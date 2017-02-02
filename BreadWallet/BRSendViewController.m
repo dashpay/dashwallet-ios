@@ -37,6 +37,8 @@
 #import "BRTransaction.h"
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
+#import "NSString+Dash.h"
+#import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"

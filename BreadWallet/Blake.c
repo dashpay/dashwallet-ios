@@ -37,6 +37,9 @@
 
 #include "sph_types.h"
 
+#ifndef X11_BLAKE
+#define X11_BLAKE 1
+
 typedef struct {
 #ifndef DOXYGEN_IGNORE
     unsigned char buf[128];    /* first field, for alignment */
@@ -505,5 +508,7 @@ sph_blake512_close(void *cc, void *dst)
 {
     sph_blake512_addbits_and_close(cc, 0, 0, dst);
 }
+
+#endif
 
 

@@ -511,19 +511,19 @@ INNER(q[16 * (sb) + 2 * 7 + o1], q[16 * (sb) + 2 * 7 + o2], mm)
 
 #if SPH_SIMD_NOCOPY
 
-#define DECL_STATE_SMALL
-#define READ_STATE_SMALL(sc)
-#define WRITE_STATE_SMALL(sc)
-#define DECL_STATE_BIG
-#define READ_STATE_BIG(sc)
-#define WRITE_STATE_BIG(sc)
+#define SIMD_DECL_STATE_SMALL
+#define SIMD_READ_STATE_SMALL(sc)
+#define SIMD_WRITE_STATE_SMALL(sc)
+#define SIMD_DECL_STATE_BIG
+#define SIMD_READ_STATE_BIG(sc)
+#define SIMD_WRITE_STATE_BIG(sc)
 
 #else
 
-#define DECL_STATE_SMALL   \
+#define SIMD_DECL_STATE_SMALL   \
 u32 A0, A1, A2, A3, B0, B1, B2, B3, C0, C1, C2, C3, D0, D1, D2, D3;
 
-#define READ_STATE_SMALL(sc)   do { \
+#define SIMD_READ_STATE_SMALL(sc)   do { \
 A0 = (sc)->state[ 0]; \
 A1 = (sc)->state[ 1]; \
 A2 = (sc)->state[ 2]; \
@@ -542,7 +542,7 @@ D2 = (sc)->state[14]; \
 D3 = (sc)->state[15]; \
 } while (0)
 
-#define WRITE_STATE_SMALL(sc)   do { \
+#define SIMD_WRITE_STATE_SMALL(sc)   do { \
 (sc)->state[ 0] = A0; \
 (sc)->state[ 1] = A1; \
 (sc)->state[ 2] = A2; \
@@ -561,13 +561,13 @@ D3 = (sc)->state[15]; \
 (sc)->state[15] = D3; \
 } while (0)
 
-#define DECL_STATE_BIG   \
+#define SIMD_DECL_STATE_BIG   \
 u32 A0, A1, A2, A3, A4, A5, A6, A7; \
 u32 B0, B1, B2, B3, B4, B5, B6, B7; \
 u32 C0, C1, C2, C3, C4, C5, C6, C7; \
 u32 D0, D1, D2, D3, D4, D5, D6, D7;
 
-#define READ_STATE_BIG(sc)   do { \
+#define SIMD_READ_STATE_BIG(sc)   do { \
 A0 = (sc)->state[ 0]; \
 A1 = (sc)->state[ 1]; \
 A2 = (sc)->state[ 2]; \
@@ -602,7 +602,7 @@ D6 = (sc)->state[30]; \
 D7 = (sc)->state[31]; \
 } while (0)
 
-#define WRITE_STATE_BIG(sc)   do { \
+#define SIMD_WRITE_STATE_BIG(sc)   do { \
 (sc)->state[ 0] = A0; \
 (sc)->state[ 1] = A1; \
 (sc)->state[ 2] = A2; \
@@ -1079,7 +1079,7 @@ one_round_big(u32 *state, u32 *w, int isp, int p0, int p1, int p2, int p3)
 }
 
 static void
-compress_big(sph_simd_big_context *sc, int last)
+simd_compress_big(sph_simd_big_context *sc, int last)
 {
     unsigned char *x;
     s32 q[256];
@@ -1266,12 +1266,12 @@ q[v + 2 * 7 + (o2)], mm); \
 #endif
 
 static void
-compress_big(sph_simd_big_context *sc, int last)
+simd_compress_big(sph_simd_big_context *sc, int last)
 {
     unsigned char *x;
     s32 q[256];
     int i;
-    DECL_STATE_BIG
+    SIMD_DECL_STATE_BIG
 #if SPH_SIMD_NOCOPY
     sph_u32 saved[32];
 #endif
@@ -1303,7 +1303,7 @@ compress_big(sph_simd_big_context *sc, int last)
             q[i] = (tq <= 128 ? tq : tq - 257);
         }
     }
-    READ_STATE_BIG(sc);
+    SIMD_READ_STATE_BIG(sc);
     A0 ^= sph_dec32le_aligned(x +   0);
     A1 ^= sph_dec32le_aligned(x +   4);
     A2 ^= sph_dec32le_aligned(x +   8);
@@ -1375,7 +1375,7 @@ compress_big(sph_simd_big_context *sc, int last)
              sc->state[24], sc->state[25], sc->state[26], sc->state[27],
              sc->state[28], sc->state[29], sc->state[30], sc->state[31],
              IF, 25,  4, PP8_0_);
-    WRITE_STATE_BIG(sc);
+    SIMD_WRITE_STATE_BIG(sc);
 #endif
 }
 
@@ -1416,7 +1416,7 @@ compress_big(sph_simd_big_context *sc, int last)
 
 #endif
 
-static const u32 IV512[] = {
+static const u32 simdIV512[] = {
     C32(0x0BA16B95), C32(0x72F999AD), C32(0x9FECC2AE), C32(0xBA3264FC),
     C32(0x5E894929), C32(0x8E9F30E5), C32(0x2F1DAA37), C32(0xF0F2C558),
     C32(0xAC506643), C32(0xA90635A5), C32(0xE25B878B), C32(0xAAB7878F),
@@ -1454,7 +1454,7 @@ update_big(void *cc, const void *data, size_t len)
         data = (const unsigned char *)data + clen;
         len -= clen;
         if ((sc->ptr += clen) == sizeof sc->buf) {
-            compress_big(sc, 0);
+            simd_compress_big(sc, 0);
             sc->ptr = 0;
             sc->count_low = T32(sc->count_low + 1);
             if (sc->count_low == 0)
@@ -1486,11 +1486,11 @@ finalize_big(void *cc, unsigned ub, unsigned n, void *dst, size_t dst_len)
         memset(sc->buf + sc->ptr, 0,
                (sizeof sc->buf) - sc->ptr);
         sc->buf[sc->ptr] = ub & (0xFF << (8 - n));
-        compress_big(sc, 0);
+        simd_compress_big(sc, 0);
     }
     memset(sc->buf, 0, sizeof sc->buf);
     encode_count_big(sc->buf, sc->count_low, sc->count_high, sc->ptr, n);
-    compress_big(sc, 1);
+    simd_compress_big(sc, 1);
     d = dst;
     for (d = dst, u = 0; u < dst_len; u ++)
         sph_enc32le(d + (u << 2), sc->state[u]);
@@ -1499,7 +1499,7 @@ finalize_big(void *cc, unsigned ub, unsigned n, void *dst, size_t dst_len)
 void
 sph_simd512_init(void *cc)
 {
-    init_big(cc, IV512);
+    init_big(cc, simdIV512);
 }
 
 void

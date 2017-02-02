@@ -30,6 +30,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "BRWalletManager.h"
 
 #define TX_VERSION    0x00000001u
 #define TX_LOCKTIME   0x00000000u
@@ -251,7 +252,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (uint64_t)standardInstantFee
 {
-    return TX_INSTANT_FEE;
+    return TX_FEE_PER_INPUT*[self.inScripts count];
 }
 
 // checks if all signatures exist, but does not verify them

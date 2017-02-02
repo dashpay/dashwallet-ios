@@ -136,66 +136,6 @@
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
 		FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A01E414877001A1C8B /* NSString+Dash.m */; };
-		FBF267BF1E414A68001A1C8B /* Blake.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A81E414A68001A1C8B /* Blake.c */; };
-		FBF267C01E414A68001A1C8B /* Blake.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A81E414A68001A1C8B /* Blake.c */; };
-		FBF267C11E414A68001A1C8B /* Blake.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A81E414A68001A1C8B /* Blake.c */; };
-		FBF267C21E414A68001A1C8B /* Blake.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A81E414A68001A1C8B /* Blake.c */; };
-		FBF267C31E414A68001A1C8B /* Blake.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A81E414A68001A1C8B /* Blake.c */; };
-		FBF267C41E414A68001A1C8B /* Bmw.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AA1E414A68001A1C8B /* Bmw.c */; };
-		FBF267C51E414A68001A1C8B /* Bmw.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AA1E414A68001A1C8B /* Bmw.c */; };
-		FBF267C61E414A68001A1C8B /* Bmw.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AA1E414A68001A1C8B /* Bmw.c */; };
-		FBF267C71E414A68001A1C8B /* Bmw.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AA1E414A68001A1C8B /* Bmw.c */; };
-		FBF267C81E414A68001A1C8B /* Bmw.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AA1E414A68001A1C8B /* Bmw.c */; };
-		FBF267C91E414A68001A1C8B /* CubeHash.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AC1E414A68001A1C8B /* CubeHash.c */; };
-		FBF267CA1E414A68001A1C8B /* CubeHash.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AC1E414A68001A1C8B /* CubeHash.c */; };
-		FBF267CB1E414A68001A1C8B /* CubeHash.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AC1E414A68001A1C8B /* CubeHash.c */; };
-		FBF267CC1E414A68001A1C8B /* CubeHash.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AC1E414A68001A1C8B /* CubeHash.c */; };
-		FBF267CD1E414A68001A1C8B /* CubeHash.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AC1E414A68001A1C8B /* CubeHash.c */; };
-		FBF267CE1E414A68001A1C8B /* Echo.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AE1E414A68001A1C8B /* Echo.c */; };
-		FBF267CF1E414A68001A1C8B /* Echo.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AE1E414A68001A1C8B /* Echo.c */; };
-		FBF267D01E414A68001A1C8B /* Echo.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AE1E414A68001A1C8B /* Echo.c */; };
-		FBF267D11E414A68001A1C8B /* Echo.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AE1E414A68001A1C8B /* Echo.c */; };
-		FBF267D21E414A68001A1C8B /* Echo.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267AE1E414A68001A1C8B /* Echo.c */; };
-		FBF267D31E414A68001A1C8B /* Groestl.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B01E414A68001A1C8B /* Groestl.c */; };
-		FBF267D41E414A68001A1C8B /* Groestl.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B01E414A68001A1C8B /* Groestl.c */; };
-		FBF267D51E414A68001A1C8B /* Groestl.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B01E414A68001A1C8B /* Groestl.c */; };
-		FBF267D61E414A68001A1C8B /* Groestl.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B01E414A68001A1C8B /* Groestl.c */; };
-		FBF267D71E414A68001A1C8B /* Groestl.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B01E414A68001A1C8B /* Groestl.c */; };
-		FBF267D81E414A68001A1C8B /* Jh.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B21E414A68001A1C8B /* Jh.c */; };
-		FBF267D91E414A68001A1C8B /* Jh.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B21E414A68001A1C8B /* Jh.c */; };
-		FBF267DA1E414A68001A1C8B /* Jh.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B21E414A68001A1C8B /* Jh.c */; };
-		FBF267DB1E414A68001A1C8B /* Jh.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B21E414A68001A1C8B /* Jh.c */; };
-		FBF267DC1E414A68001A1C8B /* Jh.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B21E414A68001A1C8B /* Jh.c */; };
-		FBF267DD1E414A68001A1C8B /* Keccak.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B41E414A68001A1C8B /* Keccak.c */; };
-		FBF267DE1E414A68001A1C8B /* Keccak.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B41E414A68001A1C8B /* Keccak.c */; };
-		FBF267DF1E414A68001A1C8B /* Keccak.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B41E414A68001A1C8B /* Keccak.c */; };
-		FBF267E01E414A68001A1C8B /* Keccak.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B41E414A68001A1C8B /* Keccak.c */; };
-		FBF267E11E414A68001A1C8B /* Keccak.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B41E414A68001A1C8B /* Keccak.c */; };
-		FBF267E21E414A68001A1C8B /* Luffa.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B61E414A68001A1C8B /* Luffa.c */; };
-		FBF267E31E414A68001A1C8B /* Luffa.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B61E414A68001A1C8B /* Luffa.c */; };
-		FBF267E41E414A68001A1C8B /* Luffa.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B61E414A68001A1C8B /* Luffa.c */; };
-		FBF267E51E414A68001A1C8B /* Luffa.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B61E414A68001A1C8B /* Luffa.c */; };
-		FBF267E61E414A68001A1C8B /* Luffa.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B61E414A68001A1C8B /* Luffa.c */; };
-		FBF267E71E414A68001A1C8B /* Shavite.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B81E414A68001A1C8B /* Shavite.c */; };
-		FBF267E81E414A68001A1C8B /* Shavite.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B81E414A68001A1C8B /* Shavite.c */; };
-		FBF267E91E414A68001A1C8B /* Shavite.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B81E414A68001A1C8B /* Shavite.c */; };
-		FBF267EA1E414A68001A1C8B /* Shavite.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B81E414A68001A1C8B /* Shavite.c */; };
-		FBF267EB1E414A68001A1C8B /* Shavite.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267B81E414A68001A1C8B /* Shavite.c */; };
-		FBF267EC1E414A68001A1C8B /* Simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BA1E414A68001A1C8B /* Simd.c */; };
-		FBF267ED1E414A68001A1C8B /* Simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BA1E414A68001A1C8B /* Simd.c */; };
-		FBF267EE1E414A68001A1C8B /* Simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BA1E414A68001A1C8B /* Simd.c */; };
-		FBF267EF1E414A68001A1C8B /* Simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BA1E414A68001A1C8B /* Simd.c */; };
-		FBF267F01E414A68001A1C8B /* Simd.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BA1E414A68001A1C8B /* Simd.c */; };
-		FBF267F11E414A68001A1C8B /* Skein.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BC1E414A68001A1C8B /* Skein.c */; };
-		FBF267F21E414A68001A1C8B /* Skein.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BC1E414A68001A1C8B /* Skein.c */; };
-		FBF267F31E414A68001A1C8B /* Skein.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BC1E414A68001A1C8B /* Skein.c */; };
-		FBF267F41E414A68001A1C8B /* Skein.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BC1E414A68001A1C8B /* Skein.c */; };
-		FBF267F51E414A68001A1C8B /* Skein.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BC1E414A68001A1C8B /* Skein.c */; };
-		FBF267F61E414A68001A1C8B /* aes_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BE1E414A68001A1C8B /* aes_helper.c */; };
-		FBF267F71E414A68001A1C8B /* aes_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BE1E414A68001A1C8B /* aes_helper.c */; };
-		FBF267F81E414A68001A1C8B /* aes_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BE1E414A68001A1C8B /* aes_helper.c */; };
-		FBF267F91E414A68001A1C8B /* aes_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BE1E414A68001A1C8B /* aes_helper.c */; };
-		FBF267FA1E414A68001A1C8B /* aes_helper.c in Sources */ = {isa = PBXBuildFile; fileRef = FBF267BE1E414A68001A1C8B /* aes_helper.c */; };
 		FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
 		FBF267FE1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
 		FBF267FF1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
@@ -1465,21 +1405,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBF267F41E414A68001A1C8B /* Skein.c in Sources */,
-				FBF267C21E414A68001A1C8B /* Blake.c in Sources */,
-				FBF267E51E414A68001A1C8B /* Luffa.c in Sources */,
 				31D68B531C23B6C10030FAAA /* BreadWalletUITests.swift in Sources */,
-				FBF267E01E414A68001A1C8B /* Keccak.c in Sources */,
-				FBF267F91E414A68001A1C8B /* aes_helper.c in Sources */,
-				FBF267EF1E414A68001A1C8B /* Simd.c in Sources */,
-				FBF267D61E414A68001A1C8B /* Groestl.c in Sources */,
-				FBF267C71E414A68001A1C8B /* Bmw.c in Sources */,
 				31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */,
-				FBF267EA1E414A68001A1C8B /* Shavite.c in Sources */,
-				FBF267DB1E414A68001A1C8B /* Jh.c in Sources */,
-				FBF267D11E414A68001A1C8B /* Echo.c in Sources */,
 				FBF268001E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */,
-				FBF267CC1E414A68001A1C8B /* CubeHash.c in Sources */,
 				22DE8CF41D02407F007F07F3 /* BRWalletConstants.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1489,7 +1417,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2230E2441D610D9A001EF2E9 /* BRCoding.swift in Sources */,
-				FBF267D31E414A68001A1C8B /* Groestl.c in Sources */,
 				22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */,
 				752E28AA19234AE300DB5A3C /* BRAddressEntity.m in Sources */,
 				75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */,
@@ -1497,12 +1424,10 @@
 				2292799A1C695CAE00C98E78 /* BRHTTPFileMiddleware.swift in Sources */,
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
 				752E28AC19234AE300DB5A3C /* BRPeerEntity.m in Sources */,
-				FBF267C41E414A68001A1C8B /* Bmw.c in Sources */,
 				FBF2680E1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
 				FBF268041E414B93001A1C8B /* NSData+Dash.m in Sources */,
 				752E28AD19234AE300DB5A3C /* BRTransactionEntity.m in Sources */,
 				752E28AE19234AE300DB5A3C /* BRTxInputEntity.m in Sources */,
-				FBF267E21E414A68001A1C8B /* Luffa.c in Sources */,
 				752E28AF19234AE300DB5A3C /* BRTxOutputEntity.m in Sources */,
 				22DE8CF11D02407F007F07F3 /* BRWalletConstants.m in Sources */,
 				FBF2680F1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
@@ -1517,17 +1442,13 @@
 				84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */,
 				2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */,
 				FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */,
-				FBF267F11E414A68001A1C8B /* Skein.c in Sources */,
-				FBF267CE1E414A68001A1C8B /* Echo.c in Sources */,
 				752E28D219234C3600DB5A3C /* BRKey+BIP38.m in Sources */,
 				220128D71C76E4F30001CAC1 /* BRWalletPlugin.swift in Sources */,
-				FBF267F61E414A68001A1C8B /* aes_helper.c in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
 				752E28D919234C3600DB5A3C /* BRTransaction.m in Sources */,
 				752E28CE19234C3600DB5A3C /* BRBIP32Sequence.m in Sources */,
 				BAC7B6BE1BD9C29900165B84 /* BRPhoneWCSessionManager.m in Sources */,
 				752E28CF19234C3600DB5A3C /* BRBIP39Mnemonic.m in Sources */,
-				FBF267E71E414A68001A1C8B /* Shavite.c in Sources */,
 				229279A51C695DE700C98E78 /* BRAPIProxy.swift in Sources */,
 				752E28DA19234C3600DB5A3C /* BRWallet.m in Sources */,
 				229279981C695C4200C98E78 /* BRHTTPServer.swift in Sources */,
@@ -1545,7 +1466,6 @@
 				22005B961C9276AF00F87733 /* BRLinkPlugin.swift in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
-				FBF267EC1E414A68001A1C8B /* Simd.c in Sources */,
 				2292799C1C695CD600C98E78 /* BRHTTPRouter.swift in Sources */,
 				75F2E0D61BEAA6A400EAE861 /* BRTxMetadataEntity.m in Sources */,
 				75878BC1192AEC3F002505AB /* BRReceiveViewController.m in Sources */,
@@ -1560,21 +1480,17 @@
 				220128D31C753C670001CAC1 /* BRSocketHelpers.c in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
-				FBF267C91E414A68001A1C8B /* CubeHash.c in Sources */,
-				FBF267DD1E414A68001A1C8B /* Keccak.c in Sources */,
 				2299CF371D5C0D0B0055EA28 /* BRReplicatedKVStore.swift in Sources */,
 				FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */,
 				751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
-				FBF267BF1E414A68001A1C8B /* Blake.c in Sources */,
 				22649FED1DAABDB200042EBC /* BRCameraPlugin.swift in Sources */,
 				220128D51C76E1550001CAC1 /* BRWebSocket.swift in Sources */,
 				75D5F3D2191EC270004AB296 /* BRAppDelegate.m in Sources */,
 				759FBB36193290F600AB4465 /* BRRootViewController.m in Sources */,
 				752E289A192349CE00DB5A3C /* BreadWallet.xcdatamodeld in Sources */,
-				FBF267D81E414A68001A1C8B /* Jh.c in Sources */,
 				759FBB37193290F600AB4465 /* BRSendViewController.m in Sources */,
 				752E28F119234E8100DB5A3C /* Reachability.m in Sources */,
 				22FF2C381BED381400B36384 /* BRAPIClient.swift in Sources */,
@@ -1586,28 +1502,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBF267E41E414A68001A1C8B /* Luffa.c in Sources */,
-				FBF267E91E414A68001A1C8B /* Shavite.c in Sources */,
 				2230E23D1D60FA52001EF2E9 /* NSDataExtensionTests.swift in Sources */,
-				FBF267DA1E414A68001A1C8B /* Jh.c in Sources */,
-				FBF267D51E414A68001A1C8B /* Groestl.c in Sources */,
 				2230E2431D610C91001EF2E9 /* BRCodingTests.swift in Sources */,
 				22DE8CF31D02407F007F07F3 /* BRWalletConstants.m in Sources */,
 				2299CF391D5C32B70055EA28 /* BRReplicatedKVStoreTests.swift in Sources */,
 				FBF267FF1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */,
-				FBF267CB1E414A68001A1C8B /* CubeHash.c in Sources */,
 				222040C81C1A3803005CE1C3 /* BRHTTPServerTests.swift in Sources */,
 				2230E2411D610A63001EF2E9 /* BRCoding.swift in Sources */,
 				75D5F3F3191EC270004AB296 /* BreadWalletTests.m in Sources */,
-				FBF267F81E414A68001A1C8B /* aes_helper.c in Sources */,
-				FBF267C61E414A68001A1C8B /* Bmw.c in Sources */,
-				FBF267DF1E414A68001A1C8B /* Keccak.c in Sources */,
-				FBF267F31E414A68001A1C8B /* Skein.c in Sources */,
-				FBF267D01E414A68001A1C8B /* Echo.c in Sources */,
 				2230E23F1D6109AD001EF2E9 /* BRKVStoreObjectsTests.swift in Sources */,
 				22FCD22C1C0E68C80066D798 /* BRTarTests.swift in Sources */,
-				FBF267C11E414A68001A1C8B /* Blake.c in Sources */,
-				FBF267EE1E414A68001A1C8B /* Simd.c in Sources */,
 				22B6A44A1C0ECB7800673913 /* BRBSPatchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1617,26 +1521,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */,
-				FBF267C81E414A68001A1C8B /* Bmw.c in Sources */,
 				BA7B53551BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
-				FBF267DC1E414A68001A1C8B /* Jh.c in Sources */,
-				FBF267FA1E414A68001A1C8B /* aes_helper.c in Sources */,
-				FBF267F01E414A68001A1C8B /* Simd.c in Sources */,
-				FBF267E61E414A68001A1C8B /* Luffa.c in Sources */,
 				BA7B53751BDBDB0500355E8D /* BRAWWatchDataManager.swift in Sources */,
 				BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */,
-				FBF267E11E414A68001A1C8B /* Keccak.c in Sources */,
-				FBF267D71E414A68001A1C8B /* Groestl.c in Sources */,
 				BAA0E8CA1BD9273700DF4236 /* BRAWGlanceInterfaceController.swift in Sources */,
-				FBF267C31E414A68001A1C8B /* Blake.c in Sources */,
-				FBF267EB1E414A68001A1C8B /* Shavite.c in Sources */,
 				BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */,
 				BA7B53511BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
-				FBF267CD1E414A68001A1C8B /* CubeHash.c in Sources */,
 				BAA6E3EF1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift in Sources */,
 				BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */,
-				FBF267D21E414A68001A1C8B /* Echo.c in Sources */,
-				FBF267F51E414A68001A1C8B /* Skein.c in Sources */,
 				BA6645961BD924EB007A6BB1 /* BRAWTransactionRowControl.swift in Sources */,
 				BAA6E3EB1BD5C78500773205 /* BRAWRootInterfaceController.swift in Sources */,
 			);
@@ -1647,22 +1539,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				22DE8CF21D02407F007F07F3 /* BRWalletConstants.m in Sources */,
-				FBF267C01E414A68001A1C8B /* Blake.c in Sources */,
-				FBF267D41E414A68001A1C8B /* Groestl.c in Sources */,
-				FBF267C51E414A68001A1C8B /* Bmw.c in Sources */,
-				FBF267F71E414A68001A1C8B /* aes_helper.c in Sources */,
 				2204604F1B9F61E600D07B61 /* BREventManager.m in Sources */,
-				FBF267E81E414A68001A1C8B /* Shavite.c in Sources */,
-				FBF267CF1E414A68001A1C8B /* Echo.c in Sources */,
 				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
-				FBF267CA1E414A68001A1C8B /* CubeHash.c in Sources */,
-				FBF267ED1E414A68001A1C8B /* Simd.c in Sources */,
 				FBF267FE1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */,
-				FBF267D91E414A68001A1C8B /* Jh.c in Sources */,
-				FBF267E31E414A68001A1C8B /* Luffa.c in Sources */,
-				FBF267DE1E414A68001A1C8B /* Keccak.c in Sources */,
 				75E2503F1B7691C900A2BB2B /* BRBubbleView.m in Sources */,
-				FBF267F21E414A68001A1C8B /* Skein.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

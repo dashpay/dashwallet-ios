@@ -36,6 +36,9 @@
 
 #include "sph_types.h"
 
+#ifndef X11_BMW
+#define X11_BMW 1
+
 typedef struct {
 #ifndef DOXYGEN_IGNORE
     unsigned char buf[128];    /* first field, for alignment */
@@ -540,3 +543,4 @@ sph_bmw512_close(void *cc, void *dst)
     sph_bmw512_addbits_and_close(cc, 0, 0, dst);
 }
 
+#endif
