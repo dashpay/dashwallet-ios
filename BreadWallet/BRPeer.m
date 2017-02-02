@@ -88,7 +88,7 @@ typedef enum : uint32_t {
     if (! (self = [super init])) return nil;
 
     _address = address;
-    _port = (port == 0) ? BITCOIN_STANDARD_PORT : port;
+    _port = (port == 0) ? DASH_STANDARD_PORT : port;
     return self;
 }
 
@@ -303,7 +303,7 @@ services:(uint64_t)services
     [msg appendUInt64:self.services]; // services of remote peer
     [msg appendBytes:&_address length:sizeof(_address)]; // IPv6 address of remote peer
     [msg appendBytes:&port length:sizeof(port)]; // port of remote peer
-    [msg appendNetAddress:LOCAL_HOST port:BITCOIN_STANDARD_PORT services:ENABLED_SERVICES]; // net address of local peer
+    [msg appendNetAddress:LOCAL_HOST port:DASH_STANDARD_PORT services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USER_AGENT]; // user agent
@@ -1114,7 +1114,7 @@ services:(uint64_t)services
                         
                         // consume one byte at a time, up to the magic number that starts a new message header
                         while (self.msgHeader.length >= sizeof(uint32_t) &&
-                               [self.msgHeader UInt32AtOffset:0] != BITCOIN_MAGIC_NUMBER) {
+                               [self.msgHeader UInt32AtOffset:0] != DASH_MAGIC_NUMBER) {
 #if DEBUG
                             printf("%c", *(const char *)self.msgHeader.bytes);
 #endif

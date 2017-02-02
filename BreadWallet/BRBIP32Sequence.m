@@ -182,7 +182,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version = BITCOIN_PRIVKEY;
     
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     version = BITCOIN_PRIVKEY_TEST;
 #endif
 
@@ -217,7 +217,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version = BITCOIN_PRIVKEY;
     
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     version = BITCOIN_PRIVKEY_TEST;
 #endif
     
@@ -250,7 +250,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version = BITCOIN_PRIVKEY;
     
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     version = BITCOIN_PRIVKEY_TEST;
 #endif
 

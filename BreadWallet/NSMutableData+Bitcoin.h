@@ -25,10 +25,10 @@
 
 #import <Foundation/Foundation.h>
 
-#if BITCOIN_TESTNET
-#define BITCOIN_MAGIC_NUMBER 0x0709110bu
+#if DASH_TESTNET
+#define DASH_MAGIC_NUMBER 0xffcae2ce
 #else
-#define BITCOIN_MAGIC_NUMBER 0xd9b4bef9u
+#define DASH_MAGIC_NUMBER 0xbd6b0cbf
 #endif
 
 CF_IMPLICIT_BRIDGING_ENABLED

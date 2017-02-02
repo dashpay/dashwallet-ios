@@ -32,7 +32,7 @@
 #import <WebKit/WebKit.h>
 #import <PushKit/PushKit.h>
 
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
 #pragma message "testnet build"
 #endif
 

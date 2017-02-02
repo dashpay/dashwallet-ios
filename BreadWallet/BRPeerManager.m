@@ -51,7 +51,7 @@
 #define GENESIS_BLOCK_HASH   (*(UInt256 *)@(checkpoint_array[0].hash).hexToData.reverse.bytes)
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
 
 static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
     {      0, "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943", 1296688602, 0x1d00ffff },
@@ -226,7 +226,7 @@ static const char *dns_seeds[] = {
         
         if (peers.count > 0) {
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
-                NSString *servname = @(BITCOIN_STANDARD_PORT).stringValue;
+                NSString *servname = @(DASH_STANDARD_PORT).stringValue;
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
 
@@ -258,7 +258,7 @@ static const char *dns_seeds[] = {
                         
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
 
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
             [self sortPeers];
             return _peers;
 #endif
@@ -270,7 +270,7 @@ static const char *dns_seeds[] = {
                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
-                    [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:BITCOIN_STANDARD_PORT
+                    [_peers addObject:[[BRPeer alloc] initWithAddress:addr port:DASH_STANDARD_PORT
                      timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
                      services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                 }

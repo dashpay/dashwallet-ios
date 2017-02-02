@@ -479,7 +479,7 @@ _switch_cell:
     UILabel *l = (id)[c.view viewWithTag:411];
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
     
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
 #endif
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]

@@ -281,7 +281,7 @@
 
 // MARK: - testKey
 
-#if ! BITCOIN_TESTNET
+#if ! DASH_TESTNET
 - (void)testKeyWithPrivateKey
 {
     XCTAssertFalse([@"S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz" isValidBitcoinPrivateKey],
@@ -331,7 +331,7 @@
 
 // MARK: - testKeyWithBIP38Key
 
-#if ! BITCOIN_TESTNET && ! SKIP_BIP38
+#if ! DASH_TESTNET && ! SKIP_BIP38
 - (void)testKeyWithBIP38Key
 {
 //    NSString *intercode, *privkey;
@@ -999,7 +999,7 @@
 
 // MARK: - testBIP32Sequence
 
-#if ! BITCOIN_TESTNET
+#if ! DASH_TESTNET
 - (void)testBIP32SequencePrivateKey
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
@@ -1051,7 +1051,7 @@
                           @"[BRBIP32Sequence publicKey:internal:masterPublicKey:]");
 }
 
-#if ! BITCOIN_TESTNET
+#if ! DASH_TESTNET
 - (void)testBIP32SequenceBitIdPrivateKey
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
@@ -1147,7 +1147,7 @@
 
     XCTAssertEqual(w.balance, SATOSHIS*3/2, @"[BRWallet balance]");
 
-#if ! BITCOIN_TESTNET
+#if ! DASH_TESTNET
     w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil
          seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
     

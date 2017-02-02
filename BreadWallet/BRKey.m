@@ -24,6 +24,8 @@
 //  THE SOFTWARE.
 
 #import "BRKey.h"
+#import "NSString+Dash.h"
+#import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -163,7 +165,7 @@ int BRSecp256k1PointMul(BRECPoint *p, const UInt256 *i)
     NSData *d = privateKey.base58checkToData;
     uint8_t version = BITCOIN_PRIVKEY;
     
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     version = BITCOIN_PRIVKEY_TEST;
 #endif
     
@@ -223,7 +225,7 @@ int BRSecp256k1PointMul(BRECPoint *p, const UInt256 *i)
     NSMutableData *d = [NSMutableData secureDataWithCapacity:sizeof(UInt256) + 2];
     uint8_t version = BITCOIN_PRIVKEY;
 
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     version = BITCOIN_PRIVKEY_TEST;
 #endif
 
@@ -263,11 +265,11 @@ int BRSecp256k1PointMul(BRECPoint *p, const UInt256 *i)
 - (NSString *)address
 {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
-    uint8_t version = BITCOIN_PUBKEY_ADDRESS;
+    uint8_t version = DASH_PUBKEY_ADDRESS;
     UInt160 hash160 = self.hash160;
 
-#if BITCOIN_TESTNET
-    version = BITCOIN_PUBKEY_ADDRESS_TEST;
+#if DASH_TESTNET
+    version = DASH_PUBKEY_ADDRESS_ADDRESS_TEST;
 #endif
     
     [d appendBytes:&version length:1];

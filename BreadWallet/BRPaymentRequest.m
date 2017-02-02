@@ -189,7 +189,7 @@
 - (BRPaymentProtocolRequest *)protocolRequest
 {
     static NSString *network = @"main";
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
     network = @"test";
 #endif
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
@@ -237,7 +237,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
         BRPaymentProtocolRequest *request = nil;
         NSString *network = @"main";
         
-#if BITCOIN_TESTNET
+#if DASH_TESTNET
         network = @"test";
 #endif
         
