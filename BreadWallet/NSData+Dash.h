@@ -11,6 +11,6 @@
 
 @interface NSData (Dash)
 
--(UInt512)x11;
+-(UInt256)x11;
 
 @end

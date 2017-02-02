@@ -28,6 +28,7 @@
 #import "BRMerkleBlock.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 #import "Reachability.h"
 #import <arpa/inet.h>
 
@@ -39,8 +40,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70013
-#define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
+#define PROTOCOL_VERSION   70103
+#define MIN_PROTO_VERSION  70103 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
@@ -188,7 +189,7 @@ services:(uint64_t)services
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:)
-         withObject:[NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
+         withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
                      userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
          afterDelay:CONNECT_TIMEOUT];
         
@@ -245,7 +246,7 @@ services:(uint64_t)services
     va_list args;
 
     va_start(args, message);
-    [self disconnectWithError:[NSError errorWithDomain:@"BreadWallet" code:500
+    [self disconnectWithError:[NSError errorWithDomain:@"DashWallet" code:500
      userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
     va_end(args);
 }
@@ -797,8 +798,8 @@ services:(uint64_t)services
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
     if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) {
-        NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].SHA256_2),
-                *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].SHA256_2);
+        NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].x11),
+                *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11);
 
         if (t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
@@ -808,7 +809,7 @@ services:(uint64_t)services
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
 
-            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].SHA256_2);
+            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }
@@ -1073,7 +1074,7 @@ services:(uint64_t)services
                 self.pingStartTime = [NSDate timeIntervalSinceReferenceDate]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
-                 withObject:[NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE
+                 withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
                              userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
                              afterDelay:CONNECT_TIMEOUT];
             }

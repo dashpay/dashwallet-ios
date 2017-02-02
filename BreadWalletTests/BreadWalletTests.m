@@ -1115,27 +1115,27 @@
     [script appendScriptPubKeyForAddress:k.address];
 
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@(0)] inputScripts:@[script]
-                         outputAddresses:@[w.receiveAddress] outputAmounts:@[@(SATOSHIS)]];
+                         outputAddresses:@[w.receiveAddress] outputAmounts:@[@(DUFFS)]];
 
     [tx signWithPrivateKeys:@[k.privateKey]];
     [w registerTransaction:tx];
 
-    XCTAssertEqual(w.balance, SATOSHIS, @"[BRWallet registerTransaction]");
+    XCTAssertEqual(w.balance, DUFFS, @"[BRWallet registerTransaction]");
 
     tx = [BRTransaction new];
     [tx addInputHash:UINT256_ZERO index:2 script:script signature:NULL sequence:UINT32_MAX - 1];
-    [tx addOutputAddress:w.receiveAddress amount:SATOSHIS];
+    [tx addOutputAddress:w.receiveAddress amount:DUFFS];
     tx.lockTime = 1000;
     tx.blockHeight = TX_UNCONFIRMED;
     [tx signWithPrivateKeys:@[k.privateKey]];
     [w registerTransaction:tx]; // test pending tx with future lockTime
 
-    XCTAssertEqual(w.balance, SATOSHIS, @"[BRWallet registerTransaction]");
+    XCTAssertEqual(w.balance, DUFFS, @"[BRWallet registerTransaction]");
 
     [w setBlockHeight:1000 andTimestamp:1 forTxHashes:@[uint256_obj(tx.txHash)]];
-    XCTAssertEqual(w.balance, SATOSHIS*2, @"[BRWallet registerTransaction]");
+    XCTAssertEqual(w.balance, DUFFS*2, @"[BRWallet registerTransaction]");
 
-    tx = [w transactionFor:SATOSHIS/2 to:k.address withFee:NO];
+    tx = [w transactionFor:DUFFS/2 to:k.address withFee:NO];
 
     XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
 
@@ -1145,7 +1145,7 @@
 
     [w registerTransaction:tx];
 
-    XCTAssertEqual(w.balance, SATOSHIS*3/2, @"[BRWallet balance]");
+    XCTAssertEqual(w.balance, DUFFS*3/2, @"[BRWallet balance]");
 
 #if ! DASH_TESTNET
     w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil

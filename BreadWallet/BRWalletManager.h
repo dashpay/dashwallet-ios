@@ -62,10 +62,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
-@property (nonatomic, readonly) NSNumberFormatter * _Nullable format; // bitcoin currency formatter
+@property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
+@property (nonatomic, readonly) NSNumberFormatter * _Nullable bitcoinFormat; // bitcoin currency formatter
+@property (nonatomic, readonly) NSNumberFormatter * _Nullable unknownFormat; // unknown currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable localFormat; // local currency formatter
 @property (nonatomic, copy) NSString * _Nullable localCurrencyCode; // local currency ISO code
-@property (nonatomic, readonly) double localCurrencyPrice; // exchange rate in local currency units per bitcoin
+@property (nonatomic, readonly) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
+@property (nonatomic, readonly) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, readonly) NSArray * _Nullable currencyCodes; // list of supported local currency codes
 @property (nonatomic, readonly) NSArray * _Nullable currencyNames; // names for local currency codes
 @property (nonatomic, readonly) BOOL isTestnet;
@@ -88,9 +91,18 @@ completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amoun
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
 completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
-- (int64_t)amountForString:(NSString * _Nullable)string;
-- (NSString * _Nonnull)stringForAmount:(int64_t)amount;
+- (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
+- (int64_t)amountForDashString:(NSString * _Nonnull)string;
+- (int64_t)amountForBitcoinString:(NSString * _Nonnull)string;
+- (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount;
+- (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color dashSymbolSize:(CGSize)dashSymbolSize;
+- (NSNumber * _Nonnull)numberForAmount:(int64_t)amount;
+- (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount;
+- (NSString * _Nonnull)stringForDashAmount:(int64_t)amount;
+- (int64_t)amountForBitcoinCurrencyString:(NSString * _Nonnull)string;
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
-- (NSString * _Nonnull)localCurrencyStringForAmount:(int64_t)amount;
+- (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount;
+- (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
+- (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
 
 @end

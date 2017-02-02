@@ -26,6 +26,7 @@
 #import "BRMerkleBlock.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "NSData+Dash.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 #define MAX_PROOF_OF_WORK 0x1d00ffffu   // highest value for difficulty target (higher values are less difficult)
@@ -115,7 +116,7 @@ inline static int ceil_log2(int x)
     [d appendUInt32:_timestamp];
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
-    _blockHash = d.SHA256_2;
+    _blockHash = d.x11;
 
     return self;
 }

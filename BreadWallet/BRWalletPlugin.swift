@@ -175,8 +175,8 @@ import Foundation
     
     func currencyFormat(_ amount: Int64) -> [String: Any] {
         var d = [String: Any]()
-        d["local_currency_amount"] = manager.localCurrencyString(forAmount: Int64(amount))
-        d["currency_amount"] = manager.string(forAmount: amount)
+        d["local_currency_amount"] = manager.localCurrencyString(forDashAmount: Int64(amount))
+        d["currency_amount"] = manager.string(forDashAmount: amount)
         return d
     }
     

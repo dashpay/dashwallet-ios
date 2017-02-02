@@ -143,7 +143,7 @@ static NSString *sanitizeString(NSString *s)
     
     //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    if ([url.scheme isEqual:@"bread"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
+    if ([url.scheme isEqual:@"dashwallet"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
         NSString *xsource = nil, *xsuccess = nil, *xerror = nil, *uri = nil;
         NSURL *callback = nil;
 

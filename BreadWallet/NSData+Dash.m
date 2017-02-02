@@ -38,7 +38,7 @@
 
 @implementation NSData (Dash)
 
-- (UInt512)x11
+- (UInt256)x11
 {
 
     UInt512 x11Data;
@@ -92,14 +92,16 @@
     sph_simd512_init(&ctx_simd);
     sph_simd512(&ctx_simd, &x11Data, 64);
     sph_simd512_close(&ctx_simd, &x11Data);
-
+    
+    UInt256 rData;
+    
     sph_echo_big_context ctx_echo;
     sph_echo512_init(&ctx_echo);
-    sph_echo512(&ctx_echo, &x11Data, 64);
-    sph_echo512_close(&ctx_echo, &x11Data);
+    sph_echo512(&ctx_echo, &x11Data, 32);
+    sph_echo512_close(&ctx_echo, &rData);
     
 
-    return x11Data;
+    return rData;
     
 }
 
