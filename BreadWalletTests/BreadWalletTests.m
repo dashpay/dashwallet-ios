@@ -37,6 +37,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
+#import "NSData+Dash.h"
 
 //#define SKIP_BIP38 1
 
@@ -60,6 +61,105 @@
     // Tear-down code here.
     
     [super tearDown];
+}
+
+-(void)testBlake
+{
+    UInt512 md = [@"020000002cc0081be5039a54b686d24d5d8747ee9770d9973ec1ace02e5c0500000000008d7139724b11c52995db4370284c998b9114154b120ad3486f1a360a1d4253d310d40e55b8f70a1be8e32300"
+                  dataUsingEncoding:NSUTF8StringEncoding].blake512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"728309A76516B83D4E326DB3C6782722129C2835A25DE336DFFC16A0C10E4EBA654D65A86C7CC606B80BEFCC665CDD9B2D966D6BDCD2179F226F36925CC1AB8F".hexToData.bytes, md),
+                  @"[NSData blake512]"); //verified by wikipedia
+}
+
+-(void)testBmw
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].bmw512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"4146f08952d34cb498486dc0a063939d7f7be69ede232f379f93c08091ea6d13d6ebdb4e06fe24030f7ca9ac07b8f59e5cfadbb05bded3b9bb3a9abecea031cb".hexToData.bytes, md),
+                  @"[NSData bmw512]"); //verified by wikipedia
+}
+
+- (void)testGroestl
+{
+    UInt512 md = [@"Groestl is an Austrian dish, usually made of leftover potatoes and pork, cut into slice."
+                  dataUsingEncoding:NSUTF8StringEncoding].groestl512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"eefdf4c9d6b6fd53390049388de8974525b406206114a8885016aa36619652535835a22ab0be05a81ea15f47ebaed9c236a79f354f699e45b6a7aebc9648695d".hexToData.bytes, md),
+                  @"[NSData groestl512]");
+}
+
+- (void)testSkein
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].skein512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"1db131ba5bc4b3ec9e381a752b3f0d53e8dd25e3d22aa8b9f17b570c3b5938833b91a54939ba873d28483e8b936f9584f06e80b1232a716a074377abd5c2b3f0".hexToData.bytes, md),
+                  @"[NSData skein512]");
+}
+
+- (void)testJh
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].jh512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"9999b3770256821e3a74c780ada66013df52378103addef0bceaac4be4f889d5ff93dc99d654310cc0063f15baa4ab168a2d8b6301104905619c334a92f521a1".hexToData.bytes, md),
+                  @"[NSData jh512]");
+}
+
+-(void)testKeccak
+{
+    UInt512 md = [@""
+                  dataUsingEncoding:NSUTF8StringEncoding].keccak512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e".hexToData.bytes, md),
+                  @"[NSData keccak512]"); //verified by wikipedia
+}
+
+- (void)testLuffa
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].luffa512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"7181d2550acde547eff499c1d533293f6bf4a0464dd9f2264ff5f35e17bb3238a6f7eb036645119a7575627f65fd74288c9581f6cf8a8df034547900aa86d634".hexToData.bytes, md),
+                  @"[NSData luffa512]");
+}
+
+-(void)testCubehash
+{
+    UInt512 md = [@"Hello"
+                  dataUsingEncoding:NSUTF8StringEncoding].cubehash512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"dcc0503aae279a3c8c95fa1181d37c418783204e2e3048a081392fd61bace883a1f7c4c96b16b4060c42104f1ce45a622f1a9abaeb994beb107fed53a78f588c".hexToData.bytes, md),
+                  @"[NSData cubehash512]");
+    
+}
+
+- (void)testShavite
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].shavite512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"45f24351ef4f5b7477214efe97f8cef4d69007e94e1e5f397011c4fecd4517fe69c509ea6aa758a9055dd6d0864b885498f4fdab5cc0458dbf98e7069b2c52dd".hexToData.bytes, md),
+                  @"[NSData shavite512]");
+}
+
+- (void)testSimd
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].simd512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"e736a132375bd8aa02d00ea3ff3f0ef4cb8fbdd0b3cf3d619cf3e270896d2911105dc9bf46c395db98f17601529d24b8fa89a28e75f73da110d91a19c44f8975".hexToData.bytes, md),
+                  @"[NSData simd512]");
+}
+
+- (void)testEcho
+{
+    UInt512 md = [@"DASH"
+                  dataUsingEncoding:NSUTF8StringEncoding].echo512;
+    XCTAssertTrue(uint512_eq(*(UInt512 *)@"42a2ee2bb582f59d1be01e4a24ed31041aa1898a3c6c2efe6956e5c6b9eb33d4a9f390f6eccdb7c757d4cb6ad3d3aed302d97740fdf78f569f599ab8cd71ff49".hexToData.bytes, md),
+                  @"[NSData echo512]");
+}
+
+
+-(void)testX11
+{
+    NSString * x11 = @"020000002cc0081be5039a54b686d24d5d8747ee9770d9973ec1ace02e5c0500000000008d7139724b11c52995db4370284c998b9114154b120ad3486f1a360a1d4253d310d40e55b8f70a1be8e32300";
+    NSData * x11Data = [NSData dataFromHexString:x11];
+    UInt256 md = x11Data.x11;
+    XCTAssertTrue(uint256_eq(*(UInt256 *)@"f29c0f286fd8071669286c6987eb941181134ff5f3978bf89f34070000000000".hexToData.bytes, md),
+                  @"[NSData x11]");
 }
 
 // MARK: - testBase58
@@ -1228,30 +1328,30 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForString:nil], 0, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:nil], 0, @"[BRWalletManager amountForDashString:]");
     
-    XCTAssertEqual([manager amountForString:@""], 0, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:@""], 0, @"[BRWalletManager amountForDashString:]");
 
     s = [manager stringForDashAmount:0];
-    XCTAssertEqual([manager amountForString:s], 0, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 0, @"[BRWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:100000000];
-    XCTAssertEqual([manager amountForString:s], 100000000, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[BRWalletManager amountForDashString:]");
 
     s = [manager stringForDashAmount:1];
-    XCTAssertEqual([manager amountForString:s], 1, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 1, @"[BRWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2100000000000000];
-    XCTAssertEqual([manager amountForString:s], 2100000000000000, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[BRWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999999];
-    XCTAssertEqual([manager amountForString:s], 2099999999999999, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[BRWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999995];
-    XCTAssertEqual([manager amountForString:s], 2099999999999995, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[BRWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999990];
-    XCTAssertEqual([manager amountForString:s], 2099999999999990, @"[BRWalletManager amountForString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[BRWalletManager amountForDashString:]");
 }
 
 // MARK: - testBloomFilter

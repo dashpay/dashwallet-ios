@@ -74,8 +74,8 @@
                 if (self.selectorType == 0) {
                     self.selectorController.title =
                         [NSString stringWithFormat:@"%@ = %@",
-                         [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyPrice],
-                         [manager stringForDashAmount:DUFFS/manager.localCurrencyPrice]];
+                         [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
+                         [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue]];
                 }
             }];
     }
@@ -160,8 +160,8 @@
 
    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
                                                        "connected peers: %d\ndl peer: %@", NULL),
-           [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyPrice],
-           [manager stringForDashAmount:DUFFS/manager.localCurrencyPrice],
+           [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
+           [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
            [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:manager.secureTime]].lowercaseString,
            [BRPeerManager sharedInstance].lastBlockHeight,
            [BRPeerManager sharedInstance].estimatedBlockHeight,
@@ -264,17 +264,17 @@
 {
     [BREventManager saveEvent:@"settings:nav_bar_swipe"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSUInteger digits = (((manager.format.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
+    NSUInteger digits = (((manager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
-    manager.format.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
-                                     (digits == 2) ? BITS : BTC];
-    manager.format.maximumFractionDigits = digits;
-    manager.format.maximum = @(MAX_MONEY/(int64_t)pow(10.0, manager.format.maximumFractionDigits));
+    manager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
+                                     (digits == 2) ? DITS : DASH];
+    manager.dashFormat.maximumFractionDigits = digits;
+    manager.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, manager.dashFormat.maximumFractionDigits));
     [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
     manager.localCurrencyCode = manager.localCurrencyCode; // force balance notification
     self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                     [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyPrice],
-                                     [manager stringForDashAmount:DUFFS/manager.localCurrencyPrice]];
+                                     [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
+                                     [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue]];
     [self.tableView reloadData];
 }
 
@@ -528,7 +528,7 @@ _switch_cell:
     [BREventManager saveEvent:@"settings:show_currency_selector"];
     NSUInteger currencyCodeIndex = 0;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    double localPrice = manager.localCurrencyPrice;
+    double localPrice = manager.localCurrencyDashPrice.doubleValue;
     NSMutableArray *options;
     self.selectorType = 0;
     options = [NSMutableArray array];

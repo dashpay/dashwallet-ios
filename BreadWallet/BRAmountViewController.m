@@ -57,13 +57,13 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
 
-    [charset addCharactersInString:manager.format.currencyDecimalSeparator];
+    [charset addCharactersInString:manager.dashFormat.currencyDecimalSeparator];
     self.charset = charset;
 
     self.payButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"pay", nil)
                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.amountField.placeholder = [manager stringForDashAmount:0];
-    [self.decimalButton setTitle:manager.format.currencyDecimalSeparator forState:UIControlStateNormal];
+    [self.decimalButton setTitle:manager.dashFormat.currencyDecimalSeparator forState:UIControlStateNormal];
 
     self.swapLeftLabel = [UILabel new];
     self.swapLeftLabel.font = self.localCurrencyLabel.font;
@@ -137,7 +137,7 @@
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     uint64_t amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountField.text] :
-                      [manager amountForString:self.amountField.text];
+                      [manager amountForDashString:self.amountField.text];
 
     self.swapLeftLabel.hidden = YES;
     self.localCurrencyLabel.hidden = NO;
@@ -184,7 +184,7 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     self.amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountField.text] :
-                  [manager amountForString:self.amountField.text];
+                  [manager amountForDashString:self.amountField.text];
 
     if (self.amount == 0){
         [BREventManager saveEvent:@"amount:pay_zero"];
@@ -338,7 +338,7 @@
 replacementString:(NSString *)string
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSNumberFormatter *numberFormatter = (self.swapped) ? manager.localFormat : manager.format;
+    NSNumberFormatter *numberFormatter = (self.swapped) ? manager.localFormat : manager.dashFormat;
     NSUInteger decimalLoc = [textField.text rangeOfString:numberFormatter.currencyDecimalSeparator].location;
     NSUInteger minimumFractionDigits = numberFormatter.minimumFractionDigits;
     NSString *textVal = textField.text, *zeroStr = nil;

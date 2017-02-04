@@ -1318,14 +1318,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                  decimalNumberByMultiplyingByPowerOf10:-self.bitcoinFormat.maximumFractionDigits]];
 }
 
-
-- (int64_t)amountForString:(NSString *)string
-{
-    if (string.length == 0) return 0;
-    return [[NSDecimalNumber decimalNumberWithDecimal:[self.dashFormat numberFromString:string].decimalValue]
-            decimalNumberByMultiplyingByPowerOf10:self.dashFormat.maximumFractionDigits].longLongValue;
-}
-
 - (NSString *)stringForDashAmount:(int64_t)amount
 {
     return [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]

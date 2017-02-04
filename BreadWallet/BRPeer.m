@@ -207,6 +207,7 @@ services:(uint64_t)services
 
 - (void)disconnectWithError:(NSError *)error
 {
+    NSLog(@"Disconnected with error %@",error);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
     if (_status == BRPeerStatusDisconnected) return;

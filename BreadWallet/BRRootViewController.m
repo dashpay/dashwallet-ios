@@ -421,14 +421,14 @@
     self.protectedObserver = nil;
 
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
-        manager.format.currencySymbol = @"m" BTC NARROW_NBSP;
-        manager.format.maximumFractionDigits = 5;
-        manager.format.maximum = @((MAX_MONEY/DUFFS)*1000);
+        manager.dashFormat.currencySymbol = @"m" BTC NARROW_NBSP;
+        manager.dashFormat.maximumFractionDigits = 5;
+        manager.dashFormat.maximum = @((MAX_MONEY/DUFFS)*1000);
     }
     else if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 8) {
-        manager.format.currencySymbol = BTC NARROW_NBSP;
-        manager.format.maximumFractionDigits = 8;
-        manager.format.maximum = @(MAX_MONEY/DUFFS);
+        manager.dashFormat.currencySymbol = BTC NARROW_NBSP;
+        manager.dashFormat.maximumFractionDigits = 8;
+        manager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     
     if (manager.noWallet) {
@@ -795,7 +795,7 @@
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         UINavigationBar *navBar = self.navigationController.navigationBar;
         NSString *text = [NSString stringWithFormat:BITS_TIP,
-                          manager.format.currencySymbol, [manager stringForDashAmount:DUFFS]];
+                          manager.dashFormat.currencySymbol, [manager stringForDashAmount:DUFFS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:navBar.bounds.size options:0
                     attributes:navBar.titleTextAttributes context:nil];
 
