@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ est pour 'bits'. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ est pour 'bits'. %2$@ = 1 dash.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ n'est pas autorisé à accéder à l'appareil photo";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUn code d'accès est nécessaire pour sécuriser votre portefeuille. Allez dans les paramètres et activez le code d'accès pour continuer.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE DÉJÀ UTILISÉE\n\nles adresses bitcoin sont destinées à un usage unique\n\nla réutilisation réduit votre vie privée pour vous et pour le destinataire et peut entraîner une perte si le destinataire ne contrôle pas directement l'adresse";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE DÉJÀ UTILISÉE\n\nles adresses dash sont destinées à un usage unique\n\nla réutilisation réduit votre vie privée pour vous et pour le destinataire et peut entraîner une perte si le destinataire ne contrôle pas directement l'adresse";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermettre l'accès à la caméra dans\nRéglages->Confidentialité->Appareil photo->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nNE LAISSEZ PERSONNE voir votre phrase\nde récupération sinon n'importe qui\npourra dépenser vos bitcoins.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nNE LAISSEZ PERSONNE voir votre phrase\nde récupération sinon n'importe qui\npourra dépenser vos dash.";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNE PRENEZ PAS une capture d'écran. \nLes captures d'écran sont visibles par les autres \napplications et appareils.\n";
@@ -89,19 +89,19 @@
 "Bitcoin address" = "Adresse Bitcoin";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Les adresses bitcoin peuvent aussi être copiées dans le presse-papier. Une adresse Bitcoin commence toujours par '1' ou '3'.";
+"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Les adresses dash peuvent aussi être copiées dans le presse-papier. Une adresse Bitcoin commence toujours par '1' ou '3'.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "frais de réseau bitcoin";
+"dash network fee" = "frais de réseau dash";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "les paiements bitcoin ne peuvent pas être inférieurs à %@";
+"dash payments can't be less than %@" = "les paiements dash ne peuvent pas être inférieurs à %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "transaction bitcoin non signée";
+"dash transaction not signed" = "transaction dash non signée";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "les sorties de transaction bitcoin ne peuvent pas être inférieures à %@";
+"dash transaction outputs can't be less than %@" = "les sorties de transaction dash ne peuvent pas être inférieures à %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloc #%1$d de %2$d";
@@ -134,7 +134,7 @@
 "choose wallet passcode" = "choisir le code d'accès du portefeuille";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "le presse-papier ne contient pas une adresse bitcoin valide";
+"clipboard doesn't contain a valid dash address" = "le presse-papier ne contient pas une adresse dash valide";
 
 /* No comment provided by engineer. */
 "close app" = "fermer l'application";
@@ -173,16 +173,16 @@
 "couldn't sweep balance" = "impossible de balayer le solde";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "impossible de transmettre le paiement au réseau bitcoin";
+"couldn't transmit payment to dash network" = "impossible de transmettre le paiement au réseau dash";
 
 /* No comment provided by engineer. */
 "current wallet passcode" = "code d'accès actuel du portefeuille";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle appli jailbreakée [débridée] peut accéder aux données du keychain [trousseau] des autres applis (et voler vos bitcoins).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle appli jailbreakée [débridée] peut accéder aux données du keychain [trousseau] des autres applis (et voler vos dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application 'jailbreakée' peut accéder aux données keychain des autres applications (et voler vos bitcoins). Effacez immédiatement ce portefeuille et restaurez sur un appareil sécurisé.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application 'jailbreakée' peut accéder aux données keychain des autres applications (et voler vos dash). Effacez immédiatement ce portefeuille et restaurez sur un appareil sécurisé.";
 
 /* No comment provided by engineer. */
 "do it later" = "le faire plus tard";
@@ -200,7 +200,7 @@
 "enter old passcode" = "entrez l'ancien code d'accès";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "erreur de signature de la transaction bitcoin";
+"error signing dash transaction" = "erreur de signature de la transaction dash";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "erreur de signature de la transaction";
@@ -230,13 +230,13 @@
 "insufficient funds" = "fonds insuffisants";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "fonds insuffisants pour les frais de réseau Bitcoin";
+"insufficient funds for dash network fee" = "fonds insuffisants pour les frais de réseau Bitcoin";
 
 /* No comment provided by engineer. */
 "INVALID" = "INVALIDE";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Laissez les autres numériser ce code QR pour obtenir votre adresse bitcoin. N'importe qui peut envoyer des bitcoins à votre portefeuille en les transférant à votre adresse.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laissez les autres numériser ce code QR pour obtenir votre adresse dash. N'importe qui peut envoyer des dash à votre portefeuille en les transférant à votre adresse.";
 
 /* No comment provided by engineer. */
 "minute" = "minute";
@@ -266,16 +266,16 @@
 "no peers found" = "aucun pair trouvé";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "n'est pas un code QR bitcoin";
+"not a dash QR code" = "n'est pas un code QR dash";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "n'est pas une adresse bitcoin valide";
+"not a valid dash address" = "n'est pas une adresse dash valide";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "n'est pas une clé privée valide";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "non connecté au réseau bitcoin";
+"not connected to the dash network" = "non connecté au réseau dash";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -308,7 +308,7 @@
 "post-dated" = "postdatée";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Recevoir les bitcoins à cette adresse : %@";
+"Receive dash at this address: %@" = "Recevoir les dash à cette adresse : %@";
 
 /* No comment provided by engineer. */
 "received" = "reçue";
@@ -353,7 +353,7 @@
 "reset" = "réinitialiser";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Numérisez le code QR de quelqu'un pour obtenir son adresse bitcoin. Vous pouvez envoyer un paiement à n'importe qui avec une adresse.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Numérisez le code QR de quelqu'un pour obtenir son adresse dash. Vous pouvez envoyer un paiement à n'importe qui avec une adresse.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Les captures d'écran sont visibles aux autres applis et appareils. Générez une nouvelle phrase de récupération et gardez-la secrète.";
@@ -365,7 +365,7 @@
 "seen by %d of %d peers" = "vu par %1$d de %2$d pairs";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Envoyer %1$@ (%2$@) de cette clé privée dans votre portefeuille ? Le réseau bitcoin recevra des frais de %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Envoyer %1$@ (%2$@) de cette clé privée dans votre portefeuille ? Le réseau dash recevra des frais de %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
 "send address as email" = "envoyer l'adresse par e-mail";
@@ -416,10 +416,10 @@
 "the app will now close" = "l'application va se fermer";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ceci est votre adresse bitcoin. Tapotez pour la copier ou pour l'envoyer par e-mail ou par sms. L'adresse changera à chaque fois que vous recevrez des fonds, mais les anciennes adresses fonctionneront toujours.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ceci est votre adresse dash. Tapotez pour la copier ou pour l'envoyer par e-mail ou par sms. L'adresse changera à chaque fois que vous recevrez des fonds, mais les anciennes adresses fonctionneront toujours.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Ceci est votre solde bitcoin. Bitcoin est une monnaie. Le taux de change fluctue avec le marché.";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Ceci est votre solde dash. Bitcoin est une monnaie. Le taux de change fluctue avec le marché.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "cette adresse de paiement est déjà dans votre portefeuille";
@@ -512,7 +512,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ÉCRIVEZ SUR PAPIER VOTRE PHRASE DE RÉCUPÉRATION";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "vous avez reçu des bitcoins !";
+"you received dash!" = "vous avez reçu des dash !";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Votre portefeuille peut être désynchronisé.\nCeci peut souvent être résolu en réanalysant la chaîne de blocs.";

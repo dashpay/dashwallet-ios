@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ 'bit' yerine geçer. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ 'bit' yerine geçer. %2$@ = 1 dash.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ kameraya erişmesi için izin verilmedi";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nCüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANILMIŞ\n\nbitcoin adresleri sadece tek kullanıma yöneliktir\n\ntekrar kullanmak alıcı ve sizin için gizliliği düşürebilir ve alıcı direk olarak adresi kontrol edemezse kaybolabilir";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANILMIŞ\n\ndash adresleri sadece tek kullanıma yöneliktir\n\ntekrar kullanmak alıcı ve sizin için gizliliği düşürebilir ve alıcı direk olarak adresi kontrol edemezse kaybolabilir";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nAyarlar->Gizlilik->Kamera->%@ \nkısmından kamera erişimine izin verin";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü bitcoinlerinizi harcayabilirler.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü dashlerinizi harcayabilirler.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nEkran görüntüsü ALMAYIN.\nEkran görüntüleri diğer uygulamalar ve \ncihazlar tarafından görülebilir.\n";
@@ -89,19 +89,19 @@
 "Bitcoin address" = "Bitcoin adresi";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin adresleri ayrıca panoya kopyalanabilir. Bitcoin adresi her zaman '1' veya '3' ile başlar.";
+"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin adresleri ayrıca panoya kopyalanabilir. Bitcoin adresi her zaman '1' veya '3' ile başlar.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "bitcoin ağ ücreti";
+"dash network fee" = "dash ağ ücreti";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin ödemesi %@'den az olamaz";
+"dash payments can't be less than %@" = "dash ödemesi %@'den az olamaz";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "bitcoin işlemi imzalanmamış";
+"dash transaction not signed" = "dash işlemi imzalanmamış";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "bitcoin işlemi çıkışı %@'den küçük olamaz";
+"dash transaction outputs can't be less than %@" = "dash işlemi çıkışı %@'den küçük olamaz";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d'in %1$d'ini engelle";
@@ -128,7 +128,7 @@
 "choose passcode for %@" = "%@ için şifre seçin";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "pano geçerli bir bitcoin adresi içermiyor";
+"clipboard doesn't contain a valid dash address" = "pano geçerli bir dash adresi içermiyor";
 
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
@@ -167,13 +167,13 @@
 "couldn't sweep balance" = "bakiye silinemedi";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "ödeme bitcoin ağına iletilemedi";
+"couldn't transmit payment to dash network" = "ödeme dash ağına iletilemedi";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve bitcoinlerinizi çalabilir).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve dashlerinizi çalabilir).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve bitcoinlerinizi çalabilir). Bu cüzdanı hemen silin ve güvenli bir cihaza yükleyin.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve dashlerinizi çalabilir). Bu cüzdanı hemen silin ve güvenli bir cihaza yükleyin.";
 
 /* No comment provided by engineer. */
 "do it later" = "daha sonra yap";
@@ -191,7 +191,7 @@
 "enter old passcode" = "eski şifreyi giriniz";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "bitcoin işlem kaydı hatası";
+"error signing dash transaction" = "dash işlem kaydı hatası";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "işlem kaydı hatası";
@@ -221,13 +221,13 @@
 "insufficient funds" = "yetersiz bakiye";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "bitcoin ağ ücreti için yetersiz bakiye";
+"insufficient funds for dash network fee" = "dash ağ ücreti için yetersiz bakiye";
 
 /* No comment provided by engineer. */
 "INVALID" = "GEÇERSİZ";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, bitcoinleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, dashleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
 
 /* No comment provided by engineer. */
 "minute" = "dakika";
@@ -254,16 +254,16 @@
 "no peers found" = "eşler bulunamadı";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "bir bitcoin QR kodu değildir";
+"not a dash QR code" = "bir dash QR kodu değildir";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "geçerli bir bitcoin adresi değil";
+"not a valid dash address" = "geçerli bir dash adresi değil";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "geçerli bir özel anahtar değil";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "bitcoin ağına bağlı değil";
+"not connected to the dash network" = "dash ağına bağlı değil";
 
 /* No comment provided by engineer. */
 "ok" = "tamam";
@@ -296,7 +296,7 @@
 "post-dated" = "ileri tarihli";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Bitcoinleri şu adresten al: %@";
+"Receive dash at this address: %@" = "Bitcoinleri şu adresten al: %@";
 
 /* No comment provided by engineer. */
 "received" = "alındı";
@@ -341,7 +341,7 @@
 "reset" = "sıfırla";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Başkalarının bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Başkalarının dash adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
@@ -353,7 +353,7 @@
 "seen by %d of %d peers" = "%2$d eşleşmenin %1$d'i tarafından görüldü";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Özel anahtardan cüzdanınıza %1$@ (%2$@) gönderilsin mi? Bitcoin ağı %3$@ (%4$@) ücreti alacaktır.";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Özel anahtardan cüzdanınıza %1$@ (%2$@) gönderilsin mi? Bitcoin ağı %3$@ (%4$@) ücreti alacaktır.";
 
 /* No comment provided by engineer. */
 "send address as email" = "adresi e-posta olarak gönder";
@@ -404,10 +404,10 @@
 "the app will now close" = "uygulama şimdi kapatılacak";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin bitcoin adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adresler her zaman çalışacaktır.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin dash adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adresler her zaman çalışacaktır.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Bu sizin bitcoin bakiyeniz. Bitcoin bir para birimidir. Döviz kurları piyasa ile değişir.";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Bu sizin dash bakiyeniz. Bitcoin bir para birimidir. Döviz kurları piyasa ile değişir.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "ödeme adresi zaten cüzdanınızda var";
@@ -494,7 +494,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "KURTARMA METNİNİZİ NOT EDİNİZ";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "bitcoin aldınız!";
+"you received dash!" = "dash aldınız!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";

@@ -1,5 +1,5 @@
 ﻿/* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ is for 'bits'. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ is for 'bits'. %2$@ = 1 dash.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n";
@@ -89,19 +89,19 @@
 "Bitcoin address" = "Bitcoin address";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'.";
+"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "bitcoin network fee";
+"dash network fee" = "dash network fee";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
+"dash payments can't be less than %@" = "dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "bitcoin transaction not signed";
+"dash transaction not signed" = "dash transaction not signed";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "bitcoin transaction outputs can't be less than %@";
+"dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "block #%1$d of %2$d";
@@ -134,7 +134,7 @@
 "choose wallet passcode" = "choose wallet passcode";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "clipboard doesn't contain a valid bitcoin address";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "close app" = "close app";
@@ -173,16 +173,16 @@
 "couldn't sweep balance" = "couldn't sweep balance";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "couldn't transmit payment to bitcoin network";
+"couldn't transmit payment to dash network" = "couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device.";
 
 /* No comment provided by engineer. */
 "do it later" = "do it later";
@@ -200,7 +200,7 @@
 "enter old passcode" = "enter old passcode";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "error signing bitcoin transaction";
+"error signing dash transaction" = "error signing dash transaction";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "error signing transaction";
@@ -230,13 +230,13 @@
 "insufficient funds" = "insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "insufficient funds for bitcoin network fee";
+"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
 "minute" = "minute";
@@ -266,16 +266,16 @@
 "no peers found" = "no peers found";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "not a bitcoin QR code";
+"not a dash QR code" = "not a dash QR code";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "not a valid bitcoin address";
+"not a valid dash address" = "not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "not a valid private key";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "not connected to the bitcoin network";
+"not connected to the dash network" = "not connected to the dash network";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -311,7 +311,7 @@
 "post-dated" = "post-dated";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Receive bitcoins at this address: %@";
+"Receive dash at this address: %@" = "Receive dash at this address: %@";
 
 /* No comment provided by engineer. */
 "received" = "received";
@@ -356,7 +356,7 @@
 "reset" = "reset";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
@@ -368,7 +368,7 @@
 "seen by %d of %d peers" = "seen by %1$d of %2$d peers";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The bitcoin network will receive a fee of %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The dash network will receive a fee of %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
 "send address as email" = "send address as email";
@@ -419,10 +419,10 @@
 "the app will now close" = "the app will now close";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market.";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "this payment address is already in your wallet";
@@ -515,7 +515,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "you received bitcoin!";
+"you received dash!" = "you received dash!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

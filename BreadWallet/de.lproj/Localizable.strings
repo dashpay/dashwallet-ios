@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ steht für 'bits'. %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ steht für 'bits'. %2$@ = 1 dash.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ darf nicht auf die Kamera zugreifen";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE BEREITS VERWENDET\n\nBitcoin-Adressen sind für einmalige Nutzung gedacht.\n\nWiederverwendung reduziert die Privatsphäre für Sie und den Empfänger und kann einen Verlust mit sich bringen, falls der Empfänger keine direkte Kontrolle über die Adresse hat";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE BEREITS VERWENDET\n\nBitcoin-Adressen sind für einmalige Nutzung gedacht.\n\nWiederverwendung reduziert die Privatsphäre für Sie und den Empfänger und kann einen Verlust mit sich bringen, falls der Empfänger keine direkte Kontrolle über die Adresse hat";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Bitcoins ausgeben.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Dash ausgeben.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKEINEN Screenshots erstellen.\nScreenshots sind sichtbar für andere Apps und Geräte.\n";
@@ -89,19 +89,19 @@
 "Bitcoin address" = "Bitcoin-Adresse";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin-Adressen können auch in die Zwischenablage kopiert werden. Eine Bitcoin-Adresse beginnt immer mit '1' oder '3'.";
+"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin-Adressen können auch in die Zwischenablage kopiert werden. Eine Bitcoin-Adresse beginnt immer mit '1' oder '3'.";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "Transaktionsgebühr";
+"dash network fee" = "Transaktionsgebühr";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Bitcoin-Zahlungen können nicht kleiner als %@ sein";
+"dash payments can't be less than %@" = "Bitcoin-Zahlungen können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "Bitcoin-Transaktion nicht signiert";
+"dash transaction not signed" = "Bitcoin-Transaktion nicht signiert";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "Bitcoin-Transaktions-Ausgänge können nicht kleiner als %@ sein";
+"dash transaction outputs can't be less than %@" = "Bitcoin-Transaktions-Ausgänge können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Block #%1$d von %2$d";
@@ -134,7 +134,7 @@
 "choose wallet passcode" = "Wallet Zugangscode eingeben";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "Zwischenablage enthält keine gültige Bitcoin-Adresse";
+"clipboard doesn't contain a valid dash address" = "Zwischenablage enthält keine gültige Bitcoin-Adresse";
 
 /* No comment provided by engineer. */
 "close app" = "App schließen";
@@ -173,16 +173,16 @@
 "couldn't sweep balance" = "Guthaben konnte nicht übertragen werden";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "Zahlung konnte nicht an das Bitcoin-Netzwerk übermittelt werden";
+"couldn't transmit payment to dash network" = "Zahlung konnte nicht an das Bitcoin-Netzwerk übermittelt werden";
 
 /* No comment provided by engineer. */
 "current wallet passcode" = "Aktueller Wallet Zugangscode";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Ihre Bitcoins stehlen).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Ihre Dash stehlen).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten anderer Apps zugreifen (und so Ihre Bitcoins stehlen). Löschen Sie dieses Wallet umgehend und stellen Sie dieses auf einem sicheren Gerät wieder her.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten anderer Apps zugreifen (und so Ihre Dash stehlen). Löschen Sie dieses Wallet umgehend und stellen Sie dieses auf einem sicheren Gerät wieder her.";
 
 /* No comment provided by engineer. */
 "do it later" = "später";
@@ -200,7 +200,7 @@
 "enter old passcode" = "alten Zugangscode eingeben";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "Fehler beim Signieren der Bitcoin-Transaktion";
+"error signing dash transaction" = "Fehler beim Signieren der Bitcoin-Transaktion";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "Fehler beim Signieren der Transaktion";
@@ -230,13 +230,13 @@
 "insufficient funds" = "Guthaben nicht ausreichend";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "Unzureichendes Guthaben für die Transaktionsgebühr";
+"insufficient funds for dash network fee" = "Unzureichendes Guthaben für die Transaktionsgebühr";
 
 /* No comment provided by engineer. */
 "INVALID" = "UNGÜLTIG";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Bitcoin-Adresse zu erhalten. Bitcoins werden so an dieses Wallet geschickt.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Bitcoin-Adresse zu erhalten. Dash werden so an dieses Wallet geschickt.";
 
 /* No comment provided by engineer. */
 "minute" = "Minute";
@@ -266,16 +266,16 @@
 "no peers found" = "keine Peers gefunden";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "Kein Bitcoin QR-Code";
+"not a dash QR code" = "Kein Bitcoin QR-Code";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "Keine gültige Bitcoin-Adresse";
+"not a valid dash address" = "Keine gültige Bitcoin-Adresse";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "Kein gültiger privater Schlüssel";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "Nicht mit dem Bitcoin-Netzwerk verbunden";
+"not connected to the dash network" = "Nicht mit dem Bitcoin-Netzwerk verbunden";
 
 /* No comment provided by engineer. */
 "ok" = "Ok";
@@ -308,7 +308,7 @@
 "post-dated" = "nachdatiert";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Bitcoins an dieser Adresse empfangen: %@";
+"Receive dash at this address: %@" = "Dash an dieser Adresse empfangen: %@";
 
 /* No comment provided by engineer. */
 "received" = "empfangen";
@@ -353,7 +353,7 @@
 "reset" = "Zurücksetzen";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots sind sichtbar für andere Apps und Geräte. Generieren Sie eine neue Wiederherstellungs-Wortfolge und halten Sie diese geheim.";
@@ -365,7 +365,7 @@
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel an Ihr Wallet senden? Das Bitcoin-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel an Ihr Wallet senden? Das Bitcoin-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
 
 /* No comment provided by engineer. */
 "send address as email" = "Adresse per e-Mail senden";
@@ -416,10 +416,10 @@
 "the app will now close" = "Die App wird jetzt beendet";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dies ist Ihre Bitcoin-Adresse. Antippen zum kopieren oder verschicken per E-Mail oder SMS. Die aktuelle Adresse ändert sich mit jeder erhaltenen Zahlung, alte Adressen funktionieren aber ebenfalls weiterhin.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dies ist Ihre Bitcoin-Adresse. Antippen zum kopieren oder verschicken per E-Mail oder SMS. Die aktuelle Adresse ändert sich mit jeder erhaltenen Zahlung, alte Adressen funktionieren aber ebenfalls weiterhin.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dies ist Ihr Bitcoin-Guthaben. Bitcoin ist eine Währung. Der Wechselkurs ändert sich mit dem Markt.";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dies ist Ihr Bitcoin-Guthaben. Bitcoin ist eine Währung. Der Wechselkurs ändert sich mit dem Markt.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "Diese Zahlungsadresse ist bereits in Ihrem Wallet";
@@ -512,7 +512,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "NOTIEREN SIE IHRE WIEDERHERSTELLUNGS-WORTFOLGE";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "Sie haben Bitcoin erhalten!";
+"you received dash!" = "Sie haben Bitcoin erhalten!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ihr Wallet ist möglicherweise nicht synchron.\nDies kann oft durch erneutes Scannen der Blockchain behoben werden.";

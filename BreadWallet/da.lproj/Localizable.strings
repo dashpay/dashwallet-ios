@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 bitcoin." = "%1$@ er for  \"bits\". %2$@ = 1 bitcoin.";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ er for  \"bits\". %2$@ = 1 dash.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ikke tilladelse til at bruge kameraet";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEn enhedsadgangskode er nødvendig for at sikre din tegnebog. Gå til indstillinger for aktivér adgangskode for at fortsætte.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE ER ALLEREDE BRUGT\n\nbitcoin-adresser bør kun bruges en enkelt gang\n\ngenbrug reducerer beskyttelse af privatlivet både for dig og for modtageren og kan resultere i tab, hvis modtageren ikke kontrollerer adressen direkte";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE ER ALLEREDE BRUGT\n\ndash-adresser bør kun bruges en enkelt gang\n\ngenbrug reducerer beskyttelse af privatlivet både for dig og for modtageren og kan resultere i tab, hvis modtageren ikke kontrollerer adressen direkte";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngiv adgang for kamera i\nIndstillinger->Anonymitet->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your bitcoins.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine bitcoin.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine dash.";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nTAG IKKE et screenshot.\nScreenshots er synlige for andre apps\nog enheder.\n";
@@ -89,19 +89,19 @@
 "Bitcoin address" = "Bitcoin-adresse";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A bitcoin address always starts with '1' or '3'." = "Bitcoin-adresser kan også kopieres til udklipsholderen. En bitcoin-adresse starter altid med \"1\" eller \"3\".";
+"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin-adresser kan også kopieres til udklipsholderen. En dash-adresse starter altid med \"1\" eller \"3\".";
 
 /* No comment provided by engineer. */
-"bitcoin network fee" = "bitcoin-netværksgebyr";
+"dash network fee" = "dash-netværksgebyr";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin-betalinger kan ikke være mindre end %@";
+"dash payments can't be less than %@" = "dash-betalinger kan ikke være mindre end %@";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "bitcoin-transaktion ikke signeret";
+"dash transaction not signed" = "dash-transaktion ikke signeret";
 
 /* No comment provided by engineer. */
-"bitcoin transaction outputs can't be less than %@" = "outputs for bitcoin-transaktioner kan ikke være mindre end %@";
+"dash transaction outputs can't be less than %@" = "outputs for dash-transaktioner kan ikke være mindre end %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloknr. %1$d af %2$d";
@@ -128,7 +128,7 @@
 "choose passcode for %@" = "vælg adgangskode for %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid bitcoin address" = "udklipsholder indeholder ikke en gyldig bitcoin-adresse";
+"clipboard doesn't contain a valid dash address" = "udklipsholder indeholder ikke en gyldig dash-adresse";
 
 /* No comment provided by engineer. */
 "close app" = "luk app";
@@ -167,13 +167,13 @@
 "couldn't sweep balance" = "kunne ikke rydde saldo";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to bitcoin network" = "kunne ikke sende betalingen til bitcoin-netværket";
+"couldn't transmit payment to dash network" = "kunne ikke sende betalingen til dash-netværket";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoin).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine bitcoin). Slet straks denne tegnebog og gendan den på en sikker enhed.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "ENHEDENS SIKKERHED KOMPROMITTERET\nEnhver \"jailbreak'et\" app kan tilgå enhver anden apps nøglerings-data (og stjæle dine dash). Slet straks denne tegnebog og gendan den på en sikker enhed.";
 
 /* No comment provided by engineer. */
 "do it later" = "gør det senere";
@@ -191,7 +191,7 @@
 "enter old passcode" = "angiv gammel adgangskode";
 
 /* No comment provided by engineer. */
-"error signing bitcoin transaction" = "fejl ved signering af bitcoin-transaktion";
+"error signing dash transaction" = "fejl ved signering af dash-transaktion";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "fejl ved signering af transaktion";
@@ -221,13 +221,13 @@
 "insufficient funds" = "utilstrækkelige midler";
 
 /* No comment provided by engineer. */
-"insufficient funds for bitcoin network fee" = "utilstrækkelige midler til bitcoin netværksgebyr";
+"insufficient funds for dash network fee" = "utilstrækkelige midler til dash netværksgebyr";
 
 /* No comment provided by engineer. */
 "INVALID" = "UGYLDIG";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your bitcoin address. Anyone can send bitcoins to your wallet by transferring them to your address." = "Lad andre scanne denne QR-kode for at få din bitcoin-adresse. Enhver kan sende bitcoins til din tegnebog ved at overføre dem til din adresse.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Lad andre scanne denne QR-kode for at få din dash-adresse. Enhver kan sende dash til din tegnebog ved at overføre dem til din adresse.";
 
 /* No comment provided by engineer. */
 "minute" = "minut";
@@ -254,16 +254,16 @@
 "no peers found" = "ingen peers fundet";
 
 /* No comment provided by engineer. */
-"not a bitcoin QR code" = "ikke en bitcoin QR-kode";
+"not a dash QR code" = "ikke en dash QR-kode";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "ikke en gyldig bitcoin-adresse";
+"not a valid dash address" = "ikke en gyldig dash-adresse";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ikke en gyldig privat nøgle";
 
 /* No comment provided by engineer. */
-"not connected to the bitcoin network" = "ikke tilsluttet bitcoin-netværket";
+"not connected to the dash network" = "ikke tilsluttet dash-netværket";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -296,7 +296,7 @@
 "post-dated" = "postdateret";
 
 /* No comment provided by engineer. */
-"Receive bitcoins at this address: %@" = "Modtag bitcoins på denne adresse: %@";
+"Receive dash at this address: %@" = "Modtag dash på denne adresse: %@";
 
 /* No comment provided by engineer. */
 "received" = "modtaget";
@@ -341,7 +341,7 @@
 "reset" = "nulstil";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their bitcoin address. You can send a payment to anyone with an address." = "Scan en andens QR-kode for at få deres bitcoin-adresse. Du kan sende en betaling til enhver med en adresse.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan en andens QR-kode for at få deres dash-adresse. Du kan sende en betaling til enhver med en adresse.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skærmbilleder er synlige for andre apps og enheder. Lav en ny gendannelsessætning og hold den hemmelig.";
@@ -353,7 +353,7 @@
 "seen by %d of %d peers" = "set af %1$d ud af %2$d peers";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The bitcoin network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) fra denne private nøgle til din tegnebog? Bitcoin-netværket vil modtage et gebyr på %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) fra denne private nøgle til din tegnebog? Bitcoin-netværket vil modtage et gebyr på %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
 "send address as email" = "send adressen som e-mail";
@@ -404,10 +404,10 @@
 "the app will now close" = "app'en vil nu lukke";
 
 /* No comment provided by engineer. */
-"This is your bitcoin address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din bitcoin-adresse. Tryk for at kopiere den eller sende den via e-mail eller sms. Adressen ændres hver gang du modtager midler, men tidligere adresser virker altid.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din dash-adresse. Tryk for at kopiere den eller sende den via e-mail eller sms. Adressen ændres hver gang du modtager midler, men tidligere adresser virker altid.";
 
 /* No comment provided by engineer. */
-"This is your bitcoin balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dette er din bitcoin-saldo. Bitcoin er en valuta. Vekselkursen følger markedet.";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dette er din dash-saldo. Bitcoin er en valuta. Vekselkursen følger markedet.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "denne betalingsadresse er allerede i din tegnebog";
@@ -494,7 +494,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SKRIV DIN GENDANNELSESSÆTNING NED";
 
 /* No comment provided by engineer. */
-"you received bitcoin!" = "du har modtaget bitcoin!";
+"you received dash!" = "du har modtaget dash!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din tegnebog kan være ude af sync.\nDette kan ofte løses ved at scanne blokkæden igen.";

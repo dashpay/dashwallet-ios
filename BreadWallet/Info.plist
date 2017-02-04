@@ -15,7 +15,7 @@
 			<string>Bitcoin Payment Request</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>bitcoin.paymentrequest</string>
+				<string>dash.paymentrequest</string>
 			</array>
 		</dict>
 		<dict>
@@ -25,7 +25,7 @@
 			<string>Bitcoin Payment</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>bitcoin.payment</string>
+				<string>dash.payment</string>
 			</array>
 		</dict>
 		<dict>
@@ -35,7 +35,7 @@
 			<string>Bitcoin Payment ACK</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>bitcoin.paymentack</string>
+				<string>dash.paymentack</string>
 			</array>
 		</dict>
 	</array>
@@ -59,10 +59,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>bitcoin</string>
+			<string>dash</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>bitcoin</string>
+				<string>dash</string>
 			</array>
 		</dict>
 		<dict>
@@ -136,11 +136,11 @@
 			<key>UTTypeDescription</key>
 			<string>Bitcoin Payment Request</string>
 			<key>UTTypeIdentifier</key>
-			<string>bitcoin.paymentrequest</string>
+			<string>dash.paymentrequest</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.mime-type</key>
-				<string>application/bitcoin-paymentrequest</string>
+				<string>application/dash-paymentrequest</string>
 			</dict>
 		</dict>
 		<dict>
@@ -151,11 +151,11 @@
 			<key>UTTypeDescription</key>
 			<string>Bitcoin Payment</string>
 			<key>UTTypeIdentifier</key>
-			<string>bitcoin.payment</string>
+			<string>dash.payment</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.mime-type</key>
-				<string>application/bitcoin-payment</string>
+				<string>application/dash-payment</string>
 			</dict>
 		</dict>
 		<dict>
@@ -166,11 +166,11 @@
 			<key>UTTypeDescription</key>
 			<string>Bitcoin Payment ACK</string>
 			<key>UTTypeIdentifier</key>
-			<string>bitcoin.paymentack</string>
+			<string>dash.paymentack</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.mime-type</key>
-				<string>application/bitcoin-paymentack</string>
+				<string>application/dash-paymentack</string>
 			</dict>
 		</dict>
 	</array>

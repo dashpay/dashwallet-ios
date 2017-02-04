@@ -212,9 +212,9 @@
     
     [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
     [s replaceCharactersInRange:[s.string rangeOfString:@"\nDO NOT let anyone see your recovery\n"
-                                 "phrase or they can spend your bitcoins.\n"]
+                                 "phrase or they can spend your dash.\n"]
      withString:NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                  "phrase or they can spend your bitcoins.\n", nil)];
+                                  "phrase or they can spend your dash.\n", nil)];
     [s replaceCharactersInRange:[s.string rangeOfString:@"\nNEVER type your recovery phrase into\n"
                                  "password managers or elsewhere.\nOther devices may be infected.\n"]
      withString:NSLocalizedString(@"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\n"
