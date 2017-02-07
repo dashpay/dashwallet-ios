@@ -243,8 +243,8 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         #else
             let testflight = false
         #endif
-        actualRequest.addValue("\((testnet ?? false) ? 1 : 0)", forHTTPHeaderField: "X-Dash-Testnet")
-        actualRequest.addValue("\(testflight ? 1 : 0)", forHTTPHeaderField: "X-Testflight")
+        actualRequest.setValue("\((testnet ?? false) ? 1 : 0)", forHTTPHeaderField: "X-Dash-Testnet")
+        actualRequest.setValue("\(testflight ? 1 : 0)", forHTTPHeaderField: "X-Testflight")
         return actualRequest
     }
     
