@@ -419,7 +419,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ceci est votre adresse dash. Tapotez pour la copier ou pour l'envoyer par e-mail ou par sms. L'adresse changera à chaque fois que vous recevrez des fonds, mais les anciennes adresses fonctionneront toujours.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Ceci est votre solde dash. Bitcoin est une monnaie. Le taux de change fluctue avec le marché.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Ceci est votre solde dash. Dash est une monnaie. Le taux de change fluctue avec le marché.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "cette adresse de paiement est déjà dans votre portefeuille";

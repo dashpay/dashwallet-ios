@@ -83,10 +83,10 @@
 "bad signature" = "firmë e gabuar";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin adresa";
+"Dash address" = "Dash adresa";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Bitcoin adresat gjithashtu mund të kopjohen në memorje. Një dash adresë gjithmon fillon me '1' ose '3'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Bitcoin adresat gjithashtu mund të kopjohen në memorje. Një dash adresë gjithmon fillon me 'X' ose '7'.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "dash tarifa";
@@ -122,7 +122,7 @@
 "choose passcode for %@" = "zgjedhni kodkalimin për %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "memorja nuk përmban një dash adresë valide";
+"clipboard doesn't contain a valid dash or bitcoin address" = "memorja nuk përmban një dash ose bitcoin adresë valide";
 
 /* No comment provided by engineer. */
 "close app" = "mbyll aplikacionin";
@@ -320,7 +320,7 @@
 "reset" = "reseto";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Skano QR kodin e dikujt tjetër për të marrë dash adresën e tyre. Mund të dergoni pages gjithkujt me një adresë.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Skano QR kodin e dikujt tjetër për të marrë dash ose bitcoin adresën e tyre. Mund të dergoni pages gjithkujt me një adresë.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshot mund të shihen nga aplikacionet dhe pajisjet tjera. Gjenero një frazë tjetër rikthyese dhe mbaje sekret.";
@@ -386,7 +386,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Kjo është dash adresa juaj. Tap për ta kopjuar ose dërguar atë përmes email ose sms. Adresa ndryshon secilën herë që ju pranoni fonde, por adresat e vjetra gjithmonë punojn.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Kjo është dash bilanci juaj. Bitcoin është një monedhë. Kursi i këmbimit ndryshon nga tregu.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Kjo është dash bilanci juaj. Dash është një monedhë. Kursi i këmbimit ndryshon nga tregu.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "kjo adresë ekziston tashmë ne kuletën tuaj";

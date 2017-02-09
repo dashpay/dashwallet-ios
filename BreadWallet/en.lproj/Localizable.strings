@@ -356,7 +356,7 @@
 "reset" = "reset";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
@@ -422,7 +422,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "This is your dash balance. Dash is a currency. The exchange rate changes with the market.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "this payment address is already in your wallet";

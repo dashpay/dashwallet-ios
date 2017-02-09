@@ -89,7 +89,7 @@
 "Dash address" = "Биткойн-адрес";
 
 /* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Адреса Dash также могут быть скопированы в буфер обмена. Bitcoin-адрес всегда начинается с «X» или «7».";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Адреса Dash также могут быть скопированы в буфер обмена. Dash-адрес всегда начинается с «X» или «7».";
 
 /* No comment provided by engineer. */
 "dash network fee" = "комиссия сети dash";
@@ -134,7 +134,7 @@
 "choose wallet passcode" = "придумайте пароль к кошельку";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "в буфере обмена нет корректного dash-адреса";
+"clipboard doesn't contain a valid dash or bitcoin address" = "в буфере обмена нет корректного dash-адреса или bitcoin-адреса";
 
 /* No comment provided by engineer. */
 "close app" = "закрыть программу";
@@ -353,7 +353,7 @@
 "reset" = "сброс";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить dash-адрес. Вы можете отправить платеж кому угодно, имея адрес.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить dash-адрес или bitcoin-адреса. Вы можете отправить платеж кому угодно, имея адрес.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Скриншоты видимы другими приложениями и устройствами. Создайте новую фразу восстановления и держите ее в секрете.";
@@ -419,7 +419,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Это ваш dash-адрес. Нажмите, чтобы скопировать его или отправить его по электронной почте или SMS. Адрес будет меняться каждый раз, когда вы получаете средства, но старые адреса останутся работоспособными.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Это ваш баланс dash. Bitcoin является валютой. Валютный курс меняется в соответствие с рынком.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Это ваш баланс dash. Dash является валютой. Валютный курс меняется в соответствие с рынком.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "этот адрес уже находится в вашем бумажнике";

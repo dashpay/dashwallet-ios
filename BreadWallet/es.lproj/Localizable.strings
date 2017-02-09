@@ -86,10 +86,10 @@
 "bad signature" = "firma incorrecta";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Dirección de dash";
+"Dash address" = "Dirección de dash";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Las direcciones de dash también pueden copiarse en el portapapeles. Una dirección de dash siempre comienza por \"1\" o \"3\".";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Las direcciones de dash también pueden copiarse en el portapapeles. Una dirección de dash siempre comienza por \"X\" o \"7\".";
 
 /* No comment provided by engineer. */
 "dash network fee" = "cuota de red de dash";
@@ -128,7 +128,7 @@
 "choose passcode for %@" = "seleccionar código de acceso para %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "el portapapeles no contiene ninguna dirección dash válida";
+"clipboard doesn't contain a valid dash or bitcoin address" = "el portapapeles no contiene ninguna dirección dash o bitcoin válida";
 
 /* No comment provided by engineer. */
 "close app" = "cerrar app";
@@ -341,7 +341,7 @@
 "reset" = "reiniciar";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Escanee el código QR de terceros para obtener su dirección dash. Puede enviar un pago a cualquier poseedor de una dirección.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Escanee el código QR de terceros para obtener su dirección dash o bitcoin. Puede enviar un pago a cualquier poseedor de una dirección.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Las capturas de pantalla son visibles para otras aplicaciones y dispositivos. Genere una nueva frase de recuperación y téngala en secreto.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Esta es su dirección dash. Pulse para copiarla o enviarla por correo electrónico o sms. La dirección cambiará cada vez que reciba fondos, si bien las direcciones antiguas funcionarán siempre.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Este es su saldo dash. Bitcoin es una moneda. La tasa de cambio fluctúa con el mercado.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Este es su saldo dash. Dash es una moneda. La tasa de cambio fluctúa con el mercado.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "esta dirección de pago ya está en su cartera";

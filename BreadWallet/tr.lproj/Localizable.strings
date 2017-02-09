@@ -128,7 +128,7 @@
 "choose passcode for %@" = "%@ için şifre seçin";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "pano geçerli bir dash adresi içermiyor";
+"clipboard doesn't contain a valid dash or bitcoin address" = "pano geçerli bir dash veya bitcoin adresi içermiyor";
 
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
@@ -341,7 +341,7 @@
 "reset" = "sıfırla";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Başkalarının dash adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Başkalarının dash veya bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin dash adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adresler her zaman çalışacaktır.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Bu sizin dash bakiyeniz. Bitcoin bir para birimidir. Döviz kurları piyasa ile değişir.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Bu sizin dash bakiyeniz. Dash bir para birimidir. Döviz kurları piyasa ile değişir.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "ödeme adresi zaten cüzdanınızda var";

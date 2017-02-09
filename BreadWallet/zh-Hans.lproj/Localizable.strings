@@ -128,7 +128,7 @@
 "choose passcode for %@" = "选择%@的密码";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid Dash or Bitcoin address" = "剪贴板不包含有效的达世币或者比特币地址";
+"clipboard doesn't contain a valid Dash or Bitcoin address" = "剪贴板不包含有效的达世币或者比特达世币或者币地址";
 
 /* No comment provided by engineer. */
 "close app" = "关闭App";
@@ -341,7 +341,7 @@
 "reset" = "重设";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "扫描别人的二维码来获得他们的达世币地址。您可以向任何一个地址发送付款。";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "扫描别人的二维码来获得他们的达世达世币或者币地址。您可以向任何一个地址发送付款。";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截图可以被其他程序或者设备获得。请生成一个新的恢复密语并妥善保管。";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "这是您的达世币地址。点击可将其复制，或将其用电子邮件或短信发送。每次你获得资金这个地址都会改变，但旧地址依然可用。";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "这是您的达世币余额。达世币是一种货币。汇率随着市场变化。";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "这是您的达世币余额。达世币是一种货币。汇率随着市场变化。";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "此付款地址已在你的钱包";

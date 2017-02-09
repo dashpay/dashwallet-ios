@@ -341,7 +341,7 @@
 "reset" = "επαναφορά";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Σάρωση του κώδικα QR κάποιου άλλου ατόμου για να πάρετε τη διεύθυνση dash τους. Μπορείτε να στείλετε μια πληρωμή σε οποιοδήποτε με μια διεύθυνση.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Σάρωση του κώδικα QR κάποιου άλλου ατόμου για να πάρετε τη διεύθυνση dash ή το bitcoin τους. Μπορείτε να στείλετε μια πληρωμή σε οποιοδήποτε με μια διεύθυνση.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Παράξτε μια νέα φράση ανάκτησης και κρατήστε την μυστική.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Αυτή είναι η διεύθυνση dash σας. Πατήστε για να την αντιγράψετε ή να το στείλετε με email ή sms. Η διεύθυνση θα αλλάξει κάθε φορά που λαμβάνετε χρήματα, αλλά λειτουργούν πάντα οι παλιές διευθύνσεις.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Αυτό είναι το υπόλοιπό σας σε dash. Το Bitcoin είναι ένα νόμισμα. Οι μεταβολές των συναλλαγματικών ισοτιμιών αλλάζουν με την αγορά.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Αυτό είναι το υπόλοιπό σας σε dash. Το Dash είναι ένα νόμισμα. Οι μεταβολές των συναλλαγματικών ισοτιμιών αλλάζουν με την αγορά.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";

@@ -128,7 +128,7 @@
 "choose passcode for %@" = "vælg adgangskode for %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "udklipsholder indeholder ikke en gyldig dash-adresse";
+"clipboard doesn't contain a valid dash or bitcoin address" = "udklipsholder indeholder ikke en gyldig dash-adresse eller bitcoin-adresse";
 
 /* No comment provided by engineer. */
 "close app" = "luk app";
@@ -341,7 +341,7 @@
 "reset" = "nulstil";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan en andens QR-kode for at få deres dash-adresse. Du kan sende en betaling til enhver med en adresse.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan en andens QR-kode for at få deres dash-adresse eller bitcoin-adresse. Du kan sende en betaling til enhver med en adresse.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skærmbilleder er synlige for andre apps og enheder. Lav en ny gendannelsessætning og hold den hemmelig.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Dette er din dash-adresse. Tryk for at kopiere den eller sende den via e-mail eller sms. Adressen ændres hver gang du modtager midler, men tidligere adresser virker altid.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Dette er din dash-saldo. Bitcoin er en valuta. Vekselkursen følger markedet.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Dette er din dash-saldo. Dash er en valuta. Vekselkursen følger markedet.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "denne betalingsadresse er allerede i din tegnebog";

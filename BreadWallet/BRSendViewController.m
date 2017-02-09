@@ -46,8 +46,8 @@
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
-#define CLIPBOARD_TIP NSLocalizedString(@"Bitcoin addresses can also be copied to the clipboard. "\
-"A bitcoin address always starts with '1' or '3'.", nil)
+#define CLIPBOARD_TIP NSLocalizedString(@"Dash addresses can also be copied to the clipboard. "\
+"A dash address always starts with '1' or '3'.", nil)
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
@@ -477,7 +477,7 @@ static NSString *sanitizeString(NSString *s)
             self.request = protoReq;
             self.okAddress = address;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                                        message:NSLocalizedString(@"\nADDRESS ALREADY USED\n\nbitcoin addresses are intended for single use only\n\n"
+                                        message:NSLocalizedString(@"\nADDRESS ALREADY USED\n\dash addresses are intended for single use only\n\n"
                                                                   "re-use reduces privacy for both you and the recipient and can result in loss if "
                                                                   "the recipient doesn't directly control the address", nil)
                                        delegate:self cancelButtonTitle:nil
@@ -1054,7 +1054,6 @@ static NSString *sanitizeString(NSString *s)
     self.tipView = [BRBubbleView viewWithText:SCAN_TIP
                                      tipPoint:CGPointMake(self.scanButton.center.x, self.scanButton.center.y - 10.0)
                                  tipDirection:BRBubbleTipDirectionDown];
-    self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];
 }

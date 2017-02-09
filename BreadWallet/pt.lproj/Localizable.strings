@@ -128,7 +128,7 @@
 "choose passcode for %@" = "escolha a senha para %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "área de transferência não contém um endereço dash válido";
+"clipboard doesn't contain a valid dash or bitcoin address" = "área de transferência não contém um endereço dash ou bitcoin válido";
 
 /* No comment provided by engineer. */
 "close app" = "fechar o aplicativo";
@@ -341,7 +341,7 @@
 "reset" = "redefinir";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Gere uma nova frase de recuperação e a mantenha secreta.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Este é seu endereço dash. Toque para copiá-lo ou enviá-lo por e-mail ou sms. O endereço vai mudar cada vez que você receber fundos, mas endereços antigos sempre funcionam.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Este é o seu saldo de dash. Bitcoin é uma moeda. A taxa de câmbio muda com o mercado.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Este é o seu saldo de dash. Dash é uma moeda. A taxa de câmbio muda com o mercado.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "este endereço de pagamento já está em sua carteira";

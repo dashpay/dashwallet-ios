@@ -35,9 +35,9 @@
 #import "BREventManager.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
-#define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your bitcoin address. Anyone can send "\
-                    "bitcoins to your wallet by transferring them to your address.", nil)
-#define ADDRESS_TIP NSLocalizedString(@"This is your bitcoin address. Tap to copy it or send it by email or sms. The "\
+#define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
+                    "dash to your wallet by transferring them to your address.", nil)
+#define ADDRESS_TIP NSLocalizedString(@"This is your dash address. Tap to copy it or send it by email or sms. The "\
                     "address will change each time you receive funds, but old addresses always work.", nil)
 
 #define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
@@ -246,7 +246,6 @@
     self.tipView = [BRBubbleView viewWithText:QR_TIP
                     tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
                     tipDirection:BRBubbleTipDirectionUp];
-    self.tipView.backgroundColor = [UIColor orangeColor];
     self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
     [self.view addSubview:[self.tipView popIn]];
 }

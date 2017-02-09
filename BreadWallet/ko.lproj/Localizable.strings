@@ -128,7 +128,7 @@
 "choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "클립보드에 제대로 된 대쉬 주소가 없습니다";
+"clipboard doesn't contain a valid Dash or Bitcoin address" = "클립보드에 제대로 된 대쉬 주소가 없습니다";
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
@@ -341,7 +341,7 @@
 "reset" = "초기화";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "다른 사람의 대쉬 주소를 얻으려면 QR코드를 스캔하세요. 주소가 있으면 누구에게든 돈을 보낼 수 있습니다";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "다른 사람의 대쉬 주소를 얻으려면 QR코드를 스캔하세요. 주소가 있으면 누구에게든 돈을 보낼 수 있습니다";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 복원 문구를 새로 만들고 비밀로 간직하세요.";
@@ -407,7 +407,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이게 당신의 대쉬 주소입니다. 탭 해서 복사하거나 이메일, SMS로 다른 사람에게 보내세요. 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 하지만 이전 주소도 언제든지 사용할 수 있습니다.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "이게 당신의 대쉬 잔액입니다. 대쉬은 화폐입니다. 환율은 시장 상황에 따라 변합니다.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이게 당신의 대쉬 잔액입니다. 대쉬은 화폐입니다. 환율은 시장 상황에 따라 변합니다.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "이 결제 주소는 당신 지갑에 있는 주소입니다";

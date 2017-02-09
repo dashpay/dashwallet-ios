@@ -134,7 +134,7 @@
 "choose wallet passcode" = "パスコードをご指定下さい";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid Dash or Bitcoin address" = "클립보드에 제대로 된 대쉬 주소가 없습니다";
+"clipboard doesn't contain a valid Dash or Bitcoin address" = "クリップボードには有効な\nダッシュまたはビットコインアドレスが\n含まれていません。"
 
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
@@ -353,7 +353,7 @@
 "reset" = "リセット";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "ダッシュインアドレスを取得するためにQRコードを見せてもらって下さい。\nダッシュインアドレスを持っている人で\nあれば誰にでも送金が可能です。";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "ダッシュまたはビットコインアドレスを取得するためにQRコードを見せてもらって下さい。\nダッシュインアドレスを持っている人で\nあれば誰にでも送金が可能です。";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "スクリーン ショットは、他のアプリや\nデバイスに閲覧することができます。\n新しい復元フレーズを作り、\n大事に守って下さい。";
@@ -419,7 +419,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これがあなたのダッシュインアドレスの一つ。タップすればコピーしたりメールやSMSで共有したりできます。\n取引を行うごとにアドレスは入れ\n替わりますが、一度表示したアドレスに\n対して送られたダッシュインは\nいつまでも自動的に受け取られます。";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "これがあなたのダッシュイン残高です。ダッシュインは通貨であり、為替レートが市場の動きにより変動します。";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "これがあなたのダッシュイン残高です。ダッシュインは通貨であり、為替レートが市場の動きにより変動します。";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";

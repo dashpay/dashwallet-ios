@@ -314,7 +314,7 @@
 "reset" = "återställ";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress eller bitcoinadress via QR-kod. Du kan göra  överföringar till alla som har en adress.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress eller bitcoinadress via QR-kod. Du kan göra överföringar till alla som har en adress.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skärmbilder är synliga för andra appar och enheter. Skapa en ny återställningsfras och håll den hemlig.";
@@ -380,7 +380,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Detta är din dashadress. Nudda för att kopiera eller skicka till andra via e-post eller sms. Adressen ändras varje gång du tar emot en betalning, men gamla adresser fungerar även i framtiden.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "Detta är ditt dashaldo. Bitcoin är en valuta. Växelkursen ändras av marknaden.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Detta är ditt dashaldo. Dash är en valuta. Växelkursen ändras av marknaden.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "denna betaladress är redan i plånboken";
