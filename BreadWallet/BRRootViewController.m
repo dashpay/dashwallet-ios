@@ -843,7 +843,7 @@
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *tip;
         if (manager.bitcoinDashPrice) {
-            tip = (self.percent.hidden) ? [NSString stringWithFormat:@"%@ \n 1%@ = %@%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
+            tip = (self.percent.hidden) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice.doubleValue,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
              [[BRPeerManager sharedInstance] lastBlockHeight],
              [[BRPeerManager sharedInstance] estimatedBlockHeight]];
@@ -853,8 +853,14 @@
              [[BRPeerManager sharedInstance] lastBlockHeight],
              [[BRPeerManager sharedInstance] estimatedBlockHeight]];
         }
+        NSMutableAttributedString *attributedTip = [[NSMutableAttributedString alloc]
+                                                       initWithString:[tip stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
         
-        self.tipView = [BRBubbleView viewWithAttributedText:[tip attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:CGSizeMake(13, 11)]
+        NSRange range = [attributedTip.string rangeOfString:DASH options:NSBackwardsSearch];
+        if (range.length != 0)
+            [attributedTip replaceCharactersInRange:range
+                                  withAttributedString:[NSString dashSymbolAttributedStringWithTintColor:[UIColor whiteColor] forDashSymbolSize:CGSizeMake(13, 11)]];
+        self.tipView = [BRBubbleView viewWithAttributedText:attributedTip
                                                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                                                tipDirection:BRBubbleTipDirectionUp];
         self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];

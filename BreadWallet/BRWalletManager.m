@@ -247,8 +247,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                       stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
                                       withString:@"-#"];
     self.dashFormat.currencyCode = @"DASH";
-    self.dashFormat.currencySymbol = DITS NARROW_NBSP;
-    self.dashFormat.maximumFractionDigits = 2;
+    self.dashFormat.currencySymbol = DASH NARROW_NBSP;
+    self.dashFormat.maximumFractionDigits = 8;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
     
@@ -901,9 +901,9 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     _localCurrencyCode = [code copy];
     
     if (i < _currencyPrices.count && self.secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
-        self.localCurrencyDashPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
+        self.localCurrencyBitcoinPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
     }
-    else self.localCurrencyDashPrice = @(0);
+    else self.localCurrencyBitcoinPrice = @(0);
     
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
@@ -1038,60 +1038,58 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOIN_TICKER_URL]
                                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
     
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                                         if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
-                                             if (connectionError) {
-                                                 NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
-                                                 return;
-                                             }
-                                             
-                                             NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                             NSError *error = nil;
-                                             NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                             NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
-                                             
-                                             if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
-                                                 NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
-                                                 NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                                                        matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                                                       date].timeIntervalSinceReferenceDate;
-                                                 
-                                                 if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
-                                             }
-                                             
-                                             if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
-                                                 NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                       [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                                                 return;
-                                             }
-                                             
-                                             for (NSDictionary *d in json[@"data"]) {
-                                                 if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
-                                                     ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
-                                                     NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                           [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                                                     return;
-                                                 }
-                                                 
-                                                 if ([d[@"code"] isEqual:@"BTC"]) continue;
-                                                 [codes addObject:d[@"code"]];
-                                                 [names addObject:d[@"name"]];
-                                                 [rates addObject:d[@"rate"]];
-                                             }
-                                             
-                                             _currencyCodes = codes;
-                                             _currencyNames = names;
-                                             _currencyPrices = rates;
-                                             self.localCurrencyCode = _localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
-                                             [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
-                                             [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
-                                             [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
-                                             [defs synchronize];
-                                             NSLog(@"bitcoin exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
-                                                   [self stringForDashAmount:DUFFS]);
-                                         }
-                                     }
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
+        if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
+            NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
+            return;
+        }
+        
+        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
+        
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
+            NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
+            NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+                                   matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
+                                  date].timeIntervalSinceReferenceDate;
+            
+            if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+        }
+        
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        }
+        
+        for (NSDictionary *d in json[@"data"]) {
+            if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
+                ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
+                NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                      [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                return;
+            }
+            
+            if ([d[@"code"] isEqual:@"BTC"]) continue;
+            [codes addObject:d[@"code"]];
+            [names addObject:d[@"name"]];
+            [rates addObject:d[@"rate"]];
+        }
+        
+        _currencyCodes = codes;
+        _currencyNames = names;
+        _currencyPrices = rates;
+        self.localCurrencyCode = _localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
+        [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
+        [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
+        [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
+        [defs synchronize];
+        NSLog(@"bitcoin exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
+              [self stringForDashAmount:DUFFS]);
+    }
+      
       
       ] resume];
     
