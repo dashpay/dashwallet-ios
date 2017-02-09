@@ -77,10 +77,10 @@
 "bad signature" = "foutieve ondertekening";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin adres";
+"Dash address" = "Dash adres";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin adressen kunnen ook naar het klipbord gekopieerd worden. Een dash adres begint altijd met een '1' of een '3'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash adressen kunnen ook naar het klipbord gekopieerd worden. Een dash adres begint altijd met een 'X' of een '7'.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "dash netwerk vergoeding";
@@ -116,7 +116,7 @@
 "choose passcode for %@" = "kies toegangscode voor %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "klipbord bevat geen valide dash adres";
+"clipboard doesn't contain a valid dash or bitcoin address" = "klipbord bevat geen valide dash of bitcoin adres";
 
 /* No comment provided by engineer. */
 "close app" = "app sluiten";
@@ -314,7 +314,7 @@
 "reset" = "opnieuw zetten";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar dash adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar dash of bitcoin adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Genereer een nieuwe herstel zin en houdt deze geheim.";

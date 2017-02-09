@@ -86,10 +86,10 @@
 "bad signature" = "hatalı imza";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin adresi";
+"Dash address" = "dash adresi";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin adresleri ayrıca panoya kopyalanabilir. Bitcoin adresi her zaman '1' veya '3' ile başlar.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash adresleri ayrıca panoya kopyalanabilir. Bitcoin adresi her zaman 'X' veya '7' ile başlar.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "dash ağ ücreti";

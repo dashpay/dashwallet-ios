@@ -191,7 +191,7 @@
                NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"],
                ([BRWalletManager sharedInstance].watchOnly) ? @" (watch only)" : @""];
         
-        composeController.toRecipients = @[@"support@breadwallet.com"];
+        composeController.toRecipients = @[@"https://github.com/QuantumExplorer/dashwallet"];
         composeController.subject = @"support request";
         [composeController setMessageBody:msg isHTML:NO];
         composeController.mailComposeDelegate = self;

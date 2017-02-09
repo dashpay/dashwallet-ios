@@ -41,9 +41,9 @@
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 
-#define BALANCE_TIP NSLocalizedString(@"This is your bitcoin balance. Bitcoin is a currency. "\
+#define BALANCE_TIP NSLocalizedString(@"This is your DASH balance. DASH is a currency. "\
                                        "The exchange rate changes with the market.", nil)
-#define BITS_TIP    NSLocalizedString(@"%@ is for 'bits'. %@ = 1 bitcoin.", nil)
+#define MDASH_TIP    NSLocalizedString(@"%@ is for 'mDASH'. %@ = 1 DASH.", nil)
 
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
 #define BALANCE_KEY            @"BALANCE"
@@ -794,7 +794,7 @@
     if ([tipView.text hasPrefix:BALANCE_TIP]) {
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         UINavigationBar *navBar = self.navigationController.navigationBar;
-        NSString *text = [NSString stringWithFormat:BITS_TIP,
+        NSString *text = [NSString stringWithFormat:MDASH_TIP,
                           manager.dashFormat.currencySymbol, [manager stringForDashAmount:DUFFS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:navBar.bounds.size options:0
                     attributes:navBar.titleTextAttributes context:nil];

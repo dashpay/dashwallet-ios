@@ -458,21 +458,32 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee
+- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
+    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:FALSE toShapeshiftAddress:nil];
+}
+
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee  isInstant:(BOOL)isInstant {
+    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:nil];
+}
+
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (BRTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
 {
+    
     uint64_t amount = 0, balance = 0, feeAmount = 0;
     BRTransaction *transaction = [BRTransaction new], *tx;
     NSUInteger i = 0, cpfpSize = 0;
     BRUTXO o;
-
+    
     if (amounts.count != scripts.count || amounts.count < 1) return nil; // sanity check
-
+    
     for (NSData *script in scripts) {
         if (script.length == 0) return nil;
         [transaction addOutputScript:script amount:[amounts[i] unsignedLongLongValue]];
         amount += [amounts[i++] unsignedLongLongValue];
     }
-
+    
     //TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
     //TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
     //TODO: use up UTXOs received from any of the output scripts that this transaction sends funds to, to mitigate an
@@ -485,18 +496,18 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         
         if (transaction.size + 34 > TX_MAX_SIZE) { // transaction size-in-bytes too large
             NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
-        
+            
             // check for sufficient total funds before building a smaller transaction
-            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize]) {
+            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant]) {
                 NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
                       amount + [self feeForTxSize:txSize + cpfpSize]);
                 return nil;
             }
-        
+            
             uint64_t lastAmount = [amounts.lastObject unsignedLongLongValue];
             NSArray *newAmounts = [amounts subarrayWithRange:NSMakeRange(0, amounts.count - 1)],
-                    *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];
-        
+            *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];
+            
             if (lastAmount > amount + feeAmount + self.minOutputAmount - balance) { // reduce final output amount
                 newAmounts = [newAmounts arrayByAddingObject:@(lastAmount - (amount + feeAmount - balance))];
                 newScripts = [newScripts arrayByAddingObject:scripts.lastObject];
@@ -511,7 +522,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
+            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant]; // assume we will add a change output
             if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
@@ -523,12 +534,18 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         return nil;
     }
     
+    if (shapeshiftAddress) {
+        [transaction addOutputShapeshiftAddress:shapeshiftAddress];
+    }
+    
     if (balance - (amount + feeAmount) >= self.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
         [transaction shuffleOutputOrder];
     }
     
     return transaction;
+
+    
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet

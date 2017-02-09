@@ -246,8 +246,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     self.dashFormat.negativeFormat = [self.dashFormat.positiveFormat
                                       stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
                                       withString:@"-#"];
-    self.dashFormat.currencyCode = @"XBT";
-    self.dashFormat.currencySymbol = BITS NARROW_NBSP;
+    self.dashFormat.currencyCode = @"DASH";
+    self.dashFormat.currencySymbol = DITS NARROW_NBSP;
     self.dashFormat.maximumFractionDigits = 2;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));

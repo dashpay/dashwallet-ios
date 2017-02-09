@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -21,11 +21,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="bottomLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="FwI-2H-GnU">
-                                <rect key="frame" x="0.0" y="-69" width="964" height="736"/>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="breadwallet-big" translatesAutoresizingMaskIntoConstraints="NO" id="Ph3-0i-aKu">
-                                <rect key="frame" x="59" y="258" width="257" height="151"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-welcome" translatesAutoresizingMaskIntoConstraints="NO" id="FwI-2H-GnU">
+                                <rect key="frame" x="0.0" y="0.0" width="757" height="667"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="0.75294117647058822" blue="0.50196078431372548" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -33,9 +30,8 @@
                             <constraint firstItem="FwI-2H-GnU" firstAttribute="leading" secondItem="Qzf-u8-EOx" secondAttribute="leading" id="Lrv-Hf-8SQ"/>
                             <constraint firstAttribute="bottom" secondItem="FwI-2H-GnU" secondAttribute="bottom" id="Wap-Zv-qBF"/>
                             <constraint firstAttribute="trailing" secondItem="FwI-2H-GnU" secondAttribute="trailing" id="a5e-FZ-9XI"/>
-                            <constraint firstAttribute="centerY" secondItem="Ph3-0i-aKu" secondAttribute="centerY" id="bZf-Q1-i91"/>
                             <constraint firstItem="FwI-2H-GnU" firstAttribute="top" secondItem="Qzf-u8-EOx" secondAttribute="top" id="kTv-lQ-twH"/>
-                            <constraint firstAttribute="centerX" secondItem="Ph3-0i-aKu" secondAttribute="centerX" id="qMn-y2-5YB"/>
+                            <constraint firstItem="FwI-2H-GnU" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" constant="-20" id="q8p-77-lRd"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
@@ -51,7 +47,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="breadwallet-big" width="257" height="151"/>
-        <image name="wallpaper-welcome" width="964" height="736"/>
+        <image name="wallpaper-welcome" width="757" height="568"/>
     </resources>
 </document>

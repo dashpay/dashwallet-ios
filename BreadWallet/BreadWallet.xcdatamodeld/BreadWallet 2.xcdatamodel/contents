@@ -30,6 +30,7 @@
         <attribute name="lockTime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="associatedShapeshift" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSShapeshiftEntity" inverseName="transaction" inverseEntity="DSShapeshiftEntity" syncable="YES"/>
         <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BRTxInputEntity" inverseName="transaction" inverseEntity="BRTxInputEntity" syncable="YES"/>
         <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BRTxOutputEntity" inverseName="transaction" inverseEntity="BRTxOutputEntity" syncable="YES"/>
     </entity>
@@ -66,15 +67,16 @@
         <attribute name="outputTransactionId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="shapeshiftStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="withdrawalAddress" attributeType="String" syncable="YES"/>
+        <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BRTransactionEntity" inverseName="associatedShapeshift" inverseEntity="BRTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
         <element name="BRAddressEntity" positionX="-137" positionY="36" width="128" height="90"/>
         <element name="BRMerkleBlockEntity" positionX="-299" positionY="36" width="128" height="208"/>
         <element name="BRPeerEntity" positionX="349" positionY="36" width="128" height="120"/>
-        <element name="BRTransactionEntity" positionX="25" positionY="36" width="128" height="133"/>
+        <element name="BRTransactionEntity" positionX="25" positionY="36" width="128" height="150"/>
         <element name="BRTxInputEntity" positionX="189" positionY="36" width="128" height="118"/>
         <element name="BRTxMetadataEntity" positionX="-90" positionY="162" width="128" height="90"/>
         <element name="BRTxOutputEntity" positionX="189" positionY="174" width="128" height="150"/>
-        <element name="DSShapeshiftEntity" positionX="-90" positionY="162" width="128" height="210"/>
+        <element name="DSShapeshiftEntity" positionX="-90" positionY="162" width="128" height="225"/>
     </elements>
 </model>

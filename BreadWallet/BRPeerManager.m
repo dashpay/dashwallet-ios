@@ -1005,11 +1005,11 @@ static const char *dns_seeds[] = {
         return;
     }
 
-//    // drop peers that don't support SPV filtering
-//    if (peer.version >= 70103 && ! (peer.services & SERVICES_NODE_BLOOM)) {
-//        [peer disconnect];
-//        return;
-//    }
+    // drop peers that don't support SPV filtering
+    if (peer.version >= 70206 && ! (peer.services & SERVICES_NODE_BLOOM)) {
+        [peer disconnect];
+        return;
+    }
 
     if (self.connected && (self.estimatedBlockHeight >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
         if (self.lastBlockHeight < self.estimatedBlockHeight) return; // don't load bloom filter yet if we're syncing

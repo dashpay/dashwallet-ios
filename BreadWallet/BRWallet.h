@@ -116,6 +116,12 @@ typedef struct _BRUTXO {
 - (BRTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts
                                    toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee;
 
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (BRTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee  isInstant:(BOOL)isInstant;
+
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (BRTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
+
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
 
@@ -163,5 +169,7 @@ typedef struct _BRUTXO {
 
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size;
+
+- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant;
 
 @end

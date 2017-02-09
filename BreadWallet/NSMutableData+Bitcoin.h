@@ -53,8 +53,11 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
 
+- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPubKeyForAddress:(NSString *)address;
 - (void)appendScriptPushData:(NSData *)d;
+
+- (void)appendShapeshiftMemoForAddress:(NSString *)address;
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;

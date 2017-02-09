@@ -290,6 +290,14 @@ sequence:(uint32_t)sequence
     [self.outScripts.lastObject appendScriptPubKeyForAddress:address];
 }
 
+- (void)addOutputShapeshiftAddress:(NSString *)address
+{
+    [self.amounts addObject:@(0)];
+    [self.addresses addObject:[NSNull null]];
+    [self.outScripts addObject:[NSMutableData data]];
+    [self.outScripts.lastObject appendShapeshiftMemoForAddress:address];
+}
+
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 {
     NSString *address = [NSString addressWithScriptPubKey:script];

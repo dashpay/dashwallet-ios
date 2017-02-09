@@ -25,5 +25,6 @@
 @dynamic outputTransactionId;
 @dynamic shapeshiftStatus;
 @dynamic withdrawalAddress;
+@dynamic transaction;
 
 @end

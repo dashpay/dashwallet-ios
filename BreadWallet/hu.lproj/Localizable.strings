@@ -86,10 +86,10 @@
 "bad signature" = "hibás aláírás";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin cím";
+"Dash address" = "Dash cím";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin címeket a vágólapra is lehet másolni. Egy dash cím mindig '1'-gyel vagy '3'-mal kezdődik.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash címeket a vágólapra is lehet másolni. Egy dash cím mindig 'X'-gyel vagy '7'-mal kezdődik.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "dash hálózati díj";
@@ -341,7 +341,7 @@
 "reset" = "visszaállít";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Olvasd be valaki másnak a QR kódját, hogy hozzájuss a dash címéhez. Bárkinek küldhetsz pénzt, akinek van ilyen címe.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Olvasd be valaki másnak a QR kódját, hogy hozzájuss a dash vagy bitcoin címéhez. Bárkinek küldhetsz pénzt, akinek van ilyen címe.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "A képernyőmentések láthatóak más alkalmazások és eszközök számára. Generálj egy új helyreállítási kódmondatot és tartsd titokban.";

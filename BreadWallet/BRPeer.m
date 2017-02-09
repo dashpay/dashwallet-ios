@@ -40,8 +40,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70103
-#define MIN_PROTO_VERSION  70103 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
+#define PROTOCOL_VERSION   70206
+#define MIN_PROTO_VERSION  70206 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
@@ -657,7 +657,7 @@ services:(uint64_t)services
         return;
     }
     
-    NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
+    //NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         inv_type type = [message UInt32AtOffset:off];

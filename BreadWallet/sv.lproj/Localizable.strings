@@ -77,10 +77,10 @@
 "bad signature" = "fel signatur";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin-adress";
+"Dash address" = "Dash-adress";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin-adresser kan också kopieras till klippboken. En Bitcoin-adress startar alltid med '1' eller '3'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash-adresser kan också kopieras till klippboken. En Dash-adress startar alltid med 'X' eller '7'.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "transaktions kostnad";
@@ -116,7 +116,7 @@
 "choose passcode for %@" = "välj pinkod for %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "urklippet innehåller inte en giltig dashadress";
+"clipboard doesn't contain a valid Dash or Bitcoin address" = "urklippet innehåller inte en giltig dashadress eller bitcoinadress";
 
 /* No comment provided by engineer. */
 "close app" = "stäng app";
@@ -314,7 +314,7 @@
 "reset" = "återställ";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress via QR-kod. Du kan göra  överföringar till alla som har en adress.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress eller bitcoinadress via QR-kod. Du kan göra  överföringar till alla som har en adress.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skärmbilder är synliga för andra appar och enheter. Skapa en ny återställningsfras och håll den hemlig.";

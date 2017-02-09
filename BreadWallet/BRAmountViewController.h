@@ -31,6 +31,9 @@
 @required
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
+@optional
+- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount;
+- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount;
 
 @end
 
@@ -38,5 +41,7 @@
 
 @property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSString *to;
+@property (nonatomic, assign) BOOL usingShapeshift;
+@property (nonatomic, strong) NSString * payeeCurrency;
 
 @end

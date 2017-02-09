@@ -280,8 +280,7 @@ CFAllocatorRef SecureAllocator()
         [self appendUInt8:OP_EQUAL];
     }
 }
-
-// MARK: - bitcoin protocol
+// MARK: - dash protocol
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type;
 {

@@ -76,10 +76,14 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
+- (void)addOutputShapeshiftAddress:(NSString *)address;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
+
+- (NSString*)shapeshiftOutboundAddress;
++ (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;

@@ -1,5 +1,5 @@
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ は「ビット」と言います。\n%2$@ = 1 ビットコイン";
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@ は「ビット」と言います。\n%2$@ = 1 ダッシュイン";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ はカメラへのアクセスを拒否されています。";
@@ -38,13 +38,13 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから進んでください。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nビットコインのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく\nなります。例えば、相手が紛失した\nウォレットに送るとビットコインが\n消滅してしまう可能性もあります。";
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nダッシュインのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく\nなります。例えば、相手が紛失した\nウォレットに送るとダッシュインが\n消滅してしまう可能性もあります。";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人は\nあなたのビットコインを\n簡単に盗むことができます。";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人は\nあなたのダッシュインを\n簡単に盗むことができます。";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nスクリーンショットをご遠慮下さい。\n他のアプリや端末に復元フレーズが\n見えてしまう危険性があります。\n";
@@ -86,22 +86,22 @@
 "bad signature" = "署名が正しくありません。";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "ビットコインアドレス";
+"Dash address" = "ダッシュアドレス"";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "ビットコインアドレスをクリップボードにコピーすることもできます。\nビットコインアドレスは\n常に '1' または '3' で始まります。";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "ダッシュアドレスをクリップボードにコピーすることもできます。\nダッシュアドレスは\n常に 'X' または '7' で始まります。";
 
 /* No comment provided by engineer. */
-"dash network fee" = "ビットコインネットワーク手数料";
+"dash network fee" = "ダッシュインネットワーク手数料";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "ビットコインの送金は %@ 以上でないと送れません。";
+"dash payments can't be less than %@" = "ダッシュインの送金は %@ 以上でないと送れません。";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "取引が署名されていません";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "ビットコインの取引出力は %@ 以上でないといけません。";
+"dash transaction outputs can't be less than %@" = "ダッシュインの取引出力は %@ 以上でないといけません。";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "ブロック #%1$d / %2$d";
@@ -134,7 +134,7 @@
 "choose wallet passcode" = "パスコードをご指定下さい";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "クリップボードには有効な\nビットコインアドレスが\n含まれていません。";
+"clipboard doesn't contain a valid Dash or Bitcoin address" = "클립보드에 제대로 된 대쉬 주소가 없습니다";
 
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
@@ -173,16 +173,16 @@
 "couldn't sweep balance" = "全残高送金ができませんでした";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "取引をビットコインネットワークへ送信できませんでした";
+"couldn't transmit payment to dash network" = "取引をダッシュインネットワークへ送信できませんでした";
 
 /* No comment provided by engineer. */
 "current wallet passcode" = "現在のパスコードをご入力下さい";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセスできます。(つまり、あなたのビットコインを簡単に盗めます。)";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセスできます。(つまり、あなたのダッシュインを簡単に盗めます。)";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセス権限が持てますので、あなたのビットコインウォレットを簡単に盗めます。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセス権限が持てますので、あなたのダッシュインウォレットを簡単に盗めます。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
 
 /* No comment provided by engineer. */
 "do it later" = "後でやります";
@@ -200,7 +200,7 @@
 "enter old passcode" = "現在のパスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "ビットコイン取引署名時エラー";
+"error signing dash transaction" = "ダッシュイン取引署名時エラー";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "取引署名時エラー";
@@ -230,13 +230,13 @@
 "insufficient funds" = "残高不足";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "ビットコインの\nネットワーク手数料を含めると\n残高が足りません";
+"insufficient funds for dash network fee" = "ダッシュインの\nネットワーク手数料を含めると\n残高が足りません";
 
 /* No comment provided by engineer. */
 "INVALID" = "無効";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "このQRコードを人に見せる、または\nビットコインアドレスをコピーして人に\n送るとすぐに送金を受け取れます。";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "このQRコードを人に見せる、または\nダッシュインアドレスをコピーして人に\n送るとすぐに送金を受け取れます。";
 
 /* No comment provided by engineer. */
 "minute" = "分";
@@ -266,16 +266,16 @@
 "no peers found" = "通信相手が見つかりませんでした。";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "ビットコインのQRコードではありません";
+"not a dash QR code" = "ダッシュインのQRコードではありません";
 
 /* No comment provided by engineer. */
-"not a valid dash address" = "有効なビットコインアドレスではありません";
+"not a valid dash address" = "有効なダッシュインアドレスではありません";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "有効な秘密鍵ではありません";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "ビットコインネットワークに接続されていません。";
+"not connected to the dash network" = "ダッシュインネットワークに接続されていません。";
 
 /* No comment provided by engineer. */
 "ok" = "OK";
@@ -308,7 +308,7 @@
 "post-dated" = "後日";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "このアドレスでビットコインを受取る： %@";
+"Receive dash at this address: %@" = "このアドレスでダッシュインを受取る： %@";
 
 /* No comment provided by engineer. */
 "received" = "受取済み";
@@ -353,7 +353,7 @@
 "reset" = "リセット";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "ビットコインアドレスを取得するためにQRコードを見せてもらって下さい。\nビットコインアドレスを持っている人で\nあれば誰にでも送金が可能です。";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "ダッシュインアドレスを取得するためにQRコードを見せてもらって下さい。\nダッシュインアドレスを持っている人で\nあれば誰にでも送金が可能です。";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "スクリーン ショットは、他のアプリや\nデバイスに閲覧することができます。\n新しい復元フレーズを作り、\n大事に守って下さい。";
@@ -365,13 +365,13 @@
 "seen by %d of %d peers" = "%1$d / %2$d ピアにて伝播確認済";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高\n%1$@ (%2$@) を\nbreadwallet宛に送金しても\n宜しいですか？\nビットコインネットワークへの\n手数料が %3$@ (%4$@) です。";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高\n%1$@ (%2$@) を\nbreadwallet宛に送金しても\n宜しいですか？\nダッシュインネットワークへの\n手数料が %3$@ (%4$@) です。";
 
 /* No comment provided by engineer. */
-"send address as email" = "ビットコインアドレスをメールにて共有";
+"send address as email" = "ダッシュインアドレスをメールにて共有";
 
 /* No comment provided by engineer. */
-"send address as message" = "ビットコインアドレスをメッセージにて共有";
+"send address as message" = "ダッシュインアドレスをメッセージにて共有";
 
 /* No comment provided by engineer. */
 "send request as email" = "リクエストをメールにて共有";
@@ -416,10 +416,10 @@
 "the app will now close" = "アプリを閉じます";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これがあなたのビットコインアドレスの一つ。タップすればコピーしたりメールやSMSで共有したりできます。\n取引を行うごとにアドレスは入れ\n替わりますが、一度表示したアドレスに\n対して送られたビットコインは\nいつまでも自動的に受け取られます。";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これがあなたのダッシュインアドレスの一つ。タップすればコピーしたりメールやSMSで共有したりできます。\n取引を行うごとにアドレスは入れ\n替わりますが、一度表示したアドレスに\n対して送られたダッシュインは\nいつまでも自動的に受け取られます。";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "これがあなたのビットコイン残高です。ビットコインは通貨であり、為替レートが市場の動きにより変動します。";
+"This is your dash balance. Bitcoin is a currency. The exchange rate changes with the market." = "これがあなたのダッシュイン残高です。ダッシュインは通貨であり、為替レートが市場の動きにより変動します。";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";
@@ -512,7 +512,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "復元フレーズを書き留めて下さい！";
 
 /* No comment provided by engineer. */
-"you received dash!" = "ビットコインの着金確認！";
+"you received dash!" = "ダッシュインの着金確認！";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";

@@ -86,10 +86,10 @@
 "bad signature" = "feil signatur";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Bitcoin-adresse";
+"Dash address" = "Bitcoin-adresse";
 
 /* No comment provided by engineer. */
-"Bitcoin addresses can also be copied to the clipboard. A dash address always starts with '1' or '3'." = "Bitcoin-adresser kan også kopieres til utklippstavlen. En Bitcoin-adresse starter alltid med '1' eller '3'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash-adresser kan også kopieres til utklippstavlen. En Bitcoin-adresse starter alltid med 'X' eller '7'.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "dash nettverksavgift";
