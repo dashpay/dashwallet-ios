@@ -258,7 +258,7 @@
     BOOL req = (_paymentRequest) ? YES : NO;
     UIActionSheet *actionSheet = [UIActionSheet new];
 
-    actionSheet.title = [NSString stringWithFormat:NSLocalizedString(@"Receive bitcoins at this address: %@", nil),
+    actionSheet.title = [NSString stringWithFormat:NSLocalizedString(@"Receive dash at this address: %@", nil),
                self.paymentAddress];
     actionSheet.delegate = self;
     [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :

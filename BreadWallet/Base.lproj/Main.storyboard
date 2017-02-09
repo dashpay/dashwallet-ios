@@ -1101,7 +1101,7 @@
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled"/>
                                 <state key="highlighted" backgroundImage="button-bg-white-pressed">
-                                    <color key="titleColor" red="0.98008280992507935" green="0.46029669046401978" blue="0.13201591372489929" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" red="0.0" green="0.70893455179999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -1121,7 +1121,7 @@
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled"/>
                                 <state key="highlighted" backgroundImage="button-bg-white-pressed">
-                                    <color key="titleColor" red="0.98008280992507935" green="0.46029669046401978" blue="0.13201591372489929" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" red="0.0" green="0.70893455179999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
@@ -2023,7 +2023,7 @@ bitpay.com/rates and poloniex</string>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="highlighted" backgroundImage="button-bg-white-pressed">
-                                    <color key="titleColor" red="0.98008280992507935" green="0.46029669046401978" blue="0.13201591372489929" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleColor" red="0.0" green="0.70893455179999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                             </button>

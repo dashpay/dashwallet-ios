@@ -410,7 +410,6 @@ if (self.usingShapeshift) {
                                                    tipPoint:CGPointMake(self.bottomButton.center.x, self.bottomButton.center.y - 10.0)
                                                tipDirection:BRBubbleTipDirectionDown];
         tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        tipView.backgroundColor = [UIColor lightGrayColor];
         tipView.userInteractionEnabled = YES;
         [self.view addSubview:[tipView popIn]];
         self.tipView = tipView;

@@ -857,7 +857,6 @@
         self.tipView = [BRBubbleView viewWithAttributedText:[tip attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:CGSizeMake(13, 11)]
                                                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                                                tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.backgroundColor = [UIColor lightGrayColor];
         self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         self.tipView.userInteractionEnabled = NO;
         [self.view addSubview:[self.tipView popIn]];

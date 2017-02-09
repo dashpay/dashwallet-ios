@@ -94,7 +94,7 @@
     if (! (self = [super initWithFrame:frame])) return nil;
 
     self.layer.cornerRadius = RADIUS;
-    self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.8];
+    self.backgroundColor = [UIColor lightGrayColor];
     self.label = [[UILabel alloc] initWithFrame:CGRectMake(MARGIN_X, MARGIN_Y, frame.size.width - MARGIN_X*2,
                                                            frame.size.height - MARGIN_Y*2)];
     self.label.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
