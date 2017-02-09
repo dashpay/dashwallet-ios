@@ -86,7 +86,7 @@
 "bad signature" = "署名が正しくありません。";
 
 /* No comment provided by engineer. */
-"Dash address" = "ダッシュアドレス"";
+"Dash address" = "ダッシュアドレス";
 
 /* No comment provided by engineer. */
 "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "ダッシュアドレスをクリップボードにコピーすることもできます。\nダッシュアドレスは\n常に 'X' または '7' で始まります。";

@@ -73,6 +73,22 @@
     return v;
 }
 
++ (instancetype)viewWithAttributedText:(NSAttributedString *)attributedText center:(CGPoint)center {
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(center.x - MARGIN_X, center.y - MARGIN_Y, MARGIN_X*2, MARGIN_Y*2)];
+    
+    v.attributedText = attributedText;
+    return v;
+}
+
++ (instancetype)viewWithAttributedText:(NSAttributedString *)attributedText tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction {
+    BRBubbleView *v = [[self alloc] initWithFrame:CGRectMake(0, 0, MARGIN_X*2, MARGIN_Y*2)];
+    
+    v.attributedText = attributedText;
+    v.tipDirection = direction;
+    v.tipPoint = point;
+    return v;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (! (self = [super initWithFrame:frame])) return nil;
@@ -107,6 +123,17 @@
 - (NSString *)text
 {
     return self.label.text;
+}
+
+- (void)setAttributedText:(NSAttributedString *)text
+{
+    self.label.attributedText = text;
+    [self setNeedsLayout];
+}
+
+- (NSAttributedString *)attributedText
+{
+    return self.label.attributedText;
 }
 
 - (void)setFont:(UIFont *)font

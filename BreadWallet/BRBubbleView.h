@@ -33,6 +33,7 @@ typedef enum : NSInteger {
 @interface BRBubbleView : UIView
 
 @property (nonatomic, strong) NSString *text;
+@property (nonatomic, strong) NSAttributedString *attributedText;
 @property (nonatomic, strong) UIFont *font;
 @property (nonatomic, assign) CGPoint tipPoint;
 @property (nonatomic, assign) BRBubbleTipDirection tipDirection;
@@ -40,6 +41,9 @@ typedef enum : NSInteger {
 
 + (instancetype)viewWithText:(NSString *)text center:(CGPoint)center;
 + (instancetype)viewWithText:(NSString *)text tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction;
+
++ (instancetype)viewWithAttributedText:(NSAttributedString *)attributedText center:(CGPoint)center;
++ (instancetype)viewWithAttributedText:(NSAttributedString *)attributedText tipPoint:(CGPoint)point tipDirection:(BRBubbleTipDirection)direction;
 
 - (instancetype)popIn;
 - (instancetype)popOut;
