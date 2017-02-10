@@ -399,28 +399,28 @@
                                 <rect key="frame" x="0.0" y="25" width="375" height="26"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M7x-tC-dff">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="1"/>
                                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="71x-I5-Oh5"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RXe-Yw-Kar">
-                                        <rect key="frame" x="0.0" y="25.5" width="375" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="26" width="375" height="0.0"/>
                                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="t4s-d2-Hm2"/>
                                         </constraints>
                                     </view>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="not connected" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UyF-OV-QVY">
-                                        <rect key="frame" x="145.5" y="5" width="84.5" height="16.5"/>
+                                        <rect key="frame" x="145" y="5" width="85" height="17"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                         <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                         <color key="shadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="refresh" translatesAutoresizingMaskIntoConstraints="NO" id="Q8l-bN-CJg">
-                                        <rect key="frame" x="351" y="7.5" width="9" height="11"/>
+                                        <rect key="frame" x="351" y="8" width="9" height="11"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="0.95686274509803915" blue="0.95686274509803915" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -450,7 +450,7 @@
                                 </state>
                             </button>
                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="88.8%" textAlignment="right" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-sr-16q">
-                                <rect key="frame" x="301.5" y="34.5" width="38.5" height="16.5"/>
+                                <rect key="frame" x="301" y="34" width="39" height="17"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                 <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -546,7 +546,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Z8K-GT-woD" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1276" y="703"/>
+            <point key="canvasLocation" x="1275.5" y="702.5"/>
         </scene>
         <!--Scan View Controller-->
         <scene sceneID="2f7-Nl-i6P">

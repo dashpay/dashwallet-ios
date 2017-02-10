@@ -80,7 +80,7 @@ static NSString *dateFormat(NSString *template)
     self.txDates = [NSMutableDictionary dictionary];
     self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
     self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
-    self.wallpaper.contentMode = UIViewContentModeBottomLeft;
+    self.wallpaper.contentMode = UIViewContentModeScaleAspectFill;
     self.wallpaper.clipsToBounds = YES;
     self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2,
                                         self.navigationController.view.frame.size.height -
