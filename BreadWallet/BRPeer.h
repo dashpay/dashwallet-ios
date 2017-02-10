@@ -39,6 +39,9 @@
 #define USER_AGENT            [NSString stringWithFormat:@"/dashwallet:%@/",\
                                NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"]]
 
+#define WEEK_TIME_INTERVAL 604800 //7*24*60*60
+#define DAY_TIME_INTERVAL 86400 //24*60*60
+
 // explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification
 #define MSG_VERSION     @"version"
 #define MSG_VERACK      @"verack"

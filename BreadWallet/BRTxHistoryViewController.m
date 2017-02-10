@@ -35,6 +35,7 @@
 #import "NSData+Bitcoin.h"
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"
+#import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
@@ -150,9 +151,7 @@ static NSString *dateFormat(NSString *template)
 
                 if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
                     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                    self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                 [manager stringForDashAmount:manager.wallet.balance],
-                                                 [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                    else [self updateTitleView];
                 }
 
                 if (self.transactions.firstObject != tx) {
@@ -177,9 +176,9 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if ([[BRPeerManager sharedInstance]
-                     timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + 60*60*24*7 <
+                     timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
                     [NSDate timeIntervalSinceReferenceDate] &&
-                    manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+                    manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
                     self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
                 }
@@ -191,9 +190,7 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                             [manager stringForDashAmount:manager.wallet.balance],
-                                             [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                else [self updateTitleView];
             }];
     }
     
@@ -208,6 +205,20 @@ static NSString *dateFormat(NSString *template)
             }];
     }
 }
+
+-(void)updateTitleView {
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
+    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [titleLabel setBackgroundColor:[UIColor clearColor]];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance] mutableCopy];
+    NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+    [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString]];
+    titleLabel.attributedText = attributedDashString;
+    self.navigationItem.titleView = titleLabel;
+}
+
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
@@ -322,7 +333,7 @@ static NSString *dateFormat(NSString *template)
     
     dispatch_once(&onceToken, ^{ // BUG: need to watch for NSCurrentLocaleDidChangeNotification
         monthDayHourFormatter = [NSDateFormatter new];
-        monthDayHourFormatter.dateFormat = dateFormat(@"Mdja");
+        monthDayHourFormatter.dateFormat = dateFormat(@"Mdjmma");
         yearMonthDayHourFormatter = [NSDateFormatter new];
         yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
     });
@@ -337,14 +348,6 @@ static NSString *dateFormat(NSString *template)
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
     date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]];
-    date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];
-    date = [date stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
-    date = [date stringByReplacingOccurrencesOfString:@"AM" withString:@"a"];
-    date = [date stringByReplacingOccurrencesOfString:@"PM" withString:@"p"];
-    date = [date stringByReplacingOccurrencesOfString:@"a.m." withString:@"a"];
-    date = [date stringByReplacingOccurrencesOfString:@"p.m." withString:@"p"];
-    date = [date stringByReplacingOccurrencesOfString:@"A.M." withString:@"a"];
-    date = [date stringByReplacingOccurrencesOfString:@"P.M." withString:@"p"];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
@@ -365,7 +368,7 @@ static NSString *dateFormat(NSString *template)
     if (! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
     if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
     
-    self.navigationItem.titleView = nil;
+    [self updateTitleView];
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -466,6 +469,7 @@ static NSString *dateFormat(NSString *template)
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
             *detailTextLabel;
+    UIImageView * shapeshiftImageView;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     switch (indexPath.section) {
@@ -485,6 +489,7 @@ static NSString *dateFormat(NSString *template)
                 sentLabel = (id)[cell viewWithTag:6];
                 balanceLabel = (id)[cell viewWithTag:7];
                 localBalanceLabel = (id)[cell viewWithTag:8];
+                shapeshiftImageView = (id)[cell viewWithTag:9];
 
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
@@ -508,9 +513,9 @@ static NSString *dateFormat(NSString *template)
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
                 detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.text = (manager.didAuthenticate) ? [manager stringForDashAmount:balance] : nil;
-                localBalanceLabel.text = (manager.didAuthenticate) ?
-                    [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
+                balanceLabel.attributedText = (manager.didAuthenticate) ? [manager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
+                localBalanceLabel.text = (manager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
+                shapeshiftImageView.hidden = !tx.associatedShapeshift;
 
                 if (confirms == 0 && ! [manager.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
@@ -539,21 +544,21 @@ static NSString *dateFormat(NSString *template)
                 }
                 
                 if (sent > 0 && received == sent) {
-                    textLabel.text = [manager stringForDashAmount:sent];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:sent]];
                     sentLabel.text = NSLocalizedString(@"moved", nil);
                     sentLabel.textColor = [UIColor blackColor];
                 }
                 else if (sent > 0) {
-                    textLabel.text = [manager stringForDashAmount:received - sent];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:received - sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"sent", nil);
                     sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
-                    textLabel.text = [manager stringForDashAmount:received];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:received];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received]];
                     sentLabel.text = NSLocalizedString(@"received", nil);
