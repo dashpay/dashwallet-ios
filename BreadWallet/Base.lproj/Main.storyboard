@@ -650,8 +650,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="bottom" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="tQ2-Uz-bsZ">
-                                <rect key="frame" x="-94" y="99" width="480" height="568"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="tQ2-Uz-bsZ">
+                                <rect key="frame" x="0.0" y="0.0" width="359" height="667"/>
                             </imageView>
                             <label opaque="NO" clipsSubviews="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ƀ 0.00 ($0.00)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cRT-Sr-x6R">
                                 <rect key="frame" x="137" y="172.5" width="101" height="45"/>
@@ -703,11 +703,13 @@
                             <constraint firstAttribute="centerX" secondItem="cRT-Sr-x6R" secondAttribute="centerX" id="1of-mv-fGR"/>
                             <constraint firstAttribute="trailing" secondItem="WSe-0v-Fha" secondAttribute="trailing" constant="8" id="SWR-Kt-uQo"/>
                             <constraint firstAttribute="centerX" secondItem="9d1-ib-nZH" secondAttribute="centerX" id="U1P-J2-Llv"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="tQ2-Uz-bsZ" secondAttribute="trailing" id="U8r-6z-cxb"/>
                             <constraint firstAttribute="bottom" secondItem="tQ2-Uz-bsZ" secondAttribute="bottom" id="aHW-4D-lmo"/>
                             <constraint firstItem="9d1-ib-nZH" firstAttribute="top" secondItem="cRT-Sr-x6R" secondAttribute="bottom" id="b1i-h0-XG0"/>
                             <constraint firstItem="WSe-0v-Fha" firstAttribute="leading" secondItem="eNl-J2-B2Z" secondAttribute="leading" constant="8" id="bx8-Kg-cIc"/>
-                            <constraint firstItem="tQ2-Uz-bsZ" firstAttribute="leading" secondItem="eNl-J2-B2Z" secondAttribute="leading" constant="-94" id="iwR-qy-T18"/>
+                            <constraint firstItem="tQ2-Uz-bsZ" firstAttribute="leading" secondItem="eNl-J2-B2Z" secondAttribute="leading" id="iwR-qy-T18"/>
                             <constraint firstItem="9d1-ib-nZH" firstAttribute="centerY" secondItem="eNl-J2-B2Z" secondAttribute="centerY" constant="10" id="njC-cK-RyW"/>
+                            <constraint firstItem="tQ2-Uz-bsZ" firstAttribute="top" secondItem="oe2-uq-uJT" secondAttribute="bottom" constant="-64" id="qbL-6U-eWr"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="iWh-Us-6IF">
@@ -2348,30 +2350,29 @@ Other devices may be infected.
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <imageView hidden="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="E1L-wq-3cS">
-                                <rect key="frame" x="-59" y="0.0" width="480" height="568"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="E1L-wq-3cS">
+                                <rect key="frame" x="16" y="0.0" width="375" height="667"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="550" verticalCompressionResistancePriority="550" text="($0.00)" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="AIC-c4-j2z">
-                                <rect key="frame" x="20" y="89" width="51" height="21"/>
+                                <rect key="frame" x="20" y="88" width="51" height="21"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" red="0.75081020590000003" green="0.75081020590000003" blue="0.75081020590000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.67000001668930054" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="500" verticalCompressionResistancePriority="500" misplaced="YES" text="($0.00)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="TBf-3l-ujT">
-                                <rect key="frame" x="157" y="89" width="52" height="20"/>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.67000001668930054" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="500" verticalCompressionResistancePriority="500" text="($0.00)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="TBf-3l-ujT">
+                                <rect key="frame" x="212" y="89" width="52" height="20"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" red="0.75" green="0.75" blue="0.75" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="D 0.00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o24-a7-ayU">
-                                <rect key="frame" x="232" y="83" width="68" height="27"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="D 0.00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o24-a7-ayU">
+                                <rect key="frame" x="287" y="83" width="68" height="27"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="23"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="83W-1O-V9b">
-                                <rect key="frame" x="40" y="75" width="200" height="60"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="83W-1O-V9b">
+                                <rect key="frame" x="95" y="75" width="200" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="e7o-BL-una"/>
                                     <constraint firstAttribute="width" constant="200" id="f6H-Qs-4v0"/>
@@ -2387,15 +2388,15 @@ Other devices may be infected.
                                     <action selector="swapCurrency:" destination="La8-tY-sM4" eventType="touchUpInside" id="fv6-5N-nkO"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NVx-Sw-vEc">
-                                <rect key="frame" x="20" y="126" width="280" height="1"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NVx-Sw-vEc">
+                                <rect key="frame" x="20" y="125" width="335" height="1"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="0.5" id="4GD-iB-GIa"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bUC-MN-PXO">
-                                <rect key="frame" x="20" y="139" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bUC-MN-PXO">
+                                <rect key="frame" x="20" y="138" width="106.5" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="1" backgroundImage="button-bg-blue">
@@ -2413,8 +2414,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="bJl-Ge-5HM"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xaD-eI-0iC">
-                                <rect key="frame" x="116" y="139" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xaD-eI-0iC">
+                                <rect key="frame" x="134.5" y="138" width="106" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="2" backgroundImage="button-bg-blue">
@@ -2432,8 +2433,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="48D-Jn-Udq"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnY-9p-vg6">
-                                <rect key="frame" x="212" y="139" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnY-9p-vg6">
+                                <rect key="frame" x="248.5" y="138" width="106.5" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="3" backgroundImage="button-bg-blue">
@@ -2451,8 +2452,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="MnP-A3-YqI"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VQH-pt-DQg">
-                                <rect key="frame" x="20" y="234" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VQH-pt-DQg">
+                                <rect key="frame" x="20" y="258" width="106.5" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="4" backgroundImage="button-bg-blue">
@@ -2470,8 +2471,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="tgV-5i-BR0"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Af-Xt-dHE">
-                                <rect key="frame" x="116" y="234" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Af-Xt-dHE">
+                                <rect key="frame" x="134.5" y="258" width="106" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="5" backgroundImage="button-bg-blue">
@@ -2489,8 +2490,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="KTf-gB-U5J"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="43w-iO-MOK">
-                                <rect key="frame" x="212" y="234" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="43w-iO-MOK">
+                                <rect key="frame" x="248.5" y="258" width="106.5" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="6" backgroundImage="button-bg-blue">
@@ -2508,8 +2509,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="qqH-5B-gFS"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-uc-kOc">
-                                <rect key="frame" x="20" y="329" width="88" height="86"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-uc-kOc">
+                                <rect key="frame" x="20" y="377.5" width="106.5" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="7" backgroundImage="button-bg-blue">
@@ -2527,8 +2528,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="bbz-co-2Rw"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="24A-83-L7p">
-                                <rect key="frame" x="116" y="329" width="88" height="86"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="24A-83-L7p">
+                                <rect key="frame" x="134.5" y="377.5" width="106" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="8" backgroundImage="button-bg-blue">
@@ -2546,8 +2547,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="Uqc-qH-oP1"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-qg-5Cf">
-                                <rect key="frame" x="212" y="329" width="88" height="86"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-qg-5Cf">
+                                <rect key="frame" x="248.5" y="377.5" width="106.5" height="112"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="9" backgroundImage="button-bg-blue">
@@ -2565,8 +2566,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="ozD-nB-YZd"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cz1-M6-v6N">
-                                <rect key="frame" x="20" y="423" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cz1-M6-v6N">
+                                <rect key="frame" x="20" y="497.5" width="106.5" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="." backgroundImage="button-bg-blue">
@@ -2584,8 +2585,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="okD-6F-HjW"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OKR-t9-9Lk">
-                                <rect key="frame" x="116" y="423" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OKR-t9-9Lk">
+                                <rect key="frame" x="134.5" y="497.5" width="106" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="0" backgroundImage="button-bg-blue">
@@ -2603,8 +2604,8 @@ Other devices may be infected.
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="cdg-bi-4Ez"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X53-jN-wEO">
-                                <rect key="frame" x="212" y="423" width="88" height="87"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X53-jN-wEO">
+                                <rect key="frame" x="248.5" y="497.5" width="106.5" height="111.5"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" image="deletetoleft" backgroundImage="button-bg-blue">
@@ -2622,9 +2623,8 @@ Other devices may be infected.
                                     <action selector="del:" destination="La8-tY-sM4" eventType="touchUpInside" id="hF2-HA-h8M"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0OZ-Q5-FOm">
-                                <rect key="frame" x="0.0" y="524" width="320" height="44"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0OZ-Q5-FOm">
+                                <rect key="frame" x="20" y="623" width="345" height="40"/>
                                 <state key="normal">
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2632,15 +2632,15 @@ Other devices may be infected.
                                     <action selector="clickedBottomBar:" destination="La8-tY-sM4" eventType="touchUpInside" id="ahL-8e-5pv"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qsg-bt-8aj">
-                                <rect key="frame" x="20" y="522" width="280" height="1"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qsg-bt-8aj">
+                                <rect key="frame" x="20" y="620.5" width="335" height="1"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="0.5" id="gwj-yA-So2"/>
                                 </constraints>
                             </view>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" misplaced="YES" text="to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2U5-tK-XSF">
-                                <rect key="frame" x="20" y="524" width="290" height="40"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2U5-tK-XSF">
+                                <rect key="frame" x="20" y="623" width="345" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="1JV-0E-LTH"/>
                                 </constraints>
@@ -2654,6 +2654,8 @@ Other devices may be infected.
                         <constraints>
                             <constraint firstItem="83W-1O-V9b" firstAttribute="leading" secondItem="TBf-3l-ujT" secondAttribute="trailing" constant="-169" id="1I0-eI-h94"/>
                             <constraint firstItem="OKR-t9-9Lk" firstAttribute="bottom" secondItem="Cz1-M6-v6N" secondAttribute="bottom" id="1Re-xO-nUt"/>
+                            <constraint firstItem="0OZ-Q5-FOm" firstAttribute="width" secondItem="2U5-tK-XSF" secondAttribute="width" id="2FN-3I-NO7"/>
+                            <constraint firstItem="E1L-wq-3cS" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leadingMargin" id="3co-rd-14P"/>
                             <constraint firstItem="X53-jN-wEO" firstAttribute="height" secondItem="43w-iO-MOK" secondAttribute="height" id="3xn-rF-TDd"/>
                             <constraint firstItem="24A-83-L7p" firstAttribute="leading" secondItem="jcY-uc-kOc" secondAttribute="trailing" constant="8" id="4FN-sC-4M2"/>
                             <constraint firstItem="24A-83-L7p" firstAttribute="height" secondItem="xaD-eI-0iC" secondAttribute="height" id="6g8-Ae-9D4"/>
@@ -2662,7 +2664,9 @@ Other devices may be infected.
                             <constraint firstItem="43w-iO-MOK" firstAttribute="leading" secondItem="2Af-Xt-dHE" secondAttribute="trailing" constant="8" id="8hW-bY-5Wv"/>
                             <constraint firstItem="X53-jN-wEO" firstAttribute="height" secondItem="EnY-9p-vg6" secondAttribute="height" id="9En-J0-BUs"/>
                             <constraint firstItem="VQH-pt-DQg" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leading" constant="20" id="9mu-Bb-AaW"/>
+                            <constraint firstItem="0OZ-Q5-FOm" firstAttribute="top" secondItem="2U5-tK-XSF" secondAttribute="top" id="AO1-WS-9GQ"/>
                             <constraint firstItem="2Af-Xt-dHE" firstAttribute="width" secondItem="VQH-pt-DQg" secondAttribute="width" id="CTo-rF-Xm0"/>
+                            <constraint firstItem="h3G-39-gve" firstAttribute="top" secondItem="E1L-wq-3cS" secondAttribute="bottom" id="CwR-Ml-a3M"/>
                             <constraint firstItem="h3G-39-gve" firstAttribute="top" secondItem="Cz1-M6-v6N" secondAttribute="bottom" constant="58" id="DaM-P2-LkJ"/>
                             <constraint firstItem="Ika-qg-5Cf" firstAttribute="leading" secondItem="24A-83-L7p" secondAttribute="trailing" constant="8" id="EUx-Ir-XKf"/>
                             <constraint firstItem="2Af-Xt-dHE" firstAttribute="leading" secondItem="VQH-pt-DQg" secondAttribute="trailing" constant="8" id="FNP-a0-zbK"/>
@@ -2682,11 +2686,11 @@ Other devices may be infected.
                             <constraint firstItem="TBf-3l-ujT" firstAttribute="baseline" secondItem="AIC-c4-j2z" secondAttribute="baseline" id="TaI-T5-wEw"/>
                             <constraint firstItem="Cz1-M6-v6N" firstAttribute="top" secondItem="jcY-uc-kOc" secondAttribute="bottom" constant="8" id="UJg-Bu-dDO"/>
                             <constraint firstItem="24A-83-L7p" firstAttribute="height" secondItem="OKR-t9-9Lk" secondAttribute="height" id="VTS-LP-Hic"/>
-                            <constraint firstItem="o24-a7-ayU" firstAttribute="centerY" secondItem="bUC-MN-PXO" secondAttribute="centerY" constant="-86" id="W1B-eZ-kc8"/>
                             <constraint firstAttribute="trailing" secondItem="X53-jN-wEO" secondAttribute="trailing" constant="20" id="Wjv-Gt-Mcq"/>
                             <constraint firstItem="o24-a7-ayU" firstAttribute="baseline" secondItem="TBf-3l-ujT" secondAttribute="baseline" id="XJx-eb-CaU"/>
                             <constraint firstItem="o24-a7-ayU" firstAttribute="leading" secondItem="83W-1O-V9b" secondAttribute="trailing" constant="-8" id="XWk-AE-C0Q"/>
                             <constraint firstAttribute="trailing" secondItem="EnY-9p-vg6" secondAttribute="trailing" constant="20" id="Xdp-3u-wWO"/>
+                            <constraint firstItem="0OZ-Q5-FOm" firstAttribute="height" secondItem="2U5-tK-XSF" secondAttribute="height" id="YgL-V3-eK1"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="xaD-eI-0iC" secondAttribute="top" id="a9d-tt-UVw"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="height" secondItem="jcY-uc-kOc" secondAttribute="height" id="aRt-xn-XOn"/>
                             <constraint firstItem="jcY-uc-kOc" firstAttribute="top" secondItem="VQH-pt-DQg" secondAttribute="bottom" constant="8" id="awm-cC-qJk"/>
@@ -2694,13 +2698,16 @@ Other devices may be infected.
                             <constraint firstItem="xaD-eI-0iC" firstAttribute="leading" secondItem="bUC-MN-PXO" secondAttribute="trailing" constant="8" id="bch-er-ji1"/>
                             <constraint firstItem="X53-jN-wEO" firstAttribute="leading" secondItem="OKR-t9-9Lk" secondAttribute="trailing" constant="8" id="bf6-DE-9Kw"/>
                             <constraint firstItem="jcY-uc-kOc" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leading" constant="20" id="cMD-P8-Xpn"/>
+                            <constraint firstItem="E1L-wq-3cS" firstAttribute="top" secondItem="DVt-q9-eT5" secondAttribute="bottom" constant="-64" id="ehp-VN-SqR"/>
                             <constraint firstItem="qsg-bt-8aj" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leading" constant="20" id="fRs-Rk-0rr"/>
                             <constraint firstAttribute="trailingMargin" secondItem="o24-a7-ayU" secondAttribute="trailing" constant="4" id="g7A-RZ-ahL"/>
                             <constraint firstItem="xaD-eI-0iC" firstAttribute="width" secondItem="bUC-MN-PXO" secondAttribute="width" id="gKL-gX-6XW"/>
                             <constraint firstItem="EnY-9p-vg6" firstAttribute="leading" secondItem="xaD-eI-0iC" secondAttribute="trailing" constant="8" id="gaI-Iz-Mbb"/>
+                            <constraint firstItem="0OZ-Q5-FOm" firstAttribute="leading" secondItem="2U5-tK-XSF" secondAttribute="leading" id="glK-DZ-jqB"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="height" secondItem="VQH-pt-DQg" secondAttribute="height" id="hK7-a9-qXm"/>
                             <constraint firstItem="h3G-39-gve" firstAttribute="top" secondItem="qsg-bt-8aj" secondAttribute="bottom" constant="45.5" id="hQ8-7s-N3Y"/>
                             <constraint firstItem="VQH-pt-DQg" firstAttribute="top" secondItem="bUC-MN-PXO" secondAttribute="bottom" constant="8" id="ixW-xW-pwo"/>
+                            <constraint firstItem="E1L-wq-3cS" firstAttribute="width" secondItem="ymr-Br-n9y" secondAttribute="width" id="jUm-kB-Ael"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="EnY-9p-vg6" secondAttribute="top" id="jXQ-zk-dqu"/>
                             <constraint firstItem="TBf-3l-ujT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="AIC-c4-j2z" secondAttribute="trailing" constant="5" id="kuG-nu-Mie"/>
                             <constraint firstItem="NVx-Sw-vEc" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leading" constant="20" id="my5-Bp-AzY"/>
@@ -2714,6 +2721,7 @@ Other devices may be infected.
                             <constraint firstItem="Ika-qg-5Cf" firstAttribute="top" secondItem="43w-iO-MOK" secondAttribute="bottom" constant="8" id="v1p-Kc-QgN"/>
                             <constraint firstItem="h3G-39-gve" firstAttribute="top" secondItem="2U5-tK-XSF" secondAttribute="bottom" constant="4" id="vDg-Pl-JFj"/>
                             <constraint firstAttribute="trailing" secondItem="2U5-tK-XSF" secondAttribute="trailing" constant="10" id="vfg-Eq-K25"/>
+                            <constraint firstItem="NVx-Sw-vEc" firstAttribute="top" secondItem="83W-1O-V9b" secondAttribute="bottom" constant="-10" id="wHU-qD-XQr"/>
                             <constraint firstItem="OKR-t9-9Lk" firstAttribute="top" secondItem="24A-83-L7p" secondAttribute="bottom" constant="8" id="wfS-gd-BHd"/>
                             <constraint firstAttribute="trailing" secondItem="43w-iO-MOK" secondAttribute="trailing" constant="20" id="xdH-DG-M3s"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="NVx-Sw-vEc" secondAttribute="top" constant="13" id="xg8-oN-0vj"/>

@@ -1326,7 +1326,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     if (!_bitcoinDashPrice || !_localCurrencyBitcoinPrice) {
         return _localCurrencyDashPrice;
     } else {
-        return @(_bitcoinDashPrice.doubleValue * _localCurrencyDashPrice.doubleValue);
+        return @(_bitcoinDashPrice.doubleValue * _localCurrencyBitcoinPrice.doubleValue);
     }
 }
 
