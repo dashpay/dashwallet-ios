@@ -402,11 +402,11 @@ static NSString *sanitizeString(NSString *s)
 - (void)confirmRequest:(BRPaymentRequest *)request
 {
     if (! request.isValid) {
-        if ([request.paymentAddress isValidBitcoinPrivateKey] || [request.paymentAddress isValidBitcoinBIP38Key]) {
+        if ([request.paymentAddress isValidDashPrivateKey] || [request.paymentAddress isValidDashBIP38Key]) {
             [self confirmSweep:request.paymentAddress];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid bitcoin address", nil)
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid dash address", nil)
                                         message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
                               otherButtonTitles:nil] show];
             [self cancel:nil];
@@ -415,7 +415,7 @@ static NSString *sanitizeString(NSString *s)
     else if (request.r.length > 0) { // payment protocol over HTTP
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
         
-        [BRPaymentRequest fetch:request.r timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+        [BRPaymentRequest fetch:request.r type:request.type timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
@@ -477,7 +477,7 @@ static NSString *sanitizeString(NSString *s)
             self.request = protoReq;
             self.okAddress = address;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                                        message:NSLocalizedString(@"\nADDRESS ALREADY USED\n\dash addresses are intended for single use only\n\n"
+                                        message:NSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
                                                                   "re-use reduces privacy for both you and the recipient and can result in loss if "
                                                                   "the recipient doesn't directly control the address", nil)
                                        delegate:self cancelButtonTitle:nil
@@ -759,7 +759,7 @@ static NSString *sanitizeString(NSString *s)
         
         NSLog(@"posting payment to: %@", self.request.details.paymentURL);
         
-        [BRPaymentRequest postPayment:payment to:self.request.details.paymentURL timeout:20.0
+        [BRPaymentRequest postPayment:payment type:@"dash" to:self.request.details.paymentURL timeout:20.0
                            completion:^(BRPaymentProtocolACK *ack, NSError *error) {
                                dispatch_async(dispatch_get_main_queue(), ^{
                                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
@@ -1004,18 +1004,18 @@ static NSString *sanitizeString(NSString *s)
         // if the clipboard contains a known txHash, we know it's not a hex encoded private key
         if (data.length == sizeof(UInt256) && [manager.wallet transactionForHash:*(UInt256 *)data.bytes]) continue;
         
-        if ([req.paymentAddress isValidBitcoinAddress] || [str isValidBitcoinPrivateKey] ||
-            [str isValidBitcoinBIP38Key] || (req.r.length > 0 && [req.scheme isEqual:@"bitcoin"])) {
+        if ([req.paymentAddress isValidBitcoinAddress] || [req.paymentAddress isValidDashAddress] || [str isValidBitcoinPrivateKey] || [str isValidDashPrivateKey] || [str isValidBitcoinBIP38Key] || [str isValidDashBIP38Key] ||
+            (req.r.length > 0 && ([req.scheme isEqual:@"bitcoin:"] || [req.scheme isEqual:@"dash:"]))) {
             [self performSelector:@selector(confirmRequest:) withObject:req afterDelay:0.1];// delayed to show highlight
             return;
         }
         else if (req.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [BRPaymentRequest fetch:req.r timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+            [BRPaymentRequest fetch:req.r type:req.type timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) { // don't try any more BIP73 urls
                         [self payFirstFromArray:[array objectsAtIndexes:[array
                                                                          indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-                                                                             return (idx >= i && ([obj hasPrefix:@"bitcoin:"] || ! [NSURL URLWithString:obj]));
+                                                                             return (idx >= i && ([obj hasPrefix:@"dash:"] || ! [NSURL URLWithString:obj]));
                                                                          }]]];
                     }
                     else [self confirmProtocolRequest:req];
@@ -1027,7 +1027,7 @@ static NSString *sanitizeString(NSString *s)
     }
     
     [[[UIAlertView alloc] initWithTitle:@""
-                                message:NSLocalizedString(@"clipboard doesn't contain a valid bitcoin address", nil) delegate:nil
+                                message:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil) delegate:nil
                       cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
 }
@@ -1167,7 +1167,7 @@ static NSString *sanitizeString(NSString *s)
             [BREventManager saveEvent:@"send:valid_qr_scan"];
             
             if (request.r.length > 0) { // start fetching payment protocol request right away
-                [BRPaymentRequest fetch:request.r timeout:5.0
+                [BRPaymentRequest fetch:request.r type:request.type timeout:5.0
                              completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                                  dispatch_async(dispatch_get_main_queue(), ^{
                                      if (error) request.r = nil;
@@ -1208,7 +1208,7 @@ static NSString *sanitizeString(NSString *s)
                 else [self confirmRequest:request];
             }
         } else {
-            [BRPaymentRequest fetch:request.r timeout:5.0
+            [BRPaymentRequest fetch:request.r type:request.type timeout:5.0
                          completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
                              dispatch_async(dispatch_get_main_queue(), ^{
                                  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];

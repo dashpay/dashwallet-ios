@@ -134,7 +134,7 @@
 "choose wallet passcode" = "パスコードをご指定下さい";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid Dash or Bitcoin address" = "クリップボードには有効な\nダッシュまたはビットコインアドレスが\n含まれていません。";
+"clipboard doesn't contain a valid dash or bitcoin address" = "クリップボードには有効な\nダッシュまたはビットコインアドレスが\n含まれていません。";
 
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";

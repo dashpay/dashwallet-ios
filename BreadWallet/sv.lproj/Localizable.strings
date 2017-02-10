@@ -116,7 +116,7 @@
 "choose passcode for %@" = "välj pinkod for %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid Dash or Bitcoin address" = "urklippet innehåller inte en giltig dashadress eller bitcoinadress";
+"clipboard doesn't contain a valid dash or bitcoin address" = "urklippet innehåller inte en giltig dashadress eller bitcoinadress";
 
 /* No comment provided by engineer. */
 "close app" = "stäng app";
