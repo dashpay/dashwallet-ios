@@ -266,10 +266,13 @@
 "no peers found" = "узлы не найдены";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "не dash QR-код";
+"not a dash or bitcoin QR code" = "не dash или bitcoin QR-код";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "некорректный dash-адрес";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "некорректный bitcoin-адрес";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "некорректный закрытый ключ";

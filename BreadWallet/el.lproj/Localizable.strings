@@ -254,10 +254,13 @@
 "no peers found" = "δε βρέθηκαν κόμβοι";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "δεν είναι κωδικός QR για dash";
+"not a dash or bitcoin QR code" = "δεν είναι κωδικός QR για dash ή το bitcoin";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "δεν είναι μια έγκυρη διεύθυνση dash";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση bitcoin";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "δεν είναι ενα έγκυρο ιδιωτικό κλειδί";

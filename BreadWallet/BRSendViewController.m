@@ -42,6 +42,8 @@
 #import "NSData+Bitcoin.h"
 #import "BREventManager.h"
 #import "FBShimmeringView.h"
+#import "MBProgressHUD.h"
+#import "DSShapeshiftManager.h"
 #import "breadwallet-Swift.h"
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
@@ -415,11 +417,11 @@ static NSString *sanitizeString(NSString *s)
     else if (request.r.length > 0) { // payment protocol over HTTP
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
         
-        [BRPaymentRequest fetch:request.r type:request.type timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+        [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
-                if (error && ! [request.paymentAddress isValidBitcoinAddress]) {
+                if (error && ! ([request.paymentAddress isValidBitcoinAddress] || [request.paymentAddress isValidDashAddress])) {
                     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                                 message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
                                       otherButtonTitles:nil] show];
@@ -429,7 +431,7 @@ static NSString *sanitizeString(NSString *s)
             });
         }];
     }
-    else [self confirmProtocolRequest:request.protocolRequest];
+    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil];
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq {
@@ -759,7 +761,7 @@ static NSString *sanitizeString(NSString *s)
         
         NSLog(@"posting payment to: %@", self.request.details.paymentURL);
         
-        [BRPaymentRequest postPayment:payment type:@"dash" to:self.request.details.paymentURL timeout:20.0
+        [BRPaymentRequest postPayment:payment scheme:@"dash" to:self.request.details.paymentURL timeout:20.0
                            completion:^(BRPaymentProtocolACK *ack, NSError *error) {
                                dispatch_async(dispatch_get_main_queue(), ^{
                                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
@@ -1010,7 +1012,7 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         else if (req.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [BRPaymentRequest fetch:req.r type:req.type timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+            [BRPaymentRequest fetch:req.r scheme:req.scheme timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) { // don't try any more BIP73 urls
                         [self payFirstFromArray:[array objectsAtIndexes:[array
@@ -1141,6 +1143,124 @@ static NSString *sanitizeString(NSString *s)
     [self confirmProtocolRequest:self.request];
 }
 
+
+-(void)verifyShapeshiftAmountIsInBounds:(uint64_t)amount completionBlock:(void (^)())completionBlock failureBlock:(void (^)())failureBlock {
+    [[DSShapeshiftManager sharedInstance] GET_marketInfo:^(NSDictionary *marketInfo, NSError *error) {
+        if (error) {
+            failureBlock();
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                        message:error.localizedDescription
+                                       delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                              otherButtonTitles:nil] show];
+        } else {
+            BRWalletManager *manager = [BRWalletManager sharedInstance];
+            if ([DSShapeshiftManager sharedInstance].min > (amount * .97)) {
+                failureBlock();
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                            message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too low, "
+                                                                                                 @"please input a value over %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].min / .97]]
+                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                                  otherButtonTitles:nil] show];
+                return;
+            } else if ([DSShapeshiftManager sharedInstance].limit < (amount * 1.03)) {
+                failureBlock();
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                            message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too high, "
+                                                                                                 @"please input a value under %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].limit / 1.03]]
+                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                                  otherButtonTitles:nil] show];
+                return;
+            }
+            completionBlock();
+        }
+    }];
+    
+}
+
+- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
+{
+    MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
+    hud.labelText       = NSLocalizedString(@"Starting Shapeshift!", nil);
+    
+    [self verifyShapeshiftAmountIsInBounds:dashAmount completionBlock:^{
+        //we know the exact amount of bitcoins we want to send
+        BRWalletManager *m = [BRWalletManager sharedInstance];
+        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+        NSString * returnAddress = m.wallet.receiveAddress;
+        NSNumber * numberAmount = [m numberForAmount:amount];
+        [[DSShapeshiftManager sharedInstance] POST_SendAmount:numberAmount withAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
+            [hud hide:TRUE];
+            if (error) {
+                NSLog(@"shapeshiftBitcoinAmount Error %@",error);
+                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                            message:error.localizedDescription
+                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                                  otherButtonTitles:nil] show];
+                return;
+            }
+            NSString * depositAddress = shiftInfo[@"deposit"];
+            NSString * withdrawalAddress = shiftInfo[@"withdrawal"];
+            NSNumber * withdrawalAmount = shiftInfo[@"withdrawalAmount"];
+            NSNumber * depositAmountNumber = @([shiftInfo[@"depositAmount"] doubleValue]);
+            if (depositAmountNumber && [withdrawalAmount floatValue] && [depositAmountNumber floatValue]) {
+                uint64_t depositAmount = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",depositAmountNumber]] decimalNumberByMultiplyingByPowerOf10:8]
+                                          unsignedLongLongValue];
+                self.amount = depositAmount;
+                
+                DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused fixedAmountOut:depositAmountNumber amountIn:depositAmountNumber];
+                
+                BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,depositAmount,sanitizeString(self.request.commonName),withdrawalAddress]];
+                [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+            }
+        }];
+    } failureBlock:^{
+        [hud hide:TRUE];
+    }];
+}
+
+- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
+{
+    MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
+    hud.labelText       = NSLocalizedString(@"Starting Shapeshift!", nil);
+    [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
+        //we don't know the exact amount of bitcoins we want to send, we are just sending dash
+        BRWalletManager *m = [BRWalletManager sharedInstance];
+        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+        NSString * returnAddress = m.wallet.receiveAddress;
+        self.amount = amount;
+        DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:address];
+        NSString * depositAddress = shapeshift.inputAddress;
+        
+        if (shapeshift) {
+            [hud hide:TRUE];
+            BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),address]];
+            [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+        } else {
+            [[DSShapeshiftManager sharedInstance] POST_ShiftWithAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
+                [hud hide:TRUE];
+                if (error) {
+                    NSLog(@"shapeshiftDashAmount Error %@",error);
+                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                                message:error.localizedDescription
+                                               delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
+                                      otherButtonTitles:nil] show];
+                    return;
+                }
+                NSString * depositAddress = shiftInfo[@"deposit"];
+                NSString * withdrawalAddress = shiftInfo[@"withdrawal"];
+                if (withdrawalAddress && depositAddress) {
+                    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused];
+                    BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),withdrawalAddress]];
+                    [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+                }
+            }];
+        }
+    } failureBlock:^{
+        [hud hide:TRUE];
+    }];
+}
+
+
 // MARK: - AVCaptureMetadataOutputObjectsDelegate
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects
@@ -1167,7 +1287,7 @@ static NSString *sanitizeString(NSString *s)
             [BREventManager saveEvent:@"send:valid_qr_scan"];
             
             if (request.r.length > 0) { // start fetching payment protocol request right away
-                [BRPaymentRequest fetch:request.r type:request.type timeout:5.0
+                [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:5.0
                              completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                                  dispatch_async(dispatch_get_main_queue(), ^{
                                      if (error) request.r = nil;
@@ -1208,7 +1328,7 @@ static NSString *sanitizeString(NSString *s)
                 else [self confirmRequest:request];
             }
         } else {
-            [BRPaymentRequest fetch:request.r type:request.type timeout:5.0
+            [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:5.0
                          completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
                              dispatch_async(dispatch_get_main_queue(), ^{
                                  [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
@@ -1226,14 +1346,18 @@ static NSString *sanitizeString(NSString *s)
                                  }
                                  else {
                                      self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
-                                     
-                                     if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
+                                     if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
+                                         [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
+                                         self.scanController.message.text = [NSString stringWithFormat:@"%@:\n%@",
+                                                                             NSLocalizedString(@"not a valid dash address", nil),
+                                                                             request.paymentAddress];
+                                     } else if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
                                          [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
                                          self.scanController.message.text = [NSString stringWithFormat:@"%@:\n%@",
                                                                              NSLocalizedString(@"not a valid bitcoin address", nil),
                                                                              request.paymentAddress];
                                      }
-                                     else self.scanController.message.text = NSLocalizedString(@"not a bitcoin QR code", nil);
+                                     else self.scanController.message.text = NSLocalizedString(@"not a dash or bitcoin QR code", nil);
                                      
                                      [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
                                      [BREventManager saveEvent:@"send:unsuccessful_bip73"];

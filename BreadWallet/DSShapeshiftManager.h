@@ -1,5 +1,5 @@
 //
-//  DCShapeshiftManager.h
+//  DSShapeshiftManager.h
 //  DashWallet
 //
 //  Created by Quantum Explorer on 7/14/15.
@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface DCShapeshiftManager : NSObject
+@interface DSShapeshiftManager : NSObject
 
 #define CURRENT_SHIFT_DEPOSIT_ADDRESS @"currentShiftDepositAddress"
 #define CURRENT_SHIFT_WITHDRAWAL_ADDRESS @"currentShiftWithdrawalAddress"

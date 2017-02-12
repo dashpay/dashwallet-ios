@@ -128,7 +128,7 @@
 "choose passcode for %@" = "选择%@的密码";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "剪贴板不包含有效的达世币或者比特达世币或者币地址";
+"clipboard doesn't contain a valid dash or bitcoin address" = "剪贴板不包含有效的达世币或者比特币地址";
 
 /* No comment provided by engineer. */
 "close app" = "关闭App";
@@ -254,10 +254,13 @@
 "no peers found" = "未找到节点。";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "非达世币二维码";
+"not a dash or bitcoin QR code" = "非达世币或者币地址二维码";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "不是一个有效的达世币的地址";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "不是一个有效的比特币的地址";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "不是一个有效的私钥";

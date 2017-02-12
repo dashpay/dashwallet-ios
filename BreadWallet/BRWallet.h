@@ -168,8 +168,6 @@ typedef struct _BRUTXO {
 - (uint32_t)blockHeightUntilFree:(BRTransaction * _Nonnull)transaction;
 
 // fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size;
-
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant;
 
 @end

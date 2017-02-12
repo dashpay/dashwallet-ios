@@ -254,10 +254,13 @@
 "no peers found" = "eşler bulunamadı";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "bir dash QR kodu değildir";
+"not a dash or bitcoin QR code" = "bir dash veya bitcoin QR kodu değildir";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "geçerli bir dash adresi değil";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "geçerli bir bitcoin adresi değil";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "geçerli bir özel anahtar değil";

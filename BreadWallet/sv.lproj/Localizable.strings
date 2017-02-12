@@ -230,10 +230,13 @@
 "no peers found" = "hittade inga likar (peer)";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "inte en dash QR-kod";
+"not a dash or bitcoin QR code" = "inte en dash eller bitcoin QR-kod";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "inte en giltig dash adress";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "inte en giltig bitcoin adress";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ogiltig privat nyckel";

@@ -88,7 +88,7 @@
         return;
     }
     self.checkingStatus = TRUE;
-    [[DCShapeshiftManager sharedInstance] GET_transactionStatusWithAddress:self.inputAddress completionBlock:^(NSDictionary *transactionInfo, NSError *error) {
+    [[DSShapeshiftManager sharedInstance] GET_transactionStatusWithAddress:self.inputAddress completionBlock:^(NSDictionary *transactionInfo, NSError *error) {
         self.checkingStatus = FALSE;
         if (transactionInfo) {
             NSString * status = transactionInfo[@"status"];

@@ -266,10 +266,13 @@
 "no peers found" = "通信相手が見つかりませんでした。";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "ダッシュインのQRコードではありません";
+"not a dash or bitcoin QR code" = "ダッシュまたはビットコインのQRコードではありません";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "有効なダッシュインアドレスではありません";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "有効なビットコインアドレスではありません";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "有効な秘密鍵ではありません";

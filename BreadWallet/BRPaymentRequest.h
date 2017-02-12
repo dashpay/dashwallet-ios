@@ -37,7 +37,6 @@
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *r; // BIP72 URI: https://github.com/bitcoin/bips/blob/master/bip-0072.mediawiki
 @property (nonatomic, strong) NSString *string;
-@property (nonatomic, strong) NSString *type;
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, readonly) BOOL isValid;
@@ -53,11 +52,11 @@
 
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
-+ (void)fetch:(NSString *)url type:(NSString*)type timeout:(NSTimeInterval)timeout
++ (void)fetch:(NSString *)url scheme:(NSString*)scheme timeout:(NSTimeInterval)timeout
 completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion;
 
 // posts a BIP70 payment object to the specified URL
-+ (void)postPayment:(BRPaymentProtocolPayment *)payment type:(NSString*)type to:(NSString *)paymentURL
++ (void)postPayment:(BRPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL
 timeout:(NSTimeInterval)timeout completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion;
 
 @end

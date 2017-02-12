@@ -266,10 +266,13 @@
 "no peers found" = "aucun pair trouvé";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "n'est pas un code QR dash";
+"not a dash or bitcoin QR code" = "ce code QR n'est pas valide pour dash ou bitcoin";
 
 /* No comment provided by engineer. */
-"not a valid dash address" = "n'est pas une adresse dash valide";
+"not a valid dash address" = "ce n'est pas une adresse dash valide";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "ce n'est pas une adresse bitcoin valide";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "n'est pas une clé privée valide";

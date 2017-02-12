@@ -254,10 +254,13 @@
 "no peers found" = "nie znaleziono węzłów sieci";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "nieprawidłowy kod QR";
+"not a dash or bitcoin QR code" = "nieprawidłowy kod QR";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "nieprawidłowy adres dash";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "nieprawidłowy adres bitoin";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "nieprawidłowy klucz prywatny";

@@ -138,6 +138,7 @@
 		FB021E4F1E42EB5F00D17638 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E4E1E42EB5F00D17638 /* NSAttributedString+Attachments.m */; };
 		FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
 		FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
+		FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */; };
 		FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A01E414877001A1C8B /* NSString+Dash.m */; };
 		FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
 		FBF267FE1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
@@ -537,6 +538,8 @@
 		FB021E531E47E17200D17638 /* FBShimmeringLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringLayer.m; sourceTree = "<group>"; };
 		FB021E541E47E17200D17638 /* FBShimmeringView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringView.h; sourceTree = "<group>"; };
 		FB021E551E47E17200D17638 /* FBShimmeringView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringView.m; sourceTree = "<group>"; };
+		FB021E591E4DEFE800D17638 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
+		FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		FBF2679F1E414877001A1C8B /* NSString+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Dash.h"; sourceTree = "<group>"; };
 		FBF267A01E414877001A1C8B /* NSString+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Dash.m"; sourceTree = "<group>"; };
 		FBF267A81E414A68001A1C8B /* Blake.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Blake.c; sourceTree = "<group>"; };
@@ -794,6 +797,7 @@
 		7579F7FE19231D4600CA56F4 /* ThirdParty */ = {
 			isa = PBXGroup;
 			children = (
+				FB021E581E4DEFD300D17638 /* MBProgressHUD */,
 				FB021E501E47E17200D17638 /* FBShimmering */,
 				752E28EF19234E8100DB5A3C /* Reachability.h */,
 				752E28F019234E8100DB5A3C /* Reachability.m */,
@@ -1082,6 +1086,15 @@
 			);
 			path = FBShimmering;
 			sourceTree = SOURCE_ROOT;
+		};
+		FB021E581E4DEFD300D17638 /* MBProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				FB021E591E4DEFE800D17638 /* MBProgressHUD.h */,
+				FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */,
+			);
+			name = MBProgressHUD;
+			sourceTree = "<group>";
 		};
 		FBF267A61E414A58001A1C8B /* x11 */ = {
 			isa = PBXGroup;
@@ -1507,6 +1520,7 @@
 				2299CF371D5C0D0B0055EA28 /* BRReplicatedKVStore.swift in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */,
+				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,

@@ -128,7 +128,7 @@
 "choose passcode for %@" = "válassz jelkódot a következőhöz: %@";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "a vágólap nem tartalmaz érvényes dash címet";
+"clipboard doesn't contain a valid dash or bitcoin address" = "a vágólap nem tartalmaz érvényes dash vagy bitcoin címet";
 
 /* No comment provided by engineer. */
 "close app" = "alkalmazás bezárása";
@@ -254,10 +254,13 @@
 "no peers found" = "nincs elérhető hálózati csomópont";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "nem dash QR kód";
+"not a dash or bitcoin QR code" = "nem dash vagy bitcoin QR kód";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "nem érvényes dash cím";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "nem érvényes bitcoin cím";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "nem érvényes privát kulcs";

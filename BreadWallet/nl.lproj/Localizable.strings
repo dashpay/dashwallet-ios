@@ -230,10 +230,13 @@
 "no peers found" = "geen peers gevonden";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "geen dash QR code";
+"not a dash or bitcoin QR code" = "geen dash of bitcoin QR code";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "geen valide dash adres";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "geen valide bitcoin adres";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "geen valide persoonlijke sleutel";

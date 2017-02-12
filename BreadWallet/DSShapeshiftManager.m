@@ -1,5 +1,5 @@
 //
-//  DCShapeshiftManager.m
+//  DSShapeshiftManager.m
 //  DashWallet
 //
 //  Created by Quantum Explorer on 7/14/15.
@@ -15,14 +15,14 @@
 
 #define SHAPESHIFT_PUBLIC_KEY @"9bcdf9343a4548c6268e1ee99e6bb43af95e88eb532f4e807b423adb7a96e54664b9c3d1130f3386c005b353402c9e7698236d1e21807b8b87d64dc605552f4a"
 
-@interface DCShapeshiftManager() <NSFetchedResultsControllerDelegate>
+@interface DSShapeshiftManager() <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic,strong) NSFetchedResultsController * shapeshiftFetchedResultsController;
 
 @end
 
 
-@implementation DCShapeshiftManager
+@implementation DSShapeshiftManager
 
 -(id)init {
     self = [super init];

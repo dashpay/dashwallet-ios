@@ -254,10 +254,13 @@
 "no peers found" = "ingen peers funnet";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "ikke en dash QR-kode";
+"not a dash or bitcoin QR code" = "ikke en dash eller bitcoin QR-kode";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "ikke en gyldig Dash-adresse";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "ikke en gyldig Bitcoin-adresse";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ikke en gyldig privat nøkkel";

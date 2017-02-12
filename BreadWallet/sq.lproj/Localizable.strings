@@ -236,10 +236,13 @@
 "no peers found" = "nuk janë gjetur peers";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "nuk është dash QR kod";
+"not a dash or bitcoin QR code" = "nuk është dash ose bitcoin QR kod";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "nuk është dash adresë valide";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "nuk është bitcoin adresë valide";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "jo një dash çelës privat valid";
