@@ -498,9 +498,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
             
             // check for sufficient total funds before building a smaller transaction
-            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant]) {
+            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
                 NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
-                      amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant]);
+                      amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
                 return nil;
             }
             
@@ -522,7 +522,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx.blockHeight == TX_UNCONFIRMED && [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant]; // assume we will add a change output
+            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
             if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
@@ -896,12 +896,16 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 }
 
 // fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant
+- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
 {
+    if (isInstant) {
+        return TX_FEE_PER_INPUT*inputCount;
+    } else {
     uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB, // standard fee based on tx size rounded up to nearest kb
              fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
     
     return (fee > standardFee) ? fee : standardFee;
+    }
 }
 
 // outputs below this amount are uneconomical due to fees
@@ -934,7 +938,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
              [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
-    fee = [self feeForTxSize:txSize + cpfpSize isInstant:TRUE];
+    fee = [self feeForTxSize:txSize + cpfpSize isInstant:TRUE inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
 }
 

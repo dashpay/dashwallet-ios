@@ -34,6 +34,7 @@
 @property (nonatomic) int32_t n;
 @property (nonatomic, retain) NSString *address;
 @property (nonatomic, retain) NSData *script;
+@property (nonatomic, retain) NSString *shapeshiftOutboundAddress;
 @property (nonatomic) int64_t value;
 @property (nonatomic) BOOL spent;
 @property (nonatomic, retain) BRTransactionEntity *transaction;

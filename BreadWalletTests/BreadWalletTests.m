@@ -1309,16 +1309,16 @@
 
     // larger than 1k transaction
     tx = [w transactionFor:25000000 to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
-    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965]);
+    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965 isInstant:FALSE inputCount:0]);
 
     int64_t amount = [w amountReceivedFromTransaction:tx] - [w amountSentByTransaction:tx],
-            fee = [w feeForTxSize:tx.size + 1965] + ((w.balance - 25000000) % 100);
+            fee = [w feeForTxSize:tx.size + 1965 isInstant:FALSE inputCount:0] + ((w.balance - 25000000) % 100);
 
     XCTAssertEqual([w feeForTransaction:tx], fee, @"[BRWallet transactionFor:to:withFee:]");
     XCTAssertEqual(amount, -25000000 - fee);
 #endif
 
-    XCTAssertEqual([w feeForTxSize:tx.size], tx.standardFee, @"[BRWallet feeForTxSize:]");
+    XCTAssertEqual([w feeForTxSize:tx.size isInstant:FALSE inputCount:0], tx.standardFee, @"[BRWallet feeForTxSize:]");
 }
 
 // MARK: - testWalletManager

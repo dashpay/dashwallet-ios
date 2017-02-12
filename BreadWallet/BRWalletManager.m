@@ -1240,7 +1240,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                      }
                      
                      // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [self.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count];
+                     if (fee) feeAmount = [self.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
                      
                      if (feeAmount + self.wallet.minOutputAmount > balance) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:

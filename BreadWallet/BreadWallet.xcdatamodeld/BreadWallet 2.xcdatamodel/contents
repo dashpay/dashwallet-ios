@@ -50,6 +50,7 @@
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="n" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="script" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="shapeshiftOutboundAddress" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="spent" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -76,7 +77,7 @@
         <element name="BRTransactionEntity" positionX="25" positionY="36" width="128" height="150"/>
         <element name="BRTxInputEntity" positionX="189" positionY="36" width="128" height="118"/>
         <element name="BRTxMetadataEntity" positionX="-90" positionY="162" width="128" height="90"/>
-        <element name="BRTxOutputEntity" positionX="189" positionY="174" width="128" height="150"/>
+        <element name="BRTxOutputEntity" positionX="189" positionY="174" width="128" height="165"/>
         <element name="DSShapeshiftEntity" positionX="-90" positionY="162" width="128" height="225"/>
     </elements>
 </model>

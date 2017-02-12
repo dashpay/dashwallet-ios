@@ -252,7 +252,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
 - (uint64_t)standardInstantFee
 {
-    return TX_FEE_PER_INPUT*[self.inScripts count];
+    return TX_FEE_PER_INPUT*[self.inputHashes count];
 }
 
 // checks if all signatures exist, but does not verify them

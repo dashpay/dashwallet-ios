@@ -565,8 +565,9 @@ static NSString *sanitizeString(NSString *s)
             fee = [manager.wallet feeForTransaction:tx];
         }
         else {
-            fee = [manager.wallet feeForTxSize:[manager.wallet transactionFor:manager.wallet.balance
-                                                                           to:address withFee:NO].size isInstant:self.sendInstantly];
+            BRTransaction * tempTx = [manager.wallet transactionFor:manager.wallet.balance
+                                                                 to:address withFee:NO];
+            fee = [manager.wallet feeForTxSize:tempTx.size isInstant:self.sendInstantly inputCount:tempTx.inputHashes.count];
             fee += (manager.wallet.balance - amount) % 100;
             amount += fee;
         }

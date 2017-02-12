@@ -38,6 +38,7 @@
 @dynamic value;
 @dynamic spent;
 @dynamic transaction;
+@dynamic shapeshiftOutboundAddress;
 
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx outputIndex:(NSUInteger)index
 {
@@ -49,6 +50,7 @@
         self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
         self.script = tx.outputScripts[index];
         self.value = [tx.outputAmounts[index] longLongValue];
+        self.shapeshiftOutboundAddress = [BRTransaction shapeshiftOutboundAddressForScript:self.script];
     }];
     
     return self;
