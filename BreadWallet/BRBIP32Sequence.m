@@ -30,10 +30,14 @@
 #import "NSMutableData+Bitcoin.h"
 
 #define BIP32_SEED_KEY "Bitcoin seed"
+#if DASH_TESTNET
+#define BIP32_XPRV     "\x3A\x58\xF3\x42" //testnet
+#define BIP32_XPUB     "\x3A\x59\xEA\x14" //testnet
+#else
 #define BIP32_XPRV     "\x02\xFD\xA4\xEA"
 #define BIP32_XPUB     "\x02\xFD\xA9\x26"
-#define TEST_BIP32_XPRV     "\x3A\x58\xF3\x42"
-#define TEST_BIP32_XPUB     "\x3A\x59\xEA\x14"
+#endif
+
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
