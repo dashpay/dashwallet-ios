@@ -520,7 +520,7 @@ services:(uint64_t)services
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
-    if (self.currentBlock && ! [MSG_TX isEqual:type]) { // if we receive a non-tx message, merkleblock is done
+    if (self.currentBlock && (! ([MSG_TX isEqual:type] || [MSG_IX isEqual:type] ))) { // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
         
         self.currentBlock = nil;
@@ -533,6 +533,7 @@ services:(uint64_t)services
     else if ([MSG_ADDR isEqual:type]) [self acceptAddrMessage:message];
     else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
     else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message];
+    else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message];
     else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
     else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
     else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
@@ -873,7 +874,7 @@ services:(uint64_t)services
                     transaction = [self.delegate peer:self requestedTransaction:hash];
                 
                     if (transaction) {
-                        [self sendMessage:transaction.data type:MSG_TX];
+                        [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
                         break;
                     }
                 
@@ -1006,7 +1007,7 @@ services:(uint64_t)services
     NSString *type = [message stringAtOffset:0 length:&off];
     uint8_t code = [message UInt8AtOffset:off++];
     NSString *reason = [message stringAtOffset:off length:&l];
-    UInt256 txHash = ([MSG_TX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
+    UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));

@@ -61,10 +61,10 @@
         <attribute name="expiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="inputAddress" attributeType="String" syncable="YES"/>
         <attribute name="inputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="inputCoinType" attributeType="String" syncable="YES"/>
+        <attribute name="inputCoinType" attributeType="String" defaultValueString="dash" syncable="YES"/>
         <attribute name="isFixedAmount" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="outputCoinAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="outputCoinType" attributeType="String" syncable="YES"/>
+        <attribute name="outputCoinType" attributeType="String" defaultValueString="bitcoin" syncable="YES"/>
         <attribute name="outputTransactionId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="shapeshiftStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="withdrawalAddress" attributeType="String" syncable="YES"/>

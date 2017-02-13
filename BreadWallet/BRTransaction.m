@@ -30,7 +30,8 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "BRWalletManager.h"
+#import "BRAddressEntity.h"
+#import "NSManagedObject+Sugar.h"
 
 #define TX_VERSION    0x00000001u
 #define TX_LOCKTIME   0x00000000u
@@ -122,9 +123,12 @@
         }
         if (!self.associatedShapeshift && [self.outputAddresses count]) {
             NSString * mainOutputAddress = nil;
-            BRWalletManager *m = [BRWalletManager sharedInstance];
+            NSMutableArray * allAddresses = [NSMutableArray array];
+            for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
+                [allAddresses addObject:e.address];
+            }
             for (NSString * outputAddress in self.outputAddresses) {
-                if ([m.wallet containsAddress:outputAddress]) continue;
+                if (outputAddress && [allAddresses containsObject:address]) continue;
                 if ([outputAddress isEqual:[NSNull null]]) continue;
                 mainOutputAddress = outputAddress;
             }

@@ -26,8 +26,8 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
-#define TX_FEE_PER_INPUT     10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_KB        100000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_INPUT     100000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)/1000) //no txout can be below this amount
@@ -50,6 +50,8 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputAmounts;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
+
+@property (nonatomic, assign) BOOL isInstant;
 
 @property (nonatomic, assign) UInt256 txHash;
 @property (nonatomic, assign) uint32_t version;

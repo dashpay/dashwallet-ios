@@ -52,6 +52,7 @@
 #define MSG_GETBLOCKS   @"getblocks"
 #define MSG_GETHEADERS  @"getheaders"
 #define MSG_TX          @"tx"
+#define MSG_IX          @"ix"
 #define MSG_BLOCK       @"block"
 #define MSG_HEADERS     @"headers"
 #define MSG_GETADDR     @"getaddr"

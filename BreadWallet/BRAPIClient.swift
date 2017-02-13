@@ -515,12 +515,13 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
     }
     
     open func featureEnabled(_ flag: BRFeatureFlags) -> Bool {
-        #if Testflight || Debug
-            return true
-        #else
-            let defaults = UserDefaults.standard
-            return defaults.bool(forKey: defaultsKeyForFeatureFlag(flag.description))
-        #endif
+        return false
+//        #if Testflight || Debug
+//            return true
+//        #else
+//            let defaults = UserDefaults.standard
+//            return defaults.bool(forKey: defaultsKeyForFeatureFlag(flag.description))
+//        #endif
     }
     
     // MARK: key value access

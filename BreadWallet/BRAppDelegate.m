@@ -29,6 +29,7 @@
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"
 #import "BRPhoneWCSessionManager.h"
+#import "DSShapeshiftManager.h"
 #import <WebKit/WebKit.h>
 #import <PushKit/PushKit.h>
 
@@ -94,6 +95,8 @@
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
     [BRPhoneWCSessionManager sharedInstance];
+    
+    [DSShapeshiftManager sharedInstance];
     
     // observe balance and create notifications
     [self setupBalanceNotification:application];

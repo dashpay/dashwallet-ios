@@ -529,6 +529,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;
     }
     
+    transaction.isInstant = isInstant;
+    
     if (balance < amount + feeAmount) { // insufficient funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;

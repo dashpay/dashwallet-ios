@@ -47,6 +47,11 @@
 }
 
 +(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress {
+    DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectMatching:@"withdrawalAddress == %@",withdrawalAddress];
+    return previousShapeshift;
+}
+
++(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress {
     DSShapeshiftEntity * previousShapeshift = [DSShapeshiftEntity anyObjectMatching:@"withdrawalAddress == %@ && shapeshiftStatus == %@",withdrawalAddress, @(eShapeshiftAddressStatus_Unused)];
     return previousShapeshift;
 }

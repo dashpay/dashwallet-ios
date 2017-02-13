@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 +(NSArray*)shapeshiftsInProgress;
 
 +(DSShapeshiftEntity*)shapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress;
++(DSShapeshiftEntity*)unusedShapeshiftHavingWithdrawalAddress:(NSString*)withdrawalAddress;
 +(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus;
 +(DSShapeshiftEntity*)registerShapeshiftWithInputAddress:(NSString*)inputAddress andWithdrawalAddress:(NSString*)withdrawalAddress withStatus:(eShapeshiftAddressStatus)shapeshiftAddressStatus fixedAmountOut:(NSNumber*)amountOut amountIn:(NSNumber*)amountIn;
 

@@ -29,6 +29,7 @@
 @class BRTxInputEntity;
 @class BRTxOutputEntity;
 @class BRTransaction;
+@class DSShapeshiftEntity;
 
 @interface BRTransactionEntity : NSManagedObject
 
@@ -38,6 +39,7 @@
 @property (nonatomic, retain) NSOrderedSet *inputs;
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
+@property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 
 - (instancetype)setAttributesFromTx:(BRTransaction *)tx;
 - (BRTransaction *)transaction;

@@ -872,8 +872,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Miu-hY-NqY">
-                                <rect key="frame" x="0.0" y="80" width="375" height="40"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Miu-hY-NqY" customClass="FBShimmeringView">
+                                <rect key="frame" x="0.0" y="64" width="375" height="40"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="shapeshift" translatesAutoresizingMaskIntoConstraints="NO" id="aGv-nf-paI">
                                         <rect key="frame" x="23" y="-2" width="44" height="44"/>
@@ -984,7 +984,7 @@
                         <constraints>
                             <constraint firstItem="QUJ-kn-Ubh" firstAttribute="top" secondItem="aeV-sO-1m0" secondAttribute="bottom" constant="42" id="3uJ-yy-n8D"/>
                             <constraint firstItem="ce6-Wi-wk4" firstAttribute="width" secondItem="bfj-xS-5rN" secondAttribute="width" id="3zv-yM-vp5"/>
-                            <constraint firstItem="Miu-hY-NqY" firstAttribute="top" secondItem="aVs-hr-BSa" secondAttribute="bottom" constant="60" id="BYd-JE-3V1"/>
+                            <constraint firstItem="Miu-hY-NqY" firstAttribute="top" secondItem="aVs-hr-BSa" secondAttribute="bottom" id="BYd-JE-3V1"/>
                             <constraint firstAttribute="centerX" secondItem="l5l-JR-LKA" secondAttribute="centerX" id="BsW-Di-um1"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="centerX" secondItem="SgP-DR-cyl" secondAttribute="centerX" id="FIk-PE-925"/>
                             <constraint firstItem="lbm-03-nu4" firstAttribute="leading" secondItem="bfj-xS-5rN" secondAttribute="leading" id="K3d-K6-PFD"/>
@@ -1006,6 +1006,7 @@
                             <outletCollection property="gestureRecognizers" destination="wh9-zs-FMO" appends="YES" id="Apq-Qt-2K4"/>
                         </connections>
                     </view>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="clipboardButton" destination="bfj-xS-5rN" id="mfH-NX-2iX"/>
                         <outlet property="clipboardText" destination="SgP-DR-cyl" id="pL2-sH-61L"/>

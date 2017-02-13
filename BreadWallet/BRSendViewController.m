@@ -659,7 +659,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 if (amount > 0 && amount < self.amount) {
                     [[[UIAlertView alloc]
-                      initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil)
+                      initWithTitle:NSLocalizedString(@"insufficient funds for dash network fee", nil)
                       message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
                                [manager stringForDashAmount:self.amount - amount],
                                [manager localCurrencyStringForDashAmount:self.amount - amount]] delegate:self
@@ -671,7 +671,7 @@ static NSString *sanitizeString(NSString *s)
                 }
                 else {
                     [[[UIAlertView alloc]
-                      initWithTitle:NSLocalizedString(@"insufficient funds for bitcoin network fee", nil) message:nil
+                      initWithTitle:NSLocalizedString(@"insufficient funds for dash network fee", nil) message:nil
                       delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
                 }
             }
@@ -688,7 +688,7 @@ static NSString *sanitizeString(NSString *s)
     
     if (! [manager.wallet signTransaction:tx withPrompt:prompt]) {
         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                    message:NSLocalizedString(@"error signing bitcoin transaction", nil) delegate:nil
+                                    message:NSLocalizedString(@"error signing dash transaction", nil) delegate:nil
                           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     }
     
@@ -1035,6 +1035,31 @@ static NSString *sanitizeString(NSString *s)
     [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
 }
 
+#pragma mark - Shapeshift
+
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    DSShapeshiftEntity * shapeshift = (DSShapeshiftEntity *)object;
+    switch ([shapeshift.shapeshiftStatus integerValue]) {
+        case eShapeshiftAddressStatus_Complete:
+        {
+            NSArray * shapeshiftsInProgress = [DSShapeshiftEntity shapeshiftsInProgress];
+            if (![shapeshiftsInProgress count]) {
+                self.shapeshiftLabel.text = shapeshift.shapeshiftStatusString;
+                self.shapeshiftView.hidden = TRUE;
+            }
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"shapeshift succeeded", nil)
+                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                                   popOutAfterDelay:2.0]];
+            break;
+        }
+        case eShapeshiftAddressStatus_Received:
+            self.shapeshiftLabel.text = shapeshift.shapeshiftStatusString;
+        default:
+            break;
+    }
+}
+
+
 -(void)startObservingShapeshift:(DSShapeshiftEntity*)shapeshift {
     
     [shapeshift addObserver:self forKeyPath:@"shapeshiftStatus" options:NSKeyValueObservingOptionNew context:nil];
@@ -1229,7 +1254,7 @@ static NSString *sanitizeString(NSString *s)
         NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.request.details.outputScripts.firstObject];
         NSString * returnAddress = m.wallet.receiveAddress;
         self.amount = amount;
-        DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:address];
+        DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity unusedShapeshiftHavingWithdrawalAddress:address];
         NSString * depositAddress = shapeshift.inputAddress;
         
         if (shapeshift) {

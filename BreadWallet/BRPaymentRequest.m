@@ -218,8 +218,11 @@
 #endif
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
-    
-    [script appendScriptPubKeyForAddress:self.paymentAddress];
+    if ([self.paymentAddress isValidDashAddress]) {
+        [script appendScriptPubKeyForAddress:self.paymentAddress];
+    } else if ([self.paymentAddress isValidBitcoinAddress]) {
+        [script appendBitcoinScriptPubKeyForAddress:self.paymentAddress];
+    }
     if (script.length == 0) return nil;
     
     BRPaymentProtocolDetails *details =
