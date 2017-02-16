@@ -272,6 +272,9 @@
 "not a valid dash address" = "ce n'est pas une adresse dash valide";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "ce n'est pas une adresse dash ou bitcoin valide";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "ce n'est pas une adresse bitcoin valide";
 
 /* No comment provided by engineer. */

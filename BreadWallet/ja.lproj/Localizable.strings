@@ -272,6 +272,9 @@
 "not a valid dash address" = "有効なダッシュインアドレスではありません";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "有効なビットコインのQRコインアドレスではありません";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "有効なビットコインアドレスではありません";
 
 /* No comment provided by engineer. */

@@ -260,6 +260,9 @@
 "not a valid dash address" = "geçerli bir dash adresi değil";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "geçerli bir dash veya bitcoin adresi değil";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "geçerli bir bitcoin adresi değil";
 
 /* No comment provided by engineer. */

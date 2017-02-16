@@ -272,6 +272,9 @@
 "not a valid dash address" = "некорректный dash-адрес";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "некорректный dash или bitcoin адрес";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "некорректный bitcoin-адрес";
 
 /* No comment provided by engineer. */

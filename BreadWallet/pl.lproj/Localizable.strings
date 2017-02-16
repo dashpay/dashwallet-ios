@@ -260,6 +260,9 @@
 "not a valid dash address" = "nieprawidłowy adres dash";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "nieprawidłowy adres dash lub bitcoin";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "nieprawidłowy adres bitoin";
 
 /* No comment provided by engineer. */

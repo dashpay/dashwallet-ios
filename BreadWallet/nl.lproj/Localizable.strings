@@ -236,6 +236,9 @@
 "not a valid dash address" = "geen valide dash adres";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "geen valide dash of bitcoin adres";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "geen valide bitcoin adres";
 
 /* No comment provided by engineer. */

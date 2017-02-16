@@ -242,6 +242,9 @@
 "not a valid dash address" = "nuk është dash adresë valide";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "nuk është dash ose bitcoin adresë valide";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "nuk është bitcoin adresë valide";
 
 /* No comment provided by engineer. */

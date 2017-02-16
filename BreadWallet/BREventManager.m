@@ -334,73 +334,75 @@
 
 - (void)_sendToServer
 {
-    [self.myQueue addOperationWithBlock:^{
-        // send any persisted data to the server
-        NSError *error = nil;
-        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
-                                                                             error:&error];
-        if (error != nil) {
-            NSLog(@"Unable to read contents of event data directory: %@", error);
-            return; // bail here as this is likely unrecoverable
-        }
-        
-        [files enumerateObjectsUsingBlock:^(id baseName, NSUInteger idx, BOOL *stop) {
-            // perform upload
-            [self.myQueue addOperationWithBlock:^{
-                // 1: read the json in
-                NSError *readError = nil;
-                NSString *fileName = [[self _unsentDataDirectory] stringByAppendingPathComponent:
-                                      [NSString stringWithFormat:@"/%@", baseName]];
-                NSInputStream *ins = [[NSInputStream alloc] initWithFileAtPath:fileName];
-                [ins open];
-                NSArray *inArray = [NSJSONSerialization JSONObjectWithStream:ins options:0 error:&readError];
-                if (readError != nil) {
-                    NSLog(@"Unable to read json event file %@: %@", fileName, readError);
-                    return; // bail out here as we likely cant recover from this error
-                }
-                
-                // 2: transform it into the json data the server expects
-                NSDictionary *eventDump = [self _eventTupleArrayToDictionary:inArray];
-                NSError *serializeErr = nil;
-                NSData *body = [NSJSONSerialization dataWithJSONObject:eventDump options:0 error:&serializeErr];
-                if (serializeErr != nil) {
-                    NSLog(@"Unable to jsonify event dump %@", serializeErr);
-                    return; // bail out as who knows why this will fail
-                }
-                
-                // 3. send off the request and await response
-                NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:EVENT_SERVER_URL];
-                req.HTTPMethod = @"POST";
-                [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-                
-                NSURLSessionConfiguration *seshConf = [NSURLSessionConfiguration defaultSessionConfiguration];
-                NSURLSession *urlSesh = [NSURLSession sessionWithConfiguration:seshConf];
-                NSURLSessionUploadTask *uploadTask =
-                    [urlSesh uploadTaskWithRequest:req fromData:body completionHandler:
-                     ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                         if (httpResponse.statusCode != 201) { // we should expect to receive a 201
-                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
-                                   (long)httpResponse.statusCode, connectionError,
-                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                         } else {
-                             NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
-                                   fileName, (long)httpResponse.statusCode,
-                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                         }
-                         
-                         // 4. remove the file from disk since we no longer need it
-                         [self.myQueue addOperationWithBlock:^{
-                             NSError *removeErr = nil;
-                             if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
-                                 NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
-                             }
-                         }];
-                     }];
-                [uploadTask resume];
-            }];
-        }];
-    }];
+    return;
+    //to do, make event server for dash
+//    [self.myQueue addOperationWithBlock:^{
+//        // send any persisted data to the server
+//        NSError *error = nil;
+//        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
+//                                                                             error:&error];
+//        if (error != nil) {
+//            NSLog(@"Unable to read contents of event data directory: %@", error);
+//            return; // bail here as this is likely unrecoverable
+//        }
+//        
+//        [files enumerateObjectsUsingBlock:^(id baseName, NSUInteger idx, BOOL *stop) {
+//            // perform upload
+//            [self.myQueue addOperationWithBlock:^{
+//                // 1: read the json in
+//                NSError *readError = nil;
+//                NSString *fileName = [[self _unsentDataDirectory] stringByAppendingPathComponent:
+//                                      [NSString stringWithFormat:@"/%@", baseName]];
+//                NSInputStream *ins = [[NSInputStream alloc] initWithFileAtPath:fileName];
+//                [ins open];
+//                NSArray *inArray = [NSJSONSerialization JSONObjectWithStream:ins options:0 error:&readError];
+//                if (readError != nil) {
+//                    NSLog(@"Unable to read json event file %@: %@", fileName, readError);
+//                    return; // bail out here as we likely cant recover from this error
+//                }
+//                
+//                // 2: transform it into the json data the server expects
+//                NSDictionary *eventDump = [self _eventTupleArrayToDictionary:inArray];
+//                NSError *serializeErr = nil;
+//                NSData *body = [NSJSONSerialization dataWithJSONObject:eventDump options:0 error:&serializeErr];
+//                if (serializeErr != nil) {
+//                    NSLog(@"Unable to jsonify event dump %@", serializeErr);
+//                    return; // bail out as who knows why this will fail
+//                }
+//                
+//                // 3. send off the request and await response
+//                NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:EVENT_SERVER_URL];
+//                req.HTTPMethod = @"POST";
+//                [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+//                
+//                NSURLSessionConfiguration *seshConf = [NSURLSessionConfiguration defaultSessionConfiguration];
+//                NSURLSession *urlSesh = [NSURLSession sessionWithConfiguration:seshConf];
+//                NSURLSessionUploadTask *uploadTask =
+//                    [urlSesh uploadTaskWithRequest:req fromData:body completionHandler:
+//                     ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
+//                         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+//                         if (httpResponse.statusCode != 201) { // we should expect to receive a 201
+//                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
+//                                   (long)httpResponse.statusCode, connectionError,
+//                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+//                         } else {
+//                             NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
+//                                   fileName, (long)httpResponse.statusCode,
+//                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+//                         }
+//                         
+//                         // 4. remove the file from disk since we no longer need it
+//                         [self.myQueue addOperationWithBlock:^{
+//                             NSError *removeErr = nil;
+//                             if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
+//                                 NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
+//                             }
+//                         }];
+//                     }];
+//                [uploadTask resume];
+//            }];
+//        }];
+//    }];
 }
 
 - (void)_removeData

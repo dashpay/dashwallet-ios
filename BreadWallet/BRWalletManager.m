@@ -47,7 +47,7 @@
 
 #define UNSPENT_URL          @"http://insight.dash.org/insight-api-dash/addrs/utxo"
 #define UNSPENT_FAILOVER_URL @"https://insight.dash.siampm.com/api/addrs/utxo"
-#define FEE_PER_KB_URL       @"https://api.breadwallet.com/fee-per-kb"
+#define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 
@@ -928,6 +928,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 {
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     
+#if (!!FEE_PER_KB_URL)
+    
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
     
@@ -958,6 +960,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                              _wallet.feePerKb = newFee;
                                          }
                                      }] resume];
+    
+#else
+    return;
+#endif
 }
 
 -(NSNumber*)bitcoinDashPrice {

@@ -260,6 +260,9 @@
 "not a valid dash address" = "유효한 대쉬 주소가 아님";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "유효한 대쉬 이나 비트코인 주소가 아님";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "유효한 비트코인 주소가 아님";
 
 /* No comment provided by engineer. */

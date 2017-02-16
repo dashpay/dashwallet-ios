@@ -260,6 +260,9 @@
 "not a valid dash address" = "δεν είναι μια έγκυρη διεύθυνση dash";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση dash ή το bitcoin";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση bitcoin";
 
 /* No comment provided by engineer. */

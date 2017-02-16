@@ -147,10 +147,6 @@
 		FBF268041E414B93001A1C8B /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF268031E414B93001A1C8B /* NSData+Dash.m */; };
 		FBF2680E1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */; };
 		FBF2680F1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */; };
-		FBF3F4261E42AE9E00C7248E /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4241E42AE7200C7248E /* CoreImage.framework */; };
-		FBF3F4271E42AE9F00C7248E /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4241E42AE7200C7248E /* CoreImage.framework */; };
-		FBF3F4281E42AE9F00C7248E /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4241E42AE7200C7248E /* CoreImage.framework */; };
-		FBF3F4291E42AEA200C7248E /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4241E42AE7200C7248E /* CoreImage.framework */; };
 		FBF3F42B1E42AF8F00C7248E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */; };
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
@@ -564,7 +560,6 @@
 		FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataClass.m"; sourceTree = "<group>"; };
 		FBF2680C1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
 		FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		FBF3F4241E42AE7200C7248E /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -576,7 +571,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBF3F4281E42AE9F00C7248E /* CoreImage.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,7 +596,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBF3F4271E42AE9F00C7248E /* CoreImage.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,7 +603,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBF3F4291E42AEA200C7248E /* CoreImage.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -619,7 +611,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */,
-				FBF3F4261E42AE9E00C7248E /* CoreImage.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -925,7 +916,6 @@
 				FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */,
 				FBF3F42C1E42B00C00C7248E /* UIKit.framework */,
 				FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */,
-				FBF3F4241E42AE7200C7248E /* CoreImage.framework */,
 				22DC3A221D2C8DD100A72EA5 /* PushKit.framework */,
 				225383001C694D7400968BEE /* CoreLocation.framework */,
 				22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */,
@@ -1270,7 +1260,6 @@
 				TargetAttributes = {
 					31D68B4F1C23B6C10030FAAA = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = H4T3K787ZT;
 						LastSwiftMigration = 0800;
 						TestTargetID = 75D5F3BD191EC270004AB296;
 					};
@@ -1743,10 +1732,11 @@
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = BreadWalletUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletUITests/BreadWalletUITests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1761,10 +1751,11 @@
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = BreadWalletUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletUITests/BreadWalletUITests-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
@@ -1946,6 +1937,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/breadwallet.app/breadwallet";
 				CLANG_ENABLE_MODULES = YES;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = NO;
@@ -1965,6 +1957,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/breadwallet.app/breadwallet";
 				CLANG_ENABLE_MODULES = YES;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = NO;
@@ -2212,6 +2205,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/breadwallet.app/breadwallet";
 				CLANG_ENABLE_MODULES = YES;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BreadWallet/BreadWallet-Prefix.pch";
 				GCC_WARN_PEDANTIC = NO;
@@ -2230,10 +2224,11 @@
 			buildSettings = {
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_ENTITLEMENTS = breadwallet/breadwallet.entitlements;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				INFOPLIST_FILE = BreadWalletUITests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.breadwallet.BreadWalletUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BreadWalletUITests/BreadWalletUITests-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;

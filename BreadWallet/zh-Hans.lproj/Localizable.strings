@@ -260,6 +260,9 @@
 "not a valid dash address" = "不是一个有效的达世币的地址";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "不是一个有效的达世币或者币地址的地址";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "不是一个有效的比特币的地址";
 
 /* No comment provided by engineer. */

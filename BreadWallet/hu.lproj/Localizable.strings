@@ -260,6 +260,9 @@
 "not a valid dash address" = "nem érvényes dash cím";
 
 /* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "nem érvényes dash vagy bitcoin cím";
+
+/* No comment provided by engineer. */
 "not a valid bitcoin address" = "nem érvényes bitcoin cím";
 
 /* No comment provided by engineer. */

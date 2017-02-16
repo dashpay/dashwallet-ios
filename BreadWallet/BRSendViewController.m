@@ -521,7 +521,7 @@ static NSString *sanitizeString(NSString *s)
         }
         else if (amount < TX_MIN_OUTPUT_AMOUNT) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                        message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
+                                        message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
                                                  [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]] delegate:nil
                               cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             [self cancel:nil];
@@ -529,7 +529,7 @@ static NSString *sanitizeString(NSString *s)
         }
         else if (outputTooSmall) {
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                        message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin transaction outputs can't be less than %@",
+                                        message:[NSString stringWithFormat:NSLocalizedString(@"dash transaction outputs can't be less than %@",
                                                                                              nil), [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
                                        delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             [self cancel:nil];
@@ -606,14 +606,14 @@ static NSString *sanitizeString(NSString *s)
             
             if (protoReq.commonName.length > 0) {
                 if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
-                    c.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
+                    c.to = [LOCK @" " stringByAppendingString:sanitizeString(shapeshift.withdrawalAddress)];
                 }
                 else if (protoReq.errorMessage.length > 0) {
-                    c.to = [REDX @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
+                    c.to = [REDX @" " stringByAppendingString:sanitizeString(shapeshift.withdrawalAddress)];
                 }
-                else c.to = sanitizeString(protoReq.commonName);
+                else c.to = sanitizeString(shapeshift.withdrawalAddress);
             }
-            else c.to = address;
+            else c.to = shapeshift.withdrawalAddress;
             
             c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:manager.wallet.balance],
                                       [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
