@@ -408,7 +408,7 @@ static NSString *sanitizeString(NSString *s)
             [self confirmSweep:request.paymentAddress];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid dash address", nil)
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid dash or bitcoin address", nil)
                                         message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
                               otherButtonTitles:nil] show];
             [self cancel:nil];
