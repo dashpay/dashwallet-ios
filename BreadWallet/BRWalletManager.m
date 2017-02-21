@@ -75,7 +75,7 @@
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define SEED_KEY            @"seed" // depreceated
-#define USER_ACCOUNT_KEY    @"https://api.breadwallet.com"
+#define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {

@@ -125,19 +125,17 @@
                                  attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.paralax
                                  attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0.0];
             [self.navigationController.view insertSubview:self.paralax atIndex:0];
-            [self.navigationController.view addConstraint:self.paralaxXLeft];
-            [self.navigationController.view
-             addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
-                            attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
-                            attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
-//            self.navigationController.view.backgroundColor = self.paralax.backgroundColor;
+            //[self.navigationController.view addConstraint:self.paralaxXLeft];
+//            [self.navigationController.view
+//             addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
+//                            attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
+//                            attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
             self.navigationController.view.clipsToBounds = YES;
             self.navigationController.view.backgroundColor = [UIColor blackColor];
             [self.navigationController.view layoutIfNeeded];
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
-//            self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
             self.navigationItem.titleView.hidden = NO;
             self.navigationItem.titleView.alpha = 0.0;
 

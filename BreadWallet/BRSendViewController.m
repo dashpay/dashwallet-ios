@@ -69,6 +69,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
 @property (nonatomic, strong) NSString *scheme;
+@property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, strong) NSURL *url, *callback;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
@@ -77,6 +78,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) id clipboardObserver;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
+@property (nonatomic, strong) IBOutlet UISwitch *instantSwitch;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
 @property (nonatomic, strong) IBOutlet UITextView *clipboardText;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *clipboardXLeft;
@@ -485,6 +487,7 @@ static NSString *sanitizeString(NSString *s)
             self.request = protoReq;
             self.scheme = currency;
             self.okAddress = address;
+            self.associatedShapeshift = shapeshift;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                                         message:NSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
                                                                   "re-use reduces privacy for both you and the recipient and can result in loss if "
@@ -495,11 +498,12 @@ static NSString *sanitizeString(NSString *s)
         } else if (wantsInstant && !self.sendInstantly) {
             self.request = protoReq;
             self.scheme = currency;
+            self.associatedShapeshift = shapeshift;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Instant Payment", nil)
-                                        message:NSLocalizedString(@"Request is for instant payment but you don't have instant payments enabled",
+                                        message:NSLocalizedString(@"Request is for an instant payment but you have disabled instant payments",
                                                                                              nil)
-                                       delegate:nil cancelButtonTitle:nil
-                              otherButtonTitles:NSLocalizedString(@"send", nil), NSLocalizedString(@"send instantly", nil), nil] show];
+                                       delegate:self cancelButtonTitle:nil
+                              otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"enable", nil), nil] show];
             return;
             
         } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
@@ -507,6 +511,7 @@ static NSString *sanitizeString(NSString *s)
             self.request = protoReq;
             self.scheme = currency;
             self.okIdentity = protoReq.commonName;
+            self.associatedShapeshift = shapeshift;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"payee identity isn't certified", nil)
                                         message:protoReq.errorMessage delegate:self cancelButtonTitle:nil
                               otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
@@ -519,6 +524,7 @@ static NSString *sanitizeString(NSString *s)
             amountController.delegate = self;
             self.request = protoReq;
             self.scheme = currency;
+            self.associatedShapeshift = shapeshift;
             if (protoReq.commonName.length > 0) {
                 if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
                     amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
@@ -613,6 +619,7 @@ static NSString *sanitizeString(NSString *s)
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
             self.scheme = currency;
+            self.associatedShapeshift = shapeshift;
             self.okIdentity = protoReq.commonName;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"payee identity isn't certified", nil)
                                         message:protoReq.errorMessage delegate:self cancelButtonTitle:nil
@@ -625,7 +632,7 @@ static NSString *sanitizeString(NSString *s)
             c.usingShapeshift = TRUE;
             c.delegate = self;
             self.request = protoReq;
-            
+            self.associatedShapeshift = shapeshift;
             if (protoReq.commonName.length > 0) {
                 if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
                     c.to = [LOCK @" " stringByAppendingString:sanitizeString(shapeshift.withdrawalAddress)];
@@ -1169,6 +1176,7 @@ static NSString *sanitizeString(NSString *s)
     if (self.clearClipboard) [UIPasteboard generalPasteboard].string = @"";
     self.request = nil;
     self.scheme = nil;
+    self.associatedShapeshift = nil;
     [self cancel:sender];
     
 }
@@ -1455,13 +1463,12 @@ static NSString *sanitizeString(NSString *s)
         }];
     }
     else if (self.request) {
-        if ([title isEqual:NSLocalizedString(@"send instantly", nil)]) {
-            BOOL temp = self.sendInstantly;
+        if ([title isEqual:NSLocalizedString(@"enable", nil)]) {
             self.sendInstantly = TRUE;
-            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:nil wantsInstant:TRUE];
-            self.sendInstantly = temp;
+            [self.instantSwitch setOn:TRUE animated:TRUE];
+            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE];
         } else {
-            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:nil];
+            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
         }
     }
     else if (self.url) [self handleURL:self.url];
