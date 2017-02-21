@@ -779,6 +779,11 @@ services:(uint64_t)services
 {
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l], off;
     
+    if (count == 0) {
+        [self error:@"count cannot be 0"];
+        return;
+    }
+    
     if (message.length < l + 81*count) {
         [self error:@"malformed headers message, length is %u, should be %u for %u items", (int)message.length,
          (int)(((l == 0) ? 1 : l) + count*81), (int)count];
@@ -799,14 +804,17 @@ services:(uint64_t)services
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
-    if (count >= 2000 || t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) {
-        NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].x11),
-                *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11);
+    if (count >= 2000 || t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) {
+        if (count >= 2000) {
+            NSValue *aTest = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(2000 - 1), 80)].x11);
+        }
+        NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].x11);
+        NSValue *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11);
 
-        if (t + 7*24*60*60 >= self.earliestKeyTime - 2*60*60) { // request blocks for the remainder of the chain
+        if (t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
 
-            for (off = l; t > 0 && t + 7*24*60*60 < self.earliestKeyTime - 2*60*60;) {
+            for (off = l; t > 0 && t < self.earliestKeyTime - (HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }

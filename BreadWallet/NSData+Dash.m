@@ -147,7 +147,7 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
 
 - (UInt256)x11
 {
-
+    NSData * copy = [self copy];
     UInt512 x11Data;
     
     sph_blake_big_context ctx_blake;

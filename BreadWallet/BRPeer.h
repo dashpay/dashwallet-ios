@@ -41,6 +41,7 @@
 
 #define WEEK_TIME_INTERVAL 604800 //7*24*60*60
 #define DAY_TIME_INTERVAL 86400 //24*60*60
+#define HOUR_TIME_INTERVAL 3600
 
 // explanation of message types at: https://en.bitcoin.it/wiki/Protocol_specification
 #define MSG_VERSION     @"version"

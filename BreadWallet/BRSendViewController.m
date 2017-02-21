@@ -68,6 +68,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) BRTransaction *sweepTx;
 @property (nonatomic, strong) BRPaymentProtocolRequest *request;
+@property (nonatomic, strong) NSString *scheme;
 @property (nonatomic, strong) NSURL *url, *callback;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
@@ -431,7 +432,7 @@ static NSString *sanitizeString(NSString *s)
             });
         }];
     }
-    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil];
+    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant];
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq {
@@ -439,6 +440,11 @@ static NSString *sanitizeString(NSString *s)
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift
+{
+    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:FALSE];
+}
+
+- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRTransaction *tx = nil;
@@ -477,6 +483,7 @@ static NSString *sanitizeString(NSString *s)
         else if (! [self.okAddress isEqual:address] && [manager.wallet addressIsUsed:address] &&
                  [[UIPasteboard generalPasteboard].string isEqual:address]) {
             self.request = protoReq;
+            self.scheme = currency;
             self.okAddress = address;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                                         message:NSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
@@ -485,10 +492,20 @@ static NSString *sanitizeString(NSString *s)
                                        delegate:self cancelButtonTitle:nil
                               otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
             return;
-        }
-        else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
+        } else if (wantsInstant && !self.sendInstantly) {
+            self.request = protoReq;
+            self.scheme = currency;
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Instant Payment", nil)
+                                        message:NSLocalizedString(@"Request is for instant payment but you don't have instant payments enabled",
+                                                                                             nil)
+                                       delegate:nil cancelButtonTitle:nil
+                              otherButtonTitles:NSLocalizedString(@"send", nil), NSLocalizedString(@"send instantly", nil), nil] show];
+            return;
+            
+        } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
                  ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
+            self.scheme = currency;
             self.okIdentity = protoReq.commonName;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"payee identity isn't certified", nil)
                                         message:protoReq.errorMessage delegate:self cancelButtonTitle:nil
@@ -501,7 +518,7 @@ static NSString *sanitizeString(NSString *s)
             
             amountController.delegate = self;
             self.request = protoReq;
-            
+            self.scheme = currency;
             if (protoReq.commonName.length > 0) {
                 if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
                     amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
@@ -536,7 +553,10 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         
+        
+        
         self.request = protoReq;
+        self.scheme = @"dash";
         
         if (self.amount == 0) {
             
@@ -592,6 +612,7 @@ static NSString *sanitizeString(NSString *s)
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
+            self.scheme = currency;
             self.okIdentity = protoReq.commonName;
             [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"payee identity isn't certified", nil)
                                         message:protoReq.errorMessage delegate:self cancelButtonTitle:nil
@@ -600,6 +621,7 @@ static NSString *sanitizeString(NSString *s)
         }
         else if (amount == 0 || amount == UINT64_MAX) {
             BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
+            self.scheme = currency;
             c.usingShapeshift = TRUE;
             c.delegate = self;
             self.request = protoReq;
@@ -637,6 +659,7 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         self.request = protoReq;
+        self.scheme = currency;
         [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/manager.bitcoinDashPrice.doubleValue];
     }
 }
@@ -1145,7 +1168,9 @@ static NSString *sanitizeString(NSString *s)
     
     if (self.clearClipboard) [UIPasteboard generalPasteboard].string = @"";
     self.request = nil;
+    self.scheme = nil;
     [self cancel:sender];
+    
 }
 
 - (IBAction)cancel:(id)sender
@@ -1430,7 +1455,14 @@ static NSString *sanitizeString(NSString *s)
         }];
     }
     else if (self.request) {
-        [self confirmProtocolRequest:self.request];
+        if ([title isEqual:NSLocalizedString(@"send instantly", nil)]) {
+            BOOL temp = self.sendInstantly;
+            self.sendInstantly = TRUE;
+            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:nil wantsInstant:TRUE];
+            self.sendInstantly = temp;
+        } else {
+            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:nil];
+        }
     }
     else if (self.url) [self handleURL:self.url];
 }

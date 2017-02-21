@@ -72,6 +72,7 @@
     self.label = nil;
     self.message = nil;
     self.amount = 0;
+    _wantsInstant = FALSE;
     self.r = nil;
 
     if (string.length == 0) return;
@@ -124,6 +125,10 @@
             }
             else if ([pair[0] isEqual:@"message"]) {
                 self.message = value;
+            }
+            else if ([[pair[0] lowercaseString] isEqual:@"IS"]) {
+                if ([value  isEqual: @"1"])
+                    _wantsInstant = TRUE;
             }
             else if ([pair[0] isEqual:@"r"]) self.r = value;
         }
