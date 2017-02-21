@@ -126,7 +126,7 @@
             else if ([pair[0] isEqual:@"message"]) {
                 self.message = value;
             }
-            else if ([[pair[0] lowercaseString] isEqual:@"IS"]) {
+            else if ([[pair[0] lowercaseString] isEqual:@"is"]) {
                 if ([value  isEqual: @"1"])
                     _wantsInstant = TRUE;
             }
@@ -165,6 +165,10 @@
     if (self.r.length > 0) {
         [q addObject:[@"r=" stringByAppendingString:[self.r
          stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+    }
+    
+    if (self.wantsInstant) {
+        [q addObject:@"IS=1"];
     }
     
     if (q.count > 0) {
