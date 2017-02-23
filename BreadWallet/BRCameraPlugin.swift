@@ -95,12 +95,23 @@ import Foundation
             }
             let resp = BRHTTPResponse(async: request)
             do {
+                // read img
                 var imgDat: [UInt8]
                 if id == "test" {
-                    imgDat = [UInt8](try! Data(contentsOf: URL(string: "http://i.imgur.com/E5duhww.jpg")!))
+                    imgDat = [UInt8](try! Data(contentsOf: URL(string: "http://i.imgur.com/VG2UvcY.jpg")!))
                 } else {
                     imgDat = try self.readImage(id)
                 }
+                // scale img
+                guard let img = UIImage(data: Data(imgDat)) else {
+                    return BRHTTPResponse(request: request, code: 500)
+                }
+                let scaledImg = img.scaled(to: CGSize(width: 1000, height: 1000), scalingMode: .aspectFit)
+                guard let scaledImageDat = UIImageJPEGRepresentation(scaledImg, 0.7) else {
+                    return BRHTTPResponse(request: request, code: 500)
+                }
+                imgDat = [UInt8](scaledImageDat)
+                // return img to client
                 var contentType = "image/jpeg"
                 if let b64opt = request.query["base64"], b64opt.count > 0 {
                     contentType = "text/plain"
