@@ -60,6 +60,7 @@ import Foundation
     
     func decorateResponse(version: UInt64, date: Date, response: BRHTTPResponse) -> BRHTTPResponse {
         let headers = [
+            "Cache-Control": ["max-age=0, must-revalidate"],
             "ETag": ["\(version)"],
             "Last-Modified": [date.RFC1123String() ?? ""]
         ]
@@ -115,6 +116,7 @@ import Foundation
             if del {
                 let headers: [String: [String]] = [
                     "ETag": ["\(ver)"],
+                    "Cache-Control": ["max-age=0, must-revalidate"],
                     "Last-Modified": [date.RFC1123String() ?? ""]
                 ]
                 return BRHTTPResponse(
@@ -123,6 +125,7 @@ import Foundation
             }
             let headers: [String: [String]] = [
                 "ETag": ["\(ver)"],
+                "Cache-Control": ["max-age=0, must-revalidate"],
                 "Last-Modified": [date.RFC1123String() ?? ""],
                 "Content-Type": ["application/json"]
             ]
@@ -177,6 +180,7 @@ import Foundation
             }
             let headers: [String: [String]] = [
                 "ETag": ["\(ver)"],
+                "Cache-Control": ["max-age=0, must-revalidate"],
                 "Last-Modified": [date.RFC1123String() ?? ""]
             ]
             return BRHTTPResponse(
@@ -216,6 +220,7 @@ import Foundation
             }
             let headers: [String: [String]] = [
                 "ETag": ["\(ver)"],
+                "Cache-Control": ["max-age=0, must-revalidate"],
                 "Last-Modified": [date.RFC1123String() ?? ""]
             ]
             return BRHTTPResponse(
