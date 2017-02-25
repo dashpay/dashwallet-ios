@@ -1339,8 +1339,8 @@ static NSString *sanitizeString(NSString *s)
                 [self handleBitIDURL:request.url];
                 [self resetQRGuide];
             }];
-        } else if ((request.isValid && [request.scheme isEqual:@"bitcoin"]) || [addr isValidBitcoinPrivateKey] ||
-                   [addr isValidBitcoinBIP38Key]) {
+        } else if ((request.isValid) || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] ||
+                   [addr isValidBitcoinBIP38Key] || [addr isValidDashBIP38Key]) {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
             [self.scanController stop];
             [BREventManager saveEvent:@"send:valid_qr_scan"];

@@ -777,8 +777,8 @@ services:(uint64_t)services
 
 - (void)acceptHeadersMessage:(NSData *)message
 {
-    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l], off;
-    
+    NSUInteger k, count = (NSUInteger)[message varIntAtOffset:0 length:&k], off;
+    NSUInteger l = k; //hold this in the stack before the memory of k can be reallocated. (Lousy fix, but should work fine).
     if (count == 0) {
         [self error:@"count cannot be 0"];
         return;
@@ -789,7 +789,6 @@ services:(uint64_t)services
          (int)(((l == 0) ? 1 : l) + count*81), (int)count];
         return;
     }
-
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
 
     if (_relayStartTime != 0) { // keep track of relay peformance
@@ -805,9 +804,6 @@ services:(uint64_t)services
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
 
     if (count >= 2000 || t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) {
-        if (count >= 2000) {
-            NSValue *aTest = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(2000 - 1), 80)].x11);
-        }
         NSValue *firstHash = uint256_obj([message subdataWithRange:NSMakeRange(l, 80)].x11);
         NSValue *lastHash = uint256_obj([message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11);
 
