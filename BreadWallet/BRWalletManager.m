@@ -1190,7 +1190,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 {
     if (! completion) return;
     
-    if ([privKey isValidBitcoinBIP38Key]) {
+    if ([privKey isValidDashBIP38Key]) {
         UIAlertView *v = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"password protected key", nil)
                                                     message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
                                           otherButtonTitles:NSLocalizedString(@"ok", nil), nil];
