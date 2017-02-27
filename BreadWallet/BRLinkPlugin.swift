@@ -80,10 +80,13 @@ import SafariServices
                 guard let escapedToURL = toURL[0].removingPercentEncoding, let url = URL(string: escapedToURL) else {
                     return BRHTTPResponse(request: request, code: 400)
                 }
+
                 let safari = SFSafariViewController(url: url)
                 safari.delegate = self
                 self.hasBrowser = true
-                self.controller.present(safari, animated: true, completion: nil)
+                DispatchQueue.main.async {
+                    self.controller.present(safari, animated: true, completion: nil)
+                }
                 return BRHTTPResponse(request: request, code: 204)
             } else {
                 // Fallback on earlier versions
