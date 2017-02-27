@@ -365,7 +365,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 // master public key used to generate wallet addresses
 - (NSData *)masterPublicKey
 {
-    return getKeychainData(MASTER_PUBKEY_KEY, nil);
+    return [getKeychainData(MASTER_PUBKEY_KEY, nil) subdataWithRange:NSMakeRange(0, 69)];
 }
 
 // requesting seedPhrase will trigger authentication
