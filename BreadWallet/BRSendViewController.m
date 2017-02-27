@@ -823,56 +823,56 @@ memo:(NSString *)memo isSecure:(BOOL)isSecure
 
 - (void)updateClipboardText
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSString *str = [[UIPasteboard generalPasteboard].string
-                         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        NSString *text = @"";
-        UIImage *img = [UIPasteboard generalPasteboard].image;
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        NSCharacterSet *separators = [NSCharacterSet alphanumericCharacterSet].invertedSet;
-        
-        if (str) {
-            [set addObject:str];
-            [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
-        }
-        
-        if (img) {
-            @synchronized ([CIContext class]) {
-                CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}];
-                
-                if (! context) context = [CIContext context];
-
-                for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:context
-                                              options:nil] featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
-                    [set addObject:[qr.messageString
-                                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-                }
-            }
-        }
-    
-        for (NSString *s in set) {
-            BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
-            
-            if ([req.paymentAddress isValidBitcoinAddress]) {
-                text = (req.label.length > 0) ? sanitizeString(req.label) : req.paymentAddress;
-                break;
-            }
-            else if ([s hasPrefix:@"bitcoin:"]) {
-                text = sanitizeString(s);
-                break;
-            }
-        }
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            CGFloat textWidth = [text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width + 12;
-
-            self.clipboardText.text = text;
-            if (textWidth < self.clipboardButton.bounds.size.width ) textWidth = self.clipboardButton.bounds.size.width;
-            if (textWidth > self.view.bounds.size.width - 16.0) textWidth = self.view.bounds.size.width - 16.0;
-            self.clipboardXLeft.constant = (self.view.bounds.size.width - textWidth)/2.0;
-            [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
-        });
-    });
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        NSString *str = [[UIPasteboard generalPasteboard].string
+//                         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+//        NSString *text = @"";
+//        UIImage *img = [UIPasteboard generalPasteboard].image;
+//        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+//        NSCharacterSet *separators = [NSCharacterSet alphanumericCharacterSet].invertedSet;
+//        
+//        if (str) {
+//            [set addObject:str];
+//            [set addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separators]];
+//        }
+//        
+//        if (img) {
+//            @synchronized ([CIContext class]) {
+//                CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer:@(YES)}];
+//                
+//                if (! context) context = [CIContext context];
+//
+//                for (CIQRCodeFeature *qr in [[CIDetector detectorOfType:CIDetectorTypeQRCode context:context
+//                                              options:nil] featuresInImage:[CIImage imageWithCGImage:img.CGImage]]) {
+//                    [set addObject:[qr.messageString
+//                                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+//                }
+//            }
+//        }
+//    
+//        for (NSString *s in set) {
+//            BRPaymentRequest *req = [BRPaymentRequest requestWithString:s];
+//            
+//            if ([req.paymentAddress isValidBitcoinAddress]) {
+//                text = (req.label.length > 0) ? sanitizeString(req.label) : req.paymentAddress;
+//                break;
+//            }
+//            else if ([s hasPrefix:@"bitcoin:"]) {
+//                text = sanitizeString(s);
+//                break;
+//            }
+//        }
+//
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            CGFloat textWidth = [text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width + 12;
+//
+//            self.clipboardText.text = text;
+//            if (textWidth < self.clipboardButton.bounds.size.width ) textWidth = self.clipboardButton.bounds.size.width;
+//            if (textWidth > self.view.bounds.size.width - 16.0) textWidth = self.view.bounds.size.width - 16.0;
+//            self.clipboardXLeft.constant = (self.view.bounds.size.width - textWidth)/2.0;
+//            [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
+//        });
+//    });
 }
 
 - (void)payFirstFromArray:(NSArray *)array
