@@ -63,7 +63,7 @@
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
 
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
-    UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blackColor];
+    UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
     
     UIImage * tabBarImage = [[UIImage imageNamed:@"tab-bar-dash"]
      resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0) resizingMode:UIImageResizingModeStretch];
@@ -72,6 +72,11 @@
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18],NSForegroundColorAttributeName:[UIColor whiteColor]}
      forState:UIControlStateNormal];
+    UIFont * titleBarFont = [UIFont systemFontOfSize:19 weight:UIFontWeightSemibold];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{
+                                                           NSFontAttributeName:titleBarFont,
+                                                           NSForegroundColorAttributeName: [UIColor whiteColor],
+                                                           }];
 
     if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
         NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];

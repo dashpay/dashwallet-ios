@@ -340,9 +340,10 @@
         <scene sceneID="iFW-LK-ypD">
             <objects>
                 <navigationController definesPresentationContext="YES" id="zyy-VL-f65" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="36d-sF-8oT">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="36d-sF-8oT">
                         <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                             <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -365,7 +366,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <gestureRecognizers/>
-                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <textAttributes key="titleTextAttributes">
                             <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                             <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -817,10 +818,11 @@
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="8" id="7pr-Px-FAo"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerX" secondItem="bFo-w9-Ygt" secondAttribute="centerX" id="CBr-ND-UkV"/>
                             <constraint firstAttribute="centerX" secondItem="qel-3J-2VC" secondAttribute="centerX" id="Cbc-27-Go0"/>
-                            <constraint firstItem="NFx-Li-ByS" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" constant="88" id="Equ-5P-lsB"/>
+                            <constraint firstItem="NFx-Li-ByS" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" priority="750" constant="88" id="Equ-5P-lsB"/>
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="leading" secondItem="bFo-w9-Ygt" secondAttribute="leading" constant="8" id="LqU-Rt-BVF"/>
                             <constraint firstAttribute="trailing" secondItem="XV7-2s-hZs" secondAttribute="trailing" constant="8" id="MGc-L3-fmW"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerY" secondItem="bFo-w9-Ygt" secondAttribute="centerY" constant="30" id="XPm-Qw-ucZ"/>
+                            <constraint firstItem="qel-3J-2VC" firstAttribute="top" relation="greaterThanOrEqual" secondItem="DXE-Ck-JTw" secondAttribute="bottom" constant="60" id="lyH-dl-FHn"/>
                         </constraints>
                         <connections>
                             <outletCollection property="gestureRecognizers" destination="wBJ-0U-BOy" appends="YES" id="EOj-CR-ycD"/>
@@ -998,7 +1000,7 @@
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="centerX" secondItem="SgP-DR-cyl" secondAttribute="centerX" id="FIk-PE-925"/>
                             <constraint firstItem="4Ur-j7-v3L" firstAttribute="centerX" secondItem="Nmx-0C-BXz" secondAttribute="centerX" id="HUi-XK-yKu"/>
                             <constraint firstItem="lbm-03-nu4" firstAttribute="leading" secondItem="bfj-xS-5rN" secondAttribute="leading" constant="8" id="K3d-K6-PFD"/>
-                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Miu-hY-NqY" secondAttribute="bottom" constant="20" id="Nyl-de-0iR"/>
+                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" secondItem="Miu-hY-NqY" secondAttribute="bottom" priority="750" constant="20" id="Nyl-de-0iR"/>
                             <constraint firstAttribute="bottom" secondItem="SgP-DR-cyl" secondAttribute="bottom" constant="78" id="Pqy-bh-DIk"/>
                             <constraint firstItem="SgP-DR-cyl" firstAttribute="top" secondItem="bfj-xS-5rN" secondAttribute="bottom" id="QP8-Ux-Sgh"/>
                             <constraint firstItem="aeV-sO-1m0" firstAttribute="trailing" secondItem="bfj-xS-5rN" secondAttribute="trailing" id="QbZ-9V-eE7"/>

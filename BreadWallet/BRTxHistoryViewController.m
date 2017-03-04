@@ -214,7 +214,7 @@ static NSString *dateFormat(NSString *template)
     NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
                               [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
-    [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString]];
+    [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     self.navigationItem.titleView = titleLabel;
 }

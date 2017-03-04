@@ -835,7 +835,7 @@
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
          direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
     }
-    else if (self.showTips && manager.seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+    else if (self.showTips && manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.showTips = NO;
     }
     else {
@@ -864,7 +864,8 @@
                                                tipDirection:BRBubbleTipDirectionUp];
         self.tipView.font = [UIFont systemFontOfSize:15.0];
         self.tipView.userInteractionEnabled = NO;
-        [self.view addSubview:[self.tipView popIn]];
+        UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
+        [currentWindow addSubview:[self.tipView popIn]];
         if (self.showTips) self.scrollView.scrollEnabled = NO;
     }
 }

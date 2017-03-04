@@ -535,10 +535,7 @@ static NSString *sanitizeString(NSString *s)
                 else amountController.to = sanitizeString(protoReq.commonName);
             }
             else amountController.to = address;
-            
-            amountController.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                     [manager stringForDashAmount:manager.wallet.balance],
-                                                     [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+            [self updateTitleView];
             [self.navigationController pushViewController:amountController animated:YES];
             return;
         }
@@ -643,9 +640,8 @@ static NSString *sanitizeString(NSString *s)
                 else c.to = sanitizeString(shapeshift.withdrawalAddress);
             }
             else c.to = shapeshift.withdrawalAddress;
-            
-            c.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:manager.wallet.balance],
-                                      [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+            BRWalletManager *manager = [BRWalletManager sharedInstance];
+            c.navigationItem.titleView = [self titleLabel];
             [self.navigationController pushViewController:c animated:YES];
             return;
         }
@@ -1063,6 +1059,32 @@ static NSString *sanitizeString(NSString *s)
                                 message:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil) delegate:nil
                       cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
     [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
+}
+
+-(UILabel*)titleLabel {
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
+    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [titleLabel setBackgroundColor:[UIColor clearColor]];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+    [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+    titleLabel.attributedText = attributedDashString;
+    return titleLabel;
+}
+
+-(void)updateTitleView {
+    if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+        [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+        ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
+    } else {
+        self.navigationItem.titleView = [self titleLabel];
+    }
 }
 
 #pragma mark - Shapeshift

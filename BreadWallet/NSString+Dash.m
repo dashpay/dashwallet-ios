@@ -185,9 +185,7 @@
     
     dashSymbol.bounds = CGRectMake(0, 0, dashSymbolSize.width, dashSymbolSize.height);
     dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] imageWithTintColor:color];
-    NSMutableAttributedString * dashSymbolString = [[NSAttributedString attributedStringWithAttachment:dashSymbol] mutableCopy];
-    [dashSymbolString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, dashSymbolString.length)];
-    return [dashSymbolString copy];
+    return [NSAttributedString attributedStringWithAttachment:dashSymbol];
 }
 
 
@@ -200,9 +198,12 @@
     if (range.location == NSNotFound) {
         [attributedString insertAttributedString:[[NSAttributedString alloc] initWithString:@" "] atIndex:0];
         [attributedString insertAttributedString:[NSString dashSymbolAttributedStringWithTintColor:color forDashSymbolSize:dashSymbolSize] atIndex:0];
+        
+        [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
     } else {
         [attributedString replaceCharactersInRange:range
                           withAttributedString:[NSString dashSymbolAttributedStringWithTintColor:color forDashSymbolSize:dashSymbolSize]];
+        [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
     }
     return attributedString;
 }
