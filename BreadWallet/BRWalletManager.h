@@ -82,12 +82,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 - (BOOL)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId; // prompt user to authenticate
 - (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
-// queries api.breadwallet.com and calls the completion block with unspent outputs for the given address
+// queries api.dashwallet.com and calls the completion block with unspent outputs for the given address
 - (void)utxosForAddresses:(NSArray * _Nonnull)address
 completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts,
                               NSError * _Null_unspecified error))completion;
 
-// given a private key, queries api.breadwallet.com for unspent outputs and calls the completion block with a signed
+// given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
 completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;

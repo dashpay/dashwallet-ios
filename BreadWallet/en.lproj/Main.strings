@@ -83,7 +83,7 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "no transactions";
 
-/* Class = "UILabel"; text = "breadwallet %ver%%net%\ncopyright © 2017 dash"; ObjectID = "uvz-hk-Nr4"; */
+/* Class = "UILabel"; text = "dashwallet %ver%%net%\ncopyright © 2017 dash"; ObjectID = "uvz-hk-Nr4"; */
 "uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\n\nBased on breadwallet\n\nthis app is open source";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */

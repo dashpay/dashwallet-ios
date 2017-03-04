@@ -36,7 +36,7 @@ let BRAPIClientErrorDomain = "BRApiClientErrorDomain"
     
     public var description: String {
         switch self {
-        case .buyBitcoin: return "buy-bitcoin";
+        case .buyBitcoin: return "buy-dash";
         case .earlyAccess: return "early-access";
         }
     }

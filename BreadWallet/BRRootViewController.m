@@ -580,14 +580,13 @@
     [[NSUserDefaults standardUserDefaults] setDouble:balance forKey:BALANCE_KEY];
 
     if (self.percent.hidden) {
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:balance],
-                                     [manager localCurrencyStringForDashAmount:balance]];
+        [self updateTitleView];
     }
 }
 
 -(UILabel*)titleLabel {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
+    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
     NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
@@ -787,7 +786,7 @@
     [defs setDouble:now forKey:BACKUP_DIALOG_TIME_KEY];
     
     [[[UIAlertView alloc]
-      initWithTitle:(first) ? NSLocalizedString(@"you received bitcoin!", nil) : NSLocalizedString(@"IMPORTANT", nil)
+      initWithTitle:(first) ? NSLocalizedString(@"you received dash!", nil) : NSLocalizedString(@"IMPORTANT", nil)
       message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
                                                            "recover your wallet", nil),
                (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :

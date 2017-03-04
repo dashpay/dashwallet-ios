@@ -153,7 +153,7 @@ int BRSecp256k1PointMul(BRECPoint *p, const UInt256 *i)
     if (! (self = [self init])) return nil;
     
     // mini private key format
-    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'S') {
+    if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'L') {
         if (! [privateKey isValidDashPrivateKey]) return nil;
         
         _seckey = [CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)privateKey,

@@ -371,7 +371,7 @@
 "seen by %d of %d peers" = "%1$d / %2$d ピアにて伝播確認済";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高\n%1$@ (%2$@) を\nbreadwallet宛に送金しても\n宜しいですか？\nダッシュインネットワークへの\n手数料が %3$@ (%4$@) です。";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高\n%1$@ (%2$@) を\ndashwallet宛に送金しても\n宜しいですか？\nダッシュインネットワークへの\n手数料が %3$@ (%4$@) です。";
 
 /* No comment provided by engineer. */
 "send address as email" = "ダッシュインアドレスをメールにて共有";

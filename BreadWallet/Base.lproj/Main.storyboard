@@ -636,7 +636,7 @@
         <scene sceneID="xl1-66-UPf">
             <objects>
                 <navigationController storyboardIdentifier="AmountNav" id="3ah-ch-e9l" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="rOn-tg-k8L" customClass="BRNavigationBar">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="rOn-tg-k8L" customClass="BRNavigationBar">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
@@ -1177,7 +1177,7 @@
                             <rect key="frame" x="139" y="13" width="98" height="18"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="VBZ-P3-o77">
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet" translatesAutoresizingMaskIntoConstraints="NO" id="VBZ-P3-o77">
                                     <rect key="frame" x="0.0" y="0.0" width="98" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 </imageView>
@@ -2023,7 +2023,7 @@ bitpay.com/rates and poloniex</string>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="left" text="start a new wallet by generating a wallet recovery phrase" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="wDZ-DN-szv">
                                 <rect key="frame" x="48.5" y="182.5" width="279" height="42"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
-                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
@@ -2031,7 +2031,7 @@ bitpay.com/rates and poloniex</string>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="if you ever lose your phone, you will need this phrase to recover your wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="dX6-jg-5IA">
                                 <rect key="frame" x="44.5" y="248.5" width="286" height="37"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                                 <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 <size key="shadowOffset" width="0.0" height="1"/>
@@ -2046,11 +2046,11 @@ bitpay.com/rates and poloniex</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
-                                <state key="normal" title="generate recovery phrase" backgroundImage="button-bg-white">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="generate recovery phrase" backgroundImage="button-bg-blue">
+                                    <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-white-pressed">
+                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
                                     <color key="titleColor" red="0.0" green="0.70893455179999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2091,12 +2091,11 @@ Other devices may be infected.
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <button hidden="YES" opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="efL-Cj-Aho">
-                                <rect key="frame" x="259" y="609" width="116" height="58"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                <rect key="frame" x="252" y="605" width="123" height="62"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                 <inset key="contentEdgeInsets" minX="60" minY="20" maxX="20" maxY="20"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="show">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                             </button>
@@ -2119,11 +2118,11 @@ Other devices may be infected.
                     </view>
                     <navigationItem key="navigationItem" id="xhy-mj-rkK">
                         <nil key="title"/>
-                        <view key="titleView" contentMode="scaleToFill" id="2TI-4e-OIp">
+                        <view key="titleView" contentMode="scaleToFill" misplaced="YES" id="2TI-4e-OIp">
                             <rect key="frame" x="139" y="13" width="98" height="18"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
                                     <rect key="frame" x="0.0" y="0.0" width="98" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 </imageView>
@@ -2790,7 +2789,6 @@ Other devices may be infected.
         <image name="button-bg-blue" width="10" height="11"/>
         <image name="button-bg-blue-pressed" width="10" height="44"/>
         <image name="button-bg-disabled" width="10" height="11"/>
-        <image name="button-bg-white" width="11" height="11"/>
         <image name="button-bg-white-pressed" width="11" height="10"/>
         <image name="cameraguide" width="234" height="234"/>
         <image name="cameraguide-blue-small" width="20" height="20"/>

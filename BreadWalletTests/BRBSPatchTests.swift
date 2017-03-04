@@ -52,9 +52,9 @@ class BRBSPatchTests: XCTestCase {
                 XCTFail("error downloading file")
             }
         }
-        download("https://s3.amazonaws.com/breadwallet-assets/bread-buy/bundle.tar", resultingUrl: &bundle1Url)
-        download("https://s3.amazonaws.com/breadwallet-assets/bread-buy/bundle2.tar", resultingUrl: &bundle2Url)
-        download("https://s3.amazonaws.com/breadwallet-assets/bread-buy/bundle_bundle2.bspatch", resultingUrl: &patchUrl)
+        download("https://s3.amazonaws.com/dashwallet-assets/dash-buy/bundle.tar", resultingUrl: &bundle1Url)
+        download("https://s3.amazonaws.com/dashwallet-assets/dash-buy/bundle2.tar", resultingUrl: &bundle2Url)
+        download("https://s3.amazonaws.com/dashwallet-assets/dash-buy/bundle_bundle2.bspatch", resultingUrl: &patchUrl)
         super.setUp()
     }
     

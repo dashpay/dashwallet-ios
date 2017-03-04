@@ -274,10 +274,10 @@ static NSString *dateFormat(NSString *template)
     }
     if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) { // only available on iOS 8 and above
 #if DEBUG || TESTFLIGHT
-        _buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/buy"];
+        _buyController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy-staging" mountPoint:@"/buy"];
         //        self.buyController.debugEndpoint = @"http://localhost:8080";
 #else
-        _buyController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/buy"];
+        _buyController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy" mountPoint:@"/buy"];
 #endif
         [_buyController startServer];
         [_buyController preload];

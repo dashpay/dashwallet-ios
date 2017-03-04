@@ -27,6 +27,7 @@
 #import "BRKey.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
+#import "NSString+Dash.h"
 #import "NSMutableData+Bitcoin.h"
 
 #define BIP32_SEED_KEY "Bitcoin seed"
@@ -185,10 +186,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = BITCOIN_PRIVKEY;
+    uint8_t version = DASH_PRIVKEY;
     
 #if DASH_TESTNET
-    version = BITCOIN_PRIVKEY_TEST;
+    version = DASH_PRIVKEY_TEST;
 #endif
 
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
@@ -220,10 +221,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = BITCOIN_PRIVKEY;
+    uint8_t version = DASH_PRIVKEY;
     
 #if DASH_TESTNET
-    version = BITCOIN_PRIVKEY_TEST;
+    version = DASH_PRIVKEY_TEST;
 #endif
     
     // path m/1H/0 (same as copay uses for bitauth)
@@ -253,10 +254,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = BITCOIN_PRIVKEY;
+    uint8_t version = DASH_PRIVKEY;
     
 #if DASH_TESTNET
-    version = BITCOIN_PRIVKEY_TEST;
+    version = DASH_PRIVKEY_TEST;
 #endif
 
     CKDpriv(&secret, &chain, 13 | BIP32_HARD); // m/13H

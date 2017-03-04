@@ -443,7 +443,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift
 {
-    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:FALSE];
+    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly];
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant
@@ -565,21 +565,21 @@ static NSString *sanitizeString(NSString *s)
             
             if (shapeshift) {
                 tx = [manager.wallet transactionForAmounts:protoReq.details.outputAmounts
-                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:self.sendInstantly toShapeshiftAddress:shapeshift.withdrawalAddress];
+                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
                 tx = [manager.wallet transactionForAmounts:protoReq.details.outputAmounts
-                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:self.sendInstantly toShapeshiftAddress:nil];
+                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         else {
             if (shapeshift) {
                 tx = [manager.wallet transactionForAmounts:@[@(self.amount)]
-                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:self.sendInstantly toShapeshiftAddress:shapeshift.withdrawalAddress];
+                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
                 tx = [manager.wallet transactionForAmounts:@[@(self.amount)]
-                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:self.sendInstantly toShapeshiftAddress:nil];
+                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         

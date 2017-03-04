@@ -121,10 +121,10 @@
     // only available on iOS 8 and above
     if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
 #if DEBUG || TESTFLIGHT
-        _eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy-staging" mountPoint:@"/ea"];
+        _eaController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy-staging" mountPoint:@"/ea"];
         //        self.eaController.debugEndpoint = @"http://localhost:8080";
 #else
-        _eaController = [[BRWebViewController alloc] initWithBundleName:@"bread-buy" mountPoint:@"/ea"];
+        _eaController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy" mountPoint:@"/ea"];
 #endif
         [_eaController startServer];
     }

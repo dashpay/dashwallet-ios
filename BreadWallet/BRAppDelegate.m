@@ -70,7 +70,7 @@
     [[UINavigationBar appearance] setBackgroundImage:tabBarImage forBarMetrics:UIBarMetricsDefault];
 
     [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
-     setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18],NSForegroundColorAttributeName:[UIColor whiteColor]}
+     setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
      forState:UIControlStateNormal];
     UIFont * titleBarFont = [UIFont systemFontOfSize:19 weight:UIFontWeightSemibold];
     [[UINavigationBar appearance] setTitleTextAttributes:@{
@@ -273,9 +273,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         
         // set up bundles
 #if DEBUG || TESTFLIGHT
-        NSArray *bundles = @[@"bread-buy-staging"];
+        NSArray *bundles = @[@"dash-buy-staging"];
 #else
-        NSArray *bundles = @[@"bread-buy"];
+        NSArray *bundles = @[@"dash-buy"];
 #endif
         [bundles enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [client updateBundle:(NSString *)obj handler:^(NSString * _Nullable error) {

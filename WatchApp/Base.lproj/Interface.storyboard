@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
     <device id="watch38" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -15,7 +15,7 @@
                 <controller title="ƀreadwallet" id="AgC-eL-Hgc" customClass="BRAWRootInterfaceController" customModule="WatchApp_Extension">
                     <items>
                         <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="wKY-qb-B8a" userLabel="Loading indicator"/>
-                        <label alignment="center" verticalAlignment="center" text="Open breadwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
+                        <label alignment="center" verticalAlignment="center" text="Open dashwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
                     </items>
                     <connections>
                         <outlet property="loadingIndicator" destination="wKY-qb-B8a" id="38C-SN-66a"/>
@@ -40,7 +40,7 @@
                                 <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="9vJ-Sn-Eit" userLabel="Loading indicator"/>
                                 <group width="1" alignment="left" id="7AP-2v-fcP" userLabel="Setup wallet message container">
                                     <items>
-                                        <label alignment="center" verticalAlignment="center" text="Open breadwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
+                                        <label alignment="center" verticalAlignment="center" text="Open dashwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
                                     </items>
                                 </group>
                                 <group width="1" alignment="left" layout="vertical" id="z73-6R-jav" userLabel="Balance info container">

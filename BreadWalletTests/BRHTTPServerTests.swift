@@ -56,7 +56,7 @@ class BRHTTPServerTests: XCTestCase {
                 XCTFail("error downloading file")
             }
         }
-        download("https://s3.amazonaws.com/breadwallet-assets/bread-buy/bundle.tar",
+        download("https://s3.amazonaws.com/dashwallet-assets/dash-buy/bundle.tar",
                  resultingUrl: &bundle1Url, resultingData: &bundle1Data)
         
         server = BRHTTPServer()
