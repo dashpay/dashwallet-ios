@@ -44,7 +44,7 @@
     self.bar2 = [[UIView alloc] initWithFrame:CGRectMake(x - BAR_WIDTH/2.0, y, BAR_WIDTH, BAR_HEIGHT)];
     self.bar3 = [[UIView alloc] initWithFrame:CGRectMake(x - BAR_WIDTH/2.0, y + BAR_SPACING, BAR_WIDTH, BAR_HEIGHT)];
     self.bar1.userInteractionEnabled = self.bar2.userInteractionEnabled = self.bar3.userInteractionEnabled = NO;
-    self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = self.currentTitleColor;
+    self.bar1.backgroundColor = self.bar2.backgroundColor = self.bar3.backgroundColor = [UIColor whiteColor];
     [self addSubview:self.bar1];
     [self addSubview:self.bar2];
     [self addSubview:self.bar3];

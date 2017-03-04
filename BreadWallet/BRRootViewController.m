@@ -585,6 +585,32 @@
     }
 }
 
+-(UILabel*)titleLabel {
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
+    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [titleLabel setBackgroundColor:[UIColor clearColor]];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+    [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+    titleLabel.attributedText = attributedDashString;
+    return titleLabel;
+}
+
+-(void)updateTitleView {
+    if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+        [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+        ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
+    } else {
+        self.navigationItem.titleView = [self titleLabel];
+    }
+}
+
 - (void)showSyncing
 {
     double progress = [BRPeerManager sharedInstance].syncProgress;
@@ -878,7 +904,7 @@
     if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
     [BREventManager saveEvent:@"root:unlock_success"];
     
-    self.navigationItem.titleView = nil;
+    [self updateTitleView];
     [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
 }
 
