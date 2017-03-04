@@ -1303,6 +1303,12 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     return [string attributedStringForDashSymbol];
 }
 
+- (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color {
+    NSString * string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
+                                                           decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
+    return [string attributedStringForDashSymbolWithTintColor:color];
+}
+
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color dashSymbolSize:(CGSize)dashSymbolSize
 {
     NSString * string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
@@ -1574,7 +1580,7 @@ replacementString:(NSString *)string
         t.autocapitalizationType = UITextAutocapitalizationTypeNone;
         t.returnKeyType = UIReturnKeyDone;
         t.delegate = self;
-        t.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        t.font = [UIFont systemFontOfSize:15.0];
         self.alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
                                                    delegate:nil cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:nil];
         [self.alertView setValue:t forKey:@"accessoryView"];

@@ -100,7 +100,7 @@
     self.label.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.label.textAlignment = NSTextAlignmentCenter;
     self.label.textColor = [UIColor whiteColor];
-    self.label.font = [UIFont fontWithName:@"HelveticaNeue-Medium" size:17.0];
+    self.label.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.label.shadowColor = [UIColor colorWithWhite:0.0 alpha:0.15];
     self.label.shadowOffset = CGSizeMake(0.0, 1.0);
     self.label.numberOfLines = 0;

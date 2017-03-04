@@ -185,8 +185,9 @@
     
     dashSymbol.bounds = CGRectMake(0, 0, dashSymbolSize.width, dashSymbolSize.height);
     dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] imageWithTintColor:color];
-    return [NSAttributedString attributedStringWithAttachment:dashSymbol];
-    
+    NSMutableAttributedString * dashSymbolString = [[NSAttributedString attributedStringWithAttachment:dashSymbol] mutableCopy];
+    [dashSymbolString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, dashSymbolString.length)];
+    return [dashSymbolString copy];
 }
 
 

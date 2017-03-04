@@ -844,7 +844,7 @@ static NSString *sanitizeString(NSString *s)
     BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking private key balance...", nil)
                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
-    statusView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    statusView.font = [UIFont systemFontOfSize:15.0];
     statusView.customView = [[UIActivityIndicatorView alloc]
                              initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     [(id)statusView.customView startAnimating];
@@ -888,7 +888,7 @@ static NSString *sanitizeString(NSString *s)
     BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking address balance...", nil)
                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
-    statusView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    statusView.font = [UIFont systemFontOfSize:15.0];
     statusView.customView = [[UIActivityIndicatorView alloc]
                              initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     [(id)statusView.customView startAnimating];
@@ -1112,7 +1112,7 @@ static NSString *sanitizeString(NSString *s)
     self.tipView = [BRBubbleView viewWithText:SCAN_TIP
                                      tipPoint:CGPointMake(self.scanButton.center.x, self.scanButton.center.y - 10.0)
                                  tipDirection:BRBubbleTipDirectionDown];
-    self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    self.tipView.font = [UIFont systemFontOfSize:15.0];
     [self.view addSubview:[self.tipView popIn]];
 }
 

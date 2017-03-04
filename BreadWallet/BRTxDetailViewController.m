@@ -316,7 +316,9 @@
                 
                 long long outputAmount = [self.outputAmount[indexPath.row] longLongValue];
                 if (outputAmount == UINT64_MAX) {
-                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-LightItalic" size:13]}];
+                    UIFont * font = [UIFont systemFontOfSize:17 weight:UIFontWeightLight];
+                    UIFontDescriptor * fontD = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
+                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
                     
                     amountLabel.attributedText = attributedString;
                     localCurrencyLabel.textColor = amountLabel.textColor;
@@ -410,7 +412,7 @@
     
     CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
                 options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont fontWithName:@"HelveticaNeue-Light" size:17]} context:nil];
+                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:17 weight:UIFontWeightLight]} context:nil];
     
     return textRect.size.height + 12.0;
 }
@@ -424,7 +426,7 @@
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:17];
+    titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightLight];
     titleLabel.textColor = [UIColor whiteColor];
     titleLabel.numberOfLines = 0;
     headerview.backgroundColor = [UIColor clearColor];

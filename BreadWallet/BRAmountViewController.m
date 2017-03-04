@@ -196,7 +196,7 @@
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
                               [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString]];
@@ -409,7 +409,7 @@ if (self.usingShapeshift) {
         BRBubbleView * tipView = [BRBubbleView viewWithText:self.to
                                                    tipPoint:CGPointMake(self.bottomButton.center.x, self.bottomButton.center.y - 10.0)
                                                tipDirection:BRBubbleTipDirectionDown];
-        tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        tipView.font = [UIFont systemFontOfSize:15.0];
         tipView.userInteractionEnabled = YES;
         [self.view addSubview:[tipView popIn]];
         self.tipView = tipView;

@@ -33,7 +33,7 @@
 "UyF-OV-QVY.text" = "not connected";
 
 /* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "settings";
+"W8m-Eh-Nf9.title" = "Settings";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
 "XJu-9x-HqQ.text" = "amount:";
@@ -42,10 +42,10 @@
 "YC6-rN-4P5.text" = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase.";
 
 /* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "pay address from clipboard";
+"bfj-xS-5rN.normalTitle" = "Pay Address From Clipboard";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "scan QR code";
+"ce6-Wi-wk4.normalTitle" = "Scan QR Code";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
 "cyp-mV-Bhd.text" = "I wrote it down:";
@@ -54,7 +54,7 @@
 "dOa-zm-TDG.normalTitle" = "new wallet";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "if you ever lose your phone, you will need this phrase to recover your wallet";
+"dX6-jg-5IA.text" = "If you ever lose your phone, you will need this phrase to recover your wallet.";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
 "eJ2-5h-DO2.text" = "unconfirmed";
@@ -66,7 +66,7 @@
 "fQN-xb-SYb.title" = "confirm:";
 
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "send money:";
+"l5l-JR-LKA.text" = "Send DASH";
 
 /* Class = "UILabel"; text = "app support:"; ObjectID = "lYb-eg-NfF"; */
 "lYb-eg-NfF.text" = "app support:";
@@ -75,7 +75,7 @@
 "ooJ-EA-DFl.title" = "recovery phrase:";
 
 /* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "receive money:";
+"qel-3J-2VC.text" = "Receive DASH";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
 "s4T-yd-VfX.title" = "transaction details";

@@ -319,7 +319,7 @@
 #if DASH_TESTNET
     UILabel *label = [UILabel new];
 
-    label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
+    label.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightLight];
     label.textColor = [UIColor redColor];
     label.textAlignment = NSTextAlignmentRight;
     label.text = @"testnet";
@@ -343,7 +343,7 @@
     if (manager.watchOnly) { // watch only wallet
         UILabel *label = [UILabel new];
         
-        label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0];
+        label.font = [UIFont systemFontOfSize:13];
         label.textColor = [UIColor redColor];
         label.textAlignment = NSTextAlignmentRight;
         label.text = @"watch only";
@@ -411,7 +411,6 @@
     if ([UIApplication sharedApplication].protectedDataAvailable) {
         [self performSelector:@selector(protectedViewDidAppear) withObject:nil afterDelay:0.0];
     }
-    
     [super viewDidAppear:animated];
 }
 
@@ -465,7 +464,7 @@
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
         if (self.navigationController.visibleViewController == self) {
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
         }
 
@@ -473,7 +472,7 @@
         return;
 #endif
 
-        if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + 7*24*60*60 < [NSDate timeIntervalSinceReferenceDate]) {
+        if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
             [self unlock:nil];
         }
@@ -863,7 +862,7 @@
         self.tipView = [BRBubbleView viewWithAttributedText:attributedTip
                                                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                                                tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        self.tipView.font = [UIFont systemFontOfSize:15.0];
         self.tipView.userInteractionEnabled = NO;
         [self.view addSubview:[self.tipView popIn]];
         if (self.showTips) self.scrollView.scrollEnabled = NO;
