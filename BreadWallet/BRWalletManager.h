@@ -63,6 +63,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
+@property (nonatomic, readonly) NSNumberFormatter * _Nullable dashSignificantFormat; // dash currency formatter that shows significant digits
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable bitcoinFormat; // bitcoin currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable unknownFormat; // unknown currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable localFormat; // local currency formatter
@@ -97,6 +98,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 - (int64_t)amountForBitcoinString:(NSString * _Nonnull)string;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color;
+- (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color useSignificantDigits:(BOOL)useSignificantDigits;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color dashSymbolSize:(CGSize)dashSymbolSize;
 - (NSNumber * _Nonnull)numberForAmount:(int64_t)amount;
 - (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount;

@@ -252,6 +252,22 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
     
+    _dashSignificantFormat = [NSNumberFormatter new];
+    self.dashSignificantFormat.lenient = YES;
+    self.dashSignificantFormat.numberStyle = NSNumberFormatterCurrencyStyle;
+    self.dashSignificantFormat.generatesDecimalNumbers = YES;
+    self.dashSignificantFormat.negativeFormat = [self.dashFormat.positiveFormat
+                                      stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
+                                      withString:@"-#"];
+    self.dashSignificantFormat.currencyCode = @"DASH";
+    self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
+    self.dashSignificantFormat.usesSignificantDigits = TRUE;
+    self.dashSignificantFormat.minimumSignificantDigits = 3;
+    self.dashSignificantFormat.maximumSignificantDigits = 6;
+    self.dashSignificantFormat.maximumFractionDigits = 8;
+    self.dashSignificantFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
+    self.dashSignificantFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
+    
     _bitcoinFormat = [NSNumberFormatter new];
     self.bitcoinFormat.lenient = YES;
     self.bitcoinFormat.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -1305,6 +1321,12 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color {
     NSString * string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
+                                                           decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
+    return [string attributedStringForDashSymbolWithTintColor:color];
+}
+
+- (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color useSignificantDigits:(BOOL)useSignificantDigits {
+    NSString * string = [(useSignificantDigits?self.dashSignificantFormat:self.dashFormat) stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
                                                            decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
     return [string attributedStringForDashSymbolWithTintColor:color];
 }

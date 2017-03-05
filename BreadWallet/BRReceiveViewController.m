@@ -33,6 +33,7 @@
 #import "BRAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
+#import "BRWalletManager.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
@@ -82,8 +83,12 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:req.amount],
-                           [manager localCurrencyStringForDashAmount:req.amount]];
+        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
+        NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                                  [manager localCurrencyStringForDashAmount:req.amount]];
+        [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+        self.label.attributedText = attributedDashString;
     }
 
     self.addressButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -133,8 +138,12 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                self.label.text = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:req.amount],
-                                   [manager localCurrencyStringForDashAmount:req.amount]];
+                BRWalletManager *manager = [BRWalletManager sharedInstance];
+                NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
+                NSString * titleString = [NSString stringWithFormat:@" (%@)",
+                                          [manager localCurrencyStringForDashAmount:req.amount]];
+                [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
+                self.label.attributedText = attributedDashString;
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
