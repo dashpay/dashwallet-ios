@@ -177,10 +177,17 @@ import Foundation
     // MARK: - basic wallet functions
     
     func walletInfo() -> [String: Any] {
+        let defs = UserDefaults.standard
         var d = [String: Any]()
         d["no_wallet"] = manager.noWallet
         d["watch_only"] = manager.watchOnly
         d["receive_address"] = manager.wallet?.receiveAddress
+        // the users btc,mbtc,bits setting
+        var mdigits = defs.integer(forKey: "SETTINGS_MAX_DIGITS")
+        if mdigits == 0 {
+            mdigits = 2
+        }
+        d["btc_denomination_digits"] = mdigits
         return d
     }
     
