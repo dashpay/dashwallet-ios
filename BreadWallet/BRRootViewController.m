@@ -27,6 +27,7 @@
 #import "BRReceiveViewController.h"
 #import "BRSendViewController.h"
 #import "BRSettingsViewController.h"
+#import "BRTxHistoryViewController.h"
 #import "BRRestoreViewController.h"
 #import "BRAppDelegate.h"
 #import "BRBubbleView.h"
@@ -36,7 +37,10 @@
 #import "BRPaymentRequest.h"
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
+#import "BREventConfirmView.h"
 #import "Reachability.h"
+#import "breadwallet-Swift.h"
+#import <WebKit/WebKit.h>
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
@@ -483,8 +487,19 @@
             [[BRPeerManager sharedInstance] connect];
             [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
             
-            if (self.url) [self.sendViewController handleURL:self.url], self.url = nil;
-            if (self.file) [self.sendViewController handleFile:self.file], self.file = nil;
+            if (self.url) {
+                [self.sendViewController handleURL:self.url];
+                self.url = nil;
+            }
+            else if (self.file) {
+                [self.sendViewController handleFile:self.file];
+                self.file = nil;
+            }
+            else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
+                     [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
+                [self showBuyAlert];
+            }
         }
     }
 }
@@ -530,6 +545,11 @@
             delegate:[(id)segue.destinationViewController viewControllers].firstObject
             cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
          show];
+    }
+    else if ([sender isEqual:@"buy alert"]) {
+        UINavigationController *nav = segue.destinationViewController;
+
+        [nav.topViewController performSelector:@selector(showBuy) withObject:nil afterDelay:1.0];
     }
 }
 
@@ -889,6 +909,45 @@
         [self unlock:sender];
     }
     else [self tip:sender];
+}
+
+- (void)showBuyAlert
+{
+    // grab a blurred image for the background
+    UIGraphicsBeginImageContext(self.navigationController.view.bounds.size);
+    [self.navigationController.view drawViewHierarchyInRect:self.navigationController.view.bounds
+                                         afterScreenUpdates:NO];
+    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
+    
+    // display the popup
+    __weak BREventConfirmView *view =
+    [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
+    view.titleLabel.text = NSLocalizedString(@"Buy bitcoin in breadwallet!", nil);
+    view.descriptionLabel.text =
+    NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
+    [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
+    
+    view.image = blurredBgImg;
+    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    view.frame = self.navigationController.view.bounds;
+    view.alpha = 0;
+    [self.navigationController.view addSubview:view];
+    
+    [UIView animateWithDuration:.5 animations:^{
+        view.alpha = 1;
+    }];
+    
+    view.completionHandler = ^(BOOL didApprove) {
+        if (didApprove) [self performSegueWithIdentifier:@"SettingsSegue" sender:@"buy alert"];
+        
+        [UIView animateWithDuration:.5 animations:^{
+            view.alpha = 0;
+        } completion:^(BOOL finished) {
+            [view removeFromSuperview];
+        }];
+    };
 }
 
 #if SNAPSHOT

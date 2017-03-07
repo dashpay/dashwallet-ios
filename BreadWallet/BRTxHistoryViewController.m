@@ -33,8 +33,6 @@
 #import "BRTransaction.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "UIImage+Utils.h"
-#import "BREventConfirmView.h"
 #import "BREventManager.h"
 #import "breadwallet-Swift.h"
 #import <WebKit/WebKit.h>
@@ -213,13 +211,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self.buyController preload];
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
-        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
-        [self showBuyAlert];
-    }
+    [self.buyController preload];    
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -438,45 +430,6 @@ static NSString *dateFormat(NSString *template)
     
     [self.tableView insertRowsAtIndexPaths:transactions withRowAnimation:UITableViewRowAnimationTop];
     [self.tableView endUpdates];
-}
-
-- (void)showBuyAlert
-{
-    // grab a blurred image for the background
-    UIGraphicsBeginImageContext(self.navigationController.view.bounds.size);
-    [self.navigationController.view drawViewHierarchyInRect:self.navigationController.view.bounds
-                                         afterScreenUpdates:NO];
-    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
-    
-    // display the popup
-    __weak BREventConfirmView *view =
-        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
-    view.titleLabel.text = NSLocalizedString(@"Buy bitcoin in breadwallet!", nil);
-    view.descriptionLabel.text =
-        NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
-    [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
-    
-    view.image = blurredBgImg;
-    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    view.frame = self.navigationController.view.bounds;
-    view.alpha = 0;
-    [self.navigationController.view addSubview:view];
-    
-    [UIView animateWithDuration:.5 animations:^{
-        view.alpha = 1;
-    }];
-    
-    view.completionHandler = ^(BOOL didApprove) {
-        if (didApprove) [self showBuy];
-        
-        [UIView animateWithDuration:.5 animations:^{
-            view.alpha = 0;
-        } completion:^(BOOL finished) {
-            [view removeFromSuperview];
-        }];
-    };
 }
 
 - (void)showBuy
