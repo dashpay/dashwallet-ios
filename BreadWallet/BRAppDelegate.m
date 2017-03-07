@@ -202,6 +202,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // sync events to the server
     [[BREventManager sharedEventManager] sync];
     
+    // set badge to alert user of buy bitcoin feature
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
         [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin] &&
         [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
