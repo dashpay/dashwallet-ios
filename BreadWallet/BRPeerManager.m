@@ -682,16 +682,16 @@ static const char *dns_seeds[] = {
         [self.txRelays removeObjectsForKeys:txHashes];
     }
     
-    for (NSValue *hash in updatedTx) {
-        NSError *kvErr = nil;
-        BRTxMetadataObject *txm;
-        UInt256 h;
-        
-        [hash getValue:&h];
-        txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
-        txm.blockHeight = height;
-        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
-    }
+//    for (NSValue *hash in updatedTx) {
+//        NSError *kvErr = nil;
+//        BRTxMetadataObject *txm;
+//        UInt256 h;
+//        
+//        [hash getValue:&h];
+//        txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
+//        txm.blockHeight = height;
+//        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
+//    }
 }
 
 - (void)txTimeout:(NSValue *)txHash
