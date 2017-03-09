@@ -451,7 +451,6 @@ static NSString *sanitizeString(NSString *s)
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRTransaction *tx = nil;
     uint64_t amount = 0, fee = 0;
-    NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
@@ -474,7 +473,7 @@ static NSString *sanitizeString(NSString *s)
     else amount = self.amount;
     
     if ([currency isEqualToString:@"dash"]) {
-        
+        NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
         if ([manager.wallet containsAddress:address]) {
             [[[UIAlertView alloc] initWithTitle:@""
                                         message:NSLocalizedString(@"this payment address is already in your wallet", nil)
@@ -612,6 +611,7 @@ static NSString *sanitizeString(NSString *s)
             [self confirmTransaction:tx withPrompt:prompt forAmount:amount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
+        NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -639,7 +639,7 @@ static NSString *sanitizeString(NSString *s)
                 }
                 else c.to = sanitizeString(shapeshift.withdrawalAddress);
             }
-            else c.to = shapeshift.withdrawalAddress;
+            else c.to = address;
             BRWalletManager *manager = [BRWalletManager sharedInstance];
             c.navigationItem.titleView = [self titleLabel];
             [self.navigationController pushViewController:c animated:YES];

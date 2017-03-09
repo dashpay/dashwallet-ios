@@ -427,7 +427,7 @@
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
     titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightLight];
-    titleLabel.textColor = [UIColor whiteColor];
+    titleLabel.textColor = [UIColor darkTextColor];
     titleLabel.numberOfLines = 0;
     headerview.backgroundColor = [UIColor clearColor];
     [headerview addSubview:titleLabel];
