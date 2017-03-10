@@ -90,7 +90,9 @@ typedef struct _BRUTXO {
 @property (nonatomic, readonly) uint64_t minOutputAmount;
 
 // largest amount that can be sent from the wallet after fees
-@property (nonatomic, readonly) uint64_t maxOutputAmount;
+- (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend;
+
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend;
 
 - (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nullable)context
                                  sequence:(id<BRKeySequence> _Nonnull)sequence

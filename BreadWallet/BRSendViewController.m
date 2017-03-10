@@ -505,6 +505,16 @@ static NSString *sanitizeString(NSString *s)
                               otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"enable", nil), nil] show];
             return;
             
+        } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:6 usingInstantSend:TRUE] < amount)) {
+            self.request = protoReq;
+            self.scheme = currency;
+            self.associatedShapeshift = shapeshift;
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Instant Payment", nil)
+                                        message:NSLocalizedString(@"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?",
+                                                                  nil)
+                                       delegate:self cancelButtonTitle:nil
+                              otherButtonTitles:NSLocalizedString(@"cancel", nil), NSLocalizedString(@"send", nil), nil] show];
+            return;
         } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
                  ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -681,7 +691,7 @@ static NSString *sanitizeString(NSString *s)
             // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
             // balance, offer to reduce the amount to available funds minus fee
             if (self.amount <= manager.wallet.balance + fuzz && self.amount > 0) {
-                int64_t amount = manager.wallet.maxOutputAmount;
+                int64_t amount = [manager.wallet maxOutputAmountUsingInstantSend:tx.isInstant];
                 
                 if (amount > 0 && amount < self.amount) {
                     [[[UIAlertView alloc]
@@ -1489,6 +1499,8 @@ static NSString *sanitizeString(NSString *s)
             self.sendInstantly = TRUE;
             [self.instantSwitch setOn:TRUE animated:TRUE];
             [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE];
+        } else if ([title isEqual:NSLocalizedString(@"send", nil)]) {
+            [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:FALSE];
         } else {
             [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
         }

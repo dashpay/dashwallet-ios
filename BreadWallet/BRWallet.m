@@ -31,6 +31,7 @@
 #import "BRTxInputEntity.h"
 #import "BRTxOutputEntity.h"
 #import "BRTxMetadataEntity.h"
+#import "BRPeerManager.h"
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -918,18 +919,33 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
-- (uint64_t)maxOutputAmount
+- (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
+{
+    return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];
+}
+
+- (uint32_t)blockHeight
+{
+    static uint32_t height = 0;
+    uint32_t h = [BRPeerManager sharedInstance].lastBlockHeight;
+    
+    if (h > height) height = h;
+    return height;
+}
+
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend
 {
     BRUTXO o;
     BRTransaction *tx;
     NSUInteger inputCount = 0;
     uint64_t amount = 0, fee;
     size_t cpfpSize = 0, txSize;
-
+    
     for (NSValue *output in self.utxos) {
         [output getValue:&o];
         tx = self.allTx[uint256_obj(o.hash)];
         if (o.n >= tx.outputAmounts.count) continue;
+        if (confirmationCount && (tx.blockHeight > self.blockHeight - confirmationCount)) continue;
         inputCount++;
         amount += [tx.outputAmounts[o.n] unsignedLongLongValue];
         
@@ -939,8 +955,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     
     
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
-             [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
-    fee = [self feeForTxSize:txSize + cpfpSize isInstant:TRUE inputCount:inputCount];
+    [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
+    fee = [self feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
 }
 
