@@ -505,7 +505,7 @@ static NSString *sanitizeString(NSString *s)
                               otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"enable", nil), nil] show];
             return;
             
-        } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:6 usingInstantSend:TRUE] < amount)) {
+        } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED usingInstantSend:TRUE] < amount)) {
             self.request = protoReq;
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
