@@ -2,8 +2,8 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "recover wallet";
 
-/* Class = "UILabel"; text = "support@breadwallet.com"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "support@breadwallet.com";
+/* Class = "UILabel"; text = "breadwallet.com/support"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "breadwallet.com/support";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "local currency";
