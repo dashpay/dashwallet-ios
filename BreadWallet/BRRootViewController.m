@@ -495,7 +495,8 @@
                 [self.sendViewController handleFile:self.file];
                 self.file = nil;
             }
-            else if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
+            else if (! self.showTips &&
+                     [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
                      [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
                 [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
                 [self showBuyAlert];
