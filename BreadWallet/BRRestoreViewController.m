@@ -72,15 +72,13 @@
         queue:nil usingBlock:^(NSNotification *note) {
             self.textView.text = nil;
         }];
-
-    if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.textView.layer.borderColor = [UIColor colorWithWhite:0.0 alpha:0.25].CGColor;
     self.textView.layer.borderWidth = 0.5;
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    [titleLabel setText:@"Confirm"];
+    [titleLabel setText:(self.navigationController.viewControllers.firstObject != self)?NSLocalizedString(@"Recovery Phrase",@"Recovery Phrase"):NSLocalizedString(@"Confirm",@"Confirm")];
     [titleLabel setTextColor:[UIColor blackColor]];
     self.navigationItem.titleView = titleLabel;
 }
