@@ -764,8 +764,16 @@
                         <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N4m-rf-eq3">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LDt-79-hdf">
+                                <rect key="frame" x="0.0" y="125" width="375" height="80"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                            </view>
                             <label opaque="NO" clipsSubviews="YES" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Receive DASH" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qel-3J-2VC">
-                                <rect key="frame" x="80" y="72.5" width="216.5" height="45"/>
+                                <rect key="frame" x="80" y="80" width="216.5" height="45"/>
                                 <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="45" id="wJO-7N-OV1"/>
@@ -815,14 +823,22 @@
                         </subviews>
                         <gestureRecognizers/>
                         <constraints>
+                            <constraint firstItem="N4m-rf-eq3" firstAttribute="centerX" secondItem="bFo-w9-Ygt" secondAttribute="centerX" id="18f-aB-tab"/>
+                            <constraint firstItem="LDt-79-hdf" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" id="2VL-Lz-wCf"/>
+                            <constraint firstItem="LDt-79-hdf" firstAttribute="leading" secondItem="bFo-w9-Ygt" secondAttribute="leadingMargin" constant="-16" id="4No-M2-7Hb"/>
+                            <constraint firstItem="N4m-rf-eq3" firstAttribute="height" secondItem="LDt-79-hdf" secondAttribute="height" id="6oc-XO-IL9"/>
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="8" id="7pr-Px-FAo"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerX" secondItem="bFo-w9-Ygt" secondAttribute="centerX" id="CBr-ND-UkV"/>
                             <constraint firstAttribute="centerX" secondItem="qel-3J-2VC" secondAttribute="centerX" id="Cbc-27-Go0"/>
-                            <constraint firstItem="NFx-Li-ByS" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" priority="750" constant="88" id="Equ-5P-lsB"/>
+                            <constraint firstItem="qel-3J-2VC" firstAttribute="top" secondItem="N4m-rf-eq3" secondAttribute="bottom" id="GDa-1O-Tfk"/>
+                            <constraint firstItem="N4m-rf-eq3" firstAttribute="leading" secondItem="bFo-w9-Ygt" secondAttribute="leadingMargin" constant="-16" id="GgH-CD-ytC"/>
+                            <constraint firstItem="LDt-79-hdf" firstAttribute="centerX" secondItem="bFo-w9-Ygt" secondAttribute="centerX" id="Ime-if-VdP"/>
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="leading" secondItem="bFo-w9-Ygt" secondAttribute="leading" constant="8" id="LqU-Rt-BVF"/>
                             <constraint firstAttribute="trailing" secondItem="XV7-2s-hZs" secondAttribute="trailing" constant="8" id="MGc-L3-fmW"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerY" secondItem="bFo-w9-Ygt" secondAttribute="centerY" constant="30" id="XPm-Qw-ucZ"/>
-                            <constraint firstItem="qel-3J-2VC" firstAttribute="top" relation="greaterThanOrEqual" secondItem="DXE-Ck-JTw" secondAttribute="bottom" constant="60" id="lyH-dl-FHn"/>
+                            <constraint firstItem="PTm-4L-adQ" firstAttribute="top" secondItem="LDt-79-hdf" secondAttribute="bottom" constant="1.5" id="cCU-b2-B23"/>
+                            <constraint firstItem="N4m-rf-eq3" firstAttribute="top" secondItem="DXE-Ck-JTw" secondAttribute="bottom" id="dnB-NB-OMz"/>
+                            <constraint firstItem="N4m-rf-eq3" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="jn3-ui-GdX"/>
                         </constraints>
                         <connections>
                             <outletCollection property="gestureRecognizers" destination="wBJ-0U-BOy" appends="YES" id="EOj-CR-ycD"/>
@@ -858,7 +874,7 @@
                     </connections>
                 </swipeGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1988" y="1430"/>
+            <point key="canvasLocation" x="1988" y="1429.8350824587708"/>
         </scene>
         <!--Send View Controller-->
         <scene sceneID="sMR-re-NXa">
@@ -985,10 +1001,10 @@
                                 </connections>
                             </switch>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash-center-logo" translatesAutoresizingMaskIntoConstraints="NO" id="4Ur-j7-v3L">
-                                <rect key="frame" x="60" y="170" width="255" height="255"/>
+                                <rect key="frame" x="59.5" y="169" width="256" height="256"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="4Ur-j7-v3L" secondAttribute="height" multiplier="1:1" id="2Sa-0c-8Jw"/>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="150" id="WBd-pt-14G"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="100" id="WBd-pt-14G"/>
                                     <constraint firstAttribute="height" priority="250" constant="260" id="X9x-p7-Nin"/>
                                 </constraints>
                             </imageView>
@@ -997,6 +1013,7 @@
                         <constraints>
                             <constraint firstItem="aeV-sO-1m0" firstAttribute="top" secondItem="SgP-DR-cyl" secondAttribute="bottom" constant="10" id="1RK-Wt-Ih0"/>
                             <constraint firstItem="ce6-Wi-wk4" firstAttribute="width" secondItem="bfj-xS-5rN" secondAttribute="width" id="3zv-yM-vp5"/>
+                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" secondItem="aVs-hr-BSa" secondAttribute="bottom" constant="60" id="6aR-Us-nmI"/>
                             <constraint firstItem="Miu-hY-NqY" firstAttribute="centerX" secondItem="SgP-DR-cyl" secondAttribute="centerX" id="7sk-bE-tMH"/>
                             <constraint firstItem="Miu-hY-NqY" firstAttribute="top" secondItem="aVs-hr-BSa" secondAttribute="bottom" id="BYd-JE-3V1"/>
                             <constraint firstAttribute="centerX" secondItem="l5l-JR-LKA" secondAttribute="centerX" id="BsW-Di-um1"/>
@@ -1005,13 +1022,13 @@
                             <constraint firstItem="4Ur-j7-v3L" firstAttribute="centerX" secondItem="Nmx-0C-BXz" secondAttribute="centerX" id="HUi-XK-yKu"/>
                             <constraint firstItem="lbm-03-nu4" firstAttribute="leading" secondItem="bfj-xS-5rN" secondAttribute="leading" constant="8" id="K3d-K6-PFD"/>
                             <constraint firstItem="QUJ-kn-Ubh" firstAttribute="top" relation="greaterThanOrEqual" secondItem="aeV-sO-1m0" secondAttribute="bottom" constant="10" id="Kc5-C8-3IV"/>
-                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" secondItem="Miu-hY-NqY" secondAttribute="bottom" priority="750" constant="20" id="Nyl-de-0iR"/>
+                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" relation="greaterThanOrEqual" secondItem="Miu-hY-NqY" secondAttribute="bottom" constant="5" id="Nyl-de-0iR"/>
                             <constraint firstItem="QUJ-kn-Ubh" firstAttribute="top" secondItem="aeV-sO-1m0" secondAttribute="bottom" priority="750" constant="42" id="PEc-KL-Qb8"/>
                             <constraint firstItem="SgP-DR-cyl" firstAttribute="top" secondItem="bfj-xS-5rN" secondAttribute="bottom" constant="10" id="QP8-Ux-Sgh"/>
                             <constraint firstItem="aeV-sO-1m0" firstAttribute="trailing" secondItem="bfj-xS-5rN" secondAttribute="trailing" id="QbZ-9V-eE7"/>
                             <constraint firstItem="lbm-03-nu4" firstAttribute="baseline" secondItem="aeV-sO-1m0" secondAttribute="baseline" constant="-10" id="Tq9-AY-eFN"/>
-                            <constraint firstItem="4Ur-j7-v3L" firstAttribute="top" secondItem="l5l-JR-LKA" secondAttribute="bottom" constant="1" id="Zeb-07-39Q"/>
-                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" relation="greaterThanOrEqual" secondItem="aVs-hr-BSa" secondAttribute="bottom" constant="60" id="cdz-YM-PCs"/>
+                            <constraint firstItem="4Ur-j7-v3L" firstAttribute="top" secondItem="l5l-JR-LKA" secondAttribute="bottom" id="Zeb-07-39Q"/>
+                            <constraint firstItem="l5l-JR-LKA" firstAttribute="top" relation="greaterThanOrEqual" secondItem="aVs-hr-BSa" secondAttribute="bottom" priority="750" constant="60" id="cdz-YM-PCs"/>
                             <constraint firstAttribute="centerX" secondItem="ce6-Wi-wk4" secondAttribute="centerX" id="dgu-8P-xXI"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="top" secondItem="ce6-Wi-wk4" secondAttribute="bottom" constant="35" id="kc2-IN-gRG"/>
                             <constraint firstItem="ce6-Wi-wk4" firstAttribute="top" secondItem="4Ur-j7-v3L" secondAttribute="bottom" constant="1.5" id="sbE-VA-B0f"/>
