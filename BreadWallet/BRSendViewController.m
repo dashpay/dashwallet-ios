@@ -142,7 +142,7 @@ static NSString *sanitizeString(NSString *s)
     NSArray * shapeshiftsInProgress = [DSShapeshiftEntity shapeshiftsInProgress];
     if (![shapeshiftsInProgress count]) {
         
-        self.shapeshiftView.hidden = TRUE;
+        self.shapeshiftView.hidden = FALSE;
     } else {
         for (DSShapeshiftEntity * shapeshift in shapeshiftsInProgress) {
             [shapeshift transaction];
