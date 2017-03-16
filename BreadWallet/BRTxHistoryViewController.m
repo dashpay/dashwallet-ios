@@ -208,10 +208,11 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
+    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    titleLabel.textAlignment = NSTextAlignmentCenter;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
                               [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];

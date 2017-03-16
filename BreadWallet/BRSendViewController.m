@@ -150,7 +150,46 @@ static NSString *sanitizeString(NSString *s)
         }
     }
     self.sendInstantly = TRUE;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
 }
+
+-(void)keyboardWillShow:(NSNotification *)notification
+{
+    NSDictionary *info  = notification.userInfo;
+    NSValue      *value = info[UIKeyboardFrameEndUserInfoKey];
+    
+    CGRect rawFrame      = [value CGRectValue];
+    CGRect keyboardFrame = [self.view convertRect:rawFrame fromView:nil];
+    
+    NSLog(@"keyboardFrame: %@", NSStringFromCGRect(keyboardFrame));
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            self.view.center = CGPointMake(self.view.center.x, (self.view.bounds.size.height - keyboardFrame.size.height)/2.0 - 50);
+            self.sendLabel.alpha = 0.0;
+        } completion:nil];
+    });
+
+}
+
+-(void)keyboardWillHide:(NSNotification *)notification
+{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0);
+        self.sendLabel.alpha = 1.0;
+    } completion:nil];
+        });
+}
+
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -1522,20 +1561,10 @@ static NSString *sanitizeString(NSString *s)
     self.useClipboard = NO;
     self.clipboardText.text = [UIPasteboard generalPasteboard].string;
     [textView scrollRangeToVisible:textView.selectedRange];
-    
-    [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0 - 100.0);
-        self.sendLabel.alpha = 0.0;
-    } completion:nil];
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0);
-        self.sendLabel.alpha = 1.0;
-    } completion:nil];
-    
     if (! self.useClipboard) [UIPasteboard generalPasteboard].string = textView.text;
     [self updateClipboardText];
 }

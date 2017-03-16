@@ -615,8 +615,7 @@
 {
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 &&
-        [BRWalletManager sharedInstance].seedCreationTime + 60*60*24 < [NSDate timeIntervalSinceReferenceDate]) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.percent.hidden = NO;
         self.navigationItem.titleView = nil;
         self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
@@ -634,8 +633,8 @@
 
     if (timeout <= DBL_EPSILON) {
         if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
-            60*60*24*7 < [NSDate timeIntervalSinceReferenceDate]) {
-            if ([BRWalletManager sharedInstance].seedCreationTime + 60*60*24 < start) {
+            WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+            if ([BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.percent.hidden = NO;
                 self.navigationItem.titleView = nil;
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
@@ -676,6 +675,7 @@
         self.progress.hidden = self.pulse.hidden = YES;
         self.progress.progress = self.pulse.progress = 0.0;
     }
+    [self updateTitleView];
 }
 
 - (void)setProgressTo:(NSNumber *)n

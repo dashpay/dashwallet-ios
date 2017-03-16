@@ -262,7 +262,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     self.dashSignificantFormat.currencyCode = @"DASH";
     self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
     self.dashSignificantFormat.usesSignificantDigits = TRUE;
-    self.dashSignificantFormat.minimumSignificantDigits = 3;
+    self.dashSignificantFormat.minimumSignificantDigits = 1;
     self.dashSignificantFormat.maximumSignificantDigits = 6;
     self.dashSignificantFormat.maximumFractionDigits = 8;
     self.dashSignificantFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
