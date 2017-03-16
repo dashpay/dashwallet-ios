@@ -29,7 +29,7 @@ import WebKit
 
 
 @available(iOS 8.0, *)
-@objc open class BRWebViewController : UIViewController, WKNavigationDelegate {
+@objc open class BRWebViewController : UIViewController, WKNavigationDelegate, BRWebSocketClient {
     var wkProcessPool: WKProcessPool
     var webView: WKWebView?
     var bundleName: String
@@ -42,6 +42,15 @@ import WebKit
     var didLoad = false
     var didAppear = false
     var didLoadTimeout = 2500
+    // we are also a socket server which sends didview/didload events to the listening client(s)
+    var sockets = [String: BRWebSocket]()
+    // this is the data that occasionally gets sent to the above connected sockets
+    var webViewInfo: [String: Any] {
+        return [
+            "visible": didAppear,
+            "loaded": didLoad,
+        ]
+    }
     
     init(bundleName name: String, mountPoint mp: String = "/") {
         wkProcessPool = WKProcessPool()
@@ -91,10 +100,12 @@ import WebKit
     
     override open func viewDidAppear(_ animated: Bool) {
         didAppear = true
+        sendToAllSockets(data: webViewInfo)
     }
     
     override open func viewDidDisappear(_ animated: Bool) {
         didAppear = false
+        sendToAllSockets(data: webViewInfo)
     }
     
     fileprivate func closeNow() {
@@ -124,6 +135,7 @@ import WebKit
     // signal to the presenter that the webview content successfully loaded
     fileprivate func webviewDidLoad() {
         didLoad = true
+        sendToAllSockets(data: webViewInfo)
     }
     
     open func startServer() {
@@ -192,6 +204,9 @@ import WebKit
             return BRHTTPResponse(request: request, code: 204)
         }
         
+        // socket /_webviewinfo will send info about the webview state to client
+        router.websocket("/_webviewinfo", client: self)
+        
         router.printDebug()
         
         // enable debug if it is turned on
@@ -221,5 +236,42 @@ import WebKit
         }
         print("[BRWebViewController disallowing navigation: \(navigationAction)")
         decisionHandler(.cancel)
+    }
+    
+    // MARK: - socket delegate 
+    func sendTo(socket: BRWebSocket, data: [String: Any]) {
+        do {
+            let j = try JSONSerialization.data(withJSONObject: data, options: [])
+            if let s = String(data: j, encoding: .utf8) {
+                socket.request.queue.async {
+                    socket.send(s)
+                }
+            }
+        } catch let e {
+            print("LOCATION SOCKET FAILED ENCODE JSON: \(e)")
+        }
+    }
+    
+    func sendToAllSockets(data: [String: Any]) {
+        for (_, s) in sockets {
+            sendTo(socket: s, data: data)
+        }
+    }
+    
+    public func socketDidConnect(_ socket: BRWebSocket) {
+        print("WEBVIEW SOCKET CONNECT \(socket.id)")
+        sockets[socket.id] = socket
+        sendTo(socket: socket, data: webViewInfo)
+    }
+    
+    public func socketDidDisconnect(_ socket: BRWebSocket) {
+        print("WEBVIEW SOCKET DISCONNECT \(socket.id)")
+        sockets.removeValue(forKey: socket.id)
+    }
+    
+    public func socket(_ socket: BRWebSocket, didReceiveText text: String) {
+        print("WEBVIEW SOCKET RECV \(text)")
+        // this is unused here but just in case just echo received text back
+        socket.send(text)
     }
 }
