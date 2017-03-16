@@ -115,7 +115,7 @@ static NSString *sanitizeString(NSString *s)
                                                       else [self updateClipboardText];
                                                   }];
     
-    FBShimmeringView *shimmeringView = [[FBShimmeringView alloc] initWithFrame:self.shapeshiftView.frame];
+    FBShimmeringView *shimmeringView = [[FBShimmeringView alloc] initWithFrame:CGRectMake(0, self.shapeshiftView.frame.origin.y, self.view.frame.size.width, self.shapeshiftView.frame.size.height)];
     [self.view addSubview:shimmeringView];
     [self.shapeshiftView removeFromSuperview];
     [shimmeringView addSubview:self.shapeshiftView];
@@ -168,8 +168,6 @@ static NSString *sanitizeString(NSString *s)
     
     CGRect rawFrame      = [value CGRectValue];
     CGRect keyboardFrame = [self.view convertRect:rawFrame fromView:nil];
-    
-    NSLog(@"keyboardFrame: %@", NSStringFromCGRect(keyboardFrame));
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
