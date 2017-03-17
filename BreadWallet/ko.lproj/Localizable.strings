@@ -404,7 +404,7 @@
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* No comment provided by engineer. */
-"syncing..." = "동기화중...";
+"Syncing:" = "동기화중";
 
 /* No comment provided by engineer. */
 "the app will now close" = "앱을 종료합니다";

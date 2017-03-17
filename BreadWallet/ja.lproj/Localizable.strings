@@ -416,7 +416,7 @@
 "swept!" = "全残高送金成功！";
 
 /* No comment provided by engineer. */
-"syncing..." = "同期中…";
+"Syncing:" = "同期中";
 
 /* No comment provided by engineer. */
 "the app will now close" = "アプリを閉じます";

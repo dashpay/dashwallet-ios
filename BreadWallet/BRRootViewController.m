@@ -54,7 +54,6 @@
 @interface BRRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
-@property (nonatomic, strong) IBOutlet UILabel *percent;
 @property (nonatomic, strong) IBOutlet UIView *errorBar, *splash, *logo, *blur;
 @property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
@@ -63,7 +62,7 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, assign) BOOL showTips, inNextTip, didAppear;
+@property (nonatomic, assign) BOOL shouldShowTips, showTips, inNextTip, didAppear;
 @property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSData *file;
@@ -110,6 +109,8 @@
     [self.view insertSubview:self.pageViewController.view belowSubview:self.splash];
     [self.pageViewController didMoveToParentViewController:self];
 
+    self.shouldShowTips = TRUE;
+    
     for (UIView *view in self.pageViewController.view.subviews) {
         if (! [view isKindOfClass:[UIScrollView class]]) continue;
         self.scrollView = (id)view;
@@ -295,8 +296,8 @@
         queue:nil usingBlock:^(NSNotification *note) {
             if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
             [self showBackupDialogIfNeeded];
-            if (! self.percent.hidden) [self hideTips];
-            self.percent.hidden = YES;
+            if (! self.shouldShowTips) [self hideTips];
+            self.shouldShowTips = YES;
             if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
             [self.receiveViewController updateAddress];
             self.balance = manager.wallet.balance;
@@ -579,7 +580,7 @@
     // use setDouble since setInteger won't hold a uint64_t
     [[NSUserDefaults standardUserDefaults] setDouble:balance forKey:BALANCE_KEY];
 
-    if (self.percent.hidden && self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
+    if (self.shouldShowTips && self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
         [self updateTitleView];
     }
 }
@@ -616,14 +617,9 @@
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-        self.percent.hidden = NO;
-        [self.percent removeFromSuperview];
-        UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
-        CGRect frame = [currentWindow convertRect:self.percent.frame fromView:self.view];
-        [currentWindow addSubview:self.percent];
-        self.percent.frame = frame;
+        self.shouldShowTips = NO;
         self.navigationItem.titleView = nil;
-        self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+        self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
     }
 }
 
@@ -640,14 +636,9 @@
         if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
-                self.percent.hidden = NO;
-                [self.percent removeFromSuperview];
-                UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
-                CGRect frame = [currentWindow convertRect:self.percent.frame fromView:self.view];
-                [currentWindow addSubview:self.percent];
-                self.percent.frame = frame;
+                self.shouldShowTips = NO;
                 self.navigationItem.titleView = nil;
-                self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+                self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
             }
         }
         else [self performSelector:@selector(showSyncing) withObject:nil afterDelay:5.0];
@@ -701,7 +692,7 @@
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
     double progress = [BRPeerManager sharedInstance].syncProgress;
 
-    if (progress > DBL_EPSILON && ! self.percent.hidden && self.tipView.alpha > 0.5) {
+    if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
                              [BRPeerManager sharedInstance].lastBlockHeight,
                              [BRPeerManager sharedInstance].estimatedBlockHeight];
@@ -731,12 +722,11 @@
     }
 
     counter++;
-    self.percent.text = [NSString stringWithFormat:@"%0.1f%%", (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
-
+    self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     if (progress + DBL_EPSILON >= 1.0) {
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
-        if (! self.percent.hidden) [self hideTips];
-        self.percent.hidden = YES;
+        if (! self.shouldShowTips) [self hideTips];
+        self.shouldShowTips = YES;
         if (! [BRWalletManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
     }
     else [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
@@ -762,8 +752,8 @@
     
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (! self.percent.hidden) [self hideTips];
-    self.percent.hidden = YES;
+    if (! self.shouldShowTips) [self hideTips];
+    self.shouldShowTips = YES;
     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
     self.balance = _balance; // reset navbar title
     self.progress.hidden = self.pulse.hidden = YES;
@@ -878,12 +868,12 @@
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *tip;
         if (manager.bitcoinDashPrice) {
-            tip = (self.percent.hidden) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice.doubleValue,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
+            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice.doubleValue,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
              [[BRPeerManager sharedInstance] lastBlockHeight],
              [[BRPeerManager sharedInstance] estimatedBlockHeight]];
         } else {
-            tip = (self.percent.hidden) ? [NSString stringWithFormat:@"%@",BALANCE_TIP]:
+            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@",BALANCE_TIP]:
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
              [[BRPeerManager sharedInstance] lastBlockHeight],
              [[BRPeerManager sharedInstance] estimatedBlockHeight]];
@@ -936,7 +926,7 @@
         [self hideErrorBar];
         [self performSelector:@selector(connect:) withObject:sender afterDelay:0.1];
     }
-    else if (! [BRWalletManager sharedInstance].didAuthenticate && self.percent.hidden) {
+    else if (! [BRWalletManager sharedInstance].didAuthenticate && self.shouldShowTips) {
         [self unlock:sender];
     }
     else [self tip:sender];
@@ -1103,7 +1093,7 @@ viewControllerAfterViewController:(UIViewController *)viewController
             
             if (! manager.didAuthenticate) {
                 item.rightBarButtonItem = rightButton;
-                if (self.percent.hidden) item.titleView = titleView;
+                if (self.shouldShowTips) item.titleView = titleView;
             }
             
             item.title = self.navigationItem.title;

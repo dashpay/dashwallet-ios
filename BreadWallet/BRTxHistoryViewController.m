@@ -149,7 +149,7 @@ static NSString *dateFormat(NSString *template)
 
                 self.transactions = manager.wallet.allTransactions;
 
-                if (! [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
+                if (! [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
                     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                     else [self updateTitleView];
                 }
@@ -180,7 +180,7 @@ static NSString *dateFormat(NSString *template)
                     [NSDate timeIntervalSinceReferenceDate] &&
                     manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
-                    self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
+                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                 }
             }];
     }
@@ -300,7 +300,7 @@ static NSString *dateFormat(NSString *template)
     uint32_t height = self.blockHeight;
 
     if (! [BRWalletManager sharedInstance].didAuthenticate &&
-        [self.navigationItem.title isEqual:NSLocalizedString(@"syncing...", nil)]) {
+        [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
         _transactions = @[];
         if (transactions.count > 0) self.moreTx = YES;
     }

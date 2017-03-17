@@ -416,7 +416,7 @@
 "swept!" = "переведено!";
 
 /* No comment provided by engineer. */
-"syncing..." = "синхронизирую...";
+"Syncing:" = "синхронизирую:";
 
 /* No comment provided by engineer. */
 "the app will now close" = "приложение сейчас закроется";
