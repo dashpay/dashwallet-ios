@@ -480,7 +480,7 @@
     NSString * s = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
     [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
                            completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                               if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
+                               if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError || !data) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
                                        returnError = [NSError errorWithDomain:@"Shapeshift" code:((NSHTTPURLResponse*)response).statusCode userInfo:nil];
