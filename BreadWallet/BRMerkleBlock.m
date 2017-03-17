@@ -85,8 +85,8 @@ inline static int ceil_log2(int x)
     if (! (self = [self init])) return nil;
     
     if (message.length < 80) return nil;
-
-    NSUInteger off = 0, l = 0, len = 0;
+    NSNumber * l = nil;
+    NSUInteger off = 0, len = 0;
     NSMutableData *d = [NSMutableData data];
 
     _version = [message UInt32AtOffset:off];
@@ -104,7 +104,7 @@ inline static int ceil_log2(int x)
     _totalTransactions = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     len = (NSUInteger)[message varIntAtOffset:off length:&l]*sizeof(UInt256);
-    off += l;
+    off += l.unsignedIntegerValue;
     _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
     off += len;
     _flags = [message dataAtOffset:off length:&l];

@@ -75,7 +75,8 @@
     if (! (self = [self init])) return nil;
  
     NSString *address = nil;
-    NSUInteger l = 0, off = 0, count = 0;
+    NSNumber * l = 0;
+    NSUInteger off = 0, count = 0;
     NSData *d = nil;
 
     @autoreleasepool {
@@ -83,7 +84,7 @@
         off += sizeof(uint32_t);
         count = (NSUInteger)[message varIntAtOffset:off length:&l]; // input count
         if (count == 0) return nil; // at least one input is required
-        off += l;
+        off += l.unsignedIntegerValue;
 
         for (NSUInteger i = 0; i < count; i++) { // inputs
             [self.hashes addObject:uint256_obj([message hashAtOffset:off])];
@@ -93,20 +94,20 @@
             [self.inScripts addObject:[NSNull null]]; // placeholder for input script (comes from input transaction)
             d = [message dataAtOffset:off length:&l];
             [self.signatures addObject:(d.length > 0) ? d : [NSNull null]]; // input signature
-            off += l;
+            off += l.unsignedIntegerValue;
             [self.sequences addObject:@([message UInt32AtOffset:off])]; // input sequence number (for replacement tx)
             off += sizeof(uint32_t);
         }
 
         count = (NSUInteger)[message varIntAtOffset:off length:&l]; // output count
-        off += l;
+        off += l.unsignedIntegerValue;
 
         for (NSUInteger i = 0; i < count; i++) { // outputs
             [self.amounts addObject:@([message UInt64AtOffset:off])]; // output amount
             off += sizeof(uint64_t);
             d = [message dataAtOffset:off length:&l];
             [self.outScripts addObject:(d) ? d : [NSNull null]]; // output script
-            off += l;
+            off += l.unsignedIntegerValue;
             address = [NSString addressWithScriptPubKey:d]; // address from output script if applicable
             [self.addresses addObject:(address) ? address : [NSNull null]];
         }

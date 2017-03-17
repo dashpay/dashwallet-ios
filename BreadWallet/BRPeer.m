@@ -548,7 +548,7 @@ services:(uint64_t)services
 
 - (void)acceptVersionMessage:(NSData *)message
 {
-    NSUInteger l = 0;
+    NSNumber * l = nil;
     
     if (message.length < 85) {
         [self error:@"malformed version message, length is %u, should be > 84", (int)message.length];
@@ -560,12 +560,12 @@ services:(uint64_t)services
     _timestamp = [message UInt64AtOffset:12] - NSTimeIntervalSince1970;
     _useragent = [message stringAtOffset:80 length:&l];
 
-    if (message.length < 80 + l + sizeof(uint32_t)) {
-        [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l + 4)];
+    if (message.length < 80 + l.unsignedIntegerValue + sizeof(uint32_t)) {
+        [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l.unsignedIntegerValue + 4)];
         return;
     }
     
-    _lastblock = [message UInt32AtOffset:80 + l];
+    _lastblock = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
     NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
     
     if (self.version < MIN_PROTO_VERSION) {
@@ -604,21 +604,22 @@ services:(uint64_t)services
     else if (! self.sentGetaddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
 
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
+    NSNumber * l = nil;
+    NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableArray *peers = [NSMutableArray array];
     
     if (count > 1000) {
         NSLog(@"%@:%u dropping addr message, %u is too many addresses (max 1000)", self.host, self.port, (int)count);
         return;
     }
-    else if (message.length < l + count*30) {
+    else if (message.length < l.unsignedIntegerValue + count*30) {
         [self error:@"malformed addr message, length is %u, should be %u for %u addresses", (int)message.length,
-         (int)(l + count*30), (int)count];
+         (int)(l.unsignedIntegerValue + count*30), (int)count];
         return;
     }
     else NSLog(@"%@:%u got addr with %u addresses", self.host, self.port, (int)count);
     
-    for (NSUInteger off = l; off < l + 30*count; off += 30) {
+    for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 30*count; off += 30) {
         NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
         UInt128 address = *(UInt128 *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t));
@@ -644,12 +645,13 @@ services:(uint64_t)services
 
 - (void)acceptInvMessage:(NSData *)message
 {
-    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
+    NSNumber * l = nil;
+    NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet], *blockHashes = [NSMutableOrderedSet orderedSet];
     
-    if (l == 0 || message.length < l + count*36) {
+    if (l.unsignedIntegerValue == 0 || message.length < l.unsignedIntegerValue + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
-         (int)(((l == 0) ? 1 : l) + count*36), (int)count];
+         (int)(((l.unsignedIntegerValue == 0) ? 1 : l.unsignedIntegerValue) + count*36), (int)count];
         return;
     }
     else if (count > MAX_GETDATA_HASHES) {
@@ -660,7 +662,7 @@ services:(uint64_t)services
     
     //NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
-    for (NSUInteger off = l; off < l + 36*count; off += 36) {
+    for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
         inv_type type = [message UInt32AtOffset:off];
         UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
@@ -777,10 +779,10 @@ services:(uint64_t)services
 
 - (void)acceptHeadersMessage:(NSData *)message
 {
-    NSUInteger k = 0;
-    NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&k];
+    NSNumber * lNumber = nil;
+    NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
+    NSUInteger l = lNumber.unsignedIntegerValue;
     NSUInteger off = 0;
-    NSUInteger l = k; //hold this in the stack before the memory of k can be reallocated. (Lousy fix, but should work fine).
     if (count == 0) {
         [self error:@"count cannot be 0"];
         return;
@@ -850,7 +852,9 @@ services:(uint64_t)services
 
 - (void)acceptGetdataMessage:(NSData *)message
 {
-    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
+    NSNumber * lNumber = nil;
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
+    l = lNumber.unsignedIntegerValue;
     
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed getdata message, length is %u, should be %u for %u items", (int)message.length,
@@ -904,8 +908,10 @@ services:(uint64_t)services
 
 - (void)acceptNotfoundMessage:(NSData *)message
 {
+    NSNumber * lNumber = nil;
     NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
-    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&l];
+    NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
+    l = lNumber.unsignedIntegerValue;
 
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed notfound message, length is %u, should be %u for %u items", (int)message.length,
@@ -1009,10 +1015,13 @@ services:(uint64_t)services
 // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 - (void)acceptRejectMessage:(NSData *)message
 {
+        NSNumber * offNumber = nil, *lNumber = nil;
     NSUInteger off = 0, l = 0;
-    NSString *type = [message stringAtOffset:0 length:&off];
+    NSString *type = [message stringAtOffset:0 length:&offNumber];
+    off = offNumber.unsignedIntegerValue;
     uint8_t code = [message UInt8AtOffset:off++];
-    NSString *reason = [message stringAtOffset:off length:&l];
+    NSString *reason = [message stringAtOffset:off length:&lNumber];
+    l = lNumber.unsignedIntegerValue;
     UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
 
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,

@@ -91,14 +91,14 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger off = 0;
+    NSNumber * off = 0;
 
     self.filter = [NSMutableData dataWithData:[message dataAtOffset:0 length:&off]];
-    self.hashFuncs = [message UInt32AtOffset:off];
-    off += sizeof(uint32_t);
-    _tweak = [message UInt32AtOffset:off];
-    off += sizeof(uint32_t);
-    _flags = [message UInt8AtOffset:off];
+    self.hashFuncs = [message UInt32AtOffset:off.unsignedIntegerValue];
+    off = @(off.unsignedIntegerValue + sizeof(uint32_t));
+    _tweak = [message UInt32AtOffset:off.unsignedIntegerValue];
+    off = @(off.unsignedIntegerValue + sizeof(uint32_t));
+    _flags = [message UInt8AtOffset:off.unsignedIntegerValue];
     return self;
 }
 
