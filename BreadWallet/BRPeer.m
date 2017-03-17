@@ -777,7 +777,9 @@ services:(uint64_t)services
 
 - (void)acceptHeadersMessage:(NSData *)message
 {
-    NSUInteger k, count = (NSUInteger)[message varIntAtOffset:0 length:&k], off;
+    NSUInteger k = 0;
+    NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&k];
+    NSUInteger off = 0;
     NSUInteger l = k; //hold this in the stack before the memory of k can be reallocated. (Lousy fix, but should work fine).
     if (count == 0) {
         [self error:@"count cannot be 0"];

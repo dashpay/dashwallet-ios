@@ -617,6 +617,11 @@
 
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.percent.hidden = NO;
+        [self.percent removeFromSuperview];
+        UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
+        CGRect frame = [currentWindow convertRect:self.percent.frame fromView:self.view];
+        [currentWindow addSubview:self.percent];
+        self.percent.frame = frame;
         self.navigationItem.titleView = nil;
         self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
     }
@@ -636,6 +641,11 @@
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([BRWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.percent.hidden = NO;
+                [self.percent removeFromSuperview];
+                UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
+                CGRect frame = [currentWindow convertRect:self.percent.frame fromView:self.view];
+                [currentWindow addSubview:self.percent];
+                self.percent.frame = frame;
                 self.navigationItem.titleView = nil;
                 self.navigationItem.title = NSLocalizedString(@"syncing...", nil);
             }

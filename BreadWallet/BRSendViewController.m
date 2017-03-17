@@ -76,6 +76,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, strong) BRScanViewController *scanController;
 @property (nonatomic, strong) id clipboardObserver;
+@property (nonatomic, assign) BOOL inClipboardTextView;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UISwitch *instantSwitch;
@@ -97,6 +98,7 @@ static NSString *sanitizeString(NSString *s)
     // TODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
     self.scanButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.clipboardButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.inClipboardTextView = FALSE;
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -163,6 +165,7 @@ static NSString *sanitizeString(NSString *s)
 
 -(void)keyboardWillShow:(NSNotification *)notification
 {
+    if (self.inClipboardTextView) {
     NSDictionary *info  = notification.userInfo;
     NSValue      *value = info[UIKeyboardFrameEndUserInfoKey];
     
@@ -175,17 +178,21 @@ static NSString *sanitizeString(NSString *s)
             self.sendLabel.alpha = 0.0;
         } completion:nil];
     });
-
+    }
 }
 
 -(void)keyboardWillHide:(NSNotification *)notification
 {
+    if (self.inClipboardTextView) {
+        self.inClipboardTextView = FALSE;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
     [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0);
         self.sendLabel.alpha = 1.0;
     } completion:nil];
         });
+        self.inClipboardTextView = FALSE;
+    }
 }
 
 
@@ -1550,6 +1557,7 @@ static NSString *sanitizeString(NSString *s)
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView
 {
     if ([self nextTip]) return NO;
+    self.inClipboardTextView = TRUE;
     return YES;
 }
 
