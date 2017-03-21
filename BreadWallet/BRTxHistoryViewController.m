@@ -581,7 +581,7 @@ static NSString *dateFormat(NSString *template)
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"Buy Bitcoin", nil);
+                    cell.textLabel.text = NSLocalizedString(@"buy bitcoin", nil);
                     cell.imageView.image = [UIImage imageNamed:@"bitcoin-buy-blue-small"];
                     break;
                     
