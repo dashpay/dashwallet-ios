@@ -148,7 +148,7 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
 - (UInt256)x11
 {
     NSData * copy = [self copy];
-    UInt512 x11Data;
+    UInt512 x11Data = UINT512_ZERO;
     
     sph_blake_big_context ctx_blake;
     sph_blake512_init(&ctx_blake);
@@ -200,7 +200,7 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
     sph_simd512(&ctx_simd, &x11Data, 64);
     sph_simd512_close(&ctx_simd, &x11Data);
     
-    UInt256 rData;
+    UInt256 rData = UINT256_ZERO;
     
     sph_echo_big_context ctx_echo;
     sph_echo512_init(&ctx_echo);

@@ -805,23 +805,9 @@ services:(uint64_t)services
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
-    UInt256 firstX11;
-    UInt256 lastX11;
     if (count >= 2000 || t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) {
-        firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
-        lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
-#if 0
-        firstX11.u64[0] = 7416445103995682008;
-        firstX11.u64[1] = 7134638485015767563;
-        firstX11.u64[2] = (uint64_t)17337051282166219788;
-        firstX11.u64[3] = 60886;
-        
-        lastX11.u64[0] = 5536586030126235133;
-        lastX11.u64[1] = (uint64_t)11412528126525074514;
-        lastX11.u64[2] = 4480265692308822261;
-        lastX11.u64[3] = 53079;
-#endif
-
+        UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
+        UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSValue *firstHash = uint256_obj(firstX11);
         NSValue *lastHash = uint256_obj(lastX11);
 
