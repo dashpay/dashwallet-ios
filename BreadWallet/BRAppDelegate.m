@@ -117,17 +117,17 @@
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (self.balance == UINT64_MAX) self.balance = [BRWalletManager sharedInstance].wallet.balance;
-        [self updatePlatform];
+        //[self updatePlatform];
         [self registerForPushNotifications];
     });
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-    BRAPIClient *client = [BRAPIClient sharedClient];
-    [client.kv sync:^(NSError *err) {
-        NSLog(@"Finished syncing. err=%@", err);
-    }];
+//    BRAPIClient *client = [BRAPIClient sharedClient];
+//    [client.kv sync:^(NSError *err) {
+//        NSLog(@"Finished syncing. err=%@", err);
+//    }];
 }
 
 // Applications may reject specific types of extensions based on the extension point identifier.

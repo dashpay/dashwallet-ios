@@ -152,7 +152,7 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
     
     sph_blake_big_context ctx_blake;
     sph_blake512_init(&ctx_blake);
-    sph_blake512(&ctx_blake, self.bytes, self.length);
+    sph_blake512(&ctx_blake, copy.bytes, copy.length);
     sph_blake512_close(&ctx_blake, &x11Data);
     
     sph_bmw_big_context ctx_bmw;
