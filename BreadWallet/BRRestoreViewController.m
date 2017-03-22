@@ -31,6 +31,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "BREventManager.h"
+#import "BRPeerManager.h"
 
 #define PHRASE_LENGTH 12
 
@@ -109,8 +110,25 @@
     
     @autoreleasepool {
         BRWalletManager *manager = [BRWalletManager sharedInstance];
+        BRPeerManager *peerManager = [BRPeerManager sharedInstance];
         
-        if ([phrase isEqual:@"wipe"]) phrase = manager.seedPhrase; // this triggers authentication request
+        if ([phrase isEqual:@"wipe"]) {
+            if ((manager.wallet.balance == 0) && ([peerManager timestampForBlockHeight:peerManager.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
+                [BREventManager saveEvent:@"restore:wipe_empty_wallet"];
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                 showInView:[UIApplication sharedApplication].keyWindow];
+                return;
+            } else {
+                phrase = manager.seedPhrase; // this triggers authentication request
+            }
+        } else if ([phrase isEqual:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) {
+                [BREventManager saveEvent:@"restore:wipe_full_wallet"];
+                [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
+                               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]
+                 showInView:[UIApplication sharedApplication].keyWindow];
+            return;
+        }
         
         if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
              isEqual:manager.masterPublicKey] || [phrase isEqual:@"wipe"]) {
@@ -174,7 +192,7 @@
             break;
         }
 
-        if ([phrase isEqual:@"wipe"]) { // shortcut word to force the wipe option to appear
+        if ([phrase isEqualToString:@"wipe"] || [phrase isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }

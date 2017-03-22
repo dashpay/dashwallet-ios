@@ -30,6 +30,16 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Bitcoin.h"
 
+#define useDarkCoinSeed 0
+
+#if useDarkCoinSeed
+
+#define BIP32_SEED_KEY "Darkcoin seed"
+#define BIP32_XPRV     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
+#define BIP32_XPUB     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
+
+#else
+
 #define BIP32_SEED_KEY "Bitcoin seed"
 #if DASH_TESTNET
 #define BIP32_XPRV     "\x04\x35\x83\x94"
@@ -37,6 +47,8 @@
 #else
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
+#endif
+
 #endif
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
