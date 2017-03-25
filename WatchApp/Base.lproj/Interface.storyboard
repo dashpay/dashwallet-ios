@@ -9,13 +9,13 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="11508"/>
     </dependencies>
     <scenes>
-        <!--ƀreadwallet-->
+        <!--Dash-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller title="ƀreadwallet" id="AgC-eL-Hgc" customClass="BRAWRootInterfaceController" customModule="WatchApp_Extension">
+                <controller title="Dash" id="AgC-eL-Hgc" customClass="BRAWRootInterfaceController" customModule="WatchApp_Extension">
                     <items>
                         <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="wKY-qb-B8a" userLabel="Loading indicator"/>
-                        <label alignment="center" verticalAlignment="center" text="Open dashwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
+                        <label alignment="center" verticalAlignment="center" text="Open DASH iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
                     </items>
                     <connections>
                         <outlet property="loadingIndicator" destination="wKY-qb-B8a" id="38C-SN-66a"/>
@@ -40,7 +40,7 @@
                                 <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="9vJ-Sn-Eit" userLabel="Loading indicator"/>
                                 <group width="1" alignment="left" id="7AP-2v-fcP" userLabel="Setup wallet message container">
                                     <items>
-                                        <label alignment="center" verticalAlignment="center" text="Open dashwallet iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
+                                        <label alignment="center" verticalAlignment="center" text="Open DASH iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
                                     </items>
                                 </group>
                                 <group width="1" alignment="left" layout="vertical" id="z73-6R-jav" userLabel="Balance info container">
@@ -124,7 +124,7 @@
                                         <group width="1" height="0.69999999999999996" alignment="center" verticalAlignment="center" radius="0.0" id="c7y-lI-ffn">
                                             <items>
                                                 <label alignment="center" verticalAlignment="center" text="Transactions" id="r80-H8-ngA">
-                                                    <color key="textColor" red="0.99215686270000003" green="0.52549019610000003" blue="0.1529411765" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="font" type="system" pointSize="14"/>
                                                 </label>
                                             </items>
@@ -231,8 +231,8 @@
                     <items>
                         <group width="1" height="0.20000000000000001" alignment="left" id="7tF-UO-81W">
                             <items>
-                                <label width="1" widthAdjustment="-30" height="1" alignment="left" text="ƀ0.00" textAlignment="right" baselineAdjustment="alignCenters" minimumScaleFactor="0.5" id="dp3-9o-r55">
-                                    <color key="textColor" red="0.99088680744171143" green="0.53554928302764893" blue="0.28542831540107727" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <label width="1" widthAdjustment="-30" height="1" alignment="left" text="Đ0.00" textAlignment="right" baselineAdjustment="alignCenters" minimumScaleFactor="0.5" id="dp3-9o-r55">
+                                    <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <fontDescription key="font" type="system" weight="semibold" pointSize="20"/>
                                 </label>
                                 <button alignment="left" id="1ql-DW-905">
