@@ -51,6 +51,9 @@ import WebKit
             "loaded": didLoad,
         ]
     }
+    var indexUrl: URL {
+        return URL(string: "http://127.0.0.1:\(server.port)\(mountPoint)")!
+    }
     
     init(bundleName name: String, mountPoint mp: String = "/") {
         wkProcessPool = WKProcessPool()
@@ -61,10 +64,6 @@ import WebKit
     
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    deinit {
-        stopServer()
     }
     
     override open func loadView() {
@@ -79,7 +78,6 @@ import WebKit
             config.allowsPictureInPictureMediaPlayback = false
         }
 
-        let indexUrl = URL(string: "http://127.0.0.1:\(server.port)\(mountPoint)")!
         let request = URLRequest(url: indexUrl)
         
         view = UIView(frame: CGRect.zero)
@@ -91,6 +89,15 @@ import WebKit
         _ = webView?.load(request)
         webView?.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         view.addSubview(webView!)
+        
+        NotificationCenter.default.addObserver(forName: .UIApplicationDidBecomeActive, object: nil, queue: OperationQueue.main) { (_) in
+            self.didAppear = true
+            self.sendToAllSockets(data: self.webViewInfo)
+        }
+        NotificationCenter.default.addObserver(forName: .UIApplicationWillResignActive, object: nil, queue: OperationQueue.main) { (_) in
+            self.didAppear = false
+            self.sendToAllSockets(data: self.webViewInfo)
+        }
     }
     
     override open func viewWillAppear(_ animated: Bool) {
@@ -148,14 +155,7 @@ import WebKit
             print("\n\n\nSERVER ERROR! \(e)\n\n\n")
         }
     }
-    
-    open func stopServer() {
-        if server.isStarted {
-            server.stop()
-            server.resetMiddleware()
-        }
-    }
-    
+
     fileprivate func setupIntegrations() {
         // proxy api for signing and verification
         let apiProxy = BRAPIProxy(mountAt: "/_api", client: BRAPIClient.sharedClient)
@@ -222,7 +222,8 @@ import WebKit
     }
     
     open func refresh() {
-        _ = webView?.reload()
+        let request = URLRequest(url: indexUrl)
+        _ = webView?.load(request)
     }
     
     // MARK: - navigation delegate
