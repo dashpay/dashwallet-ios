@@ -227,12 +227,10 @@ enum BRHTTPServerError: Error {
                 var v: Int32 = 1
                 setsockopt(cli_fd, SOL_SOCKET, SO_NOSIGPIPE, &v, socklen_t(MemoryLayout<Int32>.size))
                 self.addClient(cli_fd)
-                // print("startup: \(cli_fd)")
                 self.Q.async { () -> Void in
                     while let req = try? BRHTTPRequestImpl(readFromFd: cli_fd, queue: self.Q) {
                         self.dispatch(middleware: self.middleware, req: req) { resp in
                             _ = Darwin.shutdown(cli_fd, SHUT_RDWR)
-                            // print("shutdown: \(cli_fd)")
                             close(cli_fd)
                             self.rmClient(cli_fd)
                         }
@@ -240,7 +238,6 @@ enum BRHTTPServerError: Error {
                     }
                 }
             }
-//            self.shutdownServer()
         }
     }
     
@@ -248,7 +245,6 @@ enum BRHTTPServerError: Error {
         var newMw = mw
         if let curMw = newMw.popLast() {
             curMw.handle(req, next: { (mwResp) -> Void in
-                // print("[BRHTTPServer] trying \(req.path) \(curMw)")
                 if let httpResp = mwResp.response {
                     httpResp.done {
                         do {
