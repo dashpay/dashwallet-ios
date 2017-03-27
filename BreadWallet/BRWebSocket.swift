@@ -153,7 +153,8 @@ class BRWebSocketServer {
                 write_fd_len: Int32(writeFds.count),
                 read_fd_len: Int32(readFds.count),
                 write_fds: UnsafeMutablePointer(mutating: writeFds),
-                read_fds: UnsafeMutablePointer(mutating: readFds));
+                read_fds: UnsafeMutablePointer(mutating: readFds)
+            );
             
             let resp = bw_select(req)
             
@@ -168,7 +169,13 @@ class BRWebSocketServer {
             for i in 0..<resp.read_fd_len {
                 log("handle read fd \(sockets[resp.read_fds[Int(i)]]!.fd)")
                 if let readSock = sockets[resp.read_fds[Int(i)]] {
-                    readSock.handleRead()
+                    do {
+                        try readSock.handleRead()
+                    } catch {
+                        readSock.response.kill()
+                        readSock.client.socketDidDisconnect?(readSock)
+                        sockets.removeValue(forKey: readSock.fd)
+                    }
                 }
             }
             
@@ -333,11 +340,12 @@ class BRWebSocketImpl: BRWebSocket {
         return true
     }
     
-    func handleRead() {
+    func handleRead() throws {
         var buf = [UInt8](repeating: 0, count: 1)
         let n = recv(fd, &buf, 1, 0)
         if n <= 0 {
-            return // failed read - figure out what to do here i guess
+            log("nothign to read... killing socket")
+            throw BRHTTPServerError.socketRecvFailed
         }
         parseMessage(buf[0])
     }
