@@ -87,19 +87,12 @@ enum BRHTTPServerError: Error {
                 // backgrounding
                 NotificationCenter.default.addObserver(
                     self, selector: #selector(BRHTTPServer.suspend(_:)),
-                    name: NSNotification.Name.UIApplicationWillResignActive, object: nil
+                    name: .UIApplicationWillResignActive, object: nil
                 )
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(BRHTTPServer.suspend(_:)),
-                    name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
                 // foregrounding
                 NotificationCenter.default.addObserver(
                     self, selector: #selector(BRHTTPServer.resume(_:)),
-                    name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(BRHTTPServer.resume(_:)),
-                    name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil
-                )
+                    name: .UIApplicationWillEnterForeground, object: nil)
                 return
             } catch {
                 continue
@@ -169,22 +162,25 @@ enum BRHTTPServerError: Error {
         shutdownServer()
         // background
         NotificationCenter.default.removeObserver(
-            self, name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
-        NotificationCenter.default.removeObserver(
             self, name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
         // foreground
         NotificationCenter.default.removeObserver(
             self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
-        NotificationCenter.default.removeObserver(
-            self, name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
     }
     
     func suspend(_: Notification) {
         if isStarted {
             if self.clients.count == 0 {
                 shutdownServer()
+                print("[BRHTTPServer] suspended")
+            } else {
+                // give it 500ms to complete, then kill it
+                print("[BRHTTPServer] suspending: waiting for clients")
+                Q.asyncAfter(deadline: .now() + .milliseconds(500)) {
+                    self.shutdownServer()
+                    print("[BRHTTPServer] suspended")
+                }
             }
-            print("[BRHTTPServer] suspended")
         } else {
             print("[BRHTTPServer] already suspended")
         }
