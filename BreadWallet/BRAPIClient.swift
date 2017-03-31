@@ -279,7 +279,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                         self.log("\(logLine) got authentication challenge from API - will attempt to get token")
                         self.getToken { err in
                             if err != nil && retryCount < 1 { // retry once
-                                self.log("\(logLine) error retrieving token: \(err) - will retry")
+                                self.log("\(logLine) error retrieving token: \(String(describing: err)) - will retry")
                                 DispatchQueue.main.asyncAfter(deadline: DispatchTime(uptimeNanoseconds: 1)) {
                                     self.dataTaskWithRequest(
                                         origRequest, authenticated: authenticated,
@@ -287,7 +287,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                                     ).resume()
                                 }
                             } else if err != nil && retryCount > 0 { // fail if we already retried
-                                self.log("\(logLine) error retrieving token: \(err) - will no longer retry")
+                                self.log("\(logLine) error retrieving token: \(String(describing: err)) - will no longer retry")
                                 handler(nil, nil, err)
                             } else if retryCount < 1 { // no error, so attempt the request again
                                 self.log("\(logLine) retrieved token, so retrying the original request")
@@ -303,7 +303,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                         handler(data, httpResp, err as NSError?)
                     }
                 } else {
-                    self.log("\(logLine) encountered connection error \(err)")
+                    self.log("\(logLine) encountered connection error \(String(describing: err))")
                     handler(data, nil, err as NSError?)
                 }
             }
@@ -406,7 +406,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
             if curHost == host && curScheme == proto {
                 // follow the redirect if we're interacting with our API
                 actualRequest = decorateRequest(request)
-                log("redirecting \(currentReq.url) to \(request.url)")
+                log("redirecting \(String(describing: currentReq.url)) to \(String(describing: request.url))")
                 if let curAuth = currentReq.allHTTPHeaderFields?["Authorization"], curAuth.hasPrefix("bread") {
                     // add authentication because the previous request was authenticated
                     log("adding authentication to redirected request")
@@ -440,7 +440,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                     errStr = "invalid json"
                 }
             } else {
-                self.log("fee-per-kb network error: \(err)")
+                self.log("fee-per-kb network error: \(String(describing: err))")
                 errStr = "bad network connection"
             }
             handler(feePerKb, errStr)
@@ -470,7 +470,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         }
         dataTaskWithRequest(req as URLRequest, authenticated: true, retryCount: 0) { (dat, resp, er) in
             let dat2 = NSString(data: (dat != nil ? dat! : Data()), encoding: String.Encoding.utf8.rawValue)
-            self.log("token resp: \(resp) data: \(dat2)")
+            self.log("token resp: \(String(describing: resp)) data: \(String(describing: dat2))")
         }.resume()
     }
     
@@ -510,7 +510,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                     }
                 }
             } else {
-                self.log("error fetching features: \(err)")
+                self.log("error fetching features: \(String(describing: err))")
             }
         }.resume()
     }
@@ -629,7 +629,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
                     i += UInt(MemoryLayout<UInt32>.size)
                     let range: Range<Int> = Int(i)..<Int(i + keyLen)
                     guard let key = NSString(data: dat.subdata(in: range),
-                                             encoding: String.Encoding.utf8.rawValue) as? String else {
+                                             encoding: String.Encoding.utf8.rawValue) as String? else {
                         self.client.log("Well crap. Failed to decode a string.")
                         return completionFunc([], .unknown)
                     }
@@ -830,7 +830,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
             let req = URLRequest(url: url("/assets/bundles/\(bundleName)/download"))
             dataTaskWithRequest(req) { (data, response, err) -> Void in
                 if err != nil || response?.statusCode != 200 {
-                    return handler(NSLocalizedString("error fetching bundle: ", comment: "") + "\(err)")
+                    return handler(NSLocalizedString("error fetching bundle: ", comment: "") + "\(String(describing: err))")
                 }
                 if let data = data {
                     do {
