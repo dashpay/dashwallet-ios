@@ -325,7 +325,7 @@ class IDCameraOverlay: UIView, CameraOverlay {
         cutout = cutout.integral
         
         func rad(_ f: CGFloat) -> CGFloat {
-            return f / 180.0 * CGFloat(M_PI)
+            return f / 180.0 * CGFloat(Double.pi)
         }
         
         var transform: CGAffineTransform!
