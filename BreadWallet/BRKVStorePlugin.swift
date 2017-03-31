@@ -97,6 +97,9 @@ import Foundation
             var uncompressedBytes: [UInt8]
             do {
                 (ver, date, del, bytes) = try kv.get(self.getKey(key[0]))
+                if del {
+                    return self.decorateResponse(version: ver, date: date, response: BRHTTPResponse(request: request, code: 404))
+                }
                 let data = Data(bzCompressedData: Data(bytes: &bytes, count: bytes.count)) ?? Data()
                 json = try JSONSerialization.jsonObject(with: data, options: []) // ensure valid json
                 let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
