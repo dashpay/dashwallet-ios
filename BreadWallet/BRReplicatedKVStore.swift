@@ -823,7 +823,7 @@ extension BRReplicatedKVStore {
                                data: Data(bytes: UnsafePointer<UInt8>(b), count: b.count))
     }
     
-    @objc public func set(_ object: BRKVStoreObject) throws -> BRKVStoreObject {
+    @objc @discardableResult public func set(_ object: BRKVStoreObject) throws -> BRKVStoreObject {
         let dat = object.data
         var bytes = [UInt8](repeating: 0, count: dat.count)
         (dat as NSData).getBytes(&bytes, length: dat.count)
