@@ -84,15 +84,13 @@ enum BRHTTPServerError: Error {
             do {
                 try listenServer(port)
                 self.port = port
+                let nc = NotificationCenter.default
                 // backgrounding
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(BRHTTPServer.suspend(_:)),
-                    name: .UIApplicationWillResignActive, object: nil
-                )
+                nc.addObserver(self, selector: #selector(BRHTTPServer.suspend(_:)),
+                              name: .UIApplicationWillResignActive, object: nil)
                 // foregrounding
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(BRHTTPServer.resume(_:)),
-                    name: .UIApplicationWillEnterForeground, object: nil)
+                nc.addObserver(self, selector: #selector(BRHTTPServer.resume(_:)),
+                              name: .UIApplicationDidBecomeActive, object: nil)
                 return
             } catch {
                 continue
@@ -160,12 +158,11 @@ enum BRHTTPServerError: Error {
     
     func stop() {
         shutdownServer()
+        let nc = NotificationCenter.default
         // background
-        NotificationCenter.default.removeObserver(
-            self, name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+        nc.removeObserver(self, name: .UIApplicationWillResignActive, object: nil)
         // foreground
-        NotificationCenter.default.removeObserver(
-            self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        nc.removeObserver(self, name: .UIApplicationDidBecomeActive, object: nil)
     }
     
     func suspend(_: Notification) {
