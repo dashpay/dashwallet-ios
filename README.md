@@ -3,15 +3,15 @@
 
 [![download](/images/Download_on_the_App_Store_Badge_US-UK_135x40.png)](https://itunes.apple.com/app/breadwallet/id885251393)
 
-## Bitcoin done right
+## bitcoin done right
 
-The simplest and most secure Bitcoin wallet on any platform
+The simplest and most secure bitcoin wallet on any platform
 
 ![screenshot1](/images/screenshot1.jpg)
 
-### The first standalone iOS Bitcoin wallet:
+### The first standalone iOS bitcoin wallet:
 
-Unlike other iOS Bitcoin wallets, **breadwallet** is a real standalone Bitcoin client. There is no server to get hacked or go down, so you can always access your money. Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, **breadwallet** connects directly to the Bitcoin network with the fast performance you need on a mobile device.
+Unlike other iOS bitcoin wallets, **breadwallet** is a real standalone bitcoin client. There is no server to get hacked or go down, so you can always access your money. Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, **breadwallet** connects directly to the bitcoin network with the fast performance you need on a mobile device.
 
 ### The next step in wallet security:
 
