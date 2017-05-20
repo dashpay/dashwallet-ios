@@ -123,19 +123,42 @@ import WebKit
     // that is has loaded by didLoadTimeout then an alert will be shown allowing the user to back out 
     // of the faulty webview
     fileprivate func beginDidLoadCountdown() {
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(didLoadTimeout)) {
+        let timeout = DispatchTime.now() + .milliseconds(self.didLoadTimeout)
+        DispatchQueue.main.asyncAfter(deadline: timeout) {
             if self.didAppear && !self.didLoad {
-                let alert = UIAlertController.init(
-                    title: NSLocalizedString("Error", comment: ""),
-                    message: NSLocalizedString("There was an error loading the content. Please try again", comment: ""),
-                    preferredStyle: .alert
-                )
-                let action = UIAlertAction(title: NSLocalizedString("Dismiss", comment: ""), style: .default) { _ in
-                    self.closeNow()
+                // if the webview did not load the first time lets refresh the bundle. occasionally the bundle
+                // update can fail, so this update should fetch an entirely new copy
+                let activity = BRActivityViewController(message: NSLocalizedString("Updating...", comment: ""))
+                self.present(activity, animated: true, completion: nil)
+                BRAPIClient.sharedClient.updateBundle(self.bundleName) { (err) in
+                    if err != nil {
+                        print("[BRWebViewController] error updating bundle: \(String(describing: err))")
+                    }
+                    // give the webview another chance to load
+                    self.refresh()
+                    // XXX(sam): log this event so we know how frequently it happens
+                    DispatchQueue.main.asyncAfter(deadline: timeout) {
+                        self.dismiss(animated: true) {
+                            self.notifyUserOfLoadFailure()
+                        }
+                    }
                 }
-                alert.addAction(action)
-                self.present(alert, animated: true, completion: nil)
             }
+        }
+    }
+    
+    fileprivate func notifyUserOfLoadFailure() {
+        if self.didAppear && !self.didLoad {
+            let alert = UIAlertController.init(
+                title: NSLocalizedString("Error", comment: ""),
+                message: NSLocalizedString("There was an error loading the content. Please try again", comment: ""),
+                preferredStyle: .alert
+            )
+            let action = UIAlertAction(title: NSLocalizedString("Dismiss", comment: ""), style: .default) { _ in
+                self.closeNow()
+            }
+            alert.addAction(action)
+            self.present(alert, animated: true, completion: nil)
         }
     }
     
