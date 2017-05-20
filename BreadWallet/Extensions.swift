@@ -82,6 +82,14 @@ public extension String {
         }
         return s
     }
+    
+    func ltrim(_ chars: Set<Character>) -> String {
+        if let index = self.characters.index(where: {!chars.contains($0)}) {
+            return self[index..<self.endIndex]
+        } else {
+            return ""
+        }
+    }
 }
 
 var BZCompressionBufferSize: UInt32 = 1024

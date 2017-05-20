@@ -32,8 +32,8 @@ class BRHTTPIndexMiddleware: BRHTTPFileMiddleware {
             let newRequest = BRHTTPRequestImpl(fromRequest: request)
             newRequest.path = "/index.html"
             super.handle(newRequest, next: next)
-        } else {
-            next(BRHTTPMiddlewareResponse(request: request, response: nil))
+            return
         }
+        next(BRHTTPMiddlewareResponse(request: request, response: nil))
     }
 }
