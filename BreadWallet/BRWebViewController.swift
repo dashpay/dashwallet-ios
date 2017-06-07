@@ -36,6 +36,12 @@ import WebKit
     var server = BRHTTPServer()
     var debugEndpoint: String? // = "http://localhost:8080"
     var mountPoint: String
+    // bonjour debug endpoint establishment - this will configure the debugEndpoint
+    // over bonjour if debugOverBonjour is set to true. this MUST be set to false
+    // for production deploy targets
+    let debugOverBonjour = false
+    let bonjourBrowser = Bonjour()
+    var debugNetService: NetService?
     // didLoad should be set to true within didLoadTimeout otherwise a view will be shown which
     // indicates some error. this is to prevent the white-screen-of-death where there is some
     // javascript exception (or other error) that prevents the content from loading
@@ -60,6 +66,9 @@ import WebKit
         bundleName = name
         mountPoint = mp
         super.init(nibName: nil, bundle: nil)
+        if debugOverBonjour {
+            setupBonjour()
+        }
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -176,6 +185,32 @@ import WebKit
             }
         } catch let e {
             print("\n\n\nSERVER ERROR! \(e)\n\n\n")
+        }
+    }
+    
+    // this will look on the network for any _http._tcp bonjour services whose name
+    // contains th string "webpack" and will set our debugEndpoint to whatever that
+    // resolves to. this allows us to debug bundles over the network without complicated setup
+    fileprivate func setupBonjour() {
+        let _ = bonjourBrowser.findService("_http._tcp") { (services) in
+            for svc in services {
+                if !svc.name.lowercased().contains("webpack") {
+                    continue
+                }
+                self.debugNetService = svc
+                svc.resolve(withTimeout: 1.0)
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(1)) {
+                    guard let netService = self.debugNetService else {
+                        return
+                    }
+                    self.debugEndpoint = "http://\(netService.hostName ?? ""):\(netService.port)"
+                    print("[BRWebViewController] discovered bonjour debugging service \(String(describing: self.debugEndpoint))")
+                    self.server.resetMiddleware()
+                    self.setupIntegrations()
+                    self.refresh()
+                }
+                break
+            }
         }
     }
 
