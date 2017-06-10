@@ -32,6 +32,10 @@ Simplicity is **breadwallet**'s core design principle. A simple backup phrase is
 - Import [password protected](https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki) paper wallets
 - ["Payment protocol"](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki) payee identity certification
 
+### Translations managed by:
+
+[PhraseApp - Start localizing software the simple way](https://phraseapp.com)
+
 ### URL scheme:
 
 **breadwallet** supports the [x-callback-url](http://x-callback-url.com) specification with the following URLs:
