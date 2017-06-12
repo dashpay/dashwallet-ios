@@ -1037,7 +1037,7 @@ completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError
 - (void)utxos:(NSString *)unspentURL forAddresses:(NSArray *)addresses
 completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:UNSPENT_URL]
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:unspentURL]
                                 cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     NSMutableArray *args = [NSMutableArray array];
     NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
