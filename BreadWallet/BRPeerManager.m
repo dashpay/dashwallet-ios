@@ -113,11 +113,11 @@ static const char *dns_seeds[] = {
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
 @property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers, *nonFpTx;
-@property (nonatomic, strong) BRPeer *downloadPeer;
+@property (nonatomic, strong) BRPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) uint32_t syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) BRBloomFilter *bloomFilter;
 @property (nonatomic, assign) double fpRate;
-@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount;
+@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime, lastRelayTime;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans, *checkpoints, *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
@@ -156,7 +156,8 @@ static const char *dns_seeds[] = {
     self.txRequests = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
-
+    self.maxConnectCount = PEER_MAX_CONNECTIONS;
+    
     self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
@@ -198,10 +199,11 @@ static const char *dns_seeds[] = {
 
 - (NSMutableOrderedSet *)peers
 {
-    if (_peers.count >= PEER_MAX_CONNECTIONS) return _peers;
+    if (_fixedPeer) return [NSMutableOrderedSet orderedSetWithObject:_fixedPeer];
+    if (_peers.count >= _maxConnectCount) return _peers;
 
     @synchronized(self) {
-        if (_peers.count >= PEER_MAX_CONNECTIONS) return _peers;
+        if (_peers.count >= _maxConnectCount) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
 
         [[BRPeerEntity context] performBlockAndWait:^{
@@ -460,15 +462,14 @@ static const char *dns_seeds[] = {
 
 - (void)connect
 {
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    
     dispatch_async(self.q, ^{
         if ([BRWalletManager sharedInstance].noWallet) return; // check to make sure the wallet has been created
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
     
         if (self.syncProgress < 1.0) {
-            if (self.syncStartHeight == 0) {
-                self.syncStartHeight = (uint32_t)[[NSUserDefaults standardUserDefaults]
-                                                  integerForKey:SYNC_STARTHEIGHT_KEY];
-            }
+            if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[defs integerForKey:SYNC_STARTHEIGHT_KEY];
             
             if (self.syncStartHeight == 0) {
                 self.syncStartHeight = self.lastBlockHeight;
@@ -495,14 +496,16 @@ static const char *dns_seeds[] = {
         [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
             return ([obj status] == BRPeerStatusDisconnected) ? YES : NO;
         }]];
-
-        if (self.connectedPeers.count >= PEER_MAX_CONNECTIONS) return; //already connected to PEER_MAX_CONNECTIONS peers
+        
+        self.fixedPeer = [BRPeer peerWithHost:[defs stringForKey:SETTINGS_FIXED_PEER_KEY]];
+        self.maxConnectCount = (self.fixedPeer) ? 1 : PEER_MAX_CONNECTIONS;
+        if (self.connectedPeers.count >= self.maxConnectCount) return; // already connected to maxConnectCount peers
 
         NSMutableOrderedSet *peers = [NSMutableOrderedSet orderedSetWithOrderedSet:self.peers];
 
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
 
-        while (peers.count > 0 && self.connectedPeers.count < PEER_MAX_CONNECTIONS) {
+        while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
             // pick a random peer biased towards peers with more recent timestamps
             BRPeer *p = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
 
@@ -528,6 +531,14 @@ static const char *dns_seeds[] = {
             });
         }
     });
+}
+
+- (void)disconnect
+{
+    for (BRPeer *peer in self.connectedPeers) {
+        self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
+        [peer disconnect];
+    }
 }
 
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
@@ -794,8 +805,8 @@ static const char *dns_seeds[] = {
     NSValue *hash;
     UInt256 h;
 
-    // don't remove transactions until we're connected to PEER_MAX_CONNECTION peers
-    if (self.peerCount < PEER_MAX_CONNECTIONS) return;
+    // don't remove transactions until we're connected to maxConnectCount peers
+    if (self.peerCount < self.maxConnectCount) return;
     
     for (BRPeer *p in self.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
         if (! p.synced) return;
@@ -822,7 +833,7 @@ static const char *dns_seeds[] = {
             
             [manager.wallet removeTransaction:tx.txHash];
         }
-        else if ([self.txRelays[hash] count] < PEER_MAX_CONNECTIONS) {
+        else if ([self.txRelays[hash] count] < self.maxConnectCount) {
             // set timestamp 0 to mark as unverified
             [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
         }
@@ -1046,6 +1057,8 @@ static const char *dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
 
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
+            
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
@@ -1152,7 +1165,7 @@ static const char *dns_seeds[] = {
         [self.txRelays[hash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
-        if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
+        if ([self.txRelays[hash] count] >= self.maxConnectCount &&
             [manager.wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [manager.wallet transactionForHash:transaction.txHash].timestamp == 0) {
             [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
@@ -1212,7 +1225,7 @@ static const char *dns_seeds[] = {
         [self.txRelays[hash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:hash];
 
-        if ([self.txRelays[hash] count] >= PEER_MAX_CONNECTIONS &&
+        if ([self.txRelays[hash] count] >= self.maxConnectCount &&
             [manager.wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
             [manager.wallet transactionForHash:txHash].timestamp == 0) {
             [self setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]

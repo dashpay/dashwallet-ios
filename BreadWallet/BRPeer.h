@@ -128,10 +128,12 @@ typedef enum : NSInteger {
 @property (nonatomic, assign) BOOL synced; // use this to keep track of peer state
 
 + (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port;
++ (instancetype)peerWithHost:(NSString *)host;
 
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port;
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
+- (instancetype)initWithHost:(NSString *)host;
 - (void)setDelegate:(id<BRPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;

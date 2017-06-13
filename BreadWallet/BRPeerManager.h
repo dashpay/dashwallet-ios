@@ -33,6 +33,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerTxStatusNotification;
 
 #define PEER_MAX_CONNECTIONS 3
+#define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
 @class BRTransaction;
 
@@ -48,6 +49,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerTxStatusNotification;
 + (instancetype _Nullable)sharedInstance;
 
 - (void)connect;
+- (void)disconnect;
 - (void)rescan;
 - (void)publishTransaction:(BRTransaction * _Nonnull)transaction
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
