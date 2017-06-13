@@ -85,12 +85,36 @@ typedef enum : uint32_t {
     return [[self alloc] initWithAddress:address andPort:port];
 }
 
++ (instancetype)peerWithHost:(NSString *)host
+{
+    return [[self alloc] initWithHost:host];
+}
+
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port
 {
     if (! (self = [super init])) return nil;
 
     _address = address;
     _port = (port == 0) ? DASH_STANDARD_PORT : port;
+    return self;
+}
+
+- (instancetype)initWithHost:(NSString *)host
+{
+    if (! host) return nil;
+    if (! (self = [super init])) return nil;
+    
+    NSArray *pair = [host componentsSeparatedByString:@":"];
+    struct in_addr addr;
+    
+    if (pair.count > 1) {
+        host = [[pair subarrayWithRange:NSMakeRange(0, pair.count - 1)] componentsJoinedByString:@":"];
+        _port = [pair.lastObject intValue];
+    }
+
+    if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
+    _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
+    if (_port == 0) _port = DASH_STANDARD_PORT;
     return self;
 }
 

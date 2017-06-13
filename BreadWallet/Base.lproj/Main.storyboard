@@ -1204,7 +1204,7 @@
                         <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title=" " id="9L3-gM-TgP"/>
                         <view key="titleView" hidden="YES" contentMode="scaleToFill" id="QAl-AP-yYv">
-                            <rect key="frame" x="139" y="13" width="98" height="18"/>
+                            <rect key="frame" x="138.5" y="13" width="98" height="18"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet" translatesAutoresizingMaskIntoConstraints="NO" id="VBZ-P3-o77">
@@ -1993,12 +1993,22 @@ bitpay.com/rates and poloniex</string>
                                     <outletCollection property="gestureRecognizers" destination="68Y-ha-WTV" appends="YES" id="G1L-Kc-zvL"/>
                                 </connections>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" tag="412" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="SGv-S4-hkd">
+                            <label opaque="NO" userInteractionEnabled="NO" tag="1412" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="SGv-S4-hkd">
                                 <rect key="frame" x="20" y="647" width="0.0" height="0.0"/>
+                                <accessibility key="accessibilityConfiguration">
+                                     <accessibilityTraits key="traits" button="YES"/>
+                                </accessibility>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                 <color key="textColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" tag="412" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="HHd-Rk-TfY">
+                                <rect key="frame" x="20" y="619" width="30" height="28"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                <state key="normal">
+                                    <color key="titleColor" white="0.67000000000000004" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
                             <button hidden="YES" opaque="NO" tag="413" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Irz-6P-zvD">
                                 <rect key="frame" x="292" y="617" width="67" height="30"/>
                                 <state key="normal" title="copy logs">
@@ -2008,6 +2018,7 @@ bitpay.com/rates and poloniex</string>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="xDQ-J5-6Ey" firstAttribute="top" secondItem="HHd-Rk-TfY" secondAttribute="bottom" constant="20" id="ADK-7X-i59"/>
                             <constraint firstAttribute="centerY" secondItem="ePg-dk-slQ" secondAttribute="centerY" id="LbW-ch-oqm"/>
                             <constraint firstItem="xDQ-J5-6Ey" firstAttribute="top" secondItem="SGv-S4-hkd" secondAttribute="bottom" constant="20" id="Nzi-zA-SsM"/>
                             <constraint firstItem="SGv-S4-hkd" firstAttribute="leading" secondItem="Dle-8P-UY1" secondAttribute="leading" constant="20" id="Ttj-fO-OZm"/>
@@ -2015,12 +2026,13 @@ bitpay.com/rates and poloniex</string>
                             <constraint firstItem="ePg-dk-slQ" firstAttribute="leading" secondItem="Dle-8P-UY1" secondAttribute="leading" id="bVE-7g-IcS"/>
                             <constraint firstItem="xDQ-J5-6Ey" firstAttribute="top" secondItem="Irz-6P-zvD" secondAttribute="bottom" constant="20" id="d4a-ya-bBL"/>
                             <constraint firstItem="Irz-6P-zvD" firstAttribute="trailing" secondItem="Dle-8P-UY1" secondAttribute="trailingMargin" id="hoX-wA-yQC"/>
+                            <constraint firstItem="HHd-Rk-TfY" firstAttribute="leading" secondItem="Dle-8P-UY1" secondAttribute="leading" constant="20" id="vjb-bX-K4t"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="i2E-ci-qDf">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="2U3-rA-AAe">
-                            <rect key="frame" x="141" y="15" width="94" height="15"/>
+                            <rect key="frame" x="140.5" y="14.5" width="94" height="15"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="FHq-gW-OSW">
@@ -2148,8 +2160,8 @@ Other devices may be infected.
                     </view>
                     <navigationItem key="navigationItem" id="xhy-mj-rkK">
                         <nil key="title"/>
-                        <view key="titleView" contentMode="scaleToFill" id="2TI-4e-OIp">
-                            <rect key="frame" x="139" y="13" width="98" height="18"/>
+                        <view key="titleView" contentMode="scaleToFill" misplaced="YES" id="2TI-4e-OIp">
+                            <rect key="frame" x="138.5" y="13" width="98" height="18"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
@@ -2780,7 +2792,7 @@ Other devices may be infected.
                             </connections>
                         </barButtonItem>
                         <view key="titleView" contentMode="scaleToFill" id="e9l-yt-iYP">
-                            <rect key="frame" x="141" y="15" width="94" height="15"/>
+                            <rect key="frame" x="140.5" y="14.5" width="94" height="15"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet" translatesAutoresizingMaskIntoConstraints="NO" id="gVu-js-UxD">
