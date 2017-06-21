@@ -157,7 +157,11 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
     var proto = "https"
     
     // host is the server(s) on which the API is hosted
+    #if Debug || Testflight
+    var host = "stage.breadwallet.com"
+    #else
     var host = "api.breadwallet.com"
+    #endif
     
     // isFetchingAuth is set to true when a request is currently trying to renew authentication (the token)
     // it is useful because fetching auth is not idempotent and not reentrant, so at most one auth attempt
