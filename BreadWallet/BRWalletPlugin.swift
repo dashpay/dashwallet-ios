@@ -188,6 +188,7 @@ import Foundation
             mdigits = 2
         }
         d["btc_denomination_digits"] = mdigits
+        d["local_currency_code"] = manager.localCurrencyCode
         return d
     }
     
