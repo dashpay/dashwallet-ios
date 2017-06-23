@@ -181,32 +181,9 @@
 
 - (IBAction)about:(id)sender
 {
-    if ([MFMailComposeViewController canSendMail]) {
-        MFMailComposeViewController *composeController = [MFMailComposeViewController new];
-        NSString *msg;
-        struct utsname systemInfo;
-        
-        uname(&systemInfo);
-        msg = [NSString stringWithFormat:@"%s / iOS %@ / breadwallet %@ - %@%@\n\n",
-               systemInfo.machine, UIDevice.currentDevice.systemVersion,
-               NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
-               NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"],
-               ([BRWalletManager sharedInstance].watchOnly) ? @" (watch only)" : @""];
-        
-        composeController.toRecipients = @[@"https://github.com/QuantumExplorer/dashwallet"];
-        composeController.subject = @"support request";
-        [composeController setMessageBody:msg isHTML:NO];
-        composeController.mailComposeDelegate = self;
-        [self.navigationController presentViewController:composeController animated:YES completion:nil];
-        composeController.view.backgroundColor =
-            [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
-        [BREventManager saveEvent:@"about:send_email"];
-    }
-    else {
-        [BREventManager saveEvent:@"about:email_not_configured"];
-        [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
-          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-    }
+    BRBrowserViewController *browser = [[BRBrowserViewController alloc] init];
+    [browser load:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.dash.org/forum/topic/ios-dash-digital-wallet-support.112/"]]];
+    [self presentViewController:browser animated:YES completion:nil];
 }
 
 #if DEBUG
