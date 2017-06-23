@@ -24,10 +24,9 @@
 //  THE SOFTWARE.
 
 import Foundation
-import SafariServices
 
 @available(iOS 8.0, *)
-@objc class BRLinkPlugin: NSObject, BRHTTPRouterPlugin, SFSafariViewControllerDelegate {
+@objc class BRLinkPlugin: NSObject, BRHTTPRouterPlugin {
     var controller: UIViewController
     var hasBrowser = false
     
@@ -85,6 +84,56 @@ import SafariServices
             DispatchQueue.main.async {
                 let browser = BRBrowserViewController()
                 let req = URLRequest(url: url)
+                browser.load(req)
+                browser.onDone = {
+                    self.hasBrowser = false
+                }
+                self.controller.present(browser, animated: true, completion: nil)
+            }
+            return BRHTTPResponse(request: request, code: 204)
+        }
+        
+        // opens a browser with a customized request object
+        // params:
+        //  {
+        //    "url": "http://myirl.com",
+        //    "method": "POST",
+        //    "body": "stringified request body...",
+        //    "headers": {"X-Header": "Blerb"}
+        //  }
+        // Only the "url" parameter is required. If only the "url" parameter
+        // is supplied the request acts exactly like the GET /_browser resource above
+        router.post("/_browser") { (request, _) -> BRHTTPResponse in
+            if self.hasBrowser {
+                return BRHTTPResponse(request: request, code: 409)
+            }
+            guard let body = request.body() else {
+                print("[BRLinkPlugin] POST /_browser error reading body")
+                return BRHTTPResponse(request: request, code: 400)
+            }
+            guard let json = try? JSONSerialization.jsonObject(with: body, options: []) as? [String: Any] else {
+                print("[BRLinkPlugin] POST /_browser could not deserialize json object")
+                return BRHTTPResponse(request: request, code: 400)
+            }
+            guard let toURL = json?["url"] as? String, let url = URL(string: toURL) else {
+                print("[BRLinkPlugin] POST /_browser request body did not contain a valid URL")
+                return BRHTTPResponse(request: request, code: 400)
+            }
+            var req = URLRequest(url: url)
+            if let method = json?["method"] as? String {
+                req.httpMethod = method
+            }
+            if let body = json?["body"] as? String {
+                req.httpBody = Data(body.utf8)
+            }
+            if let headers = json?["headers"] as? [String: String] {
+                for (k, v) in headers {
+                    req.addValue(v, forHTTPHeaderField: k)
+                }
+            }
+            self.hasBrowser = true
+            DispatchQueue.main.async {
+                let browser = BRBrowserViewController()
                 browser.load(req)
                 browser.onDone = {
                     self.hasBrowser = false
