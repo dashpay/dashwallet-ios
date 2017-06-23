@@ -105,7 +105,6 @@
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (self.balance == UINT64_MAX) self.balance = [BRWalletManager sharedInstance].wallet.balance;
-        [self updatePlatform];
         [self registerForPushNotifications];
     });
 }
@@ -115,6 +114,13 @@
     BRAPIClient *client = [BRAPIClient sharedClient];
     [client.kv sync:^(NSError *err) {
         NSLog(@"Finished syncing. err=%@", err);
+    }];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [self updatePlatformOnComplete:^{
+        NSLog(@"[BRAppDelegate] updatePlatform completed!");
     }];
 }
 
@@ -262,48 +268,63 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     }
 }
 
-- (void)updatePlatform {
-    if ([WKWebView class]) { // platform features are only available on iOS 8.0+
-        BRAPIClient *client = [BRAPIClient sharedClient];
-        
-        // set up bundles
+- (void)updatePlatformOnComplete:(void (^)(void))onComplete {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if ([WKWebView class]) { // platform features are only available on iOS 8.0+
+            BRAPIClient *client = [BRAPIClient sharedClient];
+            dispatch_group_t waitGroup = dispatch_group_create();
+            
+            // set up bundles
 #if DEBUG || TESTFLIGHT
-        NSArray *bundles = @[@"bread-buy-staging"];
+            NSArray *bundles = @[@"bread-buy-staging"];
 #else
-        NSArray *bundles = @[@"bread-buy"];
+            NSArray *bundles = @[@"bread-buy"];
 #endif
-        [bundles enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [client updateBundle:(NSString *)obj handler:^(NSString * _Nullable error) {
-                if (error != nil) {
-                    NSLog(@"error updating bundle %@: %@", obj, error);
-                } else {
-                    NSLog(@"successfully updated bundle %@", obj);
-                }
+            [bundles enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                dispatch_group_enter(waitGroup);
+                [client updateBundle:(NSString *)obj handler:^(NSString * _Nullable error) {
+                    dispatch_group_leave(waitGroup);
+                    if (error != nil) {
+                        NSLog(@"error updating bundle %@: %@", obj, error);
+                    } else {
+                        NSLog(@"successfully updated bundle %@", obj);
+                    }
+                }];
             }];
-        }];
-        
-        // set up feature flags
-        [client updateFeatureFlags];
-        
-        // set up the kv store
-        BRKVStoreObject *obj;
-        NSError *kvErr = nil;
-        // store a sentinel so we can be sure the kv store replication is functioning properly
-        obj = [client.kv get:@"sentinel" error:&kvErr];
-        if (kvErr != nil) {
-            NSLog(@"Error getting sentinel, trying again. err=%@", kvErr);
-            obj = [[BRKVStoreObject alloc] initWithKey:@"sentinel" version:0 lastModified:[NSDate date]
-                                               deleted:false data:[NSData data]];
+            
+            // set up feature flags
+            dispatch_group_enter(waitGroup);
+            [client updateFeatureFlagsOnComplete:^{
+                dispatch_group_leave(waitGroup);
+            }];
+            
+            // set up the kv store
+            BRKVStoreObject *obj;
+            NSError *kvErr = nil;
+            // store a sentinel so we can be sure the kv store replication is functioning properly
+            obj = [client.kv get:@"sentinel" error:&kvErr];
+            if (kvErr != nil) {
+                NSLog(@"Error getting sentinel, trying again. err=%@", kvErr);
+                obj = [[BRKVStoreObject alloc] initWithKey:@"sentinel" version:0 lastModified:[NSDate date]
+                                                   deleted:false data:[NSData data]];
+            }
+            [client.kv set:obj error:&kvErr];
+            if (kvErr != nil) {
+                NSLog(@"Error setting kv object err=%@", kvErr);
+            }
+            dispatch_group_enter(waitGroup);
+            [client.kv sync:^(NSError * _Nullable err) {
+                dispatch_group_leave(waitGroup);
+                NSLog(@"Finished syncing: error=%@", err);
+            }];
+            
+            // wait for the async operations to complete and notify completion
+            dispatch_group_wait(waitGroup, dispatch_time(DISPATCH_TIME_NOW, 10*NSEC_PER_SEC));
+            dispatch_async(dispatch_get_main_queue(), ^{
+                onComplete();
+            });
         }
-        [client.kv set:obj error:&kvErr];
-        if (kvErr != nil) {
-            NSLog(@"Error setting kv object err=%@", kvErr);
-        }
-        
-        [client.kv sync:^(NSError * _Nullable err) {
-            NSLog(@"Finished syncing: error=%@", err);
-        }];
-    }
+    });
 }
 
 - (void)registerForPushNotifications {

@@ -460,6 +460,7 @@
     else {
         if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
         self.splash.hidden = YES;
+        
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
         [self.receiveViewController updateAddress];
@@ -495,12 +496,17 @@
                 [self.sendViewController handleFile:self.file];
                 self.file = nil;
             }
-            else if (! self.showTips &&
-                     [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
-                     [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
-                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
-                [self showBuyAlert];
-            }
+            
+            BRAppDelegate *del = (BRAppDelegate *)[UIApplication sharedApplication].delegate;
+            [del updatePlatformOnComplete:^{
+                NSLog(@"[BRRootViewController] updatePlatform completed!");
+                if (! self.showTips &&
+                    [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO
+                    && [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
+                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
+                    [self showBuyAlert];
+                }
+            }];
         }
     }
 }

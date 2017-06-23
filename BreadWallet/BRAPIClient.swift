@@ -484,7 +484,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         return "ff:\(name)"
     }
     
-    open func updateFeatureFlags() {
+    open func updateFeatureFlags(onComplete: @escaping () -> Void) {
         var authenticated = false
         var furl = "/anybody/features"
         // only use authentication if the user has previously used authenticated services
@@ -495,6 +495,8 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
         let req = URLRequest(url: url(furl))
         dataTaskWithRequest(req, authenticated: authenticated) { (data, resp, err) in
             if let resp = resp, let data = data {
+                let jsonString = String(data: data, encoding: .utf8)
+                self.log("got features data = \(String(describing: jsonString))")
                 if resp.statusCode == 200 {
                     let defaults = UserDefaults.standard
                     do {
@@ -516,6 +518,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
             } else {
                 self.log("error fetching features: \(String(describing: err))")
             }
+            onComplete()
         }.resume()
     }
     
