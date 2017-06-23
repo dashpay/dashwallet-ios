@@ -459,6 +459,7 @@
     else {
         if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
         self.splash.hidden = YES;
+        
         self.navigationController.navigationBar.hidden = NO;
         self.pageViewController.view.alpha = 1.0;
         [self.receiveViewController updateAddress];
@@ -486,8 +487,26 @@
             [[BRPeerManager sharedInstance] connect];
             [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
             
-            if (self.url) [self.sendViewController handleURL:self.url], self.url = nil;
-            if (self.file) [self.sendViewController handleFile:self.file], self.file = nil;
+
+            if (self.url) {
+                [self.sendViewController handleURL:self.url];
+                self.url = nil;
+            }
+            else if (self.file) {
+                [self.sendViewController handleFile:self.file];
+                self.file = nil;
+            }
+            
+            BRAppDelegate *del = (BRAppDelegate *)[UIApplication sharedApplication].delegate;
+            [del updatePlatformOnComplete:^{
+                NSLog(@"[BRRootViewController] updatePlatform completed!");
+                if (! self.showTips &&
+                    [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO
+                    && [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
+                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
+                    [self showBuyAlert];
+                }
+            }];
         }
     }
 }
