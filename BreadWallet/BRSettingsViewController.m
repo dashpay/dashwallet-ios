@@ -181,7 +181,9 @@
 
 - (IBAction)about:(id)sender
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://breadwallet.com/support/"]];
+    BRBrowserViewController *browser = [[BRBrowserViewController alloc] init];
+    [browser load:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://breawallet.com/support"]]];
+    [self presentViewController:browser animated:YES completion:nil];
 }
 
 #if DEBUG

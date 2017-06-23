@@ -221,14 +221,13 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
 
 @available(iOS 8.0, *)
 open class BRBrowserViewController: UINavigationController {
-    fileprivate let browser = BRBrowserViewControllerInternal()
     var onDone: (() -> Void)?
-    var didAppear = false
-    var request: URLRequest?
+    
+    fileprivate let browser = BRBrowserViewControllerInternal()
     
     init() {
         super.init(rootViewController: browser)
-        browser.navigationItem.leftBarButtonItem = UIBarButtonItem(
+        browser.navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .done, target: self, action: #selector(BRBrowserViewController.done))
     }
     
