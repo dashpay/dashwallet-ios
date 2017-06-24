@@ -99,6 +99,7 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         if let request = request {
             _ = webView.load(request)
         }
+        
     }
     
     open override func viewWillDisappear(_ animated: Bool) {
@@ -226,7 +227,8 @@ open class BRBrowserViewController: UINavigationController {
     fileprivate let browser = BRBrowserViewControllerInternal()
     
     init() {
-        super.init(rootViewController: browser)
+        super.init(navigationBarClass: UINavigationBar.self, toolbarClass: UIToolbar.self)
+        self.viewControllers = [browser]
         browser.navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .done, target: self, action: #selector(BRBrowserViewController.done))
     }
