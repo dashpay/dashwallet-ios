@@ -90,6 +90,14 @@ public extension String {
             return ""
         }
     }
+    
+    func rtrim(_ chars: Set<Character>) -> String {
+        if let index = self.characters.reversed().index(where: {!chars.contains($0)}) {
+            return self[self.startIndex...self.characters.index(before: index.base)]
+        } else {
+            return ""
+        }
+    }
 }
 
 var BZCompressionBufferSize: UInt32 = 1024

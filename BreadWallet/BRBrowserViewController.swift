@@ -13,22 +13,26 @@ import WebKit
 @available(iOS 8.0, *)
 fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigationDelegate {
     var request: URLRequest?
-    fileprivate let webView = WKWebView()
-    fileprivate let toolbarContainerView = UIView()
-    fileprivate let toolbarView = UIToolbar()
-    fileprivate let progressView = UIProgressView()
-    fileprivate let refreshButtonItem = UIBarButtonItem(
+    var closeOnURL: URL?
+    var closeTarget: NSObjectProtocol?
+    var closeSelector: Selector?
+    
+    let webView = WKWebView()
+    let toolbarContainerView = UIView()
+    let toolbarView = UIToolbar()
+    let progressView = UIProgressView()
+    let refreshButtonItem = UIBarButtonItem(
         barButtonSystemItem: UIBarButtonSystemItem.refresh, target: self,
         action: #selector(BRBrowserViewControllerInternal.refresh))
-    fileprivate var stopButtonItem = UIBarButtonItem(
+    var stopButtonItem = UIBarButtonItem(
         barButtonSystemItem: UIBarButtonSystemItem.stop, target: self,
         action: #selector(BRBrowserViewControllerInternal.stop))
-    fileprivate var flexibleSpace = UIBarButtonItem(
+    var flexibleSpace = UIBarButtonItem(
         barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
-    fileprivate var backButtonItem = UIBarButtonItem(
+    var backButtonItem = UIBarButtonItem(
         title: "\u{25C0}\u{FE0E}", style: UIBarButtonItemStyle.plain, target: self,
         action: #selector(BRBrowserViewControllerInternal.goBack))
-    fileprivate var forwardButtonItem = UIBarButtonItem(
+    var forwardButtonItem = UIBarButtonItem(
         title: "\u{25B6}\u{FE0E}", style: UIBarButtonItemStyle.plain, target: self,
         action: #selector(BRBrowserViewControllerInternal.goForward))
     
@@ -132,7 +136,7 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         }
     }
     
-    fileprivate func progressChanged(_ newValue: NSNumber) {
+    func progressChanged(_ newValue: NSNumber) {
         print("[BRBrowserViewController] progress changed new value = \(newValue)")
         progressView.progress = newValue.floatValue
         if progressView.progress == 1 {
@@ -147,7 +151,7 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         }
     }
     
-    fileprivate func showLoading(_ isLoading: Bool) {
+    func showLoading(_ isLoading: Bool) {
         print("[BRBrowserViewController] showLoading \(isLoading)")
         if isLoading {
             self.toolbarView.items = [backButtonItem, forwardButtonItem, flexibleSpace, stopButtonItem];
@@ -156,13 +160,13 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         }
     }
     
-    fileprivate func showError(_ errString: String) {
+    func showError(_ errString: String) {
         let alertView = UIAlertController(title: "Error", message: errString, preferredStyle: .alert)
         alertView.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(alertView, animated: true, completion: nil)
     }
     
-    fileprivate func backForwardListsChanged() {
+    func backForwardListsChanged() {
         // enable forward/back buttons
         backButtonItem.isEnabled = webView.canGoBack
         forwardButtonItem.isEnabled = webView.canGoForward
@@ -207,10 +211,31 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         showError(error.localizedDescription)
     }
     
-    open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
+                      withError error: Error) {
         print("[BRBrowserViewController] webView didFailProvisionalNavigation navigation = \(navigation) error = \(error)")
         showLoading(false)
         showError(error.localizedDescription)
+    }
+    
+    func closeOnURLsMatch(_ toURL: URL?) -> Bool {
+        guard let closeOnURL = closeOnURL, let toURL = toURL else {
+            return false
+        }
+        if closeOnURL.scheme == toURL.scheme && closeOnURL.host == toURL.host
+            && closeOnURL.absoluteString.rtrim(["/"]) == toURL.absoluteString.rtrim(["/"]) {
+            return true
+        }
+        return false
+    }
+    
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if closeOnURLsMatch(navigationAction.request.url) {
+            let _ = closeTarget?.perform(closeSelector, with: UIControl(frame: .zero))
+            decisionHandler(.cancel)
+        }
+        decisionHandler(.allow)
     }
     
     open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -222,11 +247,22 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
 @available(iOS 8.0, *)
 open class BRBrowserViewController: UINavigationController {
     var onDone: (() -> Void)?
+    var closeOnURL: String {
+        get {
+            return browser.closeOnURL == nil ? "" : "\(browser.closeOnURL!)"
+        }
+        set {
+            browser.closeOnURL = URL(string: newValue)
+        }
+    }
     
     fileprivate let browser = BRBrowserViewControllerInternal()
     
     init() {
-        super.init(rootViewController: browser)
+        super.init(navigationBarClass: UINavigationBar.self, toolbarClass: UIToolbar.self)
+        browser.closeTarget = self
+        browser.closeSelector = #selector(done)
+        self.viewControllers = [browser]
         browser.navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .done, target: self, action: #selector(BRBrowserViewController.done))
     }

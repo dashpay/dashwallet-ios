@@ -100,9 +100,14 @@ import Foundation
         //    "method": "POST",
         //    "body": "stringified request body...",
         //    "headers": {"X-Header": "Blerb"}
+        //    "closeOn": "http://someurl",
         //  }
         // Only the "url" parameter is required. If only the "url" parameter
         // is supplied the request acts exactly like the GET /_browser resource above
+        //
+        // When the "closeOn" parameter is provided the web view will automatically close
+        // if the browser navigates to this exact URL. It is useful for oauth redirects
+        // and the like
         router.post("/_browser") { (request, _) -> BRHTTPResponse in
             if self.hasBrowser {
                 return BRHTTPResponse(request: request, code: 409)
@@ -135,6 +140,9 @@ import Foundation
             DispatchQueue.main.async {
                 let browser = BRBrowserViewController()
                 browser.load(req)
+                if let closeOn = json?["closeOn"] as? String {
+                    browser.closeOnURL = closeOn
+                }
                 browser.onDone = {
                     self.hasBrowser = false
                 }
