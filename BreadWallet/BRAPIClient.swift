@@ -480,15 +480,8 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
     }
     
     open func updateFeatureFlags(onComplete: @escaping () -> Void) {
-        var authenticated = false
-        var furl = "/anybody/features"
-        // only use authentication if the user has previously used authenticated services
-        if let wm = BRWalletManager.sharedInstance(), let _ = wm.userAccount {
-            authenticated = true
-            furl = "/me/features"
-        }
-        let req = URLRequest(url: url(furl))
-        dataTaskWithRequest(req, authenticated: authenticated) { (data, resp, err) in
+        let req = URLRequest(url: url("/me/features"))
+        dataTaskWithRequest(req, authenticated: true) { (data, resp, err) in
             if let resp = resp, let data = data {
                 let jsonString = String(data: data, encoding: .utf8)
                 self.log("got features data = \(String(describing: jsonString))")
