@@ -150,14 +150,12 @@
                 image = [UIImage imageWithData:[defs objectForKey:APP_GROUP_QR_IMAGE_KEY]];
             }
             
-            if (! image) {
+            if (! image && req.data) {
                 image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
             }
 
-            UIImage *img = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
-            NSData *dat = UIImagePNGRepresentation(img);
-
-            replyHandler(@{AW_QR_CODE_BITS_KEY: dat});
+            image = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+            replyHandler(image ? @{AW_QR_CODE_BITS_KEY: UIImagePNGRepresentation(image)} : @{});
             break;
         }
         
@@ -277,7 +275,7 @@
         image = [UIImage imageWithData:[defs objectForKey:APP_GROUP_QR_IMAGE_KEY]];
     }
 
-    if (! image) {
+    if (! image && req) {
         image = [UIImage imageWithQRCodeData:req color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
     }
     
