@@ -11,9 +11,9 @@ import UIKit
 import WebKit
 
 @available(iOS 8.0, *)
-fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigationDelegate {
+fileprivate class BRBrowserViewControllerInternal: UIViewController, UIWebViewDelegate {
     var request: URLRequest?
-    fileprivate let webView = WKWebView()
+    fileprivate let webView = UIWebView()
     fileprivate let toolbarContainerView = UIView()
     fileprivate let toolbarView = UIToolbar()
     fileprivate let progressView = UIProgressView()
@@ -79,12 +79,12 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
             withVisualFormat: "V:|-0-[toolbar]-0-|", options: [], metrics: nil, views: ["toolbar": toolbarView]))
         
         // webview
-        webView.navigationDelegate = self
+        webView.delegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
         view.addConstraints(NSLayoutConstraint.constraints(
             withVisualFormat: "|-0-[webView]-0-|", options: [], metrics: nil,
-            views: ["webView": webView as WKWebView]))
+            views: ["webView": webView as UIWebView]))
         view.addConstraints(NSLayoutConstraint.constraints(
             withVisualFormat: "V:|[topGuide]-0-[webView]-0-[toolbarContainer]|", options: [], metrics: nil,
             views: ["webView": webView, "toolbarContainer": toolbarContainerView, "topGuide": self.topLayoutGuide]))
@@ -95,9 +95,9 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
         webView.addObserver(self, forKeyPath: "estimatedProgress", options: .new, context: nil)
         webView.addObserver(self, forKeyPath: "title", options: .new, context: nil)
         webView.addObserver(self, forKeyPath: "loading", options: .new, context: nil)
-        print("[BRBrowserViewController viewWillAppear request = \(String(describing: request))")
+        print("[BRBrowserViewController viewWillAppear request = \(String(describing: request)) \(request?.httpBody)")
         if let request = request {
-            _ = webView.load(request)
+            _ = webView.loadRequest(request)
         }
         
     }
@@ -118,8 +118,8 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
                 progressChanged(newValue)
             }
         case "title":
-            print("[BRBrowserViewController] title changed \(String(describing: webView.title))")
-            self.navigationItem.title = webView.title
+//            print("[BRBrowserViewController] title changed \(String(describing: webView.title))")
+            self.navigationItem.title = "sorry"; // webView.title
         case "loading":
             if let val = change?[NSKeyValueChangeKey.newKey] as? Bool {
                 print("[BRBrowserViewController] loading changed \(val)")
@@ -190,31 +190,31 @@ fileprivate class BRBrowserViewControllerInternal: UIViewController, WKNavigatio
     }
     
     // MARK: - WKNavigationDelegate 
-    open func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+    open func webView(_ webView: UIWebView, didCommit navigation: WKNavigation!) {
         print("[BRBrowserViewController] webView didCommit navigation = \(navigation)")
     }
     
-    open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    open func webView(_ webView: UIWebView, didFinish navigation: WKNavigation!) {
         print("[BRBrowserViewController] webView didFinish navigation = \(navigation)")
     }
     
-    open func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+    open func webViewWebContentProcessDidTerminate(_ webView: UIWebView) {
         print("[BRBrowserViewController] webViewContentProcessDidTerminate")
     }
     
-    open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: UIWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print("[BRBrowserViewController] webView didFail navigation = \(navigation) error = \(error)")
         showLoading(false)
         showError(error.localizedDescription)
     }
     
-    open func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: UIWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         print("[BRBrowserViewController] webView didFailProvisionalNavigation navigation = \(navigation) error = \(error)")
         showLoading(false)
         showError(error.localizedDescription)
     }
     
-    open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    open func webView(_ webView: UIWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         print("[BRBrowserViewController] webView didStartProfisionalNavigation navigation = \(navigation)")
         showLoading(true)
     }
