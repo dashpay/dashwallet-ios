@@ -26,7 +26,7 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-#define TX_FEE_PER_KB        100000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_KB        10000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_FEE_PER_INPUT     100000ULL    // standard ix fee per input
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
