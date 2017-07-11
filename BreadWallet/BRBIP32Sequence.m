@@ -147,7 +147,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 // MARK: - BRKeySequence
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-// the values are taken from BIP32 account m/0H
+// the values are taken from BIP32 account m/44H/5H/0H
 - (NSData *)masterPublicKeyFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
@@ -161,6 +161,8 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
     [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
+    CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
+    CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
 
     [mpk appendBytes:&chain length:sizeof(chain)];
@@ -204,6 +206,8 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     version = DASH_PRIVKEY_TEST;
 #endif
 
+    CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
+    CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
     CKDpriv(&secret, &chain, internal ? 1 : 0); // internal or external chain
 
