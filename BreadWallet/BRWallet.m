@@ -68,7 +68,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed
+masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed
 {
     if (! (self = [super init])) return nil;
 
@@ -77,6 +77,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.moc = context;
     self.sequence = sequence;
     self.masterPublicKey = masterPublicKey;
+    self.masterBIP32PublicKey = masterBIP32PublicKey;
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];

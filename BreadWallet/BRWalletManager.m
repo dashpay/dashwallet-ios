@@ -68,7 +68,8 @@
 
 #define MNEMONIC_KEY        @"mnemonic"
 #define CREATION_TIME_KEY   @"creationtime"
-#define MASTER_PUBKEY_KEY   @"masterpubkey"
+#define MASTER_PUBKEY_KEY_BIP44   @"masterpubkeyBIP44"
+#define MASTER_PUBKEY_KEY_BIP32   @"masterpubkeyBIP32"
 #define SPEND_LIMIT_KEY     @"spendlimit"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
@@ -334,28 +335,21 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 {
     if (_wallet) return _wallet;
     
-    if (getKeychainData(SEED_KEY, nil)) { // upgrade from old keychain scheme
-        @autoreleasepool {
-            NSString *seedPhrase = getKeychainString(MNEMONIC_KEY, nil);
-            
-            NSLog(@"upgrading to authenticated keychain scheme");
-            if (! setKeychainData([self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:seedPhrase
-                                                                                             withPassphrase:nil] purpose:BIP44_PURPOSE], MASTER_PUBKEY_KEY, NO)) return _wallet;
-            if (setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
-        }
-    }
-    
     uint64_t feePerKb = 0;
     NSData *mpk = self.masterPublicKey;
     
     if (! mpk) return _wallet;
+    
+    NSData *mpkBIP32 = self.masterPublicKeyNoPurpose;
+    
+    if (! mpkBIP32) return _wallet;
     
     @synchronized(self) {
         if (_wallet) return _wallet;
         
         _wallet =
         [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-                          masterPublicKey:mpk seed:^NSData *(NSString *authprompt, uint64_t amount) {
+                          masterPublicKey:mpk masterBIP32PublicKey:mpkBIP32 seed:^NSData *(NSString *authprompt, uint64_t amount) {
                               return [self seedWithPrompt:authprompt forAmount:amount];
                           }];
         
@@ -401,7 +395,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     NSError *error = nil;
     
     if (_wallet) return NO;
-    if (getKeychainData(MASTER_PUBKEY_KEY, &error) || error) return NO;
+    if (getKeychainData(MASTER_PUBKEY_KEY_BIP44, &error) || error) return NO;
+    if (getKeychainData(MASTER_PUBKEY_KEY_BIP32, &error) || error) return NO;
     if (getKeychainData(SEED_KEY, &error) || error) return NO; // check for old keychain scheme
     return YES;
 }
@@ -415,7 +410,13 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 // master public key used to generate wallet addresses
 - (NSData *)masterPublicKey
 {
-    return getKeychainData(MASTER_PUBKEY_KEY, nil);
+    return getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
+}
+
+// master public key using old non BIP 43/44
+- (NSData *)masterPublicKeyNoPurpose
+{
+    return getKeychainData(MASTER_PUBKEY_KEY_BIP32, nil);
 }
 
 // requesting seedPhrase will trigger authentication
@@ -440,7 +441,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         [[NSUserDefaults standardUserDefaults] synchronize];
         
         setKeychainData(nil, CREATION_TIME_KEY, NO);
-        setKeychainData(nil, MASTER_PUBKEY_KEY, NO);
+        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO);
+        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO);
         setKeychainData(nil, SPEND_LIMIT_KEY, NO);
         setKeychainData(nil, PIN_KEY, NO);
         setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
@@ -459,11 +461,15 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             return;
         }
         
-        NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:[self.mnemonic
-                                                                                      deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:BIP44_PURPOSE] : nil;
+        NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
+                                                 deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
+        
+        NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:derivedKeyData purpose:BIP44_PURPOSE] : nil;
+        NSData *masterPubKeyBIP32 = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:derivedKeyData purpose:BIP32_PURPOSE] : nil;
         
         if ([seedPhrase isEqual:@"wipe"]) masterPubKey = [NSData data]; // watch only wallet
-        setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
+        setKeychainData(masterPubKey, MASTER_PUBKEY_KEY_BIP44, NO);
+        setKeychainData(masterPubKeyBIP32, MASTER_PUBKEY_KEY_BIP32, NO);
         _wallet = nil;
     }
     
