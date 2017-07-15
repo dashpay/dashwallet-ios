@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16E195" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="BRAddressEntity" representedClassName="BRAddressEntity" syncable="YES">
+        <attribute name="account" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="internal" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="purpose" attributeType="Integer 32" usesScalarValueType="NO" syncable="YES"/>
     </entity>
     <entity name="BRMerkleBlockEntity" representedClassName="BRMerkleBlockEntity" syncable="YES">
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
@@ -71,7 +73,7 @@
         <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="BRTransactionEntity" inverseName="associatedShapeshift" inverseEntity="BRTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="BRAddressEntity" positionX="-137" positionY="36" width="128" height="90"/>
+        <element name="BRAddressEntity" positionX="-137" positionY="36" width="128" height="120"/>
         <element name="BRMerkleBlockEntity" positionX="-299" positionY="36" width="128" height="208"/>
         <element name="BRPeerEntity" positionX="349" positionY="36" width="128" height="120"/>
         <element name="BRTransactionEntity" positionX="25" positionY="36" width="128" height="150"/>

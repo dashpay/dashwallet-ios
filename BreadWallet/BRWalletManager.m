@@ -340,7 +340,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             
             NSLog(@"upgrading to authenticated keychain scheme");
             if (! setKeychainData([self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:seedPhrase
-                                                                                             withPassphrase:nil]], MASTER_PUBKEY_KEY, NO)) return _wallet;
+                                                                                             withPassphrase:nil] purpose:BIP44_PURPOSE], MASTER_PUBKEY_KEY, NO)) return _wallet;
             if (setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) setKeychainData(nil, SEED_KEY, NO);
         }
     }
@@ -460,7 +460,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         }
         
         NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:[self.mnemonic
-                                                                                      deriveKeyFromPhrase:seedPhrase withPassphrase:nil]] : nil;
+                                                                                      deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:BIP44_PURPOSE] : nil;
         
         if ([seedPhrase isEqual:@"wipe"]) masterPubKey = [NSData data]; // watch only wallet
         setKeychainData(masterPubKey, MASTER_PUBKEY_KEY, NO);
@@ -1504,7 +1504,7 @@ replacementString:(NSString *)string
             if (! [phrase isEqual:textView.text]) textView.text = phrase;
             
             if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
-                                                                                              normalizePhrase:phrase] withPassphrase:nil]] isEqual:self.masterPublicKey]) {
+                                                                                              normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.masterPublicKey]) {
                 self.alertView.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.alertView performSelector:@selector(setTitle:)
                                      withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

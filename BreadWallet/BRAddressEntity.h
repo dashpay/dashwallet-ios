@@ -29,6 +29,8 @@
 @interface BRAddressEntity : NSManagedObject
 
 @property (nonatomic, retain) NSString *address;
+@property (nonatomic) int32_t purpose;
+@property (nonatomic) int32_t account;
 @property (nonatomic) int32_t index;
 @property (nonatomic) BOOL internal;
 

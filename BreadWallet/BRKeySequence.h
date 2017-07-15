@@ -27,13 +27,15 @@
 
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
+#define BIP44_PURPOSE      44
+#define BIP32_PURPOSE      0
 
 @protocol BRKeySequence<NSObject>
 @required
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed;
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed purpose:(uint32_t)purpose;
 - (NSData *)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
-- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
-- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSString *)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSArray *)privateKeys:(NSArray *)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 @end

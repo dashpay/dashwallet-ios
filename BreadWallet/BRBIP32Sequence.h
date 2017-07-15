@@ -33,10 +33,10 @@
 
 @interface BRBIP32Sequence : NSObject<BRKeySequence>
 
-- (NSData * _Nullable)masterPublicKeyFromSeed:(NSData * _Nullable)seed;
+- (NSData * _Nullable)masterPublicKeyFromSeed:(NSData * _Nullable)seed purpose:(uint32_t)purpose;
 - (NSData * _Nullable)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData * _Nonnull)masterPublicKey;
-- (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
-- (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
+- (NSString * _Nullable)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
+- (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 - (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed;

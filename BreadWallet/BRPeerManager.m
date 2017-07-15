@@ -413,6 +413,9 @@ static const char *dns_seeds[] = {
     // transaction is encountered during the blockchain download
     [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
     [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+    
+    [manager.wallet addressesBIP32NoPurposeWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+    [manager.wallet addressesBIP32NoPurposeWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
 
     [self.orphans removeAllObjects]; // clear out orphans that may have been received on an old filter
     self.lastOrphan = nil;
@@ -1191,9 +1194,11 @@ static const char *dns_seeds[] = {
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
     NSArray *external = [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-            *internal = [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    *internal = [manager.wallet addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES],
+    *externalBIP32 = [manager.wallet addressesBIP32NoPurposeWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+    *internalBIP32 = [manager.wallet addressesBIP32NoPurposeWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
-    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+    for (NSString *address in [[[external arrayByAddingObjectsFromArray:internal] arrayByAddingObjectsFromArray:externalBIP32] arrayByAddingObjectsFromArray:internalBIP32]) {
         NSData *hash = address.addressToHash160;
 
         if (! hash || [_bloomFilter containsData:hash]) continue;

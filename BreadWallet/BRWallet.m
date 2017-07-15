@@ -51,8 +51,8 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @interface BRWallet ()
 
 @property (nonatomic, strong) id<BRKeySequence> sequence;
-@property (nonatomic, strong) NSData *masterPublicKey;
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
+@property (nonatomic, strong) NSData *masterPublicKey,*masterBIP32PublicKey;
+@property (nonatomic, strong) NSMutableArray *internalBIP44Addresses,*internalBIP32Addresses, *externalBIP44Addresses,*externalBIP32Addresses;
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
@@ -80,8 +80,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
-    self.internalAddresses = [NSMutableArray array];
-    self.externalAddresses = [NSMutableArray array];
+    self.internalBIP32Addresses = [NSMutableArray array];
+    self.internalBIP44Addresses = [NSMutableArray array];
+    self.externalBIP32Addresses = [NSMutableArray array];
+    self.externalBIP44Addresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
     
@@ -92,7 +94,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             @autoreleasepool {
-                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
+                NSMutableArray *a = (e.purpose == 44)?((e.internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses) : ((e.internal) ? self.internalBIP32Addresses : self.externalBIP32Addresses);
                 
                 while (e.index >= a.count) [a addObject:[NSNull null]];
                 a[e.index] = e.address;
@@ -163,11 +165,30 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     if (! _masterPublicKey) {
         @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0)];
+            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0) purpose:44];
         }
     }
     
     return _masterPublicKey;
+}
+
+- (NSData *)masterBIP32PublicKey
+{
+    if (! _masterBIP32PublicKey) {
+        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+            _masterBIP32PublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0) purpose:0];
+        }
+    }
+    
+    return _masterBIP32PublicKey;
+}
+
+-(NSArray*)internalAddresses {
+    return [self.internalBIP32Addresses arrayByAddingObjectsFromArray:self.internalBIP44Addresses];
+}
+
+-(NSArray*)externalAddresses {
+    return [self.externalBIP32Addresses arrayByAddingObjectsFromArray:self.externalBIP44Addresses];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
@@ -176,7 +197,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // for receive addresses.
 - (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
+    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses];
     NSUInteger i = a.count;
 
     // keep only the trailing contiguous block of addresses with no transactions
@@ -193,7 +214,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
 
     @synchronized(self) {
-        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
+        [a setArray:(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses];
         i = a.count;
 
         unsigned n = (unsigned)i;
@@ -217,18 +238,63 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
             [self.moc performBlock:^{ // store new address in core data
                 BRAddressEntity *e = [BRAddressEntity managedObject];
-
+                e.purpose = 44;
+                e.account = 0;
                 e.address = addr;
                 e.index = n;
                 e.internal = internal;
             }];
 
             [self.allAddresses addObject:addr];
-            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+            [(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses addObject:addr];
             [a addObject:addr];
             n++;
         }
     
+        return a;
+    }
+}
+
+- (NSArray *)addressesBIP32NoPurposeWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
+{
+    @synchronized(self) {
+        NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalBIP32Addresses : self.externalBIP32Addresses];
+        NSUInteger i = a.count;
+        
+        unsigned n = (unsigned)i;
+        
+        // keep only the trailing contiguous block of addresses with no transactions
+        while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
+            i--;
+        }
+        
+        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+        
+        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+            NSData *pubKey = [self.sequence publicKey:n internal:internal masterPublicKey:self.masterBIP32PublicKey];
+            NSString *addr = [BRKey keyWithPublicKey:pubKey].address;
+            
+            if (! addr) {
+                NSLog(@"error generating keys");
+                return nil;
+            }
+            
+            [self.moc performBlock:^{ // store new address in core data
+                BRAddressEntity *e = [BRAddressEntity managedObject];
+                e.purpose = 0;
+                e.account = 0;
+                e.address = addr;
+                e.index = n;
+                e.internal = internal;
+            }];
+            
+            [self.allAddresses addObject:addr];
+            [(internal) ? self.internalBIP32Addresses : self.externalBIP32Addresses addObject:addr];
+            [a addObject:addr];
+            n++;
+        }
+        
         return a;
     }
 }
@@ -392,7 +458,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
 
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return (addr) ? addr : self.externalAddresses.lastObject;
+    return (addr) ? addr : self.externalBIP44Addresses.lastObject;
 }
 
 // returns the first unused internal address
@@ -405,13 +471,13 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // all previously generated external addresses
 - (NSSet *)allReceiveAddresses
 {
-    return [NSSet setWithArray:self.externalAddresses];
+    return [NSSet setWithArray:[self.externalBIP32Addresses arrayByAddingObjectsFromArray:self.externalBIP44Addresses]];
 }
 
 // all previously generated external addresses
 - (NSSet *)allChangeAddresses
 {
-    return [NSSet setWithArray:self.internalAddresses];;
+    return [NSSet setWithArray:[self.internalBIP32Addresses arrayByAddingObjectsFromArray:self.internalBIP44Addresses]];
 }
 
 // NSData objects containing serialized UTXOs
@@ -561,8 +627,8 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                         *internalIndexes = [NSMutableOrderedSet orderedSet];
 
     for (NSString *addr in transaction.inputAddresses) {
-        [internalIndexes addObject:@([self.internalAddresses indexOfObject:addr])];
-        [externalIndexes addObject:@([self.externalAddresses indexOfObject:addr])];
+        [internalIndexes addObject:@([self.internalBIP44Addresses indexOfObject:addr])];
+        [externalIndexes addObject:@([self.externalBIP44Addresses indexOfObject:addr])];
     }
 
     [internalIndexes removeObject:@(NSNotFound)];
@@ -573,8 +639,35 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
 
         if (! seed) return YES; // user canceled authentication
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
+        
+        return [transaction signWithPrivateKeys:privkeys];
+    }
+}
+
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
+- (BOOL)signBIP32Transaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt
+{
+    int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
+    *internalIndexes = [NSMutableOrderedSet orderedSet];
+    
+    for (NSString *addr in transaction.inputAddresses) {
+        [internalIndexes addObject:@([self.internalBIP32Addresses indexOfObject:addr])];
+        [externalIndexes addObject:@([self.externalBIP32Addresses indexOfObject:addr])];
+    }
+    
+    [internalIndexes removeObject:@(NSNotFound)];
+    [externalIndexes removeObject:@(NSNotFound)];
+    
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        NSMutableArray *privkeys = [NSMutableArray array];
+        NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
+        
+        if (! seed) return YES; // user canceled authentication
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
         
         return [transaction signWithPrivateKeys:privkeys];
     }

@@ -108,8 +108,11 @@ typedef struct _BRUTXO {
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
-// for receive addresses.
+// for receive addresses.  These have a hardened purpose scheme of 44 as compliant with BIP 43 and 44
 - (NSArray * _Nullable)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
+
+// For the sake of backwards compatibility we need to register addresses that aren't compliant with BIP 43 and 44.
+- (NSArray * _Nullable)addressesBIP32NoPurposeWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (BRTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString * _Nonnull)address withFee:(BOOL)fee;
@@ -126,6 +129,7 @@ typedef struct _BRUTXO {
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (BOOL)signTransaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
+- (BOOL)signBIP32Transaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction * _Nonnull)transaction;

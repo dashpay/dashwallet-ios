@@ -130,8 +130,9 @@
             return;
         }
         
-        if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil]]
-             isEqual:manager.masterPublicKey] || [phrase isEqual:@"wipe"]) {
+        if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:44]
+             isEqual:manager.masterPublicKey] || [[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
+                                                  isEqual:manager.masterPublicKey] || [phrase isEqual:@"wipe"]) {
             [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
             [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
               destructiveButtonTitle:NSLocalizedString(@"wipe", nil) otherButtonTitles:nil]

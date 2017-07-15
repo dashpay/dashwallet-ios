@@ -148,10 +148,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
 // the values are taken from BIP32 account m/44H/5H/0H
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed
+- (NSData *)masterPublicKeyFromSeed:(NSData *)seed purpose:(uint32_t)purpose
 {
     if (! seed) return nil;
-
+    if (purpose && purpose != 44) return nil; //currently only support purpose 0 and 44
     NSMutableData *mpk = [NSMutableData secureData];
     UInt512 I;
 
@@ -161,8 +161,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 
     [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
-    CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
-    CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    if (purpose == 44) {
+        CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
+        CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    }
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
 
     [mpk appendBytes:&chain length:sizeof(chain)];
@@ -184,14 +186,15 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
 }
 
-- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed
 {
-    return seed ? [self privateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
+    return seed ? [self privateKeys:@[@(n)] purpose:purpose internal:internal fromSeed:seed].lastObject : nil;
 }
 
-- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSArray *)privateKeys:(NSArray *)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     if (! seed || ! n) return nil;
+    if (purpose && purpose != 44) return nil; //currently only support purpose 0 and 44
     if (n.count == 0) return @[];
 
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
@@ -206,8 +209,10 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     version = DASH_PRIVKEY_TEST;
 #endif
 
-    CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
-    CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    if (purpose == 44) {
+        CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
+        CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    }
     CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
     CKDpriv(&secret, &chain, internal ? 1 : 0); // internal or external chain
 

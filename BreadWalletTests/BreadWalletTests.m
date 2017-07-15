@@ -1104,7 +1104,7 @@
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSString *pk = [seq privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
+    NSString *pk = [seq privateKey:2 | 0x80000000 purpose:BIP32_PURPOSE internal:YES fromSeed:seed];
     NSData *d = pk.base58checkToData;
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
@@ -1114,7 +1114,7 @@
                          @"[BRBIP32Sequence privateKey:internal:fromSeed:]");
 
     // Test for correct zero padding of private keys, a nasty potential bug
-    pk = [seq privateKey:97 internal:NO fromSeed:seed];
+    pk = [seq privateKey:97 purpose:BIP32_PURPOSE internal:NO fromSeed:seed];
     d = pk.base58checkToData;
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);
@@ -1128,7 +1128,7 @@
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", [NSString hexWithData:mpk]);
     
@@ -1142,7 +1142,7 @@
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
     NSData *pub = [seq publicKey:0 internal:NO masterPublicKey:mpk];
 
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
@@ -1183,7 +1183,7 @@
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed];
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
     NSString *xpub = [seq serializedMasterPublicKey:mpk];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f xpub = %@", xpub);
