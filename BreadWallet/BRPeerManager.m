@@ -54,7 +54,8 @@
 #if DASH_TESTNET
 
 static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
-    {      261, "00000c26026d0815a7e2ce4fa270775f61403c040647ff2c3091f99e894a4618", 1296688602, 0x1d00ffffu }
+    {           0, "00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c", 1390666206, 0x1e0ffff0u },
+    {      200000, "000000016608dc3fac91002b64dcafa8a7832f8fca7e05957e538efd434ee16c", 1494653895, 0x1d01ac07u }
 };
 
 static const char *dns_seeds[] = {

@@ -363,7 +363,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             
             if (_wallet.allReceiveAddresses.count > 0 && k && ! [_wallet containsAddress:k.address]) {
                 NSLog(@"wallet doesn't contain address: %@", k.address);
-#if DEBUG
+#if 0
                 abort(); // don't wipe core data for debug builds
 #else
                 [[NSManagedObject context] performBlockAndWait:^{

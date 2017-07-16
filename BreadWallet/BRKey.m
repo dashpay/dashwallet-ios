@@ -269,7 +269,7 @@ int BRSecp256k1PointMul(BRECPoint *p, const UInt256 *i)
     UInt160 hash160 = self.hash160;
 
 #if DASH_TESTNET
-    version = DASH_PUBKEY_ADDRESS_ADDRESS_TEST;
+    version = DASH_PUBKEY_ADDRESS_TEST;
 #endif
     
     [d appendBytes:&version length:1];
