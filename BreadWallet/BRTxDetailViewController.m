@@ -131,7 +131,18 @@
         else if ([manager.wallet containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
+#if DASH_TESTNET
+                NSUInteger purpose = [manager.wallet addressPurpose:address];
+                if (purpose == 44) {
+                    [detail addObject:@"wallet address (BIP44)"];
+                } else if (purpose == 0) {
+                    [detail addObject:@"wallet address (BIP32)"];
+                } else {
+                    [detail addObject:@"wallet address (Unknown Purpose)"];
+                }
+#else
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
+#endif
                 [amount addObject:@(amt)];
                 [currencyIsBitcoinInstead addObject:@FALSE];
             }
@@ -355,10 +366,24 @@
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
                 
+#if DASH_TESTNET
+                if ([manager.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
+                    NSUInteger purpose = [manager.wallet addressPurpose:self.transaction.inputAddresses[indexPath.row]];
+                    if (purpose == 44) {
+                        subtitleLabel.text = @"wallet address (BIP44)";
+                    } else if (purpose == 0) {
+                        subtitleLabel.text = @"wallet address (BIP32)";
+                    } else {
+                    subtitleLabel.text = @"wallet address (Unknown Purpose)";
+                    }
+                }
+                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
+#else
                 if ([manager.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
+#endif
             }
             else {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];

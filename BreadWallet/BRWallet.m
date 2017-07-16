@@ -456,17 +456,25 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 // returns the first unused external address
 - (NSString *)receiveAddress
 {
-    NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
-
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
+#if ADDRESS_DEFAULT == BIP32_PURPOSE
+    NSString *addr = [self addressesBIP32NoPurposeWithGapLimit:1 internal:NO].lastObject;
+    return (addr) ? addr : self.externalBIP32Addresses.lastObject;
+#else
+    NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
     return (addr) ? addr : self.externalBIP44Addresses.lastObject;
+#endif
 }
 
 // returns the first unused internal address
 - (NSString *)changeAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
+    #if ADDRESS_DEFAULT == BIP32_PURPOSE
+    return [self addressesBIP32NoPurposeWithGapLimit:1 internal:YES].lastObject;
+    #else
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
+    #endif
 }
 
 // all previously generated external addresses
@@ -505,6 +513,14 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 - (BOOL)containsAddress:(NSString *)address
 {
     return (address && [self.allAddresses containsObject:address]) ? YES : NO;
+}
+
+// gives the purpose of the address (either 0 or 44 for now)
+-(NSUInteger)addressPurpose:(NSString *)address
+{
+    if ([self.internalBIP44Addresses containsObject:address] || [self.externalBIP44Addresses containsObject:address]) return BIP44_PURPOSE;
+    if ([self.internalBIP32Addresses containsObject:address] || [self.externalBIP32Addresses containsObject:address]) return BIP32_PURPOSE;
+    return NSIntegerMax;
 }
 
 // true if the address was previously used as an input or output in any wallet transaction

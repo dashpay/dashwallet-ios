@@ -100,6 +100,8 @@ typedef struct _BRUTXO {
                             masterBIP32PublicKey:(NSData *)masterBIP32PublicKey 
                             seed:(NSData * _Nullable(^ _Nonnull)(NSString * _Nullable authprompt, uint64_t amount))seed;
 
+-(NSUInteger)addressPurpose:(NSString *)address;
+
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
 
