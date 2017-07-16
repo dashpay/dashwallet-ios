@@ -624,24 +624,43 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 - (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt
 {
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
-    NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
-                        *internalIndexes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *externalIndexesPurpose44 = [NSMutableOrderedSet orderedSet],
+                        *internalIndexesPurpose44 = [NSMutableOrderedSet orderedSet],
+                        *externalIndexesNoPurpose = [NSMutableOrderedSet orderedSet],
+                        *internalIndexesNoPurpose = [NSMutableOrderedSet orderedSet];
 
     for (NSString *addr in transaction.inputAddresses) {
-        [internalIndexes addObject:@([self.internalBIP44Addresses indexOfObject:addr])];
-        [externalIndexes addObject:@([self.externalBIP44Addresses indexOfObject:addr])];
+        NSInteger index = [self.internalBIP44Addresses indexOfObject:addr];
+        if (index != NSNotFound) {
+            [internalIndexesPurpose44 addObject:@(index)];
+            continue;
+        }
+        index = [self.externalBIP44Addresses indexOfObject:addr];
+        if (index != NSNotFound) {
+            [externalIndexesPurpose44 addObject:@(index)];
+            continue;
+        }
+        index = [self.internalBIP32Addresses indexOfObject:addr];
+        if (index != NSNotFound) {
+            [internalIndexesNoPurpose addObject:@(index)];
+            continue;
+        }
+        index = [self.externalBIP32Addresses indexOfObject:addr];
+        if (index != NSNotFound) {
+            [externalIndexesNoPurpose addObject:@(index)];
+            continue;
+        }
     }
-
-    [internalIndexes removeObject:@(NSNotFound)];
-    [externalIndexes removeObject:@(NSNotFound)];
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         NSMutableArray *privkeys = [NSMutableArray array];
         NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
 
         if (! seed) return YES; // user canceled authentication
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
+        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
         
         return [transaction signWithPrivateKeys:privkeys];
     }
