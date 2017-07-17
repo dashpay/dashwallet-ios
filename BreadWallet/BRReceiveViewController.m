@@ -128,11 +128,11 @@
         
         if (req.amount == 0) {
             if (req.isValid) {
-                [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
-                [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
                 [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_IMAGE_KEY];
                 image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
                 [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_INV_IMAGE_KEY];
+                [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
+                [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
             }
             else {
                 [self.groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
