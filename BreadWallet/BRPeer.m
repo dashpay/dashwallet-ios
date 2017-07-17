@@ -50,7 +50,8 @@ typedef enum : uint32_t {
     inv_error = 0,
     inv_tx,
     inv_block,
-    inv_merkleblock
+    inv_merkleblock,
+    inv_txlock_request,
 } inv_type;
 
 @interface BRPeer ()
@@ -669,7 +670,9 @@ services:(uint64_t)services
         if (uint256_is_zero(hash)) continue;
         
         switch (type) {
-            case inv_tx: [txHashes addObject:uint256_obj(hash)]; break;
+            case inv_tx:
+            case inv_txlock_request:
+                [txHashes addObject:uint256_obj(hash)]; break;
             case inv_block: [blockHashes addObject:uint256_obj(hash)]; break;
             case inv_merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             default: break;
@@ -879,6 +882,7 @@ services:(uint64_t)services
         
             switch (type) {
                 case inv_tx:
+                case inv_txlock_request:
                     transaction = [self.delegate peer:self requestedTransaction:hash];
                 
                     if (transaction) {
