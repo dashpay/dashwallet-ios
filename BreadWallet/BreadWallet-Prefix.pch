@@ -11,7 +11,7 @@
 #warning "This project uses features only available in iOS SDK 7.0 and later."
 #endif
 
-//#define BITCOIN_TESTNET 1
+#define BITCOIN_TESTNET 1
 //#define SNAPSHOT        1
 #define PEER_LOGGING    1
 #define EVENT_LOGGING   1
