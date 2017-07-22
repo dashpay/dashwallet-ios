@@ -72,17 +72,17 @@
 			<string>org.dashfoundation.dash</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>bread</string>
+				<string>dashwallet</string>
 			</array>
 		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>bitid</string>
+			<string>dashid</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>bitid</string>
+				<string>dashid</string>
 			</array>
 		</dict>
 	</array>
@@ -134,7 +134,7 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Bitcoin Payment Request</string>
+			<string>Dash Payment Request</string>
 			<key>UTTypeIdentifier</key>
 			<string>dash.paymentrequest</string>
 			<key>UTTypeTagSpecification</key>
@@ -149,7 +149,7 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Bitcoin Payment</string>
+			<string>Dash Payment</string>
 			<key>UTTypeIdentifier</key>
 			<string>dash.payment</string>
 			<key>UTTypeTagSpecification</key>
@@ -164,7 +164,7 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Bitcoin Payment ACK</string>
+			<string>Dash Payment ACK</string>
 			<key>UTTypeIdentifier</key>
 			<string>dash.paymentack</string>
 			<key>UTTypeTagSpecification</key>

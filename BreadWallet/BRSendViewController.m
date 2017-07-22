@@ -294,7 +294,7 @@ static NSString *sanitizeString(NSString *s)
         
         if (callback) [[UIApplication sharedApplication] openURL:callback];
     }
-    else if ([url.scheme isEqual:@"bitcoin"]) {
+    else if ([url.scheme isEqual:@"dash"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
     } else if ([BRBitID isBitIDURL:url]) {
         [self handleBitIDURL:url];

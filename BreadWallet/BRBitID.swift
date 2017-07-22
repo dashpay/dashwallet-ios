@@ -27,17 +27,17 @@ import Foundation
 import Security
 
 @objc open class BRBitID : NSObject {
-    static let SCHEME = "bitid"
+    static let SCHEME = "dashid"
     static let PARAM_NONCE = "x"
     static let PARAM_UNSECURE = "u"
-    static let USER_DEFAULTS_NONCE_KEY = "brbitid_nonces"
+    static let USER_DEFAULTS_NONCE_KEY = "dwdashid_nonces"
     static let DEFAULT_INDEX: UInt32 = 42
     
     class open func isBitIDURL(_ url: URL!) -> Bool {
         return url.scheme == SCHEME
     }
     
-    open static let BITCOIN_SIGNED_MESSAGE_HEADER = "Bitcoin Signed Message:\n".data(using: String.Encoding.utf8)!
+    open static let BITCOIN_SIGNED_MESSAGE_HEADER = "DASH Signed Message:\n".data(using: String.Encoding.utf8)!
     
     open class func formatMessageForBitcoinSigning(_ message: String) -> Data {
         let data = NSMutableData()
@@ -133,7 +133,7 @@ import Security
             
             // build a payload consisting of the signature, address and signed uri
             let priv = BRKey(privateKey: seq.bitIdPrivateKey(BRBitID.DEFAULT_INDEX, forURI: uri, fromSeed: seed)!)!
-            let uriWithNonce = "bitid://\(url.host!)\(url.path)?x=\(nonce)"
+            let uriWithNonce = "dashid://\(url.host!)\(url.path)?x=\(nonce)"
             let signature = BRBitID.signMessage(uriWithNonce, usingKey: priv)
             let payload: [String: String] = [
                 "address": priv.address!,
