@@ -1146,7 +1146,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (void)utxos:(NSString *)unspentURL forAddresses:(NSArray *)addresses
    completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:UNSPENT_URL]
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:unspentURL]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     NSMutableArray *args = [NSMutableArray array];
     NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
@@ -1172,6 +1172,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                          BRUTXO o;
                                          
                                          if (error || ! [json isKindOfClass:[NSArray class]]) {
+                                             NSLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                                              completion(nil, nil, nil,
                                                         [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                                        [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
@@ -1180,13 +1181,24 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                          }
                                          
                                          for (NSDictionary *utxo in json) {
+                                             
+                                             NSDecimalNumber * amount = nil;
+                                             if (utxo[@"amount"]) {
+                                                 if ([utxo[@"amount"] isKindOfClass:[NSString class]]) {
+                                                     amount = [NSDecimalNumber decimalNumberWithString:utxo[@"amount"]];
+                                                 } else if ([utxo[@"amount"] isKindOfClass:[NSDecimalNumber class]]) {
+                                                     amount = utxo[@"amount"];
+                                                 } else if ([utxo[@"amount"] isKindOfClass:[NSNumber class]]) {
+                                                     amount = [NSDecimalNumber decimalNumberWithDecimal:[utxo[@"amount"] decimalValue]];
+                                                 }
+                                             }
                                              if (! [utxo isKindOfClass:[NSDictionary class]] ||
                                                  ! [utxo[@"txid"] isKindOfClass:[NSString class]] ||
                                                  [utxo[@"txid"] hexToData].length != sizeof(UInt256) ||
                                                  ! [utxo[@"vout"] isKindOfClass:[NSNumber class]] ||
                                                  ! [utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
                                                  ! [utxo[@"scriptPubKey"] hexToData] ||
-                                                 ! [utxo[@"duffs"] isKindOfClass:[NSNumber class]]) {
+                                                 (! [utxo[@"duffs"] isKindOfClass:[NSNumber class]] && !amount)) {
                                                  completion(nil, nil, nil,
                                                             [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                                            [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
@@ -1197,7 +1209,11 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                              o.hash = *(const UInt256 *)[utxo[@"txid"] hexToData].reverse.bytes;
                                              o.n = [utxo[@"vout"] unsignedIntValue];
                                              [utxos addObject:brutxo_obj(o)];
-                                             [amounts addObject:utxo[@"duffs"]];
+                                             if (amount) {
+                                                 [amounts addObject:[amount decimalNumberByMultiplyingByPowerOf10:8]];
+                                             } else {
+                                                 [amounts addObject:utxo[@"duffs"]];
+                                             }
                                              [scripts addObject:[utxo[@"scriptPubKey"] hexToData]];
                                          }
                                          
