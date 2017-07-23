@@ -191,7 +191,7 @@
                 }
             }
 
-            if (jailbroken && manager.wallet.totalReceived + manager.wallet.totalSent > 0) {
+            if (jailbroken && manager.wallet.totalReceived > 0) {
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
                   message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                             "Any 'jailbreak' app can access any other app's keychain data "
