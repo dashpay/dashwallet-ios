@@ -501,15 +501,15 @@
             }
             
             BRAppDelegate *del = (BRAppDelegate *)[UIApplication sharedApplication].delegate;
-            [del updatePlatformOnComplete:^{
-                NSLog(@"[BRRootViewController] updatePlatform completed!");
-                if (! self.showTips &&
-                    [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO
-                    && [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
-                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
-                    [self showBuyAlert];
-                }
-            }];
+//            [del updatePlatformOnComplete:^{
+//                NSLog(@"[BRRootViewController] updatePlatform completed!");
+//                if (! self.showTips &&
+//                    [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO
+//                    && [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
+//                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
+//                    [self showBuyAlert];
+//                }
+//            }];
         }
     }
 }
