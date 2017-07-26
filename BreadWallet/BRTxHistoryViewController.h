@@ -28,4 +28,6 @@
 @interface BRTxHistoryViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
+- (void)showBuy;
+
 @end
