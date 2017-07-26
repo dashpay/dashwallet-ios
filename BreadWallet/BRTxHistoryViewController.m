@@ -227,9 +227,9 @@ static NSString *dateFormat(NSString *template)
     [super viewDidAppear:animated];
     [self.buyController preload];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_bitcoin"] == NO &&
-        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyBitcoin]) {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_bitcoin"];
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
+        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
         [self showBuyAlert];
     }
 }
