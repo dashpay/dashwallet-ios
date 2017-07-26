@@ -41,8 +41,8 @@
 #define ADDRESS_TIP NSLocalizedString(@"This is your dash address. Tap to copy it or send it by email or sms. The "\
                     "address will change each time you receive funds, but old addresses always work.", nil)
 
-#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
-                       stringByAppendingPathComponent:@"qr.png"]
+//#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
+//                       stringByAppendingPathComponent:@"qr.png"]
 
 @interface BRReceiveViewController ()
 
@@ -73,8 +73,8 @@
 
     if (req.isValid) {
         if (! _qrImage) {
-            _qrImage = [[UIImage imageWithContentsOfFile:QR_IMAGE_FILE] resize:self.qrView.bounds.size
-                        withInterpolationQuality:kCGInterpolationNone];;
+            _qrImage = [[UIImage imageWithData:[self.groupDefs objectForKey:APP_GROUP_QR_IMAGE_KEY]]
+                        resize:self.qrView.bounds.size withInterpolationQuality:kCGInterpolationNone];
         }
         
         self.qrView.image = _qrImage;
@@ -113,8 +113,13 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
-        UIImage *image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+        UIImage *image = nil;
         
+        if ([req.data isEqual:[self.groupDefs objectForKey:APP_GROUP_REQUEST_DATA_KEY]]) {
+            image = [UIImage imageWithData:[self.groupDefs objectForKey:APP_GROUP_QR_IMAGE_KEY]];
+        }
+        
+        if (! image) image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
         self.qrImage = [image resize:(self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0))
                         withInterpolationQuality:kCGInterpolationNone];
         
@@ -122,12 +127,15 @@
             if (req.isValid) {
                 [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
                 [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [UIImagePNGRepresentation(image) writeToFile:QR_IMAGE_FILE atomically:YES];
+                [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_IMAGE_KEY];
+                image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
+                [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_INV_IMAGE_KEY];
             }
             else {
                 [self.groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
                 [self.groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
-                [[NSFileManager defaultManager] removeItemAtPath:QR_IMAGE_FILE error:nil];
+                [self.groupDefs removeObjectForKey:APP_GROUP_QR_IMAGE_KEY];
+                [self.groupDefs removeObjectForKey:APP_GROUP_QR_INV_IMAGE_KEY];
             }
 
             [self.groupDefs synchronize];

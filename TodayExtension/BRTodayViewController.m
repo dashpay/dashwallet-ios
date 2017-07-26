@@ -119,20 +119,17 @@
     
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
         if ([[self.extensionContext class] instancesRespondToSelector:@selector(widgetLargestAvailableDisplayMode)]) {
-            self.qrOverlay.image = [[UIImage imageWithQRCodeData:self.qrCodeData
-                                    color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0]]
-                                    resize:CGSizeMake(240, 240)
-                                    withInterpolationQuality:kCGInterpolationNone];
-            self.qrImage.image = [[UIImage imageWithQRCodeData:self.qrCodeData
-                                  color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.3]]
-                                  resize:CGSizeMake(240, 240)
-                                  withInterpolationQuality:kCGInterpolationNone];
+            self.qrOverlay.image =
+                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_INV_IMAGE_KEY]]
+                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
+            self.qrImage.image =
+                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY]]
+                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
         }
         else {
-            self.qrImage.image = self.qrOverlay.image = [[UIImage imageWithQRCodeData:self.qrCodeData
-                                                         color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.0]]
-                                                         resize:CGSizeMake(240, 240)
-                                                         withInterpolationQuality:kCGInterpolationNone];
+            self.qrImage.image = self.qrOverlay.image =
+                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_INV_IMAGE_KEY]]
+                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
         }
     }
 

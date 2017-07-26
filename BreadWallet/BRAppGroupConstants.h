@@ -26,3 +26,5 @@
 #define APP_GROUP_ID                  @"group.org.dashfoundation.dash"
 #define APP_GROUP_REQUEST_DATA_KEY    @"kBRSharedContainerDataWalletRequestDataKey"
 #define APP_GROUP_RECEIVE_ADDRESS_KEY @"kBRSharedContainerDataWalletReceiveAddressKey"
+#define APP_GROUP_QR_IMAGE_KEY        @"kBRSharedContainerDataWalletQRImageKey"
+#define APP_GROUP_QR_INV_IMAGE_KEY    @"kBRSharedContainerDataWalletQRInvImageKey"
