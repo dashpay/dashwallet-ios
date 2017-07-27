@@ -225,13 +225,13 @@ static NSString *dateFormat(NSString *template)
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self.buyController preload];
+    //[self.buyController preload];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
-        [self showBuyAlert];
-    }
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
+//        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
+//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
+//        [self showBuyAlert];
+//    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -252,7 +252,7 @@ static NSString *dateFormat(NSString *template)
         self.syncFailedObserver = nil;
         self.wallpaper.clipsToBounds = YES;
         
-        self.buyController = nil;
+        //self.buyController = nil;
     }
 
     [super viewWillDisappear:animated];
@@ -496,7 +496,7 @@ static NSString *dateFormat(NSString *template)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
+    bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
     switch (section) {
         case 0:
             if (self.transactions.count == 0) return 1;
@@ -630,12 +630,12 @@ static NSString *dateFormat(NSString *template)
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
+            bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0:
-                    cell.textLabel.text = NSLocalizedString(@"Buy Bitcoin", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"bitcoin-buy-blue-small"];
+                    cell.textLabel.text = NSLocalizedString(@"Buy Dash", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"dash-buy-blue-small"];
                     break;
                     
                 case 1:
@@ -753,7 +753,7 @@ static NSString *dateFormat(NSString *template)
 
         case 1:
         {
-            bool buyEnabled = [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
+            bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0: // buy bitcoin

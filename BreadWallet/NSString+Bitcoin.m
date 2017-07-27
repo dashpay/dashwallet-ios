@@ -178,7 +178,11 @@ static const UniChar base58chars[] = {
     
     while (z < self.length && [self characterAtIndex:z] == base58chars[0]) z++; // count leading zeroes
     
-    uint8_t buf[(self.length - z)*733/1000 + 1]; // log(58)/log(256), rounded up
+    unsigned long buffersize = (self.length - z)*733/1000 + 1;
+    
+    if (buffersize > 65535) return nil;
+    
+    uint8_t buf[buffersize]; // log(58)/log(256), rounded up
     
     memset(buf, 0, sizeof(buf));
     
@@ -300,6 +304,8 @@ static const UniChar base58chars[] = {
 
 - (BOOL)isValidBitcoinAddress
 {
+    if (self.length > 35) return NO;
+    
     NSData *d = self.base58checkToData;
     
     if (d.length != 21) return NO;

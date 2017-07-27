@@ -114,6 +114,8 @@
 
 - (BOOL)isValidDashAddress
 {
+    if (self.length > 35) return NO;
+    
     NSData *d = self.base58checkToData;
     
     if (d.length != 21) return NO;

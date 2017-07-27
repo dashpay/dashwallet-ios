@@ -93,7 +93,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self.eaController preload];
+    //[self.eaController preload];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -385,11 +385,11 @@ _switch_cell:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             cell.textLabel.text = @"early access";
 
-            if (![WKWebView class] || ![[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
-                cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
-                cell.userInteractionEnabled = NO;
-                cell.hidden = YES;
-            }
+//            if (![WKWebView class] || ![[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
+//                cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
+//                cell.userInteractionEnabled = NO;
+//                cell.hidden = YES;
+//            }
 
             break;
     }
