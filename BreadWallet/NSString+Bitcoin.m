@@ -180,7 +180,7 @@ static const UniChar base58chars[] = {
     
     unsigned long buffersize = (self.length - z)*733/1000 + 1;
     
-    if (buffersize > 65535) return nil;
+    if (buffersize > USHRT_MAX) return nil;
     
     uint8_t buf[buffersize]; // log(58)/log(256), rounded up
     
