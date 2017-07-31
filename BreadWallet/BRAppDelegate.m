@@ -220,11 +220,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // sync events to the server
     [[BREventManager sharedEventManager] sync];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
-        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
-        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
-    }
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
+//        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
+//        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
+//        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
+//    }
 }
 
 - (void)setupBalanceNotification:(UIApplication *)application
@@ -380,9 +380,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     NSString *svcType = @"p"; // ^ "production"
 #endif
     
-    NSLog(@"Push registry did update push credentials: %@", credentials);
-    BRAPIClient *client = [BRAPIClient sharedClient];
-    [client savePushNotificationToken:credentials.token pushNotificationType:svcType];
+//    NSLog(@"Push registry did update push credentials: %@", credentials);
+//    BRAPIClient *client = [BRAPIClient sharedClient];
+//    [client savePushNotificationToken:credentials.token pushNotificationType:svcType];
 }
 
 - (void)pushRegistry:(PKPushRegistry *)registry didInvalidatePushTokenForType:(NSString *)type

@@ -707,17 +707,17 @@ static const char *dns_seeds[] = {
         [self.txRelays removeObjectsForKeys:txHashes];
     }
     
-    for (NSValue *hash in updatedTx) {
-        NSError *kvErr = nil;
-        BRTxMetadataObject *txm;
-        UInt256 h;
-        
-        [hash getValue:&h];
-        //todo reenable this, crashes now
-        //txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
-        //txm.blockHeight = height;
-        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
-    }
+//    for (NSValue *hash in updatedTx) {
+//        NSError *kvErr = nil;
+//        BRTxMetadataObject *txm;
+//        UInt256 h;
+//        
+//        [hash getValue:&h];
+//        //todo reenable this, crashes now
+//        //txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
+//        //txm.blockHeight = height;
+//        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
+//    }
 }
 
 - (void)txTimeout:(NSValue *)txHash
@@ -1194,10 +1194,10 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
             
-            [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyDashPrice.doubleValue
-                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
+//            [[BRAPIClient sharedClient].kv
+//             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyDashPrice.doubleValue
+//                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
+//                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1256,10 +1256,10 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
 
-            [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyDashPrice.doubleValue
-                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
+//            [[BRAPIClient sharedClient].kv
+//             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyDashPrice.doubleValue
+//                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
+//                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
