@@ -93,15 +93,14 @@
                                                   usingBlock:^(NSNotification *note) {
                                                       if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
                                                       
-                                                      self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                                                                   [manager stringForDashAmount:manager.wallet.balance],
-                                                                                   [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                                      [self updateTitleView];
                                                   }];
     
     self.backgroundObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            self.navigationItem.titleView = self.logo;
+                                                           [self.navigationItem setRightBarButtonItem:self.lock animated:NO];
                                                        }];
     
     if (self.usingShapeshift) {
@@ -110,12 +109,6 @@
         self.shapeshiftLocalCurrencyLabel.text = @"";
     }
     self.shapeshiftLocalCurrencyLabel.hidden = !self.usingShapeshift;
-}
-
-- (void)dealloc
-{
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -149,7 +142,10 @@
 {
     self.amount = 0;
     if (self.navigationController.viewControllers.firstObject != self) self.wallpaper.hidden = animated;
-    
+    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
+    self.balanceObserver = nil;
+    self.backgroundObserver = nil;
     [super viewWillDisappear:animated];
 }
 

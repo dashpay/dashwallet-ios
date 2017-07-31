@@ -97,10 +97,10 @@ typedef struct _BRUTXO {
 - (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nullable)context
                                  sequence:(id<BRKeySequence> _Nonnull)sequence
                           masterPublicKey:(NSData * _Nullable)masterPublicKey
-                            masterBIP32PublicKey:(NSData *)masterBIP32PublicKey 
+                            masterBIP32PublicKey:(NSData * _Nullable)masterBIP32PublicKey
                             seed:(NSData * _Nullable(^ _Nonnull)(NSString * _Nullable authprompt, uint64_t amount))seed;
 
--(NSUInteger)addressPurpose:(NSString *)address;
+-(NSUInteger)addressPurpose:(NSString * _Nonnull)address;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;

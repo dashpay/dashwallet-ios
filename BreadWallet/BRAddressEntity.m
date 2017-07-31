@@ -29,6 +29,8 @@
 @implementation BRAddressEntity
 
 @dynamic address;
+@dynamic purpose;
+@dynamic account;
 @dynamic index;
 @dynamic internal;
 
