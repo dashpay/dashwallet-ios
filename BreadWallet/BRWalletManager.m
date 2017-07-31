@@ -1260,7 +1260,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                  ! [utxo[@"vout"] isKindOfClass:[NSNumber class]] ||
                                                  ! [utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
                                                  ! [utxo[@"scriptPubKey"] hexToData] ||
-                                                 (! [utxo[@"duffs"] isKindOfClass:[NSNumber class]] && !amount)) {
+                                                 (! [utxo[@"duffs"] isKindOfClass:[NSNumber class]] && ! [utxo[@"satoshis"] isKindOfClass:[NSNumber class]] && !amount)) {
                                                  completion(nil, nil, nil,
                                                             [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                                            [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
@@ -1273,8 +1273,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                              [utxos addObject:brutxo_obj(o)];
                                              if (amount) {
                                                  [amounts addObject:[amount decimalNumberByMultiplyingByPowerOf10:8]];
-                                             } else {
+                                             } else if (utxo[@"duffs"]) {
                                                  [amounts addObject:utxo[@"duffs"]];
+                                             }  else if (utxo[@"satoshis"]) {
+                                                 [amounts addObject:utxo[@"satoshis"]];
                                              }
                                              [scripts addObject:[utxo[@"scriptPubKey"] hexToData]];
                                          }
