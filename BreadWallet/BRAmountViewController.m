@@ -88,21 +88,6 @@
     
     [self updateLocalCurrencyLabel];
     
-    self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
-                                                  usingBlock:^(NSNotification *note) {
-                                                      if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
-                                                      
-                                                      [self updateTitleView];
-                                                  }];
-    
-    self.backgroundObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           self.navigationItem.titleView = self.logo;
-                                                           [self.navigationItem setRightBarButtonItem:self.lock animated:NO];
-                                                       }];
-    
     if (self.usingShapeshift) {
         [self swapCurrency:self];
     } else {
@@ -136,6 +121,21 @@
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
         [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     }
+    
+    self.balanceObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+                                                  usingBlock:^(NSNotification *note) {
+                                                      if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
+                                                      
+                                                      [self updateTitleView];
+                                                  }];
+    
+    self.backgroundObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           self.navigationItem.titleView = self.logo;
+                                                           [self.navigationItem setRightBarButtonItem:self.lock animated:NO];
+                                                       }];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

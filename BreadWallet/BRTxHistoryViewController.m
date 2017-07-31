@@ -201,9 +201,7 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)",
-                                             [manager stringForDashAmount:manager.wallet.balance],
-                                             [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                [self updateTitleView];
             }];
     }
 }
