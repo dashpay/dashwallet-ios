@@ -51,6 +51,7 @@
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
+#define TICKER_REFRESH_TIME 5.0
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
@@ -1015,18 +1016,20 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     double poloniexPrice = [[defs objectForKey:POLONIEX_DASH_BTC_PRICE_KEY] doubleValue];
     double dashcentralPrice = [[defs objectForKey:DASHCENTRAL_DASH_BTC_PRICE_KEY] doubleValue];
+    NSNumber * newPrice = 0;
     if (poloniexPrice > 0) {
         if (dashcentralPrice > 0) {
-            _bitcoinDashPrice = @((poloniexPrice + dashcentralPrice)/2.0);
+            newPrice = @((poloniexPrice + dashcentralPrice)/2.0);
         } else {
-            _bitcoinDashPrice = @(poloniexPrice);
+            newPrice = @(poloniexPrice);
         }
     } else if (dashcentralPrice > 0) {
-        _bitcoinDashPrice = @(dashcentralPrice);
+        newPrice = @(dashcentralPrice);
     }
     
-    if (! _wallet) return;
-    
+    if (! _wallet ) return;
+    //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
+    _bitcoinDashPrice = newPrice;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
     });
@@ -1037,7 +1040,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (void)updateDashExchangeRate
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashExchangeRate) object:nil];
-    [self performSelector:@selector(updateDashExchangeRate) withObject:nil afterDelay:60.0];
+    [self performSelector:@selector(updateDashExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     
     
@@ -1083,7 +1086,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (void)updateDashCentralExchangeRateFallback
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashCentralExchangeRateFallback) object:nil];
-    [self performSelector:@selector(updateDashCentralExchangeRateFallback) withObject:nil afterDelay:60.0];
+    [self performSelector:@selector(updateDashCentralExchangeRateFallback) withObject:nil afterDelay:TICKER_REFRESH_TIME];
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     
     
@@ -1100,7 +1103,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          if (!error) {
                                              NSNumber * dash_usd = @([[[json objectForKey:@"exchange_rates"] objectForKey:@"btc_dash"] doubleValue]);
-                                             NSLog(@"%@",[dash_usd class]);
                                              if (dash_usd && [dash_usd doubleValue] > 0) {
                                                  NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
                                                  
@@ -1120,7 +1122,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (void)updateBitcoinExchangeRate
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateBitcoinExchangeRate) object:nil];
-    [self performSelector:@selector(updateBitcoinExchangeRate) withObject:nil afterDelay:60.0];
+    [self performSelector:@selector(updateBitcoinExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
     if (self.reachability.currentReachabilityStatus == NotReachable) return;
     
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOIN_TICKER_URL]

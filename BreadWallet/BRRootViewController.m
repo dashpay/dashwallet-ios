@@ -634,6 +634,7 @@
                                   [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
+        [((UILabel*)self.navigationItem.titleView) sizeToFit];
     } else {
         self.navigationItem.titleView = [self titleLabel];
     }
