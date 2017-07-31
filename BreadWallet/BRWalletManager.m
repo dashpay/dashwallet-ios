@@ -50,6 +50,7 @@
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
+#define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
@@ -62,6 +63,8 @@
 #define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
 #define POLONIEX_DASH_BTC_PRICE_KEY  @"POLONIEX_DASH_BTC_PRICE"
 #define POLONIEX_DASH_BTC_UPDATE_TIME_KEY  @"POLONIEX_DASH_BTC_UPDATE_TIME"
+#define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
+#define DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY @"DASHCENTRAL_DASH_BTC_UPDATE_TIME"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 #define SECURE_TIME_KEY         @"SECURE_TIME"
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
@@ -322,6 +325,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updateBitcoinExchangeRate];
         [self updateDashExchangeRate];
+        [self updateDashCentralExchangeRateFallback];
     });
 }
 
@@ -993,8 +997,16 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         
         double poloniexPrice = [[defs objectForKey:POLONIEX_DASH_BTC_PRICE_KEY] doubleValue];
-        _bitcoinDashPrice = @(poloniexPrice);
-        
+        double dashcentralPrice = [[defs objectForKey:DASHCENTRAL_DASH_BTC_PRICE_KEY] doubleValue];
+        if (poloniexPrice > 0) {
+            if (dashcentralPrice > 0) {
+                _bitcoinDashPrice = @((poloniexPrice + dashcentralPrice)/2.0);
+            } else {
+                _bitcoinDashPrice = @(poloniexPrice);
+            }
+        } else if (dashcentralPrice > 0) {
+            _bitcoinDashPrice = @(dashcentralPrice);
+        }
     }
     return _bitcoinDashPrice;
 }
@@ -1002,7 +1014,17 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 - (void)refreshBitcoinDashPrice{
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     double poloniexPrice = [[defs objectForKey:POLONIEX_DASH_BTC_PRICE_KEY] doubleValue];
-    _bitcoinDashPrice = @(poloniexPrice);
+    double dashcentralPrice = [[defs objectForKey:DASHCENTRAL_DASH_BTC_PRICE_KEY] doubleValue];
+    if (poloniexPrice > 0) {
+        if (dashcentralPrice > 0) {
+            _bitcoinDashPrice = @((poloniexPrice + dashcentralPrice)/2.0);
+        } else {
+            _bitcoinDashPrice = @(poloniexPrice);
+        }
+    } else if (dashcentralPrice > 0) {
+        _bitcoinDashPrice = @(dashcentralPrice);
+    }
+    
     if (! _wallet) return;
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1052,6 +1074,44 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                          }
                                          NSLog(@"poloniex exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
                                                [self stringForDashAmount:DUFFS]);
+                                     }
+      ] resume];
+    
+}
+
+// until there is a public api for dash prices among multiple currencies it's better that we pull Bitcoin prices per currency and convert it to dash
+- (void)updateDashCentralExchangeRateFallback
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashCentralExchangeRateFallback) object:nil];
+    [self performSelector:@selector(updateDashCentralExchangeRateFallback) withObject:nil afterDelay:60.0];
+    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    
+    
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCENTRAL_TICKER_URL]
+                                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
+    
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
+                                         if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
+                                             NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
+                                             return;
+                                         }
+                                         NSError *error = nil;
+                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+                                         if (!error) {
+                                             NSNumber * dash_usd = @([[[json objectForKey:@"exchange_rates"] objectForKey:@"btc_dash"] doubleValue]);
+                                             NSLog(@"%@",[dash_usd class]);
+                                             if (dash_usd && [dash_usd doubleValue] > 0) {
+                                                 NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+                                                 
+                                                 [defs setObject:dash_usd forKey:DASHCENTRAL_DASH_BTC_PRICE_KEY];
+                                                 [defs setObject:[NSDate date] forKey:DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY];
+                                                 [defs synchronize];
+                                                 [self refreshBitcoinDashPrice];
+                                                 NSLog(@"dash central exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
+                                                       [self stringForDashAmount:DUFFS]);
+                                             }
+                                         }
                                      }
       ] resume];
     
