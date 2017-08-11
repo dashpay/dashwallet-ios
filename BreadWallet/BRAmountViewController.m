@@ -282,7 +282,7 @@
         [BREventManager saveEvent:@"amount:pay_using_shapeshift"];
         
         if (self.swapped) {
-            [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount*manager.bitcoinDashPrice.doubleValue];
+            [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount/manager.bitcoinDashPrice.doubleValue];
         } else
             [self.delegate amountViewController:self shapeshiftDashAmount:self.amount];
     }else {

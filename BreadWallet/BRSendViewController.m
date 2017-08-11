@@ -67,7 +67,7 @@ static NSString *sanitizeString(NSString *s)
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) BRTransaction *sweepTx;
-@property (nonatomic, strong) BRPaymentProtocolRequest *request;
+@property (nonatomic, strong) BRPaymentProtocolRequest *request, *shapeshiftRequest;
 @property (nonatomic, strong) NSString *scheme;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, strong) NSURL *url, *callback;
@@ -549,6 +549,11 @@ static NSString *sanitizeString(NSString *s)
                               otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"enable", nil), nil] show];
             return;
             
+        } else if (amount > manager.wallet.balance && amount != UINT64_MAX) {
+            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"insufficient funds", nil) message:nil
+                                       delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            [self cancel:nil];
+            return;
         } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED usingInstantSend:TRUE] < amount)) {
             self.request = protoReq;
             self.scheme = currency;
@@ -669,6 +674,7 @@ static NSString *sanitizeString(NSString *s)
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
+            self.shapeshiftRequest = protoReq;
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
             self.okIdentity = protoReq.commonName;
@@ -683,13 +689,14 @@ static NSString *sanitizeString(NSString *s)
             c.usingShapeshift = TRUE;
             c.delegate = self;
             self.request = protoReq;
+            self.shapeshiftRequest = protoReq;
             self.associatedShapeshift = shapeshift;
             if (protoReq.commonName.length > 0) {
                 if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
-                    c.to = [LOCK @" " stringByAppendingString:sanitizeString(shapeshift.withdrawalAddress)];
+                    c.to = [LOCK @" " stringByAppendingString:sanitizeString(address)];
                 }
                 else if (protoReq.errorMessage.length > 0) {
-                    c.to = [REDX @" " stringByAppendingString:sanitizeString(shapeshift.withdrawalAddress)];
+                    c.to = [REDX @" " stringByAppendingString:sanitizeString(address)];
                 }
                 else c.to = sanitizeString(shapeshift.withdrawalAddress);
             }
@@ -716,6 +723,7 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         self.request = protoReq;
+        self.shapeshiftRequest = protoReq;
         self.scheme = currency;
         [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/manager.bitcoinDashPrice.doubleValue];
     }
@@ -1252,6 +1260,7 @@ static NSString *sanitizeString(NSString *s)
     
     if (self.clearClipboard) [UIPasteboard generalPasteboard].string = @"";
     self.request = nil;
+    self.shapeshiftRequest = nil;
     self.scheme = nil;
     self.associatedShapeshift = nil;
     [self cancel:sender];
@@ -1321,7 +1330,7 @@ static NSString *sanitizeString(NSString *s)
     [self verifyShapeshiftAmountIsInBounds:dashAmount completionBlock:^{
         //we know the exact amount of bitcoins we want to send
         BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.shapeshiftRequest.details.outputScripts.firstObject];
         NSString * returnAddress = m.wallet.receiveAddress;
         NSNumber * numberAmount = [m numberForAmount:amount];
         [[DSShapeshiftManager sharedInstance] POST_SendAmount:numberAmount withAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
@@ -1345,7 +1354,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused fixedAmountOut:depositAmountNumber amountIn:depositAmountNumber];
                 
-                BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,depositAmount,sanitizeString(self.request.commonName),withdrawalAddress]];
+                BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,depositAmount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress]];
                 [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
             }
         }];
@@ -1361,7 +1370,7 @@ static NSString *sanitizeString(NSString *s)
     [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
         //we don't know the exact amount of bitcoins we want to send, we are just sending dash
         BRWalletManager *m = [BRWalletManager sharedInstance];
-        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.shapeshiftRequest.details.outputScripts.firstObject];
         NSString * returnAddress = m.wallet.receiveAddress;
         self.amount = amount;
         DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity unusedShapeshiftHavingWithdrawalAddress:address];
@@ -1386,7 +1395,7 @@ static NSString *sanitizeString(NSString *s)
                 NSString * withdrawalAddress = shiftInfo[@"withdrawal"];
                 if (withdrawalAddress && depositAddress) {
                     DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused];
-                    BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),withdrawalAddress]];
+                    BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress]];
                     [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
                 }
             }];
