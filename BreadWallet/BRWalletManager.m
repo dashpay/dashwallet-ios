@@ -458,9 +458,17 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             NSLog(@"error setting wallet seed");
             
             if (seedPhrase) {
-                [[[UIAlertView alloc] initWithTitle:@"couldn't create wallet"
-                                            message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-                                           delegate:self cancelButtonTitle:@"abort" otherButtonTitles:nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:@"couldn't create wallet"
+                                             message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:@"abort"
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
             }
             
             return;

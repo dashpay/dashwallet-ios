@@ -242,7 +242,7 @@ static NSString *sanitizeString(NSString *s)
             
             NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
                                 stringByReplacingOccurrencesOfString:@"+" withString:@" "]
-                               stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                               stringByRemovingPercentEncoding];
             
             if ([pair[0] isEqual:@"x-source"]) xsource = value;
             else if ([pair[0] isEqual:@"x-success"]) xsuccess = value;
@@ -302,8 +302,17 @@ static NSString *sanitizeString(NSString *s)
         [self handleBitIDURL:url];
     }
     else {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported url", nil) message:url.absoluteString
-                                   delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"unsupported url", nil)
+                                     message:url.absoluteString
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:@"ok"
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+        [alert addAction:okButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 
@@ -327,10 +336,17 @@ static NSString *sanitizeString(NSString *s)
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
                 if (error) {
-                    [[[UIAlertView alloc]
-                      initWithTitle:NSLocalizedString(@"couldn't transmit payment to bitcoin network", nil)
-                      message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                      otherButtonTitles:nil] show];
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:NSLocalizedString(@"couldn't transmit payment to dash network", nil)
+                                                 message:error.localizedDescription
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:@"ok"
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
                 }
                 
                 [self.view addSubview:[[[BRBubbleView
@@ -354,9 +370,18 @@ static NSString *sanitizeString(NSString *s)
         
         return;
     }
-    
-    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"unsupported or corrupted document", nil) message:nil
-                               delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"unsupported or corrupted document", nil)
+                                 message:@""
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:@"ok"
+                               style:UIAlertActionStyleCancel
+                               handler:^(UIAlertAction * action) {
+                               }];
+    [alert addAction:okButton];
+    [self presentViewController:alert animated:YES completion:nil];
+
 }
 
 - (void)handleBitIDURL:(NSURL *)url
@@ -457,9 +482,17 @@ static NSString *sanitizeString(NSString *s)
             [self confirmSweep:request.paymentAddress];
         }
         else {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"not a valid dash or bitcoin address", nil)
-                                        message:request.paymentAddress delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                              otherButtonTitles:nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"not a valid dash or bitcoin address", nil)
+                                         message:request.paymentAddress
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:@"ok"
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
+            [self presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
         }
     }
@@ -471,9 +504,17 @@ static NSString *sanitizeString(NSString *s)
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
                 if (error && ! ([request.paymentAddress isValidBitcoinAddress] || [request.paymentAddress isValidDashAddress])) {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                                message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                      otherButtonTitles:nil] show];
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                                 message:error.localizedDescription
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:@"ok"
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
                     [self cancel:nil];
                 }
                 else [self confirmProtocolRequest:(error) ? request.protocolRequest : req];
@@ -500,8 +541,17 @@ static NSString *sanitizeString(NSString *s)
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"bad payment request", nil) message:protoReq.errorMessage
-                                   delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"bad payment request", nil)
+                                     message:protoReq.errorMessage
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:@"ok"
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+        [alert addAction:okButton];
+        [self presentViewController:alert animated:YES completion:nil];
         [self cancel:nil];
         return;
     }
@@ -521,9 +571,17 @@ static NSString *sanitizeString(NSString *s)
     if ([currency isEqualToString:@"dash"]) {
         NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
         if ([manager.wallet containsAddress:address]) {
-            [[[UIAlertView alloc] initWithTitle:@""
-                                        message:NSLocalizedString(@"this payment address is already in your wallet", nil)
-                                       delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:@""
+                                         message:NSLocalizedString(@"this payment address is already in your wallet", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:@"ok"
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
+            [self presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -533,12 +591,25 @@ static NSString *sanitizeString(NSString *s)
             self.scheme = currency;
             self.okAddress = address;
             self.associatedShapeshift = shapeshift;
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                                        message:NSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
-                                                                  "re-use reduces privacy for both you and the recipient and can result in loss if "
-                                                                  "the recipient doesn't directly control the address", nil)
-                                       delegate:self cancelButtonTitle:nil
-                              otherButtonTitles:NSLocalizedString(@"ignore", nil), NSLocalizedString(@"cancel", nil), nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                         message:NSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
+                                                                   "re-use reduces privacy for both you and the recipient and can result in loss if "
+                                                                   "the recipient doesn't directly control the address", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:@"cancel"
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           [self cancelOrChangeAmount];
+                                       }];
+            UIAlertAction* ignoreButton = [UIAlertAction
+                                           actionWithTitle:@"ignore"
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+            [alert addAction:cancelButton];
+            [self presentViewController:alert animated:YES completion:nil];
             return;
         } else if (wantsInstant && !self.sendInstantly) {
             self.request = protoReq;
@@ -884,7 +955,9 @@ static NSString *sanitizeString(NSString *s)
                                                                                  (self.callback.query.length > 0) ? @"&" : @"?",
                                                                                  [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
                                                                                                                       length:sizeof(UInt256)].reverse]]];
-                                           [[UIApplication sharedApplication] openURL:self.callback];
+                                           [[UIApplication sharedApplication] openURL:self.callback options:@{} completionHandler:^(BOOL success) {
+                                           
+                                           }];
                                        }
                                        
                                        [self reset:nil];
@@ -917,8 +990,17 @@ static NSString *sanitizeString(NSString *s)
             [statusView popOut];
             
             if (error) {
-                [[[UIAlertView alloc] initWithTitle:@"" message:error.localizedDescription delegate:self
-                                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:@""
+                                             message:error.localizedDescription
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [self presentViewController:alert animated:YES completion:nil];
                 [self cancel:nil];
             }
             else if (tx) {
@@ -932,10 +1014,54 @@ static NSString *sanitizeString(NSString *s)
                 NSString *alertMsg = [NSString stringWithFormat:alertFmt, [manager stringForDashAmount:amount],
                                       [manager localCurrencyStringForDashAmount:amount], [manager stringForDashAmount:fee],
                                       [manager localCurrencyStringForDashAmount:fee]];
-                [[[UIAlertView alloc] initWithTitle:@"" message:alertMsg delegate:self
-                                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                                  otherButtonTitles:[NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:amount],
-                                                     [manager localCurrencyStringForDashAmount:amount]], nil] show];
+                
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:@""
+                                             message:alertMsg
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* cancelButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               [self cancelOrChangeAmount];
+                                           }];
+                UIAlertAction* amountButton = [UIAlertAction
+                                               actionWithTitle:[NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:amount],
+                                                                [manager localCurrencyStringForDashAmount:amount]]
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                                   [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
+                                                   
+                                                   [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
+                                                       [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
+                                                       
+                                                       if (error) {
+                                                           UIAlertController * alert = [UIAlertController
+                                                                                        alertControllerWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+                                                                                        message:error.localizedDescription
+                                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                                                           
+                                                           UIAlertAction* okButton = [UIAlertAction
+                                                                                      actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                                      style:UIAlertActionStyleCancel
+                                                                                      handler:^(UIAlertAction * action) {
+                                                                                      }];
+                                                           [alert addAction:okButton];
+                                                           [self presentViewController:alert animated:YES completion:nil];
+                                                           [self cancel:nil];
+                                                           return;
+                                                       }
+                                                       
+                                                       [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"swept!", nil)
+                                                                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+                                                                               popIn] popOutAfterDelay:2.0]];
+                                                       [self reset:nil];
+                                                   }];
+                                               
+                                           }];
+                [alert addAction:amountButton];
+                [alert addAction:cancelButton];
+                [self presentViewController:alert animated:YES completion:nil];
             }
             else [self cancel:nil];
         });
@@ -962,9 +1088,17 @@ static NSString *sanitizeString(NSString *s)
                             [statusView popOut];
                             
                             if (error) {
-                                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
-                                                            message:error.localizedDescription delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                                  otherButtonTitles:nil] show];
+                                UIAlertController * alert = [UIAlertController
+                                                             alertControllerWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
+                                                             message:error.localizedDescription
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+                                UIAlertAction* okButton = [UIAlertAction
+                                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                           style:UIAlertActionStyleCancel
+                                                           handler:^(UIAlertAction * action) {
+                                                           }];
+                                [alert addAction:okButton];
+                                [self presentViewController:alert animated:YES completion:nil];
                             }
                             else {
                                 uint64_t balance = 0;
@@ -975,8 +1109,17 @@ static NSString *sanitizeString(NSString *s)
                                                       address, [manager stringForDashAmount:balance],
                                                       [manager localCurrencyStringForDashAmount:balance]];
                                 
-                                [[[UIAlertView alloc] initWithTitle:@"" message:alertMsg delegate:nil
-                                                  cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                                UIAlertController * alert = [UIAlertController
+                                                             alertControllerWithTitle:@""
+                                                             message:alertMsg
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+                                UIAlertAction* okButton = [UIAlertAction
+                                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                           style:UIAlertActionStyleCancel
+                                                           handler:^(UIAlertAction * action) {
+                                                           }];
+                                [alert addAction:okButton];
+                                [self presentViewController:alert animated:YES completion:nil];
                             }
                         });
                     }];
@@ -985,9 +1128,25 @@ static NSString *sanitizeString(NSString *s)
 - (void)cancelOrChangeAmount
 {
     if (self.canChangeAmount && self.request && self.amount == 0) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"change payment amount?", nil)
-                                    message:nil delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                          otherButtonTitles:NSLocalizedString(@"change", nil), nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"change payment amount?", nil)
+                                     message:nil
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel",nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       [self cancel:nil];
+                                   }];
+        UIAlertAction* changeButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"change",nil)
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+        [alert addAction:cancelButton];
+        [alert addAction:changeButton];
+        [self presentViewController:alert animated:YES completion:nil];
         self.amount = UINT64_MAX;
     }
     else [self cancel:nil];
@@ -1120,10 +1279,17 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
     }
-    
-    [[[UIAlertView alloc] initWithTitle:@""
-                                message:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil) delegate:nil
-                      cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:@""
+                                 message:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               style:UIAlertActionStyleCancel
+                               handler:^(UIAlertAction * action) {
+                               }];
+    [alert addAction:okButton];
+    [self presentViewController:alert animated:YES completion:nil];
     [self performSelector:@selector(cancel:) withObject:self afterDelay:0.1];
 }
 
@@ -1297,27 +1463,48 @@ static NSString *sanitizeString(NSString *s)
     [[DSShapeshiftManager sharedInstance] GET_marketInfo:^(NSDictionary *marketInfo, NSError *error) {
         if (error) {
             failureBlock();
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
-                                        message:error.localizedDescription
-                                       delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                              otherButtonTitles:nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                         message:error.localizedDescription
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
+            [self presentViewController:alert animated:YES completion:nil];
         } else {
             BRWalletManager *manager = [BRWalletManager sharedInstance];
             if ([DSShapeshiftManager sharedInstance].min > (amount * .97)) {
                 failureBlock();
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
-                                            message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too low, "
-                                                                                                 @"please input a value over %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].min / .97]]
-                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                  otherButtonTitles:nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too low, "
+                                                                                                  @"please input a value over %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].min / .97]]
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [self presentViewController:alert animated:YES completion:nil];
                 return;
             } else if ([DSShapeshiftManager sharedInstance].limit < (amount * 1.03)) {
                 failureBlock();
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
-                                            message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too high, "
-                                                                                                 @"please input a value under %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].limit / 1.03]]
-                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                  otherButtonTitles:nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too high, "
+                                                                                                  @"please input a value under %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].limit / 1.03]]
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [self presentViewController:alert animated:YES completion:nil];
                 return;
             }
             completionBlock();
@@ -1329,7 +1516,7 @@ static NSString *sanitizeString(NSString *s)
 - (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
 {
     MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
-    hud.labelText       = NSLocalizedString(@"Starting Shapeshift!", nil);
+    hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
     
     [self verifyShapeshiftAmountIsInBounds:dashAmount completionBlock:^{
         //we know the exact amount of bitcoins we want to send
@@ -1338,13 +1525,21 @@ static NSString *sanitizeString(NSString *s)
         NSString * returnAddress = m.wallet.receiveAddress;
         NSNumber * numberAmount = [m numberForAmount:amount];
         [[DSShapeshiftManager sharedInstance] POST_SendAmount:numberAmount withAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
-            [hud hide:TRUE];
+            [hud hideAnimated:TRUE];
             if (error) {
                 NSLog(@"shapeshiftBitcoinAmount Error %@",error);
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
-                                            message:error.localizedDescription
-                                           delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                  otherButtonTitles:nil] show];
+                
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             message:error.localizedDescription
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [self presentViewController:alert animated:YES completion:nil];
                 return;
             }
             NSString * depositAddress = shiftInfo[@"deposit"];
@@ -1363,14 +1558,14 @@ static NSString *sanitizeString(NSString *s)
             }
         }];
     } failureBlock:^{
-        [hud hide:TRUE];
+        [hud hideAnimated:TRUE];
     }];
 }
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
 {
     MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
-    hud.labelText       = NSLocalizedString(@"Starting Shapeshift!", nil);
+    hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
     [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
         //we don't know the exact amount of bitcoins we want to send, we are just sending dash
         BRWalletManager *m = [BRWalletManager sharedInstance];
@@ -1381,18 +1576,25 @@ static NSString *sanitizeString(NSString *s)
         NSString * depositAddress = shapeshift.inputAddress;
         
         if (shapeshift) {
-            [hud hide:TRUE];
+            [hud hideAnimated:TRUE];
             BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),address]];
             [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
         } else {
             [[DSShapeshiftManager sharedInstance] POST_ShiftWithAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
-                [hud hide:TRUE];
+                [hud hideAnimated:TRUE];
                 if (error) {
                     NSLog(@"shapeshiftDashAmount Error %@",error);
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
-                                                message:error.localizedDescription
-                                               delegate:self cancelButtonTitle:NSLocalizedString(@"ok", nil)
-                                      otherButtonTitles:nil] show];
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                                 message:error.localizedDescription
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
                     return;
                 }
                 NSString * depositAddress = shiftInfo[@"deposit"];
@@ -1405,7 +1607,7 @@ static NSString *sanitizeString(NSString *s)
             }];
         }
     } failureBlock:^{
-        [hud hide:TRUE];
+        [hud hideAnimated:TRUE];
     }];
 }
 
@@ -1442,9 +1644,17 @@ static NSString *sanitizeString(NSString *s)
                                      if (error) request.r = nil;
                                      
                                      if (error && ! request.isValid) {
-                                         [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                                                     message:error.localizedDescription delegate:nil
-                                                           cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                                         UIAlertController * alert = [UIAlertController
+                                                                      alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                                                      message:error.localizedDescription
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+                                         UIAlertAction* okButton = [UIAlertAction
+                                                                    actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                    style:UIAlertActionStyleCancel
+                                                                    handler:^(UIAlertAction * action) {
+                                                                    }];
+                                         [alert addAction:okButton];
+                                         [self presentViewController:alert animated:YES completion:nil];
                                          [self cancel:nil];
                                          // continue here and handle the invalid request inside confirmRequest:
                                      }

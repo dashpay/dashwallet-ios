@@ -96,6 +96,19 @@
     self.shapeshiftLocalCurrencyLabel.hidden = !self.usingShapeshift;
 }
 
+-(BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    if (self.navigationController.viewControllers.firstObject != self) {
+        return UIStatusBarStyleLightContent;
+    }
+    else {
+        return UIStatusBarStyleDefault;
+    }
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -111,15 +124,13 @@
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
         if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        self.navigationController.navigationBar.barStyle = UIStatusBarStyleLightContent;
     }
     else {
         self.payButton.title = NSLocalizedString(@"request", nil);
         self.payButton.tintColor = [UIColor colorWithRed:0.0 green:96.0/255.0 blue:1.0 alpha:1.0];
         self.navigationItem.rightBarButtonItem = self.payButton;
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-        [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+        self.navigationController.navigationBar.barStyle = UIStatusBarStyleDefault;
     }
     
     self.balanceObserver =

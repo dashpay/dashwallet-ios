@@ -187,6 +187,8 @@
 }
 
 #if DEBUG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 - (IBAction)copyLogs:(id)sender
 {
     [BREventManager saveEvent:@"settings:copy_logs"];
@@ -211,6 +213,7 @@
      center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0)] popIn]
      popOutAfterDelay:2.0]];
 }
+#pragma GCC diagnostic pop
 #endif
 
 - (IBAction)fixedPeer:(id)sender
