@@ -31,7 +31,7 @@
 
 @interface BRRootViewController : UIViewController <UIAlertViewDelegate, UIPageViewControllerDataSource,
 UIScrollViewDelegate, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
-UIViewControllerAnimatedTransitioning>
+UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) IBOutlet BRReceiveViewController *receiveViewController;
 @property (nonatomic, strong) IBOutlet BRSendViewController *sendViewController;
