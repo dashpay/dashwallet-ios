@@ -45,23 +45,13 @@
     return singleton;
 }
 
-- (NSString *)percentEscapeString:(NSString *)string
-{
-    NSString *result = CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
-                                                                                 (CFStringRef)string,
-                                                                                 (CFStringRef)@" ",
-                                                                                 (CFStringRef)@":/?@!$&'()*+,;=",
-                                                                                 kCFStringEncodingUTF8));
-    return [result stringByReplacingOccurrencesOfString:@" " withString:@"+"];
-}
-
 - (NSData *)httpBodyForParamsDictionary:(NSDictionary *)paramDictionary
 {
     NSMutableArray *parameterArray = [NSMutableArray array];
     
     [paramDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
         if ([obj isKindOfClass:[NSString class]]) {
-            NSString *param = [NSString stringWithFormat:@"%@=%@", key, [self percentEscapeString:obj]];
+            NSString *param = [NSString stringWithFormat:@"%@=%@", key, [obj stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
             [parameterArray addObject:param];
         } else {
             NSString *param = [NSString stringWithFormat:@"%@=%@", key, obj];
@@ -187,41 +177,39 @@
 -(void)GET_marketInfo:(void (^)(NSDictionary *marketInfo, NSError *error))completionBlock {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://shapeshift.io/marketinfo/dash_btc"]
                                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                               if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
-                                   NSError * returnError = connectionError;
-                                   if (!returnError) {
-                                       returnError = [NSError errorWithDomain:@"DashWallet" code:((NSHTTPURLResponse*)response).statusCode userInfo:nil];
-                                   }
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       completionBlock(nil,returnError);
-                                   });
-                                   return;
-                               }
-                               NSError *error = nil;
-                               NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                               if (error) {
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       completionBlock(nil,error);
-                                   });
-                                   return;
-                               }
-                               dispatch_async(dispatch_get_main_queue(), ^{
-                                   
-                                   self.lastMarketInfoCheck = [NSDate date];
-                                   self.rate = [dictionary[@"rate"] doubleValue];
-                                   if (dictionary[@"limit"])
-                                       self.limit = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",dictionary[@"limit"]]] decimalNumberByMultiplyingByPowerOf10:8]
-                                                 unsignedLongLongValue];
-                                   if (dictionary[@"minimum"])
-                                       self.min = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",dictionary[@"minimum"]]] decimalNumberByMultiplyingByPowerOf10:8]
-                                    unsignedLongLongValue];
-                                   completionBlock(dictionary,nil);
-                               });
-                           }];
-    
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
+        if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
+            NSError * returnError = connectionError;
+            if (!returnError) {
+                returnError = [NSError errorWithDomain:@"DashWallet" code:((NSHTTPURLResponse*)response).statusCode userInfo:nil];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionBlock(nil,returnError);
+            });
+            return;
+        }
+        NSError *error = nil;
+        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if (error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionBlock(nil,error);
+            });
+            return;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            self.lastMarketInfoCheck = [NSDate date];
+            self.rate = [dictionary[@"rate"] doubleValue];
+            if (dictionary[@"limit"])
+                self.limit = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",dictionary[@"limit"]]] decimalNumberByMultiplyingByPowerOf10:8]
+                              unsignedLongLongValue];
+            if (dictionary[@"minimum"])
+                self.min = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",dictionary[@"minimum"]]] decimalNumberByMultiplyingByPowerOf10:8]
+                            unsignedLongLongValue];
+            completionBlock(dictionary,nil);
+        });
+    }] resume];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,9 +256,8 @@
 -(void)GET_transactionStatusWithAddress:(NSString*)withdrawalAddress completionBlock:(void (^)(NSDictionary *transactionInfo, NSError *error))completionBlock {
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://shapeshift.io/txStat/%@",withdrawalAddress]]
                                              cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
@@ -292,7 +279,7 @@
                                dispatch_async(dispatch_get_main_queue(), ^{
                                    completionBlock(dictionary,nil);
                                });
-                           }];
+                           }] resume];
 }
 
 #pragma mark - POST requests
@@ -333,8 +320,8 @@
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
     
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
@@ -362,7 +349,7 @@
                                    }
                                });
 
-                           }];
+                           }] resume];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,8 +379,8 @@
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
     NSString * s = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
@@ -423,7 +410,7 @@
                                    completionBlock(dictionary[@"success"],nil);
                                });
                                
-                           }];
+                           }] resume];
     
 }
 
@@ -478,8 +465,8 @@
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
     NSString * s = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError || !data) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
@@ -509,7 +496,7 @@
                                    completionBlock(dictionary[@"success"],nil);
                                });
                                
-                           }];
+                           }] resume];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -539,8 +526,8 @@
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
     
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue currentQueue]
-                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
                                    NSError * returnError = connectionError;
                                    if (!returnError) {
@@ -568,7 +555,7 @@
                                    }
                                });
                                
-                           }];
+                           }] resume];
 }
 
 

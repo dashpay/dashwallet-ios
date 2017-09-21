@@ -110,6 +110,14 @@
 
 - (void)updateAddress
 {
+    //small hack to deal with bounds
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateAddress];
+        });
+        return;
+    }
+    __block CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
@@ -123,8 +131,7 @@
             image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
         }
         
-        self.qrImage = [image resize:(self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0))
-                        withInterpolationQuality:kCGInterpolationNone];
+        self.qrImage = [image resize:qrViewBounds withInterpolationQuality:kCGInterpolationNone];
         
         if (req.amount == 0) {
             if (req.isValid) {

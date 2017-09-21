@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 int bw_nbioify(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);

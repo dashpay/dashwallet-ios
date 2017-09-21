@@ -292,7 +292,9 @@ static NSString *sanitizeString(NSString *s)
             [self handleURL:[NSURL URLWithString:uri]];
         }
         
-        if (callback) [[UIApplication sharedApplication] openURL:callback];
+        if (callback) [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
+            
+        }];
     }
     else if ([url.scheme isEqual:@"dash"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
@@ -824,7 +826,9 @@ static NSString *sanitizeString(NSString *s)
                                                       (self.callback.query.length > 0) ? @"&" : @"?",
                                                       [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
                                                                                            length:sizeof(UInt256)].reverse]]];
-                [[UIApplication sharedApplication] openURL:self.callback];
+                [[UIApplication sharedApplication] openURL:self.callback options:@{} completionHandler:^(BOOL success) {
+                    
+                }];
             }
             
             [self reset:nil];

@@ -54,22 +54,33 @@
     [self.toolbar setShadowImage:[UIImage new] forToolbarPosition:UIToolbarPositionAny];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return self.barStyle;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
 
     self.barStyle = [UIApplication sharedApplication].statusBarStyle;
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
-
+    [self setNeedsStatusBarAppearanceUpdate];
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
         [BREventManager saveEvent:@"scan:camera_denied"];
-        [[[UIAlertView alloc]
-          initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
-                         NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
-          message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
-                                                               "Settings->Privacy->Camera->%@", nil),
-                   NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]] delegate:nil
-          cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        UIAlertController * cameraAlert = [UIAlertController
+                                     alertControllerWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil)]
+                                                                                 message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
+                                                                                                                                      "Settings->Privacy->Camera->%@", nil),
+                                                                                          NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                    actionWithTitle:NSLocalizedString(@"ok", nil)
+                                    style:UIAlertActionStyleCancel
+                                    handler:^(UIAlertAction * action) {
+                                        //Handle your yes please button action here
+                                    }];
+        [cameraAlert addAction:okButton];
+        [self presentViewController:cameraAlert animated:YES completion:nil];
         return;
     }
 
@@ -109,13 +120,6 @@
     dispatch_async(dispatch_queue_create("qrscanner", NULL), ^{
         [self.session startRunning];
     });
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [[UIApplication sharedApplication] setStatusBarStyle:self.barStyle animated:animated];
-    
-    [super viewWillDisappear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated

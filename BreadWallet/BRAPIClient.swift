@@ -104,7 +104,7 @@ func getDeviceId() -> String {
 func isBreadChallenge(_ r: HTTPURLResponse) -> Bool {
     if let headers = r.allHeaderFields as? [String: String],
        let challenge = getHeaderValue("www-authenticate", d: headers) {
-        if challenge.lowercased().hasPrefix("bread") {
+        if challenge.lowercased().hasPrefix("dashwallet") {
             return true
         }
     }
@@ -157,7 +157,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
     var proto = "https"
     
     // host is the server(s) on which the API is hosted
-    var host = "api.dashwallet.com"
+    var host = "dashpay.info/api/v0"
     
     // isFetchingAuth is set to true when a request is currently trying to renew authentication (the token)
     // it is useful because fetching auth is not idempotent and not reentrant, so at most one auth attempt
@@ -229,7 +229,7 @@ func buildRequestSigningString(_ r: URLRequest) -> String {
             let authKey = getAuthKey(),
             let signingData = buildRequestSigningString(mutableRequest).data(using: String.Encoding.utf8),
             let sig = authKey.compactSign((signingData as NSData).sha256_2()) {
-            let hval = "bread \(token):\((sig as NSData).base58String())"
+            let hval = "dashwallet \(token):\((sig as NSData).base58String())"
             mutableRequest.setValue(hval, forHTTPHeaderField: "Authorization")
         }
         return mutableRequest as URLRequest

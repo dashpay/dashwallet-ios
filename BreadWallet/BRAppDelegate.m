@@ -32,6 +32,7 @@
 #import "DSShapeshiftManager.h"
 #import <WebKit/WebKit.h>
 #import <PushKit/PushKit.h>
+#import <UserNotifications/UserNotifications.h>
 
 #if DASH_TESTNET
 #pragma message "testnet build"
@@ -89,6 +90,8 @@
 
     // start the event manager
     [[BREventManager sharedEventManager] up];
+    
+    [BRWalletManager sharedInstance];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -247,16 +250,28 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 // send a local notification if in the background
                 if (application.applicationState == UIApplicationStateBackground ||
                     application.applicationState == UIApplicationStateInactive) {
-                    [UIApplication sharedApplication].applicationIconBadgeNumber =
-                        [UIApplication sharedApplication].applicationIconBadgeNumber + 1;
                     
                     if (send) {
-                        UILocalNotification *note = [[UILocalNotification alloc] init];
+                        UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+                        content.body = noteText;
+                        content.sound = [UNNotificationSound soundNamed:@"coinflip"];
                         
-                        note.alertBody = noteText;
-                        note.soundName = @"coinflip";
-                        [[UIApplication sharedApplication] presentLocalNotificationNow:note];
-                        NSLog(@"sent local notification %@", note);
+                        // 4. update application icon badge number
+                        content.badge = [NSNumber numberWithInteger:([UIApplication sharedApplication].applicationIconBadgeNumber + 1)];
+                        // Deliver the notification in five seconds.
+                        UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger
+                                                                      triggerWithTimeInterval:0.f
+                                                                      repeats:NO];
+                        UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"Now"
+                                                                                              content:content
+                                                                                              trigger:trigger];
+                        /// 3. schedule localNotification
+                        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+                        [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+                            if (!error) {
+                                NSLog(@"sent local notification %@", note);
+                            }
+                        }];
                     }
                 }
                 
@@ -340,7 +355,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)registerForPushNotifications {
-    BOOL hasNotification = [UIUserNotificationSettings class] != nil;
+    BOOL hasNotification = [UNNotificationSettings class] != nil;
     NSString *userDefaultsKey = @"has_asked_for_push";
     BOOL hasAskedForPushNotification = [[NSUserDefaults standardUserDefaults] boolForKey:userDefaultsKey];
     
@@ -349,12 +364,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         self.pushRegistry.delegate = self;
         self.pushRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
         
-        UIUserNotificationType types = (UIUserNotificationTypeAlert | UIUserNotificationTypeBadge
-                                        | UIUserNotificationTypeSound);
-        UIUserNotificationSettings *notificationSettings = [UIUserNotificationSettings
-                                                            settingsForTypes:types categories:nil];
-        
-        [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
+        UNAuthorizationOptions options = (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
+        [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            
+        }];
     }
 }
 
@@ -380,9 +393,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     NSString *svcType = @"p"; // ^ "production"
 #endif
     
-//    NSLog(@"Push registry did update push credentials: %@", credentials);
-//    BRAPIClient *client = [BRAPIClient sharedClient];
-//    [client savePushNotificationToken:credentials.token pushNotificationType:svcType];
+    NSLog(@"Push registry did update push credentials: %@", credentials);
+    BRAPIClient *client = [BRAPIClient sharedClient];
+    [client savePushNotificationToken:credentials.token pushNotificationType:svcType];
 }
 
 - (void)pushRegistry:(PKPushRegistry *)registry didInvalidatePushTokenForType:(NSString *)type
