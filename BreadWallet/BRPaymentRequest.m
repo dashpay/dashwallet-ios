@@ -110,7 +110,7 @@
         
             NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
                                 stringByReplacingOccurrencesOfString:@"+" withString:@" "]
-                               stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                               stringByRemovingPercentEncoding];
 
             if ([pair[0] isEqual:@"amount"]) {
                 NSDecimal dec, amount;
