@@ -33,6 +33,5 @@
 @property (strong, nonatomic) UIWindow *window;
 
 - (void)registerForPushNotifications;
-- (void)updatePlatformOnComplete:(void (^)(void))onComplete;
 
 @end

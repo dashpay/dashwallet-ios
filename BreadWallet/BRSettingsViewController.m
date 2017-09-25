@@ -30,9 +30,11 @@
 #import "BRPeerManager.h"
 #import "BREventManager.h"
 #import "BRUserDefaultsSwitchCell.h"
-#import "breadwallet-Swift.h"
-#include <WebKit/WebKit.h>
-#include <asl.h>
+#import <SafariServices/SafariServices.h>
+#import <asl.h>
+#import <sys/socket.h>
+#import <netdb.h>
+#import <arpa/inet.h>
 
 @interface BRSettingsViewController ()
 
@@ -43,7 +45,6 @@
 @property (nonatomic, assign) NSUInteger selectorType;
 @property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver;
-@property (nonatomic, strong) BRWebViewController *eaController;
 
 @end
 
@@ -103,8 +104,6 @@
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
         self.txStatusObserver = nil;
-        
-        self.eaController = nil;
     }
     
     [super viewWillDisappear:animated];
@@ -114,23 +113,6 @@
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-}
-
-- (BRWebViewController *)eaController {
-    if (_eaController) {
-        return _eaController;
-    }
-    // only available on iOS 8 and above
-    if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
-#if DEBUG || TESTFLIGHT
-        _eaController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy-staging" mountPoint:@"/ea"];
-        //        self.eaController.debugEndpoint = @"http://localhost:8080";
-#else
-        _eaController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy" mountPoint:@"/ea"];
-#endif
-        [_eaController startServer];
-    }
-    return _eaController;
 }
 
 - (UITableViewController *)selectorController
@@ -181,9 +163,8 @@
 
 - (IBAction)about:(id)sender
 {
-    BRBrowserViewController *browser = [[BRBrowserViewController alloc] init];
-    [browser load:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.dash.org/forum/topic/ios-dash-digital-wallet-support.112/"]]];
-    [self presentViewController:browser animated:YES completion:nil];
+    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://www.dash.org/forum/topic/ios-dash-digital-wallet-support.112/"]];
+    [self presentViewController:safariViewController animated:YES completion:nil];
 }
 
 #if DEBUG
@@ -369,7 +350,6 @@
         case 0: return 2;
         case 1: return (self.touchId) ? 3 : 2;
         case 2: return 3;
-        case 3: return 1;
     }
     
     return 0;
@@ -460,17 +440,6 @@ _switch_cell:
             }
             break;
             
-        case 3:
-            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            cell.textLabel.text = @"early access";
-
-//            if (![WKWebView class] || ![[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsEarlyAccess]) {
-//                cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
-//                cell.userInteractionEnabled = NO;
-//                cell.hidden = YES;
-//            }
-
-            break;
     }
     
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
@@ -662,11 +631,6 @@ _switch_cell:
     }
 }
 
-- (void)showEarlyAccess
-{
-    [self presentViewController:self.eaController animated:YES completion:nil];
-}
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
@@ -753,9 +717,6 @@ _deselect_switch:
                     break;
             }
             
-            break;
-        case 3:
-            [self showEarlyAccess];
             break;
     }
 }

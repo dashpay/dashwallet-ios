@@ -36,7 +36,6 @@
 #import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
 #import "BREventManager.h"
-#import "breadwallet-Swift.h"
 #import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
 
@@ -69,7 +68,6 @@ static NSString *dateFormat(NSString *template)
 @property (nonatomic, strong) id backgroundObserver, balanceObserver, txStatusObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) UIImageView *wallpaper;
-@property (nonatomic, strong) BRWebViewController *buyController;
 
 @end
 
@@ -292,23 +290,6 @@ static NSString *dateFormat(NSString *template)
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
-- (BRWebViewController *)buyController {
-    if (_buyController) {
-        return _buyController;
-    }
-    if ([WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) { // only available on iOS 8 and above
-#if DEBUG || TESTFLIGHT
-        _buyController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy-staging" mountPoint:@"/buy"];
-        //        self.buyController.debugEndpoint = @"http://localhost:8080";
-#else
-        _buyController = [[BRWebViewController alloc] initWithBundleName:@"dash-buy" mountPoint:@"/buy"];
-#endif
-        [_buyController startServer];
-        [_buyController preload];
-    }
-    return _buyController;
-}
-
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
@@ -459,49 +440,45 @@ static NSString *dateFormat(NSString *template)
     [self.tableView endUpdates];
 }
 
-- (void)showBuyAlert
-{
-    // grab a blurred image for the background
-    UIGraphicsBeginImageContext(self.navigationController.view.bounds.size);
-    [self.navigationController.view drawViewHierarchyInRect:self.navigationController.view.bounds
-                                         afterScreenUpdates:NO];
-    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
-    
-    // display the popup
-    __weak BREventConfirmView *view =
-        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
-    view.titleLabel.text = NSLocalizedString(@"Buy bitcoin in breadwallet!", nil);
-    view.descriptionLabel.text =
-        NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
-    [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
-    
-    view.image = blurredBgImg;
-    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    view.frame = self.navigationController.view.bounds;
-    view.alpha = 0;
-    [self.navigationController.view addSubview:view];
-    
-    [UIView animateWithDuration:.5 animations:^{
-        view.alpha = 1;
-    }];
-    
-    view.completionHandler = ^(BOOL didApprove) {
-        if (didApprove) [self showBuy];
-        
-        [UIView animateWithDuration:.5 animations:^{
-            view.alpha = 0;
-        } completion:^(BOOL finished) {
-            [view removeFromSuperview];
-        }];
-    };
-}
+//- (void)showBuyAlert
+//{
+//    // grab a blurred image for the background
+//    UIGraphicsBeginImageContext(self.navigationController.view.bounds.size);
+//    [self.navigationController.view drawViewHierarchyInRect:self.navigationController.view.bounds
+//                                         afterScreenUpdates:NO];
+//    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+//    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
+//
+//    // display the popup
+//    __weak BREventConfirmView *view =
+//        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
+//    view.titleLabel.text = NSLocalizedString(@"Buy bitcoin in breadwallet!", nil);
+//    view.descriptionLabel.text =
+//        NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
+//    [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
+//
+//    view.image = blurredBgImg;
+//    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+//    view.frame = self.navigationController.view.bounds;
+//    view.alpha = 0;
+//    [self.navigationController.view addSubview:view];
+//
+//    [UIView animateWithDuration:.5 animations:^{
+//        view.alpha = 1;
+//    }];
+//
+//    view.completionHandler = ^(BOOL didApprove) {
+//        if (didApprove) [self showBuy];
+//
+//        [UIView animateWithDuration:.5 animations:^{
+//            view.alpha = 0;
+//        } completion:^(BOOL finished) {
+//            [view removeFromSuperview];
+//        }];
+//    };
+//}
 
-- (void)showBuy
-{
-    [self presentViewController:self.buyController animated:YES completion:nil];
-}
 // MARK: - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -771,10 +748,10 @@ static NSString *dateFormat(NSString *template)
             bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
-                case 0: // buy bitcoin
+                case 0: // buy dash
                     [BREventManager saveEvent:@"tx_history:buy_btc"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                    [self showBuy];
+                    //[self showBuy];
                     break;
                     
                 case 1: // import private key

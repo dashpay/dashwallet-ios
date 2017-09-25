@@ -41,7 +41,6 @@
 #import "BREventConfirmView.h"
 #import "Reachability.h"
 #import "NSString+Dash.h"
-#import "breadwallet-Swift.h"
 #import <WebKit/WebKit.h>
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
@@ -656,11 +655,11 @@
         [alert addAction:cancelButton];
         [self presentViewController:alert animated:YES completion:nil];
     }
-    else if ([sender isEqual:@"buy alert"]) {
-        UINavigationController *nav = segue.destinationViewController;
-
-        [nav.topViewController performSelector:@selector(showBuy) withObject:nil afterDelay:1.0];
-    }
+//    else if ([sender isEqual:@"buy alert"]) {
+//        UINavigationController *nav = segue.destinationViewController;
+//
+//        [nav.topViewController performSelector:@selector(showBuy) withObject:nil afterDelay:1.0];
+//    }
 }
 
 - (void)viewDidLayoutSubviews

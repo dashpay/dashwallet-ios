@@ -27,11 +27,8 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BREventManager.h"
-#import "breadwallet-Swift.h"
 #import "BRPhoneWCSessionManager.h"
 #import "DSShapeshiftManager.h"
-#import <WebKit/WebKit.h>
-#import <PushKit/PushKit.h>
 #import <UserNotifications/UserNotifications.h>
 
 #if DASH_TESTNET
@@ -42,15 +39,13 @@
 #pragma message "snapshot build"
 #endif
 
-@interface BRAppDelegate () <PKPushRegistryDelegate>
+@interface BRAppDelegate ()
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
 
 // the most recent balance as received by notification
 @property uint64_t balance;
-
-@property PKPushRegistry *pushRegistry;
 
 @end
 
@@ -305,76 +300,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     }
 }
 
-- (void)updatePlatformOnComplete:(void (^)(void))onComplete {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if ([WKWebView class]) { // platform features are only available on iOS 8.0+
-            BRAPIClient *client = [BRAPIClient sharedClient];
-            dispatch_group_t waitGroup = dispatch_group_create();
-            
-            // set up bundles
-#if DEBUG || TESTFLIGHT
-
-            NSArray *bundles = @[@"dash-buy-staging"];
-#else
-            NSArray *bundles = @[@"dash-buy"];
-#endif
-            [bundles enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                dispatch_group_enter(waitGroup);
-                [client updateBundle:(NSString *)obj handler:^(NSString * _Nullable error) {
-                    dispatch_group_leave(waitGroup);
-                    if (error != nil) {
-                        NSLog(@"error updating bundle %@: %@", obj, error);
-                    } else {
-                        NSLog(@"successfully updated bundle %@", obj);
-                    }
-                }];
-            }];
-            
-            // set up feature flags
-            dispatch_group_enter(waitGroup);
-            [client updateFeatureFlagsOnComplete:^{
-                dispatch_group_leave(waitGroup);
-            }];
-            
-            // set up the kv store
-            BRKVStoreObject *obj;
-            NSError *kvErr = nil;
-            // store a sentinel so we can be sure the kv store replication is functioning properly
-            obj = [client.kv get:@"sentinel" error:&kvErr];
-            if (kvErr != nil) {
-                NSLog(@"Error getting sentinel, trying again. err=%@", kvErr);
-                obj = [[BRKVStoreObject alloc] initWithKey:@"sentinel" version:0 lastModified:[NSDate date]
-                                                   deleted:false data:[NSData data]];
-            }
-            [client.kv set:obj error:&kvErr];
-            if (kvErr != nil) {
-                NSLog(@"Error setting kv object err=%@", kvErr);
-            }
-            dispatch_group_enter(waitGroup);
-            [client.kv sync:^(NSError * _Nullable err) {
-                dispatch_group_leave(waitGroup);
-                NSLog(@"Finished syncing: error=%@", err);
-            }];
-            
-            // wait for the async operations to complete and notify completion
-            dispatch_group_wait(waitGroup, dispatch_time(DISPATCH_TIME_NOW, 10*NSEC_PER_SEC));
-            dispatch_async(dispatch_get_main_queue(), ^{
-                onComplete();
-            });
-        }
-    });
-}
-
 - (void)registerForPushNotifications {
     BOOL hasNotification = [UNNotificationSettings class] != nil;
     NSString *userDefaultsKey = @"has_asked_for_push";
     BOOL hasAskedForPushNotification = [[NSUserDefaults standardUserDefaults] boolForKey:userDefaultsKey];
     
-    if (hasAskedForPushNotification && hasNotification && !self.pushRegistry) {
-        self.pushRegistry = [[PKPushRegistry alloc] initWithQueue:dispatch_get_main_queue()];
-        self.pushRegistry.delegate = self;
-        self.pushRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
-        
+    if (hasAskedForPushNotification && hasNotification) {
         UNAuthorizationOptions options = (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
         [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
             
@@ -391,33 +322,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-}
-
-// MARK: - PKPushRegistry
-
-- (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials
-             forType:(NSString *)type
-{
-#if DEBUG
-    NSString *svcType = @"d"; // push notification environment "development"
-#else
-    NSString *svcType = @"p"; // ^ "production"
-#endif
-    
-    NSLog(@"Push registry did update push credentials: %@", credentials);
-    BRAPIClient *client = [BRAPIClient sharedClient];
-    [client savePushNotificationToken:credentials.token pushNotificationType:svcType];
-}
-
-- (void)pushRegistry:(PKPushRegistry *)registry didInvalidatePushTokenForType:(NSString *)type
-{
-    NSLog(@"Push registry did invalidate push token for type: %@", type);
-}
-
-- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload
-             forType:(NSString *)type
-{
-    NSLog(@"Push registry received push payload: %@ type: %@", payload, type);
 }
 
 @end
