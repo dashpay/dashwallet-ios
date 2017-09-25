@@ -70,7 +70,7 @@
      resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0) resizingMode:UIImageResizingModeStretch];
     [[UINavigationBar appearance] setBackgroundImage:tabBarImage forBarMetrics:UIBarMetricsDefault];
 
-    [[UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil]
+    [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
      forState:UIControlStateNormal];
     UIFont * titleBarFont = [UIFont systemFontOfSize:19 weight:UIFontWeightSemibold];
@@ -180,7 +180,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 {
     __block id protectedObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    void (^cleanup)() = ^() {
+    void (^cleanup)(void) = ^() {
         completion = nil;
         if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
         if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
@@ -383,7 +383,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier
-  completionHandler:(void (^)())completionHandler
+  completionHandler:(void (^)(void))completionHandler
 {
     NSLog(@"Handle events for background url session; identifier=%@", identifier);
 }
