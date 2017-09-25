@@ -85,7 +85,7 @@ public extension String {
     
     func ltrim(_ chars: Set<Character>) -> String {
         if let index = self.characters.index(where: {!chars.contains($0)}) {
-            return self[index..<self.endIndex]
+            return String(self[index..<self.endIndex])
         } else {
             return ""
         }
@@ -93,7 +93,7 @@ public extension String {
     
     func rtrim(_ chars: Set<Character>) -> String {
         if let index = self.characters.reversed().index(where: {!chars.contains($0)}) {
-            return self[self.startIndex...self.characters.index(before: index.base)]
+            return String(self[self.startIndex...self.characters.index(before: index.base)])
         } else {
             return ""
         }

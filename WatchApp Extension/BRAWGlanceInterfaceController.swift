@@ -75,7 +75,7 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    func updateUI() {
+    @objc func updateUI() {
         // when local currency rate is no avaliable, use empty string
         updateContainerVisibility()
         

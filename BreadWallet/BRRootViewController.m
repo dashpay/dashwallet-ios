@@ -82,6 +82,10 @@
 
 @implementation BRRootViewController
 
+-(BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -197,21 +201,56 @@
             }
 
             if (jailbroken && manager.wallet.totalReceived > 0) {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                            "Any 'jailbreak' app can access any other app's keychain data "
-                                            "(and steal your bitcoins). "
-                                            "Wipe this wallet immediately and restore on a secure device.", nil)
-                 delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-                 otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                             message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                                       "Any 'jailbreak' app can access any other app's keychain data "
+                                                                       "(and steal your bitcoins). "
+                                                                       "Wipe this wallet immediately and restore on a secure device.", nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* ignoreButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               
+                                           }];
+                UIAlertAction* wipeButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                               style:UIAlertActionStyleDestructive
+                                               handler:^(UIAlertAction * action) {
+                                                   BRRestoreViewController *restoreController =
+                                                   [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
+                                                   
+                                                   [self.navigationController pushViewController:restoreController animated:NO];
+                                               }];
+
+                [alert addAction:ignoreButton];
+                [alert addAction:wipeButton];
+                [self presentViewController:alert animated:YES completion:nil];
             }
             else if (jailbroken) {
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                  message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                            "Any 'jailbreak' app can access any other app's keychain data "
-                                            "(and steal your bitcoins).", nil)
-                  delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-                  otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                             message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                                       "Any 'jailbreak' app can access any other app's keychain data "
+                                                                       "(and steal your bitcoins).", nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* ignoreButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                                   
+                                               }];
+                UIAlertAction* closeButton = [UIAlertAction
+                                             actionWithTitle:NSLocalizedString(@"close app", nil)
+                                             style:UIAlertActionStyleDefault
+                                             handler:^(UIAlertAction * action) {
+                                                 exit(0);
+                                             }];
+                
+                [alert addAction:ignoreButton];
+                [alert addAction:closeButton];
+                [self presentViewController:alert animated:YES completion:nil];
             }
         }];
 
@@ -366,25 +405,59 @@
         //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
-        [[UIApplication sharedApplication] setStatusBarHidden:NO];
     }
     
     if (jailbroken && manager.wallet.totalReceived + manager.wallet.totalSent > 0) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-          message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                    "Any 'jailbreak' app can access any other app's keychain data "
-                                    "(and steal your bitcoins). "
-                                    "Wipe this wallet immediately and restore on a secure device.", nil)
-          delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-          otherButtonTitles:NSLocalizedString(@"wipe", nil), nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                               "Any 'jailbreak' app can access any other app's keychain data "
+                                                               "(and steal your bitcoins). "
+                                                               "Wipe this wallet immediately and restore on a secure device.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* ignoreButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+        UIAlertAction* wipeButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         BRRestoreViewController *restoreController =
+                                         [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
+                                         
+                                         [self.navigationController pushViewController:restoreController animated:NO];
+                                     }];
+        
+        [alert addAction:ignoreButton];
+        [alert addAction:wipeButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     else if (jailbroken) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-          message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                    "Any 'jailbreak' app can access any other app's keychain data "
-                                    "(and steal your bitcoins).", nil)
-          delegate:self cancelButtonTitle:NSLocalizedString(@"ignore", nil)
-          otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                               "Any 'jailbreak' app can access any other app's keychain data "
+                                                               "(and steal your bitcoins).", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* ignoreButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+        UIAlertAction* closeButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"close app", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          exit(0);
+                                      }];
+        
+        [alert addAction:ignoreButton];
+        [alert addAction:closeButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 
@@ -442,10 +515,19 @@
     
     if (manager.noWallet) {
         if (! manager.passcodeEnabled) {
-            [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-              message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
-                                        "turn passcode on to continue.", nil)
-              delegate:self cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"close app", nil), nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+                                         message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
+                                                                   "turn passcode on to continue.", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* closeButton = [UIAlertAction
+                                          actionWithTitle:NSLocalizedString(@"close app", nil)
+                                          style:UIAlertActionStyleDefault
+                                          handler:^(UIAlertAction * action) {
+                                              exit(0);
+                                          }];
+            [alert addAction:closeButton];
+            [self presentViewController:alert animated:YES completion:nil];
         }
         else {
             [self.navigationController
@@ -472,8 +554,8 @@
         if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 
         if (self.navigationController.visibleViewController == self) {
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
-            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+//            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+//            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
         }
 
 #if SNAPSHOT
@@ -831,15 +913,29 @@
     BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
     
     [defs setDouble:now forKey:BACKUP_DIALOG_TIME_KEY];
-    
-    [[[UIAlertView alloc]
-      initWithTitle:(first) ? NSLocalizedString(@"you received dash!", nil) : NSLocalizedString(@"IMPORTANT", nil)
-      message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
-                                                           "recover your wallet", nil),
-               (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :
-               NSLocalizedString(@"WRITE DOWN YOUR RECOVERY PHRASE", nil)] delegate:self
-      cancelButtonTitle:NSLocalizedString(@"do it later", nil)
-      otherButtonTitles:NSLocalizedString(@"show phrase", nil), nil] show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:(first) ? NSLocalizedString(@"you received dash!", nil) : NSLocalizedString(@"IMPORTANT", nil)
+                                                                                                                                      message:[NSString stringWithFormat:NSLocalizedString(@"\n%@\n\nif you ever lose your phone, you will need it to "
+                                                                                                                                                                                           "recover your wallet", nil),
+                                                                                                                                               (first) ? NSLocalizedString(@"next, write down your recovery phrase", nil) :
+                                                                                                                                               NSLocalizedString(@"WRITE DOWN YOUR RECOVERY PHRASE", nil)]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* doItLaterButton = [UIAlertAction
+                                  actionWithTitle:NSLocalizedString(@"do it later", nil)
+                                  style:UIAlertActionStyleCancel
+                                  handler:^(UIAlertAction * action) {
+                                      
+                                  }];
+    UIAlertAction* showPhraseButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"show phrase", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          [self performSegueWithIdentifier:@"SettingsSegue" sender:self];
+                                      }];
+
+    [alert addAction:doItLaterButton];
+    [alert addAction:showPhraseButton];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)hideTips
@@ -1084,25 +1180,6 @@ viewControllerAfterViewController:(UIViewController *)viewController
     CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
     
     self.wallpaperXLeft.constant = -PARALAX_RATIO*off;
-}
-
-// MARK: - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"close app", nil)]) exit(0);
-
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"wipe", nil)]) {
-        BRRestoreViewController *restoreController =
-            [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
-            
-        [self.navigationController pushViewController:restoreController animated:NO];
-        return;
-    }
-    
-    [self performSegueWithIdentifier:@"SettingsSegue" sender:[alertView buttonTitleAtIndex:buttonIndex]];
 }
 
 // MARK: - UIViewControllerAnimatedTransitioning

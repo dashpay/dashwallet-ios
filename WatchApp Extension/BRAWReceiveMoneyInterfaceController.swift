@@ -70,7 +70,7 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         }
     }
     
-    func updateReceiveUI() {
+    @objc func updateReceiveUI() {
         if BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage == nil {
             loadingIndicator.setHidden(false)
             qrCodeButton.setHidden(true)

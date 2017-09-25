@@ -82,7 +82,7 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
     }
     
     // MARK: UI update
-    func updateUI() {
+    @objc func updateUI() {
         updateBalance()
         updateTransactionList()
     }

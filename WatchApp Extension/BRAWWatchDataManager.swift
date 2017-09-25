@@ -39,7 +39,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
     static let WalletTxReceiveNotification = "WalletTxReceiveNotification"
     static let applicationContextDataFileName = "applicationContextData.txt"
     
-    let session : WCSession =  WCSession.default()
+    let session : WCSession =  WCSession.default
     let timerFireInterval : TimeInterval = 7; // have iphone app sync with peer every 7 seconds
     
     var timer : Timer?
@@ -73,7 +73,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
             let filemgr = FileManager.default
             let dirPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)
             let docsDir = dirPaths[0] as String
-            return URL(fileURLWithPath: docsDir).appendingPathComponent(applicationContextDataFileName)
+            return URL(fileURLWithPath: docsDir).appendingPathComponent(BRAWWatchDataManager.applicationContextDataFileName)
         }()
     
     override init() {
@@ -90,7 +90,7 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
         
     }
 
-    func requestAllData() {
+    @objc func requestAllData() {
         if self.session.isReachable {
             // WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
             let messageToSend = [
@@ -195,11 +195,11 @@ class BRAWWatchDataManager: NSObject, WCSessionDelegate {
         let attributedString = NSMutableAttributedString()
         
         attributedString.append(
-            NSAttributedString(string: "Đ", attributes: [NSForegroundColorAttributeName : UIColor.gray]))
+            NSAttributedString(string: "Đ", attributes: [NSAttributedStringKey.foregroundColor : UIColor.gray]))
         
         attributedString.append(
             NSAttributedString(string: balance ?? "0", attributes:
-                [NSForegroundColorAttributeName : UIColor.white]))
+                [NSAttributedStringKey.foregroundColor : UIColor.white]))
         
         return attributedString
     }
