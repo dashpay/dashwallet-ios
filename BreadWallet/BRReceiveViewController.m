@@ -283,113 +283,113 @@
     [BREventManager saveEvent:@"receive:address"];
 
     BOOL req = (_paymentRequest) ? YES : NO;
-    UIActionSheet *actionSheet = [UIActionSheet new];
 
-    actionSheet.title = [NSString stringWithFormat:NSLocalizedString(@"Receive dash at this address: %@", nil),
-               self.paymentAddress];
-    actionSheet.delegate = self;
-    [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
-     NSLocalizedString(@"copy address to clipboard", nil)];
+    UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Receive dash at this address: %@", nil),
+                                                                                  self.paymentAddress] message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
+    [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
+                            NSLocalizedString(@"copy address to clipboard", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string :
+                                self.paymentAddress;
+                                NSLog(@"\n\nCOPIED PAYMENT REQUEST/ADDRESS:\n\n%@", [UIPasteboard generalPasteboard].string);
+                                
+                                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                                                            center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+                                                       popOutAfterDelay:2.0]];
+                                [BREventManager saveEvent:@"receive:copy_address"];
+    }]];
 
     if ([MFMailComposeViewController canSendMail]) {
-        [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
-         NSLocalizedString(@"send address as email", nil)];
+        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
+                                NSLocalizedString(@"send address as email", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                    if ([MFMailComposeViewController canSendMail]) {
+                                        MFMailComposeViewController *composeController = [MFMailComposeViewController new];
+                                        
+                                        composeController.subject = NSLocalizedString(@"Dash address", nil);
+                                        [composeController setMessageBody:self.paymentRequest.string isHTML:NO];
+                                        [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png"
+                                                                    fileName:@"qr.png"];
+                                        composeController.mailComposeDelegate = self;
+                                        [self.navigationController presentViewController:composeController animated:YES completion:nil];
+                                        composeController.view.backgroundColor =
+                                        [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
+                                        [BREventManager saveEvent:@"receive:send_email"];
+                                    }
+                                    else {
+                                        [BREventManager saveEvent:@"receive:email_not_configured"];
+                                        UIAlertController * alert = [UIAlertController
+                                                                     alertControllerWithTitle:@""
+                                                                     message:NSLocalizedString(@"email not configured", nil)
+                                                                     preferredStyle:UIAlertControllerStyleAlert];
+                                        UIAlertAction* okButton = [UIAlertAction
+                                                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                   style:UIAlertActionStyleCancel
+                                                                   handler:^(UIAlertAction * action) {
+                                                                   }];
+                                        [alert addAction:okButton];
+                                        [self presentViewController:alert animated:YES completion:nil];
+                                        
+                                    }
+                                }]];
     }
 
 #if ! TARGET_IPHONE_SIMULATOR
     if ([MFMessageComposeViewController canSendText]) {
-        [actionSheet addButtonWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
-         NSLocalizedString(@"send address as message", nil)];
+        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
+                                NSLocalizedString(@"send address as message", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                                    if ([MFMessageComposeViewController canSendText]) {
+                                        MFMessageComposeViewController *composeController = [MFMessageComposeViewController new];
+                                        
+                                        if ([MFMessageComposeViewController canSendSubject]) {
+                                            composeController.subject = NSLocalizedString(@"Dash address", nil);
+                                        }
+                                        
+                                        composeController.body = self.paymentRequest.string;
+                                        
+                                        if ([MFMessageComposeViewController canSendAttachments]) {
+                                            [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image)
+                                                                  typeIdentifier:(NSString *)kUTTypePNG filename:@"qr.png"];
+                                        }
+                                        
+                                        composeController.messageComposeDelegate = self;
+                                        [self.navigationController presentViewController:composeController animated:YES completion:nil];
+                                        composeController.view.backgroundColor = [UIColor colorWithPatternImage:
+                                                                                  [UIImage imageNamed:@"wallpaper-default"]];
+                                        [BREventManager saveEvent:@"receive:send_message"];
+                                    }
+                                    else {
+                                        [BREventManager saveEvent:@"receive:message_not_configured"];
+                                        UIAlertController * alert = [UIAlertController
+                                                                     alertControllerWithTitle:@""
+                                                                     message:NSLocalizedString(@"sms not currently available", nil)
+                                                                     preferredStyle:UIAlertControllerStyleAlert];
+                                        UIAlertAction* okButton = [UIAlertAction
+                                                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                   style:UIAlertActionStyleCancel
+                                                                   handler:^(UIAlertAction * action) {
+                                                                   }];
+                                        [alert addAction:okButton];
+                                        [self presentViewController:alert animated:YES completion:nil];
+                                    }
+                                }]];
     }
 #endif
 
-    if (! req) [actionSheet addButtonWithTitle:NSLocalizedString(@"request an amount", nil)];
-    [actionSheet addButtonWithTitle:NSLocalizedString(@"cancel", nil)];
-    actionSheet.cancelButtonIndex = actionSheet.numberOfButtons - 1;
-    
-    [actionSheet showInView:[UIApplication sharedApplication].keyWindow];
-}
-
-// MARK: - UIActionSheetDelegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    NSString *title = [actionSheet buttonTitleAtIndex:buttonIndex];
-
-    //TODO: allow user to create a payment protocol request object, and use merge avoidance techniques:
-    // https://medium.com/@octskyward/merge-avoidance-7f95a386692f
-    
-    if ([title isEqual:NSLocalizedString(@"copy address to clipboard", nil)] ||
-        [title isEqual:NSLocalizedString(@"copy request to clipboard", nil)]) {
-        [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string :
-                                                  self.paymentAddress;
-        NSLog(@"\n\nCOPIED PAYMENT REQUEST/ADDRESS:\n\n%@", [UIPasteboard generalPasteboard].string);
-
-        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-         center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
-         popOutAfterDelay:2.0]];
-        [BREventManager saveEvent:@"receive:copy_address"];
+    if (! req) {
+        [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"request an amount", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            UINavigationController *amountNavController = [self.storyboard
+                                                           instantiateViewControllerWithIdentifier:@"AmountNav"];
+            
+            ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
+            [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
+            [BREventManager saveEvent:@"receive:request_amount"];
+                                }]];
     }
-    else if ([title isEqual:NSLocalizedString(@"send address as email", nil)] ||
-             [title isEqual:NSLocalizedString(@"send request as email", nil)]) {
-        //TODO: implement BIP71 payment protocol mime attachement
-        // https://github.com/bitcoin/bips/blob/master/bip-0071.mediawiki
+    [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         
-        if ([MFMailComposeViewController canSendMail]) {
-            MFMailComposeViewController *composeController = [MFMailComposeViewController new];
-            
-            composeController.subject = NSLocalizedString(@"Dash address", nil);
-            [composeController setMessageBody:self.paymentRequest.string isHTML:NO];
-            [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image) mimeType:@"image/png"
-             fileName:@"qr.png"];
-            composeController.mailComposeDelegate = self;
-            [self.navigationController presentViewController:composeController animated:YES completion:nil];
-            composeController.view.backgroundColor =
-                [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
-            [BREventManager saveEvent:@"receive:send_email"];
-        }
-        else {
-            [BREventManager saveEvent:@"receive:email_not_configured"];
-            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"email not configured", nil) delegate:nil
-              cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        }
-    }
-    else if ([title isEqual:NSLocalizedString(@"send address as message", nil)] ||
-             [title isEqual:NSLocalizedString(@"send request as message", nil)]) {
-        if ([MFMessageComposeViewController canSendText]) {
-            MFMessageComposeViewController *composeController = [MFMessageComposeViewController new];
-
-            if ([MFMessageComposeViewController canSendSubject]) {
-                composeController.subject = NSLocalizedString(@"Dash address", nil);
-            }
-            
-            composeController.body = self.paymentRequest.string;
-            
-            if ([MFMessageComposeViewController canSendAttachments]) {
-                [composeController addAttachmentData:UIImagePNGRepresentation(self.qrView.image)
-                 typeIdentifier:(NSString *)kUTTypePNG filename:@"qr.png"];
-            }
-            
-            composeController.messageComposeDelegate = self;
-            [self.navigationController presentViewController:composeController animated:YES completion:nil];
-            composeController.view.backgroundColor = [UIColor colorWithPatternImage:
-                                                      [UIImage imageNamed:@"wallpaper-default"]];
-            [BREventManager saveEvent:@"receive:send_message"];
-        }
-        else {
-            [BREventManager saveEvent:@"receive:message_not_configured"];
-            [[[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"sms not currently available", nil)
-              delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
-        }
-    }
-    else if ([title isEqual:NSLocalizedString(@"request an amount", nil)]) {
-        UINavigationController *amountNavController = [self.storyboard
-                                                       instantiateViewControllerWithIdentifier:@"AmountNav"];
-        
-        ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
-        [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
-        [BREventManager saveEvent:@"receive:request_amount"];
-    }
+    }]];
+    
+    // Present action sheet.
+    [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
 // MARK: - MFMessageComposeViewControllerDelegate
@@ -415,10 +415,18 @@ error:(NSError *)error
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (amount < manager.wallet.minOutputAmount) {
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"amount too small", nil)
-          message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                   [manager stringForDashAmount:manager.wallet.minOutputAmount]]
-          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
+                                     message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
+                                              [manager stringForDashAmount:manager.wallet.minOutputAmount]]
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+        [alert addAction:okButton];
+        [self presentViewController:alert animated:YES completion:nil];
         [BREventManager saveEvent:@"receive:amount_too_small"];
         return;
     }

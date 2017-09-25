@@ -135,13 +135,15 @@
 #endif
 }
 
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
  
     NSTimeInterval delay = WRITE_TOGGLE_DELAY;
- 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
  
     // remove done button if we're not the root of the nav stack
     if (self.navigationController.viewControllers.firstObject != self) {
@@ -178,22 +180,37 @@
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
                 if (self.navigationController.viewControllers.firstObject != self) {
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                                "Your funds are at risk. Transfer your balance to another wallet.", nil)
-                      delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                    
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                                 message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                                           "Your funds are at risk. Transfer your balance to another wallet.", nil)
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
                 }
                 else {
                     [[BRWalletManager sharedInstance] setSeedPhrase:nil];
                     [self.navigationController.presentingViewController dismissViewControllerAnimated:NO
                      completion:nil];
-                    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
                     
-                    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-                      message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                                "Generate a new recovery phrase and keep it secret.", nil)
-                      delegate:nil cancelButtonTitle:nil otherButtonTitles:NSLocalizedString(@"ok", nil), nil]
-                     show];
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                                 message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                                           "Generate a new recovery phrase and keep it secret.", nil)
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
                 }
             }];
     }

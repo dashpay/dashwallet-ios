@@ -94,8 +94,8 @@ completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amoun
 completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
-- (int64_t)amountForDashString:(NSString * _Nonnull)string;
-- (int64_t)amountForBitcoinString:(NSString * _Nonnull)string;
+- (int64_t)amountForDashString:(NSString * _Nullable)string;
+- (int64_t)amountForBitcoinString:(NSString * _Nullable)string;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color useSignificantDigits:(BOOL)useSignificantDigits;

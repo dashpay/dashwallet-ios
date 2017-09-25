@@ -152,8 +152,19 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
 annotation:(id)annotation
 {
     if (! [url.scheme isEqual:@"dash"] && ! [url.scheme isEqual:@"dashwallet"]) {
-        [[[UIAlertView alloc] initWithTitle:@"Not a dash URL" message:url.absoluteString delegate:nil
-          cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:@"Not a dash URL"
+                                     message:url.absoluteString
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+
+        [alert addAction:okButton];
+        [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+        
         return NO;
     }
 

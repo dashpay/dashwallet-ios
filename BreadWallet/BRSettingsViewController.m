@@ -219,17 +219,93 @@
 - (IBAction)fixedPeer:(id)sender
 {
     if (! [[NSUserDefaults standardUserDefaults] stringForKey:SETTINGS_FIXED_PEER_KEY]) {
-        UIAlertView *v = [[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"set a trusted node", nil)
-                          delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                          otherButtonTitles:NSLocalizedString(@"trust", nil), nil];
-
-        v.alertViewStyle = UIAlertViewStylePlainTextInput;
-        [v show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:nil
+                                     message:NSLocalizedString(@"set a trusted node", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder = @"node ip";
+            textField.textColor = [UIColor darkTextColor];
+            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+            textField.borderStyle = UITextBorderStyleRoundedRect;
+        }];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                                       }];
+        UIAlertAction* trustButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"trust", nil)
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         NSArray * textfields = alert.textFields;
+                                         UITextField * ipField = textfields[0];
+                                         NSString *fixedPeer = ipField.text;
+                                         NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
+                                         NSString *host = pair.firstObject;
+                                         NSString *service = (pair.count > 1) ? pair[1] : @(DASH_STANDARD_PORT).stringValue;
+                                         struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
+                                         UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+                                         
+                                         NSLog(@"DNS lookup %@", host);
+                                         
+                                         if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
+                                             for (p = servinfo; p != NULL; p = p->ai_next) {
+                                                 if (p->ai_family == AF_INET) {
+                                                     addr.u64[0] = 0;
+                                                     addr.u32[2] = CFSwapInt32HostToBig(0xffff);
+                                                     addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                                                 }
+                                                 //                else if (p->ai_family == AF_INET6) {
+                                                 //                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                                                 //                }
+                                                 else continue;
+                                                 
+                                                 uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                                                 char s[INET6_ADDRSTRLEN];
+                                                 
+                                                 if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+                                                     host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
+                                                 }
+                                                 else host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
+                                                 
+                                                 [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
+                                                                                           forKey:SETTINGS_FIXED_PEER_KEY];
+                                                 [[BRPeerManager sharedInstance] disconnect];
+                                                 [[BRPeerManager sharedInstance] connect];
+                                                 break;
+                                             }
+                                             
+                                             freeaddrinfo(servinfo);
+                                         }
+                                     }];
+        [alert addAction:trustButton];
+        [alert addAction:cancelButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     else {
-        [[[UIAlertView alloc] initWithTitle:nil message:NSLocalizedString(@"clear trusted node?", nil) delegate:self
-          cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"clear", nil), nil]
-         show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:nil
+                                     message:NSLocalizedString(@"clear trusted node?", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                                       }];
+        UIAlertAction* clearButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"clear", nil)
+                                      style:UIAlertActionStyleDestructive
+                                      handler:^(UIAlertAction * action) {
+                                          [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
+                                          [[BRPeerManager sharedInstance] disconnect];
+                                          [[BRPeerManager sharedInstance] connect];
+                                      }];
+        [alert addAction:clearButton];
+        [alert addAction:cancelButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 
@@ -507,21 +583,42 @@ _switch_cell:
 - (void)showRecoveryPhrase
 {
     [BREventManager saveEvent:@"settings:show_recovery_phrase"];
-    [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-      message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
-               [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                  "phrase or they can spend your dash.\n", nil)
-                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-               [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
-                                  "password managers or elsewhere.\n"
-                                  "Other devices may be infected.\n", nil)
-                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-               [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
-                                  "Screenshots are visible to other apps\n"
-                                  "and devices.\n", nil)
-                stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
-      delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-      otherButtonTitles:NSLocalizedString(@"show", nil), nil] show];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                 message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
+                                          [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
+                                                             "phrase or they can spend your dash.\n", nil)
+                                           stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                                          [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
+                                                             "password managers or elsewhere.\n"
+                                                             "Other devices may be infected.\n", nil)
+                                           stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                                          [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
+                                                             "Screenshots are visible to other apps\n"
+                                                             "and devices.\n", nil)
+                                           stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+    UIAlertAction* showButton = [UIAlertAction
+                                 actionWithTitle:NSLocalizedString(@"show", nil)
+                                 style:UIAlertActionStyleDefault
+                                 handler:^(UIAlertAction * action) {
+                                     BRSeedViewController *seedController =
+                                     [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                     
+                                     if (seedController.authSuccess) {
+                                         [self.navigationController pushViewController:seedController animated:YES];
+                                     } else {
+                                         [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                                     }
+                                 }];
+    [alert addAction:showButton];
+    [alert addAction:cancelButton];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)showCurrencySelector
@@ -669,72 +766,6 @@ _deselect_switch:
 error:(NSError *)error
 {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-}
-
-// MARK: - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-        return;
-    }
-    
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"trust", nil)]) {
-        NSString *fixedPeer = [alertView textFieldAtIndex:0].text;
-        NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
-        NSString *host = pair.firstObject;
-        NSString *service = (pair.count > 1) ? pair[1] : @(DASH_STANDARD_PORT).stringValue;
-        struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
-        UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-        
-        NSLog(@"DNS lookup %@", host);
-        
-        if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
-            for (p = servinfo; p != NULL; p = p->ai_next) {
-                if (p->ai_family == AF_INET) {
-                    addr.u64[0] = 0;
-                    addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                    addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                }
-//                else if (p->ai_family == AF_INET6) {
-//                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-//                }
-                else continue;
-                
-                uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                char s[INET6_ADDRSTRLEN];
-                
-                if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-                    host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
-                }
-                else host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
-
-                [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
-                 forKey:SETTINGS_FIXED_PEER_KEY];
-                [[BRPeerManager sharedInstance] disconnect];
-                [[BRPeerManager sharedInstance] connect];
-                break;
-            }
-            
-            freeaddrinfo(servinfo);
-        }
-    }
-    else if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"clear", nil)]) {
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-        [[BRPeerManager sharedInstance] disconnect];
-        [[BRPeerManager sharedInstance] connect];
-    }
-    else {
-        BRSeedViewController *seedController =
-            [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-        
-        if (seedController.authSuccess) {
-            [self.navigationController pushViewController:seedController animated:YES];
-        } else {
-            [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-        }
-    }
 }
 
 @end

@@ -858,16 +858,40 @@ static const char *dns_seeds[] = {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (rescan) {
                 [[BREventManager sharedEventManager] saveEvent:@"peer_manager:tx_rejected_rescan"];
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
-                                            message:NSLocalizedString(@"Your wallet may be out of sync.\n"
-                                                                      "This can often be fixed by rescanning the blockchain.", nil) delegate:self
-                                  cancelButtonTitle:NSLocalizedString(@"cancel", nil)
-                                  otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"transaction rejected", nil)
+                                             message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                                                       "This can often be fixed by rescanning the blockchain.", nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* cancelButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                UIAlertAction* rescanButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"rescan", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   [self rescan];
+                                               }];
+                [alert addAction:cancelButton];
+                [alert addAction:rescanButton];
+                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+
             }
             else {
                 [[BREventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
-                [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
-                                            message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"transaction rejected", nil)
+                                             message:@""
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
             }
         });
     }
@@ -1287,9 +1311,17 @@ static const char *dns_seeds[] = {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
 #if DEBUG
-            [[[UIAlertView alloc] initWithTitle:@"transaction rejected"
-                                        message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
-                                       delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:@"transaction rejected"
+                                         message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:@"ok"
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                       }];
+            [alert addAction:okButton];
+            [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
 #endif
         });
     }
@@ -1567,14 +1599,6 @@ static const char *dns_seeds[] = {
     //    }];
     
     return tx;
-}
-
-// MARK: - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-    [self rescan];
 }
 
 @end

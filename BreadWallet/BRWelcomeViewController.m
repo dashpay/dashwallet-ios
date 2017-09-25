@@ -83,12 +83,18 @@
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
 }
 
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+-(BOOL)prefersStatusBarHidden {
+    return FALSE;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:animated];
-    
     if (self.hasAppeared) {
         self.logoXCenter.constant = self.view.frame.size.width;
         self.navigationItem.titleView.hidden = NO;
@@ -141,7 +147,6 @@
 
             [UIView animateWithDuration:0.35 delay:1.0 usingSpringWithDamping:0.8 initialSpringVelocity:0.0
             options:UIViewAnimationOptionCurveEaseOut animations:^{
-                [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
                 self.navigationItem.titleView.alpha = 1.0;
                 [self.navigationController.view layoutIfNeeded];
             } completion:nil];
@@ -238,10 +243,18 @@
     
     if (! [BRWalletManager sharedInstance].passcodeEnabled) {
         [BREventManager saveEvent:@"welcome:passcode_disabled"];
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-          message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
-                                    "passcode on to continue.", nil)
-          delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+                                     message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
+                                                               "passcode on to continue.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+        [alert addAction:okButton];
+        [self presentViewController:alert animated:YES completion:nil];
         return;
     }
 

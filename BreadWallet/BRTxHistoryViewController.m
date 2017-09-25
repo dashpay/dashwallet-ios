@@ -92,11 +92,14 @@ static NSString *dateFormat(NSString *template)
     self.moreTx = YES;
 }
 
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
-    
+
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
 #if SNAPSHOT
@@ -789,23 +792,6 @@ static NSString *dateFormat(NSString *template)
             break;
         }
     }
-}
-
-// MARK: - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) {
-        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-        return;
-    }
-
-    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqual:NSLocalizedString(@"show", nil)]) {
-        BRSeedViewController *seedController =
-            [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-    
-        if (seedController.authSuccess) [self.navigationController pushViewController:seedController animated:YES];
-    }    
 }
 
 // MARK: - UIViewControllerAnimatedTransitioning

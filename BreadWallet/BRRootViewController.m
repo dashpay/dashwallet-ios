@@ -29,6 +29,7 @@
 #import "BRSettingsViewController.h"
 #import "BRTxHistoryViewController.h"
 #import "BRRestoreViewController.h"
+#import "BRSeedViewController.h"
 #import "BRAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
@@ -540,22 +541,38 @@
     [self hideErrorBar];
     
     if ([sender isEqual:NSLocalizedString(@"show phrase", nil)]) { // show recovery phrase
-        [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"WARNING", nil)
-          message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
-                   [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                      "phrase or they can spend your dash.\n", nil)
-                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-                   [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
-                                      "password managers or elsewhere.\n"
-                                      "Other devices may be infected.\n", nil)
-                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-                   [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
-                                      "Screenshots are visible to other apps\n"
-                                      "and devices.\n", nil)
-                    stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
-            delegate:[(id)segue.destinationViewController viewControllers].firstObject
-            cancelButtonTitle:NSLocalizedString(@"cancel", nil) otherButtonTitles:NSLocalizedString(@"show", nil), nil]
-         show];
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                     message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
+                                              [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
+                                                                 "phrase or they can spend your dash.\n", nil)
+                                               stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                                              [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
+                                                                 "password managers or elsewhere.\n"
+                                                                 "Other devices may be infected.\n", nil)
+                                               stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
+                                              [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
+                                                                 "Screenshots are visible to other apps\n"
+                                                                 "and devices.\n", nil)
+                                               stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                   }];
+        UIAlertAction* showButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"show", nil)
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                           BRSeedViewController *seedController =
+                                           [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                           
+                                           if (seedController.authSuccess) [self.navigationController pushViewController:seedController animated:YES];
+                                       }];
+        [alert addAction:showButton];
+        [alert addAction:cancelButton];
+        [self presentViewController:alert animated:YES completion:nil];
     }
     else if ([sender isEqual:@"buy alert"]) {
         UINavigationController *nav = segue.destinationViewController;
