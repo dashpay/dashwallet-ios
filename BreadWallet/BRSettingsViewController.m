@@ -551,6 +551,14 @@ _switch_cell:
 
 - (void)showRecoveryPhrase
 {
+    NSLog(@"%@",self);
+    BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+    if (seedController.authSuccess) {
+        [self.navigationController pushViewController:seedController animated:YES];
+    } else {
+        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+    }
+    /*
     [BREventManager saveEvent:@"settings:show_recovery_phrase"];
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -571,14 +579,13 @@ _switch_cell:
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
+                                       [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                                    }];
     UIAlertAction* showButton = [UIAlertAction
                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                  style:UIAlertActionStyleDefault
                                  handler:^(UIAlertAction * action) {
-                                     BRSeedViewController *seedController =
-                                     [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-                                     
+                                     BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
                                      if (seedController.authSuccess) {
                                          [self.navigationController pushViewController:seedController animated:YES];
                                      } else {
@@ -587,7 +594,7 @@ _switch_cell:
                                  }];
     [alert addAction:showButton];
     [alert addAction:cancelButton];
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:alert animated:YES completion:nil];*/
 }
 
 - (void)showCurrencySelector

@@ -661,12 +661,23 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 }
 
 -(BOOL)alertControllerIsVisible {
-    if ([[[[[UIApplication sharedApplication] keyWindow] rootViewController] presentedViewController] isKindOfClass:[UIAlertController class]]) {
+    if ([[[self presentingViewController] presentedViewController] isKindOfClass:[UIAlertController class]]) {
         
         // UIAlertController is presenting.Here
         return TRUE;
     }
     return FALSE;
+}
+
+-(UIViewController*)presentingViewController {
+    UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
+        topController = topController.presentedViewController;
+    }
+    if ([topController isKindOfClass:[UINavigationController class]]) {
+        topController = ((UINavigationController*)topController).topViewController;
+    }
+    return topController;
 }
 
 - (BOOL)authenticatePinWithTitle:(NSString *)title message:(NSString *)message
@@ -727,7 +738,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                                                   self.sweepCompletion = nil;
                                                                               }];
                                                    [alertController addAction:cancelButton];
-                                                   [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alertController animated:YES completion:nil];
+                                                   [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
                                                }];
                 UIAlertAction* okButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -746,7 +757,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                       (int)wait, unit];
             
             if (! [self alertControllerIsVisible]) {
-                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:self.alertController animated:YES completion:^{
+                [[self presentingViewController] presentViewController:self.alertController animated:YES completion:^{
                     self.didPresent = YES;
                     if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
                 }];
@@ -784,7 +795,11 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                        self.sweepCompletion = nil;
                                    }];
     [self.alertController addAction:cancelButton];
-    [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:self.alertController animated:YES completion:^{
+    UIAlertController * controller = [UIAlertController
+                                      alertControllerWithTitle:@"heya"
+                                      message:@"lol"
+                                      preferredStyle:UIAlertControllerStyleAlert];
+    [[self presentingViewController] presentViewController:self.alertController animated:YES completion:^{
         self.didPresent = YES;
         if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
     }];
@@ -794,17 +809,17 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
             if (self.didPresent && ! self.pinField.isFirstResponder) [self.pinField becomeFirstResponder];
         }
-        
+
         if (! [self alertControllerIsVisible]) break; // user canceled
-        
+
         // count unique attempts before checking success
         if (! [self.failedPins containsObject:self.currentPin]) setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
-        
+
         if ([self.currentPin isEqual:pin]) { // successful pin attempt
             self.pinField.text = self.currentPin = nil;
             [self.failedPins removeAllObjects];
             self.didAuthenticate = YES;
-            
+
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
                 setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
@@ -812,36 +827,36 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                 [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
                                                           forKey:PIN_UNLOCK_TIME_KEY];
             });
-            
+
             return YES;
         }
-        
+
         if (! [self.failedPins containsObject:self.currentPin]) {
             [self.failedPins addObject:self.currentPin];
-            
+
             if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
                 self.seedPhrase = nil;
-                
+
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
                     exit(0);
                 });
-                
+
                 return NO;
             }
-            
+
             if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
                 setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
             }
-            
+
             if (failCount >= 3) return [self authenticatePinWithTitle:title message:message]; // wallet disabled
         }
-        
+
         self.pinField.text = self.currentPin = nil;
-        
+
         // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
         UIView *v = self.pinField.superview.superview.superview;
         CGPoint p = v.center;
-        
+
         [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
             v.center = CGPointMake(p.x + 30.0, p.y);
         } completion:^(BOOL finished) {
@@ -851,8 +866,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                              }];
         }];
     }
-    
-    return NO;
+    return YES;
 }
 
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
@@ -891,7 +905,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                 preferredStyle:UIAlertControllerStyleAlert];
         if (_pinField) self.pinField = nil; // reset pinField so a new one is created
         [self.alertController.view addSubview:self.pinField];
-        [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:self.alertController animated:YES completion:^{
+        [[self presentingViewController] presentViewController:self.alertController animated:YES completion:^{
             self.didPresent = YES;
             if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
         }];
@@ -977,18 +991,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 {
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
 }
-
-// the keyboard can take a second or more to dismiss, this hides it quickly to improve perceived response time
-//- (void)hideKeyboard
-//{
-//    for (UIWindow *w in [UIApplication sharedApplication].windows) {
-//        if (w.windowLevel == UIWindowLevelNormal || w.windowLevel == UIWindowLevelAlert ||
-//            w.windowLevel == UIWindowLevelStatusBar) continue;
-//        [UIView animateWithDuration:0.2 animations:^{ w.alpha = 0; }];
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2*NSEC_PER_SEC), dispatch_get_main_queue(), ^{ w.alpha = 1; });
-//        break;
-//    }
-//}
 
 // MARK: - exchange rate
 
@@ -1416,7 +1418,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                }];
                                                [alert addAction:okButton];
                                                [alert addAction:cancelButton];
-                                               [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:^{
+                                               [[self presentingViewController] presentViewController:alert animated:YES completion:^{
                                                    self.didPresent = YES;
                                                    if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
                                                }];
@@ -1430,7 +1432,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                    }];
         [alert addAction:cancelButton];
         [alert addAction:okButton];
-                                                           [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+                                                           [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
         self.sweepKey = privKey;
         self.sweepFee = fee;
         self.sweepCompletion = completion;
