@@ -570,7 +570,11 @@ services:(uint64_t)services
     else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
     else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
     else if ([MSG_FEEFILTER isEqual:type]) [self acceptFeeFilterMessage:message];
-    else NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
+    else {
+#if DROP_MESSAGE_LOGGING
+        NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
+#endif
+    }
 }
 
 - (void)acceptVersionMessage:(NSData *)message
