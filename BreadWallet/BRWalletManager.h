@@ -43,6 +43,10 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
 
+typedef void (^PinCompletionBlock)(BOOL authenticated);
+typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
+typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+
 @protocol BRMnemonic;
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
@@ -53,7 +57,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, strong) id<BRKeySequence> _Nullable sequence;
 @property (nonatomic, strong) id<BRMnemonic> _Nullable mnemonic;
 @property (nonatomic, readonly) NSData * _Nullable masterPublicKey;//master public key used to generate wallet addresses
-@property (nonatomic, copy) NSString * _Nullable seedPhrase; // requesting seedPhrase will trigger authentication
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
@@ -78,10 +81,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 + (instancetype _Nullable)sharedInstance;
 
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
-- (NSData * _Nullable)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount;//auth user,return seed
-- (NSString * _Nullable)seedPhraseWithPrompt:(NSString * _Nullable)authprompt; // authenticates user, returns seedPhrase
-- (BOOL)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId; // prompt user to authenticate
-- (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
+- (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
+- (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
+- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
+- (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
 // queries api.dashwallet.com and calls the completion block with unspent outputs for the given address
 - (void)utxosForAddresses:(NSArray * _Nonnull)address
@@ -110,5 +113,8 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 - (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
 
 -(NSNumber* _Nonnull)localCurrencyDashPrice;
+
+-(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
+-(void)setSeedPhrase:(NSString* _Nullable)seedPhrase;
 
 @end

@@ -295,9 +295,10 @@
     [BREventManager saveEvent:@"settings:touch_id_limit"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
-    if ([manager authenticateWithPrompt:nil andTouchId:NO]) {
-        self.selectorType = 1;
-        self.selectorOptions =
+    [manager authenticateWithPrompt:nil andTouchId:NO completion:^(BOOL authenticated) {
+        if (authenticated) {
+            self.selectorType = 1;
+            self.selectorOptions =
             @[NSLocalizedString(@"always require passcode", nil),
               [NSString stringWithFormat:@"%@      (%@)", [manager stringForDashAmount:DUFFS/10],
                [manager localCurrencyStringForDashAmount:DUFFS/10]],
@@ -305,15 +306,17 @@
                [manager localCurrencyStringForDashAmount:DUFFS]],
               [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:DUFFS*10],
                [manager localCurrencyStringForDashAmount:DUFFS*10]]];
-        if (manager.spendingLimit > DUFFS*10) manager.spendingLimit = DUFFS*10;
-        self.selectedOption = self.selectorOptions[(log10(manager.spendingLimit) < 6) ? 0 :
-                                                   (NSUInteger)log10(manager.spendingLimit) - 6];
-        self.noOptionsText = nil;
-        self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
-        [self.navigationController pushViewController:self.selectorController animated:YES];
-        [self.selectorController.tableView reloadData];
-    }
-    else [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+            if (manager.spendingLimit > DUFFS*10) manager.spendingLimit = DUFFS*10;
+            self.selectedOption = self.selectorOptions[(log10(manager.spendingLimit) < 6) ? 0 :
+                                                       (NSUInteger)log10(manager.spendingLimit) - 6];
+            self.noOptionsText = nil;
+            self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
+            [self.navigationController pushViewController:self.selectorController animated:YES];
+            [self.selectorController.tableView reloadData];
+        } else {
+            [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+        }
+    }];
 }
 
 - (IBAction)navBarSwipe:(id)sender
@@ -551,14 +554,6 @@ _switch_cell:
 
 - (void)showRecoveryPhrase
 {
-    NSLog(@"%@",self);
-    BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-    if (seedController.authSuccess) {
-        [self.navigationController pushViewController:seedController animated:YES];
-    } else {
-        [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-    }
-    /*
     [BREventManager saveEvent:@"settings:show_recovery_phrase"];
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -585,16 +580,20 @@ _switch_cell:
                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                  style:UIAlertActionStyleDefault
                                  handler:^(UIAlertAction * action) {
-                                     BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-                                     if (seedController.authSuccess) {
-                                         [self.navigationController pushViewController:seedController animated:YES];
-                                     } else {
-                                         [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-                                     }
+                                     BRWalletManager *manager = [BRWalletManager sharedInstance];
+                                     [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                         if (seedPhrase.length > 0) {
+                                             BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                             seedController.seedPhrase = seedPhrase;
+                                             [self.navigationController pushViewController:seedController animated:YES];
+                                         } else {
+                                             [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
+                                         }
+                                     }];
                                  }];
     [alert addAction:showButton];
     [alert addAction:cancelButton];
-    [self presentViewController:alert animated:YES completion:nil];*/
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)showCurrencySelector
@@ -710,7 +709,7 @@ _deselect_switch:
                 case 0: // change passcode
                     [BREventManager saveEvent:@"settings:change_pin"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                    [manager performSelector:@selector(setPin) withObject:nil afterDelay:0.0];
+                    [manager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
                     break;
 
                 case 1: // start/recover another wallet (handled by storyboard)

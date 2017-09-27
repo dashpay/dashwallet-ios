@@ -37,6 +37,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletBalanceChangedNotification;
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
 #define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
 
+typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
+typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
+
 typedef struct _BRUTXO {
     UInt256 hash;
     unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
@@ -98,7 +102,7 @@ typedef struct _BRUTXO {
                                  sequence:(id<BRKeySequence> _Nonnull)sequence
                           masterPublicKey:(NSData * _Nullable)masterPublicKey
                             masterBIP32PublicKey:(NSData * _Nullable)masterBIP32PublicKey
-                            seed:(NSData * _Nullable(^ _Nonnull)(NSString * _Nullable authprompt, uint64_t amount))seed;
+                            seed:(_Nullable SeedRequestBlock)seed;
 
 -(NSUInteger)addressPurpose:(NSString * _Nonnull)address;
 
@@ -131,8 +135,8 @@ typedef struct _BRUTXO {
 - (BRTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
-- (BOOL)signBIP32Transaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt;
+- (void)signTransaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+- (void)signBIP32Transaction:(BRTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
 // true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(BRTransaction * _Nonnull)transaction;

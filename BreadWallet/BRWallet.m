@@ -60,7 +60,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 @property (nonatomic, strong) NSArray *balanceHistory;
 @property (nonatomic, assign) uint32_t bestBlockHeight;
-@property (nonatomic, strong) NSData *(^seed)(NSString *authprompt, uint64_t amount);
+@property (nonatomic, strong) SeedRequestBlock seed;
 @property (nonatomic, strong) NSManagedObjectContext *moc;
 
 @end
@@ -68,12 +68,12 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey seed:(NSData *(^)(NSString *authprompt, uint64_t amount))seed
+                masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey seed:(SeedRequestBlock)seed
 {
     if (! (self = [super init])) return nil;
-
+    
     NSMutableSet *updateTx = [NSMutableSet set];
-
+    
     self.moc = context;
     self.sequence = sequence;
     self.masterPublicKey = masterPublicKey;
@@ -92,7 +92,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
         [BRAddressEntity setContext:self.moc];
         [BRTransactionEntity setContext:self.moc];
         [BRTxMetadataEntity setContext:self.moc];
-
+        
         for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
             @autoreleasepool {
                 NSMutableArray *a = (e.purpose == 44)?((e.internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses) : ((e.internal) ? self.internalBIP32Addresses : self.externalBIP32Addresses);
@@ -102,7 +102,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                 [self.allAddresses addObject:e.address];
             }
         }
-
+        
         for (BRTxMetadataEntity *e in [BRTxMetadataEntity allObjects]) {
             @autoreleasepool {
                 if (e.type != TX_MDTYPE_MSG) continue;
@@ -153,35 +153,13 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
-
+    
     return self;
 }
 
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
-- (NSData *)masterPublicKey
-{
-    if (! _masterPublicKey) {
-        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            _masterPublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0) purpose:44];
-        }
-    }
-    
-    return _masterPublicKey;
-}
-
-- (NSData *)masterBIP32PublicKey
-{
-    if (! _masterBIP32PublicKey) {
-        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            _masterBIP32PublicKey = [self.sequence masterPublicKeyFromSeed:self.seed(nil, 0) purpose:0];
-        }
-    }
-    
-    return _masterBIP32PublicKey;
 }
 
 -(NSArray*)internalAddresses {
@@ -200,43 +178,43 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses];
     NSUInteger i = a.count;
-
+    
     // keep only the trailing contiguous block of addresses with no transactions
     while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
         i--;
     }
-
+    
     if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
     if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-
+    
     if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
         [self receiveAddress];
         [self changeAddress];
     }
-
+    
     @synchronized(self) {
         [a setArray:(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses];
         i = a.count;
-
+        
         unsigned n = (unsigned)i;
-
+        
         // keep only the trailing contiguous block of addresses with no transactions
         while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
             i--;
         }
-
+        
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-
+        
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self.sequence publicKey:n internal:internal masterPublicKey:self.masterPublicKey];
             NSString *addr = [BRKey keyWithPublicKey:pubKey].address;
-        
+            
             if (! addr) {
                 NSLog(@"error generating keys");
                 return nil;
             }
-
+            
             [self.moc performBlock:^{ // store new address in core data
                 BRAddressEntity *e = [BRAddressEntity managedObject];
                 e.purpose = 44;
@@ -245,13 +223,13 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                 e.index = n;
                 e.internal = internal;
             }];
-
+            
             [self.allAddresses addObject:addr];
             [(internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses addObject:addr];
             [a addObject:addr];
             n++;
         }
-    
+        
         return a;
     }
 }
@@ -323,14 +301,14 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
         
         return NO;
     };
-
+    
     [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
         if (isAscending(tx1, tx2)) return NSOrderedAscending;
         if (isAscending(tx2, tx1)) return NSOrderedDescending;
         
         NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
-                   j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
-
+        j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+        
         if (i == NSNotFound && j != NSNotFound) i = txAddressIndex(tx1, self.externalAddresses);
         if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
         return (i > j) ? NSOrderedAscending : NSOrderedDescending;
@@ -344,7 +322,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
     uint32_t now = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
-
+    
     for (BRTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
@@ -383,7 +361,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > now) pending = YES; // future locktime
                 }
-            
+                
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
                     if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) pending = YES;
                 }
@@ -394,7 +372,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                     continue;
                 }
             }
-
+            
             //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
             //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
@@ -427,7 +405,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
             prevBalance = balance;
         }
     }
-
+    
     self.invalidTx = invalidTx;
     self.pendingTx = pendingTx;
     self.spentOutputs = spentOutputs;
@@ -435,10 +413,10 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     self.balanceHistory = balanceHistory;
     _totalSent = totalSent;
     _totalReceived = totalReceived;
-
+    
     if (balance != _balance) {
         _balance = balance;
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(balanceNotification) object:nil];
             [self performSelector:@selector(balanceNotification) withObject:nil afterDelay:0.1];
@@ -470,11 +448,11 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 - (NSString *)changeAddress
 {
     //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    #if ADDRESS_DEFAULT == BIP32_PURPOSE
+#if ADDRESS_DEFAULT == BIP32_PURPOSE
     return [self addressesBIP32NoPurposeWithGapLimit:1 internal:YES].lastObject;
-    #else
+#else
     return [self addressesWithGapLimit:1 internal:YES].lastObject;
-    #endif
+#endif
 }
 
 // all previously generated external addresses
@@ -535,9 +513,9 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 - (BRTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     NSMutableData *script = [NSMutableData data];
-
+    
     [script appendScriptPubKeyForAddress:address];
-
+    
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
 }
 
@@ -634,19 +612,19 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     }
     
     return transaction;
-
+    
     
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt
+- (void)signTransaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     NSMutableOrderedSet *externalIndexesPurpose44 = [NSMutableOrderedSet orderedSet],
-                        *internalIndexesPurpose44 = [NSMutableOrderedSet orderedSet],
-                        *externalIndexesNoPurpose = [NSMutableOrderedSet orderedSet],
-                        *internalIndexesNoPurpose = [NSMutableOrderedSet orderedSet];
-
+    *internalIndexesPurpose44 = [NSMutableOrderedSet orderedSet],
+    *externalIndexesNoPurpose = [NSMutableOrderedSet orderedSet],
+    *internalIndexesNoPurpose = [NSMutableOrderedSet orderedSet];
+    
     for (NSString *addr in transaction.inputAddresses) {
         NSInteger index = [self.internalBIP44Addresses indexOfObject:addr];
         if (index != NSNotFound) {
@@ -669,23 +647,27 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
             continue;
         }
     }
-
+    
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        NSMutableArray *privkeys = [NSMutableArray array];
-        NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
-
-        if (! seed) return YES; // user canceled authentication
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
-        
-        return [transaction signWithPrivateKeys:privkeys];
+        self.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+            if (! seed) {
+                completion(YES);
+            } else {
+                NSMutableArray *privkeys = [NSMutableArray array];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
+                
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                completion(signedSuccessfully);
+            }
+        });
     }
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (BOOL)signBIP32Transaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt
+- (void)signBIP32Transaction:(BRTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
@@ -700,14 +682,18 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     [externalIndexes removeObject:@(NSNotFound)];
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        NSMutableArray *privkeys = [NSMutableArray array];
-        NSData *seed = self.seed(authprompt, (amount > 0) ? amount : 0);
-        
-        if (! seed) return YES; // user canceled authentication
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
-        [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
-        
-        return [transaction signWithPrivateKeys:privkeys];
+        self.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+            if (! seed) {
+                completion(YES);
+            } else {
+                NSMutableArray *privkeys = [NSMutableArray array];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP32_PURPOSE internal:NO fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
+                
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                completion(signedSuccessfully);
+            }
+        });
     }
 }
 
@@ -721,10 +707,10 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     for (NSValue *txHash in transaction.inputHashes) {
         BRTransaction *tx = self.allTx[txHash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-
+        
         if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
     }
-        
+    
     return NO;
 }
 
@@ -735,14 +721,14 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     NSValue *hash = uint256_obj(txHash);
     
     if (uint256_is_zero(txHash)) return NO;
-
+    
     if (! [self containsTransaction:transaction]) {
         if (transaction.blockHeight == TX_UNCONFIRMED) self.allTx[hash] = transaction;
         return NO;
     }
-
+    
     if (self.allTx[hash] != nil) return YES;
-
+    
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     NSLog(@"[BRWallet] received unseen transaction %@", transaction);
     
@@ -751,11 +737,11 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
     [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     [self updateBalance];
-
+    
     // when a wallet address is used in a transaction, generate a new address to replace it
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
-
+    
     [self.moc performBlock:^{ // add the transaction to core data
         if ([BRTransactionEntity countObjectsMatching:@"txHash == %@",
              [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
@@ -776,26 +762,26 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     BRTransaction *transaction = self.allTx[uint256_obj(txHash)];
     NSMutableSet *hashes = [NSMutableSet set];
-
+    
     for (BRTransaction *tx in self.transactions) { // remove dependent transactions
         if (tx.blockHeight < transaction.blockHeight) break;
-
+        
         if (! uint256_eq(txHash, tx.txHash) && [tx.inputHashes containsObject:uint256_obj(txHash)]) {
             [hashes addObject:uint256_obj(tx.txHash)];
         }
     }
-
+    
     for (NSValue *hash in hashes) {
         UInt256 h;
-
+        
         [hash getValue:&h];
         [self removeTransaction:h];
     }
-
+    
     [self.allTx removeObjectForKey:uint256_obj(txHash)];
     if (transaction) [self.transactions removeObject:transaction];
     [self updateBalance];
-
+    
     [self.moc performBlock:^{ // remove transaction from core data
         [BRTransactionEntity deleteObjects:[BRTransactionEntity objectsMatching:@"txHash == %@",
                                             [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
@@ -816,23 +802,23 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     //TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
     //TODO: XXX verify signatures for spends
     if (transaction.blockHeight != TX_UNCONFIRMED) return YES;
-
+    
     if (self.allTx[uint256_obj(transaction.txHash)] != nil) {
         return ([self.invalidTx containsObject:uint256_obj(transaction.txHash)]) ? NO : YES;
     }
-
+    
     uint32_t i = 0;
-
+    
     for (NSValue *hash in transaction.inputHashes) {
         BRTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
         UInt256 h;
-
+        
         [hash getValue:&h];
         if ((tx && ! [self transactionIsValid:tx]) ||
             [self.spentOutputs containsObject:brutxo_obj(((BRUTXO) { h, n }))]) return NO;
     }
-
+    
     return YES;
 }
 
@@ -854,11 +840,11 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust
         if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return YES;
     }
-
+    
     for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
         if ([self transactionIsPending:self.allTx[txHash]]) return YES;
     }
-
+    
     return NO;
 }
 
@@ -883,17 +869,17 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
     BOOL needsUpdate = NO;
-
+    
     if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) self.bestBlockHeight = height;
-
+    
     for (NSValue *hash in txHashes) {
         BRTransaction *tx = self.allTx[hash];
         UInt256 h;
-
+        
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
         tx.blockHeight = height;
         tx.timestamp = timestamp;
-
+        
         if ([self containsTransaction:tx]) {
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
@@ -902,13 +888,13 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
-
+    
     if (hashes.count > 0) {
         if (needsUpdate) {
             [self sortTransactions];
             [self updateBalance];
         }
-
+        
         [self.moc performBlockAndWait:^{
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
@@ -918,7 +904,7 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                     e.timestamp = timestamp;
                     [entities addObject:e];
                 }
-            
+                
                 for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
                                                TX_MDTYPE_MSG]) {
                     @autoreleasepool {
@@ -930,13 +916,13 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
                         [entities addObject:e];
                     }
                 }
-            
+                
                 if (height != TX_UNCONFIRMED) {
                     // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
                     // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
                     // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
                     [BRTxMetadataEntity saveContext];
-
+                    
                     for (NSManagedObject *e in entities) {
                         [self.moc refreshObject:e mergeChanges:NO];
                     }
@@ -953,13 +939,13 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     uint64_t amount = 0;
     NSUInteger n = 0;
-
+    
     //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (NSString *address in transaction.outputAddresses) {
         if ([self containsAddress:address]) amount += [transaction.outputAmounts[n] unsignedLongLongValue];
         n++;
     }
-
+    
     return amount;
 }
 
@@ -968,16 +954,16 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     uint64_t amount = 0;
     NSUInteger i = 0;
-
+    
     for (NSValue *hash in transaction.inputHashes) {
         BRTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-
+        
         if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) {
             amount += [tx.outputAmounts[n] unsignedLongLongValue];
         }
     }
-
+    
     return amount;
 }
 
@@ -986,15 +972,15 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
 {
     uint64_t amount = 0;
     NSUInteger i = 0;
-
+    
     for (NSValue *hash in transaction.inputHashes) {
         BRTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-
+        
         if (n >= tx.outputAmounts.count) return UINT64_MAX;
         amount += [tx.outputAmounts[n] unsignedLongLongValue];
     }
-
+    
     for (NSNumber *amt in transaction.outputAmounts) {
         amount -= amt.unsignedLongLongValue;
     }
@@ -1018,16 +1004,16 @@ masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterB
     // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
     NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
     NSUInteger i = 0;
-
+    
     for (NSValue *hash in transaction.inputHashes) { // get the amounts and block heights of all the transaction inputs
         BRTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-
+        
         if (n >= tx.outputAmounts.count) break;
         [amounts addObject:tx.outputAmounts[n]];
         [heights addObject:@(tx.blockHeight)];
     };
-
+    
     return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
 }
 

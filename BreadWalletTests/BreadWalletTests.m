@@ -1209,7 +1209,9 @@
     UInt256 secret = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
     BRKey *k = [BRKey keyWithSecret:secret compressed:YES];
     NSValue *hash = uint256_obj(UINT256_ZERO);
-    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil masterBIP32PublicKey:nil seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
+    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil masterBIP32PublicKey:nil seed:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
+        seedCompletion([NSData data]);
+    }];
 
     [script appendScriptPubKeyForAddress:k.address];
 
@@ -1238,7 +1240,7 @@
 
     XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
 
-    [w signTransaction:tx withPrompt:@""];
+    [w signTransaction:tx withPrompt:@"" completion:nil];
 
     XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
 
@@ -1248,7 +1250,9 @@
 
 #if ! DASH_TESTNET
     w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil masterBIP32PublicKey:nil
-         seed:^NSData *(NSString *authprompt, uint64_t amount) { return [NSData data]; }];
+                                     seed:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
+                                         seedCompletion([NSData data]);
+                                     }];
     
     // hack to make the following transactions belong to the wallet
     NSMutableSet *allAddresses = [(id)w performSelector:@selector(allAddresses)];

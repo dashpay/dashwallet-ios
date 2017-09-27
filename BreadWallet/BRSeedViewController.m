@@ -45,7 +45,6 @@
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
 @property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
-@property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
 @end
@@ -63,10 +62,7 @@
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
-    else self.seedPhrase = manager.seedPhrase; // this triggers authentication request
-
-    if (self.seedPhrase.length > 0) _authSuccess = YES;
-
+    
     return self;
 }
 
@@ -101,34 +97,6 @@
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
-    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
-        if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
-            CGRect r;
-            NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
-                            *l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
-            
-            for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-                                                  (CFStringRef)self.seedPhrase, CFSTR(" ")))) {
-                if (l.length > 0) [l appendString:IDEO_SP];
-                [l appendString:w];
-                r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
-                     attributes:@{NSFontAttributeName:self.seedLabel.font} context:nil];
-                
-                if (r.size.width + LABEL_MARGIN*2.0 >= self.view.bounds.size.width) {
-                    [s appendString:@"\n"];
-                    l.string = w;
-                }
-                else if (s.length > 0) [s appendString:IDEO_SP];
-                
-                [s appendString:w];
-            }
-
-            self.seedLabel.text = s;
-        }
-        else self.seedLabel.text = self.seedPhrase;
-
-        self.seedPhrase = nil;
-    }
     
 #if DEBUG
     self.seedLabel.userInteractionEnabled = YES; // allow clipboard copy only for debug builds
@@ -158,6 +126,36 @@
     [UIView animateWithDuration:0.1 animations:^{
         self.seedLabel.alpha = 1.0;
     }];
+    
+    
+    @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
+            CGRect r;
+            NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
+            *l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
+            
+            for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                                                         (CFStringRef)self.seedPhrase, CFSTR(" ")))) {
+                if (l.length > 0) [l appendString:IDEO_SP];
+                [l appendString:w];
+                r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
+                                 attributes:@{NSFontAttributeName:self.seedLabel.font} context:nil];
+                
+                if (r.size.width + LABEL_MARGIN*2.0 >= self.view.bounds.size.width) {
+                    [s appendString:@"\n"];
+                    l.string = w;
+                }
+                else if (s.length > 0) [s appendString:IDEO_SP];
+                
+                [s appendString:w];
+            }
+            
+            self.seedLabel.text = s;
+        }
+        else self.seedLabel.text = self.seedPhrase;
+        
+        self.seedPhrase = nil;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated

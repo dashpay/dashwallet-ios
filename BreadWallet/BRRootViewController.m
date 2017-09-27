@@ -563,8 +563,11 @@
 #endif
 
         if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-            while (! [manager authenticateWithPrompt:nil andTouchId:NO]) { }
-            [self unlock:nil];
+            [manager authenticateWithPrompt:nil andTouchId:NO completion:^(BOOL authenticated) {
+                if (authenticated) {
+                    [self unlock:nil];
+                }
+            }];
         }
 
         if (self.navigationController.visibleViewController == self) {
@@ -583,17 +586,6 @@
                 [self.sendViewController handleFile:self.file];
                 self.file = nil;
             }
-            
-            BRAppDelegate *del = (BRAppDelegate *)[UIApplication sharedApplication].delegate;
-//            [del updatePlatformOnComplete:^{
-//                NSLog(@"[BRRootViewController] updatePlatform completed!");
-//                if (! self.showTips &&
-//                    [[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO
-//                    && [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash]) {
-//                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"has_alerted_buy_dash"];
-//                    [self showBuyAlert];
-//                }
-//            }];
         }
     }
 }
@@ -647,10 +639,19 @@
                                        actionWithTitle:NSLocalizedString(@"show", nil)
                                        style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction * action) {
-                                           BRSeedViewController *seedController =
-                                           [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-                                           
-                                           if (seedController.authSuccess) [self.navigationController pushViewController:seedController animated:YES];
+                                           BRWalletManager *manager = [BRWalletManager sharedInstance];
+                                           if (manager.noWallet) {
+                                               BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                               [self.navigationController pushViewController:seedController animated:YES];
+                                           } else {
+                                               [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                                   if (seedPhrase.length > 0) {
+                                                       BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                                       seedController.seedPhrase = seedPhrase;
+                                                       [self.navigationController pushViewController:seedController animated:YES];
+                                                   }
+                                               }];
+                                           }
                                        }];
         [alert addAction:showButton];
         [alert addAction:cancelButton];
@@ -1043,11 +1044,16 @@
     [BREventManager saveEvent:@"root:unlock"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
-    if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
-    [BREventManager saveEvent:@"root:unlock_success"];
-    
-    [self updateTitleView];
-    [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
+    if (sender && ! manager.didAuthenticate) {
+        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+            if (authenticated) {
+            [BREventManager saveEvent:@"root:unlock_success"];
+            
+            [self updateTitleView];
+            [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
+            }
+        }];
+    }
 }
 
 - (IBAction)connect:(id)sender

@@ -370,23 +370,28 @@ static NSString *dateFormat(NSString *template)
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
     if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
-    if (! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
-    if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
-    
-    [self updateTitleView];
-    [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        self.transactions = manager.wallet.allTransactions;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (sender && self.transactions.count > 0) {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                 withRowAnimation:UITableViewRowAnimationAutomatic];
+    if (! manager.didAuthenticate) {
+        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+            if (authenticated) {
+                if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
+                
+                [self updateTitleView];
+                [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    self.transactions = manager.wallet.allTransactions;
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (sender && self.transactions.count > 0) {
+                            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                                          withRowAnimation:UITableViewRowAnimationAutomatic];
+                        }
+                        else [self.tableView reloadData];
+                    });
+                });
             }
-            else [self.tableView reloadData];
-        });
-    });
+        }];
+    }
 }
 
 - (IBAction)scanQR:(id)sender

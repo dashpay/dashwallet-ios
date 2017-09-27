@@ -240,11 +240,17 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     [BREventManager saveEvent:@"amount:unlock"];
     
-    if (sender && ! manager.didAuthenticate && ! [manager authenticateWithPrompt:nil andTouchId:YES]) return;
-    [BREventManager saveEvent:@"amount:successful_unlock"];
-    
-    [self updateTitleView];
-    [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
+    if (sender && ! manager.didAuthenticate) {
+        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+            if (authenticated) {
+                [BREventManager saveEvent:@"amount:successful_unlock"];
+                
+                [self updateTitleView];
+                [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
+            }
+        }];
+    }
+
 }
 
 - (IBAction)number:(id)sender

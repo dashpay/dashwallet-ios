@@ -27,6 +27,6 @@
 
 @interface BRSeedViewController : UIViewController
 
-@property (nonatomic, readonly) BOOL authSuccess;
+@property (nonatomic, strong) NSString *seedPhrase;
 
 @end
