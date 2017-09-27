@@ -1151,8 +1151,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                  [self refreshBitcoinDashPrice];
                                              }
                                          }
+#if EXCHANGE_RATES_LOGGING
                                          NSLog(@"poloniex exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
                                                [self stringForDashAmount:DUFFS]);
+#endif
                                      }
       ] resume];
     
@@ -1186,8 +1188,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                                                  [defs setObject:[NSDate date] forKey:DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY];
                                                  [defs synchronize];
                                                  [self refreshBitcoinDashPrice];
+#if EXCHANGE_RATES_LOGGING
                                                  NSLog(@"dash central exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
                                                        [self stringForDashAmount:DUFFS]);
+#endif
                                              }
                                          }
                                      }
@@ -1252,8 +1256,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
         [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
         [defs synchronize];
+#if EXCHANGE_RATES_LOGGING
         NSLog(@"bitcoin exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
               [self stringForDashAmount:DUFFS]);
+#endif
     }
       
       

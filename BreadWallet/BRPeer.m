@@ -305,7 +305,9 @@ services:(uint64_t)services
     if (! self.runLoop) return;
 
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
+#if MESSAGE_LOGGING
         NSLog(@"%@:%u sending %@", self.host, self.port, type);
+#endif
 
         [self.outputBuffer appendMessage:message type:type];
         
@@ -591,8 +593,9 @@ services:(uint64_t)services
     }
     
     _lastblock = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
+#if MESSAGE_LOGGING
     NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
-    
+#endif
     if (self.version < MIN_PROTO_VERSION) {
         [self error:@"protocol version %u not supported", self.version];
         return;
@@ -610,7 +613,9 @@ services:(uint64_t)services
     
     _pingTime = [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime; // use verack time as initial ping time
     self.pingStartTime = 0;
+#if MESSAGE_LOGGING
     NSLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
+#endif
     self.gotVerack = YES;
     [self didConnect];
 }
@@ -967,8 +972,9 @@ services:(uint64_t)services
         [self error:@"malformed ping message, length is %u, should be 4", (int)message.length];
         return;
     }
-    
+#if MESSAGE_LOGGING
     NSLog(@"%@:%u got ping", self.host, self.port);
+#endif
     [self sendMessage:message type:MSG_PONG];
 }
 
@@ -996,7 +1002,9 @@ services:(uint64_t)services
         self.pingStartTime = 0;
     }
     
+#if MESSAGE_LOGGING
     NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+#endif
 
     dispatch_async(self.delegateQueue, ^{
         if (_status == BRPeerStatusConnected && self.pongHandlers.count) {
