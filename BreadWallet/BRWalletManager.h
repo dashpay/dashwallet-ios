@@ -43,11 +43,11 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
 
-typedef void (^PinCompletionBlock)(BOOL authenticated);
+@protocol BRMnemonic;
+
+typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
-
-@protocol BRMnemonic;
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 

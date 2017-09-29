@@ -201,6 +201,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     }
 }
 
+typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletManager * context);
+
 @interface BRWalletManager()
 
 @property (nonatomic, strong) BRWallet *wallet;
@@ -210,11 +212,11 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, uint64_t fee, NSError *error);
 @property (nonatomic, strong) UIAlertController *pinAlertController;
+@property (nonatomic, strong) UIAlertController *resetAlertController;
 @property (nonatomic, strong) UITextField *pinField;
-@property (nonatomic, strong) NSString *currentPin;
 @property (nonatomic, strong) NSMutableSet *failedPins;
 @property (nonatomic, strong) id protectedObserver;
-@property (nonatomic, strong) PinCompletionBlock pinCompletionBlock;
+@property (nonatomic, copy) PinVerificationBlock pinVerificationBlock;
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
@@ -670,13 +672,11 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     _pinField.keyboardType = UIKeyboardTypeNumberPad;
     _pinField.secureTextEntry = YES;
     _pinField.delegate = self;
-    self.currentPin = nil;
     return _pinField;
 }
 
 -(BOOL)pinAlertControllerIsVisible {
     if ([[[self presentingViewController] presentedViewController] isKindOfClass:[UIAlertController class]]) {
-        
         // UIAlertController is presenting.Here
         return TRUE;
     }
@@ -696,7 +696,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
 -(void)shakeEffectWithCompletion:(void (^ _Nullable)(void))completion {
     // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
-    UIView *v = self.pinField.superview.superview.superview;
+    UIView *v = [self pinTitleView].superview;
     CGPoint p = v.center;
     
     [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
@@ -708,6 +708,65 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                          }];
     }];
     
+}
+
+-(void)userLockedOutAtHeight:(uint64_t)failHeight times:(uint64_t)failCount {
+    NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
+                           (self.secureTime + NSTimeIntervalSince1970))/60.0;
+    NSString *unit = NSLocalizedString(@"minutes", nil);
+    
+    if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
+    if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
+    
+    if (wait >= 60.0) {
+        wait /= 60.0;
+        unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
+    }
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
+                                 message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
+                                          (int)wait, unit]
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* resetButton = [UIAlertAction
+                                  actionWithTitle:NSLocalizedString(@"reset", nil)
+                                  style:UIAlertActionStyleDefault
+                                  handler:^(UIAlertAction * action) {
+                                      UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
+                                                                                                         preferredStyle:UIAlertControllerStyleAlert];
+                                      [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+                                          textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+                                          textField.returnKeyType = UIReturnKeyDone;
+                                          textField.font = [UIFont systemFontOfSize:15.0];
+                                          textField.delegate = self;
+                                      }];
+                                      UIAlertAction* cancelButton = [UIAlertAction
+                                                                     actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                                                     style:UIAlertActionStyleCancel
+                                                                     handler:^(UIAlertAction * action) {
+                                                                         
+                                                                     }];
+                                      [alertController addAction:cancelButton];
+                                      [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
+                                      self.resetAlertController = alertController;
+                                  }];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               style:UIAlertActionStyleCancel
+                               handler:^(UIAlertAction * action) {
+                                   
+                               }];
+    [alert addAction:resetButton];
+    [alert addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+    
+    if ([self pinAlertControllerIsVisible]) {
+        [_pinField resignFirstResponder];
+        [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+            [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+        }];
+    } else {
+        [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+        
+    }
 }
 
 - (void)authenticatePinWithTitle:(NSString *)title message:(NSString *)message completion:(void (^ _Nullable)(BOOL authenticated))completion
@@ -753,62 +812,8 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         }
         
         if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
-            NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
-                                   (self.secureTime + NSTimeIntervalSince1970))/60.0;
-            NSString *unit = NSLocalizedString(@"minutes", nil);
-            
-            if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-            if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
-            
-            if (wait >= 60.0) {
-                wait /= 60.0;
-                unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
-            }
-            UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
-                                         message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
-                                                  (int)wait, unit]
-                                         preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* resetButton = [UIAlertAction
-                                          actionWithTitle:NSLocalizedString(@"reset", nil)
-                                          style:UIAlertActionStyleDefault
-                                          handler:^(UIAlertAction * action) {
-                                              UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
-                                                                                                                 preferredStyle:UIAlertControllerStyleAlert];
-                                              [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-                                                  textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-                                                  textField.returnKeyType = UIReturnKeyDone;
-                                                  textField.font = [UIFont systemFontOfSize:15.0];
-                                                  textField.delegate = self;
-                                              }];
-                                              UIAlertAction* cancelButton = [UIAlertAction
-                                                                             actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                                             style:UIAlertActionStyleCancel
-                                                                             handler:^(UIAlertAction * action) {
-                                                                                 if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
-                                                                                 self.sweepKey = nil;
-                                                                                 self.sweepCompletion = nil;
-                                                                             }];
-                                              [alertController addAction:cancelButton];
-                                              [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
-                                          }];
-            UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           
-                                       }];
-            [alert addAction:resetButton];
-            [alert addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-            
-            if ([self pinAlertControllerIsVisible]) {
-                [_pinField resignFirstResponder];
-                [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
-                }];
-            } else {
-                [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
-            }
+            [self userLockedOutAtHeight:failHeight times:failCount];
+            return;
         } else {
             //no longer locked out, give the user a try
             message = [(failCount >= 7 ? NSLocalizedString(@"\n1 attempt remaining\n", nil) :
@@ -817,132 +822,93 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         }
     }
     
-    self.pinAlertController = [UIAlertController
-                               alertControllerWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                         (title) ? title : @""]
-                               message:message
-                               preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                                           (title) ? title : @""]
+                                 message:message
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    self.pinAlertController = alert;
     self.pinField = nil; // reset pinField so a new one is created
     [self.pinAlertController.view addSubview:self.pinField];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
-                                       if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
-                                       self.sweepKey = nil;
-                                       self.sweepCompletion = nil;
+
                                    }];
     [self.pinAlertController addAction:cancelButton];
-    self.pinCompletionBlock = completion;
+    
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+        NSError * error = nil;
+        uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
+        
+        if (error) {
+            completion(NO); // error reading failCount from keychain
+            [alert dismissViewControllerAnimated:TRUE completion:nil];
+            return FALSE;
+        }
+        
+        NSString *pin = getKeychainString(PIN_KEY, &error);
+        
+        if (error) {
+            completion(NO); // error reading pin from keychain
+            [alert dismissViewControllerAnimated:TRUE completion:nil];
+            return FALSE;
+        }
+        // count unique attempts before checking success
+        if (! [context.failedPins containsObject:currentPin]) setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
+        
+        if ([currentPin isEqual:pin]) { // successful pin attempt
+            [context.failedPins removeAllObjects];
+            context.didAuthenticate = YES;
+            uint64_t limit = context.spendingLimit;
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
+                setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
+                if (limit > 0) setKeychainInt(self.wallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
+                [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
+                                                          forKey:PIN_UNLOCK_TIME_KEY];
+            });
+            if (completion) completion(YES);
+            return TRUE;
+        }
+        
+        if (! [context.failedPins containsObject:currentPin]) {
+            [context.failedPins addObject:currentPin];
+            
+            if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
+                context.seedPhrase = nil;
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
+                    exit(0);
+                });
+                if (completion) completion(NO);
+                return FALSE;
+            }
+            
+            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
+            }
+            
+            if (failCount >= 3) {
+                [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+                    [context authenticatePinWithTitle:@"" message:@"" completion:completion]; // wallet disabled
+                }];
+                return FALSE;
+            }
+            [context shakeEffectWithCompletion:^{
+                context.pinField.text = @"";
+            }];
+        }
+        return FALSE;
+    };
+    
     [[self presentingViewController] presentViewController:self.pinAlertController animated:YES completion:^{
         if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
     }];
 }
 
-// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
-- (void)setNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
-    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-    if (!self.pinAlertController) {
-        self.pinAlertController = [UIAlertController
-                               alertControllerWithTitle:title
-                               message:nil
-                               preferredStyle:UIAlertControllerStyleAlert];
-        if (_pinField) self.pinField = nil; // reset pinField so a new one is created
-        [self.pinAlertController.view addSubview:self.pinField];
-        [[self presentingViewController] presentViewController:self.pinAlertController animated:YES completion:^{
-            [_pinField becomeFirstResponder];
-        }];
-    } else {
-        if (_pinField) self.pinField = nil; // reset pinField so a new one is created
-        [self.pinAlertController.view addSubview:self.pinField];
-    }
-    
 
-    NSString *pin = self.currentPin;
-    self.pinField.text = self.currentPin = nil;
-    
-    UIView *v = self.pinField.superview.superview;
-    CGPoint p = v.center;
-    
-    [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
-        v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-    } completion:^(BOOL finished) {
-        self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                         NSLocalizedString(@"verify passcode", nil)];
-        v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-        [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
-        [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                         animations:^{ v.center = p; } completion:nil];
-    }];
-    
-    if ([self.currentPin isEqual:pin]) {
-        self.pinField.text = self.currentPin = nil;
-        setKeychainString(pin, PIN_KEY, NO);
-        [self.pinField resignFirstResponder];
-        [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-            if (completion) completion(YES);
-        }];
-    }
-    
-    self.pinField.text = self.currentPin = nil;
-    
-    [self shakeEffectWithCompletion:^{
-        self.pinAlertController.title = title;
-        [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
-    }];
-}
-
--(UIView*)getSubviewForView:(UIView*)view withText:(NSString*)text {
-    for (UIView * subView in view.subviews) {
-        if ([subView isKindOfClass:[UILabel class]] && [((UILabel*)subView).text isEqualToString:text]) return subView;
-        UIView * foundView = [self getSubviewForView:subView withText:text];
-        if (foundView != nil) return foundView;
-    }
-    return nil;
-}
-
-// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
-- (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion
-{
-    NSError *error = nil;
-    NSString *pin = getKeychainString(PIN_KEY, &error);
-    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-    
-    if (error) {
-        if (completion) completion(NO);
-        return; // error reading existing pin from keychain
-    }
-    
-    [BREventManager saveEvent:@"wallet_manager:set_pin"];
-    
-    if (pin.length == 4) { //already had a pin, replacing it
-        [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil completion:^(BOOL authenticated) {
-            if (authenticated) {
-                UIView * titleView = [self getSubviewForView:self.pinAlertController.view withText:self.pinAlertController.title];
-                UIView *v = titleView.superview;
-                CGPoint p = v.center;
-                
-                [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                    v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-                } completion:^(BOOL finished) {
-                    self.pinAlertController.title = title;
-                    self.pinAlertController.message = nil;
-                    v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-                    [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                                     animations:^{ v.center = p; } completion:nil];
-                }];
-                //[self setNewPinWithCompletion:completion];
-            } else {
-                if (completion) completion(NO);
-            }
-        }];
-    }
-    else { //didn't have a pin yet
-        [self setNewPinWithCompletion:completion];
-    }
-}
 
 // amount that can be spent using touch id without pin entry
 - (uint64_t)spendingLimit
@@ -998,6 +964,126 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
     });
+}
+
+// MARK: - new pin
+
+// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
+- (void)setNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
+    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+    if (!self.pinAlertController) {
+        self.pinAlertController = [UIAlertController
+                                   alertControllerWithTitle:title
+                                   message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+        if (_pinField) self.pinField = nil; // reset pinField so a new one is created
+        [self.pinAlertController.view addSubview:self.pinField];
+        [[self presentingViewController] presentViewController:self.pinAlertController animated:YES completion:^{
+            [_pinField becomeFirstResponder];
+        }];
+    } else {
+        self.pinField.text = @"";
+    }
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+        [context setVerifyPin:currentPin withCompletion:completion];
+        return TRUE;
+    };
+}
+
+- (void)setVerifyPin:(NSString*)previousPin withCompletion:(void (^ _Nullable)(BOOL success))completion {
+    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+    self.pinField.text = nil;
+    
+    UIView *v = self.pinField.superview.superview;
+    CGPoint p = v.center;
+    
+    [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
+        v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
+    } completion:^(BOOL finished) {
+        self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                         NSLocalizedString(@"verify passcode", nil)];
+        v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
+        [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
+        [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+                         animations:^{ v.center = p; } completion:nil];
+    }];
+    
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+        if ([currentPin isEqual:previousPin]) {
+            context.pinField.text = nil;
+            setKeychainString(previousPin, PIN_KEY, NO);
+            [context.pinField resignFirstResponder];
+            [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+                if (completion) completion(YES);
+            }];
+            return TRUE;
+        }
+        
+        context.pinField.text = nil;
+        
+        [context shakeEffectWithCompletion:^{
+            context.pinAlertController.title = title;
+            [context textField:context.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
+        }];
+        return FALSE;
+    };
+}
+
+-(UIView*)getSubviewForView:(UIView*)view withText:(NSString*)text {
+    for (UIView * subView in view.subviews) {
+        if ([subView isKindOfClass:[UILabel class]] && [((UILabel*)subView).text isEqualToString:text]) return subView;
+        UIView * foundView = [self getSubviewForView:subView withText:text];
+        if (foundView != nil) return foundView;
+    }
+    return nil;
+}
+
+-(UIView*)pinTitleView {
+    return [self getSubviewForView:self.pinAlertController.view withText:self.pinAlertController.title];
+}
+
+// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
+- (void)setPinWithCompletion:(PinCompletionBlock)completion
+{
+    NSError *error = nil;
+    NSString *pin = getKeychainString(PIN_KEY, &error);
+    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+    
+    if (error) {
+        if (completion) completion(NO);
+        return; // error reading existing pin from keychain
+    }
+    
+    [BREventManager saveEvent:@"wallet_manager:set_pin"];
+    
+    if (pin.length == 4) { //already had a pin, replacing it
+        [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil completion:^(BOOL authenticated) {
+            if (authenticated) {
+                self.didAuthenticate = FALSE;
+                UIView *v = [self pinTitleView].superview;
+                CGPoint p = v.center;
+                
+                [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                    v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
+                } completion:^(BOOL finished) {
+                    self.pinAlertController.title = title;
+                    self.pinAlertController.message = nil;
+                    v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
+                    [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+                                     animations:^{ v.center = p; } completion:nil];
+                }];
+                [self setNewPinWithCompletion:completion];
+            } else {
+                if (completion) completion(NO);
+            }
+        }];
+    }
+    else { //didn't have a pin yet
+        [self setNewPinWithCompletion:completion];
+    }
 }
 
 // MARK: - floating fees
@@ -1674,125 +1760,55 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 replacementString:(NSString *)string
 {
     if (textField == self.pinField) {
-        
-        
-        self.currentPin = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        NSLog(@"currentPin %@",self.currentPin);
-        NSUInteger l = self.currentPin.length;
+        NSString * currentPin = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        NSLog(@"currentPin %@",currentPin);
+        NSUInteger l = currentPin.length;
         
         self.pinAlertController.title = [NSString stringWithFormat:@"%@\t%@\t%@\t%@%@", (l > 0 ? DOT : CIRCLE),
                                          (l > 1 ? DOT : CIRCLE), (l > 2 ? DOT : CIRCLE), (l > 3 ? DOT : CIRCLE),
                                          [self.pinAlertController.title substringFromIndex:7]];
         
-        if (self.currentPin.length == 4) {
+        if (currentPin.length == 4) {
             
-            NSError * error = nil;
-            uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
-            
-            if (error) {
-                self.pinCompletionBlock(NO); // error reading failCount from keychain
-                [self.pinAlertController dismissViewControllerAnimated:TRUE completion:nil];
-                return TRUE;
+            BOOL verified = self.pinVerificationBlock(currentPin,self);
+            self.pinField.text = @"";
+            if (verified) {
+                return NO;
+            } else {
+                self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"%@",
+                                                 [self.pinAlertController.title substringFromIndex:7]];
             }
-            
-            NSString *pin = getKeychainString(PIN_KEY, &error);
-            
-            if (error) {
-                self.pinCompletionBlock(NO); // error reading pin from keychain
-                [self.pinAlertController dismissViewControllerAnimated:TRUE completion:nil];
-                return TRUE;
-            }
-            // count unique attempts before checking success
-            if (! [self.failedPins containsObject:self.currentPin]) setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
-            
-            if ([self.currentPin isEqual:pin]) { // successful pin attempt
-                self.pinField.text = self.currentPin = nil;
-                [self.failedPins removeAllObjects];
-                self.didAuthenticate = YES;
-                uint64_t limit = self.spendingLimit;
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
-                    setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-                    if (limit > 0) setKeychainInt(self.wallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
-                    [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
-                                                              forKey:PIN_UNLOCK_TIME_KEY];
-                });
-                if (self.pinCompletionBlock) self.pinCompletionBlock(YES);
-                return TRUE;
-            }
-            
-            if (! [self.failedPins containsObject:self.currentPin]) {
-                [self.failedPins addObject:self.currentPin];
-                
-                if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-                    self.seedPhrase = nil;
-                    
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                        exit(0);
-                    });
-                    if (self.pinCompletionBlock) self.pinCompletionBlock(NO);
-                    return TRUE;
-                }
-                
-                if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                    setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
-                }
-                
-                if (failCount >= 3) {
-                    [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                        [self authenticatePinWithTitle:@"" message:@"" completion:self.pinCompletionBlock]; // wallet disabled
-                    }];
-                    self.pinField.text = self.currentPin = nil;
-                    return YES;
-                }
-            }
-            
-            self.pinField.text = self.currentPin = nil;
-            
-            [self shakeEffectWithCompletion:^{
-                [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
-            }];
         }
     }
     return YES;
 }
 
-// Adjust the screen position to account for the keyboard
-- (void)textFieldDidBeginEditing:(UITextField *)textField
-{
-    if ([LAContext class]) return; // fix is needed for iOS 7 only
-    textField.superview.superview.superview.superview.superview.center =
-    CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - 108.0);
-}
-
-
-- (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason
+-(BOOL)textFieldShouldReturn:(UITextField *)textField
 {
     if (!textField.secureTextEntry) { //not the pin
-        if (reason == UITextFieldDidEndEditingReasonCommitted) {
-            @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-                NSString *phrase = [self.mnemonic cleanupPhrase:textField.text];
-                
-                if (! [phrase isEqual:textField.text]) textField.text = phrase;
-                
-                if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
-                                                                                                  normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.masterPublicKey]) {
-                    self.pinAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
-                    [self.pinAlertController performSelector:@selector(setTitle:)
-                                                  withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-                }
-                else {
-                    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
-                    setKeychainData(nil, PIN_KEY, NO);
-                    setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-                    setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
-                    [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                        [self setPinWithCompletion:nil];
-                    }];
-                }
+        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+            NSString *phrase = [self.mnemonic cleanupPhrase:textField.text];
+            
+            if (! [phrase isEqual:textField.text]) textField.text = phrase;
+            
+            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
+                                                                                              normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.masterPublicKey]) {
+                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
+                [self.resetAlertController performSelector:@selector(setTitle:)
+                                              withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+            }
+            else {
+                setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+                setKeychainData(nil, PIN_KEY, NO);
+                setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+                setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
+                    [self setPinWithCompletion:nil];
+                }];
             }
         }
     }
+    return TRUE;
 }
 
 @end

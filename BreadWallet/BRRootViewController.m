@@ -1041,14 +1041,15 @@
 
 - (IBAction)unlock:(id)sender
 {
-    [BREventManager saveEvent:@"root:unlock"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    
-    if (sender && ! manager.didAuthenticate) {
+    if (sender && manager.didAuthenticate) {
+        [self updateTitleView];
+        [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
+    } else if (sender && ! manager.didAuthenticate) {
+        [BREventManager saveEvent:@"root:unlock"];
         [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
             if (authenticated) {
             [BREventManager saveEvent:@"root:unlock_success"];
-            
             [self updateTitleView];
             [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
             }
