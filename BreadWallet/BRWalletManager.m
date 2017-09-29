@@ -996,7 +996,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                        [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
     self.pinField.text = nil;
     
-    UIView *v = self.pinField.superview.superview;
+    UIView *v = [self pinTitleView].superview;
     CGPoint p = v.center;
     
     [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
@@ -1761,7 +1761,6 @@ replacementString:(NSString *)string
 {
     if (textField == self.pinField) {
         NSString * currentPin = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        NSLog(@"currentPin %@",currentPin);
         NSUInteger l = currentPin.length;
         
         self.pinAlertController.title = [NSString stringWithFormat:@"%@\t%@\t%@\t%@%@", (l > 0 ? DOT : CIRCLE),
