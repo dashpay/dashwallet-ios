@@ -1264,8 +1264,11 @@ viewControllerAfterViewController:(UIViewController *)viewController
                 item.rightBarButtonItem = rightButton;
                 if (self.shouldShowTips) item.titleView = titleView;
             }
-            
-            item.title = self.navigationItem.title;
+            if ([[(id)to topViewController] respondsToSelector:@selector(updateTitleView)]) {
+                [[(id)to topViewController] performSelector:@selector(updateTitleView)];
+            } else {
+                item.title = self.navigationItem.title;
+            }
             item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
             [containerView addSubview:to.view];
             [transitionContext completeTransition:YES];
