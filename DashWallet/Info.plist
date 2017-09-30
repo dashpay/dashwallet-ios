@@ -12,7 +12,7 @@
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>Bitcoin Payment Request</string>
+			<string>Dash Payment Request</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>dash.paymentrequest</string>
@@ -22,7 +22,7 @@
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>Bitcoin Payment</string>
+			<string>Dash Payment</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>dash.payment</string>
@@ -32,7 +32,7 @@
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>Bitcoin Payment ACK</string>
+			<string>Dash Payment ACK</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>dash.paymentack</string>
