@@ -131,7 +131,7 @@
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
-			remoteInfo = breadwallet;
+			remoteInfo = dashwallet;
 		};
 		757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -145,7 +145,7 @@
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
-			remoteInfo = BreadWallet;
+			remoteInfo = DashWallet;
 		};
 		BA913BEC1BD57E4D005A7C0E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -390,8 +390,8 @@
 		75CE194C1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Main.strings; sourceTree = "<group>"; };
 		75CE194D1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		75CE194E1B9642EB000778E4 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = BreadWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
-		75D5F3BE191EC270004AB296 /* breadwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = breadwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75CE50B51B5216F100DBC18C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DashWalletTests/Info.plist; sourceTree = SOURCE_ROOT; };
+		75D5F3BE191EC270004AB296 /* dashwallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dashwallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D5F3C9191EC270004AB296 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		75D5F3CD191EC270004AB296 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		75D5F3CF191EC270004AB296 /* DashWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWallet-Prefix.pch"; sourceTree = "<group>"; };
@@ -796,7 +796,7 @@
 		75D5F3BF191EC270004AB296 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75D5F3BE191EC270004AB296 /* breadwallet.app */,
+				75D5F3BE191EC270004AB296 /* dashwallet.app */,
 				75D5F3E5191EC270004AB296 /* DashWalletTests.xctest */,
 				BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */,
 				31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */,
@@ -1040,13 +1040,13 @@
 				31D68B561C23B6C10030FAAA /* PBXTargetDependency */,
 			);
 			name = DashWalletUITests;
-			productName = BreadWalletUITests;
+			productName = DashWalletUITests;
 			productReference = 31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		75D5F3BD191EC270004AB296 /* breadwallet */ = {
+		75D5F3BD191EC270004AB296 /* dashwallet */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */;
+			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "dashwallet" */;
 			buildPhases = (
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
@@ -1062,9 +1062,9 @@
 				BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */,
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
-			name = breadwallet;
-			productName = BreadWallet;
-			productReference = 75D5F3BE191EC270004AB296 /* breadwallet.app */;
+			name = dashwallet;
+			productName = DashWallet;
+			productReference = 75D5F3BE191EC270004AB296 /* dashwallet.app */;
 			productType = "com.apple.product-type.application";
 		};
 		75D5F3E4191EC270004AB296 /* DashWalletTests */ = {
@@ -1081,7 +1081,7 @@
 				75D5F3EB191EC270004AB296 /* PBXTargetDependency */,
 			);
 			name = DashWalletTests;
-			productName = BreadWalletTests;
+			productName = DashWalletTests;
 			productReference = 75D5F3E5191EC270004AB296 /* DashWalletTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -1226,7 +1226,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				75D5F3BD191EC270004AB296 /* breadwallet */,
+				75D5F3BD191EC270004AB296 /* dashwallet */,
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* DashWalletTests */,
 				31D68B4F1C23B6C10030FAAA /* DashWalletUITests */,
@@ -1440,7 +1440,7 @@
 /* Begin PBXTargetDependency section */
 		31D68B561C23B6C10030FAAA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 75D5F3BD191EC270004AB296 /* breadwallet */;
+			target = 75D5F3BD191EC270004AB296 /* dashwallet */;
 			targetProxy = 31D68B551C23B6C10030FAAA /* PBXContainerItemProxy */;
 		};
 		757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */ = {
@@ -1450,7 +1450,7 @@
 		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 75D5F3BD191EC270004AB296 /* breadwallet */;
+			target = 75D5F3BD191EC270004AB296 /* dashwallet */;
 			targetProxy = 75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */;
 		};
 		BA913BED1BD57E4D005A7C0E /* PBXTargetDependency */ = {
@@ -2246,7 +2246,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "breadwallet" */ = {
+		75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "dashwallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				75D5F3F7191EC270004AB296 /* Debug */,
