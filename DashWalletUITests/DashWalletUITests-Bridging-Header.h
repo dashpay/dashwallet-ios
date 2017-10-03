@@ -1,9 +1,9 @@
 //
-//  BreadWalletUITests-Bridging-Header.h
-//  BreadWallet
+//  DashWalletUITests-Bridging-Header.h
+//  DashWallet
 //
 //  Created by Aaron Voisine on 5/3/16.
-//  Copyright (c) 2016 breadwallet LLC
+//  Copyright (c) 2016 Dashwallet LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#ifndef BreadWalletUITests_Bridging_Header_h
-#define BreadWalletUITests_Bridging_Header_h
+#ifndef DashWalletUITests_Bridging_Header_h
+#define DashWalletUITests_Bridging_Header_h
 
-#include "BreadWallet-Prefix.pch"
+#include "DashWallet-Prefix.pch"
 
 #if SNAPSHOT
 static const bool _SNAPSHOT = 1;
@@ -34,4 +34,4 @@ static const bool _SNAPSHOT = 1;
 static const bool _SNAPSHOT = 0;
 #endif
 
-#endif /* BreadWalletUITests_Bridging_Header_h */
+#endif /* DashWalletUITests_Bridging_Header_h */
