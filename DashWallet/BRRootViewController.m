@@ -36,6 +36,7 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRPaymentRequest.h"
+#import "BRBIP32Sequence.h"
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
 #import "BREventConfirmView.h"
@@ -142,6 +143,33 @@
                     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                 }
         
+                NSURL * url = note.userInfo[@"url"];
+                if ([url.scheme isEqualToString:@"dashwallet"] && [url.host hasPrefix:@"request"]) {
+                    NSArray * array = [url.host componentsSeparatedByString:@"&"];
+                    NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
+                    for (NSString * param in array) {
+                        NSArray * paramArray = [param componentsSeparatedByString:@"="];
+                        if ([paramArray count] == 2) {
+                            [dictionary setObject:paramArray[1] forKey:paramArray[0]];
+                        }
+                    }
+                    if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
+                        [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO completion:^(BOOL authenticatedOrSuccess) {
+                            if (authenticatedOrSuccess) {
+                                BRBIP32Sequence *seq = [BRBIP32Sequence new];
+                                NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.masterPublicKey];
+                                NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.masterPublicKeyNoPurpose];
+                                NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@",dictionary[@"request"],dictionary[@"sender"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
+                                [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
+                                    
+                                }];
+                            }
+                        }];
+                        NSLog(@"%@",dictionary);
+                    }
+                } else {
+                    
+                
                 BRSendViewController *c = self.sendViewController;
                 
                 [self.pageViewController setViewControllers:(c ? @[c] : @[])
@@ -153,6 +181,7 @@
                         [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
                     }
                 }];
+                }
             }
         }];
 

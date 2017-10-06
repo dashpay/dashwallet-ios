@@ -862,7 +862,7 @@ services:(uint64_t)services
         else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
     }
     else {
-        [self error:@"non-standard headers message, %u is fewer headers than expected", (int)count];
+        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:t],self.version];
         return;
     }
     for (NSUInteger off = l; off < l + 81*count; off += 81) {

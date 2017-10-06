@@ -57,6 +57,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 @property (nonatomic, strong) id<BRKeySequence> _Nullable sequence;
 @property (nonatomic, strong) id<BRMnemonic> _Nullable mnemonic;
 @property (nonatomic, readonly) NSData * _Nullable masterPublicKey;//master public key used to generate wallet addresses
+@property (nonatomic, readonly) NSData * _Nullable masterPublicKeyNoPurpose;//master public key used to generate wallet addresses
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
