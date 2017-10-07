@@ -341,7 +341,7 @@ passphrase:(NSString *)passphrase
 }
 
 // generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
-// compressed indicates if compressed pubKey format should be used for the bitcoin address
+// compressed indicates if compressed pubKey format should be used for the dash address
 + (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb
 {
     NSData *d = code.base58checkToData; // d = 0x2C 0xE9 0xB3 0xE1 0xFF 0x39 0xE2 0x51|0x53 + entropy + passpoint
