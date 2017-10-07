@@ -356,7 +356,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         if (_wallet) return _wallet;
         
         _wallet = [[BRWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
-                                    masterPublicKey:mpk masterBIP32PublicKey:mpkBIP32 seed:^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+                                    masterBIP44PublicKey:mpk masterBIP32PublicKey:mpkBIP32 requestSeedBlock:^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+                                        //this happens when we request the seed
                                         [self seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
                                     }];
         

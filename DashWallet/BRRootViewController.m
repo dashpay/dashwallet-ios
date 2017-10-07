@@ -153,20 +153,23 @@
                             [dictionary setObject:paramArray[1] forKey:paramArray[0]];
                         }
                     }
+                    
                     if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
                         [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO completion:^(BOOL authenticatedOrSuccess) {
                             if (authenticatedOrSuccess) {
                                 BRBIP32Sequence *seq = [BRBIP32Sequence new];
-                                NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.masterPublicKey];
-                                NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.masterPublicKeyNoPurpose];
-                                NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@",dictionary[@"request"],dictionary[@"sender"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
+                                NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.masterPublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
+                                NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.masterPublicKeyNoPurpose depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
+                                NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
+                                if ([[UIApplication sharedApplication] canOpenURL:url]) {
                                 [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
                                     
                                 }];
+                                }
                             }
                         }];
-                        NSLog(@"%@",dictionary);
                     }
+                    
                 } else {
                     
                 

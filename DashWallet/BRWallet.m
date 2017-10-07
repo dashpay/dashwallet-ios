@@ -68,7 +68,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 @implementation BRWallet
 
 - (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<BRKeySequence>)sequence
-                masterPublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey seed:(SeedRequestBlock)seed
+                masterBIP44PublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey requestSeedBlock:(SeedRequestBlock)seed
 {
     if (! (self = [super init])) return nil;
     
@@ -651,7 +651,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
             if (! seed) {
-                completion(YES);
+                if (completion) completion(YES);
             } else {
                 NSMutableArray *privkeys = [NSMutableArray array];
                 [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexesPurpose44.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
@@ -660,7 +660,7 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
                 [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexesNoPurpose.array purpose:BIP32_PURPOSE internal:YES fromSeed:seed]];
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
-                completion(signedSuccessfully);
+                if (completion) completion(signedSuccessfully);
             }
         });
     }

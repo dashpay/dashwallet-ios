@@ -100,9 +100,9 @@ typedef struct _BRUTXO {
 
 - (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nullable)context
                                  sequence:(id<BRKeySequence> _Nonnull)sequence
-                          masterPublicKey:(NSData * _Nullable)masterPublicKey
-                            masterBIP32PublicKey:(NSData * _Nullable)masterBIP32PublicKey
-                            seed:(_Nullable SeedRequestBlock)seed;
+                          masterBIP44PublicKey:(NSData * _Nonnull)masterPublicKey
+                            masterBIP32PublicKey:(NSData * _Nonnull)masterBIP32PublicKey
+                            requestSeedBlock:(_Nullable SeedRequestBlock)seed;
 
 -(NSUInteger)addressPurpose:(NSString * _Nonnull)address;
 

@@ -29,6 +29,8 @@
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 #define BIP44_PURPOSE      44
 #define BIP32_PURPOSE      0
+#define BIP44_PURPOSE_ACCOUNT_DEPTH      3
+#define BIP32_PURPOSE_ACCOUNT_DEPTH      1
 #define ADDRESS_DEFAULT      BIP44_PURPOSE
 
 @protocol BRKeySequence<NSObject>

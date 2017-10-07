@@ -142,6 +142,32 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return [NSString base58checkWithData:d];
 }
 
+// helper function for serializing BIP32 master public/private keys to standard export format
+static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key)
+{
+    NSData * data = [NSData dataWithBase58String:string];
+    uint8_t * bytes = (uint8_t *)[data bytes];
+    void * type = malloc(4*sizeof(void *));
+    [data getBytes:type length:4];
+    if (type != BIP32_XPRV && type != BIP32_XPUB) return FALSE;
+    NSUInteger offset = 4;
+    *depth = bytes[4];
+    offset++;
+    *fingerprint = (uint32_t)bytes[5];
+    offset += sizeof(uint32_t);
+    *child = (uint32_t)bytes[offset];
+    offset += sizeof(uint32_t);
+    for (int i = 0;i<8;i++) {
+        (*chain).u32[i] = bytes[offset];
+        offset += sizeof(uint32_t);
+    }
+    offset += sizeof(UInt256);
+    *key = [data subdataWithRange:NSMakeRange(offset, data.length - offset)];
+    *fingerprint = CFSwapInt32BigToHost(*fingerprint);
+    *child = CFSwapInt32BigToHost(*child);
+    return TRUE;
+}
+
 @implementation BRBIP32Sequence
 
 // MARK: - BRKeySequence
@@ -310,7 +336,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)]);
 }
 
-- (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey
+- (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey depth:(NSUInteger)depth
 {
     if (masterPublicKey.length < 36) return nil;
     
@@ -318,7 +344,28 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
     UInt256 chain = *(UInt256 *)((const uint8_t *)masterPublicKey.bytes + 4);
     BRECPoint pubKey = *(BRECPoint *)((const uint8_t *)masterPublicKey.bytes + 36);
 
-    return serialize(1, fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)]);
+    return serialize(depth, fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)]);
+}
+
+- (NSData *)deserializedMasterPublicKey:(NSString *)masterPublicKeyString
+{
+    uint8_t depth;
+    uint32_t fingerprint;
+    uint32_t child;
+    UInt256 chain;
+    NSData * pubkey = nil;
+    NSMutableData * masterPublicKey = [NSMutableData data];
+    BOOL valid = deserialize(masterPublicKeyString, &depth, &fingerprint, &child, &chain, &pubkey);
+    if (!valid) return nil;
+    [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
+    [masterPublicKey appendBytes:&chain length:32];
+    [masterPublicKey appendData:pubkey];
+//
+//    uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)masterPublicKey.bytes);
+//    UInt256 chain = *(UInt256 *)((const uint8_t *)masterPublicKey.bytes + 4);
+//    BRECPoint pubKey = *(BRECPoint *)((const uint8_t *)masterPublicKey.bytes + 36);
+    
+    return [masterPublicKey copy];
 }
 
 @end

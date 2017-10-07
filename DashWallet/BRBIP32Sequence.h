@@ -45,6 +45,7 @@
 - (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed;
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
-- (NSString * _Nullable)serializedMasterPublicKey:(NSData * _Nonnull)masterPublicKey;
+- (NSString * _Nullable)serializedMasterPublicKey:(NSData * _Nonnull)masterPublicKey depth:(NSUInteger)depth;
+- (NSData * _Nullable)deserializedMasterPublicKey:(NSString * _Nonnull)masterPublicKeyString;
 
 @end

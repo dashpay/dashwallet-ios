@@ -1151,47 +1151,58 @@
                           @"[BRBIP32Sequence publicKey:internal:masterPublicKey:]");
 }
 
-#if ! DASH_TESTNET
-- (void)testBIP32SequenceBitIdPrivateKey
-{
-    BRBIP32Sequence *seq = [BRBIP32Sequence new];
-    NSData *seed = [[BRBIP39Mnemonic new]
-                    deriveKeyFromPhrase:@"inhale praise target steak garlic cricket paper better evil almost sadness "
-                    "crawl city banner amused fringe fox insect roast aunt prefer hollow basic ladder"
-                    withPassphrase:nil];
-    NSString *privKey = [seq bitIdPrivateKey:0 forURI:@"http://bitid.bitcoin.blue/callback" fromSeed:seed];
-    NSString *addr = [BRKey keyWithPrivateKey:privKey].address;
-
-    XCTAssertEqualObjects(addr, @"1J34vj4wowwPYafbeibZGht3zy3qERoUM1");
-}
-#endif
-
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
-    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
+    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
     NSString *xprv = [seq serializedPrivateMasterFromSeed:seed];
     
-    NSLog(@"000102030405060708090a0b0c0d0e0f xpriv = %@", xprv);
+    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
     
     XCTAssertEqualObjects(xprv,
-     @"xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi",
+     @"xprv9s21ZrQH143K27s8Yy6TJSKmKUxTBuXJr4RDTjJ5Jqq13d9v2VzYymSoM4VodDK7nrQHTruX6TuBsGuEVXoo91GwZnmBcTaqUhgK7HeysNv",
                          @"[BRBIP32Sequence serializedPrivateMasterFromSeed:]");
 }
 
 - (void)testBIP32SequenceSerializedMasterPublicKey
 {
+    //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
-    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
+    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
     NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
-    NSString *xpub = [seq serializedMasterPublicKey:mpk];
+    NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
     
-    NSLog(@"000102030405060708090a0b0c0d0e0f xpub = %@", xpub);
+    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
     
     XCTAssertEqualObjects(xpub,
-     @"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw",
+     @"xpub6949NHhpyXW7qCtj5eKxLG14JgbFdxUwRdmZ4M51t2Bcj95bCREEDmvdWhC6c31SbobAf5X86SLg76A5WirhTYFCG5F9wkeY6314q4ZtA68",
                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
 }
+
+- (void)testBIP44SequenceSerializedMasterPublicKey
+{
+    //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
+    BRBIP32Sequence *seq = [BRBIP32Sequence new];
+    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
+    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP44_PURPOSE];
+    NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
+    
+    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
+    
+    XCTAssertEqualObjects(xpub,
+                          @"xpub6BfBpRJkGecfCdHpjxafhL11EdFJHauux1vWAk19XLzffosFQ56gFN56BQYPt8xobwZkg5ABKCL8u37pJyhsnhje7gDVcLJeM69NEiD3ezu",
+                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
+}
+
+//- (void)testBIP32SequenceDeserializedMasterPublicKey
+//{
+//    BRBIP32Sequence *seq = [BRBIP32Sequence new];
+//    NSData *mpk = [seq deserializedMasterPublicKey:@"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw"];
+//
+//    XCTAssertEqualObjects(mpk,
+//                          [seq masterPublicKeyFromSeed:@"000102030405060708090a0b0c0d0e0f".hexToData purpose:BIP32_PURPOSE],
+//                          @"[BRBIP32Sequence deserializedMasterPublicKey:]");
+//}
 
 // MARK: - testWallet
 
@@ -1209,14 +1220,24 @@
     UInt256 secret = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
     BRKey *k = [BRKey keyWithSecret:secret compressed:YES];
     NSValue *hash = uint256_obj(UINT256_ZERO);
-    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil masterBIP32PublicKey:nil seed:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
+    BRBIP32Sequence * sequence = [BRBIP32Sequence new];
+    NSData * emptyData = [NSData data];
+    NSData * master32Pub = [sequence masterPublicKeyFromSeed:emptyData purpose:BIP32_PURPOSE];
+    NSData * master44Pub = [sequence masterPublicKeyFromSeed:emptyData purpose:BIP44_PURPOSE];
+    BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:sequence masterBIP44PublicKey:master44Pub masterBIP32PublicKey:master32Pub requestSeedBlock:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
+        //this happens when we request the seed
         seedCompletion([NSData data]);
     }];
 
     [script appendScriptPubKeyForAddress:k.address];
 
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@(0)] inputScripts:@[script]
-                         outputAddresses:@[w.receiveAddress] outputAmounts:@[@(DUFFS)]];
+    NSArray * inputHashes = @[hash];
+    NSArray * inputIndexes = @[@(0)];
+    NSArray * inputScripts = @[script];
+    NSArray * outputAddresses = @[w.receiveAddress];
+    NSArray * outputAmounts = @[@(DUFFS)];
+    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                         outputAddresses:outputAddresses outputAmounts:outputAmounts];
 
     [tx signWithPrivateKeys:@[k.privateKey]];
     [w registerTransaction:tx];
@@ -1240,82 +1261,83 @@
 
     XCTAssertNotNil(tx, @"[BRWallet transactionFor:to:withFee:]");
 
-    [w signTransaction:tx withPrompt:@"" completion:nil];
+    [w signTransaction:tx withPrompt:@"" completion:^(BOOL signedTransaction) {
+        XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
+    }];
 
-    XCTAssertTrue(tx.isSigned, @"[BRWallet signTransaction]");
+    
 
     [w registerTransaction:tx];
 
     XCTAssertEqual(w.balance, DUFFS*3/2, @"[BRWallet balance]");
 
 #if ! DASH_TESTNET
-    w = [[BRWallet alloc] initWithContext:nil sequence:[BRBIP32Sequence new] masterPublicKey:nil masterBIP32PublicKey:nil
-                                     seed:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
+    
+    w = [[BRWallet alloc] initWithContext:nil sequence:sequence masterBIP44PublicKey:master44Pub masterBIP32PublicKey:master32Pub
+                                     requestSeedBlock:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
                                          seedCompletion([NSData data]);
                                      }];
     
     // hack to make the following transactions belong to the wallet
     NSMutableSet *allAddresses = [(id)w performSelector:@selector(allAddresses)];
 
-    [allAddresses addObject:@"1DjJGdMuW6UKunUS3jAuaEcqZ2mkH1QNHc"];
-    [allAddresses addObject:@"1P5hsxGtGYEftqcP7gY63pKX7JXCfLCNiR"];
-    [allAddresses addObject:@"1htJNo75xgfHUYA7ag8hRMjwg5mREfkD7"];
-    [allAddresses addObject:@"19UZQkmaH4PqE99t5bPgA83HeXJAkoogKE"];
-    [allAddresses addObject:@"18fPNnWxGhytebu2or4c2tFcnkXVeB2aL6"];
-    [allAddresses addObject:@"16XP5vHKm2qnQHAGpmUBCwzGVxamDbGQ5N"];
-    [allAddresses addObject:@"1DieDrnPmjv4TfxXukZTKsm32PgFfwKcFA"];
+    [allAddresses addObject:@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h"];
+    
+    BRTransaction *tx1 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J"];
+    
+    BRTransaction *tx2 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq"];
+    
+    BRTransaction *tx3 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV"];
+    
+    BRTransaction *tx4 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH"];
+    
+    BRTransaction *tx5 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T"];
+    
+    BRTransaction *tx6 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [allAddresses addObject:@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6"];
+    
+    BRTransaction *tx7 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+                                                    outputAddresses:@[@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
+    
+    [tx1 signWithPrivateKeys:@[k.privateKey]];
+    [tx2 signWithPrivateKeys:@[k.privateKey]];
+    [tx3 signWithPrivateKeys:@[k.privateKey]];
+    [tx4 signWithPrivateKeys:@[k.privateKey]];
+    [tx5 signWithPrivateKeys:@[k.privateKey]];
+    [tx6 signWithPrivateKeys:@[k.privateKey]];
+    [tx7 signWithPrivateKeys:@[k.privateKey]];
 
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000001932bcd947e72ed69b813a7afc6a75a97bc60a26e45"
-     "e2635ca6b5b619cf650d84010000006a4730440220697f9338ecc869361094bc6ab5243cbf683a84e3f424599e3b2961dd33e018f602202a6"
-     "190a65b7ac42c9a907823e11e28991c01dd1bda7081bc99191c8304481c5501210235c032e32c490055212aecba58526a68f2ce3d0e53388c"
-     "e01efe1764214f52dbffffffff02a0860100000000001976a914b1cedc0e005cb1e929e18b14a2cbb481d4b7e65d88aca0ad3900000000001"
-     "976a9148ba16545a88d500197281540541299394194a17a88ac00000000".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000001669313d613ee6b9e31252b7d4160ab821ab21cf059"
-     "b7d7b8a5b4c29ebba45d30000000006b483045022100e1e314053d86aff56b4bda7aab3b650732e7d8da6e79f7ab23c1fc4523c44f0d02202"
-     "a55fce6cad078ac801626fcd42c40ff43692ade3fe14cfb97f685c070dfe9ea012102ce4f2739e0acf7e6c2eb5babf6cc62d44e5de70ba1a5"
-     "9274af86bd5c1c9fa404ffffffff01301b0f00000000001976a914f2368e03acc87480f355dd917baca95e5d19e74d88ac00000000"
-     "".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000011000b4ec5446e9d45c04fec06774468d003db4f662"
-     "0df256a22ffd6d79883688000000008a473044022022afda9e3a3589c9b286f0c6a989374f59b8c217e0de127bec612265a2b0749b022050f"
-     "dc59045592eae7aad218d0f2ac14a7f410a9195018ceecb50e6fc92060526014104a3be6b242cfbef34e63002f304eceb058fdc36797241c3"
-     "78b06fa44573e5307031cf1a4c3a1caeac128abfedd169f02db1e795788d27ff44a81a32c50645ab7cffffffff01d06c0400000000001976a"
-     "91407bb76119e91184e49882b168e5c785ecefb5b2488ac00000000".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"010000000104c58782c504726fa26c26b23d6cae4715311fb6db"
-     "d9ff494f5868cc0686948b010000008a47304402207643b8852c93e425d5a41b8e6e9126cce85115fe99310b680b86c69852dd386e0220691"
-     "da90f76fb4ee9519edf2afe4aa0f04d44529bf8602b00c4f31aad7d631d37014104126989db35c5088c021ef16a0d67b1cda7dac2dee20144"
-     "ff95b543b449788e5a66c6f314981dd0baffaa5057d5b972e4fb274e2799d6bae796ed2c29be97c574ffffffff0280969800000000001976a"
-     "9145cf74a97cf524c5b99a6ec29f3ab3ed4b436592988ac49981700000000001976a9148e022fdce38b1d22fb5bfe89d3e8256c650f246988"
-     "ac00000000".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000011000b4ec5446e9d45c04fec06774468d003db4f662"
-     "0df256a22ffd6d79883688010000008b483045022100d77a298b3126b347d1576e301ba7a6ca0610124f2cb0cc47b58254cb66cbd00302205"
-     "3708a6c858dfb35a65b57381fec99e5797c33cc7d66d220469564303a62dc8a014104a331cd33c13ba323e549fdefa11af1f03f86a44a4f2e"
-     "e0883fab39d96bf9c147940afe36e2ddf6ebbef5e8a57a931d5f854abcc27b33d1ba7f424647202a7ee2ffffffff0240420f0000000000197"
-     "6a914540b5d80a4d05a2cf7035bbca524f68ef93cf79688ac60926200000000001976a914bf49bd44526f6ab157275aa938df9479bfecf003"
-     "88ac00000000".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"0100000002f6d5012856206e93341a40b19afb86caabe9964753"
-     "99b77d3695f484ec6fb1d4000000006b483045022100d0f7d86aea22a4fe23bb3b5de29e56983faa9fdf60052a0d8321212ca972336502201"
-     "09b11f128e24a2d3dc615ddf2124bb2d1e7506a80a944bafa5ebdf965043982012102fe5d33b9a5fe9c8799d6f8ad0cf92bd477620dd299c5"
-     "62c812295dcb6d66f6b4ffffffffe9c01e3b016c95729b13fa5db25412c89a555223f6d4378c3b65898e5b3ca8dd000000006b48304502210"
-     "092e5b28aea395ca4a916067ac18f30a9616d6cf827158e80126a657152226165022043cb34077eaf4ec01727eeb038b0b297da0c5580beb1"
-     "11b999949c36ba53d12301210382efead48069b88d35ea13e0e80f19eda6c08191f1ce668a77c8d210c5791ffeffffffff0240420f0000000"
-     "0001976a914faaaeb7f7e534ee2e18c3f15a3191dd51c36a93688ac5f700c00000000001976a9143c978b11b19d0718b4a847304340b3804d"
-     "5194a388ac00000000".hexToData]];
-    [w registerTransaction:[BRTransaction transactionWithMessage:@"01000000027560f62fa95ecdb9eb0bf200764b8eff99c717918c"
-     "743314fe1e7d4dc9899cc8010000008a47304402203e2c3beb755fe868728896482aaa197f10c4bad9749e9f4d9e607acd23726b9602202bb"
-     "0eca3031ee8c750a6688f02b422275b0b02f4353c3e9526905e297c7e2ca801410429c3b9fa9ec9aea0918ccc00c08a814f13bdd2e72273b6"
-     "2b046605f8daa8b559b2aec4706caa15b914897ea3be4ba3b200aeca22f16ed882836cad0bdf9c282affffffff8b10474e40d60efc2612614"
-     "97ed6d46d38e5219fce122c1ba2b0bc645342fef3000000008a47304402202990aa1fcbb519bf6edd798f6290930bd8c0e8e6185153af0b90"
-     "ed64249302c20220419a07a674753778ab2198f37f43b2c7f7c3ef2aac8b685090e30484a366cf960141049b3707c1b05412511a75eaa39b2"
-     "56bc7e958539e66fd02b291199df0408c62bbe70a093560cc408e52fac7ee74ed650c5f8c70b85ccc9a2ab853164d1d2a4bd3ffffffff0240"
-     "548900000000001976a9148b81a28bc33e75484783475aed1f1e78ac4c084788acbe040300000000001976a9146a5af3e825f69bec5089b42"
-     "f54c389c19673ba8488ac00000000".hexToData]];
+    [w registerTransaction:tx1];
+    [w registerTransaction:tx2];
+    [w registerTransaction:tx3];
+    [w registerTransaction:tx4];
+    [w registerTransaction:tx5];
+    [w registerTransaction:tx6];
+    [w registerTransaction:tx7];
 
     // larger than 1k transaction
-    tx = [w transactionFor:25000000 to:@"16c7nyuu2D99LqJ8TQ8GSsWSyrCYDS5qBA" withFee:YES];
-    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size + 1965 isInstant:FALSE inputCount:0]);
+    tx = [w transactionFor:25000000 to:@"XvQbGBRz8fokqot7BnnjjSLWWi41BgwujN" withFee:YES];
+    NSLog(@"fee: %llu, should be %llu", [w feeForTransaction:tx], [w feeForTxSize:tx.size isInstant:FALSE inputCount:0]);
 
     int64_t amount = [w amountReceivedFromTransaction:tx] - [w amountSentByTransaction:tx],
-            fee = [w feeForTxSize:tx.size + 1965 isInstant:FALSE inputCount:0] + ((w.balance - 25000000) % 100);
+            fee = [w feeForTxSize:tx.size isInstant:FALSE inputCount:0] + ((w.balance - 25000000) % 100);
 
     XCTAssertEqual([w feeForTransaction:tx], fee, @"[BRWallet transactionFor:to:withFee:]");
     XCTAssertEqual(amount, -25000000 - fee);
