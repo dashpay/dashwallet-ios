@@ -364,7 +364,7 @@ static NSString *dateFormat(NSString *template)
 
     if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate) {
-        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
                 if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
                 

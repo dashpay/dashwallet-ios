@@ -295,7 +295,7 @@
     [BREventManager saveEvent:@"settings:touch_id_limit"];
     BRWalletManager *manager = [BRWalletManager sharedInstance];
 
-    [manager authenticateWithPrompt:nil andTouchId:NO completion:^(BOOL authenticated) {
+    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
         if (authenticated) {
             self.selectorType = 1;
             self.selectorOptions =

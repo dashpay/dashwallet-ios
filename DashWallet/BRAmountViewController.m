@@ -241,7 +241,7 @@
     [BREventManager saveEvent:@"amount:unlock"];
     
     if (sender && ! manager.didAuthenticate) {
-        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 [BREventManager saveEvent:@"amount:successful_unlock"];
                 

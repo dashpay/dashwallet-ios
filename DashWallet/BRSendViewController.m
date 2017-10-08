@@ -303,7 +303,7 @@ static NSString *sanitizeString(NSString *s)
                     self.url = nil;
                 }
             } else if (!self.clearClipboard) {
-                [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+                [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
                     if (authenticated) {
                         if ([self processURLAddressList:url]) {
                             if (xsuccess) {

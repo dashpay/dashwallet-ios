@@ -45,7 +45,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 
 @protocol BRMnemonic;
 
-typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess);
+typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL authenticated); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
+typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 
@@ -84,7 +85,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
-- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
+- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 
 // queries api.dashwallet.com and calls the completion block with unspent outputs for the given address
@@ -117,5 +118,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 
 -(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 -(void)setSeedPhrase:(NSString* _Nullable)seedPhrase;
+
+-(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion;
 
 @end

@@ -155,7 +155,7 @@
                     }
                     
                     if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
-                        [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO completion:^(BOOL authenticatedOrSuccess) {
+                        [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
                             if (authenticatedOrSuccess) {
                                 BRBIP32Sequence *seq = [BRBIP32Sequence new];
                                 NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.extendedBIP44PublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
@@ -578,47 +578,54 @@
         }
     }
     else {
-        if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
-        self.splash.hidden = YES;
-        
-        self.navigationController.navigationBar.hidden = NO;
-        self.pageViewController.view.alpha = 1.0;
-        [self.receiveViewController updateAddress];
-        if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-
-        if (self.navigationController.visibleViewController == self) {
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-
-#if SNAPSHOT
-        return;
-#endif
-
-        if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-            [manager authenticateWithPrompt:nil andTouchId:NO completion:^(BOOL authenticated) {
-                if (authenticated) {
-                    [self unlock:nil];
-                }
-            }];
-        }
-
-        if (self.navigationController.visibleViewController == self) {
-            if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-        }
-        
-        if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            [[BRPeerManager sharedInstance] connect];
-            [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+        [manager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated) {
+            if (!success && neededUpgrade && !authenticated) {
+                
+            }
+            //if (!success) exit(0);
+            if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
+            self.splash.hidden = YES;
             
-            if (self.url) {
-                [self.sendViewController handleURL:self.url];
-                self.url = nil;
+            self.navigationController.navigationBar.hidden = NO;
+            self.pageViewController.view.alpha = 1.0;
+            [self.receiveViewController updateAddress];
+            if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+            
+            if (self.navigationController.visibleViewController == self) {
+                [self setNeedsStatusBarAppearanceUpdate];
             }
-            else if (self.file) {
-                [self.sendViewController handleFile:self.file];
-                self.file = nil;
+            
+#if SNAPSHOT
+            return;
+#endif
+            if (!authenticated) {
+                if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                        if (authenticated) {
+                            [self unlock:nil];
+                        }
+                    }];
+                }
             }
-        }
+            
+            if (self.navigationController.visibleViewController == self) {
+                if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+            }
+            
+            if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+                [[BRPeerManager sharedInstance] connect];
+                [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+                
+                if (self.url) {
+                    [self.sendViewController handleURL:self.url];
+                    self.url = nil;
+                }
+                else if (self.file) {
+                    [self.sendViewController handleFile:self.file];
+                    self.file = nil;
+                }
+            }
+        }];
     }
 }
 
@@ -1079,7 +1086,7 @@
         [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     } else {
         [BREventManager saveEvent:@"root:unlock"];
-        [manager authenticateWithPrompt:nil andTouchId:YES completion:^(BOOL authenticated) {
+        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
             [BREventManager saveEvent:@"root:unlock_success"];
             [self updateTitleView];
