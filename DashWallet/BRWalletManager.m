@@ -650,7 +650,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 // MARK: - authentication
 
 // prompts user to authenticate with touch id or passcode
-- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(void (^)(BOOL authenticated))completion;
+- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
 {
     if (touchId && [LAContext class]) { // check if touch id framework is available
         NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
@@ -680,11 +680,11 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             }
             else if (authcode == 1) {
                 self.didAuthenticate = YES;
-                completion(YES);
+                completion(YES,NO);
                 return;
             }
             else if (authcode == LAErrorUserCancel || authcode == LAErrorSystemCancel) {
-                completion(NO);
+                completion(NO,NO);
                 return;
             }
         }
@@ -696,10 +696,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                     DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
             [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                completion(YES);
+                completion(YES,NO);
             }];
         } else {
-            completion(NO);
+            completion(NO,cancelled);
         }
     }];
 }
