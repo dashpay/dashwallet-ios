@@ -1071,22 +1071,50 @@
     
     XCTAssertEqualObjects(xpub,
                           @"xpub6949NHhpyXW7qCtj5eKxLG14JgbFdxUwRdmZ4M51t2Bcj95bCREEDmvdWhC6c31SbobAf5X86SLg76A5WirhTYFCG5F9wkeY6314q4ZtA68",
-                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
+                          @"[BRBIP32Sequence serializedMasterPublicKey:depth:]");
+    
+    BRBIP39Mnemonic * mnemonic = [BRBIP39Mnemonic new];
+    seed = [mnemonic deriveKeyFromPhrase:@"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow" withPassphrase:nil];
+    
+    XCTAssertEqualObjects(seed.hexString,
+                          @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
+                          @"[BRBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
+    
+    mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
+    XCTAssertEqualObjects(mpk.hexString,
+                          @"c93fa1867e984d7255df4736e7d7d6243026b9744e62374cbb54a0a47cc0fe0c334f876e02cdfeed62990ac98b6932e0080ce2155b4f5c7a8341271e9ee9c90cd87300009c",
+                          @"[BRBIP32Sequence masterPublicKeyFromSeed:purpose:]");
+    
+    xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
+    
+    XCTAssertEqualObjects(xpub,
+                          @"xpub69NHuRQrRn5GbT7j881uR64arreu3TFmmPAMnTeHdGd68BmAFxssxhzhmyvQoL3svMWTSbymV5FdHoypDDmaqV1C5pvnKbcse1vgrENbau7",
+                          @"[BRBIP32Sequence serializedMasterPublicKey:depth:]");
 }
 
 - (void)testBIP44SequenceSerializedMasterPublicKey
 {
     //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
-    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
+    BRBIP39Mnemonic * mnemonic = [BRBIP39Mnemonic new];
+    NSData * seed = [mnemonic deriveKeyFromPhrase:@"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow" withPassphrase:nil];
+    
+    XCTAssertEqualObjects(seed.hexString,
+                          @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
+                          @"[BRBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
+
     NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP44_PURPOSE];
+    XCTAssertEqualObjects(mpk.hexString,
+                          @"c93fa186a07188bd71458a0e90987f92b18a6451e99eb52f0060be450e0b4b3ce3e49f9f033914476cf503c7c2dcf5a0f90d3e943a84e507551bdf84891dd38c0817cca97a",
+                          @"[BRBIP32Sequence masterPublicKeyFromSeed:purpose:]");
+    
     NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
     
-    NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
+    NSLog(@"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc xpub = %@", xpub);
     
     XCTAssertEqualObjects(xpub,
-                          @"xpub6BfBpRJkGecfCdHpjxafhL11EdFJHauux1vWAk19XLzffosFQ56gFN56BQYPt8xobwZkg5ABKCL8u37pJyhsnhje7gDVcLJeM69NEiD3ezu",
-                          @"[BRBIP32Sequence serializedMasterPublicKey:]");
+                          @"xpub6CAqVZYbGiQCTyzzvvueEoBy8M74VWtPywf2F3zpwbS8AugDSSMSLcewpDaRQxVCxtL4kbTbWb1fzWg2R5933ECsxrEtKBA4gkJu8quduHs",
+                          @"[BRBIP32Sequence serializedMasterPublicKey:depth:]");
 }
 
 //- (void)testBIP32SequenceDeserializedMasterPublicKey
