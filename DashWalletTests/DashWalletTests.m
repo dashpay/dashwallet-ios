@@ -1023,21 +1023,21 @@
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
+    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0' pub+chain = %@", [NSString hexWithData:mpk]);
     
     XCTAssertEqualObjects(mpk, @"3442193e"
                           "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
                           "035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56".hexToData,
-                          @"[BRBIP32Sequence masterPublicKeyFromSeed:]");
+                          @"[BRBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:]");
 }
 
 - (void)testBIP32SequencePublicKey
 {
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
+    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
     NSData *pub = [seq publicKey:0 internal:NO masterPublicKey:mpk];
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/0 pub = %@", [NSString hexWithData:pub]);
@@ -1064,7 +1064,7 @@
     //from Mnemonic stay issue box trade stock chaos raccoon candy obey wet refuse carbon silent guide crystal
     BRBIP32Sequence *seq = [BRBIP32Sequence new];
     NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
+    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
     NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
     
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpub = %@", xpub);
@@ -1080,10 +1080,10 @@
                           @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
                           @"[BRBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
     
-    mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP32_PURPOSE];
+    mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
     XCTAssertEqualObjects(mpk.hexString,
                           @"c93fa1867e984d7255df4736e7d7d6243026b9744e62374cbb54a0a47cc0fe0c334f876e02cdfeed62990ac98b6932e0080ce2155b4f5c7a8341271e9ee9c90cd87300009c",
-                          @"[BRBIP32Sequence masterPublicKeyFromSeed:purpose:]");
+                          @"[BRBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:purpose:]");
     
     xpub = [seq serializedMasterPublicKey:mpk depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
     
@@ -1103,10 +1103,10 @@
                           @"467c2dd58bbd29427fb3c5467eee339021a87b21309eeabfe9459d31eeb6eba9b2a1213c12a173118c84fd49e8b4bf9282272d67bf7b7b394b088eab53b438bc",
                           @"[BRBIP39Mnemonic deriveKeyFromPhrase:withPassphrase:]");
 
-    NSData *mpk = [seq masterPublicKeyFromSeed:seed purpose:BIP44_PURPOSE];
+    NSData *mpk = [seq extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE];
     XCTAssertEqualObjects(mpk.hexString,
-                          @"c93fa186a07188bd71458a0e90987f92b18a6451e99eb52f0060be450e0b4b3ce3e49f9f033914476cf503c7c2dcf5a0f90d3e943a84e507551bdf84891dd38c0817cca97a",
-                          @"[BRBIP32Sequence masterPublicKeyFromSeed:purpose:]");
+                          @"4687e396a07188bd71458a0e90987f92b18a6451e99eb52f0060be450e0b4b3ce3e49f9f033914476cf503c7c2dcf5a0f90d3e943a84e507551bdf84891dd38c0817cca97a",
+                          @"[BRBIP32Sequence extendedPublicKeyForAccount:0 fromSeed:purpose:]");
     
     NSString *xpub = [seq serializedMasterPublicKey:mpk depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
     
@@ -1123,7 +1123,7 @@
 //    NSData *mpk = [seq deserializedMasterPublicKey:@"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw"];
 //
 //    XCTAssertEqualObjects(mpk,
-//                          [seq masterPublicKeyFromSeed:@"000102030405060708090a0b0c0d0e0f".hexToData purpose:BIP32_PURPOSE],
+//                          [seq extendedPublicKeyForAccount:0 fromSeed:@"000102030405060708090a0b0c0d0e0f".hexToData purpose:BIP32_PURPOSE],
 //                          @"[BRBIP32Sequence deserializedMasterPublicKey:]");
 //}
 
@@ -1145,8 +1145,8 @@
     NSValue *hash = uint256_obj(UINT256_ZERO);
     BRBIP32Sequence * sequence = [BRBIP32Sequence new];
     NSData * emptyData = [NSData data];
-    NSData * master32Pub = [sequence masterPublicKeyFromSeed:emptyData purpose:BIP32_PURPOSE];
-    NSData * master44Pub = [sequence masterPublicKeyFromSeed:emptyData purpose:BIP44_PURPOSE];
+    NSData * master32Pub = [sequence extendedPublicKeyForAccount:0 fromSeed:emptyData purpose:BIP32_PURPOSE];
+    NSData * master44Pub = [sequence extendedPublicKeyForAccount:0 fromSeed:emptyData purpose:BIP44_PURPOSE];
     BRWallet *w = [[BRWallet alloc] initWithContext:nil sequence:sequence masterBIP44PublicKey:master44Pub masterBIP32PublicKey:master32Pub requestSeedBlock:^(NSString * _Nullable authprompt, uint64_t amount, SeedCompletionBlock  _Nullable seedCompletion) {
         //this happens when we request the seed
         seedCompletion([NSData data]);

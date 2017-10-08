@@ -36,7 +36,7 @@
 @protocol BRKeySequence<NSObject>
 @required
 
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed purpose:(uint32_t)purpose;
+- (NSData *)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;
 - (NSData *)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
 - (NSString *)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray *)privateKeys:(NSArray *)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;

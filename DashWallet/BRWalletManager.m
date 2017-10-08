@@ -72,8 +72,10 @@
 
 #define MNEMONIC_KEY        @"mnemonic"
 #define CREATION_TIME_KEY   @"creationtime"
-#define MASTER_PUBKEY_KEY_BIP44   @"masterpubkeyBIP44"
-#define MASTER_PUBKEY_KEY_BIP32   @"masterpubkeyBIP32"
+#define MASTER_PUBKEY_KEY_BIP44   @"masterpubkeyBIP44" //these are old and need to be retired
+#define MASTER_PUBKEY_KEY_BIP32   @"masterpubkeyBIP32" //these are old and need to be retired
+#define EXTENDED_0_PUBKEY_KEY_BIP44   @"extended0pubkeyBIP44"
+#define EXTENDED_0_PUBKEY_KEY_BIP32   @"extended0pubkeyBIP32"
 #define SPEND_LIMIT_KEY     @"spendlimit"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
@@ -344,11 +346,11 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (_wallet) return _wallet;
     
     uint64_t feePerKb = 0;
-    NSData *mpk = self.masterPublicKey;
+    NSData *mpk = self.extendedBIP44PublicKey;
     
     if (! mpk) return _wallet;
     
-    NSData *mpkBIP32 = self.masterPublicKeyNoPurpose;
+    NSData *mpkBIP32 = self.extendedBIP32PublicKey;
     
     if (! mpkBIP32) return _wallet;
     
@@ -403,8 +405,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     NSError *error = nil;
     
     if (_wallet) return NO;
-    if (getKeychainData(MASTER_PUBKEY_KEY_BIP44, &error) || error) return NO;
-    if (getKeychainData(MASTER_PUBKEY_KEY_BIP32, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, &error) || error) return NO;
     if (getKeychainData(SEED_KEY, &error) || error) return NO; // check for old keychain scheme
     return YES;
 }
@@ -412,19 +414,19 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 // true if this is a "watch only" wallet with no signing ability
 - (BOOL)watchOnly
 {
-    return (self.masterPublicKey && self.masterPublicKey.length == 0) ? YES : NO;
+    return (self.extendedBIP44PublicKey && self.extendedBIP44PublicKey.length == 0) ? YES : NO;
 }
 
-// master public key used to generate wallet addresses
-- (NSData *)masterPublicKey
+// master public key used to generate wallet addresses m/44'/5'/0'
+- (NSData *)extendedBIP44PublicKey
 {
-    return getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
+    return getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, nil);
 }
 
-// master public key using old non BIP 43/44
-- (NSData *)masterPublicKeyNoPurpose
+// master public key using old non BIP 43/44 m/0'
+- (NSData *)extendedBIP32PublicKey
 {
-    return getKeychainData(MASTER_PUBKEY_KEY_BIP32, nil);
+    return getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, nil);
 }
 
 
@@ -449,8 +451,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         [[NSUserDefaults standardUserDefaults] synchronize];
         
         setKeychainData(nil, CREATION_TIME_KEY, NO);
-        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO);
-        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO);
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
         setKeychainData(nil, SPEND_LIMIT_KEY, NO);
         setKeychainData(nil, PIN_KEY, NO);
         setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
@@ -481,12 +483,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
                                                  deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
         
-        NSData *masterPubKey = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:derivedKeyData purpose:BIP44_PURPOSE] : nil;
-        NSData *masterPubKeyBIP32 = (seedPhrase) ? [self.sequence masterPublicKeyFromSeed:derivedKeyData purpose:BIP32_PURPOSE] : nil;
+        NSData *masterPubKeyBIP44 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP44_PURPOSE] : nil;
+        NSData *masterPubKeyBIP32 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP32_PURPOSE] : nil;
         
-        if ([seedPhrase isEqual:@"wipe"]) masterPubKey = [NSData data]; // watch only wallet
-        setKeychainData(masterPubKey, MASTER_PUBKEY_KEY_BIP44, NO);
-        setKeychainData(masterPubKeyBIP32, MASTER_PUBKEY_KEY_BIP32, NO);
+        if ([seedPhrase isEqual:@"wipe"]) {
+            masterPubKeyBIP44 = [NSData data]; // watch only wallet
+            masterPubKeyBIP32 = [NSData data];
+        }
+        setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
+        setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
         _wallet = nil;
     }
     
@@ -1791,8 +1796,8 @@ replacementString:(NSString *)string
             
             if (! [phrase isEqual:textField.text]) textField.text = phrase;
             
-            if (! [[self.sequence masterPublicKeyFromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
-                                                                                              normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.masterPublicKey]) {
+            if (! [[self.sequence extendedPublicKeyForAccount:0 fromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
+                                                                                              normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.extendedBIP44PublicKey]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                               withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

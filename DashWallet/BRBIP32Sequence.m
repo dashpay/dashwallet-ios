@@ -174,7 +174,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
 // the values are taken from BIP32 account m/44H/5H/0H
-- (NSData *)masterPublicKeyFromSeed:(NSData *)seed purpose:(uint32_t)purpose
+- (NSData *)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose
 {
     if (! seed) return nil;
     if (purpose && purpose != 44) return nil; //currently only support purpose 0 and 44
@@ -184,14 +184,13 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
 
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-
-    [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
     if (purpose == 44) {
         CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
         CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
     }
-    CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
+    [mpk appendBytes:[BRKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
+    CKDpriv(&secret, &chain, account | BIP32_HARD); // account 0H
 
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[BRKey keyWithSecret:secret compressed:YES].publicKey];

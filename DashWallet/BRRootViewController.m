@@ -158,8 +158,8 @@
                         [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO completion:^(BOOL authenticatedOrSuccess) {
                             if (authenticatedOrSuccess) {
                                 BRBIP32Sequence *seq = [BRBIP32Sequence new];
-                                NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.masterPublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
-                                NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.masterPublicKeyNoPurpose depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
+                                NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.extendedBIP44PublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
+                                NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.extendedBIP32PublicKey depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
                                 NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
                                 if ([[UIApplication sharedApplication] canOpenURL:url]) {
                                 [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {

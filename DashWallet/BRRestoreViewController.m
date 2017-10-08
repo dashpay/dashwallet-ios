@@ -135,9 +135,9 @@
                 [self presentViewController:actionSheet animated:YES completion:nil];
             } else {
                 [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
-                    if ([[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:44]
-                         isEqual:manager.masterPublicKey] || [[manager.sequence masterPublicKeyFromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
-                                                              isEqual:manager.masterPublicKey] || [seedPhrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
+                    if ([[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:44]
+                         isEqual:manager.extendedBIP44PublicKey] || [[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
+                                                              isEqual:manager.extendedBIP44PublicKey] || [seedPhrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
                         [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
                         UIAlertController * actionSheet = [UIAlertController
                                                            alertControllerWithTitle:@""
