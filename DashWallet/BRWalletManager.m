@@ -416,7 +416,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     NSError * error = nil;
     NSData * data = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error);
     if (error) {
-        completion(NO,NO,NO);
+        completion(NO,NO,NO,NO);
         return;
     }
     NSData * oldData = (data)?nil:getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
@@ -425,13 +425,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         //upgrade scenario
         [self authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
-                completion(NO,YES,NO);
+                completion(NO,YES,NO,cancelled);
                 return;
             }
             @autoreleasepool {
                 NSString * seedPhrase = authenticated?getKeychainString(MNEMONIC_KEY, nil):nil;
                 if (!seedPhrase) {
-                    completion(NO,YES,YES);
+                    completion(NO,YES,YES,NO);
                     return;
                 }
                 NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
@@ -443,13 +443,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                 failed = failed | !setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
                 failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO);
                 failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO);
-                completion(!failed,YES,YES);
+                completion(!failed,YES,YES,NO);
                 
             }
         }];
         
     } else {
-        completion(YES,NO,NO);
+        completion(YES,NO,NO,NO);
     }
 }
 
