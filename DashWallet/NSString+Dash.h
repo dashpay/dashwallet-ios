@@ -57,4 +57,6 @@
 
 -(NSInteger)indexOfCharacter:(unichar)character;
 
++(NSString*)waitTimeFromNow:(NSTimeInterval)wait;
+
 @end

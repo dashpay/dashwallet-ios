@@ -49,6 +49,7 @@ typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL aut
 typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
@@ -61,6 +62,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 @property (nonatomic, readonly) NSData * _Nullable extendedBIP32PublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
+@property (nonatomic ,readonly) BOOL lockedOut;
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
 @property (nonatomic, readonly) NSString * _Nullable authPrivateKey; // private key for signing authenticated api calls
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
@@ -120,5 +122,8 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)setSeedPhrase:(NSString* _Nullable)seedPhrase;
 
 -(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion;
+
+-(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
+-(NSTimeInterval)lockoutWaitTime;
 
 @end

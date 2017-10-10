@@ -599,8 +599,8 @@ static NSString *sanitizeString(NSString *s)
             self.associatedShapeshift = shapeshift;
             
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"Instant Payment", nil)
-                                         message:NSLocalizedString(@"Request is for an instant payment but you have disabled instant payments",
+                                         alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
+                                         message:NSLocalizedString(@"request is for an instant payment but you have disabled instant payments",
                                                                    nil)
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* ignoreButton = [UIAlertAction
@@ -643,7 +643,7 @@ static NSString *sanitizeString(NSString *s)
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"Instant Payment", nil)
+                                         alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
                                          message:NSLocalizedString(@"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?",
                                                                    nil)
                                          preferredStyle:UIAlertControllerStyleAlert];

@@ -83,7 +83,6 @@ inline static int ceil_log2(int x)
 - (instancetype)initWithMessage:(NSData *)message
 {
     if (! (self = [self init])) return nil;
-    NSLog(@"%@",message.hexString);
     if (message.length < 80) return nil;
     NSNumber * l = nil;
     NSUInteger off = 0, len = 0;
@@ -106,9 +105,6 @@ inline static int ceil_log2(int x)
     len = (NSUInteger)[message varIntAtOffset:off length:&l]*sizeof(UInt256);
     off += l.unsignedIntegerValue;
     _hashes = (off + len > message.length) ? nil : [message subdataWithRange:NSMakeRange(off, len)];
-    if (len/sizeof(UInt256) > 1) {
-        NSLog(@"%ld transactions : %@",len/sizeof(UInt256),_hashes.hexString);
-    }
     off += len;
     _flags = [message dataAtOffset:off length:&l];
     _height = BLOCK_UNKNOWN_HEIGHT;

@@ -423,7 +423,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (!data && oldData) {
         NSLog(@"fixing public key");
         //upgrade scenario
-        [self authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
                 completion(NO,YES,NO,cancelled);
                 return;
@@ -759,9 +759,52 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     
 }
 
--(void)userLockedOutAtHeight:(uint64_t)failHeight times:(uint64_t)failCount {
-    NSTimeInterval wait = (failHeight + pow(6, failCount - 3)*60.0 -
-                           (self.secureTime + NSTimeIntervalSince1970))/60.0;
+-(NSTimeInterval)lockoutWaitTime {
+    NSError * error = nil;
+    uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
+    if (error) {
+        return NSIntegerMax;
+    }
+    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
+    if (error) {
+        return NSIntegerMax;
+    }
+    NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 -
+                           (self.secureTime + NSTimeIntervalSince1970);
+    return wait;
+}
+
+-(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
+    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
+                                                                       preferredStyle:UIAlertControllerStyleAlert];
+    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        textField.returnKeyType = UIReturnKeyDone;
+        textField.font = [UIFont systemFontOfSize:15.0];
+        textField.delegate = self;
+    }];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       resetCancelHandlerBlock();
+                                   }];
+    [alertController addAction:cancelButton];
+    [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
+    self.resetAlertController = alertController;
+}
+
+-(void)userLockedOut {
+    NSError * error = nil;
+    uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
+    if (error) {
+        return;
+    }
+    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
+    if (error) {
+        return;
+    }
+    NSTimeInterval wait = [self lockoutWaitTime];
     NSString *unit = NSLocalizedString(@"minutes", nil);
     
     if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
@@ -780,23 +823,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                   actionWithTitle:NSLocalizedString(@"reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
-                                      UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
-                                                                                                         preferredStyle:UIAlertControllerStyleAlert];
-                                      [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-                                          textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-                                          textField.returnKeyType = UIReturnKeyDone;
-                                          textField.font = [UIFont systemFontOfSize:15.0];
-                                          textField.delegate = self;
-                                      }];
-                                      UIAlertAction* cancelButton = [UIAlertAction
-                                                                     actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                                     style:UIAlertActionStyleCancel
-                                                                     handler:^(UIAlertAction * action) {
-                                                                         
-                                                                     }];
-                                      [alertController addAction:cancelButton];
-                                      [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
-                                      self.resetAlertController = alertController;
+                                      [self showResetWalletWithCancelHandler:nil];
                                   }];
     UIAlertAction* okButton = [UIAlertAction
                                actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -818,13 +845,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     }
 }
 
-- (void)authenticatePinWithTitle:(NSString *)title message:(NSString *)message alertIfLockout:(BOOL)showLockoutAlert completion:(PinCompletionBlock)completion
+- (void)authenticatePinWithTitle:(NSString *)title message:(NSString *)message alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion
 {
+
     //authentication logic is as follows
     //you have 3 failed attempts initially
     //after that you get locked out once immediately with a message saying
     //then you have 4 attempts with exponentially increasing intervals to get your password right
-    
     
     [BREventManager saveEvent:@"wallet_manager:pin_auth"];
     
@@ -842,7 +869,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         return;
     }
     
-    __block uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
+    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
     
     if (error) {
         completion(NO,NO);
@@ -863,7 +890,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         }
         NSLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime - NSTimeIntervalSince1970);
         if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
-            [self userLockedOutAtHeight:failHeight times:failCount];
+            if (alertIfLockout) {
+                [self userLockedOut];
+            }
             completion(NO,NO);
             return;
         } else {
@@ -942,7 +971,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             
             if (failCount >= 3) {
                 [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    [context userLockedOutAtHeight:self.secureTime + NSTimeIntervalSince1970 times:failCount]; // wallet disabled
+                    if (alertIfLockout) {
+                        [context userLockedOut]; // wallet disabled
+                    }
                     completion(NO,NO);
                 }];
                 return FALSE;
@@ -1241,6 +1272,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                              NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
                                              return;
                                          }
+                                         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
+                                             NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+                                             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
+                                             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+                                                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
+                                                                   date].timeIntervalSinceReferenceDate;
+                                             
+                                             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                         }
                                          NSError *error = nil;
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          NSArray * asks = [json objectForKey:@"asks"];
@@ -1289,6 +1329,17 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                              NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
                                              return;
                                          }
+                                         
+                                         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
+                                             NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+                                             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
+                                             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
+                                                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
+                                                                   date].timeIntervalSinceReferenceDate;
+                                             
+                                             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                         }
+                                         
                                          NSError *error = nil;
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          if (!error) {
