@@ -33,13 +33,11 @@
 
 @property (nonatomic, assign) BOOL hasAppeared, animating;
 @property (nonatomic, strong) id foregroundObserver, backgroundObserver;
-@property (nonatomic, strong) UINavigationController *seedNav;
 
-@property (nonatomic, strong) IBOutlet UIView *paralax, *wallpaper;
-@property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel, *warningLabel;
-@property (nonatomic, strong) IBOutlet UIButton *newwalletButton, *recoverButton, *generateButton, *showButton;
+@property (nonatomic, strong) IBOutlet UIView *wallpaper, *wallpaperContainer;
+@property (nonatomic, strong) IBOutlet UIButton *newwalletButton, *recoverButton;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint *logoXCenter, *walletXCenter, *restoreXCenter,
-                                                          *paralaxXLeft, *wallpaperXLeft;
+                                                           *wallpaperXLeft;
 
 @end
 
@@ -117,7 +115,6 @@
         self.navigationItem.titleView.alpha = 1.0;
         self.logoXCenter.constant = self.view.frame.size.width;
         self.walletXCenter.constant = self.restoreXCenter.constant = 0.0;
-        self.paralaxXLeft.constant = self.view.frame.size.width*PARALAX_RATIO;
         return;
 #endif
 
@@ -126,19 +123,17 @@
         }
 
         if (! self.hasAppeared) {
-            self.hasAppeared = YES;
-            self.paralaxXLeft = [NSLayoutConstraint constraintWithItem:self.navigationController.view
-                                 attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.paralax
-                                 attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0.0];
-            [self.navigationController.view insertSubview:self.paralax atIndex:0];
-            [self.navigationController.view addConstraint:self.paralaxXLeft];
+            [self.wallpaperContainer removeFromSuperview];
+            [self.navigationController.view insertSubview:self.wallpaperContainer atIndex:0];
             [self.navigationController.view
              addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
-                            attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
-                            attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
-            self.navigationController.view.clipsToBounds = YES;
-            self.navigationController.view.backgroundColor = [UIColor blackColor];
-            [self.navigationController.view layoutIfNeeded];
+                                                        attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.wallpaperContainer
+                                                        attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
+            [self.navigationController.view
+             addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
+                                                        attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.wallpaperContainer
+                                                        attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0]];
+            self.hasAppeared = YES;
             self.logoXCenter.constant = self.view.frame.size.width;
             self.walletXCenter.constant = 0.0;
             self.restoreXCenter.constant = 0.0;
@@ -156,13 +151,6 @@
     });
 }
 
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-//    [super prepareForSegue:segue sender:sender];
-//
-////    [segue.destinationViewController setTransitioningDelegate:self];
-////    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
-//}
-
 - (void)animateWallpaper
 {
     if (self.animating) return;
@@ -173,7 +161,7 @@
     [UIView animateWithDuration:30.0 delay:0.0
     options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse
     animations:^{
-        [self.wallpaper.superview layoutIfNeeded];
+        [self.wallpaperContainer layoutIfNeeded];
     } completion:^(BOOL finished) {
         self.animating = NO;
     }];
@@ -187,44 +175,6 @@
     
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"GenerateViewController"];
     
-    self.generateButton = (id)[c.view viewWithTag:1];
-    [self.generateButton addTarget:self action:@selector(generate:) forControlEvents:UIControlEventTouchUpInside];
-    self.generateButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    self.generateButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
-#pragma clang diagnostic pop
-
-    self.warningLabel = (id)[c.view viewWithTag:2];
-    self.showButton = (id)[c.view viewWithTag:3];
-    [self.showButton addTarget:self action:@selector(show:) forControlEvents:UIControlEventTouchUpInside];
-    self.startLabel = (id)[c.view viewWithTag:4];
-    self.recoverLabel = (id)[c.view viewWithTag:5];
-    
-    NSTextAttachment *noEye = [NSTextAttachment new], *noKey = [NSTextAttachment new];
-    NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
-                                    initWithAttributedString:self.warningLabel.attributedText];
-    
-    noEye.image = [UIImage imageNamed:@"no-eye"];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-eye%"]
-     withAttributedString:[NSAttributedString attributedStringWithAttachment:noEye]];
-    noKey.image = [UIImage imageNamed:@"no-key"];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
-     withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
-    
-    [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"\nDO NOT let anyone see your recovery\n"
-                                 "phrase or they can spend your dash.\n"]
-     withString:NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                  "phrase or they can spend your dash.\n", nil)];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"\nNEVER type your recovery phrase into\n"
-                                 "password managers or elsewhere.\nOther devices may be infected.\n"]
-     withString:NSLocalizedString(@"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\n"
-                                  "Other devices may be infected.\n", nil)];
-    self.warningLabel.attributedText = s;
-    self.generateButton.superview.backgroundColor = [UIColor clearColor];
-    
     [self.navigationController pushViewController:c animated:YES];
 }
 
@@ -235,56 +185,6 @@
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"RecoverViewController"];
 
     [self.navigationController pushViewController:c animated:YES];
-}
-
-- (IBAction)generate:(id)sender
-{
-    [BREventManager saveEvent:@"welcome:generate"];
-    
-    if (! [BRWalletManager sharedInstance].passcodeEnabled) {
-        [BREventManager saveEvent:@"welcome:passcode_disabled"];
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-                                     message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
-                                                               "passcode on to continue.", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"ok", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                   }];
-        [alert addAction:okButton];
-        [self presentViewController:alert animated:YES completion:nil];
-        return;
-    }
-
-    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
-    [sender setEnabled:NO];
-    self.seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
-    self.warningLabel.hidden = self.showButton.hidden = NO;
-    self.warningLabel.alpha = self.showButton.alpha = 0.0;
-        
-    [UIView animateWithDuration:0.5 animations:^{
-        self.warningLabel.alpha = self.showButton.alpha = 1.0;
-        self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
-        self.startLabel.alpha = self.recoverLabel.alpha = 0.33;
-        self.generateButton.alpha = 0.33;
-    }];
-}
-
-- (IBAction)show:(id)sender
-{
-    [BREventManager saveEvent:@"welcome:show"];
-    
-    [self.navigationController presentViewController:self.seedNav animated:YES completion:^{
-        self.warningLabel.hidden = self.showButton.hidden = YES;
-        self.navigationController.navigationBar.topItem.titleView.alpha = 1.0;
-        self.startLabel.alpha = self.recoverLabel.alpha = 1.0;
-        self.generateButton.alpha = 1.0;
-        self.generateButton.enabled = YES;
-        self.navigationController.navigationBar.topItem.hidesBackButton = NO;
-        self.generateButton.superview.backgroundColor = [UIColor whiteColor];
-    }];
 }
 
 // MARK: UIViewControllerAnimatedTransitioning
@@ -306,8 +206,6 @@
     to.view.center = CGPointMake(v.frame.size.width*(to == self ? -1 : 3)/2.0, to.view.center.y);
     [v addSubview:to.view];
     [v layoutIfNeeded];
-
-//    self.paralaxXLeft.constant = self.view.frame.size.width*(to == self ? 1 : 2)*PARALAX_RATIO;
     
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
