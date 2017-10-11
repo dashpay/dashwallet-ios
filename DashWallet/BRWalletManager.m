@@ -1051,7 +1051,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 // MARK: - new pin
 
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
-- (void)setNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
+- (void)setBrandNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
     NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
                        [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
     if (!self.pinAlertController) {
@@ -1065,7 +1065,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             [_pinField becomeFirstResponder];
         }];
     } else {
+        self.pinField.delegate = nil;
         self.pinField.text = @"";
+        self.pinField.delegate = self;
+        self.pinAlertController.title = title;
     }
     self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
         [context setVerifyPin:currentPin withCompletion:completion];
@@ -1074,8 +1077,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 }
 
 - (void)setVerifyPin:(NSString*)previousPin withCompletion:(void (^ _Nullable)(BOOL success))completion {
-    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
     self.pinField.text = nil;
     
     UIView *v = [self pinTitleView].superview;
@@ -1103,11 +1104,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             return TRUE;
         }
         
-        context.pinField.text = nil;
-        
         [context shakeEffectWithCompletion:^{
-            context.pinAlertController.title = title;
-            [context textField:context.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
+            [context setBrandNewPinWithCompletion:completion];
         }];
         return FALSE;
     };
@@ -1131,8 +1129,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 {
     NSError *error = nil;
     NSString *pin = getKeychainString(PIN_KEY, &error);
-    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
     
     if (error) {
         if (completion) completion(NO);
@@ -1151,20 +1147,21 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                 [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
                     v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
                 } completion:^(BOOL finished) {
-                    self.pinAlertController.title = title;
+                    self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                                     [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
                     self.pinAlertController.message = nil;
                     v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
                     [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
                                      animations:^{ v.center = p; } completion:nil];
                 }];
-                [self setNewPinWithCompletion:completion];
+                [self setBrandNewPinWithCompletion:completion];
             } else {
                 if (completion) completion(NO);
             }
         }];
     }
     else { //didn't have a pin yet
-        [self setNewPinWithCompletion:completion];
+        [self setBrandNewPinWithCompletion:completion];
     }
 }
 
@@ -1872,7 +1869,9 @@ replacementString:(NSString *)string
         if (currentPin.length == 4) {
             
             BOOL verified = self.pinVerificationBlock(currentPin,self);
+            self.pinField.delegate = nil;
             self.pinField.text = @"";
+            self.pinField.delegate = self;
             if (verified) {
                 return NO;
             } else {

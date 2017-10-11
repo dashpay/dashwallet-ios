@@ -124,18 +124,18 @@
         if (! [BRWalletManager sharedInstance].noWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
-        
+
         if (! self.hasAppeared) {
             self.hasAppeared = YES;
             self.paralaxXLeft = [NSLayoutConstraint constraintWithItem:self.navigationController.view
                                  attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.paralax
                                  attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0.0];
             [self.navigationController.view insertSubview:self.paralax atIndex:0];
-            //[self.navigationController.view addConstraint:self.paralaxXLeft];
-//            [self.navigationController.view
-//             addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
-//                            attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
-//                            attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
+            [self.navigationController.view addConstraint:self.paralaxXLeft];
+            [self.navigationController.view
+             addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationController.view
+                            attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.paralax
+                            attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
             self.navigationController.view.clipsToBounds = YES;
             self.navigationController.view.backgroundColor = [UIColor blackColor];
             [self.navigationController.view layoutIfNeeded];
@@ -151,7 +151,7 @@
                 [self.navigationController.view layoutIfNeeded];
             } completion:nil];
         }
-        
+
         [self animateWallpaper];
     });
 }
