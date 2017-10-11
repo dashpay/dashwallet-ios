@@ -264,14 +264,6 @@ static NSString *dateFormat(NSString *template)
     [super viewWillDisappear:animated];
 }
 
-//- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-//{
-//    [super prepareForSegue:segue sender:sender];
-//
-//    [segue.destinationViewController setTransitioningDelegate:self];
-//    [segue.destinationViewController setModalPresentationStyle:UIModalPresentationCustom];
-//}
-
 - (void)dealloc
 {
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
@@ -486,7 +478,7 @@ static NSString *dateFormat(NSString *template)
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
+    bool buyEnabled = FALSE;
     switch (section) {
         case 0:
             if (self.transactions.count == 0) return 1;
@@ -620,7 +612,7 @@ static NSString *dateFormat(NSString *template)
 
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
+            bool buyEnabled = FALSE;
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0:
@@ -646,23 +638,6 @@ static NSString *dateFormat(NSString *template)
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
 }
-
-//- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-//{
-//    switch (section) {
-//        case 0:
-//            return nil;
-//
-//        case 1:
-//            return nil;
-//            
-//        case 2:
-//            return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
-//                                     "or are having trouble sending (rescanning can take several minutes)", nil);
-//    }
-//    
-//    return nil;
-//}
 
 // MARK: - UITableViewDelegate
 

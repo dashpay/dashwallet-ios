@@ -1343,7 +1343,8 @@
         self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         [containerView addSubview:self.burger];
         [containerView layoutIfNeeded];
-        self.burger.center = CGPointMake(26.0, 40.0);
+        
+        self.burger.center = CGPointMake(26.0, self.topLayoutGuide.length - 24);
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
         
@@ -1392,7 +1393,7 @@
         self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         self.burger.hidden = NO;
         [containerView layoutIfNeeded];
-        self.burger.center = CGPointMake(26.0, 40.0);
+        self.burger.center = CGPointMake(26.0, self.topLayoutGuide.length - 24);
         [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
         self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
