@@ -2160,7 +2160,7 @@ Other devices may be infected.
                             <constraint firstItem="dX6-jg-5IA" firstAttribute="top" secondItem="wDZ-DN-szv" secondAttribute="bottom" constant="24" id="d9L-Qs-FQN"/>
                             <constraint firstAttribute="centerY" secondItem="wDZ-DN-szv" secondAttribute="centerY" constant="130" id="dJv-Ep-XBg"/>
                             <constraint firstAttribute="trailing" secondItem="efL-Cj-Aho" secondAttribute="trailing" id="ffZ-DN-LfC"/>
-                            <constraint firstItem="zSf-HG-qwr" firstAttribute="top" secondItem="rLQ-Ub-gHT" secondAttribute="bottom" id="uDh-yS-dbc"/>
+                            <constraint firstItem="rLQ-Ub-gHT" firstAttribute="height" secondItem="ttV-Ha-QVS" secondAttribute="height" id="trj-HX-a56"/>
                             <constraint firstAttribute="centerX" secondItem="A4M-yq-26d" secondAttribute="centerX" id="uWk-tD-YFh"/>
                             <constraint firstItem="A4M-yq-26d" firstAttribute="centerY" secondItem="ttV-Ha-QVS" secondAttribute="centerY" constant="100" id="wJO-uI-4MN"/>
                         </constraints>
@@ -2218,8 +2218,8 @@ Other devices may be infected.
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="CsT-dR-Qwt" secondAttribute="trailing" constant="12" id="1BL-CD-vft"/>
                             <constraint firstItem="CsT-dR-Qwt" firstAttribute="leading" secondItem="CNN-rm-LcR" secondAttribute="leading" constant="12" id="DVI-Sg-VrI"/>
+                            <constraint firstItem="CsT-dR-Qwt" firstAttribute="top" secondItem="eXK-Av-YPP" secondAttribute="bottom" constant="5" id="K9b-PR-av4"/>
                             <constraint firstItem="rS9-Eb-omV" firstAttribute="top" secondItem="CsT-dR-Qwt" secondAttribute="bottom" constant="230" id="bS4-GF-j7U"/>
-                            <constraint firstItem="CsT-dR-Qwt" firstAttribute="top" secondItem="CNN-rm-LcR" secondAttribute="top" constant="69" id="fGq-Vh-q3I"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="recovery phrase:" id="ooJ-EA-DFl"/>
