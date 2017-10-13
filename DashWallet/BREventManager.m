@@ -268,7 +268,7 @@
         long long currentTimeMillis = (long long)([NSDate date].timeIntervalSince1970 * 1000.0);
         NSArray *tuple = @[self.sessionId, @(currentTimeMillis), evtName, attrs];
         [self._buffer addObject:tuple];
-        NSLog(@"BREventManager Saved event %@ with attributes %@", evtName, attrs);
+        //NSLog(@"BREventManager Saved event %@ with attributes %@", evtName, attrs);
     }];
 }
 

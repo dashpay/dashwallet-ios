@@ -197,7 +197,6 @@
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BRAppleWatchData *appleWatchData = [self applicationContextData];
-
         [self.session updateApplicationContext:@{
             AW_APPLICATION_CONTEXT_KEY: [NSKeyedArchiver archivedDataWithRootObject:appleWatchData]
         }

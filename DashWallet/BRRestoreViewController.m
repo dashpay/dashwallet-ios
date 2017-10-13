@@ -115,8 +115,8 @@
             if ((manager.wallet.balance == 0) && ([peerManager timestampForBlockHeight:peerManager.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
                 [BREventManager saveEvent:@"restore:wipe_empty_wallet"];
                 UIAlertController * actionSheet = [UIAlertController
-                                             alertControllerWithTitle:@""
-                                             message:@""
+                                             alertControllerWithTitle:nil
+                                             message:nil
                                              preferredStyle:UIAlertControllerStyleActionSheet];
                 UIAlertAction* cancelButton = [UIAlertAction
                                              actionWithTitle:NSLocalizedString(@"cancel", nil)
@@ -140,8 +140,8 @@
                                                               isEqual:manager.extendedBIP44PublicKey] || [seedPhrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
                         [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
                         UIAlertController * actionSheet = [UIAlertController
-                                                           alertControllerWithTitle:@""
-                                                           message:@""
+                                                           alertControllerWithTitle:nil
+                                                           message:nil
                                                            preferredStyle:UIAlertControllerStyleActionSheet];
                         UIAlertAction* cancelButton = [UIAlertAction
                                                        actionWithTitle:NSLocalizedString(@"cancel", nil)
@@ -180,8 +180,8 @@
         } else if ([phrase isEqual:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) {
                 [BREventManager saveEvent:@"restore:wipe_full_wallet"];
             UIAlertController * actionSheet = [UIAlertController
-                                               alertControllerWithTitle:@""
-                                               message:@""
+                                               alertControllerWithTitle:nil
+                                               message:nil
                                                preferredStyle:UIAlertControllerStyleActionSheet];
             UIAlertAction* cancelButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"cancel", nil)
