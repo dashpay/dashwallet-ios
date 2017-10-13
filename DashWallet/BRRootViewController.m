@@ -129,6 +129,13 @@
         break;
     }
     
+    if (!self.errorBar.superview) {
+        [self.navigationController.navigationBar addSubview:self.errorBar];
+        [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeLeft multiplier:1.0 constant:0.0]];
+        [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeRight multiplier:1.0 constant:0.0]];
+        [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-48.0]];
+    }
+    
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     self.urlObserver =
@@ -364,7 +371,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.reachability.currentReachabilityStatus == NotReachable) return;
-                                                           [self hideErrorBar];
+                                                           [self hideErrorBarWithCompletion:nil];
                                                            [self startActivityWithTimeout:0];
                                                        }];
     
@@ -709,7 +716,7 @@
     
     (segue.destinationViewController).transitioningDelegate = self;
     (segue.destinationViewController).modalPresentationStyle = UIModalPresentationCustom;
-    [self hideErrorBar];
+    [self hideErrorBarWithCompletion:nil];
     
     if ([sender isEqual:NSLocalizedString(@"show phrase", nil)]) { // show recovery phrase
         UIAlertController * alert = [UIAlertController
@@ -985,17 +992,17 @@
     self.progress.hidden = self.pulse.hidden = YES;
 }
 
-- (void)hideErrorBar
+- (void)hideErrorBarWithCompletion:(void (^ _Nullable)(BOOL finished))completion
 {
     if (self.navigationItem.prompt == nil) return;
-    self.navigationItem.prompt = nil;
-    
     [UIView animateWithDuration:UINavigationControllerHideShowBarDuration delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut animations:^{
                             self.burger.center = CGPointMake(self.burger.center.x, 40.0);
                             self.errorBar.alpha = 0.0;
                         } completion:^(BOOL finished) {
-                            if (self.navigationItem.prompt == nil) self.errorBar.hidden = YES;
+                            self.navigationItem.prompt = nil;
+                            self.errorBar.hidden = YES;
+                            if (completion) completion(finished);
                         }];
 }
 
@@ -1169,8 +1176,9 @@
     if ([self nextTip]) return;
     
     if (! self.errorBar.hidden) {
-        [self hideErrorBar];
-        [self performSelector:@selector(connect:) withObject:sender afterDelay:0.1];
+        [self hideErrorBarWithCompletion:^(BOOL finished) {
+            [self connect:sender];
+        }];
     }
     else if (! [BRWalletManager sharedInstance].didAuthenticate && self.shouldShowTips) {
         [self unlock:sender];
