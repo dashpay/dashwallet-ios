@@ -978,10 +978,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                 }];
                 return FALSE;
             }
-            [context shakeEffectWithCompletion:^{
-                context.pinField.text = @"";
-            }];
         }
+        [context shakeEffectWithCompletion:^{
+            context.pinField.text = @"";
+        }];
         return FALSE;
     };
     
