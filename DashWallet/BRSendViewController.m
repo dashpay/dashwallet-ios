@@ -589,7 +589,9 @@ static NSString *sanitizeString(NSString *s)
                                            actionWithTitle:@"ignore"
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
+                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
                                            }];
+            [alert addAction:ignoreButton];
             [alert addAction:cancelButton];
             [self presentViewController:alert animated:YES completion:nil];
             return;
