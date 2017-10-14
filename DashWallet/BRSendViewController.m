@@ -54,6 +54,8 @@
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 #define NBSP @"\xC2\xA0"         // no-break space (utf-8)
 
+#define SEND_INSTANTLY_KEY @"SEND_INSTANTLY_KEY"
+
 static NSString *sanitizeString(NSString *s)
 {
     NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
@@ -150,7 +152,9 @@ static NSString *sanitizeString(NSString *s)
             [self startObservingShapeshift:shapeshift];
         }
     }
-    self.sendInstantly = TRUE;
+    
+    self.sendInstantly = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
+    [self.instantSwitch setOn:self.sendInstantly];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -1559,6 +1563,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (IBAction)enableInstantX:(id)sender {
     self.sendInstantly = ((UISwitch*)sender).isOn;
+    [[NSUserDefaults standardUserDefaults] setBool:self.sendInstantly forKey:SEND_INSTANTLY_KEY];
 }
 
 - (IBAction)scanQR:(id)sender
