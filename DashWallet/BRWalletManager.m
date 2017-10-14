@@ -216,7 +216,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 @property (nonatomic, strong) UIAlertController *resetAlertController;
 @property (nonatomic, strong) UITextField *pinField;
 @property (nonatomic, strong) NSMutableSet *failedPins;
-@property (nonatomic, strong) id protectedObserver;
+@property (nonatomic, strong) id protectedObserver, keyboardObserver;
 @property (nonatomic, copy) PinVerificationBlock pinVerificationBlock;
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
@@ -311,7 +311,18 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self protectedInit];
                                                        }];
-    
+    self.keyboardObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillChangeFrameNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if ([self pinAlertControllerIsVisible]) {
+            CGFloat alertHeight = self.pinAlertController.view.frame.size.height;
+            CGFloat keyboardHeight = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue].size.height;
+            CGFloat difference = ([UIScreen mainScreen].bounds.size.height + alertHeight)/2.0 - ([UIScreen mainScreen].bounds.size.height - keyboardHeight) + 20;
+            if (difference > 0) {
+                [UIView animateWithDuration:0.2 animations:^{
+                    self.pinAlertController.view.superview.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - difference);
+                }];
+            }
+        }
+    }];
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedInit];
     return self;
 }
@@ -337,6 +348,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 - (void)dealloc
 {
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
+    if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
@@ -517,7 +529,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                                exit(0);
                                            }];
                 [alert addAction:okButton];
-                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+                [self presentAlertController:alert animated:YES completion:nil];
             }
             
             return;
@@ -743,6 +755,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     return topController;
 }
 
+-(void)presentAlertController:(UIAlertController*)alertController animated:(BOOL)animated completion:(void (^ __nullable)(void))completion {
+    [[self presentingViewController] presentViewController:alertController animated:animated completion:completion];
+}
+
 -(void)shakeEffectWithCompletion:(void (^ _Nullable)(void))completion {
     // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
     UIView *v = [self pinTitleView].superview;
@@ -770,7 +786,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         return NSIntegerMax;
     }
     NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 -
-                           (self.secureTime + NSTimeIntervalSince1970);
+    (self.secureTime + NSTimeIntervalSince1970);
     return wait;
 }
 
@@ -790,7 +806,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                        resetCancelHandlerBlock();
                                    }];
     [alertController addAction:cancelButton];
-    [[self presentingViewController] presentViewController:alertController animated:YES completion:nil];
+    [self presentAlertController:alertController animated:YES completion:nil];
     self.resetAlertController = alertController;
 }
 
@@ -814,11 +830,11 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         wait /= 60.0;
         unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
     }
-    UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
-                                 message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
-                                          (int)wait, unit]
-                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController * alertController = [UIAlertController
+                                           alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
+                                           message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
+                                                    (int)wait, unit]
+                                           preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* resetButton = [UIAlertAction
                                   actionWithTitle:NSLocalizedString(@"reset", nil)
                                   style:UIAlertActionStyleDefault
@@ -831,23 +847,22 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                handler:^(UIAlertAction * action) {
                                    
                                }];
-    [alert addAction:resetButton];
-    [alert addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+    [alertController addAction:resetButton];
+    [alertController addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
     
     if ([self pinAlertControllerIsVisible]) {
         [_pinField resignFirstResponder];
         [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-            [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+            [self presentAlertController:alertController animated:YES completion:nil];
         }];
     } else {
-        [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
-        
+        [self presentAlertController:alertController animated:YES completion:nil];
     }
 }
 
 - (void)authenticatePinWithTitle:(NSString *)title message:(NSString *)message alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion
 {
-
+    
     //authentication logic is as follows
     //you have 3 failed attempts initially
     //after that you get locked out once immediately with a message saying
@@ -985,7 +1000,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         return FALSE;
     };
     
-    [[self presentingViewController] presentViewController:self.pinAlertController animated:YES completion:^{
+    [self presentAlertController:self.pinAlertController animated:YES completion:^{
         if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
     }];
 }
@@ -1061,7 +1076,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                    preferredStyle:UIAlertControllerStyleAlert];
         if (_pinField) self.pinField = nil; // reset pinField so a new one is created
         [self.pinAlertController.view addSubview:self.pinField];
-        [[self presentingViewController] presentViewController:self.pinAlertController animated:YES completion:^{
+        [self presentAlertController:self.pinAlertController animated:YES completion:^{
             [_pinField becomeFirstResponder];
         }];
     } else {
@@ -1584,7 +1599,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                                }];
                                                [alert addAction:okButton];
                                                [alert addAction:cancelButton];
-                                               [[self presentingViewController] presentViewController:alert animated:YES completion:^{
+                                               [self presentAlertController:alert animated:YES completion:^{
                                                    if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
                                                }];
                                            }
@@ -1597,7 +1612,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                    }];
         [alert addAction:cancelButton];
         [alert addAction:okButton];
-        [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+        [self presentAlertController:alert animated:YES completion:nil];
         self.sweepKey = privKey;
         self.sweepFee = fee;
         self.sweepCompletion = completion;
