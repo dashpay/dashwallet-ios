@@ -528,13 +528,13 @@ _switch_cell:
     UIButton *b = nil;
     
 #if DASH_TESTNET
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@"%net% (testnet)"];
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@"%net% (testnet)"];
 #endif
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%"]
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
      withString:[NSString stringWithFormat:@"%@ - %@",
                  NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
                  NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%"] withString:@""];
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@""];
     l.attributedText = s;
     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
 #if DEBUG

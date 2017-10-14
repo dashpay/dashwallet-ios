@@ -455,7 +455,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "les frais de transaction coûteraient plus que les fonds disponibles sur cette clé privée (à cause de minuscules dépôts \"dust\")";
 
 /* No comment provided by engineer. */
-"transaction history" = "historique de transaction";
+"transaction history" = "historique des transactions";
 
 /* No comment provided by engineer. */
 "transaction is post-dated" = "la transaction est postdatée";

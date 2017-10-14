@@ -41,7 +41,7 @@
 "bfj-xS-5rN.normalTitle" = "adresse depuis le presse-papier";
 
 /* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "numériser un code QR";
+"ce6-Wi-wk4.normalTitle" = "scanner un code QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
 "cyp-mV-Bhd.text" = "Je l'ai écrite sur papier :";
@@ -62,13 +62,13 @@
 "fQN-xb-SYb.title" = "confirmez :";
 
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "envoyer de l'argent :";
+"l5l-JR-LKA.text" = "Envoyer :";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "phrase de récupération :";
 
 /* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "recevoir de l'argent :";
+"qel-3J-2VC.text" = "Recevoir :";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
 "s4T-yd-VfX.title" = "détails de la transaction";
