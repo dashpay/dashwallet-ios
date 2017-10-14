@@ -87,6 +87,7 @@ sequence:(uint32_t)sequence;
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
 
 - (NSString*)shapeshiftOutboundAddress;
+- (NSString*)shapeshiftOutboundAddressForceScript;
 + (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script;
 
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes

@@ -45,6 +45,7 @@
 #define OP_RETURN      0x6a
 
 #define OP_SHAPESHIFT  0xb1 //not a bitcoin op code, used to identify shapeshift when placed after OP_RETURN
+#define OP_SHAPESHIFT_SCRIPT 0xb3
 
 void SHA1(void *_Nonnull md, const void *_Nonnull data, size_t len);
 void SHA256(void *_Nonnull md, const void *_Nonnull data, size_t len);

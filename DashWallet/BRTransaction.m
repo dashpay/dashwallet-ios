@@ -122,6 +122,13 @@
         if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
             self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
         }
+        if (!self.associatedShapeshift) {
+            NSString * possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
+            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress];
+            if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
+                self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
+            }
+        }
         if (!self.associatedShapeshift && [self.outputAddresses count]) {
             NSString * mainOutputAddress = nil;
             NSMutableArray * allAddresses = [NSMutableArray array];
@@ -134,7 +141,9 @@
                 mainOutputAddress = outputAddress;
             }
             //NSAssert(mainOutputAddress, @"there should always be an output address");
-            self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+            if (mainOutputAddress){
+                self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+            }
         }
     }
 
@@ -492,12 +501,44 @@ sequence:(uint32_t)sequence
     return nil;
 }
 
+- (NSString*)shapeshiftOutboundAddressForceScript {
+    for (NSData * script in self.outputScripts) {
+        NSString * outboundAddress = [BRTransaction shapeshiftOutboundAddressForceScript:script];
+        if (outboundAddress) return outboundAddress;
+    }
+    return nil;
+}
+
++ (NSString*)shapeshiftOutboundAddressForceScript:(NSData*)script {
+    if ([script UInt8AtOffset:0] == OP_RETURN) {
+        UInt8 length = [script UInt8AtOffset:1];
+        if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
+            NSMutableData * data = [NSMutableData data];
+            uint8_t v = BITCOIN_SCRIPT_ADDRESS;
+            [data appendBytes:&v length:1];
+            NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+            
+            [data appendData:addressData];
+            return [NSString base58checkWithData:data];
+        }
+    }
+    return nil;
+}
+
 + (NSString*)shapeshiftOutboundAddressForScript:(NSData*)script {
     if ([script UInt8AtOffset:0] == OP_RETURN) {
         UInt8 length = [script UInt8AtOffset:1];
         if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
             NSMutableData * data = [NSMutableData data];
             uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+            [data appendBytes:&v length:1];
+            NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+            
+            [data appendData:addressData];
+            return [NSString base58checkWithData:data];
+        } else if ([script UInt8AtOffset:2] == OP_SHAPESHIFT_SCRIPT) {
+            NSMutableData * data = [NSMutableData data];
+            uint8_t v = BITCOIN_SCRIPT_ADDRESS;
             [data appendBytes:&v length:1];
             NSData * addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
             
