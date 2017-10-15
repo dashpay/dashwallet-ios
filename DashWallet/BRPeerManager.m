@@ -54,11 +54,12 @@
 
 static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
     {           0, "00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c", 1390666206, 0x1e0ffff0u },
-    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu }
+    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
+    {        5000, "0000000097e4be8abd515e45947b165b367955457ef7b7efedf9e7e30fc059d0", 1507271366, 0x1d014188u }
 };
 
 static const char *dns_seeds[] = {
-    "testnet-seed.dashdot.io"
+    "testnet-seed.dashdot.io"//,"testnet-seed.dashpay.info"
 };
 
 #else // main net
