@@ -205,7 +205,6 @@
         BOOL valid = ([self.paymentAddress isValidDashAddress] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
             NSLog(@"Not a valid dash request");
-            
         }
         return valid;
     } else if ([self.scheme isEqualToString:@"bitcoin"]) {
