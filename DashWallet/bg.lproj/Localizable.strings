@@ -3,10 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ е за 'бита'. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ е за 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ не е позволен достъп до камерата";

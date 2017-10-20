@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ står för 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ej tillåtelse att använda kameran";
@@ -43,6 +43,9 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSEN ANVÄNDS REDAN\n\ndashadresser bör endast användas en gång\n\nåteranvändning minskar transparensen för såväl dig som mottagaren";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
@@ -96,6 +99,9 @@
 "bad recovery phrase" = "fel återställningsfras";
 
 /* No comment provided by engineer. */
+"bad signature" = "fel signatur";
+
+/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -123,6 +129,9 @@
 "change payment amount?" = "ändra belopp?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "change wallet passcode";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "checking address balance...";
 
 /* No comment provided by engineer. */
@@ -132,10 +141,16 @@
 "choose passcode for %@" = "välj pinkod for %@";
 
 /* No comment provided by engineer. */
+"choose wallet passcode" = "choose wallet passcode";
+
+/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash address" = "urklippet innehåller inte en giltig dashadress";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "urklippet innehåller inte en giltig dashadress eller bitcoinadress";
@@ -145,6 +160,9 @@
 
 /* confirm */
 "confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "BEKRÄFTA RADERING";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekräftad i block #%d";
@@ -178,6 +196,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "kunde inte skicka betalningen till dash-nätverket";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-adress";
@@ -294,6 +315,9 @@
 "moved" = "överförd";
 
 /* No comment provided by engineer. */
+"new wallet passcode" = "new wallet passcode";
+
+/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "nästa, skriv ner din återhämtning fras";
 
 /* No comment provided by engineer. */
@@ -321,10 +345,10 @@
 "not connected to the dash network" = "ingen anslutning till dashnätverket";
 
 /* No comment provided by engineer. */
-"ok" = "OK";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "pinkod";
@@ -355,6 +379,9 @@
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"post-dated" = "framdaterad";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -492,7 +519,10 @@
 "swept!" = "inläst!";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Synkroniserar:";
+"syncing..." = "synkroniserar...";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
@@ -546,6 +576,9 @@
 "transaction history" = "transaktionshistorik";
 
 /* No comment provided by engineer. */
+"transaction is post-dated" = "transaktionen är framåtdaterad";
+
+/* No comment provided by engineer. */
 "transaction rejected" = "transaktion avvisad";
 
 /* No comment provided by engineer. */
@@ -594,10 +627,16 @@
 "verify passcode" = "upprepa pinkoden";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "verify wallet passcode";
+
+/* No comment provided by engineer. */
 "wallet address" = "plånbok adress";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "plånbok inaktiverad";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "wallet passcode";
 
 /* No comment provided by engineer. */
 "WARNING" = "VARNING";

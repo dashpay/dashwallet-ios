@@ -3,13 +3,13 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is voor 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ heeft geen toegang tot de camera";
 
 /* No comment provided by engineer. */
-"%@\n\nbalance: %@ (%@)" = "%1$@\n\nbalance: %2$@ (%3$@)";
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d bevestigingen";
@@ -18,7 +18,7 @@
 ", " = ", ";
 
 /* No comment provided by engineer. */
-"0 confirmations" = "0 confirmations";
+"0 confirmations" = "0 bevestigingen";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 bevestiging";
@@ -45,6 +45,9 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar instellingen en zet toegangscode aan om verder te gaan.";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS REEDS GEBRUIKT\n\ndash adressen zijn bedoelt om éénmalig te gebruiken\n\nhergebruik vermindert de privacy van jou en de ontvanger en kan tot verlies lijden wanneer de ontvanger het adres niet direct beheert";
+
+/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -54,7 +57,7 @@
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLaat je herstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw dash uit te geven.";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nMaak GEEN schermafbeelding.\nSchermafbeeldingen zijn zichtbaar voor andere apps\nen apparaten.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
@@ -96,6 +99,9 @@
 "bad recovery phrase" = "foutieve herstel zin";
 
 /* No comment provided by engineer. */
+"bad signature" = "foutieve ondertekening";
+
+/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -123,7 +129,10 @@
 "change payment amount?" = "bedrag aanpassen?";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "checking address balance...";
+"change wallet passcode" = "wijzig toegangscode";
+
+/* No comment provided by engineer. */
+"checking address balance..." = "bezig met controleren van saldo...";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "balans van persoonlijke sleutel controleren...";
@@ -132,19 +141,28 @@
 "choose passcode for %@" = "kies toegangscode voor %@";
 
 /* No comment provided by engineer. */
+"choose wallet passcode" = "kies toegangscode";
+
+/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "klipbord bevat geen valide dash of bitcoin adres";
+"clipboard doesn't contain a valid dash address" = "het klembord bevat geen geldig Dash-adres";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "app sluiten";
 
 /* confirm */
 "confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "BEVESTIG WIPE";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bevestigd in blok #%d";
@@ -156,7 +174,7 @@
 "copied" = "gekopieërd";
 
 /* No comment provided by engineer. */
-"copy" = "copy";
+"copy" = "kopieer";
 
 /* No comment provided by engineer. */
 "copy address to clipboard" = "kopieer adres naar klipbord";
@@ -165,10 +183,10 @@
 "copy request to clipboard" = "kopieer adres naar klipbord";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "copy wallet addresses to clipboard?";
+"copy wallet addresses to clipboard?" = "wilt u het portemonnee-adres kopiëren naar het klembord?";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "couldn't check address balance";
+"couldn't check address balance" = "het controleren van het saldo is mislukt";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "betaling mislukt";
@@ -178,6 +196,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "betaling niet naar het dash netwerk verstuurd";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "huidige toegangscode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash adres";
@@ -294,10 +315,13 @@
 "moved" = "verplaatst";
 
 /* No comment provided by engineer. */
+"new wallet passcode" = "nieuwe toegangscode";
+
+/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "vervolgens, schrijf je herstel zin op";
 
 /* No comment provided by engineer. */
-"no exchange rate data" = "no exchange rate data";
+"no exchange rate data" = "geen beursratio-gegevens";
 
 /* No comment provided by engineer. */
 "no peers found" = "geen peers gevonden";
@@ -321,10 +345,10 @@
 "not connected to the dash network" = "niet verbonden met het dash netwerk";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
 "passcode" = "toegangscode";
@@ -342,7 +366,7 @@
 "pay" = "Betalen";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
+"payee identity isn't certified" = "betaler-identiteit is niet gecertificeerd";
 
 /* No comment provided by engineer. */
 "payment address" = "betalingsadres";
@@ -351,10 +375,13 @@
 "payment output" = "betalingsuitgang";
 
 /* No comment provided by engineer. */
-"pending" = "pending";
+"pending" = "wachten op goedkeuring";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"post-dated" = "post-gedateerd";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -492,7 +519,10 @@
 "swept!" = "geveegd!";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Synchroniseren:";
+"syncing..." = "synchroniseren...";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
@@ -546,6 +576,9 @@
 "transaction history" = "transactie geschiedenis";
 
 /* No comment provided by engineer. */
+"transaction is post-dated" = "transactie is verlopen";
+
+/* No comment provided by engineer. */
 "transaction rejected" = "transactie geweigerd";
 
 /* No comment provided by engineer. */
@@ -594,10 +627,16 @@
 "verify passcode" = "verifieer toegangscode";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "toegangscode bevestigen";
+
+/* No comment provided by engineer. */
 "wallet address" = "portemonnee adres";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portemonnee uitgeschakeld";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "portemonnee-toegangscode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";

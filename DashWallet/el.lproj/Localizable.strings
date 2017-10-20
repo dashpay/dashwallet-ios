@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ είναι για τα 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στην κάμερα";
@@ -43,6 +43,9 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nΈνας κωδικός συσκευής είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ ΗΔΗ\n\nΟι διευθύνσεις dash προορίζονται για μια χρήση μόνο\n\nΕπαναχρησιμοποίηση τους μειώνει την προστασία της ιδιωτικής ζωής τόσο της δικής σας όσο και του παραλήπτη και μπορεί να οδηγήσει σε απώλεια, εάν ο παραλήπτης δεν ελέγχει απευθείας τη διεύθυνση";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
@@ -96,6 +99,9 @@
 "bad recovery phrase" = "λάθος φράση ανάκτησης";
 
 /* No comment provided by engineer. */
+"bad signature" = "λάθος υπογραφή";
+
+/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -123,6 +129,9 @@
 "change payment amount?" = "αλλαγή του ποσού πληρωμής?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "change wallet passcode";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "έλεγχος του ποσού της διεύθυνσης...";
 
 /* No comment provided by engineer. */
@@ -132,19 +141,28 @@
 "choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
 
 /* No comment provided by engineer. */
+"choose wallet passcode" = "choose wallet passcode";
+
+/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "Το πρόχειρο δεν περιέχει μία έγκυρη διεύθυνση dash ή το bitcoin";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "κλείστε την εφαρμογή";
 
 /* confirm */
 "confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "ΕΠΙΒΕΒΑΙΩΣΗ ΕΚΚΑΘΑΡΙΣΗΣ";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "επιβεβαιώθηκε στο μπλόκ #%d";
@@ -178,6 +196,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "δεν μπορούσα να μεταδώσω την πληρωμή στο δίκτυο dash";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Διεύθυνση Dash";
@@ -294,6 +315,9 @@
 "moved" = "μετακινηθηκε";
 
 /* No comment provided by engineer. */
+"new wallet passcode" = "new wallet passcode";
+
+/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "στη συνέχεια, γράψτε την φράση ανακτησής σας";
 
 /* No comment provided by engineer. */
@@ -321,10 +345,10 @@
 "not connected to the dash network" = "δεν είστε συνδεδεμένος με το δίκτυο dash";
 
 /* No comment provided by engineer. */
-"ok" = "Εντάξει";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "Εντάξει";
 
 /* No comment provided by engineer. */
 "passcode" = "κωδικός πρόσβασης";
@@ -355,6 +379,9 @@
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"post-dated" = "μετα-χρονολογημένη";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -492,7 +519,10 @@
 "swept!" = "σαρώθηκε!";
 
 /* No comment provided by engineer. */
-"Syncing:" = "συγχρονισμός:";
+"syncing..." = "συγχρονισμός...";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
@@ -546,6 +576,9 @@
 "transaction history" = "ιστορικό συναλλαγής";
 
 /* No comment provided by engineer. */
+"transaction is post-dated" = "η συναλλαγή είναι μεταχρονολογημένη";
+
+/* No comment provided by engineer. */
 "transaction rejected" = "η συναλλαγή απορρίφθηκε";
 
 /* No comment provided by engineer. */
@@ -594,10 +627,16 @@
 "verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "verify wallet passcode";
+
+/* No comment provided by engineer. */
 "wallet address" = "διεύθυνση πορτοφόλιού";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "wallet passcode";
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";

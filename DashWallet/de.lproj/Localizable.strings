@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ steht für 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ darf nicht auf die Kamera zugreifen";
@@ -43,6 +43,9 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE BEREITS VERWENDET\n\nDash-Adressen sind für einmalige Nutzung gedacht.\n\nWiederverwendung reduziert die Privatsphäre für Sie und den Empfänger und kann einen Verlust mit sich bringen, falls der Empfänger keine direkte Kontrolle über die Adresse hat";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
@@ -96,6 +99,9 @@
 "bad recovery phrase" = "fehlerhafte Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
+"bad signature" = "Fehlerhafte Signatur";
+
+/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -123,6 +129,9 @@
 "change payment amount?" = "Zahlungsbetrag ändern?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "Wallet Zugangscode ändern";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "Guthaben der Adresse wird geprüft...";
 
 /* No comment provided by engineer. */
@@ -132,19 +141,28 @@
 "choose passcode for %@" = "Wählen Sie den Zugangscode für %@";
 
 /* No comment provided by engineer. */
+"choose wallet passcode" = "Wallet Zugangscode eingeben";
+
+/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "Zwischenablage enthält keine gültige Dash oder Bitcoin Adresse";
+"clipboard doesn't contain a valid dash address" = "Zwischenablage enthält keine gültige Dash-Adresse";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "App schließen";
 
 /* confirm */
 "confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "LÖSCHEN BESTÄTIGEN";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "Bestätigt in Block #%d";
@@ -178,6 +196,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "Zahlung konnte nicht an das Dash-Netzwerk übermittelt werden";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "Aktueller Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-Adresse";
@@ -294,6 +315,9 @@
 "moved" = "verschoben";
 
 /* No comment provided by engineer. */
+"new wallet passcode" = "Neuer Wallet Zugangscode";
+
+/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";
 
 /* No comment provided by engineer. */
@@ -321,10 +345,10 @@
 "not connected to the dash network" = "Nicht mit dem Dash-Netzwerk verbunden";
 
 /* No comment provided by engineer. */
-"ok" = "Ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "Ok";
 
 /* No comment provided by engineer. */
 "passcode" = "Zugangscode";
@@ -351,10 +375,13 @@
 "payment output" = "Zahlungsausgang";
 
 /* No comment provided by engineer. */
-"pending" = "pending";
+"pending" = "vorbehaltlich";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"post-dated" = "nachdatiert";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -492,7 +519,10 @@
 "swept!" = "geleert!";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Synchronisiere:";
+"syncing..." = "Synchronisiere...";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
@@ -546,6 +576,9 @@
 "transaction history" = "Transaktionshistorie";
 
 /* No comment provided by engineer. */
+"transaction is post-dated" = "Transaktion ist nachdatiert";
+
+/* No comment provided by engineer. */
 "transaction rejected" = "Transaktion abgelehnt";
 
 /* No comment provided by engineer. */
@@ -594,10 +627,16 @@
 "verify passcode" = "Sicherheitscode verifizieren";
 
 /* No comment provided by engineer. */
+"verify wallet passcode" = "Wallet Zugangscode verifzieren";
+
+/* No comment provided by engineer. */
 "wallet address" = "Wallet-Adresse";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "Wallet deaktiviert";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNUNG";
