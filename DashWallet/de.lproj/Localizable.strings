@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ steht für 'bits'. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ darf nicht auf die Kamera zugreifen";
 
 /* No comment provided by engineer. */
@@ -37,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE BEREITS VERWENDET\n\nDash-Adressen sind für einmalige Nutzung gedacht.\n\nWiederverwendung reduziert die Privatsphäre für Sie und den Empfänger und kann einen Verlust mit sich bringen, falls der Empfänger keine direkte Kontrolle über die Adresse hat";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
@@ -84,9 +78,6 @@
 "bad recovery phrase" = "fehlerhafte Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
-"bad signature" = "Fehlerhafte Signatur";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "Block #%1$d von %2$d";
 
 /* No comment provided by engineer. */
@@ -102,9 +93,6 @@
 "change payment amount?" = "Zahlungsbetrag ändern?";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "Wallet Zugangscode ändern";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "Guthaben der Adresse wird geprüft...";
 
 /* No comment provided by engineer. */
@@ -114,16 +102,10 @@
 "choose passcode for %@" = "Wählen Sie den Zugangscode für %@";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "Wallet Zugangscode eingeben";
-
-/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "Zwischenablage enthält keine gültige Dash oder Bitcoin Adresse";
 
 /* No comment provided by engineer. */
 "close app" = "App schließen";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "LÖSCHEN BESTÄTIGEN";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "Bestätigt in Block #%d";
@@ -157,9 +139,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "Zahlung konnte nicht an das Dash-Netzwerk übermittelt werden";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "Aktueller Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-Adresse";
@@ -255,9 +234,6 @@
 "moved" = "verschoben";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "Neuer Wallet Zugangscode";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";
 
 /* No comment provided by engineer. */
@@ -310,9 +286,6 @@
 
 /* No comment provided by engineer. */
 "payment output" = "Zahlungsausgang";
-
-/* No comment provided by engineer. */
-"post-dated" = "nachdatiert";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Dash an dieser Adresse empfangen: %@";
@@ -459,9 +432,6 @@
 "transaction history" = "Transaktionshistorie";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "Transaktion ist nachdatiert";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "Transaktion abgelehnt";
 
 /* No comment provided by engineer. */
@@ -498,16 +468,10 @@
 "verify passcode" = "Sicherheitscode verifizieren";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "Wallet Zugangscode verifzieren";
-
-/* No comment provided by engineer. */
 "wallet address" = "Wallet-Adresse";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "Wallet deaktiviert";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "Wallet Zugangscode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNUNG";
@@ -549,12 +513,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -571,12 +529,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
 
 /* No comment provided by engineer. */
 "enable" = "";
@@ -598,9 +550,6 @@
 
 /* No comment provided by engineer. */
 "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -657,12 +606,6 @@
 "This is your dash balance." = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
-
-/* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
 
 /* No comment provided by engineer. */
@@ -676,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";

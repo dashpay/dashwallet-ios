@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ είναι για τα bits. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στην κάμερα";
 
 /* No comment provided by engineer. */
@@ -37,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nΈνας κωδικός συσκευής είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ ΗΔΗ\n\nΟι διευθύνσεις dash προορίζονται για μια χρήση μόνο\n\nΕπαναχρησιμοποίηση τους μειώνει την προστασία της ιδιωτικής ζωής τόσο της δικής σας όσο και του παραλήπτη και μπορεί να οδηγήσει σε απώλεια, εάν ο παραλήπτης δεν ελέγχει απευθείας τη διεύθυνση";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nεπιτρέψτε στην κάμερα πρόσβαση στις\nρυθμίσεις-> απορρήτο-> κάμερα->%@";
@@ -84,9 +78,6 @@
 "bad recovery phrase" = "λάθος φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"bad signature" = "λάθος υπογραφή";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "μπλόκ %1$d απο %2$d";
 
 /* No comment provided by engineer. */
@@ -115,9 +106,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "κλείστε την εφαρμογή";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "ΕΠΙΒΕΒΑΙΩΣΗ ΕΚΚΑΘΑΡΙΣΗΣ";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "επιβεβαιώθηκε στο μπλόκ #%d";
@@ -300,9 +288,6 @@
 "payment output" = "έξοδος πληρωμής";
 
 /* No comment provided by engineer. */
-"post-dated" = "μετα-χρονολογημένη";
-
-/* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Λάβετε dash σε αυτή τη διεύθυνση: %@";
 
 /* No comment provided by engineer. */
@@ -447,9 +432,6 @@
 "transaction history" = "ιστορικό συναλλαγής";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "η συναλλαγή είναι μεταχρονολογημένη";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "η συναλλαγή απορρίφθηκε";
 
 /* No comment provided by engineer. */
@@ -531,12 +513,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -553,12 +529,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
 
 /* No comment provided by engineer. */
 "enable" = "";
@@ -580,9 +550,6 @@
 
 /* No comment provided by engineer. */
 "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -639,12 +606,6 @@
 "This is your dash balance." = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
-
-/* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
 
 /* No comment provided by engineer. */
@@ -658,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";

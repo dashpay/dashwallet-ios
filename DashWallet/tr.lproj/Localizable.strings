@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ 'bit' yerine geçer. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ kameraya erişmesi için izin verilmedi";
 
 /* No comment provided by engineer. */
@@ -37,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nCüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANILMIŞ\n\ndash adresleri sadece tek kullanıma yöneliktir\n\ntekrar kullanmak alıcı ve sizin için gizliliği düşürebilir ve alıcı direk olarak adresi kontrol edemezse kaybolabilir";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nAyarlar->Gizlilik->Kamera->%@ \nkısmından kamera erişimine izin verin";
@@ -84,9 +78,6 @@
 "bad recovery phrase" = "hatalı kurtarma cümlesi";
 
 /* No comment provided by engineer. */
-"bad signature" = "hatalı imza";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "%2$d'in %1$d'ini engelle";
 
 /* No comment provided by engineer. */
@@ -115,9 +106,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "TEMİZLEME İŞLEMİNİ ONAYLA";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d bloğunda onaylandı";
@@ -300,9 +288,6 @@
 "payment output" = "ödeme çıktısı";
 
 /* No comment provided by engineer. */
-"post-dated" = "ileri tarihli";
-
-/* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Bitcoinleri şu adresten al: %@";
 
 /* No comment provided by engineer. */
@@ -447,9 +432,6 @@
 "transaction history" = "işlem geçmişi";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "işlem kontrol edildi";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "işlem reddedildi";
 
 /* No comment provided by engineer. */
@@ -531,12 +513,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -553,12 +529,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
 
 /* No comment provided by engineer. */
 "enable" = "";
@@ -580,9 +550,6 @@
 
 /* No comment provided by engineer. */
 "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -639,12 +606,6 @@
 "This is your dash balance." = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
-
-/* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
 
 /* No comment provided by engineer. */
@@ -658,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";

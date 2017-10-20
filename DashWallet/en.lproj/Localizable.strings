@@ -3,9 +3,6 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDash'. %@ = 1 dash." = "%1$@ is for 'mDash'. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
 
 /* No comment provided by engineer. */
@@ -43,9 +40,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
@@ -99,9 +93,6 @@
 "bad recovery phrase" = "bad recovery phrase";
 
 /* No comment provided by engineer. */
-"bad signature" = "bad signature";
-
-/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -129,9 +120,6 @@
 "change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "change wallet passcode";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "checking address balance...";
 
 /* No comment provided by engineer. */
@@ -141,16 +129,10 @@
 "choose passcode for %@" = "choose passcode for %@";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "choose wallet passcode";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -160,9 +142,6 @@
 
 /* Confirm */
 "Confirm" = "Confirm";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "CONFIRM WIPE";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmed in block #%d";
@@ -199,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "couldn't transmit payment to dash network";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash address";
@@ -318,9 +294,6 @@
 "moved" = "moved";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "new wallet passcode";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "next, write down your recovery phrase";
 
 /* No comment provided by engineer. */
@@ -343,9 +316,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "not a valid private key";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "not connected to the bitcoin network";
 
 /* No comment provided by engineer. */
 "not connected to the dash network" = "not connected to the dash network";
@@ -387,9 +357,6 @@
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"post-dated" = "post-dated";
-
-/* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
 
 /* No comment provided by engineer. */
@@ -401,11 +368,11 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "received %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
-
 /* Recovery Phrase */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "recovery phrase doesn't match";
@@ -549,9 +516,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "This is your dash balance. Dash is a currency. The exchange rate changes with the market.";
 
 /* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "This is your DASH balance. DASH is a currency. The exchange rate changes with the market.";
-
-/* No comment provided by engineer. */
 "this payment address is already in your wallet" = "this payment address is already in your wallet";
 
 /* No comment provided by engineer. */
@@ -583,9 +547,6 @@
 
 /* No comment provided by engineer. */
 "transaction history" = "transaction history";
-
-/* No comment provided by engineer. */
-"transaction is post-dated" = "transaction is post-dated";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaction rejected";
@@ -636,16 +597,10 @@
 "verify passcode" = "verify passcode";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "verify wallet passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "wallet address";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "wallet disabled";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "wallet passcode";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";

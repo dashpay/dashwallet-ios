@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@는 'bits'라고 합니다. %2$@ = 1대쉬";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에게 카메라 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
@@ -37,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해 패스코드가 필요합니다. 설정에 가서 패스코드를 활성화해주세요.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 한번 사용된 주소 입니다.\n\n빗코인 주소는 한 번만 사용하기를 권장합니다.\n\n주소의 재사용은 당신과 받는 사람의 개인정보가 노출될 가능성이 높아지고, 만약 받는 사람이 직접 주소를 관리하고 있지 않다면 빗코인을 잃어버리는 결과를 가져올 수도 있습니다.";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 이 애플리케이션의 카메라 접근을 허용해 주십시요.";
@@ -84,9 +78,6 @@
 "bad recovery phrase" = "잘못된 복원 문구";
 
 /* No comment provided by engineer. */
-"bad signature" = "잘못된 서명";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
 
 /* No comment provided by engineer. */
@@ -115,9 +106,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "삭제 확인";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";
@@ -300,9 +288,6 @@
 "payment output" = "거래 출력";
 
 /* No comment provided by engineer. */
-"post-dated" = "후일부";
-
-/* No comment provided by engineer. */
 "Receive dash at this address: %@" = "이 주소로 대쉬을 받습니다: %@";
 
 /* No comment provided by engineer. */
@@ -447,9 +432,6 @@
 "transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "거래 날짜가 후일로 설정됨";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "거래가 거부됨";
 
 /* No comment provided by engineer. */
@@ -531,12 +513,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -553,12 +529,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
 
 /* No comment provided by engineer. */
 "enable" = "";
@@ -580,9 +550,6 @@
 
 /* No comment provided by engineer. */
 "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -639,12 +606,6 @@
 "This is your dash balance." = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
-
-/* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
 
 /* No comment provided by engineer. */
@@ -658,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";

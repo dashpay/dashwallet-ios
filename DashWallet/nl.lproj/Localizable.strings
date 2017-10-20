@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ is voor 'bits'. %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ heeft geen toegang tot de camera";
 
 /* No comment provided by engineer. */
@@ -31,9 +28,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar instellingen en zet toegangscode aan om verder te gaan.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS REEDS GEBRUIKT\n\ndash adressen zijn bedoelt om éénmalig te gebruiken\n\nhergebruik vermindert de privacy van jou en de ontvanger en kan tot verlies lijden wanneer de ontvanger het adres niet direct beheert";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
@@ -75,9 +69,6 @@
 "bad recovery phrase" = "foutieve herstel zin";
 
 /* No comment provided by engineer. */
-"bad signature" = "foutieve ondertekening";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d van %2$d";
 
 /* No comment provided by engineer. */
@@ -103,9 +94,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "app sluiten";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "BEVESTIG WIPE";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bevestigd in blok #%d";
@@ -273,9 +261,6 @@
 "payment output" = "betalingsuitgang";
 
 /* No comment provided by engineer. */
-"post-dated" = "post-gedateerd";
-
-/* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Ontvang dash op dit adres: %@";
 
 /* No comment provided by engineer. */
@@ -420,9 +405,6 @@
 "transaction history" = "transactie geschiedenis";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "transactie is verlopen";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "transactie geweigerd";
 
 /* No comment provided by engineer. */
@@ -513,12 +495,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -549,12 +525,6 @@
 "couldn't check address balance" = "";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
-
-/* No comment provided by engineer. */
 "enable" = "";
 
 /* No comment provided by engineer. */
@@ -577,9 +547,6 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -636,13 +603,7 @@
 "The amount you wanted to shapeshift is too low, please input a value over %@" = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
 "This is your dash balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
 
 /* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
@@ -658,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";

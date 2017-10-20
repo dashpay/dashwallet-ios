@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ er for  \"bits\". %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ikke tilladelse til at bruge kameraet";
 
 /* No comment provided by engineer. */
@@ -37,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEn enhedsadgangskode er nødvendig for at sikre din tegnebog. Gå til indstillinger for aktivér adgangskode for at fortsætte.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE ER ALLEREDE BRUGT\n\ndash-adresser bør kun bruges en enkelt gang\n\ngenbrug reducerer beskyttelse af privatlivet både for dig og for modtageren og kan resultere i tab, hvis modtageren ikke kontrollerer adressen direkte";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngiv adgang for kamera i\nIndstillinger->Anonymitet->Kamera->%@";
@@ -84,9 +78,6 @@
 "bad recovery phrase" = "ugyldig genskabelsessætning";
 
 /* No comment provided by engineer. */
-"bad signature" = "ugyldig signatur";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "bloknr. %1$d af %2$d";
 
 /* No comment provided by engineer. */
@@ -115,9 +106,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "luk app";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "BEKRÆFT SLETNING";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekræftet i bloknr. %d";
@@ -264,9 +252,6 @@
 "not a valid dash address" = "ikke en gyldig dash-adresse";
 
 /* No comment provided by engineer. */
-"not a valid dash or address" = "ikke en gyldig dash eller bitcoin adresse";
-
-/* No comment provided by engineer. */
 "not a valid private key" = "ikke en gyldig privat nøgle";
 
 /* No comment provided by engineer. */
@@ -298,9 +283,6 @@
 
 /* No comment provided by engineer. */
 "payment output" = "betalings-output";
-
-/* No comment provided by engineer. */
-"post-dated" = "postdateret";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Modtag dash på denne adresse: %@";
@@ -447,9 +429,6 @@
 "transaction history" = "transaktionshistorik";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "transaktionen er postdateret";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "transaktion afvist";
 
 /* No comment provided by engineer. */
@@ -531,12 +510,6 @@
 "bitcoin payments can't be less than %@" = "";
 
 /* No comment provided by engineer. */
-"bitcoin transaction not signed" = "";
-
-/* No comment provided by engineer. */
-"Buy bitcoin in breadwallet!" = "";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "";
 
 /* No comment provided by engineer. */
@@ -553,12 +526,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins)." = "";
-
-/* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your bitcoins). Wipe this wallet immediately and restore on a secure device." = "";
 
 /* No comment provided by engineer. */
 "enable" = "";
@@ -583,9 +550,6 @@
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "";
-
-/* No comment provided by engineer. */
-"not connected to the bitcoin network" = "";
 
 /* No comment provided by engineer. */
 "OK" = "";
@@ -639,13 +603,7 @@
 "The amount you wanted to shapeshift is too low, please input a value over %@" = "";
 
 /* No comment provided by engineer. */
-"This is your DASH balance." = "";
-
-/* No comment provided by engineer. */
 "This is your dash balance." = "";
-
-/* No comment provided by engineer. */
-"This is your DASH balance. DASH is a currency. The exchange rate changes with the market." = "";
 
 /* No comment provided by engineer. */
 "to: %@ (via Shapeshift)" = "";
@@ -661,9 +619,6 @@
 
 /* Updating Price */
 "Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer." = "";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";
