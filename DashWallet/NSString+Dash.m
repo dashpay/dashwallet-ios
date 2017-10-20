@@ -222,7 +222,7 @@
     NSString * secondsUnit = seconds!=1?NSLocalizedString(@"seconds",nil):NSLocalizedString(@"second",nil);
     NSMutableString * tryAgainTime = [@"" mutableCopy];
     if (hours) {
-        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",hours,hoursUnit]];
+        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",(unsigned long)hours,hoursUnit]];
         if (minutes && seconds) {
             [tryAgainTime appendString:NSLocalizedString(@", ",nil)];
         } else if (minutes || seconds) {
@@ -230,13 +230,13 @@
         }
     }
     if (minutes) {
-        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",minutes,minutesUnit]];
+        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",(unsigned long)minutes,minutesUnit]];
         if (seconds) {
             [tryAgainTime appendString:NSLocalizedString(@" and ",nil)];
         }
     }
     if (seconds) {
-        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",seconds,secondsUnit]];
+        [tryAgainTime appendString:[NSString stringWithFormat:@"%ld %@",(unsigned long)seconds,secondsUnit]];
     }
     return [NSString stringWithString:tryAgainTime];
 }
