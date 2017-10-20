@@ -168,7 +168,7 @@
         self.bubbleView = nil;
     }
     else {
-        self.bubbleView = [BRBubbleView viewWithText:NSLocalizedString(@"Copy", nil)
+        self.bubbleView = [BRBubbleView viewWithText:NSLocalizedString(@"copy", nil)
                            tipPoint:CGPointMake(self.addressLabel.center.x, self.addressLabel.frame.origin.y - 5.0)
                            tipDirection:BRBubbleTipDirectionDown];
         self.bubbleView.alpha = 0;

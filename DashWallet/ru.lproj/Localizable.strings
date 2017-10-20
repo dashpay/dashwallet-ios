@@ -182,8 +182,7 @@
 /* No comment provided by engineer. */
 "copy" = "скопировать";
 
-/* No comment provided by engineer. */
-"Copy" = "Copy";
+
 
 /* No comment provided by engineer. */
 "copy address to clipboard" = "скопировать адрес в буфер обмена";
