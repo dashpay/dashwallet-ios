@@ -1820,6 +1820,7 @@ static NSString *sanitizeString(NSString *s)
             [addr isValidBitcoinBIP38Key] || [addr isValidDashBIP38Key]) {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
             [self.scanController stop];
+            
             [BREventManager saveEvent:@"send:valid_qr_scan"];
             
             if (request.r.length > 0) { // start fetching payment protocol request right away
@@ -1863,13 +1864,12 @@ static NSString *sanitizeString(NSString *s)
                 [self.navigationController dismissViewControllerAnimated:YES completion:^{
                     [self resetQRGuide];
                     if (request.amount > 0) self.canChangeAmount = YES;
+                    if (request.isValid && self.showBalance) {
+                        [self showBalance:request.paymentAddress];
+                        [self cancel:nil];
+                    }
+                    else [self confirmRequest:request];
                 }];
-                
-                if (request.isValid && self.showBalance) {
-                    [self showBalance:request.paymentAddress];
-                    [self cancel:nil];
-                }
-                else [self confirmRequest:request];
             }
         } else {
             [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:5.0
