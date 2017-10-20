@@ -404,8 +404,7 @@
 /* No comment provided by engineer. */
 "recovery phrase" = "恢复密语";
 
-/* Recovery Phrase */
-"Recovery Phrase" = "Recovery Phrase";
+
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "恢复密语不匹配";
@@ -495,7 +494,7 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"Shapeshift failed" = "Shapeshift failed";
+"shapeshift failed" = "shapeshift failed";
 
 /* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift status:";

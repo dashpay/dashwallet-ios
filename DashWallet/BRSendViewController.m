@@ -1655,7 +1655,7 @@ static NSString *sanitizeString(NSString *s)
         if (error) {
             failureBlock();
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                         alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
                                          message:error.localizedDescription
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
@@ -1670,7 +1670,7 @@ static NSString *sanitizeString(NSString *s)
             if ([DSShapeshiftManager sharedInstance].min > (amount * .97)) {
                 failureBlock();
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
                                              message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too low, "
                                                                                                   @"please input a value over %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].min / .97]]
                                              preferredStyle:UIAlertControllerStyleAlert];
@@ -1685,7 +1685,7 @@ static NSString *sanitizeString(NSString *s)
             } else if ([DSShapeshiftManager sharedInstance].limit < (amount * 1.03)) {
                 failureBlock();
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
                                              message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too high, "
                                                                                                   @"please input a value under %@", nil),[manager stringForDashAmount:[DSShapeshiftManager sharedInstance].limit / 1.03]]
                                              preferredStyle:UIAlertControllerStyleAlert];
@@ -1721,7 +1721,7 @@ static NSString *sanitizeString(NSString *s)
                 NSLog(@"shapeshiftBitcoinAmount Error %@",error);
                 
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
                                              message:error.localizedDescription
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
@@ -1776,7 +1776,7 @@ static NSString *sanitizeString(NSString *s)
                 if (error) {
                     NSLog(@"shapeshiftDashAmount Error %@",error);
                     UIAlertController * alert = [UIAlertController
-                                                 alertControllerWithTitle:NSLocalizedString(@"Shapeshift failed", nil)
+                                                 alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction

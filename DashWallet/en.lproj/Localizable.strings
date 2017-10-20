@@ -368,8 +368,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "received %1$@ (%2$@)";
 
-/* Recovery Phrase */
-"Recovery Phrase" = "Recovery Phrase";
+
 
 /* No comment provided by engineer. */
 "recovery phrase" = "recovery phrase";
@@ -462,7 +461,7 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"Shapeshift failed" = "Shapeshift failed";
+"shapeshift failed" = "shapeshift failed";
 
 /* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift status:";
@@ -624,4 +623,4 @@
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
