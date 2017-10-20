@@ -1,5 +1,14 @@
 
 /* No comment provided by engineer. */
+" and " = " and ";
+
+/* No comment provided by engineer. */
+"%@ is for 'bits'. %@ = 1 dash." = "%1$@는 'bits'라고 합니다. %2$@ = 1대쉬";
+
+/* No comment provided by engineer. */
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+
+/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에게 카메라 접근 권한이 없습니다";
 
 /* No comment provided by engineer. */
@@ -7,6 +16,9 @@
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d 승인";
+
+/* No comment provided by engineer. */
+", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 컨펌";
@@ -33,7 +45,13 @@
 "\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해 패스코드가 필요합니다. 설정에 가서 패스코드를 활성화해주세요.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해비밀번호가 필요합니다. 설정에 가서 비밀번호를 활성화해주세요.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 한번 사용된 주소 입니다.\n\n빗코인 주소는 한 번만 사용하기를 권장합니다.\n\n주소의 재사용은 당신과 받는 사람의 개인정보가 노출될 가능성이 높아지고, 만약 받는 사람이 직접 주소를 관리하고 있지 않다면 빗코인을 잃어버리는 결과를 가져올 수도 있습니다.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 이 애플리케이션의 카메라 접근을 허용해 주십시요.";
@@ -51,16 +69,22 @@
 "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n절대로 복원 문구를 패스워드 매니저나 기타 다른 곳에 저장하지 마십시오. \n이러한 기기는 감염되어 있을 우려가 있습니다.\n";
 
 /* No comment provided by engineer. */
+"\ntry again in %@" = "\ntry again in %@";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
 "about" = "정보";
 
 /* No comment provided by engineer. */
-"always require passcode" = "항상 패스코드 필요";
+"always require passcode" = "항상 비밀번호 필요";
 
 /* No comment provided by engineer. */
 "amount too small" = "보낼 금액이 너무 적습니다";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
@@ -78,7 +102,22 @@
 "bad recovery phrase" = "잘못된 복원 문구";
 
 /* No comment provided by engineer. */
+"bad signature" = "잘못된 서명";
+
+/* No comment provided by engineer. */
+"Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
+
+/* No comment provided by engineer. */
+"Buy Dash" = "Buy Dash";
+
+/* No comment provided by engineer. */
+"Buy dash in dashwallet!" = "Buy dash in dashwallet!";
 
 /* No comment provided by engineer. */
 "cancel" = "취소";
@@ -93,6 +132,9 @@
 "change payment amount?" = "보낼 금액을 변경하시겠습니까?";
 
 /* No comment provided by engineer. */
+"change wallet passcode" = "지갑 비밀번호 변경";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "주소 잔액을 확인하는중...";
 
 /* No comment provided by engineer. */
@@ -102,10 +144,28 @@
 "choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "클립보드에 제대로 된 대쉬 이나 비트코인 주소가 없습니다";
+"choose wallet passcode" = "지갑 비밀번호 선택";
+
+/* No comment provided by engineer. */
+"clear" = "clear";
+
+/* No comment provided by engineer. */
+"clear trusted node?" = "clear trusted node?";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash address" = "클립보드의 지갑주소가 유효하지 않음";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
+
+/* Confirm */
+"Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"CONFIRM WIPE" = "삭제 확인";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";
@@ -120,13 +180,16 @@
 "copy" = "복사";
 
 /* No comment provided by engineer. */
+"Copy" = "Copy";
+
+/* No comment provided by engineer. */
 "copy address to clipboard" = "클립보드로 주소 복사하기";
 
 /* No comment provided by engineer. */
 "copy request to clipboard" = "클립보드로 요청 복사하기";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "빗코인 지갑 주소를 클립보드에 복사하시겠습니까?";
+"copy wallet addresses to clipboard?" = "지갑 주소를 클립보드에 복사하시겠습니까?";
 
 /* No comment provided by engineer. */
 "couldn't check address balance" = "이 주소의 잔액을 확인하지 못하였습니다.";
@@ -139,6 +202,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "지불 내용을 대쉬 네트워크에 전송할 수 없었습니다";
+
+/* No comment provided by engineer. */
+"current wallet passcode" = "현재 지갑 비밀번호";
 
 /* No comment provided by engineer. */
 "Dash address" = "대쉬 주소";
@@ -177,6 +243,15 @@
 "email not configured" = "이메일이 설정되지 않았습니다";
 
 /* No comment provided by engineer. */
+"enable" = "enable";
+
+/* No comment provided by engineer. */
+"enable receive notifications" = "enable receive notifications";
+
+/* No comment provided by engineer. */
+"enter" = "enter";
+
+/* No comment provided by engineer. */
 "enter old passcode" = "이전 암호 입력";
 
 /* No comment provided by engineer. */
@@ -184,6 +259,12 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "거래 서명 중 오류 발생";
+
+/* No comment provided by engineer. */
+"exit" = "exit";
+
+/* No comment provided by engineer. */
+"failed wallet update" = "failed wallet update";
 
 /* No comment provided by engineer. */
 "from:" = "보낸 주소:";
@@ -205,6 +286,12 @@
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "중요!!";
+
+/* No comment provided by engineer. */
+"instant payment" = "instant payment";
+
+/* No comment provided by engineer. */
+"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "잔액 부족";
@@ -234,6 +321,9 @@
 "moved" = "이동 완료";
 
 /* No comment provided by engineer. */
+"new wallet passcode" = "새로운 지갑 비밀번호";
+
+/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
 
 /* No comment provided by engineer. */
@@ -259,6 +349,9 @@
 
 /* No comment provided by engineer. */
 "not connected to the dash network" = "대쉬 네트워크에 연결돼 있지 않습니다";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -288,6 +381,18 @@
 "payment output" = "거래 출력";
 
 /* No comment provided by engineer. */
+"pending" = "대기중";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"post-dated" = "후일부";
+
+/* No comment provided by engineer. */
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+
+/* No comment provided by engineer. */
 "Receive dash at this address: %@" = "이 주소로 대쉬을 받습니다: %@";
 
 /* No comment provided by engineer. */
@@ -298,6 +403,9 @@
 
 /* No comment provided by engineer. */
 "recovery phrase" = "복원 문구";
+
+/* Recovery Phrase */
+"Recovery Phrase" = "Recovery Phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
@@ -316,6 +424,9 @@
 
 /* No comment provided by engineer. */
 "request expired" = "요청 만료";
+
+/* No comment provided by engineer. */
+"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "requested network \"%@\" instead of \"%@\"" = "네트워크 \"%2$@\" 대신 \"%1$@\"를 요청 했습니다";
@@ -342,7 +453,16 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 당신의 지갑에 있는 돈이 위험합니다. 다른 지갑으로 잔액을 옮겨 주세요.";
 
 /* No comment provided by engineer. */
+"second" = "second";
+
+/* No comment provided by engineer. */
+"seconds" = "seconds";
+
+/* No comment provided by engineer. */
 "seen by %d of %d peers" = "%2$d개의 피어중 %1$d개의 피어가 보았습니다";
+
+/* No comment provided by engineer. */
+"send" = "send";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "이 비밀 키에서 %1$@ (%2$@)를 당신의 지갑으로 옮기겠습니까? 대쉬 네트워크에 %3$@ (%4$@)의 수수료가 지급됩니다.";
@@ -366,7 +486,22 @@
 "sent!" = "보냈습니다!";
 
 /* No comment provided by engineer. */
+"set a trusted node" = "set a trusted node";
+
+/* No comment provided by engineer. */
 "settings" = "설정";
+
+/* No comment provided by engineer. */
+"shapeshift bitcoin id:" = "shapeshift bitcoin id:";
+
+/* No comment provided by engineer. */
+"Shapeshift failed" = "Shapeshift failed";
+
+/* No comment provided by engineer. */
+"shapeshift status:" = "shapeshift status:";
+
+/* No comment provided by engineer. */
+"shapeshift succeeded" = "shapeshift succeeded";
 
 /* No comment provided by engineer. */
 "show" = "보기";
@@ -384,19 +519,34 @@
 "spent input" = "사용된 입력";
 
 /* No comment provided by engineer. */
+"Starting Shapeshift!" = "Starting Shapeshift!";
+
+/* No comment provided by engineer. */
 "status:" = "상태:";
 
 /* No comment provided by engineer. */
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* No comment provided by engineer. */
-"Syncing:" = "동기화중";
+"syncing..." = "동기화중...";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "The amount you wanted to shapeshift is too low, please input a value over %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "앱을 종료합니다";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이게 당신의 대쉬 주소입니다. 탭 해서 복사하거나 이메일, SMS로 다른 사람에게 보내세요. 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 하지만 이전 주소도 언제든지 사용할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"This is your dash balance." = "This is your dash balance.";
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이게 당신의 대쉬 잔액입니다. 대쉬은 화폐입니다. 환율은 시장 상황에 따라 변합니다.";
@@ -417,6 +567,9 @@
 "to: %@" = "받는 주소: %@";
 
 /* No comment provided by engineer. */
+"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
+
+/* No comment provided by engineer. */
 "touch id limit" = "Touch ID 제한";
 
 /* No comment provided by engineer. */
@@ -432,10 +585,22 @@
 "transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
+"transaction is post-dated" = "거래 날짜가 후일로 설정됨";
+
+/* No comment provided by engineer. */
 "transaction rejected" = "거래가 거부됨";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "패스코드 켜기";
+"trust" = "trust";
+
+/* No comment provided by engineer. */
+"Try It!" = "Try It!";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "비밀번호 켜기";
+
+/* No comment provided by engineer. */
+"Unable to get new qr code" = "Unable to get new qr code";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "%@에서 예상치 못한 응답";
@@ -461,17 +626,26 @@
 /* No comment provided by engineer. */
 "unverified" = "확인되지 않음";
 
+/* Updating Price */
+"Updating Price" = "Updating Price";
+
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
 
 /* No comment provided by engineer. */
-"verify passcode" = "패스코드 확인";
+"verify passcode" = "비밀번호 확인";
+
+/* No comment provided by engineer. */
+"verify wallet passcode" = "지갑 비밀번호 확인";
 
 /* No comment provided by engineer. */
 "wallet address" = "지갑 주소";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "지갑 사용 정지됨";
+
+/* No comment provided by engineer. */
+"wallet passcode" = "지갑 비밀번호";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
@@ -483,145 +657,13 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "복원 문구를 옮겨 적어주세요";
 
 /* No comment provided by engineer. */
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
+
+/* No comment provided by engineer. */
+"you must enter your pin in order to enter dashwallet" = "you must enter your pin in order to enter dashwallet";
+
+/* No comment provided by engineer. */
 "you received dash!" = "대쉬을 받았습니다!";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "지갑이 동기화 돼있지 않은 것 같습니다.\n보통 블록체인을 재스캔하면 고쳐집니다.";
-
-/* No comment provided by engineer. */
-" and " = "";
-
-/* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "";
-
-/* No comment provided by engineer. */
-", " = "";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "";
-
-/* No comment provided by engineer. */
-"\ntry again in %@" = "";
-
-/* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "";
-
-/* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "";
-
-/* No comment provided by engineer. */
-"Buy Dash" = "";
-
-/* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "";
-
-/* No comment provided by engineer. */
-"clear" = "";
-
-/* No comment provided by engineer. */
-"clear trusted node?" = "";
-
-/* Confirm */
-"Confirm" = "";
-
-/* No comment provided by engineer. */
-"Copy" = "";
-
-/* No comment provided by engineer. */
-"enable" = "";
-
-/* No comment provided by engineer. */
-"enable receive notifications" = "";
-
-/* No comment provided by engineer. */
-"enter" = "";
-
-/* No comment provided by engineer. */
-"exit" = "";
-
-/* No comment provided by engineer. */
-"failed wallet update" = "";
-
-/* No comment provided by engineer. */
-"instant payment" = "";
-
-/* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "";
-
-/* No comment provided by engineer. */
-"OK" = "";
-
-/* No comment provided by engineer. */
-"pending" = "";
-
-/* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "";
-
-/* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "";
-
-/* Recovery Phrase */
-"Recovery Phrase" = "";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "";
-
-/* No comment provided by engineer. */
-"second" = "";
-
-/* No comment provided by engineer. */
-"seconds" = "";
-
-/* No comment provided by engineer. */
-"send" = "";
-
-/* No comment provided by engineer. */
-"set a trusted node" = "";
-
-/* No comment provided by engineer. */
-"shapeshift bitcoin id:" = "";
-
-/* No comment provided by engineer. */
-"Shapeshift failed" = "";
-
-/* No comment provided by engineer. */
-"shapeshift status:" = "";
-
-/* No comment provided by engineer. */
-"shapeshift succeeded" = "";
-
-/* No comment provided by engineer. */
-"Starting Shapeshift!" = "";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "";
-
-/* No comment provided by engineer. */
-"This is your dash balance." = "";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "";
-
-/* No comment provided by engineer. */
-"trust" = "";
-
-/* No comment provided by engineer. */
-"Try It!" = "";
-
-/* No comment provided by engineer. */
-"Unable to get new qr code" = "";
-
-/* Updating Price */
-"Updating Price" = "";
-
-/* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "";
-
-/* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "";
