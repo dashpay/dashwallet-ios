@@ -146,6 +146,9 @@
 /* Confirm */
 "Confirm" = "Confirm";
 
+/* confirm */
+"confirm" = "confirm";
+
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmée en bloc #%d";
 

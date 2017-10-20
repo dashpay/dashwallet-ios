@@ -161,6 +161,9 @@
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
 
+/* confirm */
+"confirm" = "confirm";
+
 /* Confirm */
 "Confirm" = "Confirm";
 
@@ -403,8 +406,6 @@
 
 /* No comment provided by engineer. */
 "recovery phrase" = "복원 문구";
-
-
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";

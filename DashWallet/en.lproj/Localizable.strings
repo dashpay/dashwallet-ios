@@ -3,6 +3,9 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
+
+/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ is not allowed to access the camera";
 
 /* No comment provided by engineer. */
@@ -142,6 +145,9 @@
 
 /* Confirm */
 "Confirm" = "Confirm";
+
+/* confirm */
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmed in block #%d";
@@ -367,8 +373,6 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "received %1$@ (%2$@)";
-
-
 
 /* No comment provided by engineer. */
 "recovery phrase" = "recovery phrase";
@@ -621,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";
-
-/* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";

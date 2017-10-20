@@ -161,6 +161,9 @@
 /* No comment provided by engineer. */
 "close app" = "关闭App";
 
+/* confirm */
+"confirm" = "confirm";
+
 /* Confirm */
 "Confirm" = "Confirm";
 
@@ -403,8 +406,6 @@
 
 /* No comment provided by engineer. */
 "recovery phrase" = "恢复密语";
-
-
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "恢复密语不匹配";

@@ -161,6 +161,9 @@
 /* No comment provided by engineer. */
 "close app" = "закрыть программу";
 
+/* confirm */
+"confirm" = "confirm";
+
 /* Confirm */
 "Confirm" = "Confirm";
 
@@ -403,8 +406,6 @@
 
 /* No comment provided by engineer. */
 "recovery phrase" = "фраза восстановления";
-
-
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "фразы восстановления не совпадают";

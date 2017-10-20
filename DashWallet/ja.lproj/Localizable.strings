@@ -161,6 +161,9 @@
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
 
+/* confirm */
+"confirm" = "confirm";
+
 /* Confirm */
 "Confirm" = "Confirm";
 
@@ -403,8 +406,6 @@
 
 /* No comment provided by engineer. */
 "recovery phrase" = "復元フレーズ";
-
-
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "復元フレーズが一致しません";
