@@ -605,7 +605,7 @@ static const char *dns_seeds[] = {
         if (completion) {
             [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_signed"];
             completion([NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
+                                                                                      NSLocalizedString(@"dash transaction not signed", nil)}]);
         }
         
         return;
@@ -614,7 +614,7 @@ static const char *dns_seeds[] = {
         if (completion) {
             [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
+                                                                                        NSLocalizedString(@"not connected to the dash network", nil)}]);
         }
         
         return;

@@ -417,7 +417,7 @@ error:(NSError *)error
     if (amount < manager.wallet.minOutputAmount) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
-                                     message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
+                                     message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
                                               [manager stringForDashAmount:manager.wallet.minOutputAmount]]
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction

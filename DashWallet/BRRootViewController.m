@@ -47,9 +47,9 @@
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 
-#define BALANCE_TIP_START NSLocalizedString(@"This is your DASH balance.", nil)
+#define BALANCE_TIP_START NSLocalizedString(@"This is your dash balance.", nil)
 
-#define BALANCE_TIP NSLocalizedString(@"This is your DASH balance. DASH is a currency. "\
+#define BALANCE_TIP NSLocalizedString(@"This is your dash balance. Dash is a currency. "\
 "The exchange rate changes with the market.", nil)
 #define MDASH_TIP    NSLocalizedString(@"%@ is for 'mDASH'. %@ = 1 DASH.", nil)
 
@@ -245,7 +245,7 @@
                                                                                             alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                                                                             message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                                                                                                       "Any 'jailbreak' app can access any other app's keychain data "
-                                                                                                                      "(and steal your bitcoins). "
+                                                                                                                      "(and steal your dash). "
                                                                                                                       "Wipe this wallet immediately and restore on a secure device.", nil)
                                                                                             preferredStyle:UIAlertControllerStyleAlert];
                                                                UIAlertAction* ignoreButton = [UIAlertAction
@@ -273,7 +273,7 @@
                                                                                             alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                                                                             message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                                                                                                       "Any 'jailbreak' app can access any other app's keychain data "
-                                                                                                                      "(and steal your bitcoins).", nil)
+                                                                                                                      "(and steal your dash).", nil)
                                                                                             preferredStyle:UIAlertControllerStyleAlert];
                                                                UIAlertAction* ignoreButton = [UIAlertAction
                                                                                               actionWithTitle:NSLocalizedString(@"ignore", nil)
@@ -452,7 +452,7 @@
                                      alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                      message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                                                "Any 'jailbreak' app can access any other app's keychain data "
-                                                               "(and steal your bitcoins). "
+                                                               "(and steal your dash). "
                                                                "Wipe this wallet immediately and restore on a secure device.", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* ignoreButton = [UIAlertAction
@@ -480,7 +480,7 @@
                                      alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                      message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
                                                                "Any 'jailbreak' app can access any other app's keychain data "
-                                                               "(and steal your bitcoins).", nil)
+                                                               "(and steal your dash).", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* ignoreButton = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"ignore", nil)
@@ -1201,7 +1201,7 @@
     [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
     view.titleLabel.text = NSLocalizedString(@"Buy dash in dashwallet!", nil);
     view.descriptionLabel.text =
-    NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
+    NSLocalizedString(@"You can now buy dash in\ndashwallet with cash or\nbank transfer.", nil);
     [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
     
     view.image = blurredBgImg;

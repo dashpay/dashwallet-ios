@@ -443,9 +443,9 @@ static NSString *dateFormat(NSString *template)
 //    // display the popup
 //    __weak BREventConfirmView *view =
 //        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
-//    view.titleLabel.text = NSLocalizedString(@"Buy bitcoin in breadwallet!", nil);
+//    view.titleLabel.text = NSLocalizedString(@"Buy dash in dashwallet!", nil);
 //    view.descriptionLabel.text =
-//        NSLocalizedString(@"You can now buy bitcoin in\nbreadwallet with cash or\nbank transfer.", nil);
+//        NSLocalizedString(@"You can now buy dash in\ndashwallet with cash or\nbank transfer.", nil);
 //    [view.okBtn setTitle:NSLocalizedString(@"Try It!", nil) forState:UIControlStateNormal];
 //
 //    view.image = blurredBgImg;
