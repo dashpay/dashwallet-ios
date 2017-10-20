@@ -480,6 +480,8 @@
 		FB0ACB9C1F9AB5FC00F4AB52 /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACB9D1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Main.strings; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB0ACB9F1F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Main.strings; sourceTree = "<group>"; };
+		FB0ACBA01F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB248B5C1F73803100405AE0 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		FB248B621F79BB7C00405AE0 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
@@ -1232,6 +1234,7 @@
 				pt,
 				sk,
 				bg,
+				vi,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -1534,6 +1537,7 @@
 				75CE194E1B9642EB000778E4 /* pt */,
 				FB0ACB9C1F9AB5FC00F4AB52 /* sk */,
 				FB0ACB9E1F9AB76800F4AB52 /* bg */,
+				FB0ACBA01F9ABB6200F4AB52 /* vi */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1602,6 +1606,7 @@
 				75BDCC381CE2FC7000AAFA22 /* en */,
 				FB0ACB9B1F9AB5FB00F4AB52 /* sk */,
 				FB0ACB9D1F9AB76800F4AB52 /* bg */,
+				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
