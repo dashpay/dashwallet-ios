@@ -85,7 +85,7 @@
         if ([s isValidBitcoinAddress] || [s isValidBitcoinPrivateKey]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
             self.scheme = @"bitcoin";
-        } else if ([s isValidDashAddress] || [s isValidDashPrivateKey]) {
+        } else if ([s isValidDashAddress] || [s isValidDashPrivateKey] || [s isValidDashBIP38Key]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
         }

@@ -1816,8 +1816,7 @@ static NSString *sanitizeString(NSString *s)
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:
                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
         BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
-        if ((request.isValid) || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] ||
-            [addr isValidBitcoinBIP38Key] || [addr isValidDashBIP38Key]) {
+        if ((request.isValid) || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
             self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
             [self.scanController stop];
             
