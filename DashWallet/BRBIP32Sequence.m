@@ -353,7 +353,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     uint32_t child;
     UInt256 chain;
     NSData * pubkey = nil;
-    NSMutableData * masterPublicKey = [NSMutableData data];
+    NSMutableData * masterPublicKey = [NSMutableData secureData];
     BOOL valid = deserialize(masterPublicKeyString, &depth, &fingerprint, &child, &chain, &pubkey);
     if (!valid) return nil;
     [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
