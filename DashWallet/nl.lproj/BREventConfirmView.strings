@@ -1,0 +1,13 @@
+
+/* Class = "UILabel"; text = "Help us improve dashwallet!"; ObjectID = "Mgm-wb-UlM"; */
+"Mgm-wb-UlM.text" = "Help mee om dashwallet te verbeteren!";
+
+/* Class = "UIButton"; normalTitle = "No Thanks"; ObjectID = "Tw0-s4-w0k"; */
+"Tw0-s4-w0k.normalTitle" = "Nee, bedankt";
+
+/* Class = "UIButton"; normalTitle = "Ok Great!"; ObjectID = "fzO-vI-zum"; */
+"fzO-vI-zum.normalTitle" = "Ja, graag!";
+
+/* Class = "UILabel"; text = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!"; ObjectID = "kqc-0F-49V"; */
+"kqc-0F-49V.text" = "Wil je anonieme gebruiksgegevens van deze app met ons delen?\n\nDeze is informatie is volledig anoniem en bevat geen financiële informatie. We respecteren je financiële privacy!";
+

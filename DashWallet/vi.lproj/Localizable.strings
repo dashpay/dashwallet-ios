@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
+" and " = " và ";
 
 /* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ là cho 'mDASH'. %2$@ = 1 DASH.";
@@ -18,7 +18,7 @@
 ", " = ", ";
 
 /* No comment provided by engineer. */
-"0 confirmations" = "0 confirmations";
+"0 confirmations" = "0 xác thực";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1 xác thực";
@@ -45,16 +45,10 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nBạn cần có mật khẩu cho thiết bị để bảo vệ ví của mình. Hãy vào phần Settings của điện thoại và bật mật khẩu lên và tiếp tục.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nĐỊA CHỈ ĐÃ ĐƯỢC SỬ DỤNG\n\nđịa chỉ dash chỉ được sử dụng cho một lần duy nhất\n\ntái sử dụng địa chỉ giảm mức độ riêng tư cả cho bạn và người nhận và có thể gây ra mất nếu người nhận không trực tiếp kiểm soát địa chỉ đó";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nĐỊA CHỈ ĐÃ ĐƯỢC SỬ DỤNG\ncác địa chỉ dash chỉ nên sử dụng một lần duy nhất\n\ntái sử dụng địa chỉ làm giảm đi tính riêng tư cho cả bạn lẫn người nhận và dẫn đến tình trạng mất nếu người nhận không quản lý trực tiếp địa chỉ đó";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbật tính năng truy cập chụp ảnh trong phần\nSettings->Privacy->Camera->%@";
-
-/* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery phrase or they can spend your dash.\n\nNEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.\n" = "\nĐỪNG ĐỂ bất cứ ai nhìn thấy cụm từ phục hồi của bạn hoặc họ sẽ có thể tiêu dash của bạn.\n\nĐừng bao giờ nhập mã phục hồi của bạn phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị lây nhiễm virus.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi \ncủa bạn hoặc họ sẽ tiêu mất số dash của bạn.";
@@ -84,7 +78,7 @@
 "amount too small" = "số lượng quá nhỏ";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Ứng dụng %@ có thể nhận Master Public Key của bạn.  Nó có thể được dùng để theo dõi ví của bạn, nhưng nó không thể dùng để chuyển Dash.";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "sai mật khẩu, hãy thử lại";
@@ -102,25 +96,19 @@
 "bad recovery phrase" = "cụm từ phục hồi không đúng";
 
 /* No comment provided by engineer. */
-"bad signature" = "chữ ký không đúng";
+"Bitcoin address (shapeshift)" = "Địa chỉ Bitcoin (shapeshift)";
 
 /* No comment provided by engineer. */
-"Bitcoin address" = "Địa chỉ Bitcoin";
-
-/* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
+"bitcoin payments can't be less than %@" = "giao dịch bitcoin không nhỏ hơn %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "khối #%1$d của %2$d";
 
 /* No comment provided by engineer. */
-"Buy Dash" = "Buy Dash";
+"Buy Dash" = "Mua Dash";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+"Buy dash in dashwallet!" = "Mua dash trong dashwallet!";
 
 /* No comment provided by engineer. */
 "cancel" = "huỷ bỏ";
@@ -135,7 +123,7 @@
 "change payment amount?" = "thay đổi số lượng cần chi?";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "checking address balance...";
+"checking address balance..." = "đang kiểm tra số dư của địa chỉ...";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "kiểm tra số dư của khoá riêng...";
@@ -144,31 +132,28 @@
 "choose passcode for %@" = "hãy chọn mật khẩu cho %@";
 
 /* No comment provided by engineer. */
-"clear" = "clear";
+"clear" = "xoá";
 
 /* No comment provided by engineer. */
-"clear trusted node?" = "clear trusted node?";
+"clear trusted node?" = "xoá các nút đã tin cậy?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid Dash or Bitcoin address" = "bộ đệm không chứa một địa chỉ hợp lệ của Dash hay Bitcoin";
+"clipboard doesn't contain a valid dash or bitcoin address" = "bộ đệm không chứa địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
 
-/* confirm */
-"confirm" = "confirm";
+/* Confirm */
+"Confirm" = "Xác thực";
 
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "XOÁ XÁC THỰC";
+/* confirm */
+"confirm" = "xác thực";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "đã được xác thực trong khối #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "connect timeout";
+"connect timeout" = "hết thời hạn kết nối";
 
 /* No comment provided by engineer. */
 "copied" = "đã được chép";
@@ -183,10 +168,10 @@
 "copy request to clipboard" = "chép yêu cầu vào bộ đệm";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "copy wallet addresses to clipboard?";
+"copy wallet addresses to clipboard?" = "copy địa chỉ ví vào bộ đệm?";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "couldn't check address balance";
+"couldn't check address balance" = "không thể kiểm tra số dư của địa chỉ";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "không thể thực hiện thanh toán";
@@ -201,10 +186,7 @@
 "Dash address" = "Địa chỉ Dash";
 
 /* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'.";
-
-/* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or 'Y'." = "Địa chỉ dash luôn có thể vào bộ đệm của máy. Một địa chỉ dash thường bắt đầu bằng 'X' hoặc 'Y'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Địa chỉ Dash cũng có thể copy vào bộ đệm. Một địa chỉ dash luôn bắt đầu bằng chữ 'X' hoặc '7'.";
 
 /* No comment provided by engineer. */
 "dash network fee" = "phí giao dịch";
@@ -225,7 +207,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "AN NINH THIẾT BỊ BỊ  TỔN HẠI\nBất kỳ ứng dụng bị 'jailbreak' hay 'phá khoá' nào đều có thể truy cập được vào dữ liệu chìa khoá của ứng dụng (và đánh cắp dash của bạn). Hãy xoá sạch ví này ngay lập tức và phục hồi nó trên một thiết bị an toàn.";
 
 /* No comment provided by engineer. */
-"do it later" = "le faire plus tard";
+"do it later" = "làm việc này sau";
 
 /* No comment provided by engineer. */
 "done" = "xong";
@@ -240,10 +222,10 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"enable receive notifications" = "bật thông báo khi nhận được";
 
 /* No comment provided by engineer. */
-"enter" = "enter";
+"enter" = "nhập";
 
 /* No comment provided by engineer. */
 "enter old passcode" = "nhập mật khẩu cũ";
@@ -255,10 +237,10 @@
 "error signing transaction" = "lỗi khi ký giao dịch";
 
 /* No comment provided by engineer. */
-"exit" = "exit";
+"exit" = "thoát";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "failed wallet update";
+"failed wallet update" = "không cập nhận được ví";
 
 /* No comment provided by engineer. */
 "from:" = "từ:";
@@ -282,10 +264,10 @@
 "IMPORTANT" = "QUAN TRỌNG";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
+"instant payment" = "giao dịch tức thời";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send cần đầu vào với đủ 6 xác thực, bạn có muốn gửi đi như một giao dịch thông thường không?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "không đủ kinh phí";
@@ -297,10 +279,7 @@
 "INVALID" = "KHÔNG HỢP LỆ";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
-
-/* No comment provided by engineer. */
-"Let others scan this QR code to get your digital cash (DASH) address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để những người khác quét mã QR này để lấy địa chỉ ví (DASH) của bạn. Bất kỳ ai cũng có thể gửi dash đến ví của bạn bằng cách gửi cho họ địa chỉ của bạn.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
 "minute" = "phút";
@@ -309,7 +288,7 @@
 "minutes" = "phút";
 
 /* No comment provided by engineer. */
-"missing certificate" = "certificat manquant";
+"missing certificate" = "thiếu chứng thực";
 
 /* No comment provided by engineer. */
 "more..." = "tiếp...";
@@ -318,31 +297,25 @@
 "moved" = "đã di chuyển";
 
 /* No comment provided by engineer. */
-"new phrase" = "tạo cụm từ mới";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "tiếp theo, ghi xuống cụm từ phục hồi";
 
 /* No comment provided by engineer. */
-"no exchange rate data" = "no exchange rate data";
+"no exchange rate data" = "không có thông tin về tỷ giá";
 
 /* No comment provided by engineer. */
 "no peers found" = "không tìm thấy nút ngang hàng";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "đây phải là mã QR của địa chỉ dash hay bitcoin";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "không phải mã QR của dash";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "not a valid bitcoin address";
+"not a valid bitcoin address" = "không phải địa chỉ bitcoin hợp lệ";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "không phải một địa chỉ dash hợp lệ";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "không phải địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "không phải một khoá riêng hợp lệ";
@@ -351,10 +324,10 @@
 "not connected to the dash network" = "chưa được kết nối với mạng lưới của dash";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "mật khẩu";
@@ -372,7 +345,7 @@
 "pay" = "thanh toán";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
+"payee identity isn't certified" = "thông tin về người nhận chưa được xác nhận";
 
 /* No comment provided by engineer. */
 "payment address" = "địa chỉ thanh toán";
@@ -381,16 +354,13 @@
 "payment output" = "đầu ra thanh toán";
 
 /* No comment provided by engineer. */
-"pending" = "pending";
+"pending" = "đang chờ";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "hãy nhập mã pin để nâng cấp ví";
 
 /* No comment provided by engineer. */
-"post-dated" = "ngày cập nhật";
-
-/* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "tỷ giá: 1%@ = 1%@\ncập nhật: 1%@\nblock #%d of 2%d\ncác kết nối: 2%d\ndl peer: 1%@\n";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Nhận dash với địa chỉ này: %@";
@@ -423,7 +393,7 @@
 "request expired" = "yêu cầu đã hết hạn";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
+"request is for an instant payment but you have disabled instant payments" = "yêu cầu này là dành cho giao dịch tức thời nhưng bạn đã tắt tính năng giao dịch tức thời";
 
 /* No comment provided by engineer. */
 "requested network \"%@\" instead of \"%@\"" = "yêu cầu mạng lưới \"%1$@\" à thay cho \"%2$@\"";
@@ -441,22 +411,19 @@
 "reset" = "khởi tạo lại";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Quét mã QR của một người khác để lấy địa chỉ dash của họ. Bạn có thể gửi một khoản thanh toán cho bất kỳ ai với một địa chỉ.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Hãy quét mã QR của người kia để lấy địa chỉ dash hay bitcoin của họ. Bạn có thể gửi tiền cho bất cứ ai khi có địa chỉ của họ.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
-
-/* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "LChụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Hãy sinh ra một cụm từ phục hồi mới và giữ nó bí mật.";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Hãy sinh ra một cụm từ phục hồi mới và giữ nó bí mật.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Tiền của bạn có rủi ro. Hãy chuyển số dư của bạn vào một ví khác.";
 
 /* No comment provided by engineer. */
-"second" = "second";
+"second" = "giây";
 
 /* No comment provided by engineer. */
-"seconds" = "seconds";
+"seconds" = "giây";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "được thấy bởi %1$d của %2$d các nút";
@@ -486,7 +453,7 @@
 "sent!" = "đã gửi!";
 
 /* No comment provided by engineer. */
-"set a trusted node" = "set a trusted node";
+"set a trusted node" = "thiết lập một nút tin cậy";
 
 /* No comment provided by engineer. */
 "settings" = "thiết lập";
@@ -495,13 +462,13 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift failed";
+"shapeshift failed" = "shapeshift không thành công";
 
 /* No comment provided by engineer. */
-"shapeshift status:" = "shapeshift status:";
+"shapeshift status:" = "tình trạng shapeshift:";
 
 /* No comment provided by engineer. */
-"shapeshift succeeded" = "shapeshift succeeded";
+"shapeshift succeeded" = "shapeshift thành công";
 
 /* No comment provided by engineer. */
 "show" = "hiển thị";
@@ -519,7 +486,7 @@
 "spent input" = "đầu vào";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Starting Shapeshift!";
+"Starting Shapeshift!" = "Bắt đầu Shapeshift!";
 
 /* No comment provided by engineer. */
 "status:" = "tình trạng:";
@@ -528,16 +495,13 @@
 "swept!" = "đã được quét!";
 
 /* No comment provided by engineer. */
-"syncing..." = "đang đồng bộ...";
+"Syncing:" = "Đang đồng bộ:";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Syncing:";
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "Số tiền mà bạn muốn shapeshift quá lớn, hãy sử dụng một lượng nhỏ hơn %@";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "The amount you wanted to shapeshift is too low, please input a value over %@";
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "Số tiền mà bạn shapeshift quá ít, hãy sử dụng một lượng lớn hơn %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "ứng dụng sẽ được đóng bây giờ";
@@ -546,7 +510,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Đây là địa chỉ dash của bạn. Chạm vào để chép nó hoặc gửi nó qua email hoặc sms. Địa chỉ sẽ thay đổi mỗi khi bạn nhận tiền, nhưng địa chỉ cũ luôn hoạt động.";
 
 /* No comment provided by engineer. */
-"This is your dash balance." = "This is your dash balance.";
+"This is your dash balance." = "Đây là số dư dash của bạn.";
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Đây là số dư dash của bạn. Dash là một loại tiền. Tỷ giá giao dịch có thể thay đổi theo thị trường.";
@@ -567,7 +531,7 @@
 "to: %@" = "đến: %@";
 
 /* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
+"to: %@ (via Shapeshift)" = "đến: %@ (theo Shapeshift)";
 
 /* No comment provided by engineer. */
 "touch id limit" = "chạm giới hạn id";
@@ -582,25 +546,22 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
 
 /* No comment provided by engineer. */
-"transaction history" = "historique des transactions";
-
-/* No comment provided by engineer. */
-"transaction is post-dated" = "la transaction est postdatée";
+"transaction history" = " lịch sử giao dịch";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "giao dịch bị từ chối";
 
 /* No comment provided by engineer. */
-"trust" = "trust";
+"trust" = "tin cậy";
 
 /* No comment provided by engineer. */
-"Try It!" = "Try It!";
+"Try It!" = "Hãy thử!";
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "hãy bật mật khẩu cho thiết bị của bạn";
 
 /* No comment provided by engineer. */
-"Unable to get new qr code" = "Unable to get new qr code";
+"Unable to get new qr code" = "Không thể lấy mã QR mới";
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "phản hồi không mong đợi từ %@";
@@ -627,7 +588,7 @@
 "unverified" = "chưa được kiểm tra";
 
 /* Updating Price */
-"Updating Price" = "Updating Price";
+"Updating Price" = "Đang cập nhật giá";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
@@ -651,10 +612,10 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "HÃY GHI LẠI CỤM TỪ PHỤC HỒI";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Bây giờ bạn có thể mua dash trong\nví dashwallet hoặc\nchuyển khoản.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "you must enter your pin in order to enter dashwallet";
+"you must enter your pin in order to enter dashwallet" = "bạn cần nhập mã pin của bạn để truy cập ví dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "bạn đã nhận được dash!";

@@ -484,6 +484,12 @@
 		FB0ACBA01F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB248B5C1F73803100405AE0 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		FB248B621F79BB7C00405AE0 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
+		FB4310ED1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		FB4310EE1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Main.strings; sourceTree = "<group>"; };
+		FB4310EF1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		FB4310F01FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Interface.strings; sourceTree = "<group>"; };
+		FB4310F11FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB4310F71FA2951E00784EBC /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -1235,6 +1241,7 @@
 				sk,
 				bg,
 				vi,
+				th,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -1509,6 +1516,8 @@
 				75FD2FB11BFAB97200D56BBA /* ja */,
 				75FD2FB31BFAB97500D56BBA /* de */,
 				75FD2FB51BFAB97A00D56BBA /* ru */,
+				FB4310ED1FA027DB00784EBC /* th */,
+				FB4310F71FA2951E00784EBC /* nl */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";
@@ -1538,6 +1547,7 @@
 				FB0ACB9C1F9AB5FC00F4AB52 /* sk */,
 				FB0ACB9E1F9AB76800F4AB52 /* bg */,
 				FB0ACBA01F9ABB6200F4AB52 /* vi */,
+				FB4310F11FA027DB00784EBC /* th */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1565,6 +1575,7 @@
 				75ABFB8A1B55BB4E00B0B5CC /* ru */,
 				750C6CC21B5C8EB60038AAE9 /* el */,
 				75CE194D1B9642EB000778E4 /* pt */,
+				FB4310EF1FA027DB00784EBC /* th */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -1607,6 +1618,7 @@
 				FB0ACB9B1F9AB5FB00F4AB52 /* sk */,
 				FB0ACB9D1F9AB76800F4AB52 /* bg */,
 				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
+				FB4310EE1FA027DB00784EBC /* th */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -1616,6 +1628,7 @@
 			children = (
 				BA913BE11BD57E4D005A7C0E /* Base */,
 				756A8F131CE566F6007893E2 /* en */,
+				FB4310F01FA027DB00784EBC /* th */,
 			);
 			name = Interface.storyboard;
 			sourceTree = "<group>";
