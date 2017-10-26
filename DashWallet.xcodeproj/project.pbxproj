@@ -490,6 +490,7 @@
 		FB4310F01FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB4310F11FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4310F71FA2951E00784EBC /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		FB4310F91FA2978800784EBC /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -1518,6 +1519,7 @@
 				75FD2FB51BFAB97A00D56BBA /* ru */,
 				FB4310ED1FA027DB00784EBC /* th */,
 				FB4310F71FA2951E00784EBC /* nl */,
+				FB4310F91FA2978800784EBC /* pl */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";

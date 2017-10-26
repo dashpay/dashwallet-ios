@@ -1,5 +1,9 @@
+
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "odzyskaj portfel";
+
+/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "waluta lokalna";
@@ -14,7 +18,7 @@
 "D4H-hd-LsX.text" = "dane kursu wymiany dostarczane przez\nbitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "jeśli kiedyś zgubisz swój telefon, będziesz potrzebował tej frazy by odzyskać swój portfel";
+"EQG-Km-ZKY.text" = "jeśli kiedyś zgubisz swój telefon, będziesz potrzebował tej frazy by odzyskać portfel";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "wysłano";
@@ -64,6 +68,9 @@
 /* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "wyślij pieniądze:";
 
+/* Class = "UILabel"; text = "app support:"; ObjectID = "lYb-eg-NfF"; */
+"lYb-eg-NfF.text" = "wsparcie aplikacji:";
+
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "fraza odzyskiwania danych:";
 
@@ -75,6 +82,9 @@
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "brak transakcji";
+
+/* Class = "UILabel"; text = "dashwallet %ver%%net%\ncopyright © 2017 dash"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\n\nBased on breadwallet\n\nthis app is open source";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "rozpocznij nowy portfel generując frazę odzyskiwania portfelu";
