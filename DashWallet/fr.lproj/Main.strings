@@ -1,3 +1,4 @@
+
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "récupérer un portefeuille";
 
@@ -10,7 +11,7 @@
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "créer/récupérer un autre portefeuille";
 
-/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
+/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "données de taux de change fournies par";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
@@ -28,7 +29,7 @@
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "non connecté";
 
-/* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
+/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
 "W8m-Eh-Nf9.title" = "Paramètres";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
@@ -37,10 +38,10 @@
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer et en créer/récupérer un autre. Votre solde actuel reste sur cette phrase.";
 
-/* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
+/* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "adresse depuis le presse-papier";
 
-/* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
+/* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "scanner un code QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
@@ -61,13 +62,13 @@
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "confirmez :";
 
-/* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
+/* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "Envoyer :";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "phrase de récupération :";
 
-/* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
+/* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
 "qel-3J-2VC.text" = "Recevoir :";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
@@ -78,3 +79,147 @@
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "créez un nouveau portefeuille en générant une phrase de récupération";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
+"00M-e1-IWY.text" = "";
+
+/* Class = "UIButton"; normalTitle = "8"; ObjectID = "24A-83-L7p"; */
+"24A-83-L7p.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "5"; ObjectID = "2Af-Xt-dHE"; */
+"2Af-Xt-dHE.normalTitle" = "";
+
+/* Class = "UILabel"; text = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "2U5-tK-XSF"; */
+"2U5-tK-XSF.text" = "";
+
+/* Class = "UIButton"; normalTitle = "6"; ObjectID = "43w-iO-MOK"; */
+"43w-iO-MOK.normalTitle" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
+"55a-IW-IjK.text" = "";
+
+/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "";
+
+/* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
+"83W-1O-V9b.normalTitle" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
+"9L3-gM-TgP.title" = "";
+
+/* Class = "UILabel"; text = "($0.00)"; ObjectID = "AIC-c4-j2z"; */
+"AIC-c4-j2z.text" = "";
+
+/* Class = "UILabel"; text = "USD"; ObjectID = "CsQ-fq-mfQ"; */
+"CsQ-fq-mfQ.text" = "";
+
+/* Class = "UIButton"; normalTitle = "."; ObjectID = "Cz1-M6-v6N"; */
+"Cz1-M6-v6N.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "3"; ObjectID = "EnY-9p-vg6"; */
+"EnY-9p-vg6.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "GAm-wQ-UwG"; */
+"GAm-wQ-UwG.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "GWf-4e-jTu"; */
+"GWf-4e-jTu.text" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "HrP-wv-Y1B"; */
+"HrP-wv-Y1B.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "Huq-Vk-LaF"; */
+"Huq-Vk-LaF.title" = "";
+
+/* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
+"Ika-qg-5Cf.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
+"Irz-6P-zvD.normalTitle" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "JNR-nK-iyP"; */
+"JNR-nK-iyP.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "O7K-cF-GAA"; */
+"O7K-cF-GAA.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "OBr-C7-abe"; */
+"OBr-C7-abe.title" = "";
+
+/* Class = "UIButton"; normalTitle = "0"; ObjectID = "OKR-t9-9Lk"; */
+"OKR-t9-9Lk.normalTitle" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "Ofd-q3-a1P"; */
+"Ofd-q3-a1P.text" = "";
+
+/* Class = "UILabel"; text = "($0.00)"; ObjectID = "TBf-3l-ujT"; */
+"TBf-3l-ujT.text" = "";
+
+/* Class = "UIButton"; normalTitle = "4"; ObjectID = "VQH-pt-DQg"; */
+"VQH-pt-DQg.normalTitle" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "WHQ-zW-IjD"; */
+"WHQ-zW-IjD.text" = "";
+
+/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "WSe-0v-Fha"; */
+"WSe-0v-Fha.normalTitle" = "";
+
+/* Class = "UILabel"; text = "id:"; ObjectID = "WsQ-ej-Wh4"; */
+"WsQ-ej-Wh4.text" = "";
+
+/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
+"XV7-2s-hZs.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
+"adc-g6-wnP.text" = "";
+
+/* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
+"bUC-MN-PXO.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
+"fVX-tM-tZx.text" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "gZx-fI-siU"; */
+"gZx-fI-siU.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "hWS-2G-hHE"; */
+"hWS-2G-hHE.title" = "";
+
+/* Class = "UIButton"; normalTitle = "7"; ObjectID = "jcY-uc-kOc"; */
+"jcY-uc-kOc.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "mpz-vn-jZ1"; */
+"mpz-vn-jZ1.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "mxS-i4-y1n"; */
+"mxS-i4-y1n.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "ncN-gc-vpQ"; */
+"ncN-gc-vpQ.text" = "";
+
+/* Class = "UILabel"; text = "D 0.00"; ObjectID = "o24-a7-ayU"; */
+"o24-a7-ayU.text" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "pXc-8D-8Gh"; */
+"pXc-8D-8Gh.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "qNV-Ka-14n"; */
+"qNV-Ka-14n.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
+"uaG-gX-Ias.text" = "";
+
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
+"wd8-oB-KWn.text" = "";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
+"x2u-C3-wz6.text" = "";
+
+/* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
+"xaD-eI-0iC.normalTitle" = "";

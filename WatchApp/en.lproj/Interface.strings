@@ -5,13 +5,13 @@
 /* Class = "WKInterfaceController"; title = "Cancel"; ObjectID = "4rD-ne-4oP"; */
 "4rD-ne-4oP.title" = "Cancel";
 
-/* Class = "WKInterfaceLabel"; text = "Open breadwallet iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
+/* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
 "Gat-bm-t3w.text" = "Open dashwallet iPhone app to setup your wallet";
 
 /* Class = "WKInterfaceButton"; title = "OK"; ObjectID = "R3B-Zx-omu"; */
 "R3B-Zx-omu.title" = "OK";
 
-/* Class = "WKInterfaceLabel"; text = "Open breadwallet iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
+/* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
 "VXj-KF-nqM.text" = "Open dashwallet iPhone app to setup your wallet";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
@@ -19,3 +19,69 @@
 
 /* Class = "WKInterfaceLabel"; text = "Transactions"; ObjectID = "r80-H8-ngA"; */
 "r80-H8-ngA.text" = "Transactions";
+
+/* Class = "WKInterfaceButton"; title = "0"; ObjectID = "4mi-Wz-WHA"; */
+"4mi-Wz-WHA.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "$211.86"; ObjectID = "6Qe-WS-tck"; */
+"6Qe-WS-tck.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "8"; ObjectID = "73A-Xa-Cxk"; */
+"73A-Xa-Cxk.title" = "";
+
+/* Class = "WKInterfaceController"; title = "Dash"; ObjectID = "AgC-eL-Hgc"; */
+"AgC-eL-Hgc.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "⌫"; ObjectID = "DcN-TW-QTh"; */
+"DcN-TW-QTh.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "1"; ObjectID = "JJr-7L-vPm"; */
+"JJr-7L-vPm.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "ƀ14,659"; ObjectID = "PXD-22-aMP"; */
+"PXD-22-aMP.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "2"; ObjectID = "R30-qD-rDV"; */
+"R30-qD-rDV.title" = "";
+
+/* Class = "WKInterfaceButton"; title = "3"; ObjectID = "UOC-wT-Oz1"; */
+"UOC-wT-Oz1.title" = "";
+
+/* Class = "WKInterfaceButton"; title = "5"; ObjectID = "WXs-5Q-Jgb"; */
+"WXs-5Q-Jgb.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "Đ0.00"; ObjectID = "dp3-9o-r55"; */
+"dp3-9o-r55.text" = "";
+
+/* Class = "WKInterfaceLabel"; text = "$4.00"; ObjectID = "g26-mA-1DG"; */
+"g26-mA-1DG.text" = "";
+
+/* Class = "WKInterfaceLabel"; text = "10/12/05"; ObjectID = "g4d-GB-1T5"; */
+"g4d-GB-1T5.text" = "";
+
+/* Class = "WKInterfaceLabel"; text = "$272.87"; ObjectID = "hlq-aV-AYk"; */
+"hlq-aV-AYk.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "7"; ObjectID = "iLE-Pv-XdV"; */
+"iLE-Pv-XdV.title" = "";
+
+/* Class = "WKInterfaceButton"; title = "6"; ObjectID = "jHE-o4-fZF"; */
+"jHE-o4-fZF.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "receive ƀ100, 5 days ago"; ObjectID = "jqM-V4-RYz"; */
+"jqM-V4-RYz.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "9"; ObjectID = "kpX-gK-aLE"; */
+"kpX-gK-aLE.title" = "";
+
+/* Class = "WKInterfaceLabel"; text = "ƀ802,130"; ObjectID = "oAt-M3-LfO"; */
+"oAt-M3-LfO.text" = "";
+
+/* Class = "WKInterfaceLabel"; text = "ƀ1,000,000"; ObjectID = "qrn-xE-8JS"; */
+"qrn-xE-8JS.text[device=watch42mm]" = "";
+
+/* Class = "WKInterfaceLabel"; text = "ƀ1,000,000"; ObjectID = "qrn-xE-8JS"; */
+"qrn-xE-8JS.text" = "";
+
+/* Class = "WKInterfaceButton"; title = "4"; ObjectID = "xFZ-Zc-8wy"; */
+"xFZ-Zc-8wy.title" = "";
