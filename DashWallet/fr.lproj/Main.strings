@@ -2,6 +2,9 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "récupérer un portefeuille";
 
+/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
+
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "devise locale";
 
@@ -9,7 +12,7 @@
 "A4M-yq-26d.normalTitle" = "générer une phrase de récupération";
 
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "créer/récupérer un autre portefeuille";
+"D1b-HB-lKH.text" = "créer ou récupérer un autre portefeuille";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "données de taux de change fournies par";
@@ -36,7 +39,7 @@
 "XJu-9x-HqQ.text" = "montant :";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer et en créer/récupérer un autre. Votre solde actuel reste sur cette phrase.";
+"YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer puis en créer ou en récupérer un autre. Votre solde actuel reste sur cette phrase.";
 
 /* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "adresse depuis le presse-papier";
@@ -77,8 +80,20 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "aucune transaction";
 
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\n\nBasé sur breadwallet\n\ncette application est open source";
+
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "créez un nouveau portefeuille en générant une phrase de récupération";
+
+/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
+"adc-g6-wnP.text" = "Shapeshift en cours";
+
+/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "Instant Send";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
+"x2u-C3-wz6.text" = "état :";
 
 /* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
 "00M-e1-IWY.text" = "";
@@ -97,9 +112,6 @@
 
 /* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
 "55a-IW-IjK.text" = "";
-
-/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "";
@@ -170,9 +182,6 @@
 /* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
 "XV7-2s-hZs.normalTitle" = "";
 
-/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "";
-
 /* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
 "bUC-MN-PXO.normalTitle" = "";
 
@@ -187,9 +196,6 @@
 
 /* Class = "UIButton"; normalTitle = "7"; ObjectID = "jcY-uc-kOc"; */
 "jcY-uc-kOc.normalTitle" = "";
-
-/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "";
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "mpz-vn-jZ1"; */
 "mpz-vn-jZ1.text" = "";
@@ -212,14 +218,8 @@
 /* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
 "uaG-gX-Ias.text" = "";
 
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "";
-
 /* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
 "wd8-oB-KWn.text" = "";
-
-/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "";
 
 /* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
 "xaD-eI-0iC.normalTitle" = "";

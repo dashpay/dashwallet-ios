@@ -1115,17 +1115,13 @@
     XCTAssertEqualObjects(xpub,
                           @"xpub6CAqVZYbGiQCTyzzvvueEoBy8M74VWtPywf2F3zpwbS8AugDSSMSLcewpDaRQxVCxtL4kbTbWb1fzWg2R5933ECsxrEtKBA4gkJu8quduHs",
                           @"[BRBIP32Sequence serializedMasterPublicKey:depth:]");
+    
+    NSData * deserializedMpk = [seq deserializedMasterPublicKey:xpub];
+    
+    XCTAssertEqualObjects(mpk,
+                          deserializedMpk,
+                          @"[BRBIP32Sequence deserializedMasterPublicKey:]");
 }
-
-//- (void)testBIP32SequenceDeserializedMasterPublicKey
-//{
-//    BRBIP32Sequence *seq = [BRBIP32Sequence new];
-//    NSData *mpk = [seq deserializedMasterPublicKey:@"xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw"];
-//
-//    XCTAssertEqualObjects(mpk,
-//                          [seq extendedPublicKeyForAccount:0 fromSeed:@"000102030405060708090a0b0c0d0e0f".hexToData purpose:BIP32_PURPOSE],
-//                          @"[BRBIP32Sequence deserializedMasterPublicKey:]");
-//}
 
 // MARK: - testWallet
 
