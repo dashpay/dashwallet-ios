@@ -94,3 +94,132 @@
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "status:";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
+"00M-e1-IWY.text" = "";
+
+/* Class = "UIButton"; normalTitle = "8"; ObjectID = "24A-83-L7p"; */
+"24A-83-L7p.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "5"; ObjectID = "2Af-Xt-dHE"; */
+"2Af-Xt-dHE.normalTitle" = "";
+
+/* Class = "UILabel"; text = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "2U5-tK-XSF"; */
+"2U5-tK-XSF.text" = "";
+
+/* Class = "UIButton"; normalTitle = "6"; ObjectID = "43w-iO-MOK"; */
+"43w-iO-MOK.normalTitle" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
+"55a-IW-IjK.text" = "";
+
+/* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
+"83W-1O-V9b.normalTitle" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
+"9L3-gM-TgP.title" = "";
+
+/* Class = "UILabel"; text = "($0.00)"; ObjectID = "AIC-c4-j2z"; */
+"AIC-c4-j2z.text" = "";
+
+/* Class = "UILabel"; text = "USD"; ObjectID = "CsQ-fq-mfQ"; */
+"CsQ-fq-mfQ.text" = "";
+
+/* Class = "UIButton"; normalTitle = "."; ObjectID = "Cz1-M6-v6N"; */
+"Cz1-M6-v6N.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "3"; ObjectID = "EnY-9p-vg6"; */
+"EnY-9p-vg6.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "GAm-wQ-UwG"; */
+"GAm-wQ-UwG.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "GWf-4e-jTu"; */
+"GWf-4e-jTu.text" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "HrP-wv-Y1B"; */
+"HrP-wv-Y1B.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "Huq-Vk-LaF"; */
+"Huq-Vk-LaF.title" = "";
+
+/* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
+"Ika-qg-5Cf.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
+"Irz-6P-zvD.normalTitle" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "JNR-nK-iyP"; */
+"JNR-nK-iyP.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "O7K-cF-GAA"; */
+"O7K-cF-GAA.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "OBr-C7-abe"; */
+"OBr-C7-abe.title" = "";
+
+/* Class = "UIButton"; normalTitle = "0"; ObjectID = "OKR-t9-9Lk"; */
+"OKR-t9-9Lk.normalTitle" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "Ofd-q3-a1P"; */
+"Ofd-q3-a1P.text" = "";
+
+/* Class = "UILabel"; text = "($0.00)"; ObjectID = "TBf-3l-ujT"; */
+"TBf-3l-ujT.text" = "";
+
+/* Class = "UIButton"; normalTitle = "4"; ObjectID = "VQH-pt-DQg"; */
+"VQH-pt-DQg.normalTitle" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "WHQ-zW-IjD"; */
+"WHQ-zW-IjD.text" = "";
+
+/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "WSe-0v-Fha"; */
+"WSe-0v-Fha.normalTitle" = "";
+
+/* Class = "UILabel"; text = "id:"; ObjectID = "WsQ-ej-Wh4"; */
+"WsQ-ej-Wh4.text" = "";
+
+/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
+"XV7-2s-hZs.normalTitle" = "";
+
+/* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
+"bUC-MN-PXO.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
+"fVX-tM-tZx.text" = "";
+
+/* Class = "UILabel"; text = "subtitle"; ObjectID = "gZx-fI-siU"; */
+"gZx-fI-siU.text" = "";
+
+/* Class = "UIBarButtonItem"; title = " "; ObjectID = "hWS-2G-hHE"; */
+"hWS-2G-hHE.title" = "";
+
+/* Class = "UIButton"; normalTitle = "7"; ObjectID = "jcY-uc-kOc"; */
+"jcY-uc-kOc.normalTitle" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "mpz-vn-jZ1"; */
+"mpz-vn-jZ1.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "mxS-i4-y1n"; */
+"mxS-i4-y1n.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "ncN-gc-vpQ"; */
+"ncN-gc-vpQ.text" = "";
+
+/* Class = "UILabel"; text = "D 0.00"; ObjectID = "o24-a7-ayU"; */
+"o24-a7-ayU.text" = "";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "pXc-8D-8Gh"; */
+"pXc-8D-8Gh.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "qNV-Ka-14n"; */
+"qNV-Ka-14n.text" = "";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
+"uaG-gX-Ias.text" = "";
+
+/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
+"wd8-oB-KWn.text" = "";
+
+/* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
+"xaD-eI-0iC.normalTitle" = "";
