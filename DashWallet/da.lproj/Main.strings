@@ -125,6 +125,9 @@
 /* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
 "Ika-qg-5Cf.normalTitle" = "9";
 
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:";
+
 /* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
 "00M-e1-IWY.text" = "";
 
@@ -217,9 +220,6 @@
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
 "uaG-gX-Ias.text" = "";
-
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "";
 
 /* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
 "wd8-oB-KWn.text" = "";
