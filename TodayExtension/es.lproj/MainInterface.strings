@@ -1,15 +1,15 @@
 
 /* Class = "UILabel"; text = "scan QR code"; ObjectID = "JgG-Ah-UZk"; */
-"JgG-Ah-UZk.text" = "escanear código QR";
+"JgG-Ah-UZk.text" = "Escanear código QR";
 
 /* Class = "UILabel"; text = "receive"; ObjectID = "KJN-zr-IQB"; */
-"KJN-zr-IQB.text" = "recibir";
+"KJN-zr-IQB.text" = "Recibir";
 
 /* Class = "UILabel"; text = "send"; ObjectID = "QMM-JV-cTG"; */
-"QMM-JV-cTG.text" = "enviar";
+"QMM-JV-cTG.text" = "Enviar";
 
 /* Class = "UIButton"; normalTitle = "setup wallet"; ObjectID = "fgE-Q8-uG8"; */
-"fgE-Q8-uG8.normalTitle" = "nueva cartera";
+"fgE-Q8-uG8.normalTitle" = "Configurar cartera";
 
 /* Class = "UILabel"; text = "Label"; ObjectID = "gQm-B2-ZXE"; */
 "gQm-B2-ZXE.text" = "";
