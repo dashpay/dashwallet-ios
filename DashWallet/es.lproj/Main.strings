@@ -14,7 +14,7 @@
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "comenzar/recuperar otra cartera";
 
-/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
+/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "datos de tasa de cambio proporcionados por\nbitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
@@ -32,7 +32,7 @@
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "sin conexión";
 
-/* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
+/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
 "W8m-Eh-Nf9.title" = "Configuración";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
@@ -41,10 +41,10 @@
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "Introduzca esta frase de recuperación de cartera para borrarla y crear/recuperar otra. Su saldo actual se conserva en esta frase.";
 
-/* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
+/* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "pagar a la dirección del portapapeles";
 
-/* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
+/* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "escanear código QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
@@ -65,16 +65,13 @@
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "confirmar:";
 
-/* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
+/* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "enviar dinero:";
-
-/* Class = "UILabel"; text = "app support:"; ObjectID = "lYb-eg-NfF"; */
-"lYb-eg-NfF.text" = "soporte de la aplicación:";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "frase de recuperación:";
 
-/* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
+/* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
 "qel-3J-2VC.text" = "recibir dinero:";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
@@ -83,7 +80,7 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "ninguna transacción";
 
-/* Class = "UILabel"; text = "dashwallet %ver%%net%\ncopyright © 2017 dash"; ObjectID = "uvz-hk-Nr4"; */
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
 "uvz-hk-Nr4.text" = "dashwallet v%ver %% net%\nderechos reservados © 2017 Dash Foundation\nBasado en breadwallet\nesta aplicación es de código abierto";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
@@ -142,9 +139,6 @@
 
 /* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
 "55a-IW-IjK.text" = "";
-
-/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "";
 
 /* Class = "UIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
 "9L3-gM-TgP.title" = "";
@@ -226,9 +220,6 @@
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
 "uaG-gX-Ias.text" = "";
-
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "";
 
 /* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
 "wd8-oB-KWn.text" = "";
