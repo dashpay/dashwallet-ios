@@ -2,6 +2,9 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "recuperare il portafoglio";
 
+/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
+
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "valuta locale";
 
@@ -16,6 +19,9 @@
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "se perdi il tuo telefono, sarà necessario questa frase per recuperare il tuo portafoglio";
+
+/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
+"FjB-H2-BnK.text" = "inviato";
 
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "ricordamelo più tardi";
@@ -50,6 +56,9 @@
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "se perdi il tuo telefono, sarà necessario questa frase per recuperare il tuo portafoglio";
 
+/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
+"eJ2-5h-DO2.text" = "non confermato";
+
 /* Class = "UIButton"; normalTitle = "show"; ObjectID = "efL-Cj-Aho"; */
 "efL-Cj-Aho.normalTitle" = "visualizza";
 
@@ -71,20 +80,20 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "nessuna transazione";
 
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\n\nBasato sul breadwallet\n\nquesta app è open source";
+
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "crea un nuovo portafoglio generando una frase di recupero del portafoglio";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift in corso";
 
 /* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
 "lbm-03-nu4.text" = "Instant Send";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
-
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:";
+"x2u-C3-wz6.text" = "stato:";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
@@ -131,9 +140,6 @@
 /* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
 "55a-IW-IjK.text" = "";
 
-/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "";
-
 /* Class = "UIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
 "9L3-gM-TgP.title" = "";
 
@@ -142,9 +148,6 @@
 
 /* Class = "UILabel"; text = "USD"; ObjectID = "CsQ-fq-mfQ"; */
 "CsQ-fq-mfQ.text" = "";
-
-/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "";
 
 /* Class = "UILabel"; text = "Detail"; ObjectID = "GAm-wQ-UwG"; */
 "GAm-wQ-UwG.text" = "";
@@ -187,9 +190,6 @@
 
 /* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
 "XV7-2s-hZs.normalTitle" = "";
-
-/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "";
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
 "fVX-tM-tZx.text" = "";
