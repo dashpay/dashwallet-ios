@@ -417,6 +417,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (_wallet) return NO;
     if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error) || error) return NO;
     if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, &error) || error) return NO;
+    return YES;
+}
+
+- (BOOL)noOldWallet
+{
+    NSError *error = nil;
+    if (_wallet) return NO;
     if (getKeychainData(MASTER_PUBKEY_KEY_BIP44, &error) || error) return NO;
     if (getKeychainData(MASTER_PUBKEY_KEY_BIP32, &error) || error) return NO;
     return YES;

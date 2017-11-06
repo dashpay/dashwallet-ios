@@ -553,7 +553,7 @@
         manager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     
-    if (manager.noWallet) {
+    if (manager.noWallet && manager.noOldWallet) {
         if (! manager.passcodeEnabled) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)

@@ -140,7 +140,7 @@
                                                    preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
                                              actionWithTitle:NSLocalizedString(@"ok", nil)
-                                             style:UIAlertActionStyleDestructive
+                                             style:UIAlertActionStyleCancel
                                              handler:^(UIAlertAction * action) {
                                                  
                                              }];
