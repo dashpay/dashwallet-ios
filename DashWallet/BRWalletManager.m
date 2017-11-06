@@ -515,6 +515,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         setKeychainData(nil, CREATION_TIME_KEY, NO);
         setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
         setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
+        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO); //for sanity
+        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO); //for sanity
         setKeychainData(nil, SPEND_LIMIT_KEY, NO);
         setKeychainData(nil, PIN_KEY, NO);
         setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
@@ -552,8 +554,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             masterPubKeyBIP44 = [NSData data]; // watch only wallet
             masterPubKeyBIP32 = [NSData data];
         }
-        setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
-        setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
+        if (seedPhrase) {
+            setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
+            setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
+        }
         _wallet = nil;
     }
     
