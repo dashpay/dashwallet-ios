@@ -14,7 +14,7 @@
 /* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "生成/找回另一个钱包";
 
-/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
+/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "由 bitpay.com/rates 提供的汇率数据";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
@@ -32,19 +32,19 @@
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "未连接";
 
-/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
+/* Class = "UINavigationItem"; title = "settings"; ObjectID = "W8m-Eh-Nf9"; */
 "W8m-Eh-Nf9.title" = "设置";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
 "XJu-9x-HqQ.text" = "数量：";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "输入这个钱包的恢复密语来清除它，并启动或者找回另一个钱包。您当前的余额可被这个密语恢复。";
+"YC6-rN-4P5.text" = "输入这个钱包的恢复密语来清除它，并启动或者找回另一个钱包。你当前的余额保留在这个恢复密语中。";
 
-/* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
+/* Class = "UIButton"; normalTitle = "pay address from clipboard"; ObjectID = "bfj-xS-5rN"; */
 "bfj-xS-5rN.normalTitle" = "以剪贴板中地址支付";
 
-/* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
+/* Class = "UIButton"; normalTitle = "scan QR code"; ObjectID = "ce6-Wi-wk4"; */
 "ce6-Wi-wk4.normalTitle" = "扫描二维码";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
@@ -54,7 +54,7 @@
 "dOa-zm-TDG.normalTitle" = "新的钱包";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "如果你丢失了你的手机，你会需要这个密语来找回你的钱包";
+"dX6-jg-5IA.text" = "如果你丢失了你的手机，你会需要这个密语来找回你的钱包。";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
 "eJ2-5h-DO2.text" = "未确认";
@@ -65,13 +65,16 @@
 /* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "请确认：";
 
-/* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
+/* Class = "UILabel"; text = "send money:"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "发送达世币";
+
+/* Class = "UILabel"; text = "app support:"; ObjectID = "lYb-eg-NfF"; */
+"lYb-eg-NfF.text" = "app支持：";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "恢复密语：";
 
-/* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
+/* Class = "UILabel"; text = "receive money:"; ObjectID = "qel-3J-2VC"; */
 "qel-3J-2VC.text" = "接收达世币";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
@@ -80,20 +83,20 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "没有交易";
 
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\n版权 © 2017 达世币基金会\n\n基于breadwallet开发\n\n本app是开源软件";
+/* Class = "UILabel"; text = "dashwallet %ver%%net%\ncopyright © 2017 dash"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "达世币钱包 v%ver%%net%\n版权 © 2017 达世币基金会\n\n基于breadwallet开发\n\n本app是开源软件";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "通过生成一个钱包恢复密语来开启一个新的钱包";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift转换中";
 
 /* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Instant Send";
+"lbm-03-nu4.text" = "即时支付";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
+"x2u-C3-wz6.text" = "状态：";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
