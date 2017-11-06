@@ -87,13 +87,13 @@
 "wDZ-DN-szv.text" = "crear una cartera nueva mediante la generación de una frase de recuperación";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift en proceso";
 
 /* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Instant Send";
+"lbm-03-nu4.text" = "Envío instantáneo";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
+"x2u-C3-wz6.text" = "Estado:";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
