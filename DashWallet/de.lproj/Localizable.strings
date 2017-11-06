@@ -252,6 +252,9 @@
 "id:" = "ID:";
 
 /* No comment provided by engineer. */
+"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
+
+/* No comment provided by engineer. */
 "ignore" = "ignorieren";
 
 /* No comment provided by engineer. */
@@ -520,6 +523,9 @@
 
 /* No comment provided by engineer. */
 "this private key is empty" = "Dieser private Schlüssel ist ohne Guthaben";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
 
 /* No comment provided by engineer. */
 "to:" = "An:";

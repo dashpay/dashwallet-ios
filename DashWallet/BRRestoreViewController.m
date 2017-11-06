@@ -134,50 +134,20 @@
                 [actionSheet addAction:wipeButton];
                 [self presentViewController:actionSheet animated:YES completion:nil];
             } else {
-                [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
-                    if ([[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:44]
-                         isEqual:manager.extendedBIP44PublicKey] || [[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
-                                                              isEqual:manager.extendedBIP44PublicKey] || [seedPhrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
-                        [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
-                        UIAlertController * actionSheet = [UIAlertController
-                                                           alertControllerWithTitle:nil
-                                                           message:nil
-                                                           preferredStyle:UIAlertControllerStyleActionSheet];
-                        UIAlertAction* cancelButton = [UIAlertAction
-                                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                       style:UIAlertActionStyleCancel
-                                                       handler:^(UIAlertAction * action) {
-                                                           [self.textView becomeFirstResponder];
-                                                       }];
-                        UIAlertAction* wipeButton = [UIAlertAction
-                                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
-                                                     style:UIAlertActionStyleDestructive
-                                                     handler:^(UIAlertAction * action) {
-                                                         [self wipeWallet];
-                                                     }];
-                        [actionSheet addAction:cancelButton];
-                        [actionSheet addAction:wipeButton];
-                        [self presentViewController:actionSheet animated:YES completion:nil];
-                    }
-                    else if (seedPhrase) {
-                        [BREventManager saveEvent:@"restore:wipe_bad_recovery_phrase"];
-                        UIAlertController * alert = [UIAlertController
-                                                     alertControllerWithTitle:@""
-                                                     message:NSLocalizedString(@"recovery phrase doesn't match", nil)
-                                                     preferredStyle:UIAlertControllerStyleAlert];
-                        UIAlertAction* okButton = [UIAlertAction
-                                                   actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                   style:UIAlertActionStyleCancel
-                                                   handler:^(UIAlertAction * action) {
-                                                       [self.textView becomeFirstResponder];
-                                                   }];
-                        [alert addAction:okButton];
-                        [self presentViewController:alert animated:YES completion:nil];
-                    }
-                    else [self.textView becomeFirstResponder];
-                }];
+                UIAlertController * actionSheet = [UIAlertController
+                                                   alertControllerWithTitle:NSLocalizedString(@"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase", nil)
+                                                   message:NSLocalizedString(@"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"", nil)
+                                                   preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                             actionWithTitle:NSLocalizedString(@"ok", nil)
+                                             style:UIAlertActionStyleDestructive
+                                             handler:^(UIAlertAction * action) {
+                                                 
+                                             }];
+                [actionSheet addAction:okButton];
+                [self presentViewController:actionSheet animated:YES completion:nil];
             }
-        } else if ([phrase isEqual:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) {
+        } else if ([[phrase lowercaseString] isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) {
                 [BREventManager saveEvent:@"restore:wipe_full_wallet"];
             UIAlertController * actionSheet = [UIAlertController
                                                alertControllerWithTitle:nil
@@ -199,6 +169,49 @@
             [actionSheet addAction:wipeButton];
             [self presentViewController:actionSheet animated:YES completion:nil];
             return;
+        } else {
+            [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                if ([[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:seedPhrase withPassphrase:nil] purpose:44]
+                     isEqual:manager.extendedBIP44PublicKey] || [[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
+                                                                 isEqual:manager.extendedBIP44PublicKey] || [seedPhrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
+                    [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
+                    UIAlertController * actionSheet = [UIAlertController
+                                                       alertControllerWithTitle:nil
+                                                       message:nil
+                                                       preferredStyle:UIAlertControllerStyleActionSheet];
+                    UIAlertAction* cancelButton = [UIAlertAction
+                                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                                   style:UIAlertActionStyleCancel
+                                                   handler:^(UIAlertAction * action) {
+                                                       [self.textView becomeFirstResponder];
+                                                   }];
+                    UIAlertAction* wipeButton = [UIAlertAction
+                                                 actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                                 style:UIAlertActionStyleDestructive
+                                                 handler:^(UIAlertAction * action) {
+                                                     [self wipeWallet];
+                                                 }];
+                    [actionSheet addAction:cancelButton];
+                    [actionSheet addAction:wipeButton];
+                    [self presentViewController:actionSheet animated:YES completion:nil];
+                }
+                else if (seedPhrase) {
+                    [BREventManager saveEvent:@"restore:wipe_bad_recovery_phrase"];
+                    UIAlertController * alert = [UIAlertController
+                                                 alertControllerWithTitle:@""
+                                                 message:NSLocalizedString(@"recovery phrase doesn't match", nil)
+                                                 preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* okButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                                   [self.textView becomeFirstResponder];
+                                               }];
+                    [alert addAction:okButton];
+                    [self presentViewController:alert animated:YES completion:nil];
+                }
+                else [self.textView becomeFirstResponder];
+            }];
         }
     }
 }
@@ -281,7 +294,7 @@
             break;
         }
 
-        if ([phrase isEqualToString:@"wipe"] || [phrase isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) { // shortcut word to force the wipe option to appear
+        if ([phrase isEqualToString:@"wipe"] || [[phrase lowercaseString] isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
