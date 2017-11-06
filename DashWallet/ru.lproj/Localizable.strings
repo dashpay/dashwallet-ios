@@ -1,12 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
+" and " = " и ";
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ означает «бит». %2$@ составляет 1 dash.";
-
-/* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ означает «mDASH». %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ необходим доступ к камере";
@@ -15,7 +12,7 @@
 "%@\n\nbalance: %@ (%@)" = "%1$@\n\nбаланс: %2$@ (%3$@)";
 
 /* No comment provided by engineer. */
-"%d confirmations" = "подтверждений: %d";
+"%d confirmations" = "Подтверждений: %d";
 
 /* No comment provided by engineer. */
 ", " = ", ";
@@ -30,244 +27,223 @@
 "\"%@\" is not a recovery phrase word" = "«%@» не является словом из фразы восстановления";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\nвсего %1$@ (%2$@)";
+"\n         total %@ (%@)" = "\nИтого: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nесли Вы потеряете свой телефон, вам понадобится эта фраза, чтобы восстановить Ваш кошелек";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nВам понадобится эта фраза, чтобы восстановить Ваш кошелек, если Вы потеряете свой телефон";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nосталась 1 попытка\n";
+"\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n сумма: %1$@ (%2$@)";
+"\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nКод доступа необходим для защиты Вашего кошелька. Перейдите в настройки и включите код доступа, чтобы продолжить.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nЭТОТ АДРЕС УЖЕ ИСПОЛЬЗОВАН\n\ndash-адреса предназначены только для одного использования\n\nповторное использование уменьшает Вашу приватность и приватность получателя и может привести к потере денег, если получатель не контролирует адрес";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС УЖЕ ИСПОЛЬЗОВАН\nАдреса Dash преднозначены для разового использования\n\nповторное использование адреса снижает приватность как для Вас, так и для получателя и может привести к потере средств, если получатель больше не контролирует этот адрес";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nРазрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nНЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления,\nиначе они смогут потратить Ваши DASH.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nНЕ позволяйте никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши dash.\n";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nНЕ ДЕЛАЙТЕ скриншот.\nСкриншоты видны другим приложениям\nи устройствам.\n";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "НЕ ДЕЛАЙТЕ скриншот.\nСкриншоты видны другим приложениям и устройствам.";
+"\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nкомиссия сети: +%1$@ (%2$@)";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНИКОГДА не вводите Вашу фразу восстановления\nв менеджеры паролей или другие приложения.\nДругие устройства могут быть инфицированы.\n";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.\n";
+"\ntry again in %@" = "\nПопробуйте еще раз через %@";
 
 /* No comment provided by engineer. */
-"\ntry again in %@" = "\ntry again in %@";
+"\ntry again in %d %@" = "\nПопробуйте еще раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nпопробуйте еще раз через %1$d %2$@";
+"about" = "О программе";
 
 /* No comment provided by engineer. */
-"about" = "о программе";
+"always require passcode" = "Всегда требовать код доступа";
 
 /* No comment provided by engineer. */
-"always require passcode" = "всегда требовать пароль";
+"amount too small" = "Сумма слишком мала";
 
 /* No comment provided by engineer. */
-"amount too small" = "сумма слишком мала";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложение %@ хочет получить Ваш основной публичный ключ. Это может быть использовано для отслеживания Вашего кошелька, но не для отправки Ваших DASH.";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
+"bad password, try again" = "Некорректный пароль, попробуйте еще раз";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "некорректный пароль, попробуйте еще раз";
+"bad payment request" = "Некорректный платежный запрос";
 
 /* No comment provided by engineer. */
-"bad payment request" = "некорректный платежный запрос";
+"bad payment request URL" = "Некорректный платежный URL-запрос";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "некорректный платежный URL-запрос";
+"bad payment URL" = "Некорректный платежный URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "некорректный платежный URL";
+"bad recovery phrase" = "Некорректная фраза восстановления";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "некорректная фраза восстановления";
+"Bitcoin address (shapeshift)" = "Адрес Bitcoin (ShapeShift)";
 
 /* No comment provided by engineer. */
-"bad signature" = "некорректная подпись";
+"bitcoin payments can't be less than %@" = "Платеж в Bitcoin не может быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
+"block #%d of %d" = "Блок #%1$d из %2$d";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
+"Buy Dash" = "Купить DASH";
 
 /* No comment provided by engineer. */
-"block #%d of %d" = "блок #%1$d в %2$d";
+"Buy dash in dashwallet!" = "Купить DASH в dashwallet!";
 
 /* No comment provided by engineer. */
-"Buy Dash" = "Buy Dash";
+"cancel" = "Отменить";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+"change" = "Изменить";
 
 /* No comment provided by engineer. */
-"cancel" = "отменить";
+"change passcode" = "Изменить код доступа";
 
 /* No comment provided by engineer. */
-"change" = "изменить";
+"change payment amount?" = "Изменить сумму платежа?";
 
 /* No comment provided by engineer. */
-"change passcode" = "изменить пароль";
+"checking address balance..." = "Проверка баланса адреса...";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "изменить сумму платежа?";
+"checking private key balance..." = "Проверка баланса закрытого ключа...";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "сменить пароль к кошельку";
+"choose passcode for %@" = "Придумайте код доступа для %@";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "проверка баланса...";
+"clear" = "Удалить";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "проверка баланса по закрытому ключу...";
+"clear trusted node?" = "Удалить доверенный узел?";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "введите новый пароль для %@";
+"clipboard doesn't contain a valid dash or bitcoin address" = "Буфер обмена не содержит корректного адреса Dash или Bitcoin";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "придумайте пароль к кошельку";
-
-/* No comment provided by engineer. */
-"clear" = "clear";
-
-/* No comment provided by engineer. */
-"clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "буфер обмена не содержит действительный dash адрес";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
-"close app" = "закрыть программу";
-
-/* confirm */
-"confirm" = "confirm";
+"close app" = "Закрыть программу";
 
 /* Confirm */
-"Confirm" = "Confirm";
+"Confirm" = "Подтвердить";
+
+/* confirm */
+"confirm" = "Подтвердить";
 
 /* No comment provided by engineer. */
-"CONFIRM WIPE" = "ПОДТВЕРДИТЕ УДАЛЕНИЕ";
+"confirmed in block #%d" = "Подтверждено в блоке #%d";
 
 /* No comment provided by engineer. */
-"confirmed in block #%d" = "подтверждено в блоке #%d";
+"connect timeout" = "Время ожидания подключения";
 
 /* No comment provided by engineer. */
-"connect timeout" = "время ожидания подключения";
+"copied" = "Скопировано";
 
 /* No comment provided by engineer. */
-"copied" = "копирован(а)";
+"copy" = "Скопировать";
 
 /* No comment provided by engineer. */
-"copy" = "скопировать";
+"copy address to clipboard" = "Скопировать адрес в буфер обмена";
 
 /* No comment provided by engineer. */
-"copy address to clipboard" = "скопировать адрес в буфер обмена";
+"copy request to clipboard" = "Скопировать запрос в буфер обмена";
 
 /* No comment provided by engineer. */
-"copy request to clipboard" = "скопировать запрос в буфер обмена";
+"copy wallet addresses to clipboard?" = "Скопировать адреса кошелька в буфер обмена?";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "скопировать адреса кошельков?";
+"couldn't check address balance" = "Не удалось проверить баланс";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "не удалось проверить баланс";
+"couldn't make payment" = "Не удалось совершить платёж";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "не удалось совершить платёж";
+"couldn't sweep balance" = "Не получилось перенести баланс";
 
 /* No comment provided by engineer. */
-"couldn't sweep balance" = "не получилось перенести баланс";
+"couldn't transmit payment to dash network" = "Не удалось передать платёж в сеть Dash";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "не удалось передать платёж в сеть dash";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "текущий пароль";
-
-/* No comment provided by engineer. */
-"Dash address" = "Dash-адрес";
+"Dash address" = "Адрес Dash";
 
 /* No comment provided by engineer. */
 "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Адреса Dash также могут быть скопированы в буфер обмена. Dash-адрес всегда начинается с «X» или «7».";
 
 /* No comment provided by engineer. */
-"dash network fee" = "комиссия сети dash";
+"dash network fee" = "Комиссия сети Dash";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash-платежи не могут быть меньше, чем %@";
+"dash payments can't be less than %@" = "Платежи в Dash не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "dash-транзакция не подписана";
+"dash transaction not signed" = "Транзакция не подписана";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "выходы dash-транзакций не могут быть меньше, чем %@";
+"dash transaction outputs can't be less than %@" = "Выходы транзакции не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши DASH).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши dash). Немедленно удалите этот кошелёк и восстановите его в безопасном месте.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши DASH). Немедленно удалите этот кошелёк и восстановите его в безопасном месте.";
 
 /* No comment provided by engineer. */
-"do it later" = "отложить на потом";
+"do it later" = "Отложить на потом";
 
 /* No comment provided by engineer. */
-"done" = "готово";
+"done" = "Готово";
 
 /* No comment provided by engineer. */
-"double spend" = "двойное расходование";
+"double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
-"email not configured" = "почта не настроена";
+"email not configured" = "Почта не настроена";
 
 /* No comment provided by engineer. */
-"enable" = "enable";
+"enable" = "Включить";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"enable receive notifications" = "Уведомлять о получении";
 
 /* No comment provided by engineer. */
-"enter" = "enter";
+"enter" = "Ввести";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "введите старый пароль";
+"enter old passcode" = "Введите старый пароль";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "ошибка подписания dash-транзакции";
+"error signing dash transaction" = "Ошибка подписания транзакции";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "ошибка подписания транзакции";
+"error signing transaction" = "Ошибка подписания транзакции";
 
 /* No comment provided by engineer. */
-"exit" = "exit";
+"exit" = "Выход";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "failed wallet update";
+"failed wallet update" = "Не удалось обновить кошелек";
 
 /* No comment provided by engineer. */
-"from:" = "от:";
+"from:" = "От:";
 
 /* No comment provided by engineer. */
 "hour" = "час";
@@ -279,34 +255,31 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
+"ignore" = "Игнорировать";
 
 /* No comment provided by engineer. */
-"ignore" = "игнорировать";
-
-/* No comment provided by engineer. */
-"import private key" = "импортировать закрытый ключ";
+"import private key" = "Импортировать закрытый ключ";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ВАЖНО";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
+"instant payment" = "Мгновенный платеж";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "недостаточно средств";
+"insufficient funds" = "Недостаточно средств";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "недостаточно средств для комиссии сети dash";
+"insufficient funds for dash network fee" = "Недостаточно средств для оплаты комиссии сети Dash";
 
 /* No comment provided by engineer. */
 "INVALID" = "НЕКОРРЕКТНО";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR код, чтобы получить Ваш dash-адрес. Кто угодно сможет отправить dash на Ваш кошелек путём передачи их на Ваш адрес.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR-код, чтобы получить Ваш адрес Dash. Кто угодно сможет отправить DASH на Ваш кошелек путём передачи их на Ваш адрес.";
 
 /* No comment provided by engineer. */
 "minute" = "минут";
@@ -315,136 +288,130 @@
 "minutes" = "минуты";
 
 /* No comment provided by engineer. */
-"missing certificate" = "отсутствует сертификат";
+"missing certificate" = "Отсутствует сертификат";
 
 /* No comment provided by engineer. */
 "more..." = "ещё...";
 
 /* No comment provided by engineer. */
-"moved" = "перемещено";
+"moved" = "Перемещено";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "новый пароль";
+"next, write down your recovery phrase" = "Теперь запишите Вашу фразу восстановления";
 
 /* No comment provided by engineer. */
-"next, write down your recovery phrase" = "теперь запишите вашу фразу восстановления";
+"no exchange rate data" = "Не удалось получить курсы обмена";
 
 /* No comment provided by engineer. */
-"no exchange rate data" = "не удалось получить курсы обмена";
+"no peers found" = "Узлы не найдены";
 
 /* No comment provided by engineer. */
-"no peers found" = "узлы не найдены";
+"not a dash or bitcoin QR code" = "Не является QR-кодом для Dash или Bitcoin";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "не dash или bitcoin QR-код";
+"not a valid bitcoin address" = "Некорректный адрес Bitcoin";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "некорректный bitcoin-адрес";
+"not a valid dash address" = "Некорректный адрес Dash";
 
 /* No comment provided by engineer. */
-"not a valid dash address" = "некорректный dash-адрес";
+"not a valid dash or bitcoin address" = "Некорректный адрес Dash или Bitcoin";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "некорректный dash или bitcoin адрес";
+"not a valid private key" = "Некорректный закрытый ключ";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "некорректный закрытый ключ";
+"not connected to the dash network" = "Нет подключения к сети Dash";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "не подключено к сети dash";
+"ok" = "ок";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "ОК";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"passcode" = "Код доступа";
 
 /* No comment provided by engineer. */
-"passcode" = "код доступа";
+"passcode for %@" = "Код доступа для %@";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "код доступа для %@";
+"password" = "Пароль";
 
 /* No comment provided by engineer. */
-"password" = "пароль";
+"password protected key" = "Защищённый паролем ключ";
 
 /* No comment provided by engineer. */
-"password protected key" = "защищённый паролем ключ";
+"pay" = "Оплатить";
 
 /* No comment provided by engineer. */
-"pay" = "оплатить";
+"payee identity isn't certified" = "Сертификат личности получателя некорректен";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "сертификат личности получателя некорректен";
+"payment address" = "Адрес оплаты";
 
 /* No comment provided by engineer. */
-"payment address" = "адрес оплаты";
+"payment output" = "Выход оплаты";
 
 /* No comment provided by engineer. */
-"payment output" = " выход оплаты";
+"pending" = "Ожидание";
 
 /* No comment provided by engineer. */
-"pending" = "ожидание";
+"please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "Курс: %@ = %@\nОбновлено: %@\nБлок #%d из %d\nПодключенных узлов: %d\nТекущий узел: %@";
 
 /* No comment provided by engineer. */
-"post-dated" = "чек с будущей датой";
+"Receive dash at this address: %@" = "Получить DASH на этот адрес: %@";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"received" = "Получено";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "Получить dash на этот адрес: %@";
+"received %@ (%@)" = "Получено %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received" = "получено";
+"recovery phrase" = "Фраза восстановления";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "получено %1$@ (%2$@)";
+"recovery phrase doesn't match" = "Фраза восстановления не подходит";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "фраза восстановления";
+"recovery phrase must have %d words" = "Фраза восстановления должна состоять из %d слов";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "фразы восстановления не совпадают";
+"reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"recovery phrase must have %d words" = "фраза восстановления должна состоять из %d слов";
+"request" = "Запрос";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "уменьшить сумму платежа на %1$@ (%2$@)?";
+"request an amount" = "Запросить сумму";
 
 /* No comment provided by engineer. */
-"request" = "запрос";
+"request expired" = "Срок действия запроса истек";
 
 /* No comment provided by engineer. */
-"request an amount" = "запросить сумму";
+"request is for an instant payment but you have disabled instant payments" = "Запрос для мгновенного платежа, но Вы отключили эту опцию";
 
 /* No comment provided by engineer. */
-"request expired" = "срок действия запроса истек";
+"requested network \"%@\" instead of \"%@\"" = "Запросить сеть «%1$@» вместо «%2$@»";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
+"rescan" = "Повторное сканирование";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "запросить сеть «%1$@» вместо «%2$@»";
+"rescan blockchain" = "Пересканировать цепочку блоков";
 
 /* No comment provided by engineer. */
-"rescan" = "повторное сканирование";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Пересканировать цепочку блоков, если вы считаете, что могли пропустить транзакцию или возникли проблемы с отправкой (повторное сканирование может занять несколько минут)";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "пересканировать blockchain";
+"reset" = "Сбросить";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "пересканировать blockchain, если вы считаете, что могли пропустить транзакцию или возникли проблемы отправки (повторное сканирование может занять несколько минут)";
-
-/* No comment provided by engineer. */
-"reset" = "сброс";
-
-/* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить dash-адрес или bitcoin-адрес. Вы можете отправить платеж кому угодно, у кого есть адрес.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить его адрес Dash или Bitcoin. Вы можете отправить платеж любому, у кого есть адрес.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Скриншоты видимы другими приложениями и устройствами. Создайте новую фразу восстановления и держите ее в секрете.";
@@ -453,220 +420,206 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Скриншоты видимы другими приложениями и устройствами. Ваши средства находятся под угрозой. Переведите Ваш баланс на другой кошелёк.";
 
 /* No comment provided by engineer. */
-"second" = "second";
+"second" = "секунда";
 
 /* No comment provided by engineer. */
-"seconds" = "seconds";
+"seconds" = "секунды";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "видели %1$d из %2$d узлов";
+"seen by %d of %d peers" = "Видели %1$d из %2$d узлов";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "Отправить";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) из этого закрытого ключа в ваш кошелёк? Сеть dash получит комиссию в %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) из этого закрытого ключа в ваш кошелёк? Сеть Dash получит комиссию в %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
-"send address as email" = "отправить адрес по почте";
+"send address as email" = "Отправить адрес по почте";
 
 /* No comment provided by engineer. */
-"send address as message" = "отправить адрес в сообщении";
+"send address as message" = "Отправить адрес в сообщении";
 
 /* No comment provided by engineer. */
-"send request as email" = "отправить запрос по почте";
+"send request as email" = "Отправить запрос по почте";
 
 /* No comment provided by engineer. */
-"send request as message" = "отправить запросы в сообщении";
+"send request as message" = "Отправить запрос в сообщении";
 
 /* No comment provided by engineer. */
-"sent" = "отправлено";
+"sent" = "Отправлено";
 
 /* No comment provided by engineer. */
-"sent!" = "отправлено!";
+"sent!" = "Отправлено!";
 
 /* No comment provided by engineer. */
-"set a trusted node" = "set a trusted node";
+"set a trusted node" = "Указать доверенный узел";
 
 /* No comment provided by engineer. */
-"settings" = "настройки";
+"settings" = "Настройки";
 
 /* No comment provided by engineer. */
-"shapeshift bitcoin id:" = "shapeshift bitcoin id:";
+"shapeshift bitcoin id:" = "ShapeShift Bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift failed";
+"shapeshift failed" = "ShapeShift завершился с ошибкой";
 
 /* No comment provided by engineer. */
-"shapeshift status:" = "shapeshift status:";
+"shapeshift status:" = "Статус ShapeShift:";
 
 /* No comment provided by engineer. */
-"shapeshift succeeded" = "shapeshift succeeded";
+"shapeshift succeeded" = "ShapeShift выполнен успешно";
 
 /* No comment provided by engineer. */
-"show" = "показать";
+"show" = "Показать";
 
 /* No comment provided by engineer. */
-"show phrase" = "показать фразу";
+"show phrase" = "Показать фразу";
 
 /* No comment provided by engineer. */
-"sms not currently available" = "сообщения сейчас недоступны";
+"sms not currently available" = "Сообщения сейчас недоступны";
 
 /* No comment provided by engineer. */
-"spent address" = "потраченный адрес";
+"spent address" = "Потраченный адрес";
 
 /* No comment provided by engineer. */
-"spent input" = "потраченный ввод";
+"spent input" = "Потраченный ввод";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Starting Shapeshift!";
+"Starting Shapeshift!" = "Начинаю ShapeShift!";
 
 /* No comment provided by engineer. */
-"status:" = "статус:";
+"status:" = "Cтатус:";
 
 /* No comment provided by engineer. */
-"swept!" = "переведено!";
+"swept!" = "Переведено!";
 
 /* No comment provided by engineer. */
-"syncing..." = "синхронизирую...";
+"Syncing:" = "Синхронизация:";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Syncing:";
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "Сумма, которую Вы хотите провести через ShapeShift, слишком велика. Пожалуйста, введите сумму менее %@";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "Сумма, которую Вы хотите провести через ShapeShift, слишком мала. Пожалуйста, введите сумму более %@";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "The amount you wanted to shapeshift is too low, please input a value over %@";
+"the app will now close" = "Приложение сейчас закроется";
 
 /* No comment provided by engineer. */
-"the app will now close" = "приложение сейчас закроется";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Это Ваш адрес Dash. Нажмите, чтобы скопировать его или отправить его по электронной почте или SMS. Адрес будет меняться каждый раз, когда Вы получаете средства, но старые адреса останутся работоспособными.";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Это Ваш dash-адрес. Нажмите, чтобы скопировать его или отправить его по электронной почте или SMS. Адрес будет меняться каждый раз, когда Вы получаете средства, но старые адреса останутся работоспособными.";
+"This is your dash balance." = "Это Ваш баланс Dash.";
 
 /* No comment provided by engineer. */
-"This is your dash balance." = "This is your dash balance.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Это Ваш баланс Dash. Dash является валютой. Обменный курс определяется рынком.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Это Ваш баланс dash. Dash является валютой. Валютный курс меняется в соответствии с рынком.";
+"this payment address is already in your wallet" = "Этот адрес уже находится в вашем кошельке";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "этот адрес уже находится в вашем бумажнике";
+"this private key is already in your wallet" = "Этот закрытый ключ уже находится в вашем кошельке";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "этот закрытый ключ уже находится в вашем бумажнике";
+"this private key is empty" = "Этот закрытый ключ пустой";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "этот закрытый ключ пустой";
+"to:" = "Кому:";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+"to: %@" = "Кому: %@";
 
 /* No comment provided by engineer. */
-"to:" = "кому:";
+"to: %@ (via Shapeshift)" = "Кому: %@ (через ShapeShift)";
 
 /* No comment provided by engineer. */
-"to: %@" = "кому: %@";
+"touch id limit" = "Лимит Touch ID";
 
 /* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
+"touch id spending limit" = "Лимит расходов Touch ID";
 
 /* No comment provided by engineer. */
-"touch id limit" = "лимит Touch ID";
+"transaction canceled, network timeout" = "Транзакция отменена, время ожидания сети истекло";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "лимит расходов по Touch ID";
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Комиссия за эту транзакцию будет больше, чем сумма на этом приватном ключе (из-за маленьких депозитов)";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "транзакция отменена, время ожидания сети истекло";
+"transaction history" = "История транзакций";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "комиссия за эту транзакцию будет стоить больше, чем сейчас есть на этом приватном ключе (из-за маленьких депозитов)";
+"transaction rejected" = "Транзакция отклонена";
 
 /* No comment provided by engineer. */
-"transaction history" = "история транзакций";
+"trust" = "Доверять";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "транзакция с будущим временем";
+"Try It!" = "Попробовать!";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "транзакция отклонена";
+"turn device passcode on" = "Включить код доступа";
 
 /* No comment provided by engineer. */
-"trust" = "trust";
+"Unable to get new qr code" = "Не удалось получить новый QR-код";
 
 /* No comment provided by engineer. */
-"Try It!" = "Try It!";
+"unexpected response from %@" = "Неожиданный ответ от %@";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "включить код доступа";
+"unknown address" = "Неизвестный адрес";
 
 /* No comment provided by engineer. */
-"Unable to get new qr code" = "Unable to get new qr code";
+"unrecognized address" = "Нераспознанный адрес";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "неожиданный ответ от %@";
+"unsupported or corrupted document" = "Неподдерживаемый или поврежденный документ";
 
 /* No comment provided by engineer. */
-"unknown address" = "неизвестный адрес";
+"unsupported signature type" = "Тип подписи не поддерживается";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "нераспознанный адрес";
+"unsupported url" = "Неподдерживаемый URL-адрес";
 
 /* No comment provided by engineer. */
-"unsupported or corrupted document" = "неподдерживаемый или поврежденный документ";
+"untrusted certificate" = "Ненадёжный сертификат";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "тип подписи не поддерживается";
-
-/* No comment provided by engineer. */
-"unsupported url" = "неподдерживаемый URL-адрес";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "ненадёжный сертификат";
-
-/* No comment provided by engineer. */
-"unverified" = "неподтверждённый";
+"unverified" = "Неподтверждённый";
 
 /* Updating Price */
-"Updating Price" = "Updating Price";
+"Updating Price" = "Обновление цены";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "проверено, ожидание подтверждения";
+"verified, waiting for confirmation" = "Проверено, ожидание подтверждения";
 
 /* No comment provided by engineer. */
-"verify passcode" = "подтвердите код";
+"verify passcode" = "Подтвердите код";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "подтвердите пароль";
+"wallet address" = "Адрес кошелька";
 
 /* No comment provided by engineer. */
-"wallet address" = "адрес кошелька";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "кошелек отключен";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "пароль к кошельку";
+"wallet disabled" = "Кошелек отключен";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"wipe" = "стереть";
+"wipe" = "Стереть";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ЗАПИШИТЕ ВАШУ ФРАЗУ ВОССТАНОВЛЕНИЯ";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Теперь Вы можете купить DASH\nв dashwallet с помощью наличных\nили банковского перевода.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "you must enter your pin in order to enter dashwallet";
+"you must enter your pin in order to enter dashwallet" = "Вы должны ввести PIN для входв в dashwallet";
 
 /* No comment provided by engineer. */
-"you received dash!" = "Вы получили dash!";
+"you received dash!" = "Вы получили DASH!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Кажется, ваш кошелек рассинхронизирован.\nЭто может быть исправлено путём повторного сканирования blockchain.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелек рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";
+

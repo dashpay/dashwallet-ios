@@ -6,7 +6,8 @@
 "Tw0-s4-w0k.normalTitle" = "Нет, спасибо";
 
 /* Class = "UIButton"; normalTitle = "Ok Great!"; ObjectID = "fzO-vI-zum"; */
-"fzO-vI-zum.normalTitle" = "Да, хорошо";
+"fzO-vI-zum.normalTitle" = "Ок, отлично!";
 
 /* Class = "UILabel"; text = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!"; ObjectID = "kqc-0F-49V"; */
-"kqc-0F-49V.text" = "Не могли бы Вы анонимно поделиться с нами информацией об использовании приложения?\n\nЭти данные полностью анонимны и не включают в себя никакой информации о финансах. Мы уважаем Вашу финансовую конфиденциальность!";
+"kqc-0F-49V.text" = "Хотите ли Вы поделиться с нами деперсонифицированной информацией об использовании приложения?\n\nЭта информация абсолютно анонимна и не содержит финансовых данных. Мы уважаем Вашу финансовую приватность!";
+
