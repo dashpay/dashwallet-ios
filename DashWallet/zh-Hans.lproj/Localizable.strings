@@ -255,6 +255,9 @@
 "id:" = "id：";
 
 /* No comment provided by engineer. */
+"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
+
+/* No comment provided by engineer. */
 "ignore" = "忽略";
 
 /* No comment provided by engineer. */
@@ -525,6 +528,9 @@
 "this private key is empty" = "这个私钥为空";
 
 /* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+
+/* No comment provided by engineer. */
 "to:" = "到：";
 
 /* No comment provided by engineer. */
@@ -622,4 +628,3 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能未同步。\n这通常可以通过重新扫描区块链来修复。";
-
