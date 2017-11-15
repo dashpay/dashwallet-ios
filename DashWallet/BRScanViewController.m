@@ -67,8 +67,9 @@
     [self setNeedsStatusBarAppearanceUpdate];
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
         [BREventManager saveEvent:@"scan:camera_denied"];
+        NSString * titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil), NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]];
         UIAlertController * cameraAlert = [UIAlertController
-                                     alertControllerWithTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil)]
+                                     alertControllerWithTitle:titleString
                                                                                  message:[NSString stringWithFormat:NSLocalizedString(@"\nallow camera access in\n"
                                                                                                                                       "Settings->Privacy->Camera->%@", nil),
                                                                                           NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
