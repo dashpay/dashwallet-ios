@@ -23,7 +23,7 @@
 //#define SNAPSHOT        1
 #define PEER_LOGGING    1
 #define EVENT_LOGGING   1
-#define MESSAGE_LOGGING 0
+#define MESSAGE_LOGGING 1
 #define DROP_MESSAGE_LOGGING (0 & DEBUG)
 #define EXCHANGE_RATES_LOGGING 0
 

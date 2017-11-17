@@ -137,8 +137,9 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
                                                       if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
-                                                      
-                                                      [self updateTitleView];
+                                                      if ([[BRWalletManager sharedInstance] didAuthenticate]) {
+                                                          [self updateTitleView];
+                                                      }
                                                   }];
     
     self.backgroundObserver =

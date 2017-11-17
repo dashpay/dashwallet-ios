@@ -267,7 +267,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                         content.badge = [NSNumber numberWithInteger:([UIApplication sharedApplication].applicationIconBadgeNumber + 1)];
                         // Deliver the notification in five seconds.
                         UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger
-                                                                      triggerWithTimeInterval:5.0f
+                                                                      triggerWithTimeInterval:1.0f
                                                                       repeats:NO];
                         UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"Now"
                                                                                               content:content
