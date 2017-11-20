@@ -438,8 +438,6 @@ services:(uint64_t)services
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
-    NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-          @[locators.firstObject, locators.lastObject]);
     if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSinceReferenceDate];
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
@@ -841,16 +839,16 @@ services:(uint64_t)services
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
-    if (count >= 2000 || t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) {
+    if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
         UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSValue *firstHash = uint256_obj(firstX11);
         NSValue *lastHash = uint256_obj(lastX11);
 
-        if (t >= self.earliestKeyTime - HOUR_TIME_INTERVAL/2 - WEEK_TIME_INTERVAL/4) { // request blocks for the remainder of the chain
+        if (t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
 
-            for (off = l; t > 0 && t < self.earliestKeyTime - (HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
+            for (off = l; t > 0 && t < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
@@ -859,7 +857,11 @@ services:(uint64_t)services
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }
-        else [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+        else {
+            NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
+                  @[lastHash, firstHash]);
+            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+        }
     }
     else {
         [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:t],self.version];
@@ -1053,7 +1055,7 @@ services:(uint64_t)services
 // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 - (void)acceptRejectMessage:(NSData *)message
 {
-        NSNumber * offNumber = nil, *lNumber = nil;
+    NSNumber * offNumber = nil, *lNumber = nil;
     NSUInteger off = 0, l = 0;
     NSString *type = [message stringAtOffset:0 length:&offNumber];
     off = offNumber.unsignedIntegerValue;

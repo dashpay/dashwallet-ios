@@ -1344,7 +1344,9 @@ static const char *dns_seeds[] = {
 {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL > self.earliestKeyTime + NSTimeIntervalSince1970 + 2*HOUR_TIME_INTERVAL) return;
+        block.timestamp + WEEK_TIME_INTERVAL/4 > self.earliestKeyTime + NSTimeIntervalSince1970 + HOUR_TIME_INTERVAL/2) {
+        return;
+    }
     
     NSArray *txHashes = block.txHashes;
     
@@ -1380,8 +1382,12 @@ static const char *dns_seeds[] = {
     BOOL syncDone = NO;
     
     if (! prev) { // block is an orphan
-        NSLog(@"%@:%d relayed orphan block %@, previous %@, last block is %@, height %d", peer.host, peer.port,
-              blockHash, prevBlock, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight);
+//        NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
+//        for (BRMerkleBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
+//            NSLog(@"printing previous block at height %d : %@",merkleBlock.height,uint256_obj(merkleBlock.blockHash));
+//        }
+        NSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, height %d", peer.host, peer.port,
+              blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight);
         
         // ignore orphans older than one week ago
         if (block.timestamp < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - 7*24*60*60) return;
@@ -1417,8 +1423,9 @@ static const char *dns_seeds[] = {
     // verify block difficulty if block is past last checkpoint
     if ((block.height > (checkpoint_array[CHECKPOINT_COUNT - 1].height + DGW_PAST_BLOCKS_MAX)) &&
         ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
-        NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x, blockHash: %@", peer.host, peer.port,
-              block.height,block.target, blockHash);
+        uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
+        NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
+              block.height,block.target,foundDifficulty, blockHash);
         [self peerMisbehavin:peer];
         return;
     }
@@ -1507,6 +1514,9 @@ static const char *dns_seeds[] = {
         self.lastBlock = block;
         if (block.height == _estimatedBlockHeight) syncDone = YES;
     }
+    
+    //NSLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
+    //      block.height,block.target, blockHash);
     
     if (syncDone) { // chain download is complete
         self.syncStartHeight = 0;

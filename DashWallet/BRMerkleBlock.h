@@ -68,4 +68,6 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 // Verifies the block difficulty target is correct for the block's position in the chain.
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
 
+- (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
+
 @end
