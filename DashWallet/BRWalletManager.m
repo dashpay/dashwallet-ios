@@ -1929,12 +1929,21 @@ replacementString:(NSString *)string
                                                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
             else {
+                if (oldData) {
+                    NSData *masterPubKeyBIP44 = [self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE];
+                    NSData *masterPubKeyBIP32 = [self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
+                    BOOL failed = !setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO); //new keys
+                    failed = failed | !setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO); //new keys
+                    failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO); //old keys
+                    failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO); //old keys
+                }
                 setKeychainData(nil, SPEND_LIMIT_KEY, NO);
                 setKeychainData(nil, PIN_KEY, NO);
                 setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
                 setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
                 [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    [self setPinWithCompletion:nil];
+                    self.pinAlertController = nil;
+                    [self setBrandNewPinWithCompletion:nil];
                 }];
             }
         }
