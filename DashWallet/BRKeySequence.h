@@ -34,6 +34,10 @@
 #define ADDRESS_DEFAULT      BIP44_PURPOSE
 
 @protocol BRKeySequence<NSObject>
+
+@optional
+- (NSData *)deprecatedIncorrectExtendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;
+
 @required
 
 - (NSData *)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;

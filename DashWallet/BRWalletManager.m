@@ -1916,9 +1916,14 @@ replacementString:(NSString *)string
             NSString *phrase = [self.mnemonic cleanupPhrase:textField.text];
             
             if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            
-            if (! [[self.sequence extendedPublicKeyForAccount:0 fromSeed:[self.mnemonic deriveKeyFromPhrase:[self.mnemonic
-                                                                                                             normalizePhrase:phrase] withPassphrase:nil] purpose:BIP44_PURPOSE] isEqual:self.extendedBIP44PublicKey]) {
+            NSData * oldData = getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
+            NSData * seed = [self.mnemonic deriveKeyFromPhrase:[self.mnemonic
+                                                                normalizePhrase:phrase] withPassphrase:nil];
+            if (self.extendedBIP44PublicKey && ![[self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:self.extendedBIP44PublicKey]) {
+                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
+                [self.resetAlertController performSelector:@selector(setTitle:)
+                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+            } else if (oldData && ![[self.sequence deprecatedIncorrectExtendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:oldData]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
