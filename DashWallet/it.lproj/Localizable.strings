@@ -78,6 +78,12 @@
 "amount too small" = "importo troppo piccolo";
 
 /* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+
+/* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'applicazione %@vorrebbe ricevere la tua Chiave Pubblica Principale. Può essere utilizzata per tracciare il tuo portafoglio, ma non può essere usata per spostare i tuoi Dash.";
 
 /* No comment provided by engineer. */
@@ -414,6 +420,9 @@
 "reset" = "resetta";
 
 /* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scansiona il codice QR di qualcun altro per vedere il suo indirizzo dash o bitcoin. Puoi effettuare un pagamento verso chiunque abbia un indirizzo.";
 
 /* No comment provided by engineer. */
@@ -526,6 +535,12 @@
 
 /* No comment provided by engineer. */
 "this private key is empty" = "questa chiave privata è vuota";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+
+/* No comment provided by engineer. */
+"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";

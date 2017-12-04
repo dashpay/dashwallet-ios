@@ -72,7 +72,9 @@
     self.label = nil;
     self.message = nil;
     self.amount = 0;
+    self.callbackScheme = nil;
     _wantsInstant = FALSE;
+    _instantValueRequired = FALSE;
     self.r = nil;
 
     if (string.length == 0) return;
@@ -111,26 +113,40 @@
             NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
                                 stringByReplacingOccurrencesOfString:@"+" withString:@" "]
                                stringByRemovingPercentEncoding];
+            
+            BOOL require = FALSE;
+            NSString * key = pair[0];
+            if ([key hasPrefix:@"req-"] && key.length > 4) {
+                key = [key substringFromIndex:4];
+                require = TRUE;
+            }
 
-            if ([pair[0] isEqual:@"amount"]) {
+            if ([key isEqual:@"amount"]) {
                 NSDecimal dec, amount;
 
                 if ([[NSScanner scannerWithString:value] scanDecimal:&dec]) {
                     NSDecimalMultiplyByPowerOf10(&amount, &dec, 8, NSRoundUp);
                     self.amount = [NSDecimalNumber decimalNumberWithDecimal:amount].unsignedLongLongValue;
                 }
+                if (require)
+                    _amountValueImmutable = TRUE;
             }
-            else if ([pair[0] isEqual:@"label"]) {
+            else if ([key isEqual:@"label"]) {
                 self.label = value;
             }
-            else if ([pair[0] isEqual:@"message"]) {
+            else if ([key isEqual:@"sender"]) {
+                self.callbackScheme = value;
+            }
+            else if ([key isEqual:@"message"]) {
                 self.message = value;
             }
-            else if ([[pair[0] lowercaseString] isEqual:@"is"]) {
+            else if ([[key lowercaseString] isEqual:@"is"]) {
                 if ([value  isEqual: @"1"])
                     _wantsInstant = TRUE;
+                if (require)
+                    _instantValueRequired = TRUE;
             }
-            else if ([pair[0] isEqual:@"r"]) self.r = value;
+            else if ([key isEqual:@"r"]) self.r = value;
         }
     }
     else if (url) self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
@@ -240,7 +256,7 @@
          outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil];
     BRPaymentProtocolRequest *request =
         [[BRPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
-         signature:nil];
+         signature:nil callbackScheme:self.callbackScheme];
     
     return request;
 }
@@ -322,8 +338,8 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
         return;
     }
 
-    [req setValue:@"application/bitcoin-payment" forHTTPHeaderField:@"Content-Type"];
-    [req addValue:@"application/bitcoin-paymentack" forHTTPHeaderField:@"Accept"];
+    [req setValue:[NSString stringWithFormat:@"application/%@-payment",scheme] forHTTPHeaderField:@"Content-Type"];
+    [req addValue:[NSString stringWithFormat:@"application/%@-paymentack",scheme] forHTTPHeaderField:@"Accept"];
     req.HTTPMethod = @"POST";
     req.HTTPBody = payment.data;
 

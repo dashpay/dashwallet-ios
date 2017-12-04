@@ -194,7 +194,7 @@ typedef enum : NSUInteger {
 
 - (instancetype)initWithNetwork:(NSString *)network outputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
 time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
-merchantData:(NSData *)data
+                   merchantData:(NSData *)data
 {
     if (scripts.count == 0 || amounts.count != scripts.count) return nil;
     if (! (self = [self init])) return nil;
@@ -324,7 +324,7 @@ merchantData:(NSData *)data
 }
 
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
+details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig callbackScheme:(NSString *)callbackScheme
 {
     if (! details) return nil; // required
     if (! (self = [self init])) return nil;
@@ -341,6 +341,7 @@ details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig
     if (d.length > 0) _pkiData = d;
     _details = details;
     _signature = sig;
+    _callbackScheme = callbackScheme;
     return self;
 }
 

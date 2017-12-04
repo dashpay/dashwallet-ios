@@ -78,6 +78,12 @@
 "amount too small" = "túl alacsony összeg";
 
 /* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+
+/* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
@@ -411,6 +417,9 @@
 "reset" = "visszaállít";
 
 /* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Olvasd be valaki másnak a QR kódját, hogy hozzájuss a dash vagy bitcoin címéhez. Bárkinek küldhetsz pénzt, akinek van ilyen címe.";
 
 /* No comment provided by engineer. */
@@ -523,6 +532,12 @@
 
 /* No comment provided by engineer. */
 "this private key is empty" = "ez a privátkulcs üres";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+
+/* No comment provided by engineer. */
+"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";

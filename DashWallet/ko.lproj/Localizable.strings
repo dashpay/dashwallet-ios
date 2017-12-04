@@ -84,6 +84,12 @@
 "amount too small" = "보낼 금액이 너무 적습니다";
 
 /* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+
+/* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
@@ -444,6 +450,9 @@
 "reset" = "초기화";
 
 /* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "다른 사람의 대쉬 이나 비트코인 주소를 얻으려면 QR코드를 스캔하세요. 주소가 있으면 누구에게든 돈을 보낼 수 있습니다";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,12 @@
 
 /* No comment provided by engineer. */
 "this private key is empty" = "이 비밀 키는 잔액이 없습니다";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+
+/* No comment provided by engineer. */
+"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";

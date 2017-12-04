@@ -44,6 +44,7 @@
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"
 #import "DSShapeshiftManager.h"
+#import "BRBIP32Sequence.h"
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
@@ -71,7 +72,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRPaymentProtocolRequest *request, *shapeshiftRequest;
 @property (nonatomic, strong) NSString *scheme;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
-@property (nonatomic, strong) NSURL *url, *callback;
+@property (nonatomic, strong) NSURL *url;
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -275,78 +276,69 @@ static NSString *sanitizeString(NSString *s)
                                 @"host": (url.host ? url.host : @"(null)"),
                                 @"path": (url.path ? url.path : @"(null)")}];
     
-    //TODO: XXX custom url splash image per: "Providing Launch Images for Custom URL Schemes."
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    if ([url.scheme isEqual:@"dashwallet"]) { // x-callback-url handling: http://x-callback-url.com/specifications/
-        NSString *xsource = nil, *xsuccess = nil, *xerror = nil, *uri = nil;
-        NSURL *callback = nil;
-        
-        for (NSString *arg in [url.query componentsSeparatedByString:@"&"]) {
-            NSArray *pair = [arg componentsSeparatedByString:@"="]; // if more than one '=', then pair[1] != value
-            
-            if (pair.count < 2) continue;
-            
-            NSString *value = [[[arg substringFromIndex:[pair[0] length] + 1]
-                                stringByReplacingOccurrencesOfString:@"+" withString:@" "]
-                               stringByRemovingPercentEncoding];
-            
-            if ([pair[0] isEqual:@"x-source"]) xsource = value;
-            else if ([pair[0] isEqual:@"x-success"]) xsuccess = value;
-            else if ([pair[0] isEqual:@"x-error"]) xerror = value;
-            else if ([pair[0] isEqual:@"uri"]) uri = value;
-        }
-        
+    if ([url.scheme isEqual:@"dashwallet"]) {
         if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) { // scan qr
             [self scanQR:self.scanButton];
-        }
-        else if ([url.host isEqual:@"addresslist"] || [url.path isEqual:@"/addresslist"]) { // copy wallet addresses
-            if (manager.didAuthenticate && ! self.clearClipboard) {
-                
-                if ([self processURLAddressList:url]) {
-                    if (xsuccess) callback = [NSURL URLWithString:xsuccess];
-                    self.url = nil;
+        } else if ([url.host hasPrefix:@"request"] || [url.path isEqual:@"/request"]) {
+            NSArray * array = [url.host componentsSeparatedByString:@"&"];
+            NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
+            for (NSString * param in array) {
+                NSArray * paramArray = [param componentsSeparatedByString:@"="];
+                if ([paramArray count] == 2) {
+                    [dictionary setObject:paramArray[1] forKey:paramArray[0]];
                 }
-            } else if (!self.clearClipboard) {
-                [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-                    if (authenticated) {
-                        if ([self processURLAddressList:url]) {
-                            if (xsuccess) {
-                                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:xsuccess] options:@{} completionHandler:^(BOOL success) {
-                                    
-                                }];
-                            } else {
-                                self.url = nil;
-                            }
-                        }
-                    } else if (xerror || xsuccess) {
-                        [UIPasteboard generalPasteboard].string = @"";
-                        [self cancel:nil];
-                        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:(xerror) ? xerror : xsuccess] options:@{} completionHandler:^(BOOL success) {
-                            
-                        }];
-                    }
-                }];
             }
-            else if (xerror || xsuccess) {
-                callback = [NSURL URLWithString:(xerror) ? xerror : xsuccess];
-                [UIPasteboard generalPasteboard].string = @"";
-                [self cancel:nil];
-            }
-        }
-        else if ([url.path isEqual:@"/address"] && xsuccess) { // get receive address
-            callback = [NSURL URLWithString:[xsuccess stringByAppendingFormat:@"%@address=%@",
-                                             ([NSURL URLWithString:xsuccess].query.length > 0) ? @"&" : @"?",
-                                             manager.wallet.receiveAddress]];
-        }
-        else if (([url.host isEqual:@"bitcoin-uri"] || [url.path isEqual:@"/bitcoin-uri"]) && uri &&
-                 [[NSURL URLWithString:uri].scheme isEqual:@"bitcoin"]) {
-            if (xsuccess) self.callback = [NSURL URLWithString:xsuccess];
-            [self handleURL:[NSURL URLWithString:uri]];
-        }
-        
-        if (callback) [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
             
-        }];
+            if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
+                if ([dictionary[@"request"] isEqualToString:@"masterPublicKey"]) {
+                    [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
+                        if (authenticatedOrSuccess) {
+                            BRBIP32Sequence *seq = [BRBIP32Sequence new];
+                            NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.extendedBIP44PublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
+                            NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.extendedBIP32PublicKey depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
+                            NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
+                            [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
+                                
+                            }];
+                        }
+                    }];
+                } else if ([dictionary[@"request"] isEqualToString:@"address"]) {
+                    [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
+                        if (authenticatedOrSuccess) {
+                            NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&address=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],manager.wallet.receiveAddress]];
+                            [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
+                                
+                            }];
+                        }
+                    }];
+                }
+                
+            }
+        } else if ([url.host hasPrefix:@"pay"] || [url.path isEqual:@"/pay"]) {
+            NSMutableArray * array = [[url.host componentsSeparatedByString:@"&"] mutableCopy];
+            NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
+            for (NSString * param in array) {
+                NSArray * paramArray = [param componentsSeparatedByString:@"="];
+                if ([paramArray count] == 2) {
+                    [dictionary setObject:paramArray[1] forKey:paramArray[0]];
+                }
+            }
+            if (dictionary[@"pay"] && dictionary[@"sender"]) {
+                if (dictionary[@"label"]) [dictionary removeObjectForKey:@"label"];
+                NSURLComponents *components = [NSURLComponents componentsWithString:[NSString stringWithFormat:@"dash:%@",dictionary[@"pay"]]];
+                NSMutableArray *queryItems = [NSMutableArray array];
+                NSURLQueryItem *label = [NSURLQueryItem queryItemWithName:@"label" value:[NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting a payment to",nil),[dictionary[@"sender"] capitalizedString]]];
+                [queryItems addObject:label];
+                for (NSString *key in dictionary) {
+                    if ([key isEqualToString:@"label"]) continue;
+                    [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:dictionary[key]]];
+                }
+                components.queryItems = queryItems;
+                NSURL * paymentURL = components.URL;
+                [self confirmRequest:[BRPaymentRequest requestWithURL:paymentURL]];
+            }
+        }
     }
     else if ([url.scheme isEqual:@"dash"]) {
         [self confirmRequest:[BRPaymentRequest requestWithURL:url]];
@@ -507,7 +499,7 @@ static NSString *sanitizeString(NSString *s)
             });
         }];
     }
-    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant];
+    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant requiresInstantValue:request.instantValueRequired];
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq {
@@ -516,10 +508,10 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift
 {
-    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly];
+    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly requiresInstantValue:FALSE];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant
+- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRTransaction *tx = nil;
@@ -604,29 +596,56 @@ static NSString *sanitizeString(NSString *s)
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
             
-            UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
-                                         message:NSLocalizedString(@"request is for an instant payment but you have disabled instant payments",
-                                                                   nil)
-                                         preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* ignoreButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ignore", nil)
-                                           style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
-                                           }];
-            UIAlertAction* enableButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"enable", nil)
-                                           style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction * action) {
-                                               self.sendInstantly = TRUE;
-                                               [self.instantSwitch setOn:TRUE animated:TRUE];
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE];
-                                           }];
-            
-            [alert addAction:ignoreButton];
-            [alert addAction:enableButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            if (requiresInstantValue) {
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
+                                             message:NSLocalizedString(@"this request requires an instant payment but you have disabled instant payments",
+                                                                       nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* ignoreButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   
+                                               }];
+                UIAlertAction* enableButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"enable", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   self.sendInstantly = TRUE;
+                                                   [self.instantSwitch setOn:TRUE animated:TRUE];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:TRUE];
+                                               }];
+                
+                [alert addAction:ignoreButton];
+                [alert addAction:enableButton];
+                [self presentViewController:alert animated:YES completion:nil];
+            } else {
+                
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
+                                             message:NSLocalizedString(@"request is for an instant payment but you have disabled instant payments",
+                                                                       nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* ignoreButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                               }];
+                UIAlertAction* enableButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"enable", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   self.sendInstantly = TRUE;
+                                                   [self.instantSwitch setOn:TRUE animated:TRUE];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:requiresInstantValue];
+                                               }];
+                
+                [alert addAction:ignoreButton];
+                [alert addAction:enableButton];
+                [self presentViewController:alert animated:YES completion:nil];
+            }
             return;
             
         } else if (amount > manager.wallet.balance && amount != UINT64_MAX) {
@@ -648,28 +667,52 @@ static NSString *sanitizeString(NSString *s)
             self.request = protoReq;
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
-            UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
-                                         message:NSLocalizedString(@"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?",
-                                                                   nil)
-                                         preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* cancelButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                               [self cancelOrChangeAmount];
-                                           }];
-            UIAlertAction* enableButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"send", nil)
-                                           style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:FALSE];
-                                           }];
-            
-            [alert addAction:cancelButton];
-            [alert addAction:enableButton];
-            [self presentViewController:alert animated:YES completion:nil];
-            return;
+            if (requiresInstantValue) {
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
+                                             message:NSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.",
+                                                                       nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* cancelButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   [self cancelOrChangeAmount];
+                                               }];
+                UIAlertAction* retryButton = [UIAlertAction
+                                              actionWithTitle:NSLocalizedString(@"retry", nil)
+                                              style:UIAlertActionStyleDefault
+                                              handler:^(UIAlertAction * action) {
+                                                  [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:wantsInstant requiresInstantValue:requiresInstantValue];
+                                              }];
+                
+                [alert addAction:cancelButton];
+                [alert addAction:retryButton];
+                [self presentViewController:alert animated:YES completion:nil];
+            } else {
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
+                                             message:NSLocalizedString(@"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?",
+                                                                       nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* cancelButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                                   [self cancelOrChangeAmount];
+                                               }];
+                UIAlertAction* enableButton = [UIAlertAction
+                                               actionWithTitle:NSLocalizedString(@"send", nil)
+                                               style:UIAlertActionStyleDefault
+                                               handler:^(UIAlertAction * action) {
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:FALSE requiresInstantValue:requiresInstantValue];
+                                               }];
+                
+                [alert addAction:cancelButton];
+                [alert addAction:enableButton];
+                [self presentViewController:alert animated:YES completion:nil];
+                return;
+            }
         } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
                    ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -761,8 +804,6 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         
-        
-        
         self.request = protoReq;
         self.scheme = @"dash";
         
@@ -814,7 +855,7 @@ static NSString *sanitizeString(NSString *s)
         // to avoid the frozen pincode keyboard bug, we need to make sure we're scheduled normally on the main runloop
         // rather than a dispatch_async queue
         CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
-            [self confirmTransaction:tx withPrompt:prompt forAmount:amount];
+            [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
         NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
@@ -985,7 +1026,7 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
-- (void)confirmTransaction:(BRTransaction *)tx withPrompt:(NSString *)prompt forAmount:(uint64_t)amount
+- (void)confirmTransaction:(BRTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     __block BOOL previouslyWasAuthenticated = manager.didAuthenticate;
@@ -1069,12 +1110,13 @@ static NSString *sanitizeString(NSString *s)
                         [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                         [(id)self.parentViewController.parentViewController ping];
                         
-                        if (self.callback) {
-                            self.callback = [NSURL URLWithString:[self.callback.absoluteString stringByAppendingFormat:@"%@txid=%@",
-                                                                  (self.callback.query.length > 0) ? @"&" : @"?",
-                                                                  [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                                                       length:sizeof(UInt256)].reverse]]];
-                            [[UIApplication sharedApplication] openURL:self.callback options:@{} completionHandler:^(BOOL success) {
+                        
+                        if (self.request.callbackScheme) {
+                            NSURL * callback = [NSURL URLWithString:[self.request.callbackScheme
+                                                                     stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
+                                                                     [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                                                          length:sizeof(UInt256)].reverse]]];
+                            [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
                                 
                             }];
                         }
@@ -1135,14 +1177,12 @@ static NSString *sanitizeString(NSString *s)
                                                                           popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
                                                    [(id)self.parentViewController.parentViewController stopActivityWithSuccess:YES];
                                                    [(id)self.parentViewController.parentViewController ping];
-                                                   
-                                                   if (self.callback) {
-                                                       self.callback = [NSURL URLWithString:[self.callback.absoluteString
-                                                                                             stringByAppendingFormat:@"%@txid=%@",
-                                                                                             (self.callback.query.length > 0) ? @"&" : @"?",
-                                                                                             [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                                                                                  length:sizeof(UInt256)].reverse]]];
-                                                       [[UIApplication sharedApplication] openURL:self.callback options:@{} completionHandler:^(BOOL success) {
+                                                   if (self.request.callbackScheme) {
+                                                       NSURL * callback = [NSURL URLWithString:[self.request.callbackScheme
+                                                                                                stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
+                                                                                                [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                                                                                     length:sizeof(UInt256)].reverse]]];
+                                                       [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
                                                            
                                                        }];
                                                    }
@@ -1631,7 +1671,7 @@ static NSString *sanitizeString(NSString *s)
 - (IBAction)cancel:(id)sender
 {
     [BREventManager saveEvent:@"send:cancel"];
-    self.url = self.callback = nil;
+    self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
     self.okAddress = self.okIdentity = nil;

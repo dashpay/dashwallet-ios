@@ -62,12 +62,13 @@ merchantData:(NSData *)data;
 @property (nonatomic, readonly) BOOL isValid; // true if certificate chain, signature and details.expires are all valid
 @property (nonatomic, readonly) NSString *commonName; // common name of signer (set when isValid is called)
 @property (nonatomic, readonly) NSString *errorMessage; // error message if there was an error validating the request
+@property (nonatomic, readonly) NSString *callbackScheme; //used for a local device callback
 
 + (instancetype)requestWithData:(NSData *)data;
 
 - (instancetype)initWithData:(NSData *)data;
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig;
+                        details:(BRPaymentProtocolDetails *)details signature:(NSData *)sig callbackScheme:(NSString *)callbackScheme;
 
 @end
 

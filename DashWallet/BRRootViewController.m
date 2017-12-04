@@ -36,7 +36,6 @@
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BRPaymentRequest.h"
-#import "BRBIP32Sequence.h"
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
 #import "BREventConfirmView.h"
@@ -151,47 +150,22 @@
                                                           }
                                                           
                                                           NSURL * url = note.userInfo[@"url"];
-                                                          if ([url.scheme isEqualToString:@"dashwallet"] && [url.host hasPrefix:@"request"]) {
-                                                              NSArray * array = [url.host componentsSeparatedByString:@"&"];
-                                                              NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
-                                                              for (NSString * param in array) {
-                                                                  NSArray * paramArray = [param componentsSeparatedByString:@"="];
-                                                                  if ([paramArray count] == 2) {
-                                                                      [dictionary setObject:paramArray[1] forKey:paramArray[0]];
-                                                                  }
-                                                              }
-                                                              
-                                                              if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
-                                                                  [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
-                                                                      if (authenticatedOrSuccess) {
-                                                                          BRBIP32Sequence *seq = [BRBIP32Sequence new];
-                                                                          NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.extendedBIP44PublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
-                                                                          NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.extendedBIP32PublicKey depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
-                                                                          NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
-                                                                          if ([[UIApplication sharedApplication] canOpenURL:url]) {
-                                                                              [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
-                                                                                  
-                                                                              }];
-                                                                          }
-                                                                      }
-                                                                  }];
-                                                              }
-                                                              
-                                                          } else {
-                                                              
-                                                              
-                                                              BRSendViewController *c = self.sendViewController;
-                                                              
-                                                              [self.pageViewController setViewControllers:(c ? @[c] : @[])
-                                                                                                direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
-                                                                                                    _url = note.userInfo[@"url"];
-                                                                                                    
-                                                                                                    if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
-                                                                                                        _url = nil;
-                                                                                                        [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
-                                                                                                    }
-                                                                                                }];
-                                                          }
+                                                          
+                                                          
+                                                          
+                                                          
+                                                          BRSendViewController *c = self.sendViewController;
+                                                          
+                                                          [self.pageViewController setViewControllers:(c ? @[c] : @[])
+                                                                                            direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
+                                                                                                _url = note.userInfo[@"url"];
+                                                                                                
+                                                                                                if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
+                                                                                                    _url = nil;
+                                                                                                    [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
+                                                                                                }
+                                                                                            }];
+                                                          
                                                       }
                                                   }];
     
@@ -600,17 +574,17 @@
                                                      exit(0);
                                                  }];
                     UIAlertAction* enterButton = [UIAlertAction
-                                                   actionWithTitle:NSLocalizedString(@"enter", nil)
-                                                   style:UIAlertActionStyleDefault
-                                                   handler:^(UIAlertAction * action) {
-                                                       [self protectedViewDidAppear];
-                                                   }];
+                                                  actionWithTitle:NSLocalizedString(@"enter", nil)
+                                                  style:UIAlertActionStyleDefault
+                                                  handler:^(UIAlertAction * action) {
+                                                      [self protectedViewDidAppear];
+                                                  }];
                     [alert addAction:exitButton];
                     [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
                 } else {
                     __block NSUInteger wait = [manager lockoutWaitTime];
                     NSString * waitTime = [NSString waitTimeFromNow:wait];
-
+                    
                     alert = [UIAlertController
                              alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
                              message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
@@ -637,11 +611,11 @@
                                                       }];
                                                   }];
                     UIAlertAction* exitButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"exit", nil)
-                                               style:UIAlertActionStyleDefault
-                                               handler:^(UIAlertAction * action) {
-                                                   exit(0);
-                                               }];
+                                                 actionWithTitle:NSLocalizedString(@"exit", nil)
+                                                 style:UIAlertActionStyleDefault
+                                                 handler:^(UIAlertAction * action) {
+                                                     exit(0);
+                                                 }];
                     [alert addAction:resetButton];
                     [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
                 }
@@ -1370,11 +1344,11 @@
                       item.rightBarButtonItem = rightButton;
                       if (self.shouldShowTips) item.titleView = titleView;
                   } else {
-                  if ([[(id)to topViewController] respondsToSelector:@selector(updateTitleView)]) {
-                      [[(id)to topViewController] performSelector:@selector(updateTitleView)];
-                  } else {
-                      item.title = self.navigationItem.title;
-                  }
+                      if ([[(id)to topViewController] respondsToSelector:@selector(updateTitleView)]) {
+                          [[(id)to topViewController] performSelector:@selector(updateTitleView)];
+                      } else {
+                          item.title = self.navigationItem.title;
+                      }
                   }
                   item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
                   [containerView addSubview:to.view];
