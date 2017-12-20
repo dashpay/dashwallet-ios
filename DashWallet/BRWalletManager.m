@@ -814,7 +814,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
-                                       resetCancelHandlerBlock();
+                                       if (resetCancelHandlerBlock) {
+                                            resetCancelHandlerBlock();
+                                       }
                                    }];
     [alertController addAction:cancelButton];
     [self presentAlertController:alertController animated:YES completion:nil];
