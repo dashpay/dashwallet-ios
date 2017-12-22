@@ -23,6 +23,9 @@
 		22DE8CF31D02407F007F07F3 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 22DE8CF01D02407F007F07F3 /* BRWalletConstants.m */; };
 		22DE8CF41D02407F007F07F3 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 22DE8CF01D02407F007F07F3 /* BRWalletConstants.m */; };
 		22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */; };
+		2AC92C841FEB0A6D008CAEE0 /* BRQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* BRQRScanViewController.m */; };
+		2AC92C871FEB0AE8008CAEE0 /* BRQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* BRQRScanView.m */; };
+		2AC92C8A1FEB0B8B008CAEE0 /* BRQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* BRQRScanViewModel.m */; };
 		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
@@ -225,6 +228,12 @@
 		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
 		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
 		22F45A0F1C3329EB00B07A15 /* BRUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsConstants.h; sourceTree = "<group>"; };
+		2AC92C821FEB0A6D008CAEE0 /* BRQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRQRScanViewController.h; sourceTree = "<group>"; };
+		2AC92C831FEB0A6D008CAEE0 /* BRQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRQRScanViewController.m; sourceTree = "<group>"; };
+		2AC92C851FEB0AE8008CAEE0 /* BRQRScanView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRQRScanView.h; sourceTree = "<group>"; };
+		2AC92C861FEB0AE8008CAEE0 /* BRQRScanView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRQRScanView.m; sourceTree = "<group>"; };
+		2AC92C881FEB0B8B008CAEE0 /* BRQRScanViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BRQRScanViewModel.h; sourceTree = "<group>"; };
+		2AC92C891FEB0B8B008CAEE0 /* BRQRScanViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BRQRScanViewModel.m; sourceTree = "<group>"; };
 		31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
 		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -595,6 +604,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2AC92C811FEB0A32008CAEE0 /* Scan */ = {
+			isa = PBXGroup;
+			children = (
+				2AC92C821FEB0A6D008CAEE0 /* BRQRScanViewController.h */,
+				2AC92C831FEB0A6D008CAEE0 /* BRQRScanViewController.m */,
+				2AC92C851FEB0AE8008CAEE0 /* BRQRScanView.h */,
+				2AC92C861FEB0AE8008CAEE0 /* BRQRScanView.m */,
+				2AC92C881FEB0B8B008CAEE0 /* BRQRScanViewModel.h */,
+				2AC92C891FEB0B8B008CAEE0 /* BRQRScanViewModel.m */,
+			);
+			name = Scan;
+			sourceTree = "<group>";
+		};
 		31D68B511C23B6C10030FAAA /* DashWalletUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -788,6 +810,7 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				2AC92C811FEB0A32008CAEE0 /* Scan */,
 				759FBB32193290F600AB4465 /* BRRootViewController.h */,
 				759FBB33193290F600AB4465 /* BRRootViewController.m */,
 				759FBB34193290F600AB4465 /* BRSendViewController.h */,
@@ -1406,6 +1429,7 @@
 				758DBD0E1980634900389E2A /* BRTxDetailViewController.m in Sources */,
 				FB021E4F1E42EB5F00D17638 /* NSAttributedString+Attachments.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
+				2AC92C8A1FEB0B8B008CAEE0 /* BRQRScanViewModel.m in Sources */,
 				752E28D119234C3600DB5A3C /* BRKey.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */,
 				2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */,
@@ -1434,6 +1458,7 @@
 				757BE7E6192C1FF70061CB20 /* BRWelcomeViewController.m in Sources */,
 				757BE7E9192D4E880061CB20 /* BRSeedViewController.m in Sources */,
 				752E28E719234DA200DB5A3C /* NSData+Bitcoin.m in Sources */,
+				2AC92C841FEB0A6D008CAEE0 /* BRQRScanViewController.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				220128D31C753C670001CAC1 /* BRSocketHelpers.c in Sources */,
 				752E28E919234DA200DB5A3C /* NSManagedObject+Sugar.m in Sources */,
@@ -1442,6 +1467,7 @@
 				FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */,
+				2AC92C871FEB0AE8008CAEE0 /* BRQRScanView.m in Sources */,
 				752E28EA19234DA200DB5A3C /* NSMutableData+Bitcoin.m in Sources */,
 				752E28EB19234DA200DB5A3C /* NSString+Bitcoin.m in Sources */,
 				757C89521A2FCE420076B373 /* BRSettingsViewController.m in Sources */,
