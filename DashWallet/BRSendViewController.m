@@ -77,14 +77,10 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, strong) BRScanViewController *scanController;
-@property (nonatomic, strong) id clipboardObserver;
-@property (nonatomic, assign) BOOL inClipboardTextView;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UISwitch *instantSwitch;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
-@property (nonatomic, strong) IBOutlet UITextView *clipboardText;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *clipboardXLeft;
 @property (nonatomic, strong) IBOutlet UIView * shapeshiftView;
 @property (nonatomic, strong) IBOutlet UILabel * shapeshiftLabel;
 
@@ -100,24 +96,12 @@ static NSString *sanitizeString(NSString *s)
     // TODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
     self.scanButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.clipboardButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    self.inClipboardTextView = FALSE;
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     self.scanButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
     self.clipboardButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
 #pragma clang diagnostic pop
-    
-    self.clipboardText.textContainerInset = UIEdgeInsetsMake(8.0, 0.0, 0.0, 0.0);
-    
-    self.clipboardObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIPasteboardChangedNotification object:nil queue:nil
-                                                  usingBlock:^(NSNotification *note) {
-                                                      if (self.clipboardText.isFirstResponder) {
-                                                          self.useClipboard = YES;
-                                                      }
-                                                      else [self updateClipboardText];
-                                                  }];
     
     FBShimmeringView *shimmeringView = [[FBShimmeringView alloc] initWithFrame:CGRectMake(0, self.shapeshiftView.frame.origin.y, self.view.frame.size.width, self.shapeshiftView.frame.size.height)];
     [self.view addSubview:shimmeringView];
@@ -156,49 +140,7 @@ static NSString *sanitizeString(NSString *s)
     
     self.sendInstantly = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
     [self.instantSwitch setOn:self.sendInstantly];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
 }
-
--(void)keyboardWillShow:(NSNotification *)notification
-{
-    if (self.inClipboardTextView) {
-        NSDictionary *info  = notification.userInfo;
-        NSValue      *value = info[UIKeyboardFrameEndUserInfoKey];
-        
-        CGRect rawFrame      = [value CGRectValue];
-        CGRect keyboardFrame = [self.view convertRect:rawFrame fromView:nil];
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                self.view.center = CGPointMake(self.view.center.x, (self.view.bounds.size.height - keyboardFrame.size.height)/2.0 - 50);
-                self.sendLabel.alpha = 0.0;
-            } completion:nil];
-        });
-    }
-}
-
--(void)keyboardWillHide:(NSNotification *)notification
-{
-    if (self.inClipboardTextView) {
-        self.inClipboardTextView = FALSE;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [UIView animateWithDuration:0.35 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                self.view.center = CGPointMake(self.view.center.x, self.view.bounds.size.height/2.0);
-                self.sendLabel.alpha = 1.0;
-            } completion:nil];
-        });
-        self.inClipboardTextView = FALSE;
-    }
-}
-
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -223,7 +165,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)dealloc
 {
-    if (self.clipboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.clipboardObserver];
+
 }
 
 -(BOOL)processURLAddressList:(NSURL*)url {
@@ -1389,7 +1331,6 @@ static NSString *sanitizeString(NSString *s)
 
 - (BOOL)nextTip
 {
-    [self.clipboardText resignFirstResponder];
     if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
     
     BRBubbleView *tipView = self.tipView;
@@ -1461,16 +1402,6 @@ static NSString *sanitizeString(NSString *s)
                 break;
             }
         }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            CGFloat textWidth = [text sizeWithAttributes:@{NSFontAttributeName:self.clipboardText.font}].width + 12;
-            
-            self.clipboardText.text = text;
-            if (textWidth < self.clipboardButton.bounds.size.width ) textWidth = self.clipboardButton.bounds.size.width;
-            if (textWidth > self.view.bounds.size.width - 16.0) textWidth = self.view.bounds.size.width - 16.0;
-            self.clipboardXLeft.constant = (self.view.bounds.size.width - textWidth)/2.0;
-            [self.clipboardText scrollRangeToVisible:NSMakeRange(0, 0)];
-        });
     });
 }
 
@@ -1951,40 +1882,6 @@ static NSString *sanitizeString(NSString *s)
         
         break;
     }
-}
-
-// MARK: UITextViewDelegate
-
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
-{
-    if ([self nextTip]) return NO;
-    self.inClipboardTextView = TRUE;
-    return YES;
-}
-
-- (void)textViewDidBeginEditing:(UITextView *)textView
-{
-    //BUG: XXX this needs to take keyboard size into account
-    self.useClipboard = NO;
-    self.clipboardText.text = [UIPasteboard generalPasteboard].string;
-    [textView scrollRangeToVisible:textView.selectedRange];
-}
-
-- (void)textViewDidEndEditing:(UITextView *)textView
-{
-    if (! self.useClipboard) [UIPasteboard generalPasteboard].string = textView.text;
-    [self updateClipboardText];
-}
-
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
-{
-    if ([text isEqual:@"\n"]) {
-        [textView resignFirstResponder];
-        return NO;
-    }
-    
-    if (text.length > 0 || range.length > 0) self.useClipboard = NO;
-    return YES;
 }
 
 // MARK: UIViewControllerAnimatedTransitioning
