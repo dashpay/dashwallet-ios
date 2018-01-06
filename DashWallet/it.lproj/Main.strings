@@ -223,3 +223,6 @@
 
 /* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
 "wd8-oB-KWn.text" = "";
+
+/* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
+"F30-En-QkL.normalTitle" = "";

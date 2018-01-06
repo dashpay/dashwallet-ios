@@ -223,3 +223,6 @@
 
 /* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
 "xaD-eI-0iC.normalTitle" = "2";
+
+/* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
+"F30-En-QkL.normalTitle" = "";
