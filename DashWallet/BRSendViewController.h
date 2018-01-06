@@ -26,14 +26,17 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import "BRAmountViewController.h"
+#import <CoreNFC/CoreNFC.h>
 
 @interface BRSendViewController : UIViewController <UIAlertViewDelegate, UITextViewDelegate,
 BRAmountViewControllerDelegate, AVCaptureMetadataOutputObjectsDelegate, UIViewControllerTransitioningDelegate,
-UIViewControllerAnimatedTransitioning>
+UIViewControllerAnimatedTransitioning,NFCNDEFReaderSessionDelegate>
 
 - (IBAction)tip:(id)sender;
 
 - (IBAction)enableInstantX:(id)sender;
+
+- (IBAction)startNFC:(id)sender;
 
 - (void)handleURL:(NSURL *)url;
 - (void)handleFile:(NSData *)file;

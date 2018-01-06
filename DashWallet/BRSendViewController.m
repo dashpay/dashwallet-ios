@@ -83,6 +83,8 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
 @property (nonatomic, strong) IBOutlet UIView * shapeshiftView;
 @property (nonatomic, strong) IBOutlet UILabel * shapeshiftLabel;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint * NFCWidthConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint * leftOfNFCButtonWhitespaceConstraint;
 
 @end
 
@@ -140,6 +142,17 @@ static NSString *sanitizeString(NSString *s)
     
     self.sendInstantly = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
     [self.instantSwitch setOn:self.sendInstantly];
+    BOOL hasNFC = NO;
+    if (@available(iOS 11.0, *)) {
+        if ([NFCNDEFReaderSession readingAvailable]) {
+            //hasNFC = YES; disabled
+        }
+    }
+    
+    if (!hasNFC) {
+        [self.NFCWidthConstraint setConstant:0];
+        [self.leftOfNFCButtonWhitespaceConstraint setConstant:0];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -1610,6 +1623,23 @@ static NSString *sanitizeString(NSString *s)
     self.canChangeAmount = self.showBalance = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
     [self updateClipboardText];
+}
+
+- (IBAction)startNFC:(id)sender NS_AVAILABLE_IOS(11.0) {
+    [BREventManager saveEvent:@"send:nfc"];
+        NFCNDEFReaderSession *session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT) invalidateAfterFirstRead:NO];
+        [session beginSession];
+}
+
+// MARK: - NFCNDEFReaderSessionDelegate
+
+- (void) readerSession:(nonnull NFCNDEFReaderSession *)session didDetectNDEFs:(nonnull NSArray<NFCNDEFMessage *> *)messages NS_AVAILABLE_IOS(11.0) {
+    
+    for (NFCNDEFMessage *message in messages) {
+        for (NFCNDEFPayload *payload in message.records) {
+            NSLog(@"Payload data:%@",payload.payload);
+        }
+    }
 }
 
 // MARK: - BRAmountViewControllerDelegate

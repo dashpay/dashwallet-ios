@@ -996,6 +996,9 @@
                                 </constraints>
                                 <state key="normal" title="NFC" backgroundImage="button-bg-blue"/>
                                 <state key="highlighted" backgroundImage="button-bg-blue-pressed"/>
+                                <connections>
+                                    <action selector="startNFC:" destination="RsQ-W7-grB" eventType="touchUpInside" id="zxp-5r-DMe"/>
+                                </connections>
                             </button>
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aeV-sO-1m0">
                                 <rect key="frame" x="167" y="507.5" width="51" height="30"/>
@@ -1072,8 +1075,10 @@
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
+                        <outlet property="NFCWidthConstraint" destination="iE6-nK-QF0" id="mgl-la-LeG"/>
                         <outlet property="clipboardButton" destination="bfj-xS-5rN" id="mfH-NX-2iX"/>
                         <outlet property="instantSwitch" destination="aeV-sO-1m0" id="T13-wq-XNf"/>
+                        <outlet property="leftOfNFCButtonWhitespaceConstraint" destination="tPV-6A-6Xh" id="d3I-WF-sey"/>
                         <outlet property="scanButton" destination="ce6-Wi-wk4" id="tr9-fj-NRa"/>
                         <outlet property="sendLabel" destination="l5l-JR-LKA" id="uWh-qp-akV"/>
                         <outlet property="shapeshiftLabel" destination="adc-g6-wnP" id="u0R-FU-WdX"/>
