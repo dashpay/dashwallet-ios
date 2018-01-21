@@ -116,6 +116,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 - (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
+- (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
 
 -(NSNumber* _Nonnull)localCurrencyDashPrice;
 
