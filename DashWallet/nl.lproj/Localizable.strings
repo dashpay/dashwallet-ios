@@ -36,6 +36,9 @@
 "\n%d attempts remaining\n" = "\nnog %d pogingen\n";
 
 /* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nnog 1 poging\n";
 
 /* No comment provided by engineer. */

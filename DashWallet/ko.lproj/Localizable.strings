@@ -36,6 +36,9 @@
 "\n%d attempts remaining\n" = "\n%d회의 시도 남음\n";
 
 /* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1회의 시도 남음\n";
 
 /* No comment provided by engineer. */

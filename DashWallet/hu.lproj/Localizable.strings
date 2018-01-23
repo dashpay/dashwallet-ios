@@ -36,6 +36,9 @@
 "\n%d attempts remaining\n" = "\nmég %d alkalommal próbálkozhatsz\n";
 
 /* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nmég 1 alkalommal próbálkozhatsz\n";
 
 /* No comment provided by engineer. */

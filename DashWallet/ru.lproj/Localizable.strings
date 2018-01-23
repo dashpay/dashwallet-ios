@@ -36,6 +36,9 @@
 "\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
 
 /* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
