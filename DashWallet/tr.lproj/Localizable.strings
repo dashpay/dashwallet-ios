@@ -45,9 +45,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nCüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANILMIŞ\n\ndash adresleri sadece tek kullanıma yöneliktir\n\ntekrar kullanmak alıcı ve sizin için gizliliği düşürebilir ve alıcı direk olarak adresi kontrol edemezse kaybolabilir";
-
-/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -105,9 +102,6 @@
 "bad recovery phrase" = "hatalı kurtarma cümlesi";
 
 /* No comment provided by engineer. */
-"bad signature" = "hatalı imza";
-
-/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -135,9 +129,6 @@
 "change payment amount?" = "ödeme tutarı değişsin mi?";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "change wallet passcode";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "adres bakiyesi denetleniyor...";
 
 /* No comment provided by engineer. */
@@ -147,16 +138,10 @@
 "choose passcode for %@" = "%@ için şifre seçin";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "choose wallet passcode";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -164,11 +149,11 @@
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
 
+/* Confirm */
+"Confirm" = "Confirm";
+
 /* confirm */
 "confirm" = "confirm";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "TEMİZLEME İŞLEMİNİ ONAYLA";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d bloğunda onaylandı";
@@ -202,9 +187,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "ödeme dash ağına iletilemedi";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "Dash address" = "dash adresi";
@@ -324,9 +306,6 @@
 "moved" = "taşınmış";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "new wallet passcode";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "sonra, kurtarma cümlenizi yazın";
 
 /* No comment provided by engineer. */
@@ -354,10 +333,10 @@
 "not connected to the dash network" = "dash ağına bağlı değil";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "tamam";
 
 /* No comment provided by engineer. */
-"ok" = "tamam";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "şifre";
@@ -390,10 +369,7 @@
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"post-dated" = "ileri tarihli";
-
-/* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Bitcoinleri şu adresten al: %@";
@@ -531,9 +507,6 @@
 "swept!" = "silindi!";
 
 /* No comment provided by engineer. */
-"syncing..." = "eşitleniyor...";
-
-/* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
@@ -597,9 +570,6 @@
 "transaction history" = "işlem geçmişi";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "işlem kontrol edildi";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "işlem reddedildi";
 
 /* No comment provided by engineer. */
@@ -648,16 +618,10 @@
 "verify passcode" = "şifreyi doğrulayın";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "verify wallet passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "cüzdan adresi";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "cüzdan devre dışı";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "wallet passcode";
 
 /* No comment provided by engineer. */
 "WARNING" = "UYARI";

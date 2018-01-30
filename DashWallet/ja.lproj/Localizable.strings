@@ -48,9 +48,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから進んでください。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nこのアドレスは使用済みです！\n\nダッシュのアドレスは1回のみの\n利用が最適です。\n\n再利用してしまうと、プライバシーの\n低下及び宛先間違いが発生しやすく\nなります。例えば、相手が紛失した\nウォレットに送るとダッシュインが\n消滅してしまう可能性もあります。";
-
-/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -108,9 +105,6 @@
 "bad recovery phrase" = "不正な復元フレーズ";
 
 /* No comment provided by engineer. */
-"bad signature" = "署名が正しくありません。";
-
-/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -138,9 +132,6 @@
 "change payment amount?" = "送金額だけ変更しますか？";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "ウォレットのパスコードを変更";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "アドレスの残高を確認しています…";
 
 /* No comment provided by engineer. */
@@ -150,16 +141,10 @@
 "choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "パスコードをご指定下さい";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "クリップボードに有効なダッシュアドレスが含まれていません";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -167,14 +152,11 @@
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
 
-/* confirm */
-"confirm" = "confirm";
-
 /* Confirm */
 "Confirm" = "Confirm";
 
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "ウォレットを完全削除";
+/* confirm */
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "ブロック#%dにて承認";
@@ -208,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "取引をダッシュネットワークへ送信できませんでした";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "現在のパスコードをご入力下さい";
 
 /* No comment provided by engineer. */
 "Dash address" = "ダッシュアドレス";
@@ -330,9 +309,6 @@
 "moved" = "移動されました";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "新規のパスコードをご入力下さい";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "復元フレーズを紙に書き留めて下さい！";
 
 /* No comment provided by engineer. */
@@ -360,10 +336,10 @@
 "not connected to the dash network" = "ダッシュネットワークに接続されていません。";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "OK";
 
 /* No comment provided by engineer. */
-"ok" = "OK";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "パスコード";
@@ -394,9 +370,6 @@
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
-
-/* No comment provided by engineer. */
-"post-dated" = "後日";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -471,7 +444,7 @@
 "seen by %d of %d peers" = "%1$d / %2$d ピアにて伝播確認済";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "送金する";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高\n%1$@ (%2$@) を\ndashwallet宛に送金しても\n宜しいですか？\nダッシュネットワークへの\n手数料が %3$@ (%4$@) です。";
@@ -537,9 +510,6 @@
 "swept!" = "全残高送金成功！";
 
 /* No comment provided by engineer. */
-"syncing..." = "同期中…";
-
-/* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
@@ -603,9 +573,6 @@
 "transaction history" = "取引履歴";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "取引が後日行われる予定";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "取引が拒否されました";
 
 /* No comment provided by engineer. */
@@ -654,16 +621,10 @@
 "verify passcode" = "もう一度パスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "もう一度パスコードをご入力下さい";
-
-/* No comment provided by engineer. */
 "wallet address" = "自分のアドレス";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ウォレット無効";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "ウォレットのパスコード";
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";

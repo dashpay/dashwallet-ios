@@ -149,6 +149,9 @@
 /* No comment provided by engineer. */
 "close app" = "App schließen";
 
+/* Confirm */
+"Confirm" = "Bestätigen";
+
 /* confirm */
 "confirm" = "Bestätigen";
 

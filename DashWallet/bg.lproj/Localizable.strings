@@ -78,10 +78,10 @@
 "amount too small" = "твърде малко количество";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+"Application %@ is requesting a payment to" = "Приложението %@ изисква плащане към";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Приложението %@ изисква адрес за да направи плащането. Ще разрешите ли това?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложението %@ иска да получи вашият Master Public Key.  Това може да бъде използване за проследяване на вашият портфейл,но не може да се използва за преместване на вашите Dash.";
@@ -261,7 +261,7 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
+"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "Ако все още искате да го изтриете, моля въведете: \"Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване\"";
 
 /* No comment provided by engineer. */
 "ignore" = "игнорирай";
@@ -420,7 +420,7 @@
 "reset" = "изчистване";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "повторен опит";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash или bitcoin адрес. Можете да изпратите плащане към всеки с наличен адрес.";
@@ -537,13 +537,13 @@
 "this private key is empty" = "този частен ключ е празен";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква  мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на Instant Send, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
 
 /* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
+"this request requires an instant payment but you have disabled instant payments" = "тази заявка изисква мигновено плащане, но Вие сте изключили мигновените плащанията";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Този портфейл не е празен или синхронизирането не е приключило, не можете да го изтриете без фразата за възстановяване";
 
 /* No comment provided by engineer. */
 "to:" = "до:";

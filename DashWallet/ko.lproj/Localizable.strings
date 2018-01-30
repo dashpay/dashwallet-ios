@@ -48,9 +48,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해비밀번호가 필요합니다. 설정에 가서 비밀번호를 활성화해주세요.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 한번 사용된 주소 입니다.\n\n빗코인 주소는 한 번만 사용하기를 권장합니다.\n\n주소의 재사용은 당신과 받는 사람의 개인정보가 노출될 가능성이 높아지고, 만약 받는 사람이 직접 주소를 관리하고 있지 않다면 빗코인을 잃어버리는 결과를 가져올 수도 있습니다.";
-
-/* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
@@ -108,9 +105,6 @@
 "bad recovery phrase" = "잘못된 복원 문구";
 
 /* No comment provided by engineer. */
-"bad signature" = "잘못된 서명";
-
-/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -138,9 +132,6 @@
 "change payment amount?" = "보낼 금액을 변경하시겠습니까?";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "지갑 비밀번호 변경";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "주소 잔액을 확인하는중...";
 
 /* No comment provided by engineer. */
@@ -150,16 +141,10 @@
 "choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "지갑 비밀번호 선택";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "클립보드의 지갑주소가 유효하지 않음";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -167,14 +152,11 @@
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
 
-/* confirm */
-"confirm" = "confirm";
-
 /* Confirm */
 "Confirm" = "Confirm";
 
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "삭제 확인";
+/* confirm */
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";
@@ -208,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "지불 내용을 대쉬 네트워크에 전송할 수 없었습니다";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "현재 지갑 비밀번호";
 
 /* No comment provided by engineer. */
 "Dash address" = "대쉬 주소";
@@ -330,9 +309,6 @@
 "moved" = "이동 완료";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "새로운 지갑 비밀번호";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
 
 /* No comment provided by engineer. */
@@ -360,10 +336,10 @@
 "not connected to the dash network" = "대쉬 네트워크에 연결돼 있지 않습니다";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "암호";
@@ -394,9 +370,6 @@
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
-
-/* No comment provided by engineer. */
-"post-dated" = "후일부";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -537,9 +510,6 @@
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* No comment provided by engineer. */
-"syncing..." = "동기화중...";
-
-/* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
@@ -603,9 +573,6 @@
 "transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "거래 날짜가 후일로 설정됨";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "거래가 거부됨";
 
 /* No comment provided by engineer. */
@@ -654,16 +621,10 @@
 "verify passcode" = "비밀번호 확인";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "지갑 비밀번호 확인";
-
-/* No comment provided by engineer. */
 "wallet address" = "지갑 주소";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "지갑 사용 정지됨";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "지갑 비밀번호";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
