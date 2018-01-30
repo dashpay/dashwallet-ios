@@ -122,107 +122,17 @@
 /* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
 "Ika-qg-5Cf.normalTitle" = "9";
 
-/* Class = "UILabel"; text = "Detail"; ObjectID = "00M-e1-IWY"; */
-"00M-e1-IWY.text" = "";
-
-/* Class = "UILabel"; text = "to: 1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "2U5-tK-XSF"; */
-"2U5-tK-XSF.text" = "";
-
-/* Class = "UILabel"; text = "subtitle"; ObjectID = "55a-IW-IjK"; */
-"55a-IW-IjK.text" = "";
-
 /* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "";
-
-/* Class = "UIBarButtonItem"; title = " "; ObjectID = "9L3-gM-TgP"; */
-"9L3-gM-TgP.title" = "";
-
-/* Class = "UILabel"; text = "($0.00)"; ObjectID = "AIC-c4-j2z"; */
-"AIC-c4-j2z.text" = "";
-
-/* Class = "UILabel"; text = "USD"; ObjectID = "CsQ-fq-mfQ"; */
-"CsQ-fq-mfQ.text" = "";
+"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "";
 
-/* Class = "UILabel"; text = "Detail"; ObjectID = "GAm-wQ-UwG"; */
-"GAm-wQ-UwG.text" = "";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "GWf-4e-jTu"; */
-"GWf-4e-jTu.text" = "";
-
-/* Class = "UILabel"; text = "Detail"; ObjectID = "HrP-wv-Y1B"; */
-"HrP-wv-Y1B.text" = "";
-
-/* Class = "UIBarButtonItem"; title = " "; ObjectID = "Huq-Vk-LaF"; */
-"Huq-Vk-LaF.title" = "";
-
-/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "";
-
-/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "JNR-nK-iyP"; */
-"JNR-nK-iyP.text" = "";
-
-/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "O7K-cF-GAA"; */
-"O7K-cF-GAA.text" = "";
-
-/* Class = "UIBarButtonItem"; title = " "; ObjectID = "OBr-C7-abe"; */
-"OBr-C7-abe.title" = "";
-
-/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "Ofd-q3-a1P"; */
-"Ofd-q3-a1P.text" = "";
-
-/* Class = "UILabel"; text = "($0.00)"; ObjectID = "TBf-3l-ujT"; */
-"TBf-3l-ujT.text" = "";
-
-/* Class = "UILabel"; text = "subtitle"; ObjectID = "WHQ-zW-IjD"; */
-"WHQ-zW-IjD.text" = "";
-
-/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "WSe-0v-Fha"; */
-"WSe-0v-Fha.normalTitle" = "";
-
-/* Class = "UILabel"; text = "id:"; ObjectID = "WsQ-ej-Wh4"; */
-"WsQ-ej-Wh4.text" = "";
-
-/* Class = "UIButton"; normalTitle = "1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"; ObjectID = "XV7-2s-hZs"; */
-"XV7-2s-hZs.normalTitle" = "";
-
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
 "eJ2-5h-DO2.text" = "";
 
-/* Class = "UILabel"; text = "Title"; ObjectID = "fVX-tM-tZx"; */
-"fVX-tM-tZx.text" = "";
-
-/* Class = "UILabel"; text = "subtitle"; ObjectID = "gZx-fI-siU"; */
-"gZx-fI-siU.text" = "";
-
-/* Class = "UIBarButtonItem"; title = " "; ObjectID = "hWS-2G-hHE"; */
-"hWS-2G-hHE.title" = "";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "mpz-vn-jZ1"; */
-"mpz-vn-jZ1.text" = "";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "mxS-i4-y1n"; */
-"mxS-i4-y1n.text" = "";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "ncN-gc-vpQ"; */
-"ncN-gc-vpQ.text" = "";
-
-/* Class = "UILabel"; text = "D 0.00"; ObjectID = "o24-a7-ayU"; */
-"o24-a7-ayU.text" = "";
-
-/* Class = "UILabel"; text = "Detail"; ObjectID = "pXc-8D-8Gh"; */
-"pXc-8D-8Gh.text" = "";
-
-/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "qNV-Ka-14n"; */
-"qNV-Ka-14n.text" = "";
-
-/* Class = "UILabel"; text = "Title"; ObjectID = "uaG-gX-Ias"; */
-"uaG-gX-Ias.text" = "";
-
-/* Class = "UILabel"; text = "($1,000.00)"; ObjectID = "wd8-oB-KWn"; */
-"wd8-oB-KWn.text" = "";
-
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
-"F30-En-QkL.normalTitle" = "";
+"F30-En-QkL.normalTitle" = "NFC";
+
+/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
+"Irz-6P-zvD.normalTitle" = "";
