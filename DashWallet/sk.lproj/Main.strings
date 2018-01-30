@@ -69,7 +69,7 @@
 "YC6-rN-4P5.text" = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase.";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift vo vývoji";
 
 /* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
 "bUC-MN-PXO.normalTitle" = "1";
@@ -126,7 +126,7 @@
 "wDZ-DN-szv.text" = "start a new wallet by generating a wallet recovery phrase";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
+"x2u-C3-wz6.text" = "stav:";
 
 /* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
 "xaD-eI-0iC.normalTitle" = "2";

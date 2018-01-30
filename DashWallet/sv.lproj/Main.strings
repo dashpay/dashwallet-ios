@@ -75,7 +75,7 @@
 "wDZ-DN-szv.text" = "starta en ny plånbok genom att skapa en återställningsfras till plånboken";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift pågår";
 
 /* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
 "lbm-03-nu4.text" = "Instant Send";
@@ -126,10 +126,10 @@
 "5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "";
+"FjB-H2-BnK.text" = "skickat";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "";
+"eJ2-5h-DO2.text" = "obekräftad";
 
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
