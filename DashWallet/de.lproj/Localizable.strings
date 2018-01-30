@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "App schließen";
 
-/* Confirm */
-"Confirm" = "Bestätigen";
-
 /* confirm */
 "confirm" = "Bestätigen";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) empfangen";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */

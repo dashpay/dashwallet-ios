@@ -377,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "fogadva: %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "helyreállítási kódmondat";
 
 /* No comment provided by engineer. */

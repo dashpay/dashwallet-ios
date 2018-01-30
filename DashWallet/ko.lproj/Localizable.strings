@@ -3,9 +3,6 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@는 'bits'라고 합니다. %2$@ = 1대쉬";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -151,9 +148,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
-
-/* Confirm */
-"Confirm" = "Confirm";
 
 /* confirm */
 "confirm" = "confirm";
@@ -383,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) 받음";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "복원 문구";
 
 /* No comment provided by engineer. */

@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "затвори приложението";
 
-/* Confirm */
-"Confirm" = "Потвърди";
-
 /* confirm */
 "confirm" = "потвърдено";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "фраза за възстановяване";
 
 /* No comment provided by engineer. */

@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "zamknij aplikację";
 
-/* Confirm */
-"Confirm" = "Potwierdź";
-
 /* confirm */
 "confirm" = "potwierdź";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "otrzymano %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "fraza odzyskiwania danych";
 
 /* No comment provided by engineer. */

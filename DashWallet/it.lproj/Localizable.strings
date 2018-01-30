@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "chiudi app";
 
-/* Confirm */
-"Confirm" = "Conferma";
-
 /* confirm */
 "confirm" = "Conferma";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ricevuto %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "frase di recupero";
 
 /* No comment provided by engineer. */

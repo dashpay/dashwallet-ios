@@ -3,9 +3,6 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'bits'. %@ = 1 dash." = "%1$@ er for  \"bits\". %2$@ = 1 dash.";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -151,9 +148,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "luk app";
-
-/* Confirm */
-"Confirm" = "Confirm";
 
 /* confirm */
 "confirm" = "confirm";
@@ -383,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "modtog %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "gendannelsesssætning";
 
 /* No comment provided by engineer. */

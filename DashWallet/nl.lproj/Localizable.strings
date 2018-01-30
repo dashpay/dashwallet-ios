@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "sluit app";
 
-/* Confirm */
-"Confirm" = "Bevestig";
-
 /* confirm */
 "confirm" = "bevestig";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ontvangen %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "herstelzin";
 
 /* No comment provided by engineer. */

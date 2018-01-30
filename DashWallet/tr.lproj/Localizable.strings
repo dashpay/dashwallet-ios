@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
 
-/* Confirm */
-"Confirm" = "Confirm";
-
 /* confirm */
 "confirm" = "confirm";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ alındı (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "kurtarma cümlesi";
 
 /* No comment provided by engineer. */

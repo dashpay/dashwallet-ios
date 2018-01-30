@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
 
-/* Confirm */
-"Confirm" = "Xác thực";
-
 /* confirm */
 "confirm" = "xác thực";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "nhận %@ (%@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "cụm từ phục hồi";
 
 /* No comment provided by engineer. */

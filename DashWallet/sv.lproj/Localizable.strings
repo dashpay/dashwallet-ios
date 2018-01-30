@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "stäng app";
 
-/* Confirm */
-"Confirm" = "Bekräfta";
-
 /* confirm */
 "confirm" = "bekräfta";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "tog emot %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "återställningsfras";
 
 /* No comment provided by engineer. */
