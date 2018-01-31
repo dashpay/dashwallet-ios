@@ -2,6 +2,9 @@
 /* Class = "UIButton"; normalTitle = "recover wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "gjenopprett lommebok";
 
+/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
+
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "lokal valuta";
 
@@ -77,20 +80,11 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "ingen transaksjoner";
 
-/* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "start en ny lommebok ved å generere en gjenopprettingsfrase";
-
-/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
-
-/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Instant Send";
-
-/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
-
 /* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
 "uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:";
+
+/* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
+"wDZ-DN-szv.text" = "start en ny lommebok ved å generere en gjenopprettingsfrase";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
@@ -128,11 +122,17 @@
 /* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
 "Ika-qg-5Cf.normalTitle" = "9";
 
-/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
+/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
+"adc-g6-wnP.text" = "Shapeshift in progress";
+
+/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "Instant Send";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
+"x2u-C3-wz6.text" = "status:";
 
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "";
+"Irz-6P-zvD.normalTitle" = "copy logs";

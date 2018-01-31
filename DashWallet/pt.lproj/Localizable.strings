@@ -1,9 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
+" and " = "e";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ é para 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ não tem permissão para acessar a câmera";
@@ -111,10 +111,10 @@
 "block #%d of %d" = "bloco #%1$d de %2$d";
 
 /* No comment provided by engineer. */
-"Buy Dash" = "Buy Dash";
+"Buy Dash" = "Comprar Dash";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+"Buy dash in dashwallet!" = "Compre Dash na dashwallet!";
 
 /* No comment provided by engineer. */
 "cancel" = "cancelar";
@@ -138,7 +138,7 @@
 "choose passcode for %@" = "escolha a senha para %@";
 
 /* No comment provided by engineer. */
-"clear" = "clear";
+"clear" = "limpar";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
@@ -150,7 +150,7 @@
 "close app" = "fechar o aplicativo";
 
 /* confirm */
-"confirm" = "confirm";
+"confirm" = "confirmar:";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmada no bloco #%d";
@@ -222,10 +222,10 @@
 "email not configured" = "e-mail não configurado";
 
 /* No comment provided by engineer. */
-"enable" = "enable";
+"enable" = "habilitar";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"enable receive notifications" = "ativar receber notificações";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -240,10 +240,10 @@
 "error signing transaction" = "erro na assinatura da transação";
 
 /* No comment provided by engineer. */
-"exit" = "exit";
+"exit" = "sair";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "failed wallet update";
+"failed wallet update" = "atualização da carteira falhou";
 
 /* No comment provided by engineer. */
 "from:" = "de:";
@@ -366,7 +366,7 @@
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Receber dash neste endereço: %@";
@@ -417,7 +417,7 @@
 "reset" = "redefinir";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "tente novamente";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
@@ -432,13 +432,13 @@
 "second" = "second";
 
 /* No comment provided by engineer. */
-"seconds" = "seconds";
+"seconds" = "segundos";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "visto por %1$d de %2$d peers";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "enviar";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Enviar %1$@ (%2$@) desta chave privada para sua carteira? A rede dash receberá uma taxa de %3$@ (%4$@).";

@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ azaz 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nem tud hozzáférni a kamerához";
@@ -438,7 +438,7 @@
 "seen by %d of %d peers" = "látta: %1$d csomópont a(z) %2$d-ból/-ből";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "küldés";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Átvezessem a következő egyenleget a privát kulcsról a tárcádba: %1$@ (%2$@)? A dash hálózati díj %3$@ (%4$@) lesz.";

@@ -86,15 +86,6 @@
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "通过生成一个钱包恢复密语来开启一个新的钱包";
 
-/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift转换中";
-
-/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "即时支付";
-
-/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "状态：";
-
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
 
@@ -131,8 +122,17 @@
 /* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
 "Ika-qg-5Cf.normalTitle" = "9";
 
+/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
+"adc-g6-wnP.text" = "Shapeshift转换中";
+
+/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "即时支付";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
+"x2u-C3-wz6.text" = "状态：";
+
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "";
+"Irz-6P-zvD.normalTitle" = "copy logs";

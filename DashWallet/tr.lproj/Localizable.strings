@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ 'mDASH' yerine geçer. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ kameraya erişmesi için izin verilmedi";
@@ -438,7 +438,7 @@
 "seen by %d of %d peers" = "%2$d eşleşmenin %1$d'i tarafından görüldü";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "gönder";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Özel anahtardan cüzdanınıza %1$@ (%2$@) gönderilsin mi? Bitcoin ağı %3$@ (%4$@) ücreti alacaktır.";
@@ -456,7 +456,7 @@
 "send request as message" = "isteği mesaj olarak gönder";
 
 /* No comment provided by engineer. */
-"sent" = "gönderildi";
+"sent" = "gönderilen";
 
 /* No comment provided by engineer. */
 "sent!" = "gönderildi!";

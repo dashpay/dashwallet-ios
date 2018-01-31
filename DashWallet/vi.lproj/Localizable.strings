@@ -438,7 +438,7 @@
 "seen by %d of %d peers" = "được thấy bởi %1$d của %2$d các nút";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "gửi";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Gửi %1$@ (%2$@) từ khoá riêng này vào ví của bạn? Mạng lưới dash sẽ nhận một mức phí của %3$@ (%4$@).";

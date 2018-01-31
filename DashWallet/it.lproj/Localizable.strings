@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-" and " = " e ";
+" and " = "e";
 
 /* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@sta per 'mDASH'. %@ = 1 DASH.";
@@ -15,7 +15,7 @@
 "%d confirmations" = "%d conferme";
 
 /* No comment provided by engineer. */
-", " = ", ";
+", " = ",";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 conferme";
@@ -438,7 +438,7 @@
 "seen by %d of %d peers" = "visto da %1$d di %2$d pari";
 
 /* No comment provided by engineer. */
-"send" = "invia";
+"send" = "Invia";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Inviare %1$@ (%2$@) da questa chiave privata al tuo portafoglio? La rete dash riceverà una tassa di %3$@ (%4$@).";
@@ -480,7 +480,7 @@
 "shapeshift succeeded" = "shapeshift avvenuto con successo";
 
 /* No comment provided by engineer. */
-"show" = "mostra";
+"show" = "visualizza";
 
 /* No comment provided by engineer. */
 "show phrase" = "mostra frase";
