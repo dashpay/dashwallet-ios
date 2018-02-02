@@ -1,9 +1,9 @@
 //
-//  BRSendViewController.h
-//  BreadWallet
+//  BRQRScanView.h
+//  dashwallet
 //
-//  Created by Aaron Voisine on 5/8/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Andrew Podkovyrin on 21/12/2017.
+//  Copyright © 2017 Aaron Voisine. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,15 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-#import <AVFoundation/AVFoundation.h>
-#import "BRAmountViewController.h"
-#import <CoreNFC/CoreNFC.h>
 
-@interface BRSendViewController : UIViewController <UIAlertViewDelegate, BRAmountViewControllerDelegate, NFCNDEFReaderSessionDelegate>
+NS_ASSUME_NONNULL_BEGIN
 
-- (IBAction)tip:(id)sender;
+@class BRQRScanViewModel;
 
-- (IBAction)enableInstantX:(id)sender;
+@interface BRQRScanView : UIView
 
-- (IBAction)startNFC:(id)sender;
-
-- (void)handleURL:(NSURL *)url;
-- (void)handleFile:(NSData *)file;
-- (void)updateClipboardText;
+@property (strong, nonatomic) BRQRScanViewModel *viewModel;
 
 @end
+
+NS_ASSUME_NONNULL_END

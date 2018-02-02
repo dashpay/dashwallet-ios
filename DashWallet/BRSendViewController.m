@@ -25,7 +25,6 @@
 
 #import "BRSendViewController.h"
 #import "BRRootViewController.h"
-#import "BRScanViewController.h"
 #import "BRAmountViewController.h"
 #import "BRSettingsViewController.h"
 #import "BRBubbleView.h"
@@ -45,6 +44,8 @@
 #import "MBProgressHUD.h"
 #import "DSShapeshiftManager.h"
 #import "BRBIP32Sequence.h"
+#import "BRQRScanViewController.h"
+#import "BRQRScanViewModel.h"
 
 #define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
@@ -65,7 +66,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface BRSendViewController ()
+@interface BRSendViewController () <BRQRScanViewModelDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) BRTransaction *sweepTx;
@@ -76,7 +77,6 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, strong) NSString *okAddress, *okIdentity;
 @property (nonatomic, strong) BRBubbleView *tipView;
-@property (nonatomic, strong) BRScanViewController *scanController;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UISwitch *instantSwitch;
@@ -159,15 +159,6 @@ static NSString *sanitizeString(NSString *s)
 {
     [super viewWillAppear:animated];
     [self cancel:nil];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    
-    if (! self.scanController) {
-        self.scanController = [self.storyboard instantiateViewControllerWithIdentifier:@"ScanViewController"];
-    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -1368,12 +1359,6 @@ static NSString *sanitizeString(NSString *s)
     return YES;
 }
 
-- (void)resetQRGuide
-{
-    self.scanController.message.text = nil;
-    self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide"];
-}
-
 - (void)updateClipboardText
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -1556,9 +1541,10 @@ static NSString *sanitizeString(NSString *s)
     [BREventManager saveEvent:@"send:scan_qr"];
     if (! [sender isEqual:self.scanButton]) self.showBalance = YES;
     [sender setEnabled:NO];
-    self.scanController.delegate = self;
-    self.scanController.transitioningDelegate = self;
-    [self.navigationController presentViewController:self.scanController animated:YES completion:nil];
+    
+    BRQRScanViewController *qrScanViewController = [[BRQRScanViewController alloc] init];
+    qrScanViewController.viewModel.delegate = self;
+    [self presentViewController:qrScanViewController animated:YES completion:nil];
 }
 
 - (IBAction)payToClipboard:(id)sender
@@ -1803,199 +1789,65 @@ static NSString *sanitizeString(NSString *s)
     }];
 }
 
+// MARK: - BRQRScanViewModelDelegate
 
-// MARK: - AVCaptureMetadataOutputObjectsDelegate
+- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel didScanStandardNonPaymentRequest:(BRPaymentRequest *)request {
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (request.amount > 0) self.canChangeAmount = YES;
+        if (request.isValid && self.showBalance) {
+            [self showBalance:request.paymentAddress];
+            [self cancel:nil];
+        }
+        else {
+            [self confirmRequest:request];
+        }
+    }];
+}
 
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects
-       fromConnection:(AVCaptureConnection *)connection
-{
-    for (AVMetadataMachineReadableCodeObject *codeObject in metadataObjects) {
-        if (! [codeObject.type isEqual:AVMetadataObjectTypeQRCode]) continue;
-        
-        [BREventManager saveEvent:@"send:scanned_qr"];
-        
-        NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:
-                          [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
-        if ((request.isValid) || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
-            self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
-            [self.scanController stop];
+- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel
+  didScanPaymentRequest:(BRPaymentRequest *)request
+        protocolRequest:(BRPaymentProtocolRequest *)protocolRequest
+                  error:(NSError *_Nullable)error {
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (error) {
+            request.r = nil;
+        }
+
+        if (error && !request.isValid) {
+            UIAlertController *alert = [UIAlertController
+                                        alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                        message:error.localizedDescription
+                                        preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:nil];
+            [alert addAction:okButton];
+            [self presentViewController:alert animated:YES completion:nil];
             
-            [BREventManager saveEvent:@"send:valid_qr_scan"];
-            
-            if (request.r.length > 0) { // start fetching payment protocol request right away
-                [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:5.0
-                             completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                                 dispatch_async(dispatch_get_main_queue(), ^{
-                                     if (error) request.r = nil;
-                                     
-                                     if (error && ! request.isValid) {
-                                         UIAlertController * alert = [UIAlertController
-                                                                      alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                                                      message:error.localizedDescription
-                                                                      preferredStyle:UIAlertControllerStyleAlert];
-                                         UIAlertAction* okButton = [UIAlertAction
-                                                                    actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                    style:UIAlertActionStyleCancel
-                                                                    handler:^(UIAlertAction * action) {
-                                                                    }];
-                                         [alert addAction:okButton];
-                                         [self presentViewController:alert animated:YES completion:nil];
-                                         [self cancel:nil];
-                                         // continue here and handle the invalid request inside confirmRequest:
-                                     }
-                                     
-                                     [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                                         [self resetQRGuide];
-                                     }];
-                                     
-                                     if (error) {
-                                         [BREventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
-                                         [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
-                                     }
-                                     else {
-                                         [BREventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
-                                         [self confirmProtocolRequest:req];
-                                     }
-                                 });
-                             }];
-            }
-            else { // standard non payment protocol request
-                [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                    [self resetQRGuide];
-                    if (request.amount > 0) self.canChangeAmount = YES;
-                    if (request.isValid && self.showBalance) {
-                        [self showBalance:request.paymentAddress];
-                        [self cancel:nil];
-                    }
-                    else [self confirmRequest:request];
-                }];
-            }
-        } else {
-            [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:5.0
-                         completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
-                             dispatch_async(dispatch_get_main_queue(), ^{
-                                 [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetQRGuide) object:nil];
-                                 
-                                 if (req) {
-                                     self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-green"];
-                                     [self.scanController stop];
-                                     
-                                     [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                                         [self resetQRGuide];
-                                     }];
-                                     
-                                     [BREventManager saveEvent:@"send:successful_bip73"];
-                                     [self confirmProtocolRequest:req];
-                                 }
-                                 else {
-                                     self.scanController.cameraGuide.image = [UIImage imageNamed:@"cameraguide-red"];
-                                     if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
-                                         [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
-                                         self.scanController.message.text = [NSString stringWithFormat:@"%@:\n%@",
-                                                                             NSLocalizedString(@"not a valid dash address", nil),
-                                                                             request.paymentAddress];
-                                     } else if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
-                                                [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
-                                         self.scanController.message.text = [NSString stringWithFormat:@"%@:\n%@",
-                                                                             NSLocalizedString(@"not a valid bitcoin address", nil),
-                                                                             request.paymentAddress];
-                                     }
-                                     else self.scanController.message.text = NSLocalizedString(@"not a dash or bitcoin QR code", nil);
-                                     
-                                     [self performSelector:@selector(resetQRGuide) withObject:nil afterDelay:0.35];
-                                     [BREventManager saveEvent:@"send:unsuccessful_bip73"];
-                                 }
-                             });
-                         }];
+            [BREventManager saveEvent:@"send:cancel"];
         }
         
-        break;
-    }
+        if (error) {
+            [BREventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
+            [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
+        }
+        else {
+            [BREventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
+            [self confirmProtocolRequest:protocolRequest];
+        }
+    }];
 }
 
-// MARK: UIViewControllerAnimatedTransitioning
-
-// This is used for percent driven interactive transitions, as well as for container controllers that have companion
-// animations that might need to synchronize with the main animation.
-- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
-{
-    return 0.35;
+- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(BRPaymentProtocolRequest *)protocolRequest {
+    [self dismissViewControllerAnimated:YES completion:^{
+        [BREventManager saveEvent:@"send:successful_bip73"];
+        [self confirmProtocolRequest:protocolRequest];
+    }];
 }
 
-// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
-- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
-{
-    UIView *containerView = transitionContext.containerView;
-    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    UIImageView *img = self.scanButton.imageView;
-    UIView *guide = self.scanController.cameraGuide;
-    
-    [self.scanController.view layoutIfNeeded];
-    
-    if (to == self.scanController) {
-        [containerView addSubview:to.view];
-        to.view.frame = from.view.frame;
-        to.view.center = CGPointMake(to.view.center.x, containerView.frame.size.height*3/2);
-        guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-                                                     img.bounds.size.height/guide.bounds.size.height);
-        guide.alpha = 0;
-        
-        [UIView animateWithDuration:0.1 animations:^{
-            img.alpha = 0.0;
-            guide.alpha = 1.0;
-        }];
-        
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:0.8
-              initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                  to.view.center = from.view.center;
-              } completion:^(BOOL finished) {
-                  img.alpha = 1.0;
-                  [transitionContext completeTransition:YES];
-              }];
-        
-        [UIView animateWithDuration:0.8 delay:0.15 usingSpringWithDamping:0.5 initialSpringVelocity:0
-                            options:UIViewAnimationOptionCurveEaseOut animations:^{
-                                guide.transform = CGAffineTransformIdentity;
-                            } completion:^(BOOL finished) {
-                                [to.view addSubview:guide];
-                            }];
-    }
-    else {
-        [containerView insertSubview:to.view belowSubview:from.view];
-        [self cancel:nil];
-        
-        [UIView animateWithDuration:0.8 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:0
-                            options:UIViewAnimationOptionCurveEaseIn animations:^{
-                                guide.transform = CGAffineTransformMakeScale(img.bounds.size.width/guide.bounds.size.width,
-                                                                             img.bounds.size.height/guide.bounds.size.height);
-                                guide.alpha = 0.0;
-                            } completion:^(BOOL finished) {
-                                guide.transform = CGAffineTransformIdentity;
-                                guide.alpha = 1.0;
-                            }];
-        
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] - 0.15 delay:0.15
-                            options:UIViewAnimationOptionCurveEaseIn animations:^{
-                                from.view.center = CGPointMake(from.view.center.x, containerView.frame.size.height*3/2);
-                            } completion:^(BOOL finished) {
-                                [transitionContext completeTransition:YES];
-                            }];
-    }
-}
-
-// MARK: - UIViewControllerTransitioningDelegate
-
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
-                                                                  presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
-{
-    return self;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
-{
-    return self;
+- (void)qrScanViewModelDidCancel:(BRQRScanViewModel *)viewModel {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

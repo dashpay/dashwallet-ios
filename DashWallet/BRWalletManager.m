@@ -814,7 +814,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
-                                       resetCancelHandlerBlock();
+                                       if (resetCancelHandlerBlock) {
+                                            resetCancelHandlerBlock();
+                                       }
                                    }];
     [alertController addAction:cancelButton];
     [self presentAlertController:alertController animated:YES completion:nil];
@@ -1123,6 +1125,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         if ([currentPin isEqual:previousPin]) {
             context.pinField.text = nil;
             setKeychainString(previousPin, PIN_KEY, NO);
+            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
+                                                      forKey:PIN_UNLOCK_TIME_KEY];
             [context.pinField resignFirstResponder];
             [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
                 if (completion) completion(YES);
