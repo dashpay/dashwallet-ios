@@ -1,12 +1,12 @@
 
 /* Class = "UILabel"; text = "Help us improve dashwallet!"; ObjectID = "Mgm-wb-UlM"; */
-"Mgm-wb-UlM.text" = "アプリの改善にご協力いただけますか？";
+"Mgm-wb-UlM.text" = "Help us improve dashwallet!";
 
 /* Class = "UIButton"; normalTitle = "No Thanks"; ObjectID = "Tw0-s4-w0k"; */
-"Tw0-s4-w0k.normalTitle" = "いいえ";
+"Tw0-s4-w0k.normalTitle" = "No Thanks";
 
 /* Class = "UIButton"; normalTitle = "Ok Great!"; ObjectID = "fzO-vI-zum"; */
-"fzO-vI-zum.normalTitle" = "はい";
+"fzO-vI-zum.normalTitle" = "Ok Great!";
 
 /* Class = "UILabel"; text = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!"; ObjectID = "kqc-0F-49V"; */
-"kqc-0F-49V.text" = "診断データと使用状況データを匿名で開発者に共有していただけますか？\n\nこの情報は個人を特定するデータ及びビットコインに関する取引情報が一切含まれておりません。ユーザーのプライバシーを大切に守ります。";
+"kqc-0F-49V.text" = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!";

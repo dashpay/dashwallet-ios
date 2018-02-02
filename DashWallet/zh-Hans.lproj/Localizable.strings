@@ -149,9 +149,6 @@
 /* No comment provided by engineer. */
 "close app" = "关闭App";
 
-/* Confirm */
-"Confirm" = "确认";
-
 /* confirm */
 "confirm" = "确认";
 
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "收到 %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "恢复密语";
 
 /* No comment provided by engineer. */

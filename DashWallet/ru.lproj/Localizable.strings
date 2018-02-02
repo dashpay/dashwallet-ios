@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-" and " = " и ";
+" and " = "и";
 
 /* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ означает «mDASH». %@ = 1 DASH.";
@@ -15,7 +15,7 @@
 "%d confirmations" = "Подтверждений: %d";
 
 /* No comment provided by engineer. */
-", " = ", ";
+", " = ",";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 подтверждений";
@@ -148,9 +148,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "Закрыть программу";
-
-/* Confirm */
-"Confirm" = "Подтвердить";
 
 /* confirm */
 "confirm" = "Подтвердить";
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "Получено %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "Фраза восстановления";
 
 /* No comment provided by engineer. */
@@ -420,7 +417,7 @@
 "reset" = "Сбросить";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "повторить";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить его адрес Dash или Bitcoin. Вы можете отправить платеж любому, у кого есть адрес.";

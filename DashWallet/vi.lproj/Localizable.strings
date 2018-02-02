@@ -54,7 +54,7 @@
 "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi \ncủa bạn hoặc họ sẽ tiêu mất số dash của bạn.";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n";
+"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKHÔNG NÊN chụp ảnh màn hình.\nVì ảnh chụp màn hình hiển thị cho các ứng dụng khác\nvà các thiết bị khác.\n";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
@@ -148,9 +148,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
-
-/* Confirm */
-"Confirm" = "Xác thực";
 
 /* confirm */
 "confirm" = "xác thực";
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "nhận %@ (%@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "cụm từ phục hồi";
 
 /* No comment provided by engineer. */
@@ -441,7 +438,7 @@
 "seen by %d of %d peers" = "được thấy bởi %1$d của %2$d các nút";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "gửi";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Gửi %1$@ (%2$@) từ khoá riêng này vào ví của bạn? Mạng lưới dash sẽ nhận một mức phí của %3$@ (%4$@).";

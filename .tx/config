@@ -1,0 +1,38 @@
+[main]
+host = https://www.transifex.com
+
+[dash-ios-wallet.app-localizable-strings]
+file_filter = DashWallet/<lang>.lproj/Localizable.strings
+minimum_perc = 0
+source_file = DashWallet/en.lproj/Localizable.strings
+source_lang = en
+type = STRINGS
+
+[dash-ios-wallet.app-breventconfirmview-strings]
+file_filter = DashWallet/<lang>.lproj/BREventConfirmView.strings
+minimum_perc = 0
+source_file = DashWallet/en.lproj/BREventConfirmView.strings
+source_lang = en
+type = STRINGS
+
+[dash-ios-wallet.widget-maininterface-strings]
+file_filter = TodayExtension/<lang>.lproj/MainInterface.strings
+minimum_perc = 0
+source_file = TodayExtension/en.lproj/MainInterface.strings
+source_lang = en
+type = STRINGS
+
+[dash-ios-wallet.app-main-strings]
+file_filter = DashWallet/<lang>.lproj/Main.strings
+minimum_perc = 0
+source_file = DashWallet/en.lproj/Main.strings
+source_lang = en
+type = STRINGS
+
+[dash-ios-wallet.watch-interface-strings]
+file_filter = WatchApp/<lang>.lproj/Interface.strings
+minimum_perc = 0
+source_file = WatchApp/en.lproj/Interface.strings
+source_lang = en
+type = STRINGS
+

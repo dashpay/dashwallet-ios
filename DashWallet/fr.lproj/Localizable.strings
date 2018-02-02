@@ -81,7 +81,7 @@
 "Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %1@ is requesting an address so it can pay you.  Would you like to authorize this?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'application %@ aimerais recevoir votre clé publique.  Celle ci peut être utilisé pour garder une trace de vos transactions, elle ne peut pas être utilisé pour transmettre (ou voler) votre argent.";
@@ -148,9 +148,6 @@
 
 /* No comment provided by engineer. */
 "close app" = "fermer l'application";
-
-/* Confirm */
-"Confirm" = "Confirm";
 
 /* confirm */
 "confirm" = "confirm";
@@ -380,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ reçus (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "phrase de récupération";
 
 /* No comment provided by engineer. */

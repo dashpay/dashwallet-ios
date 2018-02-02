@@ -3,7 +3,7 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ er for 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ikke tilgang til kameraet";
@@ -43,9 +43,6 @@
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEn pinkode er nødvendig for å sikre lommeboken din. Gå til innstillinger og slå på pinkode for å fortsette.";
-
-/* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\n\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE ALLEREDE BRUKT\n\ndash-adresser er kun ment for engangsbruk\n\ngjenbruk reduserer personvern for både deg og mottageren og kan resultere i tap av midler om mottager ikke direkte kontrollerer adressen";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
@@ -105,9 +102,6 @@
 "bad recovery phrase" = "feil gjenoppretingsfrase";
 
 /* No comment provided by engineer. */
-"bad signature" = "feil signatur";
-
-/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -135,9 +129,6 @@
 "change payment amount?" = "justere beløp?";
 
 /* No comment provided by engineer. */
-"change wallet passcode" = "change wallet passcode";
-
-/* No comment provided by engineer. */
 "checking address balance..." = "sjekker saldo på adressen...";
 
 /* No comment provided by engineer. */
@@ -147,16 +138,10 @@
 "choose passcode for %@" = "velg pinkode for %@";
 
 /* No comment provided by engineer. */
-"choose wallet passcode" = "choose wallet passcode";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
-
-/* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -166,9 +151,6 @@
 
 /* confirm */
 "confirm" = "confirm";
-
-/* No comment provided by engineer. */
-"CONFIRM WIPE" = "BEKREFT SLETTING";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekreftet i blokk #%d";
@@ -202,9 +184,6 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "kunne ikke kringkaste betaling til Dash-nettverket";
-
-/* No comment provided by engineer. */
-"current wallet passcode" = "current wallet passcode";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-adresse";
@@ -324,9 +303,6 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"new wallet passcode" = "new wallet passcode";
-
-/* No comment provided by engineer. */
 "next, write down your recovery phrase" = "deretter, skriv ned din gjenopprettingsfrase";
 
 /* No comment provided by engineer. */
@@ -354,10 +330,10 @@
 "not connected to the dash network" = "ikke tilkoblet Dash-nettverket";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "passcode" = "pinkode";
@@ -390,10 +366,7 @@
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"post-dated" = "fremdatert";
-
-/* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Motta dash på denne adressen: %@";
@@ -404,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "mottok %1$@ (%2$@)";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "gjenopprettingsfrase";
 
 /* No comment provided by engineer. */
@@ -531,9 +504,6 @@
 "swept!" = "sweeped!";
 
 /* No comment provided by engineer. */
-"syncing..." = "synkroniserer...";
-
-/* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
@@ -597,9 +567,6 @@
 "transaction history" = "transaksjonshistorie";
 
 /* No comment provided by engineer. */
-"transaction is post-dated" = "transaksjonen er fremdatert";
-
-/* No comment provided by engineer. */
 "transaction rejected" = "transaksjonen er avvist";
 
 /* No comment provided by engineer. */
@@ -648,16 +615,10 @@
 "verify passcode" = "verifiser pinkode";
 
 /* No comment provided by engineer. */
-"verify wallet passcode" = "verify wallet passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "adresse til lommebok";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "lommebok deaktivert";
-
-/* No comment provided by engineer. */
-"wallet passcode" = "wallet passcode";
 
 /* No comment provided by engineer. */
 "WARNING" = "ADVARSEL";

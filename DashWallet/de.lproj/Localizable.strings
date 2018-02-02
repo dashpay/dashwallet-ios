@@ -377,7 +377,7 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) empfangen";
 
-/* No comment provided by engineer. */
+/* recovery phrase */
 "recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */

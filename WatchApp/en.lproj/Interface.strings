@@ -21,13 +21,10 @@
 "r80-H8-ngA.text" = "Transactions";
 
 /* Class = "WKInterfaceButton"; title = "0"; ObjectID = "4mi-Wz-WHA"; */
-"4mi-Wz-WHA.title" = "";
-
-/* Class = "WKInterfaceLabel"; text = "$211.86"; ObjectID = "6Qe-WS-tck"; */
-"6Qe-WS-tck.text" = "";
+"4mi-Wz-WHA.title" = "0";
 
 /* Class = "WKInterfaceButton"; title = "8"; ObjectID = "73A-Xa-Cxk"; */
-"73A-Xa-Cxk.title" = "";
+"73A-Xa-Cxk.title" = "8";
 
 /* Class = "WKInterfaceController"; title = "Dash"; ObjectID = "AgC-eL-Hgc"; */
 "AgC-eL-Hgc.title" = "";
@@ -36,52 +33,25 @@
 "DcN-TW-QTh.text" = "";
 
 /* Class = "WKInterfaceButton"; title = "1"; ObjectID = "JJr-7L-vPm"; */
-"JJr-7L-vPm.title" = "";
-
-/* Class = "WKInterfaceLabel"; text = "ƀ14,659"; ObjectID = "PXD-22-aMP"; */
-"PXD-22-aMP.text" = "";
+"JJr-7L-vPm.title" = "1";
 
 /* Class = "WKInterfaceButton"; title = "2"; ObjectID = "R30-qD-rDV"; */
-"R30-qD-rDV.title" = "";
+"R30-qD-rDV.title" = "2";
 
 /* Class = "WKInterfaceButton"; title = "3"; ObjectID = "UOC-wT-Oz1"; */
-"UOC-wT-Oz1.title" = "";
+"UOC-wT-Oz1.title" = "3";
 
 /* Class = "WKInterfaceButton"; title = "5"; ObjectID = "WXs-5Q-Jgb"; */
-"WXs-5Q-Jgb.title" = "";
-
-/* Class = "WKInterfaceLabel"; text = "Đ0.00"; ObjectID = "dp3-9o-r55"; */
-"dp3-9o-r55.text" = "";
-
-/* Class = "WKInterfaceLabel"; text = "$4.00"; ObjectID = "g26-mA-1DG"; */
-"g26-mA-1DG.text" = "";
-
-/* Class = "WKInterfaceLabel"; text = "10/12/05"; ObjectID = "g4d-GB-1T5"; */
-"g4d-GB-1T5.text" = "";
-
-/* Class = "WKInterfaceLabel"; text = "$272.87"; ObjectID = "hlq-aV-AYk"; */
-"hlq-aV-AYk.text" = "";
+"WXs-5Q-Jgb.title" = "5";
 
 /* Class = "WKInterfaceButton"; title = "7"; ObjectID = "iLE-Pv-XdV"; */
-"iLE-Pv-XdV.title" = "";
+"iLE-Pv-XdV.title" = "7";
 
 /* Class = "WKInterfaceButton"; title = "6"; ObjectID = "jHE-o4-fZF"; */
-"jHE-o4-fZF.title" = "";
-
-/* Class = "WKInterfaceLabel"; text = "receive ƀ100, 5 days ago"; ObjectID = "jqM-V4-RYz"; */
-"jqM-V4-RYz.text" = "";
+"jHE-o4-fZF.title" = "6";
 
 /* Class = "WKInterfaceButton"; title = "9"; ObjectID = "kpX-gK-aLE"; */
-"kpX-gK-aLE.title" = "";
-
-/* Class = "WKInterfaceLabel"; text = "ƀ802,130"; ObjectID = "oAt-M3-LfO"; */
-"oAt-M3-LfO.text" = "";
-
-/* Class = "WKInterfaceLabel"; text = "ƀ1,000,000"; ObjectID = "qrn-xE-8JS"; */
-"qrn-xE-8JS.text[device=watch42mm]" = "";
-
-/* Class = "WKInterfaceLabel"; text = "ƀ1,000,000"; ObjectID = "qrn-xE-8JS"; */
-"qrn-xE-8JS.text" = "";
+"kpX-gK-aLE.title" = "9";
 
 /* Class = "WKInterfaceButton"; title = "4"; ObjectID = "xFZ-Zc-8wy"; */
-"xFZ-Zc-8wy.title" = "";
+"xFZ-Zc-8wy.title" = "4";
