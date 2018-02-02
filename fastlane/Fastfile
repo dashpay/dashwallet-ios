@@ -1,0 +1,73 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+fastlane_version "2.80.0"
+
+default_platform(:ios)
+
+platform :ios do
+  ENV["XCODE_SCHEME"]="dashwallet"
+  ENV["XCODE_PROJECT"]="DashWallet.xcodeproj"
+
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    ensure_git_status_clean
+
+    increment_build_number
+
+    disable_automatic_code_signing(path: ENV["XCODE_PROJECT"])
+
+    build_app(
+      scheme: ENV["XCODE_SCHEME"],
+      configuration: "Release",
+      clean: true,
+
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: { 
+          "org.dashfoundation.dash" => "TODO 1",
+          "org.dashfoundation.dash.TodayExtension" => "TODO 2",
+          "org.dashfoundation.dash.watchkitapp" => "TODO 3",
+          "org.dashfoundation.dash.watchkitapp.watchkitextension" => "TODO 4"
+        }
+      }
+    )
+
+    enable_automatic_code_signing(path: ENV["XCODE_PROJECT"])
+
+    upload_to_testflight(
+      skip_submission: true,
+      skip_waiting_for_build_processing: true
+    )
+
+    # Make sure our directory is clean, except for changes Fastlane has made
+    clean_build_artifacts
+
+    # Version number
+    version_number = get_version_number
+    build_number = Actions.lane_context[Actions::SharedValues::BUILD_NUMBER]
+    version_name = "v#{version_number} (#{build_number})"
+
+    # Tag release and push to GitHub
+    commit_version_bump(
+      message: "Deployed version #{version_name}",
+      xcodeproj: ENV["XCODE_PROJECT"]
+    )
+    push_to_git_remote(force: false)
+  end
+
+  desc "Run tests"
+  lane :test do
+    scan(
+      scheme: ENV["XCODE_SCHEME"]
+    )
+  end
+end
