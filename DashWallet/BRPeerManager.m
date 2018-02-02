@@ -59,7 +59,7 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
 };
 
 static const char *dns_seeds[] = {
-    "testnet-seed.dashdot.io"//,"testnet-seed.dashpay.info"
+    "testnet-seed.dashdot.io", "test.dnsseed.masternode.io" //,"testnet-seed.dashpay.info"
 };
 
 #else // main net
