@@ -38,7 +38,7 @@
 
 @interface BRTxDetailViewController ()
 
-@property (nonatomic, strong) NSArray *outputText, *outputDetail, *outputAmount, *outputIsBitcoin;
+@property (nonatomic, strong) NSArray *inputAddresses, *outputText, *outputDetail, *outputAmount, *outputIsBitcoin;
 @property (nonatomic, assign) int64_t sent, received;
 @property (nonatomic, strong) id txStatusObserver;
 
@@ -87,13 +87,19 @@
 - (void)setTransaction:(BRTransaction *)transaction
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSMutableArray *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];;
+    NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     uint64_t fee = [manager.wallet feeForTransaction:transaction];
     NSUInteger outputAmountIndex = 0;
     
     _transaction = transaction;
     self.sent = [manager.wallet amountSentByTransaction:transaction];
     self.received = [manager.wallet amountReceivedFromTransaction:transaction];
+    
+    for (NSString *inputAddress in transaction.inputAddresses) {
+        if (![mutableInputAddresses containsObject:inputAddress]) {
+            [mutableInputAddresses addObject:inputAddress];
+        }
+    }
 
     for (NSString *address in transaction.outputAddresses) {
         NSData * script = transaction.outputScripts[outputAmountIndex];
@@ -162,6 +168,7 @@
         [currencyIsBitcoinInstead addObject:@FALSE];
     }
     
+    self.inputAddresses = mutableInputAddresses;
     self.outputText = text;
     self.outputDetail = detail;
     self.outputAmount = amount;
@@ -187,8 +194,8 @@
     // Return the number of rows in the section.
     switch (section) {
         case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?5:4):3;
-        case 1: return (self.sent > 0) ? self.outputText.count : self.transaction.inputAddresses.count;
-        case 2: return (self.sent > 0) ? self.transaction.inputAddresses.count : self.outputText.count;
+        case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
+        case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
     }
 
     return 1;
@@ -355,20 +362,20 @@
                 }
 
             }
-            else if (self.transaction.inputAddresses[indexPath.row] != (id)[NSNull null]) {
+            else if (self.inputAddresses[indexPath.row] != (id)[NSNull null]) {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
                 localCurrencyLabel = (id)[cell viewWithTag:5];
-                detailLabel.text = self.transaction.inputAddresses[indexPath.row];
+                detailLabel.text = self.inputAddresses[indexPath.row];
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
                 
 #if DASH_TESTNET
-                if ([manager.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
-                    NSUInteger purpose = [manager.wallet addressPurpose:self.transaction.inputAddresses[indexPath.row]];
+                if ([manager.wallet containsAddress:self.inputAddresses[indexPath.row]]) {
+                    NSUInteger purpose = [manager.wallet addressPurpose:self.inputAddresses[indexPath.row]];
                     if (purpose == 44) {
                         subtitleLabel.text = @"wallet address (BIP44)";
                     } else if (purpose == 0) {
@@ -379,7 +386,7 @@
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
 #else
-                if ([manager.wallet containsAddress:self.transaction.inputAddresses[indexPath.row]]) {
+                if ([manager.wallet containsAddress:self.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
