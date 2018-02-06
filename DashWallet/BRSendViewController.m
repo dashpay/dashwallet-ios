@@ -374,8 +374,14 @@ static NSString *sanitizeString(NSString *s)
 
 
 // generate a description of a transaction so the user can review and decide whether to confirm or cancel
-- (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name
-                         memo:(NSString *)memo isSecure:(BOOL)isSecure
+- (NSString *)promptForAmount:(uint64_t)amount
+                          fee:(uint64_t)fee
+                      address:(NSString *)address
+                         name:(NSString *)name
+                         memo:(NSString *)memo
+                     isSecure:(BOOL)isSecure
+                localCurrency:(NSString *)localCurrency
+          localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
@@ -388,6 +394,15 @@ static NSString *sanitizeString(NSString *s)
     if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
     prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n\n     amount %@ (%@)", nil),
               [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
+    
+    if (localCurrency && localCurrencyAmount && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
+        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+        numberFormatter.currencyCode = localCurrency;
+        numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+        NSNumber *localAmount = [NSDecimalNumber decimalNumberWithString:localCurrencyAmount];
+        NSString *requestedAmount = [numberFormatter stringFromNumber:localAmount];
+        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
+    }
     
     if (fee > 0) {
         prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
@@ -445,19 +460,19 @@ static NSString *sanitizeString(NSString *s)
             });
         }];
     }
-    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant requiresInstantValue:request.instantValueRequired];
+    else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant requiresInstantValue:request.instantValueRequired localCurrency:request.currency localCurrencyAmount:request.currencyAmount];
 }
 
 - (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq {
-    [self confirmProtocolRequest:protoReq currency:@"dash" associatedShapeshift:nil];
+    [self confirmProtocolRequest:protoReq currency:@"dash" associatedShapeshift:nil localCurrency:nil localCurrencyAmount:nil];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift
+- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
-    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly requiresInstantValue:FALSE];
+    [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly requiresInstantValue:FALSE localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue
+- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     BRTransaction *tx = nil;
@@ -531,7 +546,7 @@ static NSString *sanitizeString(NSString *s)
                                            actionWithTitle:@"ignore"
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                            }];
             [alert addAction:ignoreButton];
             [alert addAction:cancelButton];
@@ -560,7 +575,7 @@ static NSString *sanitizeString(NSString *s)
                                                handler:^(UIAlertAction * action) {
                                                    self.sendInstantly = TRUE;
                                                    [self.instantSwitch setOn:TRUE animated:TRUE];
-                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:TRUE];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:TRUE localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 
                 [alert addAction:ignoreButton];
@@ -577,7 +592,7 @@ static NSString *sanitizeString(NSString *s)
                                                actionWithTitle:NSLocalizedString(@"ignore", nil)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
-                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 UIAlertAction* enableButton = [UIAlertAction
                                                actionWithTitle:NSLocalizedString(@"enable", nil)
@@ -585,7 +600,7 @@ static NSString *sanitizeString(NSString *s)
                                                handler:^(UIAlertAction * action) {
                                                    self.sendInstantly = TRUE;
                                                    [self.instantSwitch setOn:TRUE animated:TRUE];
-                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:requiresInstantValue];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:requiresInstantValue localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 
                 [alert addAction:ignoreButton];
@@ -629,7 +644,7 @@ static NSString *sanitizeString(NSString *s)
                                               actionWithTitle:NSLocalizedString(@"retry", nil)
                                               style:UIAlertActionStyleDefault
                                               handler:^(UIAlertAction * action) {
-                                                  [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:wantsInstant requiresInstantValue:requiresInstantValue];
+                                                  [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:wantsInstant requiresInstantValue:requiresInstantValue localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                               }];
                 
                 [alert addAction:cancelButton];
@@ -651,7 +666,7 @@ static NSString *sanitizeString(NSString *s)
                                                actionWithTitle:NSLocalizedString(@"send", nil)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
-                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:FALSE requiresInstantValue:requiresInstantValue];
+                                                   [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:FALSE requiresInstantValue:requiresInstantValue localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 
                 [alert addAction:cancelButton];
@@ -674,7 +689,7 @@ static NSString *sanitizeString(NSString *s)
                                            actionWithTitle:NSLocalizedString(@"ignore", nil)
                                            style:UIAlertActionStyleDestructive
                                            handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                            }];
             UIAlertAction* cancelButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"cancel", nil)
@@ -795,13 +810,19 @@ static NSString *sanitizeString(NSString *s)
             address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
         }
         
-        NSString *prompt = [self promptForAmount:amount fee:fee address:address name:protoReq.commonName
-                                            memo:protoReq.details.memo isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])];
+        NSString *prompt = [self promptForAmount:amount
+                                             fee:fee
+                                         address:address
+                                            name:protoReq.commonName
+                                            memo:protoReq.details.memo
+                                        isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])
+                                   localCurrency:localCurrency
+                             localCurrencyAmount:localCurrencyAmount];
         
         // to avoid the frozen pincode keyboard bug, we need to make sure we're scheduled normally on the main runloop
         // rather than a dispatch_async queue
         CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
-            [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount];
+            [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
         NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
@@ -820,7 +841,7 @@ static NSString *sanitizeString(NSString *s)
                                            actionWithTitle:NSLocalizedString(@"ignore", nil)
                                            style:UIAlertActionStyleDestructive
                                            handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                            }];
             UIAlertAction* cancelButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"cancel", nil)
@@ -902,7 +923,7 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
--(void)insufficientFundsForTransaction:(BRTransaction *)tx forAmount:(uint64_t)amount {
+-(void)insufficientFundsForTransaction:(BRTransaction *)tx forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
@@ -930,7 +951,7 @@ static NSString *sanitizeString(NSString *s)
                                                             [manager localCurrencyStringForDashAmount:amount - self.amount]]
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
-                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift];
+                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                            }];
             
             
@@ -972,18 +993,18 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
-- (void)confirmTransaction:(BRTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount
+- (void)confirmTransaction:(BRTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     __block BOOL previouslyWasAuthenticated = manager.didAuthenticate;
     
     if (! tx) { // tx is nil if there were insufficient wallet funds
         if (manager.didAuthenticate) {
-            [self insufficientFundsForTransaction:tx forAmount:amount];
+            [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         } else {
             [manager seedWithPrompt:prompt forAmount:amount completion:^(NSData * _Nullable seed) {
                 if (seed) {
-                    [self insufficientFundsForTransaction:tx forAmount:amount];
+                    [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                 } else {
                     [self cancelOrChangeAmount];
                 }
@@ -1732,7 +1753,7 @@ static NSString *sanitizeString(NSString *s)
                 DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused fixedAmountOut:depositAmountNumber amountIn:depositAmountNumber];
                 
                 BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,depositAmount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress]];
-                [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+                [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
             }
         }];
     } failureBlock:^{
@@ -1756,7 +1777,7 @@ static NSString *sanitizeString(NSString *s)
         if (shapeshift) {
             [hud hideAnimated:TRUE];
             BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),address]];
-            [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+            [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
         } else {
             [[DSShapeshiftManager sharedInstance] POST_ShiftWithAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
                 [hud hideAnimated:TRUE];
@@ -1780,7 +1801,7 @@ static NSString *sanitizeString(NSString *s)
                 if (withdrawalAddress && depositAddress) {
                     DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused];
                     BRPaymentRequest * request = [BRPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress]];
-                    [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift];
+                    [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
                 }
             }];
         }

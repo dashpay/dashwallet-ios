@@ -40,6 +40,8 @@
 @property (nonatomic, strong) NSString *callbackScheme;
 @property (nonatomic, strong) NSData *data;
 @property (nonatomic, strong) NSURL *url;
+@property (nonatomic, strong) NSString *currency;
+@property (nonatomic, strong) NSString *currencyAmount;
 @property (nonatomic, readonly) BOOL isValid;
 @property (nonatomic, readonly) BOOL wantsInstant;
 @property (nonatomic, readonly) BOOL instantValueRequired;

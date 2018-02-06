@@ -36,6 +36,9 @@
 "\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
 
 /* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 deneme hakkı kaldı\n";
 
 /* No comment provided by engineer. */

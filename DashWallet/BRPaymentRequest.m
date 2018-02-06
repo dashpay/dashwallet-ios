@@ -146,7 +146,15 @@
                 if (require)
                     _instantValueRequired = TRUE;
             }
-            else if ([key isEqual:@"r"]) self.r = value;
+            else if ([key isEqual:@"r"]) {
+                self.r = value;
+            }
+            else if ([key isEqual:@"currency"]) {
+                self.currency = value;
+            }
+            else if ([key isEqual:@"local"]) {
+                self.currencyAmount = value;
+            }
         }
     }
     else if (url) self.r = s; // BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
@@ -187,6 +195,14 @@
         [q addObject:@"IS=1"];
     }
     
+    if (self.currency.length > 0) {
+        [q addObject:[@"currency=" stringByAppendingString:[self.currency stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+    }
+
+    if (self.currencyAmount.length > 0) {
+        [q addObject:[@"local=" stringByAppendingString:[self.currencyAmount stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+    }
+
     if (q.count > 0) {
         [s appendString:@"?"];
         [s appendString:[q componentsJoinedByString:@"&"]];

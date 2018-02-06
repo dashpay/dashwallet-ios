@@ -1847,21 +1847,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 
 - (NSString *)localCurrencyStringForDashAmount:(int64_t)amount
 {
-    if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
-    if (!self.localCurrencyBitcoinPrice || !self.bitcoinDashPrice) return NSLocalizedString(@"Updating Price",@"Updating Price");
-    
-    NSNumber * local = [NSNumber numberWithDouble:self.localCurrencyBitcoinPrice.doubleValue*self.bitcoinDashPrice.doubleValue];
-    
-    
-    NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:local.decimalValue]
-                           decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
-                          decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
-    *min = [[NSDecimalNumber one]
-            decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
-    
-    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
-    if ([n compare:min] == NSOrderedAscending) n = min;
-    if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
+    NSNumber *n = [self localCurrencyNumberForDashAmount:amount];
+    if (!n) {
+        return NSLocalizedString(@"Updating Price",@"Updating Price");
+    }
     return [self.localFormat stringFromNumber:n];
 }
 
@@ -1882,6 +1871,28 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     return [self.localFormat stringFromNumber:n];
 }
 
+- (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount {
+    if (amount == 0) {
+        return @0;
+    }
+    
+    if (!self.localCurrencyBitcoinPrice || !self.bitcoinDashPrice) {
+        return nil;
+    }
+    
+    NSNumber *local = [NSNumber numberWithDouble:self.localCurrencyBitcoinPrice.doubleValue*self.bitcoinDashPrice.doubleValue];
+    
+    NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:local.decimalValue]
+                           decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
+                          decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+    *min = [[NSDecimalNumber one]
+            decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
+    
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
+    if ([n compare:min] == NSOrderedAscending) n = min;
+    if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
+    return n;
+}
 
 // MARK: - UITextFieldDelegate
 
