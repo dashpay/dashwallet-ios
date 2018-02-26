@@ -675,56 +675,114 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 // prompts user to authenticate with touch id or passcode
 - (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
 {
-    if (touchId && [LAContext class]) { // check if touch id framework is available
+    if (touchId) {
         NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
-        LAContext *context = [LAContext new];
+        LAContext *context = [[LAContext alloc] init];
         NSError *error = nil;
-        __block NSInteger authcode = 0;
-        
-        [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
-        
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
             pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
-            context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
             
-            [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                    localizedReason:(authprompt.length > 0 ? authprompt : @" ") reply:^(BOOL success, NSError *error) {
-                        authcode = (success) ? 1 : error.code;
-                    }];
+            void(^localAuthBlock)(void) = ^{
+                [self performLocalAuthenticationSynchronously:context
+                                                       prompt:authprompt
+                                                   completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
+                                                       if (shouldTryAnotherMethod) {
+                                                           [self authenticateWithPrompt:authprompt
+                                                                             andTouchId:NO
+                                                                         alertIfLockout:alertIfLockout
+                                                                             completion:completion];
+                                                       }
+                                                       else {
+                                                           completion(authenticated, NO);
+                                                       }
+                                                   }];
+            };
             
-            while (authcode == 0) {
-                [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
-                                      beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            BOOL shouldPreprompt = NO;
+            if (@available(iOS 11.0, *)) {
+                if (context.biometryType == LABiometryTypeFaceID) {
+                    shouldPreprompt = YES;
+                }
             }
-            
-            if (authcode == LAErrorAuthenticationFailed) {
-                setKeychainInt(0, SPEND_LIMIT_KEY, NO); // require pin entry for next spend
+            if (authprompt && shouldPreprompt) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"confirm", nil)
+                                                                               message:authprompt
+                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                                                       style:UIAlertActionStyleCancel
+                                                                     handler:^(UIAlertAction * action) {
+                                                                         completion(NO, YES);
+                                                                     }];
+                [alert addAction:cancelAction];
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                   style:UIAlertActionStyleDefault
+                                                                 handler:^(UIAlertAction * action) {
+                                                                     localAuthBlock();
+                                                                 }];
+                [alert addAction:okAction];
+                [self presentAlertController:alert animated:YES completion:nil];
             }
-            else if (authcode == 1) {
-                self.didAuthenticate = YES;
-                completion(YES,NO);
-                return;
-            }
-            else if (authcode == LAErrorUserCancel || authcode == LAErrorSystemCancel) {
-                completion(NO,NO);
-                return;
+            else {
+                localAuthBlock();
             }
         }
-        else if (error) NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
+        else {
+            NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
+            
+            [self authenticateWithPrompt:authprompt
+                              andTouchId:NO
+                          alertIfLockout:alertIfLockout
+                              completion:completion];
+        }
+    }
+    else {
+        // TODO explain reason when touch id is disabled after 30 days without pin unlock
+        [self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
+                                        DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
+            if (authenticated) {
+                [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+                    completion(YES,NO);
+                }];
+            } else {
+                completion(NO,cancelled);
+            }
+        }];
+    }
+}
+
+- (void)performLocalAuthenticationSynchronously:(LAContext *)context
+                                         prompt:(NSString *)prompt
+                                     completion:(void(^)(BOOL authenticated, BOOL shouldTryAnotherMethod))completion {
+    [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
+    
+    __block NSInteger result = 0;
+    context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
+    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+            localizedReason:(prompt.length > 0 ? prompt : @" ")
+                      reply:^(BOOL success, NSError *error) {
+                          result = success ? 1 : error.code;
+                      }];
+    
+    while (result == 0) {
+        [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
-    // TODO explain reason when touch id is disabled after 30 days without pin unlock
-    [self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
-                                    DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
-        if (authenticated) {
-            [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                completion(YES,NO);
-            }];
-        } else {
-            completion(NO,cancelled);
-        }
-    }];
+    if (result == LAErrorAuthenticationFailed) {
+        setKeychainInt(0, SPEND_LIMIT_KEY, NO); // require pin entry for next spend
+    }
+    else if (result == 1) {
+        self.didAuthenticate = YES;
+        completion(YES, NO);
+        return;
+    }
+    else if (result == LAErrorUserCancel || result == LAErrorSystemCancel) {
+        completion(NO, NO);
+        return;
+    }
+    
+    completion(NO, YES);
 }
 
 - (BOOL)isTestnet {

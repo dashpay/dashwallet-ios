@@ -1339,7 +1339,7 @@ static NSString *sanitizeString(NSString *s)
                                        actionWithTitle:NSLocalizedString(@"change",nil)
                                        style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction * action) {
-                                           
+                                           // TODO: do smth
                                        }];
         [alert addAction:cancelButton];
         [alert addAction:changeButton];
