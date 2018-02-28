@@ -145,7 +145,7 @@ static NSString *sanitizeString(NSString *s)
     BOOL hasNFC = NO;
     if (@available(iOS 11.0, *)) {
         if ([NFCNDEFReaderSession readingAvailable]) {
-            //hasNFC = YES; disabled
+            hasNFC = YES;
         }
     }
     
@@ -1424,7 +1424,7 @@ static NSString *sanitizeString(NSString *s)
     });
 }
 
-- (void)payFirstFromArray:(NSArray *)array
+- (void)payFirstFromArray:(NSArray *)array errorMessage:(NSString*)errorMessage
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSUInteger i = 0;
@@ -1450,7 +1450,7 @@ static NSString *sanitizeString(NSString *s)
                         [self payFirstFromArray:[array objectsAtIndexes:[array
                                                                          indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
                                                                              return (idx >= i && ([obj hasPrefix:@"dash:"] || ! [NSURL URLWithString:obj]));
-                                                                         }]]];
+                                                                         }]] errorMessage:errorMessage];
                     }
                     else [self confirmProtocolRequest:req];
                 });
@@ -1461,7 +1461,7 @@ static NSString *sanitizeString(NSString *s)
     }
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:@""
-                                 message:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil)
+                                 message:errorMessage
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* okButton = [UIAlertAction
                                actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -1600,7 +1600,7 @@ static NSString *sanitizeString(NSString *s)
     
     [sender setEnabled:NO];
     self.clearClipboard = YES;
-    [self payFirstFromArray:set.array];
+    [self payFirstFromArray:set.array errorMessage:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil)];
 }
 
 - (IBAction)reset:(id)sender
@@ -1635,18 +1635,31 @@ static NSString *sanitizeString(NSString *s)
 - (IBAction)startNFC:(id)sender NS_AVAILABLE_IOS(11.0) {
     [BREventManager saveEvent:@"send:nfc"];
         NFCNDEFReaderSession *session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT) invalidateAfterFirstRead:NO];
-        [session beginSession];
+    session.alertMessage = NSLocalizedString(@"Please place your phone near NFC device.",nil);
+    [session beginSession];
 }
 
 // MARK: - NFCNDEFReaderSessionDelegate
 
-- (void) readerSession:(nonnull NFCNDEFReaderSession *)session didDetectNDEFs:(nonnull NSArray<NFCNDEFMessage *> *)messages NS_AVAILABLE_IOS(11.0) {
-    
+- (void)readerSession:(nonnull NFCNDEFReaderSession *)session didDetectNDEFs:(nonnull NSArray<NFCNDEFMessage *> *)messages NS_AVAILABLE_IOS(11.0) {
+    NSMutableArray * array = [NSMutableArray array];
     for (NFCNDEFMessage *message in messages) {
         for (NFCNDEFPayload *payload in message.records) {
-            NSLog(@"Payload data:%@",payload.payload);
+            NSLog(@"payload.payload %@",payload.payload);
+            NSData * data = payload.payload;
+            const unsigned char* bytes = [data bytes];
+            
+            if (bytes[0] == 0) {
+                data = [data subdataWithRange:NSMakeRange(1, data.length - 1)];
+            }
+            NSLog(@"Payload data:%@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            [array addObject:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
         }
     }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self payFirstFromArray:array errorMessage:NSLocalizedString(@"NFC device didn't transmit a valid dash or bitcoin address", nil)];
+    });
+    [session invalidateSession];
 }
 
 // MARK: - BRAmountViewControllerDelegate

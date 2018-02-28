@@ -309,6 +309,9 @@
 "next, write down your recovery phrase" = "nästa, skriv ner din återhämtning fras";
 
 /* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
 "no exchange rate data" = "ingen växlingskurs data";
 
 /* No comment provided by engineer. */
@@ -367,6 +370,9 @@
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "skriv in din pin-kod för att uppdatera plånboken";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "Please place your phone near NFC device.";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "kurs: %@ = %@\nuppdaterad: %@\nblock #%d of %d\nkopplade peers: %d\ndl peer: %@";
