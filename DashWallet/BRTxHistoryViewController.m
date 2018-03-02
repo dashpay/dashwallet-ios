@@ -121,7 +121,7 @@ static NSString *dateFormat(NSString *template)
     return;
 #endif
 
-    if (! manager.didAuthenticate) {
+    if (manager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             self.transactions = manager.wallet.allTransactions;
            
@@ -130,7 +130,6 @@ static NSString *dateFormat(NSString *template)
             });
         });
     }
-    else [self unlock:nil];
 
     if (! self.backgroundObserver) {
         self.backgroundObserver =
