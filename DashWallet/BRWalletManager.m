@@ -523,6 +523,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
         setKeychainData(nil, AUTH_PRIVKEY_KEY, NO);
         
+        self.pinAlertController = nil;
+        
         if (! setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) {
             NSLog(@"error setting wallet seed");
             
@@ -1143,7 +1145,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (!self.pinAlertController) {
         self.pinAlertController = [UIAlertController
                                    alertControllerWithTitle:title
-                                   message:nil
+                                    message:nil
                                    preferredStyle:UIAlertControllerStyleAlert];
         if (_pinField) self.pinField = nil; // reset pinField so a new one is created
         [self.pinAlertController.view addSubview:self.pinField];
