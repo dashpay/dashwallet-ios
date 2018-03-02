@@ -80,8 +80,8 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "没有交易";
 
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "达世币钱包 v%ver%%net%\n版权 © 2017 达世币基金会\n\n基于breadwallet开发\n\n本app是开源软件";
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "达世币钱包 v%ver%%net%\n版权 © 2018 达世币基金会\n\n基于breadwallet开发\n\n本app是开源软件";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "通过生成一个钱包恢复密语来开启一个新的钱包";

@@ -3,7 +3,7 @@
 //  BreadWallet
 //
 //  Created by Sam Westrich on 7/20/16.
-//  Copyright © 2017 Dash Foundation. All rights reserved.
+//  Copyright © 2018 Dash Core. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal

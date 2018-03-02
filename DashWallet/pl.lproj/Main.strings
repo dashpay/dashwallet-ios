@@ -80,8 +80,8 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "brak transakcji";
 
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2017 Dash Foundation\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\nPrawa austorskie © 2017 Dash Foundation\n\nStworzony w oparciu na breadwallet\n\nKod źródłowy tej aplikacji jest otwarty i publicznie dostępny.";
+/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\nPrawa austorskie © 2018 Dash Core\n\nStworzony w oparciu na breadwallet\n\nKod źródłowy tej aplikacji jest otwarty i publicznie dostępny.";
 
 /* Class = "UILabel"; text = "start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "rozpocznij nowy portfel generując frazę odzyskiwania portfelu";
