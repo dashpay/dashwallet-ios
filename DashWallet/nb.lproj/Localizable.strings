@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "ber om nettverk \"%1$@\" i stedet for \"%2$@\"";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "skann på nytt";
 
 /* No comment provided by engineer. */

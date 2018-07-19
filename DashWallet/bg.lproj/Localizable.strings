@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "исканата мрежа \"%1$@\" вместо \"%2$@\"";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */

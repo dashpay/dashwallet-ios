@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "verzoek netwerk \"%1$@\" in plaats van \"%2$@\"";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */

@@ -1,0 +1,47 @@
+{
+  "name": "DashSync",
+  "version": "0.1.0",
+  "summary": "Dash Sync is a light and configurable blockchain client that you can embed into your iOS Application.",
+  "description": "Dash Sync is a light blockchain client that you can embed into your iOS Application.  It is fully customizable to make the type of node you are interested in.",
+  "homepage": "https://github.com/dashevo/dashsync-ios.git",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "quantumexplorer": "quantum@dash.org"
+  },
+  "source": {
+    "git": "https://github.com/dashevo/dashsync-iOS.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source_files": "DashSync/**/*.{h,m}",
+  "public_header_files": "DashSync/**/*.h",
+  "libraries": [
+    "bz2",
+    "sqlite3"
+  ],
+  "requires_arc": true,
+  "resource_bundles": {
+    "DashSync": [
+      "DashSync/*.xcdatamodeld",
+      "DashSync/*.plist",
+      "DashSync/*.lproj/*.plist"
+    ]
+  },
+  "frameworks": [
+    "Foundation",
+    "UIKit",
+    "SystemConfiguration",
+    "CoreData"
+  ],
+  "compiler_flags": "-Wno-comma",
+  "dependencies": {
+    "secp256k1_dash": [
+      "0.1.0"
+    ]
+  }
+}

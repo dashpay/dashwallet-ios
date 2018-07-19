@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "\"%2$@\" yerine \"%1$@\" ağı istendi";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */

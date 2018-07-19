@@ -1,0 +1,1 @@
+../../../DashSync/DashSync/Models/Entities/DSTxOutputEntity+CoreDataProperties.h

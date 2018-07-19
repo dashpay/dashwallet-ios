@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "请求网络 \"%1$@\" 而非 \"%2$@\"";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "重新扫描";
 
 /* No comment provided by engineer. */

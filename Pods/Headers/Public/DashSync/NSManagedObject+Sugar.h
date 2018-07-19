@@ -1,0 +1,1 @@
+../../../DashSync/DashSync/Categories/NSManagedObject+Sugar.h

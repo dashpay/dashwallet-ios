@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "a \"%2$@\" hálózatot kaptam a \"%1$@\" helyett";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "újraszkennelés";
 
 /* No comment provided by engineer. */

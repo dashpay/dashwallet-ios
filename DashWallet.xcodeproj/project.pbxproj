@@ -28,6 +28,7 @@
 		2AC92C8A1FEB0B8B008CAEE0 /* BRQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* BRQRScanViewModel.m */; };
 		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
+		37349D2201552A242E86E0AB /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CAA89EF60BD078E4ACDB87B9 /* libPods-dashwallet.a */; };
 		751B2B5C1B68911700EA87FB /* BRTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* BRTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
 		752E289A192349CE00DB5A3C /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 752E2898192349CE00DB5A3C /* DashWallet.xcdatamodeld */; };
@@ -211,6 +212,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0AC3080FBAD0C08A50E9F2D6 /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
 		220128D11C753C670001CAC1 /* BRSocketHelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BRSocketHelpers.c; sourceTree = "<group>"; };
 		220128D21C753C670001CAC1 /* BRSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSocketHelpers.h; sourceTree = "<group>"; };
 		2204604C1B9F61E600D07B61 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
 		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		488B4A1C2517B982704A8529 /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1101AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
@@ -476,6 +479,9 @@
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12C041B2DEEF700895CC5 /* BRTodayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTodayViewController.h; sourceTree = "<group>"; };
 		BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTodayViewController.m; sourceTree = "<group>"; };
+		BDA30F3FDBF7B6B24C380398 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
+		CAA89EF60BD078E4ACDB87B9 /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEA82645BC925C7D94BFFBE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		FB021E4D1E42EB5F00D17638 /* NSAttributedString+Attachments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+Attachments.h"; sourceTree = "<group>"; };
 		FB021E4E1E42EB5F00D17638 /* NSAttributedString+Attachments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+Attachments.m"; sourceTree = "<group>"; };
 		FB021E511E47E17200D17638 /* FBShimmering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmering.h; sourceTree = "<group>"; };
@@ -576,10 +582,18 @@
 				222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */,
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
 				22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */,
+				37349D2201552A242E86E0AB /* libPods-dashwallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		75D5F3E2191EC270004AB296 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		98D8BEC37D53F589C8D1FA49 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -850,6 +864,7 @@
 				BA913BEE1BD57E4D005A7C0E /* WatchApp Extension */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
+				B10C5019B1B287DBC65CE0A7 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -883,6 +898,7 @@
 				22B6A4471C0E963900673913 /* libbz2.tbd */,
 				75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */,
 				BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */,
+				CAA89EF60BD078E4ACDB87B9 /* libPods-dashwallet.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -957,6 +973,17 @@
 				75F2E0C41BE559F200EAE861 /* main_impl.h */,
 			);
 			path = recovery;
+			sourceTree = "<group>";
+		};
+		B10C5019B1B287DBC65CE0A7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				0AC3080FBAD0C08A50E9F2D6 /* Pods-dashwallet.debug.xcconfig */,
+				DEA82645BC925C7D94BFFBE2 /* Pods-dashwallet.testnet.xcconfig */,
+				BDA30F3FDBF7B6B24C380398 /* Pods-dashwallet.release.xcconfig */,
+				488B4A1C2517B982704A8529 /* Pods-dashwallet.testflight.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
@@ -1109,6 +1136,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "dashwallet" */;
 			buildPhases = (
+				F7A162CAB43A2E899FDC5053 /* [CP] Check Pods Manifest.lock */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
@@ -1116,6 +1144,7 @@
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
 				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
 				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
+				203A6194CF596CC07CC7D793 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1153,6 +1182,7 @@
 			buildPhases = (
 				BA913BDC1BD57E4D005A7C0E /* Resources */,
 				BA913C001BD57E4E005A7C0E /* Embed App Extensions */,
+				98D8BEC37D53F589C8D1FA49 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1366,6 +1396,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		203A6194CF596CC07CC7D793 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		CEE253DB1E26B3B400A25B15 /* Icon Versioning */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1379,6 +1427,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"";
+		};
+		F7A162CAB43A2E899FDC5053 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-dashwallet-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
 		};
 		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1868,6 +1934,7 @@
 		};
 		75D5F3F7191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0AC3080FBAD0C08A50E9F2D6 /* Pods-dashwallet.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -1895,6 +1962,7 @@
 		};
 		75D5F3F8191EC270004AB296 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BDA30F3FDBF7B6B24C380398 /* Pods-dashwallet.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2124,6 +2192,7 @@
 		};
 		CEE253D31E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 488B4A1C2517B982704A8529 /* Pods-dashwallet.testflight.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2309,6 +2378,7 @@
 		};
 		FB9CC19B1F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DEA82645BC925C7D94BFFBE2 /* Pods-dashwallet.testnet.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;

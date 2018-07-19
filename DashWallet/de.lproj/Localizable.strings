@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "Netzwerk \"%1$@\" statt \"%2$@\" angefordert";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "Erneut scannen";
 
 /* No comment provided by engineer. */

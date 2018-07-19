@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "ネットワーク「%2$@」の代わりに「%1$@」を要求してしまいました。";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "再スキャン";
 
 /* No comment provided by engineer. */

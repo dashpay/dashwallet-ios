@@ -1,0 +1,1 @@
+../../../DashSync/DashSync/Models/Transactions/DSCoinbaseTransaction.h

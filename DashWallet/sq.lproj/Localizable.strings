@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "kërkohet rrjeti \"%1$@\" në vend të \"%2$@\"";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "riskano";
 
 /* No comment provided by engineer. */

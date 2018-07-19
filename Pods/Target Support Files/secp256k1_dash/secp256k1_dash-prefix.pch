@@ -1,0 +1,21 @@
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#else
+#ifndef FOUNDATION_EXPORT
+#if defined(__cplusplus)
+#define FOUNDATION_EXPORT extern "C"
+#else
+#define FOUNDATION_EXPORT extern
+#endif
+#endif
+#endif
+
+/* DASH specific secp256k1 configuration */
+#define USE_BASIC_CONFIG 1
+#define ENABLE_MODULE_RECOVERY 1
+#define DETERMINISTIC          1
+#if __BIG_ENDIAN__
+#define WORDS_BIGENDIAN        1
+#endif
+
+#include "basic-config.h"

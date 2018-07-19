@@ -414,6 +414,9 @@
 "requested network \"%@\" instead of \"%@\"" = "네트워크 \"%2$@\" 대신 \"%1$@\"를 요청 했습니다";
 
 /* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
 "rescan" = "재스캔";
 
 /* No comment provided by engineer. */
