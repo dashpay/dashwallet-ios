@@ -69,13 +69,11 @@
 		BA913BE41BD57E4D005A7C0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE31BD57E4D005A7C0E /* Assets.xcassets */; };
 		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA913BF11BD57E4D005A7C0E /* ExtensionDelegate.swift */; };
-		BA913BFA1BD57E4D005A7C0E /* WatchApp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BA913BDE1BD57E4D005A7C0E /* WatchApp.app */; };
 		BAA0E8CA1BD9273700DF4236 /* BRAWGlanceInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA0E8C91BD9273700DF4236 /* BRAWGlanceInterfaceController.swift */; };
 		BAA6E3EB1BD5C78500773205 /* BRAWRootInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EA1BD5C78500773205 /* BRAWRootInterfaceController.swift */; };
 		BAA6E3EF1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EE1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift */; };
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
 		BAC7B6BE1BD9C29900165B84 /* BRPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */; };
-		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
 		FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
 		FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
@@ -111,20 +109,6 @@
 			remoteGlobalIDString = BA913BE91BD57E4D005A7C0E;
 			remoteInfo = "WatchApp Extension";
 		};
-		BA913BF81BD57E4D005A7C0E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BA913BDD1BD57E4D005A7C0E;
-			remoteInfo = WatchApp;
-		};
-		BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BAE12BE41B2DEE7F00895CC5;
-			remoteInfo = TodayExtension;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -135,28 +119,6 @@
 			dstSubfolderSpec = 13;
 			files = (
 				BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BA913C021BD57E4E005A7C0E /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				BA913BFA1BD57E4D005A7C0E /* WatchApp.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -771,8 +733,6 @@
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
-				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
-				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
 				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
 				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
 				203A6194CF596CC07CC7D793 /* [CP] Copy Pods Resources */,
@@ -780,8 +740,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */,
-				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
 			name = dashwallet;
 			productName = DashWallet;
@@ -1263,16 +1221,6 @@
 			isa = PBXTargetDependency;
 			target = BA913BE91BD57E4D005A7C0E /* WatchApp Extension */;
 			targetProxy = BA913BEC1BD57E4D005A7C0E /* PBXContainerItemProxy */;
-		};
-		BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BA913BDD1BD57E4D005A7C0E /* WatchApp */;
-			targetProxy = BA913BF81BD57E4D005A7C0E /* PBXContainerItemProxy */;
-		};
-		BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BAE12BE41B2DEE7F00895CC5 /* TodayExtension */;
-			targetProxy = BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
