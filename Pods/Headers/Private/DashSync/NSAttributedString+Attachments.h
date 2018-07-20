@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/NSAttributedString+Attachments.h
+../../../../../dashsync-iOS/DashSync/Categories/NSAttributedString+Attachments.h

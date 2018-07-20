@@ -23,21 +23,17 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <WebKit/WebKit.h>
+
+#import <DashSync/DashSync.h>
+
+#import "BRAppDelegate.h"
 #import "BRTxHistoryViewController.h"
 #import "BRRootViewController.h"
 #import "BRSettingsViewController.h"
 #import "BRTxDetailViewController.h"
 #import "BRSeedViewController.h"
-#import "BRWalletManager.h"
-#import "BRPeerManager.h"
-#import "BRTransaction.h"
-#import "NSString+Bitcoin.h"
-#import "NSData+Bitcoin.h"
-#import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
-#import "BREventManager.h"
-#import "NSString+Dash.h"
-#import <WebKit/WebKit.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -98,10 +94,10 @@ static NSString *dateFormat(NSString *template)
 {
     [super viewWillAppear:animated];
 
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
 #if SNAPSHOT
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
                          inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
     manager.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
@@ -123,7 +119,9 @@ static NSString *dateFormat(NSString *template)
 
     if (manager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            self.transactions = manager.wallet.allTransactions;
+            DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+            DSWallet *wallet = chain.wallets.firstObject;
+            self.transactions = wallet.allTransactions;
            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
@@ -136,7 +134,9 @@ static NSString *dateFormat(NSString *template)
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
                 self.moreTx = YES;
-                self.transactions = manager.wallet.allTransactions;
+                DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                DSWallet *wallet = chain.wallets.firstObject;
+                self.transactions = wallet.allTransactions;
                 [self.tableView reloadData];
                 self.navigationItem.titleView = self.logo;
                 self.navigationItem.rightBarButtonItem = self.lock;
@@ -147,9 +147,11 @@ static NSString *dateFormat(NSString *template)
         self.balanceObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRTransaction *tx = self.transactions.firstObject;
-
-                self.transactions = manager.wallet.allTransactions;
+                DSTransaction *tx = self.transactions.firstObject;
+                DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                DSWallet *wallet = chain.wallets.firstObject;
+                
+                self.transactions = wallet.allTransactions;
 
                 if (! [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
                     if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
@@ -168,7 +170,9 @@ static NSString *dateFormat(NSString *template)
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                self.transactions = manager.wallet.allTransactions;
+                DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                DSWallet *wallet = chain.wallets.firstObject;
+                self.transactions = wallet.allTransactions;
                 [self.tableView reloadData];
             }];
     }
@@ -208,13 +212,15 @@ static NSString *dateFormat(NSString *template)
 
 
 -(UILabel*)titleLabel {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                              [manager localCurrencyStringForDashAmount:wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -222,10 +228,12 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+        DSWallet *wallet = chain.wallets.firstObject;
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                  [manager localCurrencyStringForDashAmount:wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -287,7 +295,7 @@ static NSString *dateFormat(NSString *template)
 {
     uint32_t height = self.blockHeight;
 
-    if (! [BRWalletManager sharedInstance].didAuthenticate &&
+    if (! [DSWalletManager sharedInstance].didAuthenticate &&
         [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
         _transactions = @[];
         if (transactions.count > 0) self.moreTx = YES;
@@ -296,8 +304,8 @@ static NSString *dateFormat(NSString *template)
         if (transactions.count <= 5) self.moreTx = NO;
         _transactions = (self.moreTx) ? [transactions subarrayWithRange:NSMakeRange(0, 5)] : [transactions copy];
     
-        if (! [BRWalletManager sharedInstance].didAuthenticate) {
-            for (BRTransaction *tx in _transactions) {
+        if (! [DSWalletManager sharedInstance].didAuthenticate) {
+            for (DSTransaction *tx in _transactions) {
                 if (tx.blockHeight == TX_UNCONFIRMED ||
                     (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
                 _transactions = [_transactions subarrayWithRange:NSMakeRange(0, [_transactions indexOfObject:tx])];
@@ -314,7 +322,7 @@ static NSString *dateFormat(NSString *template)
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:tableView numberOfRowsInSection:path.section]);
 }
 
-- (NSString *)dateForTx:(BRTransaction *)tx
+- (NSString *)dateForTx:(DSTransaction *)tx
 {
     static NSDateFormatter *monthDayHourFormatter = nil;
     static NSDateFormatter *yearMonthDayHourFormatter = nil;
@@ -345,25 +353,27 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:dismiss"];
+    [DSEventManager saveEvent:@"tx_history:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)unlock:(id)sender
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
-    if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
+    if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate) {
         [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
-                if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
+                if (sender) [DSEventManager saveEvent:@"tx_history:unlock_success"];
                 
                 [self updateTitleView];
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
                 
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    self.transactions = manager.wallet.allTransactions;
+                    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                    DSWallet *wallet = chain.wallets.firstObject;
+                    self.transactions = wallet.allTransactions;
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (sender && self.transactions.count > 0) {
@@ -381,7 +391,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)scanQR:(id)sender
 {
     //TODO: show scanner in settings rather than dismissing
-    [BREventManager saveEvent:@"tx_history:scan_qr"];
+    [DSEventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
 
     nav.view.alpha = 0.0;
@@ -394,7 +404,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)showTx:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:show_tx"];
+    [DSEventManager saveEvent:@"tx_history:show_tx"];
     BRTxDetailViewController *detailController
         = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
@@ -404,8 +414,8 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)more:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:more"];
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    [DSEventManager saveEvent:@"tx_history:more"];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
     if (! manager.didAuthenticate) {
@@ -417,7 +427,9 @@ static NSString *dateFormat(NSString *template)
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
      withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
-    self.transactions = manager.wallet.allTransactions;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
+    self.transactions = wallet.allTransactions;
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     
@@ -498,7 +510,7 @@ static NSString *dateFormat(NSString *template)
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
             *detailTextLabel;
     UIImageView * shapeshiftImageView;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     switch (indexPath.section) {
         case 0:
@@ -519,10 +531,12 @@ static NSString *dateFormat(NSString *template)
                 localBalanceLabel = (id)[cell viewWithTag:8];
                 shapeshiftImageView = (id)[cell viewWithTag:9];
 
-                BRTransaction *tx = self.transactions[indexPath.row];
-                uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
-                         sent = [manager.wallet amountSentByTransaction:tx],
-                         balance = [manager.wallet balanceAfterTransaction:tx];
+                DSTransaction *tx = self.transactions[indexPath.row];
+                DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                DSWallet *wallet = chain.wallets.firstObject;
+                uint64_t received = [wallet amountReceivedFromTransaction:tx],
+                         sent = [wallet amountSentByTransaction:tx],
+                         balance = [wallet balanceAfterTransaction:tx];
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
 
@@ -721,18 +735,18 @@ static NSString *dateFormat(NSString *template)
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0: // buy dash
-                    [BREventManager saveEvent:@"tx_history:buy_btc"];
+                    [DSEventManager saveEvent:@"tx_history:buy_btc"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     //[self showBuy];
                     break;
                     
                 case 1: // import private key
-                    [BREventManager saveEvent:@"tx_history:import_priv_key"];
+                    [DSEventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
 
                 case 2: // settings
-                    [BREventManager saveEvent:@"tx_history:settings"];
+                    [DSEventManager saveEvent:@"tx_history:settings"];
                     destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
                     [self.navigationController pushViewController:destinationController animated:YES];
                     break;

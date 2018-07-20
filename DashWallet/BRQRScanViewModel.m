@@ -25,10 +25,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import "NSString+Bitcoin.h"
-#import "NSString+Dash.h"
-#import "BREventManager.h"
-#import "BRPaymentRequest.h"
+#import <DashSync/DashSync.h>
 
 #import "BRQRScanViewModel.h"
 
@@ -264,7 +261,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     
     [self pauseQRCodeSearch];
     
-    [BREventManager saveEvent:@"send:scanned_qr"];
+    [DSEventManager saveEvent:@"send:scanned_qr"];
     
     AVMetadataMachineReadableCodeObject *codeObject = metadataObjects[index];
     
@@ -274,13 +271,13 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     });
     
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr];
     if (request.isValid || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
         });
         
-        [BREventManager saveEvent:@"send:valid_qr_scan"];
+        [DSEventManager saveEvent:@"send:valid_qr_scan"];
         
         if (request.r.length > 0) { // start fetching payment protocol request right away
             __weak __typeof__(self) weakSelf = self;
@@ -329,7 +326,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
                                  
                                  [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
                                  
-                                 [BREventManager saveEvent:@"send:unsuccessful_bip73"];
+                                 [DSEventManager saveEvent:@"send:unsuccessful_bip73"];
                              }
                          });
                      }];

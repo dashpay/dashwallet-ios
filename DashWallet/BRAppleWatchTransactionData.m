@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRAppleWatchTransactionData.h"
-#import "BRTransaction+Utils.h"
 
 #define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
 #define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
@@ -45,7 +44,7 @@
     return self;
 }
 
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction
++ (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction
 {
     BRAppleWatchTransactionData *appleWatchTransactionData;
     

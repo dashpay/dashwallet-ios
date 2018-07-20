@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/UIImage+DSUtils.h
+../../../../../dashsync-iOS/DashSync/Categories/UIImage+DSUtils.h

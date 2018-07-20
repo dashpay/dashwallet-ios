@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Transactions/DSTransactionFactory.h
+../../../../../dashsync-iOS/DashSync/Models/Transactions/DSTransactionFactory.h

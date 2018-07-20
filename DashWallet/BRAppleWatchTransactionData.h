@@ -23,8 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTransaction.h"
 #import <Foundation/Foundation.h>
+
+#import <DashSync/DashSync.h>
 
 typedef enum : NSInteger {
     BRAWTransactionTypeSent,
@@ -40,6 +41,6 @@ typedef enum : NSInteger {
 @property (nonatomic, strong) NSString *dateText;
 @property (nonatomic) BRAWTransactionType type;
 
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction;
++ (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction;
 
 @end

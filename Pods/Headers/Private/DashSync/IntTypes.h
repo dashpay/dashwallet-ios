@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/IntTypes.h
+../../../../../dashsync-iOS/DashSync/Categories/IntTypes.h

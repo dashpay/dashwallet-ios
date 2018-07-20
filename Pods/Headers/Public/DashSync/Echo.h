@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/crypto/x11/Echo.h
+../../../../../dashsync-iOS/DashSync/crypto/x11/Echo.h

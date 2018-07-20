@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "Запрос для мгновенного платежа, но Вы отключили эту опцию";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "Запросить сеть «%1$@» вместо «%2$@»";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

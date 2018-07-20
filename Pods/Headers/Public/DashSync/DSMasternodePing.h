@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSMasternodePing.h
+../../../../../dashsync-iOS/DashSync/Models/DSMasternodePing.h

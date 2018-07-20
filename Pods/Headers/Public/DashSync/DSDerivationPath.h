@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSDerivationPath.h
+../../../../../dashsync-iOS/DashSync/Models/DSDerivationPath.h

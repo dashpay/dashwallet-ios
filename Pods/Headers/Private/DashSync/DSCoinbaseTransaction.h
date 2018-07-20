@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Transactions/DSCoinbaseTransaction.h
+../../../../../dashsync-iOS/DashSync/Models/Transactions/DSCoinbaseTransaction.h

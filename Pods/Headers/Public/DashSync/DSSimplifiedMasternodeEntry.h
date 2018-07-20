@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSSimplifiedMasternodeEntry.h
+../../../../../dashsync-iOS/DashSync/Models/DSSimplifiedMasternodeEntry.h

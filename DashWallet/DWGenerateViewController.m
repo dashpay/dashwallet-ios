@@ -6,9 +6,9 @@
 //  Copyright © 2018 Dash Core. All rights reserved.
 //
 
+#import <DashSync/DashSync.h>
+
 #import "DWGenerateViewController.h"
-#import "BREventManager.h"
-#import "BRWalletManager.h"
 
 @interface DWGenerateViewController ()
 
@@ -66,10 +66,10 @@
 }
 
 -(IBAction)generateRecoveryPhrase:(id)sender {
-    [BREventManager saveEvent:@"welcome:generate"];
+    [DSEventManager saveEvent:@"welcome:generate"];
     
-    if (! [BRWalletManager sharedInstance].passcodeEnabled) {
-        [BREventManager saveEvent:@"welcome:passcode_disabled"];
+    if (! [DSWalletManager sharedInstance].passcodeEnabled) {
+        [DSEventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
                                      message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
@@ -101,7 +101,7 @@
 
 - (IBAction)show:(id)sender
 {
-    [BREventManager saveEvent:@"welcome:show"];
+    [DSEventManager saveEvent:@"welcome:show"];
     
     [self.navigationController presentViewController:self.seedNav animated:YES completion:^{
         self.warningLabel.hidden = self.showButton.hidden = YES;

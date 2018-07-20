@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/NSString+Dash.h
+../../../../../dashsync-iOS/DashSync/Categories/NSString+Dash.h

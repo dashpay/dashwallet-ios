@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSTransactionEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSTransactionEntity+CoreDataClass.h

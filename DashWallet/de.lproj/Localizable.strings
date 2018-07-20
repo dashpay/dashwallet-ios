@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "Dies ist eine Zahlungsanforderung für InstantSend. Dieses ist jedoch deaktiviert.";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "Netzwerk \"%1$@\" statt \"%2$@\" angefordert";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

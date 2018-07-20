@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSAccount.h
+../../../../../dashsync-iOS/DashSync/Models/DSAccount.h

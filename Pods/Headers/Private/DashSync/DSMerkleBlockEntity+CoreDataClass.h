@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSMerkleBlockEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSMerkleBlockEntity+CoreDataClass.h

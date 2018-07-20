@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "ネットワーク「%2$@」の代わりに「%1$@」を要求してしまいました。";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

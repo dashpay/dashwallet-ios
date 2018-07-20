@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSPaymentProtocol.h
+../../../../../dashsync-iOS/DashSync/Models/DSPaymentProtocol.h

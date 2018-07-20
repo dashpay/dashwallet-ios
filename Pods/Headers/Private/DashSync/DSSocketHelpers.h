@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSSocketHelpers.h
+../../../../../dashsync-iOS/DashSync/Models/DSSocketHelpers.h

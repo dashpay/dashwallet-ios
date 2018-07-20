@@ -23,9 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRScanViewController.h"
-#import "BREventManager.h"
+#import <DashSync/DashSync.h>
 
+#import "BRScanViewController.h"
 
 @interface BRScanViewController ()
 
@@ -66,7 +66,7 @@
     self.barStyle = [UIApplication sharedApplication].statusBarStyle;
     [self setNeedsStatusBarAppearanceUpdate];
     if ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo] == AVAuthorizationStatusDenied) {
-        [BREventManager saveEvent:@"scan:camera_denied"];
+        [DSEventManager saveEvent:@"scan:camera_denied"];
         NSString * titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil), NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]];
         UIAlertController * cameraAlert = [UIAlertController
                                      alertControllerWithTitle:titleString
@@ -153,7 +153,7 @@
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"scan:dismiss"];
+    [DSEventManager saveEvent:@"scan:dismiss"];
     [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 

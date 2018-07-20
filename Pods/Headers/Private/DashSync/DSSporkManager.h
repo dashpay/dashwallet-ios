@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSSporkManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSSporkManager.h

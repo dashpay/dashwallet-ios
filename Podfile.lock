@@ -4,7 +4,7 @@ PODS:
   - secp256k1_dash (0.1.0)
 
 DEPENDENCIES:
-  - "DashSync (from `git@github.com:dashevo/dashsync-ios.git`, commit `5398500b14c5b34ca1d68f7dd6610f8c8d31a77c`, branch `master`)"
+  - DashSync (from `../dashsync-iOS`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -12,19 +12,12 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   DashSync:
-    :branch: master
-    :commit: 5398500b14c5b34ca1d68f7dd6610f8c8d31a77c
-    :git: "git@github.com:dashevo/dashsync-ios.git"
-
-CHECKOUT OPTIONS:
-  DashSync:
-    :commit: 5398500b14c5b34ca1d68f7dd6610f8c8d31a77c
-    :git: "git@github.com:dashevo/dashsync-ios.git"
+    :path: "../dashsync-iOS"
 
 SPEC CHECKSUMS:
-  DashSync: b8c0f6b11ca8fbb8faece8760485f38829109b35
+  DashSync: 7fa2798a0cb2ad8d6c7bc3d68a2f0b75c10e991e
   secp256k1_dash: 16bc4c20423f88dc264db75d5611c9c6a5fd1f77
 
-PODFILE CHECKSUM: 524409a0b45590a20b2f57de64fd1a807cecd704
+PODFILE CHECKSUM: 354df6f8740417dee6a93e6cfca800578c2161c1
 
 COCOAPODS: 1.5.3

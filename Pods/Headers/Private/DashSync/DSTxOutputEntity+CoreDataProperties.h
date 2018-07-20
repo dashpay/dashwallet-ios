@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSTxOutputEntity+CoreDataProperties.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSTxOutputEntity+CoreDataProperties.h

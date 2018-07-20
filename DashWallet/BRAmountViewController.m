@@ -23,13 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <DashSync/DashSync.h>
+
+#import "BRAppDelegate.h"
 #import "BRAmountViewController.h"
-#import "BRPaymentRequest.h"
-#import "BRWalletManager.h"
-#import "BRPeerManager.h"
-#import "BRTransaction.h"
-#import "BREventManager.h"
-#import "NSString+Dash.h"
 #import "BRBubbleView.h"
 
 @interface BRAmountViewController ()
@@ -59,7 +56,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
     
     [charset addCharactersInString:manager.dashFormat.currencyDecimalSeparator];
@@ -123,7 +120,7 @@
     
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
-        if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+        if ([[DSWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
         self.navigationController.navigationBar.barStyle = UIStatusBarStyleLightContent;
     }
     else {
@@ -137,7 +134,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
                                                       if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
-                                                      if ([[BRWalletManager sharedInstance] didAuthenticate]) {
+                                                      if ([[DSWalletManager sharedInstance] didAuthenticate]) {
                                                           [self updateTitleView];
                                                       }
                                                   }];
@@ -163,7 +160,7 @@
 
 - (void)updateLocalCurrencyLabel
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     uint64_t amount;
     if (self.usingShapeshift) {
         amount = (self.swapped) ? [manager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
@@ -204,13 +201,15 @@
 }
 
 -(UILabel*)titleLabel {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                              [manager localCurrencyStringForDashAmount:wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -218,10 +217,12 @@
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+        DSWallet *wallet = chain.wallets.firstObject;
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                  [manager localCurrencyStringForDashAmount:wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -238,13 +239,13 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
-    [BREventManager saveEvent:@"amount:unlock"];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    [DSEventManager saveEvent:@"amount:unlock"];
     
     if (sender && ! manager.didAuthenticate) {
         [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
-                [BREventManager saveEvent:@"amount:successful_unlock"];
+                [DSEventManager saveEvent:@"amount:successful_unlock"];
                 
                 [self updateTitleView];
                 [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
@@ -286,18 +287,18 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     if (self.usingShapeshift) {
         
         self.amount = (self.swapped) ? [manager amountForBitcoinString:self.amountLabel.text]:
         [manager amountForDashString:self.amountLabel.text];
         
         if (self.amount == 0){
-            [BREventManager saveEvent:@"amount:pay_zero"];
+            [DSEventManager saveEvent:@"amount:pay_zero"];
             return;
         }
         
-        [BREventManager saveEvent:@"amount:pay_using_shapeshift"];
+        [DSEventManager saveEvent:@"amount:pay_using_shapeshift"];
         
         if (self.swapped) {
             [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount/manager.bitcoinDashPrice.doubleValue];
@@ -308,11 +309,11 @@
         [manager amountForDashString:self.amountLabel.text];
         
         if (self.amount == 0){
-            [BREventManager saveEvent:@"amount:pay_zero"];
+            [DSEventManager saveEvent:@"amount:pay_zero"];
             return;
         }
         
-        [BREventManager saveEvent:@"amount:pay"];
+        [DSEventManager saveEvent:@"amount:pay"];
         
         [self.delegate amountViewController:self selectedAmount:self.amount];
     }
@@ -320,14 +321,14 @@
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"amount:dismiss"];
+    [DSEventManager saveEvent:@"amount:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)swapCurrency:(id)sender
 {
     self.swapped = ! self.swapped;
-    [BREventManager saveEvent:@"amount:swap_currency"];
+    [DSEventManager saveEvent:@"amount:swap_currency"];
     
     if (self.swapLeftLabel.hidden) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
@@ -350,7 +351,7 @@
     }
     
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSString *s = (self.swapped) ? self.localCurrencyLabel.text : self.amountLabel.text;
     uint64_t amount =
     [manager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
@@ -422,7 +423,7 @@
 
 - (IBAction)releaseSwapButton:(id)sender
 {
-    [BREventManager saveEvent:@"amount:release_swap"];
+    [DSEventManager saveEvent:@"amount:release_swap"];
     [UIView animateWithDuration:0.1 animations:^{
         //self.swapLeftLabel.transform = CGAffineTransformIdentity;
         self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
@@ -453,7 +454,7 @@
 -(void)updateAmountLabel:(UILabel *)amountLabel shouldChangeCharactersInRange:(NSRange)range
        replacementString:(NSString *)string
 {
-    BRWalletManager *m = [BRWalletManager sharedInstance];
+    DSWalletManager *m = [DSWalletManager sharedInstance];
     NSNumberFormatter *formatter;
     if (self.usingShapeshift) {
         formatter = (self.swapped) ? m.bitcoinFormat:m.dashFormat;

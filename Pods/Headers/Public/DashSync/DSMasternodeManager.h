@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSMasternodeManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSMasternodeManager.h

@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSKey+BIP38.h
+../../../../../dashsync-iOS/DashSync/Models/DSKey+BIP38.h

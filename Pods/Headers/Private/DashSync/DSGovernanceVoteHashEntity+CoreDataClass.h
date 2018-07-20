@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSGovernanceVoteHashEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSGovernanceVoteHashEntity+CoreDataClass.h

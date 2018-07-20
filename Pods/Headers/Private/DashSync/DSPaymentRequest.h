@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSPaymentRequest.h
+../../../../../dashsync-iOS/DashSync/Models/DSPaymentRequest.h

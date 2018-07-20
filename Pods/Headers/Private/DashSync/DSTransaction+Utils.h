@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/DSTransaction+Utils.h
+../../../../../dashsync-iOS/DashSync/Categories/DSTransaction+Utils.h

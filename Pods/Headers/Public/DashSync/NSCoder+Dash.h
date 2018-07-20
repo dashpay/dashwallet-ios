@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/NSCoder+Dash.h
+../../../../../dashsync-iOS/DashSync/Categories/NSCoder+Dash.h

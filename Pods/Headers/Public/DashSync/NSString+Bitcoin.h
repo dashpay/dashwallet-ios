@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/NSString+Bitcoin.h
+../../../../../dashsync-iOS/DashSync/Categories/NSString+Bitcoin.h

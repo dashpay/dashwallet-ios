@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSShapeshiftEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSShapeshiftEntity+CoreDataClass.h

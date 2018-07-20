@@ -28,9 +28,17 @@
 #define BRURLNotification            @"BRURLNotification"
 #define BRFileNotification           @"BRFileNotification"
 
+@class DSChain;
+@class DSChainPeerManager;
+
 @interface BRAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+
+@property (readonly, strong, nonatomic) DSChain *chain;
+@property (readonly, strong, nonatomic) DSChainPeerManager *peerManager;
+
++ (instancetype)sharedDelegate;
 
 - (void)registerForPushNotifications;
 

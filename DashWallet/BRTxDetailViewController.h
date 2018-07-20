@@ -25,11 +25,11 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRTransaction;
+@class DSTransaction;
 
 @interface BRTxDetailViewController : UITableViewController
 
-@property (nonatomic, strong) BRTransaction *transaction;
+@property (nonatomic, strong) DSTransaction *transaction;
 @property (nonatomic, strong) NSString *txDateString;
 
 @end

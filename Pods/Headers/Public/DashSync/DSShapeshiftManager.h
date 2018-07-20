@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSShapeshiftManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSShapeshiftManager.h

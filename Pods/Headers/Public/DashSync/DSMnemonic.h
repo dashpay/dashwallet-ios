@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSMnemonic.h
+../../../../../dashsync-iOS/DashSync/Models/DSMnemonic.h

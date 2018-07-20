@@ -23,18 +23,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRSettingsViewController.h"
-#import "BRSeedViewController.h"
-#import "BRWalletManager.h"
-#import "BRBubbleView.h"
-#import "BRPeerManager.h"
-#import "BREventManager.h"
-#import "BRUserDefaultsSwitchCell.h"
-#import <SafariServices/SafariServices.h>
+
 #import <asl.h>
 #import <sys/socket.h>
 #import <netdb.h>
 #import <arpa/inet.h>
+
+#import <SafariServices/SafariServices.h>
+
+#import <DashSync/DashSync.h>
+
+#import "BRSettingsViewController.h"
+#import "BRSeedViewController.h"
+#import "BRBubbleView.h"
+#import "BRUserDefaultsSwitchCell.h"
 
 @interface BRSettingsViewController ()
 
@@ -54,7 +56,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.touchId = [BRWalletManager sharedInstance].touchIdEnabled;
+    self.touchId = [DSWalletManager sharedInstance].touchIdEnabled;
 }
 
 
@@ -62,7 +64,7 @@
 {
     [super viewWillAppear:animated];
  
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];
     self.navBarSwipe = nil;
@@ -135,7 +137,7 @@
 - (NSString *)stats
 {
     static NSDateFormatter *fmt = nil;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     if (! fmt) {
         fmt = [NSDateFormatter new];
@@ -157,7 +159,7 @@
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"settings:dismiss"];
+    [DSEventManager saveEvent:@"settings:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -172,7 +174,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 - (IBAction)copyLogs:(id)sender
 {
-    [BREventManager saveEvent:@"settings:copy_logs"];
+    [DSEventManager saveEvent:@"settings:copy_logs"];
     aslmsg q = asl_new(ASL_TYPE_QUERY), m;
     aslresponse r = asl_search(NULL, q);
     NSMutableString *s = [NSMutableString string];
@@ -292,8 +294,8 @@
 
 - (IBAction)touchIdLimit:(id)sender
 {
-    [BREventManager saveEvent:@"settings:touch_id_limit"];
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    [DSEventManager saveEvent:@"settings:touch_id_limit"];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
         if (authenticated) {
@@ -321,8 +323,8 @@
 
 - (IBAction)navBarSwipe:(id)sender
 {
-    [BREventManager saveEvent:@"settings:nav_bar_swipe"];
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    [DSEventManager saveEvent:@"settings:nav_bar_swipe"];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger digits = (((manager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
     manager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
@@ -363,7 +365,7 @@
     static NSString *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell", *actionIdent = @"ActionCell",
                     *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
         cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
@@ -521,7 +523,7 @@ _switch_cell:
 
 - (void)showAbout
 {
-    [BREventManager saveEvent:@"settings:show_about"];
+    [DSEventManager saveEvent:@"settings:show_about"];
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
     UILabel *l = (id)[c.view viewWithTag:411];
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
@@ -554,7 +556,7 @@ _switch_cell:
 
 - (void)showRecoveryPhrase
 {
-    [BREventManager saveEvent:@"settings:show_recovery_phrase"];
+    [DSEventManager saveEvent:@"settings:show_recovery_phrase"];
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                  message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
@@ -580,7 +582,7 @@ _switch_cell:
                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                  style:UIAlertActionStyleDefault
                                  handler:^(UIAlertAction * action) {
-                                     BRWalletManager *manager = [BRWalletManager sharedInstance];
+                                     DSWalletManager *manager = [DSWalletManager sharedInstance];
                                      [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
                                          if (seedPhrase.length > 0) {
                                              BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
@@ -598,9 +600,9 @@ _switch_cell:
 
 - (void)showCurrencySelector
 {
-    [BREventManager saveEvent:@"settings:show_currency_selector"];
+    [DSEventManager saveEvent:@"settings:show_currency_selector"];
     NSUInteger currencyCodeIndex = 0;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     double localPrice = manager.localCurrencyDashPrice.doubleValue;
     NSMutableArray *options;
     self.selectorType = 0;
@@ -640,7 +642,7 @@ _switch_cell:
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger currencyCodeIndex = 0;
     
     // if we are showing the local currency selector
@@ -707,18 +709,18 @@ _deselect_switch:
         case 2:
             switch (indexPath.row) {
                 case 0: // change passcode
-                    [BREventManager saveEvent:@"settings:change_pin"];
+                    [DSEventManager saveEvent:@"settings:change_pin"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     [manager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
                     break;
 
                 case 1: // start/recover another wallet (handled by storyboard)
-                    [BREventManager saveEvent:@"settings:recover"];
+                    [DSEventManager saveEvent:@"settings:recover"];
                     break;
                     
                 case 2: // rescan blockchain
                     [[BRPeerManager sharedInstance] rescan];
-                    [BREventManager saveEvent:@"settings:rescan"];
+                    [DSEventManager saveEvent:@"settings:rescan"];
                     [self done:nil];
                     break;
             }

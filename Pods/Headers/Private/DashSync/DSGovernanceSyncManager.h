@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSGovernanceSyncManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSGovernanceSyncManager.h

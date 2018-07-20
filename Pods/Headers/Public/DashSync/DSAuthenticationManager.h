@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSAuthenticationManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSAuthenticationManager.h

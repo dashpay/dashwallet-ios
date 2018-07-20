@@ -24,10 +24,10 @@
 //  THE SOFTWARE.
 
 #import <XCTest/XCTest.h>
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRBIP32Sequence.h"
 #import "BRBIP39Mnemonic.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
 #import "BRBloomFilter.h"
@@ -650,12 +650,12 @@
     
     [script appendScriptPubKeyForAddress:k.address];
     
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
                                                    outputAddresses:@[k.address, k.address] outputAmounts:@[@100000000, @4900000000]];
     
     [tx signWithPrivateKeys:@[k.privateKey]];
     
-    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
     
     NSUInteger height = [tx blockHeightUntilFreeForAmounts:@[@5000000000] withBlockHeights:@[@1]];
     uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
@@ -663,15 +663,15 @@
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
     
     NSData *d = tx.data;
     
-    tx = [BRTransaction transactionWithMessage:d];
+    tx = [DSTransaction transactionWithMessage:d];
     
-    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
+    XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
     
-    tx = [[BRTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
+    tx = [[DSTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
                                        inputIndexes:@[@0, @0,@0, @0, @0, @0, @0, @0, @0, @0]
                                        inputScripts:@[script, script, script, script, script, script, script, script, script, script]
                                     outputAddresses:@[k.address, k.address, k.address, k.address, k.address, k.address, k.address, k.address,
@@ -681,7 +681,7 @@
     
     [tx signWithPrivateKeys:@[k.privateKey]];
     
-    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
     
     height = [tx blockHeightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                                                   @1000000, @1000000, @1000000]
@@ -694,12 +694,12 @@
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
     
     d = tx.data;
-    tx = [BRTransaction transactionWithMessage:d];
+    tx = [DSTransaction transactionWithMessage:d];
     
-    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
+    XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
 }
 
 // MARK: - testBIP39Mnemonic
@@ -1155,7 +1155,7 @@
     NSArray * inputScripts = @[script];
     NSArray * outputAddresses = @[w.receiveAddress];
     NSArray * outputAmounts = @[@(DUFFS)];
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                    outputAddresses:outputAddresses outputAmounts:outputAmounts];
     
     [tx signWithPrivateKeys:@[k.privateKey]];
@@ -1163,7 +1163,7 @@
     
     XCTAssertEqual(w.balance, DUFFS, @"[BRWallet registerTransaction]");
     
-    tx = [BRTransaction new];
+    tx = [DSTransaction new];
     [tx addInputHash:UINT256_ZERO index:2 script:script signature:NULL sequence:UINT32_MAX - 1];
     [tx addOutputAddress:w.receiveAddress amount:DUFFS];
     tx.lockTime = 1000;
@@ -1202,37 +1202,37 @@
     
     [allAddresses addObject:@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h"];
     
-    BRTransaction *tx1 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx1 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J"];
     
-    BRTransaction *tx2 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx2 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq"];
     
-    BRTransaction *tx3 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx3 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV"];
     
-    BRTransaction *tx4 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx4 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH"];
     
-    BRTransaction *tx5 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx5 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T"];
     
-    BRTransaction *tx6 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx6 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6"];
     
-    BRTransaction *tx7 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx7 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [tx1 signWithPrivateKeys:@[k.privateKey]];
@@ -1269,33 +1269,33 @@
 
 - (void)testWalletManager
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForDashString:nil], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:nil], 0, @"[DSWalletManager amountForDashString:]");
     
-    XCTAssertEqual([manager amountForDashString:@""], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:@""], 0, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:0];
-    XCTAssertEqual([manager amountForDashString:s], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 0, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:100000000];
-    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:1];
-    XCTAssertEqual([manager amountForDashString:s], 1, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 1, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2100000000000000];
-    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999999];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999995];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999990];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[DSWalletManager amountForDashString:]");
 }
 
 // MARK: - testBloomFilter

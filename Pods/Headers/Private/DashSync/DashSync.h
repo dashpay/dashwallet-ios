@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/DashSync.h
+../../../../../dashsync-iOS/DashSync/DashSync.h

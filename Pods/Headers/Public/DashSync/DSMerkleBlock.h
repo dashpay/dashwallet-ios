@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSMerkleBlock.h
+../../../../../dashsync-iOS/DashSync/Models/DSMerkleBlock.h

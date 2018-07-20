@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "искането е за  instant payment, но вашите instant payments са изключени";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "исканата мрежа \"%1$@\" вместо \"%2$@\"";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

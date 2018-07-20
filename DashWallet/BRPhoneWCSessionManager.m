@@ -23,16 +23,15 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <WatchConnectivity/WatchConnectivity.h>
+
+#import <DashSync/DashSync.h>
+#import <DashSync/UIImage+DSUtils.h>
+
 #import "BRPhoneWCSessionManager.h"
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
-#import "BRPaymentRequest.h"
-#import "BRPeerManager.h"
-#import "BRTransaction+Utils.h"
-#import "BRWalletManager.h"
 #import "BRAppGroupConstants.h"
-#import "UIImage+Utils.h"
-#import <WatchConnectivity/WatchConnectivity.h>
 
 @interface BRPhoneWCSessionManager () <WCSessionDelegate>
 
@@ -137,7 +136,7 @@
             break;
             
         case AWSessionRquestDataTypeQRCodeBits: {
-            BRWalletManager *manager = [BRWalletManager sharedInstance];
+            DSWalletManager *manager = [DSWalletManager sharedInstance];
             BRPaymentRequest *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress];
 
             req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
@@ -206,7 +205,7 @@
 
 - (BRAppleWatchData *)applicationContextData
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSArray *transactions = manager.wallet.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
@@ -229,7 +228,7 @@
     return appleWatchData;
 }
 
-- (NSString *)lastTransactionStringFromTransaction:(BRTransaction *)transaction
+- (NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction
 {
     if (transaction) {
         NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
@@ -280,7 +279,7 @@
 
 - (UIImage *)qrCode
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSData *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
     NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     UIImage *image = nil;
@@ -302,17 +301,17 @@
 {
     NSMutableArray *transactionListData = [[NSMutableArray alloc] init];
     
-    for (BRTransaction *transaction in transactions) {
+    for (DSTransaction *transaction in transactions) {
         [transactionListData addObject:[BRAppleWatchTransactionData appleWatchTransactionDataFrom:transaction]];
     }
 
 #if SNAPSHOT
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     [transactionListData removeAllObjects];
 
     for (int i = 0; i < 6; i++) {
-        BRTransaction *tx = [BRTransaction new];
+        DSTransaction *tx = [DSTransaction new];
         BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
         int64_t amount =
             [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i] longLongValue];

@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSDynamicOptions.h
+../../../../../dashsync-iOS/DashSync/Models/DSDynamicOptions.h

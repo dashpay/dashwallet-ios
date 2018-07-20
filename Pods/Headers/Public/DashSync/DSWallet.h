@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSWallet.h
+../../../../../dashsync-iOS/DashSync/Models/DSWallet.h

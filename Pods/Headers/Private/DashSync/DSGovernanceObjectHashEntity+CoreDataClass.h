@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSGovernanceObjectHashEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSGovernanceObjectHashEntity+CoreDataClass.h

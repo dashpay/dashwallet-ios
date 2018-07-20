@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSSporkHashEntity+CoreDataProperties.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSSporkHashEntity+CoreDataProperties.h

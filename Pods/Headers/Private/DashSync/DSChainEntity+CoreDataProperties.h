@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSChainEntity+CoreDataProperties.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSChainEntity+CoreDataProperties.h

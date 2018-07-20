@@ -23,12 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRSeedViewController.h"
-#import "BRWalletManager.h"
-#import "BRPeerManager.h"
-#import "NSMutableData+Bitcoin.h"
-#import "BREventManager.h"
+#import <DashSync/DashSync.h>
 
+#import "BRSeedViewController.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
@@ -54,11 +51,11 @@
 
 - (instancetype)customInit
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     if (manager.noWallet) {
         self.seedPhrase = [manager generateRandomSeed];
-        [[BRPeerManager sharedInstance] connect];
+        [[DSChainManager sharedInstance] connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -193,7 +190,7 @@
                     [self presentViewController:alert animated:YES completion:nil];
                 }
                 else {
-                    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
+                    [[DSWalletManager sharedInstance] setSeedPhrase:nil];
                     [self.navigationController.presentingViewController dismissViewControllerAnimated:NO
                      completion:nil];
                     
@@ -248,7 +245,7 @@
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"seed:dismiss"];
+    [DSEventManager saveEvent:@"seed:dismiss"];
     if (self.navigationController.viewControllers.firstObject != self) return;
     
     self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
@@ -258,7 +255,7 @@
 
 - (IBAction)toggleWrite:(id)sender
 {
-    [BREventManager saveEvent:@"seed:toggle_write"];
+    [DSEventManager saveEvent:@"seed:toggle_write"];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
 
     if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {

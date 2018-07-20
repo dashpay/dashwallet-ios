@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Transactions/DSTransition.h
+../../../../../dashsync-iOS/DashSync/Models/Transactions/DSTransition.h

@@ -23,9 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <DashSync/DashSync.h>
+
 #import "BRQRScanView.h"
 #import "BRQRScanViewModel.h"
-#import "BREventManager.h"
 
 #import "BRQRScanViewController.h"
 
@@ -62,7 +63,7 @@
     [super viewWillAppear:animated];
     
     if (self.viewModel.isCameraDeniedOrRestricted) {
-        [BREventManager saveEvent:@"scan:camera_denied"];
+        [DSEventManager saveEvent:@"scan:camera_denied"];
         NSString *displayName = [NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"];
         NSString *titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
                                  displayName];

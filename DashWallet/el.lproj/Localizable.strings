@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "αίτηση δικτύου \"%1$@\" αντί για \"%2$@\"";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

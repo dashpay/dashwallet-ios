@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSEventManager.h
+../../../../../dashsync-iOS/DashSync/Models/DSEventManager.h

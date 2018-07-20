@@ -23,18 +23,15 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <MobileCoreServices/UTCoreTypes.h>
+
+#import <DashSync/DashSync.h>
+#import <DashSync/UIImage+DSUtils.h>
+
 #import "BRReceiveViewController.h"
 #import "BRRootViewController.h"
-#import "BRPaymentRequest.h"
-#import "BRWalletManager.h"
-#import "BRPeerManager.h"
-#import "BRTransaction.h"
 #import "BRBubbleView.h"
 #import "BRAppGroupConstants.h"
-#import "UIImage+Utils.h"
-#import "BREventManager.h"
-#import "BRWalletManager.h"
-#import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
                     "dash to your wallet by transferring them to your address.", nil)
@@ -64,7 +61,7 @@
 {
     [super viewDidLoad];
 
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     BRPaymentRequest *req;
 
     self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
@@ -83,7 +80,7 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [manager localCurrencyStringForDashAmount:req.amount]];
@@ -119,7 +116,7 @@
     }
     __block CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
         UIImage *image = nil;
         
@@ -156,7 +153,7 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                BRWalletManager *manager = [BRWalletManager sharedInstance];
+                DSWalletManager *manager = [DSWalletManager sharedInstance];
                 NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
                 NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                           [manager localCurrencyStringForDashAmount:req.amount]];
@@ -185,13 +182,13 @@
 
 - (void)checkRequestStatus
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     BRPaymentRequest *req = self.paymentRequest;
     uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
     if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
 
-    for (BRTransaction *tx in manager.wallet.allTransactions) {
+    for (DSTransaction *tx in manager.wallet.allTransactions) {
         if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
         if (tx.blockHeight == TX_UNCONFIRMED &&
             [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
@@ -219,7 +216,7 @@
 - (NSString *)paymentAddress
 {
     if (_paymentRequest) return _paymentRequest.paymentAddress;
-    return [BRWalletManager sharedInstance].wallet.receiveAddress;
+    return [DSWalletManager sharedInstance].wallet.receiveAddress;
 }
 
 - (BOOL)nextTip
@@ -280,7 +277,7 @@
 - (IBAction)address:(id)sender
 {
     if ([self nextTip]) return;
-    [BREventManager saveEvent:@"receive:address"];
+    [DSEventManager saveEvent:@"receive:address"];
 
     BOOL req = (_paymentRequest) ? YES : NO;
 
@@ -295,7 +292,7 @@
                                 [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
                                                                             center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
                                                        popOutAfterDelay:2.0]];
-                                [BREventManager saveEvent:@"receive:copy_address"];
+                                [DSEventManager saveEvent:@"receive:copy_address"];
     }]];
 
     if ([MFMailComposeViewController canSendMail]) {
@@ -312,10 +309,10 @@
                                         [self.navigationController presentViewController:composeController animated:YES completion:nil];
                                         composeController.view.backgroundColor =
                                         [UIColor colorWithPatternImage:[UIImage imageNamed:@"wallpaper-default"]];
-                                        [BREventManager saveEvent:@"receive:send_email"];
+                                        [DSEventManager saveEvent:@"receive:send_email"];
                                     }
                                     else {
-                                        [BREventManager saveEvent:@"receive:email_not_configured"];
+                                        [DSEventManager saveEvent:@"receive:email_not_configured"];
                                         UIAlertController * alert = [UIAlertController
                                                                      alertControllerWithTitle:@""
                                                                      message:NSLocalizedString(@"email not configured", nil)
@@ -354,10 +351,10 @@
                                         [self.navigationController presentViewController:composeController animated:YES completion:nil];
                                         composeController.view.backgroundColor = [UIColor colorWithPatternImage:
                                                                                   [UIImage imageNamed:@"wallpaper-default"]];
-                                        [BREventManager saveEvent:@"receive:send_message"];
+                                        [DSEventManager saveEvent:@"receive:send_message"];
                                     }
                                     else {
-                                        [BREventManager saveEvent:@"receive:message_not_configured"];
+                                        [DSEventManager saveEvent:@"receive:message_not_configured"];
                                         UIAlertController * alert = [UIAlertController
                                                                      alertControllerWithTitle:@""
                                                                      message:NSLocalizedString(@"sms not currently available", nil)
@@ -381,7 +378,7 @@
             
             ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
             [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
-            [BREventManager saveEvent:@"receive:request_amount"];
+            [DSEventManager saveEvent:@"receive:request_amount"];
                                 }]];
     }
     [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
@@ -412,7 +409,7 @@ error:(NSError *)error
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     if (amount < manager.wallet.minOutputAmount) {
         UIAlertController * alert = [UIAlertController
@@ -427,11 +424,11 @@ error:(NSError *)error
                                    }];
         [alert addAction:okButton];
         [self presentViewController:alert animated:YES completion:nil];
-        [BREventManager saveEvent:@"receive:amount_too_small"];
+        [DSEventManager saveEvent:@"receive:amount_too_small"];
         return;
     }
 
-    [BREventManager saveEvent:@"receive:show_request"];
+    [DSEventManager saveEvent:@"receive:show_request"];
     UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
     BRReceiveViewController *receiveController = [self.storyboard
                                                   instantiateViewControllerWithIdentifier:@"RequestViewController"];

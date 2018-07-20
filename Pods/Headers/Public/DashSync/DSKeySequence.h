@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSKeySequence.h
+../../../../../dashsync-iOS/DashSync/Models/DSKeySequence.h

@@ -23,11 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <DashSync/DashSync.h>
+
 #import "BRWelcomeViewController.h"
 #import "BRRootViewController.h"
-#import "BRWalletManager.h"
-#import "BREventManager.h"
-
 
 @interface BRWelcomeViewController ()
 
@@ -106,7 +105,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [BREventManager saveEvent:@"welcome:shown"];
+    [DSEventManager saveEvent:@"welcome:shown"];
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
 #if SNAPSHOT
@@ -118,7 +117,7 @@
         return;
 #endif
 
-        if (! [BRWalletManager sharedInstance].noWallet) { // sanity check
+        if (! [DSWalletManager sharedInstance].noWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
 
@@ -171,7 +170,7 @@
 
 - (IBAction)start:(id)sender
 {
-    [BREventManager saveEvent:@"welcome:new_wallet"];
+    [DSEventManager saveEvent:@"welcome:new_wallet"];
     
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"GenerateViewController"];
     
@@ -180,7 +179,7 @@
 
 - (IBAction)recover:(id)sender
 {
-    [BREventManager saveEvent:@"welcome:recover_wallet"];
+    [DSEventManager saveEvent:@"welcome:recover_wallet"];
 
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"RecoverViewController"];
 

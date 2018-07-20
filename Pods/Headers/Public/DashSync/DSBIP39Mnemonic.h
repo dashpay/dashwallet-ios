@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSBIP39Mnemonic.h
+../../../../../dashsync-iOS/DashSync/Models/DSBIP39Mnemonic.h

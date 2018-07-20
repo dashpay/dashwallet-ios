@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/crypto/x11/Skein.h
+../../../../../dashsync-iOS/DashSync/crypto/x11/Skein.h

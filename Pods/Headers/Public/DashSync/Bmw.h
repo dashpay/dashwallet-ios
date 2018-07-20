@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/crypto/x11/Bmw.h
+../../../../../dashsync-iOS/DashSync/crypto/x11/Bmw.h

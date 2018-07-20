@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Transactions/DSBlockchainUserRegistrationTransaction.h
+../../../../../dashsync-iOS/DashSync/Models/Transactions/DSBlockchainUserRegistrationTransaction.h

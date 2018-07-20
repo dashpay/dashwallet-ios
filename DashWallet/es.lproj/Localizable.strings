@@ -411,9 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "la solicitud es para un pago instantáneo pero usted desactivó los pagos instantáneos";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "solicitada la red \"%1$@\" en lugar de \"%2$@\"";
-
-/* No comment provided by engineer. */
 "requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */

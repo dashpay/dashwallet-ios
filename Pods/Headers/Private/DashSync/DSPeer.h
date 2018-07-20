@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSPeer.h
+../../../../../dashsync-iOS/DashSync/Models/DSPeer.h

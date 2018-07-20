@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Categories/NSManagedObject+Sugar.h
+../../../../../dashsync-iOS/DashSync/Categories/NSManagedObject+Sugar.h

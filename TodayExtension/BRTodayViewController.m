@@ -23,11 +23,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import <NotificationCenter/NotificationCenter.h>
+
+#import <DashSync/DashSync.h>
+#import <DashSync/UIImage+DSUtils.h>
+
 #import "BRTodayViewController.h"
 #import "BRAppGroupConstants.h"
 #import "BRBubbleView.h"
-#import "UIImage+Utils.h"
-#import <NotificationCenter/NotificationCenter.h>
 
 #define SCAN_URL @"dashwallet://x-callback-url/scanqr"
 #define OPEN_URL @"dashwallet://"

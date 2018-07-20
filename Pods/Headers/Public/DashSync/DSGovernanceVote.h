@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSGovernanceVote.h
+../../../../../dashsync-iOS/DashSync/Models/DSGovernanceVote.h

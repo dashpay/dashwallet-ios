@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSPeerEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSPeerEntity+CoreDataClass.h

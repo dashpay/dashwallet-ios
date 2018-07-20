@@ -23,13 +23,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRAppDelegate.h"
-#import "BRPeerManager.h"
-#import "BRWalletManager.h"
-#import "BREventManager.h"
-#import "BRPhoneWCSessionManager.h"
-#import "DSShapeshiftManager.h"
 #import <UserNotifications/UserNotifications.h>
+
+#import <DashSync/DashSync.h>
+
+#import "BRAppDelegate.h"
+#import "BRPhoneWCSessionManager.h"
 
 #if DASH_TESTNET
 #pragma message "testnet build"
@@ -47,9 +46,16 @@
 // the most recent balance as received by notification
 @property uint64_t balance;
 
+@property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic) DSChainPeerManager *peerManager;
+
 @end
 
 @implementation BRAppDelegate
+
++ (instancetype)sharedDelegate {
+    return (BRAppDelegate *)[UIApplication sharedApplication].delegate;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -82,11 +88,18 @@
              userInfo:@{@"file":file}];
         }
     }
-
-    // start the event manager
-    [[BREventManager sharedEventManager] up];
     
-    [BRWalletManager sharedInstance];
+    // Configure Dash Sync
+
+    [DashSync sharedSyncController];
+    DSChain *chain = [DSChain mainnet];
+    self.chain = chain;
+    self.peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];;
+    
+    // start the event manager
+    [[DSEventManager sharedEventManager] up];
+    
+    [DSWalletManager sharedInstance];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -114,7 +127,9 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (self.balance == UINT64_MAX) self.balance = [BRWalletManager sharedInstance].wallet.balance;
+        DSChain *chain = self.chain;
+        DSWallet *wallet = chain.wallets.firstObject;
+        if (self.balance == UINT64_MAX) self.balance = wallet.balance;
         [self registerForPushNotifications];
     });
 }
@@ -193,8 +208,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [BRPeerManager sharedInstance].syncProgress);
-            completion(([BRPeerManager sharedInstance].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
+            NSLog(@"background fetch timeout with progress: %f", self.peerManager.syncProgress);
+            completion((self.peerManager.syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
                        UIBackgroundFetchResultFailed);
             cleanup();
         }
@@ -205,7 +220,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch protected data available");
-            [[BRPeerManager sharedInstance] connect];
+            [self.peerManager connect];
         }];
 
     syncFinishedObserver =
@@ -225,10 +240,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     NSLog(@"background fetch starting");
-    [[BRPeerManager sharedInstance] connect];
+    [self.peerManager connect];
 
     // sync events to the server
-    [[BREventManager sharedEventManager] sync];
+    [[DSEventManager sharedEventManager] sync];
     
 //    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
 //        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
@@ -239,18 +254,20 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 - (void)setupBalanceNotification:(UIApplication *)application
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     self.balance = UINT64_MAX; // this gets set in applicationDidBecomActive:
     
     self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification * _Nonnull note) {
-            if (self.balance < manager.wallet.balance) {
+            DSChain *chain = self.chain;
+            DSWallet * wallet = chain.wallets.firstObject;
+            if (self.balance < wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
                 NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
-                                      [manager stringForDashAmount:manager.wallet.balance - self.balance],
-                                      [manager localCurrencyStringForDashAmount:manager.wallet.balance - self.balance]];
+                                      [manager stringForDashAmount:wallet.balance - self.balance],
+                                      [manager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
                 
                 NSLog(@"local notifications enabled=%d", send);
                 
@@ -286,7 +303,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 [[BRPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
             }
             
-            self.balance = manager.wallet.balance;
+            self.balance = wallet.balance;
         }];
 }
 

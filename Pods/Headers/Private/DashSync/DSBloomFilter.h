@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/DSBloomFilter.h
+../../../../../dashsync-iOS/DashSync/Models/DSBloomFilter.h

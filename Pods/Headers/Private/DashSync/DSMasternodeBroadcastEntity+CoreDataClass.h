@@ -1,1 +1,1 @@
-../../../DashSync/DashSync/Models/Entities/DSMasternodeBroadcastEntity+CoreDataClass.h
+../../../../../dashsync-iOS/DashSync/Models/Entities/DSMasternodeBroadcastEntity+CoreDataClass.h
