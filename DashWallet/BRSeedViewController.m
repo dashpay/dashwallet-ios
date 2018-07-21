@@ -195,7 +195,7 @@
                 else {
                     [[BRWalletManager sharedInstance] setSeedPhrase:nil];
                     [self.navigationController.presentingViewController dismissViewControllerAnimated:NO
-                     completion:nil];
+                                                                                           completion:nil];
                     
                     UIAlertController * alert = [UIAlertController
                                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -208,7 +208,9 @@
                                                handler:^(UIAlertAction * action) {
                                                }];
                     [alert addAction:okButton];
-                    [self presentViewController:alert animated:YES completion:nil];
+                    [self.navigationController.presentingViewController presentViewController:alert animated:YES completion:nil];
+                    
+
                 }
             }];
     }
