@@ -1052,7 +1052,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="250" image="dash-center-logo" translatesAutoresizingMaskIntoConstraints="NO" id="4Ur-j7-v3L">
-                                <rect key="frame" x="63" y="195.5" width="249" height="250"/>
+                                <rect key="frame" x="62.5" y="195.5" width="250" height="250"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="4Ur-j7-v3L" secondAttribute="height" multiplier="1:1" id="2Sa-0c-8Jw"/>
                                 </constraints>
