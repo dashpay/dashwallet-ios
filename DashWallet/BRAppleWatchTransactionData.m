@@ -25,6 +25,8 @@
 
 #import "BRAppleWatchTransactionData.h"
 
+#import <DashSync/DSTransaction+Utils.h>
+
 #define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
 #define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
 #define AW_TRANSACTION_DATA_DATE_KEY @"AW_TRANSACTION_DATA_DATE_KEY"
@@ -50,15 +52,15 @@
     
     if (transaction) {
         appleWatchTransactionData = [BRAppleWatchTransactionData new];
-        appleWatchTransactionData.amountText = transaction.amountText;
-        appleWatchTransactionData.amountTextInLocalCurrency = transaction.localCurrencyTextForAmount;
+        appleWatchTransactionData.amountText = [transaction amountTextReceivedInAccount:transaction.account];
+        appleWatchTransactionData.amountTextInLocalCurrency = [transaction localCurrencyTextForAmountReceivedInAccount:transaction.account];
         appleWatchTransactionData.dateText = transaction.dateText;
         
-        switch (transaction.transactionType) {
-            case BRTransactionTypeSent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
-            case BRTransactionTypeReceive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
-            case BRTransactionTypeMove: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
-            case BRTransactionTypeInvalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
+        switch (transaction.type) {
+            case DSTransactionTypeSent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
+            case DSTransactionTypeReceive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
+            case DSTransactionTypeMove: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
+            case DSTransactionTypeInvalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
         }
     }
     

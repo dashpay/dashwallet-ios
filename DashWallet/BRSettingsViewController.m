@@ -37,6 +37,7 @@
 #import "BRSeedViewController.h"
 #import "BRBubbleView.h"
 #import "BRUserDefaultsSwitchCell.h"
+#import "BRAppDelegate.h"
 
 @interface BRSettingsViewController ()
 
@@ -56,7 +57,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.touchId = [DSWalletManager sharedInstance].touchIdEnabled;
+    self.touchId = [DSAuthenticationManager sharedInstance].touchIdEnabled;
 }
 
 
@@ -72,7 +73,7 @@
     // observe the balance change notification to update the balance display
     if (! self.balanceObserver) {
         self.balanceObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
                     self.selectorController.title =
@@ -85,7 +86,7 @@
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 //[(id)[self.navigationController.topViewController.view viewWithTag:412] setText:self.stats];
                 [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
@@ -138,21 +139,25 @@
 {
     static NSDateFormatter *fmt = nil;
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
     if (! fmt) {
         fmt = [NSDateFormatter new];
         fmt.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"Mdjma" options:0 locale:[NSLocale currentLocale]];
     }
+    
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
 
    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
                                                        "connected peers: %d\ndl peer: %@", NULL),
            [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
            [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
-           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:manager.secureTime]].lowercaseString,
-           [BRPeerManager sharedInstance].lastBlockHeight,
-           [BRPeerManager sharedInstance].estimatedBlockHeight,
-           [BRPeerManager sharedInstance].peerCount,
-           [BRPeerManager sharedInstance].downloadPeerName];
+           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:authManager.secureTime]].lowercaseString,
+           chain.lastBlockHeight,
+           chain.estimatedBlockHeight,
+           peerManager.peerCount,
+           peerManager.downloadPeerName];
 }
 
 // MARK: - IBAction
@@ -201,6 +206,8 @@
 
 - (IBAction)fixedPeer:(id)sender
 {
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    
     if (! [[NSUserDefaults standardUserDefaults] stringForKey:SETTINGS_FIXED_PEER_KEY]) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:nil
@@ -227,7 +234,7 @@
                                          NSString *fixedPeer = ipField.text;
                                          NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
                                          NSString *host = pair.firstObject;
-                                         NSString *service = (pair.count > 1) ? pair[1] : @(DASH_STANDARD_PORT).stringValue;
+                                         NSString *service = (pair.count > 1) ? pair[1] : @(chain.standardPort).stringValue;
                                          struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                                          UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                                          
@@ -255,8 +262,9 @@
                                                  
                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
-                                                 [[BRPeerManager sharedInstance] disconnect];
-                                                 [[BRPeerManager sharedInstance] connect];
+                                                 DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+                                                 [peerManager disconnect];
+                                                 [peerManager connect];
                                                  break;
                                              }
                                              
@@ -283,8 +291,9 @@
                                       style:UIAlertActionStyleDestructive
                                       handler:^(UIAlertAction * action) {
                                           [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-                                          [[BRPeerManager sharedInstance] disconnect];
-                                          [[BRPeerManager sharedInstance] connect];
+                                          DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+                                          [peerManager disconnect];
+                                          [peerManager connect];
                                       }];
         [alert addAction:clearButton];
         [alert addAction:cancelButton];
@@ -296,8 +305,9 @@
 {
     [DSEventManager saveEvent:@"settings:touch_id_limit"];
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
-    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+    [authManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
         if (authenticated) {
             self.selectorType = 1;
             self.selectorOptions =
@@ -582,8 +592,9 @@ _switch_cell:
                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                  style:UIAlertActionStyleDefault
                                  handler:^(UIAlertAction * action) {
-                                     DSWalletManager *manager = [DSWalletManager sharedInstance];
-                                     [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                                     DSWallet *wallet = chain.wallets.firstObject;
+                                     [wallet seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
                                          if (seedPhrase.length > 0) {
                                              BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
                                              seedController.seedPhrase = seedPhrase;
@@ -667,6 +678,8 @@ _switch_cell:
         return;
     }
     
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    
     switch (indexPath.section) {
         case 0:
             switch (indexPath.row) {
@@ -719,7 +732,7 @@ _deselect_switch:
                     break;
                     
                 case 2: // rescan blockchain
-                    [[BRPeerManager sharedInstance] rescan];
+                    [peerManager rescan];
                     [DSEventManager saveEvent:@"settings:rescan"];
                     [self done:nil];
                     break;

@@ -55,7 +55,7 @@
 
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 DSChain *chain = [BRAppDelegate sharedDelegate].chain;
                 DSWallet *wallet = chain.wallets.firstObject;
@@ -86,7 +86,8 @@
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
-    uint64_t fee = [wallet feeForTransaction:transaction];
+    DSAccount *account = [wallet accountContainingTransaction:transaction];
+    uint64_t fee = [account feeForTransaction:transaction];
     NSUInteger outputAmountIndex = 0;
     
     _transaction = transaction;
@@ -201,15 +202,17 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount;
-    NSUInteger relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
+    NSUInteger peerCount = peerManager.peerCount;
+    NSUInteger relayCount = [peerManager relayCountForTransaction:self.transaction.txHash];
     NSString *s;
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
+    DSAccount *account = wallet.accounts.firstObject;
     
     NSInteger indexPathRow = indexPath.row;
     
@@ -274,13 +277,13 @@
                                             self.transaction.blockHeight, self.txDateString];
                         subtitleLabel.text = self.txDateString;
                     }
-                    else if (! [wallet transactionIsValid:self.transaction]) {
+                    else if (! [account transactionIsValid:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
-                    else if ([wallet transactionIsPending:self.transaction]) {
+                    else if ([account transactionIsPending:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"pending", nil);
                     }
-                    else if (! [wallet transactionIsVerified:self.transaction]) {
+                    else if (! [account transactionIsVerified:self.transaction]) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }

@@ -28,6 +28,7 @@
 #import <DashSync/DashSync.h>
 
 #import "BRQRScanViewModel.h"
+#import "BRAppDelegate.h"
 
 static NSTimeInterval const kReqeustTimeout = 5.0;
 static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
@@ -270,9 +271,11 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         self.qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
     });
     
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr];
-    if (request.isValid || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
+    if (request.isValid || [addr isValidBitcoinPrivateKeyOnChain:chain] || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
         });
@@ -281,55 +284,63 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         
         if (request.r.length > 0) { // start fetching payment protocol request right away
             __weak __typeof__(self) weakSelf = self;
-            [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
-                         completion:^(BRPaymentProtocolRequest *req, NSError *error) {
-                             dispatch_async(dispatch_get_main_queue(), ^{
-                                 __strong __typeof__(weakSelf) strongSelf = weakSelf;
-                                 [strongSelf.delegate qrScanViewModel:strongSelf
-                                                didScanPaymentRequest:request
-                                                      protocolRequest:req
-                                                                error:error];
-                             });
-                         }];
+            [DSPaymentRequest
+             fetch:request.r
+             scheme:request.scheme
+             onChain:chain
+             timeout:kReqeustTimeout
+             completion:^(DSPaymentProtocolRequest *req, NSError *error) {
+                 dispatch_async(dispatch_get_main_queue(), ^{
+                     __strong __typeof__(weakSelf) strongSelf = weakSelf;
+                     [strongSelf.delegate qrScanViewModel:strongSelf
+                                    didScanPaymentRequest:request
+                                          protocolRequest:req
+                                                    error:error];
+                 });
+             }];
         }
         else { // standard non payment protocol request
             [self.delegate qrScanViewModel:self didScanStandardNonPaymentRequest:request];            
         }
     } else {
         __weak __typeof__(self) weakSelf = self;
-        [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
-                     completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
-                         dispatch_async(dispatch_get_main_queue(), ^{
-                             __strong __typeof__(weakSelf) strongSelf = weakSelf;
-                             
-                             if (req) {
-                                 [strongSelf.qrCodeObject setValid];
-                                 [strongSelf.delegate qrScanViewModel:strongSelf didScanBIP73PaymentProtocolRequest:req];
-                             }
-                             else {
-                                 NSString *errorMessage = nil;
-                                 if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
-                                     [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
-                                     errorMessage = [NSString stringWithFormat:@"%@:\n%@",
-                                                     NSLocalizedString(@"not a valid dash address", nil),
-                                                     request.paymentAddress];
-                                 } else if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
-                                            [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
-                                     errorMessage = [NSString stringWithFormat:@"%@:\n%@",
-                                                     NSLocalizedString(@"not a valid bitcoin address", nil),
-                                                     request.paymentAddress];
-                                 }
-                                 else {
-                                     errorMessage = NSLocalizedString(@"not a dash or bitcoin QR code", nil);
-                                 }
-                                 [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
-                                 
-                                 [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
-                                 
-                                 [DSEventManager saveEvent:@"send:unsuccessful_bip73"];
-                             }
-                         });
-                     }];
+        [DSPaymentRequest
+         fetch:request.r
+         scheme:request.scheme
+         onChain:chain
+         timeout:kReqeustTimeout
+         completion:^(DSPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 __strong __typeof__(weakSelf) strongSelf = weakSelf;
+                 
+                 if (req) {
+                     [strongSelf.qrCodeObject setValid];
+                     [strongSelf.delegate qrScanViewModel:strongSelf didScanBIP73PaymentProtocolRequest:req];
+                 }
+                 else {
+                     NSString *errorMessage = nil;
+                     if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
+                         [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
+                         errorMessage = [NSString stringWithFormat:@"%@:\n%@",
+                                         NSLocalizedString(@"not a valid dash address", nil),
+                                         request.paymentAddress];
+                     } else if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
+                                [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
+                         errorMessage = [NSString stringWithFormat:@"%@:\n%@",
+                                         NSLocalizedString(@"not a valid bitcoin address", nil),
+                                         request.paymentAddress];
+                     }
+                     else {
+                         errorMessage = NSLocalizedString(@"not a dash or bitcoin QR code", nil);
+                     }
+                     [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
+                     
+                     [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
+                     
+                     [DSEventManager saveEvent:@"send:unsuccessful_bip73"];
+                 }
+             });
+         }];
     }
 }
 

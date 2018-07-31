@@ -118,9 +118,11 @@
     }
     self.wallpaper.hidden = NO;
     
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
-        if ([[DSWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+        if (authManager.didAuthenticate) [self unlock:nil];
         self.navigationController.navigationBar.barStyle = UIStatusBarStyleLightContent;
     }
     else {
@@ -130,11 +132,13 @@
         self.navigationController.navigationBar.barStyle = UIStatusBarStyleDefault;
     }
     
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
-                                                      if ([[DSWalletManager sharedInstance] didAuthenticate]) {
+                                                      if (peerManager.syncProgress < 1.0) return; // wait for sync before updating balance
+                                                      if (authManager.didAuthenticate) {
                                                           [self updateTitleView];
                                                       }
                                                   }];
@@ -239,11 +243,11 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     [DSEventManager saveEvent:@"amount:unlock"];
     
-    if (sender && ! manager.didAuthenticate) {
-        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+    if (sender && ! authManager.didAuthenticate) {
+        [authManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 [DSEventManager saveEvent:@"amount:successful_unlock"];
                 
@@ -579,8 +583,10 @@
         }
     }
     
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    
     if (self.navigationController.viewControllers.firstObject != self) {
-        if (! m.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
+        if (! authManager.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
             [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
         }
         else if ((formattedAmount.length > 0 && !self.amountLabelIsEmpty && [number floatValue]) && self.navigationItem.rightBarButtonItem != self.payButton) {

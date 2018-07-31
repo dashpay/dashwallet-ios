@@ -135,11 +135,12 @@
     }
     
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     self.urlObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet) {
+                                                      if (chain.hasAWallet) {
                                                           if (self.navigationController.topViewController != self) {
                                                               [self.navigationController popToRootViewControllerAnimated:YES];
                                                           }
@@ -171,7 +172,7 @@
     self.fileObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet) {
+                                                      if (chain.hasAWallet) {
                                                           if (self.navigationController.topViewController != self) {
                                                               [self.navigationController popToRootViewControllerAnimated:YES];
                                                           }
@@ -197,10 +198,11 @@
     self.foregroundObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (! manager.noWallet) {
+                                                           if (chain.hasAWallet) {
                                                                DSEventManager *eventMan = [DSEventManager sharedEventManager];
+                                                               DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
                                                                
-                                                               [[BRPeerManager sharedInstance] connect];
+                                                               [peerManager connect];
                                                                [self.sendViewController updateClipboardText];
                                                                
                                                                if (eventMan.isInSampleGroup && ! eventMan.hasAskedForPermission) {
@@ -273,8 +275,9 @@
     self.backgroundObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (! manager.noWallet) { // lockdown the app
-                                                               manager.didAuthenticate = NO;
+                                                           if (chain.hasAWallet) { // lockdown the app
+                                                               DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                                                               authManager.didAuthenticate = NO;
                                                                self.navigationItem.titleView = self.logo;
                                                                self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                                                                self.navigationItem.rightBarButtonItem = self.lock;
@@ -312,19 +315,21 @@
     self.reachabilityObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
+                                                      if (chain.hasAWallet && self.reachability.currentReachabilityStatus != NotReachable &&
                                                           [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                                                          [[BRPeerManager sharedInstance] connect];
+                                                          DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+                                                          [peerManager connect];
                                                       }
-                                                      else if (! manager.noWallet && self.reachability.currentReachabilityStatus == NotReachable) {
+                                                      else if (chain.hasAWallet && self.reachability.currentReachabilityStatus == NotReachable) {
                                                           [self showErrorBar];
                                                       }
                                                   }];
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      double progress = [BRPeerManager sharedInstance].syncProgress;
+                                                      DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+                                                      double progress = peerManager.syncProgress;
                                                       
                                                       if (_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
                                                           self.balance = _balance; // this updates the local currency value with the latest exchange rate
@@ -339,7 +344,7 @@
                                                   }];
     
     self.seedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletManagerSeedChangedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.receiveViewController updateAddress];
                                                            DSChain *chain = [BRAppDelegate sharedDelegate].chain;
@@ -348,7 +353,7 @@
                                                        }];
     
     self.syncStartedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.reachability.currentReachabilityStatus == NotReachable) return;
                                                            [self hideErrorBarWithCompletion:nil];
@@ -356,13 +361,14 @@
                                                        }];
     
     self.syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
                                                            if (! self.shouldShowTips) [self hideTips];
                                                            self.shouldShowTips = YES;
-                                                           if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                           DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                                                           if (! authManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                            [self.receiveViewController updateAddress];
                                                            DSChain *chain = [BRAppDelegate sharedDelegate].chain;
                                                            DSWallet *wallet = chain.wallets.firstObject;
@@ -370,7 +376,7 @@
                                                        }];
     
     self.syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
@@ -423,13 +429,12 @@
     AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
                                                                                 withExtension:@"aiff"], &_pingsound);
     
-    if (! manager.noWallet) {
+    if (chain.hasAWallet) {
         //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
     }
     
-    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
     
     if (jailbroken && wallet.totalReceived + wallet.totalSent > 0) {
@@ -492,7 +497,8 @@
     
     self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
     self.pageViewController.view.alpha = 1.0;
-    if ([DSWalletManager sharedInstance].didAuthenticate) [self unlock:nil];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if (authManager.didAuthenticate) [self unlock:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -523,6 +529,7 @@
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
@@ -538,8 +545,12 @@
         manager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     
-    if (manager.noWallet && manager.noOldWallet) {
-        if (! manager.passcodeEnabled) {
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    
+    // TODO: dashsync-migration
+    BOOL noOldWallet = NO; // was `manager.noOldWallet`
+    if (!chain.hasAWallet && noOldWallet) {
+        if (! authManager.passcodeEnabled) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
                                          message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
@@ -564,7 +575,7 @@
                                                    direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
              }];
             
-            manager.didAuthenticate = YES;
+            authManager.didAuthenticate = YES;
             self.showTips = YES;
             [self unlock:nil];
         }
@@ -593,7 +604,7 @@
                     [alert addAction:exitButton];
                     [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
                 } else {
-                    __block NSUInteger wait = [manager lockoutWaitTime];
+                    __block NSUInteger wait = [authManager lockoutWaitTime];
                     NSString * waitTime = [NSString waitTimeFromNow:wait];
                     
                     alert = [UIAlertController
@@ -650,7 +661,7 @@
 #endif
             if (!authenticated) {
                 if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-                    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                    [authManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
                         if (authenticated) {
                             [self unlock:nil];
                         }
@@ -663,7 +674,8 @@
             }
             
             if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                [[BRPeerManager sharedInstance] connect];
+                DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+                [peerManager connect];
                 [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
                 
                 if (self.url) {
@@ -675,7 +687,7 @@
                     self.file = nil;
                 }
             }
-        }];
+        } forChain:chain];
     }
 }
 
@@ -729,11 +741,13 @@
                                      style:UIAlertActionStyleDefault
                                      handler:^(UIAlertAction * action) {
                                          DSWalletManager *manager = [DSWalletManager sharedInstance];
-                                         if (manager.noWallet) {
+                                         DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+                                         if (!chain.hasAWallet) {
                                              BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
                                              [self.navigationController pushViewController:seedController animated:YES];
                                          } else {
-                                             [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                             DSWallet *wallet = chain.wallets.firstObject;
+                                             [wallet seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
                                                  if (seedPhrase.length > 0) {
                                                      BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
                                                      seedController.seedPhrase = seedPhrase;
@@ -804,13 +818,16 @@
 
 -(UILabel*)titleLabel {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
+    
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                              [manager localCurrencyStringForDashAmount:wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -819,9 +836,11 @@
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
         DSWalletManager *manager = [DSWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
+        DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+        DSWallet *wallet = chain.wallets.firstObject;
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                  [manager localCurrencyStringForDashAmount:wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -832,7 +851,8 @@
 
 - (void)showSyncing
 {
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    double progress = peerManager.syncProgress;
     
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.shouldShowTips = NO;
@@ -850,8 +870,10 @@
         self.start = start;
     }
     
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    
     if (timeout <= DBL_EPSILON) {
-        if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
+        if ([chain timestampForBlockHeight:chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.shouldShowTips = NO;
@@ -871,7 +893,8 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    double progress = peerManager.syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
@@ -908,12 +931,14 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    double progress = peerManager.syncProgress;
     
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                             [BRPeerManager sharedInstance].lastBlockHeight,
-                             [BRPeerManager sharedInstance].estimatedBlockHeight];
+                             chain.lastBlockHeight,
+                             chain.estimatedBlockHeight];
     }
     
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
@@ -945,7 +970,8 @@
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
         if (! self.shouldShowTips) [self hideTips];
         self.shouldShowTips = YES;
-        if (! [DSWalletManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
+        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+        if (! authManager.didAuthenticate) self.navigationItem.titleView = self.logo;
     }
     else [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
@@ -968,11 +994,11 @@
                             self.errorBar.alpha = 1.0;
                         } completion:nil];
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     
     if (! self.shouldShowTips) [self hideTips];
     self.shouldShowTips = YES;
-    if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+    if (! authManager.didAuthenticate) self.navigationItem.titleView = self.logo;
     self.balance = _balance; // reset navbar title
     self.progress.hidden = self.pulse.hidden = YES;
 }
@@ -996,9 +1022,11 @@
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
     
     if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
-        manager.wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
+        wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
     
     BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
     
@@ -1080,6 +1108,7 @@
 - (IBAction)tip:(id)sender
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     if (sender == self.receiveViewController) {
         BRSendViewController *sendController = self.sendViewController;
@@ -1102,13 +1131,13 @@
         if (manager.bitcoinDashPrice) {
             tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice.doubleValue,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-             [[BRPeerManager sharedInstance] lastBlockHeight],
-             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+             chain.lastBlockHeight,
+             chain.estimatedBlockHeight];
         } else {
             tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@",BALANCE_TIP]:
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-             [[BRPeerManager sharedInstance] lastBlockHeight],
-             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+             chain.lastBlockHeight,
+             chain.estimatedBlockHeight];
         }
         NSMutableAttributedString *attributedTip = [[NSMutableAttributedString alloc]
                                                     initWithString:[tip stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
@@ -1130,13 +1159,13 @@
 
 - (IBAction)unlock:(id)sender
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    if (manager.didAuthenticate) {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if (authManager.didAuthenticate) {
         [self updateTitleView];
         [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     } else {
         [DSEventManager saveEvent:@"root:unlock"];
-        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [authManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 [DSEventManager saveEvent:@"root:unlock_success"];
                 [self updateTitleView];
@@ -1151,13 +1180,16 @@
     [DSEventManager saveEvent:@"root:connect"];
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
     
-    [[BRPeerManager sharedInstance] connect];
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    [peerManager connect];
     [DSEventManager saveEvent:@"root:connect_success"];
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 }
 
 - (IBAction)navBarTap:(id)sender
 {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    
     if ([self nextTip]) return;
     
     if (! self.errorBar.hidden) {
@@ -1165,7 +1197,7 @@
             [self connect:sender];
         }];
     }
-    else if (! [DSWalletManager sharedInstance].didAuthenticate && self.shouldShowTips) {
+    else if (! authManager.didAuthenticate && self.shouldShowTips) {
         [self unlock:sender];
     }
     else [self tip:sender];
@@ -1214,9 +1246,11 @@
 - (IBAction)nextScreen:(id)sender
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     if (self.navigationController.presentedViewController) {
-        if (manager.noWallet) [manager generateRandomSeed];
+        // TODO: [DSWallet generateRandomSeed] result is not used
+        if (!chain.hasAWallet) [DSWallet generateRandomSeed];
         self.showTips = NO;
         [self.navigationController dismissViewControllerAnimated:NO completion:^{
             manager.didAuthenticate = NO;
@@ -1238,7 +1272,7 @@
         [self.pageViewController setViewControllers:@[self.receiveViewController]
                                           direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         self.receiveViewController.paymentRequest =
-        [BRPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
+        [DSPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
         [self.receiveViewController updateAddress];
         [self.progress removeFromSuperview];
         [self.pulse removeFromSuperview];
@@ -1351,7 +1385,8 @@
                   self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
                                                                     containerView.frame.size.height/2.0);
                   
-                  if (! manager.didAuthenticate) {
+                  DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                  if (! authManager.didAuthenticate) {
                       item.rightBarButtonItem = rightButton;
                       if (self.shouldShowTips) item.titleView = titleView;
                   } else {
@@ -1368,11 +1403,13 @@
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            [[BRPeerManager sharedInstance] connect];
+            DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+            [peerManager connect];
             [self.sendViewController updateClipboardText];
         }
         
-        if (manager.didAuthenticate) [self unlock:nil];
+        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+        if (authManager.didAuthenticate) [self unlock:nil];
         [self.navigationController.navigationBar.superview insertSubview:from.view
                                                             belowSubview:self.navigationController.navigationBar];
         

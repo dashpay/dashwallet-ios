@@ -26,6 +26,7 @@
 #import <DashSync/DashSync.h>
 
 #import "BRSeedViewController.h"
+#import "BRAppDelegate.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
@@ -53,9 +54,12 @@
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
 
-    if (manager.noWallet) {
-        self.seedPhrase = [manager generateRandomSeed];
-        [[DSChainManager sharedInstance] connect];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    
+    if (chain.hasAWallet) {
+        self.seedPhrase = [DSWallet generateRandomSeed];
+        [peerManager connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -190,7 +194,8 @@
                     [self presentViewController:alert animated:YES completion:nil];
                 }
                 else {
-                    [[DSWalletManager sharedInstance] setSeedPhrase:nil];
+                    // TODO: dashsync-migration
+//                    [[DSWalletManager sharedInstance] setSeedPhrase:nil];
                     [self.navigationController.presentingViewController dismissViewControllerAnimated:NO
                      completion:nil];
                     

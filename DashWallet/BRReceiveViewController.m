@@ -32,6 +32,7 @@
 #import "BRRootViewController.h"
 #import "BRBubbleView.h"
 #import "BRAppGroupConstants.h"
+#import "BRAppDelegate.h"
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
                     "dash to your wallet by transferring them to your address.", nil)
@@ -62,11 +63,12 @@
     [super viewDidLoad];
 
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    BRPaymentRequest *req;
+    DSPaymentRequest *req;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
 
     self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     req = (_paymentRequest) ? _paymentRequest :
-          [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
+          [DSPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY] onChain:chain];
 
     if (req.isValid) {
         if (! _qrImage) {
@@ -117,7 +119,7 @@
     __block CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         DSWalletManager *manager = [DSWalletManager sharedInstance];
-        BRPaymentRequest *req = self.paymentRequest;
+        DSPaymentRequest *req = self.paymentRequest;
         UIImage *image = nil;
         
         if ([req.data isEqual:[self.groupDefs objectForKey:APP_GROUP_REQUEST_DATA_KEY]]) {
@@ -162,7 +164,7 @@
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
-                        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -170,7 +172,7 @@
                 
                 if (! self.txStatusObserver) {
                     self.txStatusObserver =
-                        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -183,16 +185,19 @@
 - (void)checkRequestStatus
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    BRPaymentRequest *req = self.paymentRequest;
+    DSPaymentRequest *req = self.paymentRequest;
+    DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
     uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
-    if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
+    if (! [wallet addressIsUsed:self.paymentAddress]) return;
 
-    for (DSTransaction *tx in manager.wallet.allTransactions) {
+    for (DSTransaction *tx in wallet.allTransactions) {
         if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
         if (tx.blockHeight == TX_UNCONFIRMED &&
-            [[BRPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
-        total += [manager.wallet amountReceivedFromTransaction:tx];
+            [peerManager relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
+        total += [wallet amountReceivedFromTransaction:tx];
                  
         if (total + fuzz >= req.amount) {
             UIView *view = self.navigationController.presentingViewController.view;
@@ -207,16 +212,20 @@
     }
 }
 
-- (BRPaymentRequest *)paymentRequest
+- (DSPaymentRequest *)paymentRequest
 {
     if (_paymentRequest) return _paymentRequest;
-    return [BRPaymentRequest requestWithString:self.paymentAddress];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    return [DSPaymentRequest requestWithString:self.paymentAddress onChain:chain];
 }
 
 - (NSString *)paymentAddress
 {
     if (_paymentRequest) return _paymentRequest.paymentAddress;
-    return [DSWalletManager sharedInstance].wallet.receiveAddress;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
+    DSAccount *account = wallet.accounts.firstObject;
+    return account.receiveAddress;
 }
 
 - (BOOL)nextTip
@@ -410,12 +419,14 @@ error:(NSError *)error
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
     
-    if (amount < manager.wallet.minOutputAmount) {
+    if (amount < chain.minOutputAmount) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
                                      message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
-                                              [manager stringForDashAmount:manager.wallet.minOutputAmount]]
+                                              [manager stringForDashAmount:chain.minOutputAmount]]
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
                                    actionWithTitle:NSLocalizedString(@"ok", nil)

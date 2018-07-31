@@ -27,6 +27,7 @@
 
 #import "BRWelcomeViewController.h"
 #import "BRRootViewController.h"
+#import "BRAppDelegate.h"
 
 @interface BRWelcomeViewController ()
 
@@ -117,7 +118,8 @@
         return;
 #endif
 
-        if (! [DSWalletManager sharedInstance].noWallet) { // sanity check
+        DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+        if (chain.hasAWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
 

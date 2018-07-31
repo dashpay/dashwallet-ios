@@ -67,8 +67,8 @@
 
 -(IBAction)generateRecoveryPhrase:(id)sender {
     [DSEventManager saveEvent:@"welcome:generate"];
-    
-    if (! [DSWalletManager sharedInstance].passcodeEnabled) {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if (! authManager.passcodeEnabled) {
         [DSEventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)

@@ -199,7 +199,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
 
-    if ([BRPeerManager sharedInstance].syncProgress >= 1.0) {
+    if (self.peerManager.syncProgress >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
@@ -224,20 +224,20 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync finished");
-            if (completion) completion(UIBackgroundFetchResultNewData);
-            cleanup();
-        }];
-
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"background fetch sync finished");
+                                                           if (completion) completion(UIBackgroundFetchResultNewData);
+                                                           cleanup();
+                                                       }];
+    
     syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync failed");
-            if (completion) completion(UIBackgroundFetchResultFailed);
-            cleanup();
-        }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"background fetch sync failed");
+                                                           if (completion) completion(UIBackgroundFetchResultFailed);
+                                                           cleanup();
+                                                       }];
 
     NSLog(@"background fetch starting");
     [self.peerManager connect];
@@ -259,7 +259,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     self.balance = UINT64_MAX; // this gets set in applicationDidBecomActive:
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification * _Nonnull note) {
             DSChain *chain = self.chain;
             DSWallet * wallet = chain.wallets.firstObject;
