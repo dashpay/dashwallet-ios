@@ -15,6 +15,6 @@ target 'WatchApp Extension' do
 	default_pods
 end
 
-target 'TodayExtension' do
-	default_pods
-end
+# target 'TodayExtension' do
+# 	default_pods
+# end
