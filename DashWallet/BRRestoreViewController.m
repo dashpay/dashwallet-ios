@@ -104,7 +104,7 @@
     [DSEventManager saveEvent:@"restore:wipe"];
     
     @autoreleasepool {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSChain *chain = [BRAppDelegate sharedDelegate].chain;
         DSWallet *wallet = chain.wallets.firstObject;
         if ([phrase isEqual:@"wipe"]) {
@@ -222,6 +222,7 @@
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     [[DashSync sharedSyncController] wipePeerDataForChain:chain];
     self.textView.text = nil;
+    
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -280,7 +281,7 @@
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSBIP39Mnemonic *mnemonic = [DSBIP39Mnemonic sharedInstance];
         NSString *phrase = [mnemonic cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES, noWallet = !chain.hasAWallet;

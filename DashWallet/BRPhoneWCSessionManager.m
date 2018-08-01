@@ -63,7 +63,7 @@
             [self sendApplicationContext];
             
             self.balanceObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
                     if (peerManager.syncProgress == 1.0) [self sendApplicationContext];
@@ -210,7 +210,7 @@
 
 - (BRAppleWatchData *)applicationContextData
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
     DSAccount *account = wallet.accounts.firstObject; // TODO: fix it
@@ -290,7 +290,7 @@
 
 - (UIImage *)qrCode
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
     DSAccount *account = wallet.accounts.firstObject; // TODO: fix it
@@ -320,7 +320,7 @@
     }
 
 #if SNAPSHOT
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     
     [transactionListData removeAllObjects];
 

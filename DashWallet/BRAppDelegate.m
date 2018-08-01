@@ -99,7 +99,7 @@
     // start the event manager
     [[DSEventManager sharedEventManager] up];
     
-    [DSWalletManager sharedInstance];
+    [DSPriceManager sharedInstance];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -254,12 +254,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 - (void)setupBalanceNotification:(UIApplication *)application
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     
     self.balance = UINT64_MAX; // this gets set in applicationDidBecomActive:
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
         usingBlock:^(NSNotification * _Nonnull note) {
             DSChain *chain = self.chain;
             DSWallet * wallet = chain.wallets.firstObject;

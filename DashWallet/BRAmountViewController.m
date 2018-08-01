@@ -56,7 +56,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
     
     [charset addCharactersInString:manager.dashFormat.currencyDecimalSeparator];
@@ -135,7 +135,7 @@
     DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
                                                       if (peerManager.syncProgress < 1.0) return; // wait for sync before updating balance
                                                       if (authManager.didAuthenticate) {
@@ -164,7 +164,7 @@
 
 - (void)updateLocalCurrencyLabel
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     uint64_t amount;
     if (self.usingShapeshift) {
         amount = (self.swapped) ? [manager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
@@ -205,7 +205,7 @@
 }
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
@@ -221,7 +221,7 @@
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSChain *chain = [BRAppDelegate sharedDelegate].chain;
         DSWallet *wallet = chain.wallets.firstObject;
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
@@ -291,7 +291,7 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     if (self.usingShapeshift) {
         
         self.amount = (self.swapped) ? [manager amountForBitcoinString:self.amountLabel.text]:
@@ -355,7 +355,7 @@
     }
     
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *s = (self.swapped) ? self.localCurrencyLabel.text : self.amountLabel.text;
     uint64_t amount =
     [manager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
@@ -458,7 +458,7 @@
 -(void)updateAmountLabel:(UILabel *)amountLabel shouldChangeCharactersInRange:(NSRange)range
        replacementString:(NSString *)string
 {
-    DSWalletManager *m = [DSWalletManager sharedInstance];
+    DSPriceManager *m = [DSPriceManager sharedInstance];
     NSNumberFormatter *formatter;
     if (self.usingShapeshift) {
         formatter = (self.swapped) ? m.bitcoinFormat:m.dashFormat;

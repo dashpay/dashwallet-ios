@@ -52,7 +52,7 @@
 
 - (instancetype)customInit
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
 
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
@@ -60,6 +60,7 @@
     if (chain.hasAWallet) {
         self.seedPhrase = [DSWallet generateRandomSeed];
         [peerManager connect];
+        
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -119,7 +120,8 @@
         self.toolbar.hidden = YES;
     }
     else delay *= 2; // extra delay before showing toggle when starting a new wallet
-    
+
+
     if ([[NSUserDefaults standardUserDefaults] boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
         [self performSelector:@selector(showWriteToggle) withObject:nil afterDelay:delay];
     }
@@ -262,6 +264,7 @@
 {
     [DSEventManager saveEvent:@"seed:toggle_write"];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+
 
     if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
         [self.toolbar setItems:@[self.toolbar.items[0], self.doneButton] animated:YES];

@@ -65,7 +65,7 @@
 {
     [super viewWillAppear:animated];
  
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
 
     if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];
     self.navBarSwipe = nil;
@@ -73,7 +73,7 @@
     // observe the balance change notification to update the balance display
     if (! self.balanceObserver) {
         self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
                     self.selectorController.title =
@@ -138,7 +138,7 @@
 - (NSString *)stats
 {
     static NSDateFormatter *fmt = nil;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
     if (! fmt) {
@@ -304,7 +304,7 @@
 - (IBAction)touchIdLimit:(id)sender
 {
     [DSEventManager saveEvent:@"settings:touch_id_limit"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
     [authManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
@@ -334,7 +334,7 @@
 - (IBAction)navBarSwipe:(id)sender
 {
     [DSEventManager saveEvent:@"settings:nav_bar_swipe"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSUInteger digits = (((manager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
     manager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
@@ -375,7 +375,7 @@
     static NSString *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell", *actionIdent = @"ActionCell",
                     *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
         cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
@@ -613,7 +613,7 @@ _switch_cell:
 {
     [DSEventManager saveEvent:@"settings:show_currency_selector"];
     NSUInteger currencyCodeIndex = 0;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     double localPrice = manager.localCurrencyDashPrice.doubleValue;
     NSMutableArray *options;
     self.selectorType = 0;
@@ -653,7 +653,7 @@ _switch_cell:
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSUInteger currencyCodeIndex = 0;
     
     // if we are showing the local currency selector

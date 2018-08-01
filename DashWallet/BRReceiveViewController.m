@@ -62,7 +62,7 @@
 {
     [super viewDidLoad];
 
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSPaymentRequest *req;
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
 
@@ -82,7 +82,7 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [manager localCurrencyStringForDashAmount:req.amount]];
@@ -118,7 +118,7 @@
     }
     __block CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSPaymentRequest *req = self.paymentRequest;
         UIImage *image = nil;
         
@@ -155,7 +155,7 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                DSWalletManager *manager = [DSWalletManager sharedInstance];
+                DSPriceManager *manager = [DSPriceManager sharedInstance];
                 NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
                 NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                           [manager localCurrencyStringForDashAmount:req.amount]];
@@ -164,7 +164,7 @@
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
-                    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -184,7 +184,7 @@
 
 - (void)checkRequestStatus
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSPaymentRequest *req = self.paymentRequest;
     DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
@@ -418,7 +418,7 @@ error:(NSError *)error
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
     

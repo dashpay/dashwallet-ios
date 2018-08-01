@@ -94,7 +94,7 @@ static NSString *dateFormat(NSString *template)
 {
     [super viewWillAppear:animated];
 
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     
 #if SNAPSHOT
@@ -146,7 +146,7 @@ static NSString *dateFormat(NSString *template)
 
     if (! self.balanceObserver) {
         self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 DSTransaction *tx = self.transactions.firstObject;
                 DSChain *chain = [BRAppDelegate sharedDelegate].chain;
@@ -185,7 +185,9 @@ static NSString *dateFormat(NSString *template)
             queue:nil usingBlock:^(NSNotification *note) {
                 if ([chain timestampForBlockHeight:chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
                     [NSDate timeIntervalSinceReferenceDate] &&
-                    manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                    // TODO: dashsync-migration
+                    // `manager.seedCreationTime` replaced with `chain.earliestWalletCreationTime`
+                    chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                     self.navigationItem.titleView = nil;
                     self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                 }
@@ -213,7 +215,7 @@ static NSString *dateFormat(NSString *template)
 
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
@@ -229,7 +231,7 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSChain *chain = [BRAppDelegate sharedDelegate].chain;
         DSWallet *wallet = chain.wallets.firstObject;
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
@@ -364,7 +366,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)unlock:(id)sender
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
     if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
@@ -421,7 +423,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)more:(id)sender
 {
     [DSEventManager saveEvent:@"tx_history:more"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
@@ -517,7 +519,7 @@ static NSString *dateFormat(NSString *template)
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
             *detailTextLabel;
     UIImageView * shapeshiftImageView;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;

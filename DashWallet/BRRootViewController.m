@@ -31,6 +31,8 @@
 
 #import <DashSync/DashSync.h>
 #import <DashSync/UIImage+DSUtils.h>
+#import <DashSync/DSEnvironment.h>
+#import <DashSync/DSVersionManager.h>
 
 #import "BRRootViewController.h"
 #import "BRReceiveViewController.h"
@@ -134,7 +136,7 @@
         [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-48.0]];
     }
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     self.urlObserver =
@@ -326,7 +328,7 @@
                                                   }];
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
                                                       DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
                                                       double progress = peerManager.syncProgress;
@@ -344,7 +346,7 @@
                                                   }];
     
     self.seedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.receiveViewController updateAddress];
                                                            DSChain *chain = [BRAppDelegate sharedDelegate].chain;
@@ -413,7 +415,9 @@
      }];
 #endif
     
-    if (manager.watchOnly) { // watch only wallet
+    DSEnvironment *environment = [DSEnvironment sharedInstance];
+    
+    if (environment.watchOnly) { // watch only wallet
         UILabel *label = [UILabel new];
         
         label.font = [UIFont systemFontOfSize:13];
@@ -528,8 +532,9 @@
 - (void)protectedViewDidAppear
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    DSVersionManager *versionManager = [DSVersionManager sharedInstance];
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
@@ -581,7 +586,7 @@
         }
     }
     else {
-        [manager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        [versionManager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 UIAlertController * alert;
                 if (cancelled) {
@@ -740,7 +745,7 @@
                                      actionWithTitle:NSLocalizedString(@"show", nil)
                                      style:UIAlertActionStyleDefault
                                      handler:^(UIAlertAction * action) {
-                                         DSWalletManager *manager = [DSWalletManager sharedInstance];
+                                         DSPriceManager *manager = [DSPriceManager sharedInstance];
                                          DSChain *chain = [BRAppDelegate sharedDelegate].chain;
                                          if (!chain.hasAWallet) {
                                              BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
@@ -795,7 +800,7 @@
 
 - (void)setBalance:(uint64_t)balance
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     
     if (balance > _balance && [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
@@ -817,7 +822,7 @@
 }
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     DSWallet *wallet = chain.wallets.firstObject;
     
@@ -835,7 +840,7 @@
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         DSChain *chain = [BRAppDelegate sharedDelegate].chain;
         DSWallet *wallet = chain.wallets.firstObject;
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
@@ -852,9 +857,12 @@
 - (void)showSyncing
 {
     DSChainPeerManager *peerManager = [BRAppDelegate sharedDelegate].peerManager;
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     double progress = peerManager.syncProgress;
     
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    // TODO: dashsync-migration
+    // `manager.seedCreationTime` replaced with `chain.earliestWalletCreationTime`
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.shouldShowTips = NO;
         self.navigationItem.titleView = nil;
         self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
@@ -875,7 +883,9 @@
     if (timeout <= DBL_EPSILON) {
         if ([chain timestampForBlockHeight:chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-            if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
+            // TODO: dashsync-migration
+            // `manager.seedCreationTime` replaced with `chain.earliestWalletCreationTime`
+            if (chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.shouldShowTips = NO;
                 self.navigationItem.titleView = nil;
                 self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
@@ -1019,7 +1029,7 @@
 
 - (void)showBackupDialogIfNeeded
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
@@ -1080,7 +1090,7 @@
     [tipView popOut];
     
     if ([tipView.text hasPrefix:BALANCE_TIP]) {
-        DSWalletManager *m = [DSWalletManager sharedInstance];
+        DSPriceManager *m = [DSPriceManager sharedInstance];
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *text = [NSString stringWithFormat:MDASH_TIP, m.dashFormat.currencySymbol, [m stringForDashAmount:DUFFS]];
         CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
@@ -1107,7 +1117,7 @@
 
 - (IBAction)tip:(id)sender
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     if (sender == self.receiveViewController) {
@@ -1122,7 +1132,9 @@
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
                                               direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
     }
-    else if (self.showTips && manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    // TODO: dashsync-migration
+    // `manager.seedCreationTime` replaced with `chain.earliestWalletCreationTime`
+    else if (self.showTips && chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.showTips = NO;
     }
     else {
@@ -1245,7 +1257,7 @@
 #if SNAPSHOT
 - (IBAction)nextScreen:(id)sender
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSChain *chain = [BRAppDelegate sharedDelegate].chain;
     
     if (self.navigationController.presentedViewController) {
@@ -1325,7 +1337,7 @@
 // This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     UIView *containerView = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
