@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ azaz 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -13,9 +10,6 @@
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d megerősítés";
-
-/* No comment provided by engineer. */
-", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 megerősítés";
@@ -33,13 +27,7 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nha valaha elveszítenéd a telefonodat, erre a kódmondatra lesz szükséged tárcád helyreállításához";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nmég %d alkalommal próbálkozhatsz\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nmég 1 alkalommal próbálkozhatsz\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     összeg %1$@ (%2$@)";
@@ -69,9 +57,6 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = "\npróbáld újra %1$d %2$@ múlva";
-
-/* No comment provided by engineer. */
 "about" = "névjegy";
 
 /* No comment provided by engineer. */
@@ -90,16 +75,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "rossz jelszó, próbáld újra";
-
-/* No comment provided by engineer. */
 "bad payment request" = "hibás fizetési kérelem";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "hibás fizetési kérelem URL";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "hibás fizetési URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "hibás helyreállítási kódmondat";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "privát kulcs egyenlegének ellenőrzése...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "válassz jelkódot a következőhöz: %@";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
@@ -157,9 +130,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "%d. blokkban megerősítve";
-
-/* No comment provided by engineer. */
-"connect timeout" = "a kapcsolat időtúllépés miatt megszakadt";
 
 /* No comment provided by engineer. */
 "copied" = "másolva";
@@ -201,9 +171,6 @@
 "dash payments can't be less than %@" = "a dash fizetés összege nem lehet kevesebb, mint %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "a dash tranzakció nincs aláírva";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "a dash tranzakció kimeneteinek összege nem lehet kisebb, mint %@";
 
 /* No comment provided by engineer. */
@@ -234,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "írd be a régi jelkódot";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "hiba a dash tranzakció aláírása közben";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "hiba a tranzakció aláírása közben";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -250,12 +211,6 @@
 
 /* No comment provided by engineer. */
 "from:" = "küldő:";
-
-/* No comment provided by engineer. */
-"hour" = "óra";
-
-/* No comment provided by engineer. */
-"hours" = "óra";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
@@ -291,15 +246,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Engedd hogy ezt a QR kódot beolvassa aki dasht akar neked küldeni.\nA címedet használva bárki tud dasht küldeni a tárcádba.";
 
 /* No comment provided by engineer. */
-"minute" = "perc";
-
-/* No comment provided by engineer. */
-"minutes" = "perc";
-
-/* No comment provided by engineer. */
-"missing certificate" = "tanusítvány hiányzik";
-
-/* No comment provided by engineer. */
 "more..." = "tovább...";
 
 /* No comment provided by engineer. */
@@ -315,9 +261,6 @@
 "no exchange rate data" = "ehhez a devizához nincs elérhető árfolyam";
 
 /* No comment provided by engineer. */
-"no peers found" = "nincs elérhető hálózati csomópont";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "nem dash vagy bitcoin QR kód";
 
 /* No comment provided by engineer. */
@@ -330,28 +273,10 @@
 "not a valid dash or bitcoin address" = "nem érvényes dash vagy bitcoin cím";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "nem érvényes privát kulcs";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "nincs csatlakozva a dash hálózathoz";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "jelkód";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "jelkód a következőhöz: %@";
-
-/* No comment provided by engineer. */
-"password" = "jelszó";
-
-/* No comment provided by engineer. */
-"password protected key" = "jelszóval védett kulcs";
 
 /* No comment provided by engineer. */
 "pay" = "Fizetés";
@@ -367,9 +292,6 @@
 
 /* No comment provided by engineer. */
 "pending" = "pending";
-
-/* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -411,12 +333,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
-
-/* No comment provided by engineer. */
-"rescan" = "újraszkennelés";
-
-/* No comment provided by engineer. */
 "rescan blockchain" = "blockchain újraszkennelése";
 
 /* No comment provided by engineer. */
@@ -436,12 +352,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "A képernyőmentések láthatóak más alkalmazások és eszközök számára. A pénzed így nincs biztonságban. Vidd át az egyenleged egy másik tárcába.";
-
-/* No comment provided by engineer. */
-"second" = "second";
-
-/* No comment provided by engineer. */
-"seconds" = "seconds";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "látta: %1$d csomópont a(z) %2$d-ból/-ből";
@@ -537,12 +447,6 @@
 "this payment address is already in your wallet" = "ez a cím eleve a saját tárcádhoz tartozik";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "ez a privát kulcs már a tárcádhoz tartozik";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "ez a privátkulcs üres";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -567,16 +471,7 @@
 "touch id spending limit" = "touch id költési limit";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "tranzakció törölve, hálózati időtúllépés miatt";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "a hálózati díj többe kerülne, mint amekkora egyenleg található ezen a privát kulcson (a túl sok kicsi tranzakció aránytalanul nagyobb költsége miatt)";
-
-/* No comment provided by engineer. */
 "transaction history" = "tranzakció történet";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "tranzakció visszautasítva";
 
 /* No comment provided by engineer. */
 "trust" = "trust";
@@ -591,9 +486,6 @@
 "Unable to get new qr code" = "Unable to get new qr code";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "váratlan hiba: %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "ismeretlen cím";
 
 /* No comment provided by engineer. */
@@ -603,31 +495,16 @@
 "unsupported or corrupted document" = "nem támogatott, vagy sérült a dokumentum";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "nem támogatott aláírás típus";
-
-/* No comment provided by engineer. */
 "unsupported url" = "nem támogatott url";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "nem megbízható tanúsítvány";
-
-/* No comment provided by engineer. */
 "unverified" = "nem ellenőrzött";
-
-/* Updating Price */
-"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "ellenőrízve, megerősítésre vár";
 
 /* No comment provided by engineer. */
-"verify passcode" = "jelkód ellenőrzése";
-
-/* No comment provided by engineer. */
 "wallet address" = "tárca cím";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "tárca letiltva";
 
 /* No comment provided by engineer. */
 "WARNING" = "FIGYELEM!";
@@ -646,6 +523,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "dasht kaptál!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "A tárcád nincs szinkronban.\nÁltalában segít az, ha újraszkenneled a blockchaint.";

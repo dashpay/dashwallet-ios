@@ -1,10 +1,16 @@
 PODS:
   - DashSync (0.1.0):
+    - DashSync/Core (= 0.1.0)
+    - secp256k1_dash (= 0.1.0)
+  - DashSync/AppExtension (0.1.0):
+    - secp256k1_dash (= 0.1.0)
+  - DashSync/Core (0.1.0):
     - secp256k1_dash (= 0.1.0)
   - secp256k1_dash (0.1.0)
 
 DEPENDENCIES:
   - DashSync (from `../dashsync-iOS`)
+  - DashSync/AppExtension (from `../dashsync-iOS`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -15,9 +21,9 @@ EXTERNAL SOURCES:
     :path: "../dashsync-iOS"
 
 SPEC CHECKSUMS:
-  DashSync: 7fa2798a0cb2ad8d6c7bc3d68a2f0b75c10e991e
+  DashSync: 0a5ef34159dbefb4774bbad84e532cc9a0bf3ac2
   secp256k1_dash: 16bc4c20423f88dc264db75d5611c9c6a5fd1f77
 
-PODFILE CHECKSUM: 17e9f48befec2baa4cecbfb117f430d7cd8c22db
+PODFILE CHECKSUM: 56456296630f5089f69ac6debf559b73ff99986c
 
 COCOAPODS: 1.5.3

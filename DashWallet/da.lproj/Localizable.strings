@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -13,9 +10,6 @@
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d bekræftelser";
-
-/* No comment provided by engineer. */
-", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 bekræftelser";
@@ -33,13 +27,7 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nhvis du nogensinde mister din telefon, vil du få brug for den for at genskabe din tegnebog";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d forsøg tilbage\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 forsøg tilbage\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     beløb %1$@ (%2$@)";
@@ -69,9 +57,6 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nprøv igen om %1$d %2$@";
-
-/* No comment provided by engineer. */
 "about" = "om";
 
 /* No comment provided by engineer. */
@@ -90,16 +75,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "forkert adgangskode; prøv igen";
-
-/* No comment provided by engineer. */
 "bad payment request" = "ugyldig betalingsanmodning";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "ugyldig betalingsanmodnings-URL";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "ugyldig betalings-URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "ugyldig genskabelsessætning";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "tjekker saldo for privat nøgle …";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "vælg adgangskode for %@";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
@@ -157,9 +130,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekræftet i bloknr. %d";
-
-/* No comment provided by engineer. */
-"connect timeout" = "forbindelses-timeout";
 
 /* No comment provided by engineer. */
 "copied" = "kopieret";
@@ -201,9 +171,6 @@
 "dash payments can't be less than %@" = "dash-betalinger kan ikke være mindre end %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "dash-transaktion ikke signeret";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "outputs for dash-transaktioner kan ikke være mindre end %@";
 
 /* No comment provided by engineer. */
@@ -234,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "angiv gammel adgangskode";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "fejl ved signering af dash-transaktion";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "fejl ved signering af transaktion";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -250,12 +211,6 @@
 
 /* No comment provided by engineer. */
 "from:" = "fra:";
-
-/* No comment provided by engineer. */
-"hour" = "time";
-
-/* No comment provided by engineer. */
-"hours" = "timer";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
@@ -291,15 +246,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Lad andre scanne denne QR-kode for at få din dash-adresse. Enhver kan sende dash til din tegnebog ved at overføre dem til din adresse.";
 
 /* No comment provided by engineer. */
-"minute" = "minut";
-
-/* No comment provided by engineer. */
-"minutes" = "minutter";
-
-/* No comment provided by engineer. */
-"missing certificate" = "manglende certifikat";
-
-/* No comment provided by engineer. */
 "more..." = "mere...";
 
 /* No comment provided by engineer. */
@@ -315,9 +261,6 @@
 "no exchange rate data" = "ingen valutakursdata";
 
 /* No comment provided by engineer. */
-"no peers found" = "ingen peers fundet";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "ikke en dash eller bitcoin QR-kode";
 
 /* No comment provided by engineer. */
@@ -330,28 +273,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ikke en gyldig privat nøgle";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "ikke tilsluttet dash-netværket";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "adgangskode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "adgangskode for %@";
-
-/* No comment provided by engineer. */
-"password" = "adgangskode";
-
-/* No comment provided by engineer. */
-"password protected key" = "nøgle beskyttet med adgangskode";
 
 /* No comment provided by engineer. */
 "pay" = "Betal";
@@ -367,9 +292,6 @@
 
 /* No comment provided by engineer. */
 "pending" = "pending";
-
-/* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -411,12 +333,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
-
-/* No comment provided by engineer. */
-"rescan" = "scan igen";
-
-/* No comment provided by engineer. */
 "rescan blockchain" = "scan blokkæden igen";
 
 /* No comment provided by engineer. */
@@ -436,12 +352,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Skærmbilleder er synlige for andre apps og enheder. Dine midler er i fare. Overfør din saldo til en anden tegnebog.";
-
-/* No comment provided by engineer. */
-"second" = "second";
-
-/* No comment provided by engineer. */
-"seconds" = "seconds";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "set af %1$d ud af %2$d peers";
@@ -537,12 +447,6 @@
 "this payment address is already in your wallet" = "denne betalingsadresse er allerede i din tegnebog";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "dette private nøgle er allerede i din tegnebog";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "denne private nøgle er tom";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -567,16 +471,7 @@
 "touch id spending limit" = "betalingsgrænse for touch id";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transaktion annullet, netværk-timeout";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsgebyret koster mere end de tilgængelige midler på denne private nøgle (på grund af bittesmå \"støv\"-indskud)";
-
-/* No comment provided by engineer. */
 "transaction history" = "transaktionshistorik";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transaktion afvist";
 
 /* No comment provided by engineer. */
 "trust" = "trust";
@@ -591,9 +486,6 @@
 "Unable to get new qr code" = "Unable to get new qr code";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "uventet svar fra %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "ukendt adresse";
 
 /* No comment provided by engineer. */
@@ -603,31 +495,16 @@
 "unsupported or corrupted document" = "dokument ikke understøttet eller beskadiget";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "signaturtype ikke understøttet";
-
-/* No comment provided by engineer. */
 "unsupported url" = "url ikke understøttet";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "upålideligt certifikat";
-
-/* No comment provided by engineer. */
 "unverified" = "ikke verificeret";
-
-/* Updating Price */
-"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verificeret, venter på bekræftelse";
 
 /* No comment provided by engineer. */
-"verify passcode" = "bekræft adgangskode";
-
-/* No comment provided by engineer. */
 "wallet address" = "tegnebogs-adresse";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "tegnebog deaktiveret";
 
 /* No comment provided by engineer. */
 "WARNING" = "ADVARSEL";
@@ -646,6 +523,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "du har modtaget dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din tegnebog kan være ude af sync.\nDette kan ofte løses ved at scanne blokkæden igen.";

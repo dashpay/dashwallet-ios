@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "и";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ означает «mDASH». %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -13,9 +10,6 @@
 
 /* No comment provided by engineer. */
 "%d confirmations" = "Подтверждений: %d";
-
-/* No comment provided by engineer. */
-", " = ",";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 подтверждений";
@@ -33,13 +27,7 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nВам понадобится эта фраза, чтобы восстановить Ваш кошелек, если Вы потеряете свой телефон";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
@@ -69,9 +57,6 @@
 "\ntry again in %@" = "\nПопробуйте еще раз через %@";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nПопробуйте еще раз через %1$d %2$@";
-
-/* No comment provided by engineer. */
 "about" = "О программе";
 
 /* No comment provided by engineer. */
@@ -90,16 +75,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложение %@ хочет получить Ваш основной публичный ключ. Это может быть использовано для отслеживания Вашего кошелька, но не для отправки Ваших DASH.";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "Некорректный пароль, попробуйте еще раз";
-
-/* No comment provided by engineer. */
 "bad payment request" = "Некорректный платежный запрос";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "Некорректный платежный URL-запрос";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "Некорректный платежный URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "Некорректная фраза восстановления";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "Проверка баланса закрытого ключа...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "Придумайте код доступа для %@";
-
-/* No comment provided by engineer. */
 "clear" = "Удалить";
 
 /* No comment provided by engineer. */
@@ -157,9 +130,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "Подтверждено в блоке #%d";
-
-/* No comment provided by engineer. */
-"connect timeout" = "Время ожидания подключения";
 
 /* No comment provided by engineer. */
 "copied" = "Скопировано";
@@ -201,9 +171,6 @@
 "dash payments can't be less than %@" = "Платежи в Dash не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "Транзакция не подписана";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "Выходы транзакции не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
@@ -234,13 +201,7 @@
 "enter" = "Ввести";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "Введите старый пароль";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "Ошибка подписания транзакции";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "Ошибка подписания транзакции";
 
 /* No comment provided by engineer. */
 "exit" = "Выход";
@@ -250,12 +211,6 @@
 
 /* No comment provided by engineer. */
 "from:" = "От:";
-
-/* No comment provided by engineer. */
-"hour" = "час";
-
-/* No comment provided by engineer. */
-"hours" = "часов";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
@@ -291,15 +246,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR-код, чтобы получить Ваш адрес Dash. Кто угодно сможет отправить DASH на Ваш кошелек путём передачи их на Ваш адрес.";
 
 /* No comment provided by engineer. */
-"minute" = "минут";
-
-/* No comment provided by engineer. */
-"minutes" = "минуты";
-
-/* No comment provided by engineer. */
-"missing certificate" = "Отсутствует сертификат";
-
-/* No comment provided by engineer. */
 "more..." = "ещё...";
 
 /* No comment provided by engineer. */
@@ -315,9 +261,6 @@
 "no exchange rate data" = "Не удалось получить курсы обмена";
 
 /* No comment provided by engineer. */
-"no peers found" = "Узлы не найдены";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "Не является QR-кодом для Dash или Bitcoin";
 
 /* No comment provided by engineer. */
@@ -330,28 +273,10 @@
 "not a valid dash or bitcoin address" = "Некорректный адрес Dash или Bitcoin";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "Некорректный закрытый ключ";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "Нет подключения к сети Dash";
-
-/* No comment provided by engineer. */
 "ok" = "ок";
 
 /* No comment provided by engineer. */
 "OK" = "ОК";
-
-/* No comment provided by engineer. */
-"passcode" = "Код доступа";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "Код доступа для %@";
-
-/* No comment provided by engineer. */
-"password" = "Пароль";
-
-/* No comment provided by engineer. */
-"password protected key" = "Защищённый паролем ключ";
 
 /* No comment provided by engineer. */
 "pay" = "Оплатить";
@@ -367,9 +292,6 @@
 
 /* No comment provided by engineer. */
 "pending" = "Ожидание";
-
-/* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -411,12 +333,6 @@
 "request is for an instant payment but you have disabled instant payments" = "Запрос для мгновенного платежа, но Вы отключили эту опцию";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
-
-/* No comment provided by engineer. */
-"rescan" = "Повторное сканирование";
-
-/* No comment provided by engineer. */
 "rescan blockchain" = "Пересканировать цепочку блоков";
 
 /* No comment provided by engineer. */
@@ -436,12 +352,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Скриншоты видимы другими приложениями и устройствами. Ваши средства находятся под угрозой. Переведите Ваш баланс на другой кошелёк.";
-
-/* No comment provided by engineer. */
-"second" = "секунда";
-
-/* No comment provided by engineer. */
-"seconds" = "секунды";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "Видели %1$d из %2$d узлов";
@@ -537,12 +447,6 @@
 "this payment address is already in your wallet" = "Этот адрес уже находится в вашем кошельке";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "Этот закрытый ключ уже находится в вашем кошельке";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "Этот закрытый ключ пустой";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -567,16 +471,7 @@
 "touch id spending limit" = "Лимит расходов Touch ID";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "Транзакция отменена, время ожидания сети истекло";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Комиссия за эту транзакцию будет больше, чем сумма на этом приватном ключе (из-за маленьких депозитов)";
-
-/* No comment provided by engineer. */
 "transaction history" = "История транзакций";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "Транзакция отклонена";
 
 /* No comment provided by engineer. */
 "trust" = "Доверять";
@@ -591,9 +486,6 @@
 "Unable to get new qr code" = "Не удалось получить новый QR-код";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "Неожиданный ответ от %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "Неизвестный адрес";
 
 /* No comment provided by engineer. */
@@ -603,31 +495,16 @@
 "unsupported or corrupted document" = "Неподдерживаемый или поврежденный документ";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "Тип подписи не поддерживается";
-
-/* No comment provided by engineer. */
 "unsupported url" = "Неподдерживаемый URL-адрес";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "Ненадёжный сертификат";
-
-/* No comment provided by engineer. */
 "unverified" = "Неподтверждённый";
-
-/* Updating Price */
-"Updating Price" = "Обновление цены";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "Проверено, ожидание подтверждения";
 
 /* No comment provided by engineer. */
-"verify passcode" = "Подтвердите код";
-
-/* No comment provided by engineer. */
 "wallet address" = "Адрес кошелька";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "Кошелек отключен";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
@@ -646,6 +523,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "Вы получили DASH!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелек рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";

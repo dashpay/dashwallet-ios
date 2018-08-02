@@ -176,6 +176,7 @@
 		B33A36825BD4EE96E794F2C305928999 /* DSPriceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2F08814B442744AA8D9BE500E2300792 /* DSPriceManager.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B467152166C00A419BD5F931DA588D28 /* field_5x52_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 14E8FCC85D33BB42BD322B659DCD46FC /* field_5x52_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B4DEE9B582A569BED6C8810E02BB8139 /* DSTransactionHashEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = A2B93088ADEA09A96E39E94F99C4100B /* DSTransactionHashEntity+CoreDataClass.m */; settings = {COMPILER_FLAGS = "-Wno-comma -w -Xanalyzer -analyzer-disable-all-checks"; }; };
+		B8448718D6BEF0B76B1F8898742C95E0 /* Pods-WatchApp Extension-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0747D7C84B4050D6A8BBB29E1695C156 /* Pods-WatchApp Extension-dummy.m */; };
 		B8C5E4CA99392F763E3A7E8787DB2CEE /* DSSporkEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = D7E3645F0936972015C2F97002554FC0 /* DSSporkEntity+CoreDataClass.m */; settings = {COMPILER_FLAGS = "-Wno-comma -w -Xanalyzer -analyzer-disable-all-checks"; }; };
 		BA7B74AD36975EECAA99497C8FCA21F1 /* DSAddressEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = C040A7460AFF82F58AA98676C5CB57BB /* DSAddressEntity+CoreDataClass.m */; settings = {COMPILER_FLAGS = "-Wno-comma -w -Xanalyzer -analyzer-disable-all-checks"; }; };
 		BB77ECBFB091ADCA1D0C391406CFA338 /* DSTransactionHashEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = E7B98EB4469992B325F0F3E5EB765E99 /* DSTransactionHashEntity+CoreDataProperties.m */; settings = {COMPILER_FLAGS = "-Wno-comma -w -Xanalyzer -analyzer-disable-all-checks"; }; };
@@ -217,7 +218,6 @@
 		D6AE1BE876780C120F305ACA9D772202 /* Shavite.h in Headers */ = {isa = PBXBuildFile; fileRef = A90ACCDE8BEE8E101F15D4112167BC13 /* Shavite.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		D6DA90C0053B836EF4F724BAAED3611D /* DSMasternodeBroadcastHashEntity+CoreDataClass.h in Headers */ = {isa = PBXBuildFile; fileRef = B395BA8C0C4588095FB33A03402422BF /* DSMasternodeBroadcastHashEntity+CoreDataClass.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		D7321D2C867B6CBA2A2C88FC8D8A88D4 /* DSGovernanceVoteEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E47BBF72AB1387DA3AEBEF276458B71 /* DSGovernanceVoteEntity+CoreDataClass.m */; settings = {COMPILER_FLAGS = "-Wno-comma -w -Xanalyzer -analyzer-disable-all-checks"; }; };
-		D74B5B42ADC3B0E350D492F04BD99148 /* Pods-WatchApp Extension-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0747D7C84B4050D6A8BBB29E1695C156 /* Pods-WatchApp Extension-dummy.m */; };
 		D9CD42AEBBFFDFC5BD402DEE89AC3CA2 /* DSSporkHashEntity+CoreDataClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 3B60C5DB132C0A9E2204BEA456044E60 /* DSSporkHashEntity+CoreDataClass.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		DA21A0A07894853505EA538AF7647967 /* aes_helper.h in Headers */ = {isa = PBXBuildFile; fileRef = EBDBD6F4951EBE6DC9894781733A04A4 /* aes_helper.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		DA69C05370E3DDE0C2AE3ED9B66E9238 /* scalar_8x32_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = AD0E1D9F61F18F83A43459B74AC74677 /* scalar_8x32_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -266,13 +266,6 @@
 			remoteGlobalIDString = 7AE53850507042FE18ABD11627E52519;
 			remoteInfo = secp256k1_dash;
 		};
-		4FAD9AC00C04891A0DC9C684DE739B7A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7AE53850507042FE18ABD11627E52519;
-			remoteInfo = secp256k1_dash;
-		};
 		530F82A70725D9DC53FD93EBF023B697 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
@@ -294,12 +287,12 @@
 			remoteGlobalIDString = 5B2EC58BDC401F8640F9C550C533EF20;
 			remoteInfo = "DashSync-DashSync";
 		};
-		B719596680B20FBAEF58DB9F1D648448 /* PBXContainerItemProxy */ = {
+		A479E78F0E6BB8B327741845BF615807 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E166A6DB92A56D95DF6C7A9546149456;
-			remoteInfo = DashSync;
+			remoteGlobalIDString = 7AE53850507042FE18ABD11627E52519;
+			remoteInfo = secp256k1_dash;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -610,14 +603,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2B845D98C5D26B463CED501760918107 /* Frameworks */ = {
+		4E694A88E090538045296DD3F7B68836 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4E694A88E090538045296DD3F7B68836 /* Frameworks */ = {
+		682D0408562ED0AE22948BC085E9AD0B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1276,24 +1269,6 @@
 			productReference = A15AADB9A7067BCA7570A06C3C007F0B /* libPods-dashwallet.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		3C648C6150FB134246C151D59532B842 /* Pods-WatchApp Extension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 3A8C1E40B9FF713144BE8C3F2C9B8C7B /* Build configuration list for PBXNativeTarget "Pods-WatchApp Extension" */;
-			buildPhases = (
-				19F709B7DFFE44C329C1F96E602B310B /* Sources */,
-				2B845D98C5D26B463CED501760918107 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				CDA7E54C3057FB5C573EEB8EAEF59011 /* PBXTargetDependency */,
-				BF23C9828BCB67C9D1D0597B7C6C4392 /* PBXTargetDependency */,
-			);
-			name = "Pods-WatchApp Extension";
-			productName = "Pods-WatchApp Extension";
-			productReference = 8B1E324F619B1BF0F18A80D593705C63 /* libPods-WatchApp Extension.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		5B2EC58BDC401F8640F9C550C533EF20 /* DashSync-DashSync */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F1473F011B2BF13379718A2890277EC9 /* Build configuration list for PBXNativeTarget "DashSync-DashSync" */;
@@ -1326,6 +1301,23 @@
 			name = secp256k1_dash;
 			productName = secp256k1_dash;
 			productReference = 4B2FBEB67AB9F78A7747829E12C081AA /* libsecp256k1_dash.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		9F1A8A684778DD1046C660126CF493E1 /* Pods-WatchApp Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 950B03F65DD6E83BB045149758370AA6 /* Build configuration list for PBXNativeTarget "Pods-WatchApp Extension" */;
+			buildPhases = (
+				E1F8DFEFC738AAA914129F04AA94532D /* Sources */,
+				682D0408562ED0AE22948BC085E9AD0B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E75A21CD7D7BF17A88E055099B1F4324 /* PBXTargetDependency */,
+			);
+			name = "Pods-WatchApp Extension";
+			productName = "Pods-WatchApp Extension";
+			productReference = 8B1E324F619B1BF0F18A80D593705C63 /* libPods-WatchApp Extension.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		E166A6DB92A56D95DF6C7A9546149456 /* DashSync */ = {
@@ -1371,7 +1363,7 @@
 				E166A6DB92A56D95DF6C7A9546149456 /* DashSync */,
 				5B2EC58BDC401F8640F9C550C533EF20 /* DashSync-DashSync */,
 				1BEB62FB77F25B2095F2EAE586BDB10C /* Pods-dashwallet */,
-				3C648C6150FB134246C151D59532B842 /* Pods-WatchApp Extension */,
+				9F1A8A684778DD1046C660126CF493E1 /* Pods-WatchApp Extension */,
 				7AE53850507042FE18ABD11627E52519 /* secp256k1_dash */,
 			);
 		};
@@ -1391,14 +1383,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		19F709B7DFFE44C329C1F96E602B310B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D74B5B42ADC3B0E350D492F04BD99148 /* Pods-WatchApp Extension-dummy.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		35873413408327FF9968D2309E3A6DC0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1420,6 +1404,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				07BDAECF61977159DCF68C13E1ECCF9F /* Pods-dashwallet-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1F8DFEFC738AAA914129F04AA94532D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8448718D6BEF0B76B1F8898742C95E0 /* Pods-WatchApp Extension-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1548,17 +1540,11 @@
 			target = E166A6DB92A56D95DF6C7A9546149456 /* DashSync */;
 			targetProxy = 530F82A70725D9DC53FD93EBF023B697 /* PBXContainerItemProxy */;
 		};
-		BF23C9828BCB67C9D1D0597B7C6C4392 /* PBXTargetDependency */ = {
+		E75A21CD7D7BF17A88E055099B1F4324 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = secp256k1_dash;
 			target = 7AE53850507042FE18ABD11627E52519 /* secp256k1_dash */;
-			targetProxy = 4FAD9AC00C04891A0DC9C684DE739B7A /* PBXContainerItemProxy */;
-		};
-		CDA7E54C3057FB5C573EEB8EAEF59011 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = DashSync;
-			target = E166A6DB92A56D95DF6C7A9546149456 /* DashSync */;
-			targetProxy = B719596680B20FBAEF58DB9F1D648448 /* PBXContainerItemProxy */;
+			targetProxy = A479E78F0E6BB8B327741845BF615807 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1579,33 +1565,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		0C65A235A3BE8F26AEEB10D65F389D0D /* Testflight */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_MODULE_NAME = DashSync;
-				PRODUCT_NAME = DashSync;
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Testflight;
-		};
 		11D05CF3FC8204F8D57CCC95669FFFFE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
@@ -1711,6 +1670,32 @@
 			};
 			name = Debug;
 		};
+		5624FDE752078849FD91FD9C6A1E651A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PRIVATE_HEADERS_FOLDER_PATH = "";
+				PRODUCT_MODULE_NAME = DashSync;
+				PRODUCT_NAME = DashSync;
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		58CE816B060A41D32CEC095441D0E3E0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1811,7 +1796,7 @@
 			};
 			name = Release;
 		};
-		6D713E42A443473B6122370FD5B4D724 /* Testnet */ = {
+		6FC2FCD08C02AD6AD26243D7FD30814E /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5ABE16B41F5F42391EC8153E3A2D3210 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
@@ -1858,28 +1843,31 @@
 			};
 			name = Testflight;
 		};
-		777CB794B9CAEC5F9988C22210C5537B /* Debug */ = {
+		7A915D9E10E2CF7E3EA0E4D30C15CB4F /* Testflight */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2F969834763ACFE4A01DC5D6864EF571 /* Pods-WatchApp Extension.debug.xcconfig */;
+			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRIVATE_HEADERS_FOLDER_PATH = "";
+				PRODUCT_MODULE_NAME = DashSync;
+				PRODUCT_NAME = DashSync;
+				PUBLIC_HEADERS_FOLDER_PATH = "";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
-			name = Debug;
+			name = Testflight;
 		};
 		8DF8F5156E8F2444B70B2492835F65CD /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1974,6 +1962,30 @@
 			};
 			name = Debug;
 		};
+		A2C54885979A8B886D8509DD0162CC6B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5C8DCC7A007D8D55679EA793B7EBF0A5 /* Pods-WatchApp Extension.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		A80B873F05A7E0B7EA726E5BB50FB2A8 /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2032,60 +2044,6 @@
 			};
 			name = Testnet;
 		};
-		AE0AFD7B658DD0C4FC42E4B13F93B9BA /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_MODULE_NAME = DashSync;
-				PRODUCT_NAME = DashSync;
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		B7195ABDF22BD0C4908CA1C1ECADC517 /* Testnet */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_MODULE_NAME = DashSync;
-				PRODUCT_NAME = DashSync;
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Testnet;
-		};
 		C6932E62AACB9280190B0DD360FE08E5 /* Testflight */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
@@ -2119,6 +2077,56 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				WRAPPER_EXTENSION = bundle;
+			};
+			name = Testnet;
+		};
+		D0CD48300A64057263CA0FA7446C4FE3 /* Testflight */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1C625B1FAC28771713CA6B65F4D5B9A5 /* Pods-WatchApp Extension.testflight.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Testflight;
+		};
+		D6530EB1489CE979F40BA9F3F11C6485 /* Testnet */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				GCC_PREFIX_HEADER = "Target Support Files/DashSync/DashSync-prefix.pch";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PRIVATE_HEADERS_FOLDER_PATH = "";
+				PRODUCT_MODULE_NAME = DashSync;
+				PRODUCT_NAME = DashSync;
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Testnet;
 		};
@@ -2180,11 +2188,33 @@
 			};
 			name = Testflight;
 		};
-		DBE7F9741C81B4D493CA2332349D2B2E /* Debug */ = {
+		E623870BE08CC36DCE182335858E7942 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F969834763ACFE4A01DC5D6864EF571 /* Pods-WatchApp Extension.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EFD32EFD141C863D84A7C8449C6F1D4E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 693873F89471852C1A2A470DEB352865 /* DashSync.xcconfig */;
 			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -2205,30 +2235,6 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
-		};
-		EFE98B0547E72ED40FA21D860DFA56E5 /* Testflight */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1C625B1FAC28771713CA6B65F4D5B9A5 /* Pods-WatchApp Extension.testflight.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				MACH_O_TYPE = staticlib;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Testflight;
 		};
 		F2EE4538D641833A3E40B74B1EE042DF /* Testflight */ = {
 			isa = XCBuildConfiguration;
@@ -2256,30 +2262,6 @@
 			};
 			name = Testflight;
 		};
-		F3F88F8F132E2139E74A15EC8731E5D9 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5C8DCC7A007D8D55679EA793B7EBF0A5 /* Pods-WatchApp Extension.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				MACH_O_TYPE = staticlib;
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2290,17 +2272,6 @@
 				58CE816B060A41D32CEC095441D0E3E0 /* Release */,
 				DBE544CC58DE157EF0F45CC19277BCD3 /* Testflight */,
 				A80B873F05A7E0B7EA726E5BB50FB2A8 /* Testnet */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		3A8C1E40B9FF713144BE8C3F2C9B8C7B /* Build configuration list for PBXNativeTarget "Pods-WatchApp Extension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				777CB794B9CAEC5F9988C22210C5537B /* Debug */,
-				F3F88F8F132E2139E74A15EC8731E5D9 /* Release */,
-				EFE98B0547E72ED40FA21D860DFA56E5 /* Testflight */,
-				6D713E42A443473B6122370FD5B4D724 /* Testnet */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -2327,13 +2298,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		950B03F65DD6E83BB045149758370AA6 /* Build configuration list for PBXNativeTarget "Pods-WatchApp Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E623870BE08CC36DCE182335858E7942 /* Debug */,
+				A2C54885979A8B886D8509DD0162CC6B /* Release */,
+				D0CD48300A64057263CA0FA7446C4FE3 /* Testflight */,
+				6FC2FCD08C02AD6AD26243D7FD30814E /* Testnet */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AF9082A50FA501FE1B1BF18031668106 /* Build configuration list for PBXNativeTarget "DashSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DBE7F9741C81B4D493CA2332349D2B2E /* Debug */,
-				AE0AFD7B658DD0C4FC42E4B13F93B9BA /* Release */,
-				0C65A235A3BE8F26AEEB10D65F389D0D /* Testflight */,
-				B7195ABDF22BD0C4908CA1C1ECADC517 /* Testnet */,
+				EFD32EFD141C863D84A7C8449C6F1D4E /* Debug */,
+				5624FDE752078849FD91FD9C6A1E651A /* Release */,
+				7A915D9E10E2CF7E3EA0E4D30C15CB4F /* Testflight */,
+				D6530EB1489CE979F40BA9F3F11C6485 /* Testnet */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

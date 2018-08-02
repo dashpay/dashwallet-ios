@@ -18,6 +18,7 @@
   "platforms": {
     "ios": "10.0"
   },
+  "default_subspecs": "Core",
   "source_files": "DashSync/**/*.{h,m}",
   "public_header_files": "DashSync/**/*.h",
   "libraries": [
@@ -43,5 +44,16 @@
     "secp256k1_dash": [
       "0.1.0"
     ]
-  }
+  },
+  "subspecs": [
+    {
+      "name": "Core"
+    },
+    {
+      "name": "AppExtension",
+      "pod_target_xcconfig": {
+        "GCC_PREPROCESSOR_DEFINITIONS": "DASHSYNC_EXTENSIONS=1"
+      }
+    }
+  ]
 }

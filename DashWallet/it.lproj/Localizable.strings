@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "e";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@sta per 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -13,9 +10,6 @@
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d conferme";
-
-/* No comment provided by engineer. */
-", " = ",";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 conferme";
@@ -33,13 +27,7 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nse perdi il tuo telefono, ti basterà per recuperare il tuo portafoglio";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d tentativi rimanenti\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 tentativo rimasto\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n       importo %1$@ (%2$@)";
@@ -69,9 +57,6 @@
 "\ntry again in %@" = "\nriprova tra %@";
 
 /* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nriprova in %1$d %2$@";
-
-/* No comment provided by engineer. */
 "about" = "chi siamo";
 
 /* No comment provided by engineer. */
@@ -90,16 +75,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'applicazione %@vorrebbe ricevere la tua Chiave Pubblica Principale. Può essere utilizzata per tracciare il tuo portafoglio, ma non può essere usata per spostare i tuoi Dash.";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "password errata, riprova";
-
-/* No comment provided by engineer. */
 "bad payment request" = "richiesta di pagamento errata";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "URL di richiesta pagamento errato";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "URL di pagamento errato";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "frase di sicurezza errata";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "verificando il saldo della chiave privata...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "scegli codice di accesso per %@";
-
-/* No comment provided by engineer. */
 "clear" = "rimuovere";
 
 /* No comment provided by engineer. */
@@ -157,9 +130,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confermato nel blocco #%d";
-
-/* No comment provided by engineer. */
-"connect timeout" = "connessione interrotta";
 
 /* No comment provided by engineer. */
 "copied" = "copiato";
@@ -201,9 +171,6 @@
 "dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "transazione dash non firmata";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "transazioni dash in uscita non possono essere inferiori a %@";
 
 /* No comment provided by engineer. */
@@ -234,13 +201,7 @@
 "enter" = "immetti";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "immetti il vecchio codice";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "errore firma di transazione dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "errore firma della transazione";
 
 /* No comment provided by engineer. */
 "exit" = "esci";
@@ -250,12 +211,6 @@
 
 /* No comment provided by engineer. */
 "from:" = "da:";
-
-/* No comment provided by engineer. */
-"hour" = "ora";
-
-/* No comment provided by engineer. */
-"hours" = "ore";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
@@ -291,15 +246,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Permetti agli altri di scansionare questo codice QR per trovare il tuo indirizzo dash. Chiunque può spedire dash al tuo portafoglio trasferendoli al tuo indirizzo.";
 
 /* No comment provided by engineer. */
-"minute" = "minuto";
-
-/* No comment provided by engineer. */
-"minutes" = "minuti";
-
-/* No comment provided by engineer. */
-"missing certificate" = "certificato mancante";
-
-/* No comment provided by engineer. */
 "more..." = "di più...";
 
 /* No comment provided by engineer. */
@@ -315,9 +261,6 @@
 "no exchange rate data" = "nessun dato del tasso di cambio";
 
 /* No comment provided by engineer. */
-"no peers found" = "nessun pari trovato";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "non è un codice QR dash o bitcoin";
 
 /* No comment provided by engineer. */
@@ -330,28 +273,10 @@
 "not a valid dash or bitcoin address" = "non un indirizzo dash o bitcoin valido";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "non una chiave privata valida";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "non connesso alla rete dash";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "codice accesso";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "codice accesso per %@";
-
-/* No comment provided by engineer. */
-"password" = "password";
-
-/* No comment provided by engineer. */
-"password protected key" = "chiave protetta da password";
 
 /* No comment provided by engineer. */
 "pay" = "Paga";
@@ -367,9 +292,6 @@
 
 /* No comment provided by engineer. */
 "pending" = "in attesa di";
-
-/* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -411,12 +333,6 @@
 "request is for an instant payment but you have disabled instant payments" = "richiesto un pagamento immediato, ma hai disabilitato i pagamenti immediati";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
-
-/* No comment provided by engineer. */
-"rescan" = "riscansiona";
-
-/* No comment provided by engineer. */
 "rescan blockchain" = "riscansiona catena di blocchi";
 
 /* No comment provided by engineer. */
@@ -436,12 +352,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. I tuoi fondi sono a rischio. Trasferisci il tuo saldo a un altro portafoglio.";
-
-/* No comment provided by engineer. */
-"second" = "secondo";
-
-/* No comment provided by engineer. */
-"seconds" = "secondi";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "visto da %1$d di %2$d pari";
@@ -537,12 +447,6 @@
 "this payment address is already in your wallet" = "questo indirizzo di pagamento è già nel tuo portafoglio";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "questa chiave privata è già nel tuo portafoglio";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "questa chiave privata è vuota";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -567,16 +471,7 @@
 "touch id spending limit" = "limite di spesa touch id";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transazione cancellata, rete sospesa";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "i costi di transazione costerebbero più dei fondi disponibili su questa chiave privata (a causa dei micro depositi \"dust\")";
-
-/* No comment provided by engineer. */
 "transaction history" = "cronologia transazioni";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transazione rifiutata";
 
 /* No comment provided by engineer. */
 "trust" = "fiducia";
@@ -591,9 +486,6 @@
 "Unable to get new qr code" = "Impossibile ottenere un nuovo codice QR";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "risposta inaspettata da %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "indirizzo sconoscuito";
 
 /* No comment provided by engineer. */
@@ -603,31 +495,16 @@
 "unsupported or corrupted document" = "documento non supportato o corrotto";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "tipo di firma non supportato";
-
-/* No comment provided by engineer. */
 "unsupported url" = "url non supportato";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "certificato non attendibile";
-
-/* No comment provided by engineer. */
 "unverified" = "non verificato";
-
-/* Updating Price */
-"Updating Price" = "Prezzo in aggiornamento";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verificato, in attesa di conferma";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifica codice d'accesso";
-
-/* No comment provided by engineer. */
 "wallet address" = "indirizzo portafoglio";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "portafoglio disabilitato";
 
 /* No comment provided by engineer. */
 "WARNING" = "ATTENZIONE";
@@ -646,6 +523,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "hai ricevuto dei dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe essere non sincronizzato.\nDi solito si rimedia riscansionando la catena di blocchi.";
