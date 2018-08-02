@@ -117,7 +117,7 @@
         });
         return;
     }
-    __block CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
+    CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BRWalletManager *manager = [BRWalletManager sharedInstance];
         BRPaymentRequest *req = self.paymentRequest;
@@ -128,16 +128,19 @@
         }
         
         if (! image && req.data) {
-            image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+            image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0/255.0 blue:228.0/255.0]];
+            CGSize holeSize = CGSizeMake(5.0, 5.0);
+            image = [image imageByCuttingHoleInCenterWithSize:holeSize];
         }
         
-        self.qrImage = [image resize:qrViewBounds withInterpolationQuality:kCGInterpolationNone];
+        UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
+        UIImage *resizedImage = [image resize:qrViewBounds withInterpolationQuality:kCGInterpolationNone];
+
+        self.qrImage = [resizedImage imageByMergingWithImage:overlayLogo];
         
         if (req.amount == 0) {
             if (req.isValid) {
                 [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_IMAGE_KEY];
-                image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:1.0 green:1.0 blue:1.0]];
-                [self.groupDefs setObject:UIImagePNGRepresentation(image) forKey:APP_GROUP_QR_INV_IMAGE_KEY];
                 [self.groupDefs setObject:self.paymentAddress forKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
                 [self.groupDefs setObject:req.data forKey:APP_GROUP_REQUEST_DATA_KEY];
             }
@@ -145,7 +148,6 @@
                 [self.groupDefs removeObjectForKey:APP_GROUP_REQUEST_DATA_KEY];
                 [self.groupDefs removeObjectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
                 [self.groupDefs removeObjectForKey:APP_GROUP_QR_IMAGE_KEY];
-                [self.groupDefs removeObjectForKey:APP_GROUP_QR_INV_IMAGE_KEY];
             }
 
             [self.groupDefs synchronize];
