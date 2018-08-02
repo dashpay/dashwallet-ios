@@ -33,5 +33,8 @@
 - (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
 - (UIImage *)blurWithRadius:(CGFloat)radius;
 - (UIImage *)imageWithTintColor:(UIColor *)tintColor;
+- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage;
+- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect;
+- (UIImage *)imageByCuttingHoleInCenterWithSize:(CGSize)holeSize;
 
 @end

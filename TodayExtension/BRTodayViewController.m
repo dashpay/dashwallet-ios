@@ -116,21 +116,16 @@
 - (void)updateReceiveMoneyUI
 {
     self.qrCodeData = [self.appGroupUserDefault objectForKey:APP_GROUP_REQUEST_DATA_KEY];
-    
+
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
-        if ([[self.extensionContext class] instancesRespondToSelector:@selector(widgetLargestAvailableDisplayMode)]) {
-            self.qrOverlay.image =
-                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_INV_IMAGE_KEY]]
-                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
-            self.qrImage.image =
-                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY]]
-                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
-        }
-        else {
-            self.qrImage.image = self.qrOverlay.image =
-                [[UIImage imageWithData:[self.appGroupUserDefault objectForKey:APP_GROUP_QR_INV_IMAGE_KEY]]
-                 resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
-        }
+        NSData *imageData = [self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY];
+        UIImage *image = [UIImage imageWithData:imageData];
+        UIImage *resizedImage = [image resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
+        UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
+        UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+
+        self.qrOverlay.image = result;
+        self.qrImage.image = result;
     }
 
     self.addressLabel.text = [self.appGroupUserDefault objectForKey:APP_GROUP_RECEIVE_ADDRESS_KEY];
