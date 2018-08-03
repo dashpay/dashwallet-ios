@@ -586,6 +586,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B361A57803894CC7C6E59498 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BA913BE71BD57E4D005A7C0E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1153,6 +1160,7 @@
 			buildPhases = (
 				BA913BDC1BD57E4D005A7C0E /* Resources */,
 				BA913C001BD57E4E005A7C0E /* Embed App Extensions */,
+				B361A57803894CC7C6E59498 /* Frameworks */,
 			);
 			buildRules = (
 			);

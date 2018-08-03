@@ -71,7 +71,7 @@
     UIImage *image = nil;
     
     if (context) {
-        CGContextSetInterpolationQuality(context, kCGInterpolationNone);
+        CGContextSetInterpolationQuality(context, quality);
         CGContextRotateCTM(context, M_PI); // flip
         CGContextScaleCTM(context, -1.0, 1.0); // mirror
         CGContextDrawImage(context, CGContextGetClipBoundingBox(context), self.CGImage);
