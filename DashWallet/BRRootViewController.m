@@ -535,6 +535,8 @@
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     DSVersionManager *versionManager = [DSVersionManager sharedInstance];
+    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
+    DSWallet *wallet = chain.wallets.firstObject;
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     self.protectedObserver = nil;
@@ -550,10 +552,7 @@
         manager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     
-    DSChain *chain = [BRAppDelegate sharedDelegate].chain;
-    
-    // TODO: dashsync-migration
-    BOOL noOldWallet = NO; // was `manager.noOldWallet`
+    BOOL noOldWallet = ![versionManager hasAOldWallet];
     if (!chain.hasAWallet && noOldWallet) {
         if (! authManager.passcodeEnabled) {
             UIAlertController * alert = [UIAlertController
@@ -586,7 +585,7 @@
         }
     }
     else {
-        [versionManager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        [versionManager upgradeExtendedKeysForWallet:wallet withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 UIAlertController * alert;
                 if (cancelled) {
@@ -692,7 +691,7 @@
                     self.file = nil;
                 }
             }
-        } forChain:chain];
+        }];
     }
 }
 
