@@ -163,4 +163,56 @@
     return coloredImage;
 }
 
+- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage {
+    CGRect r = CGRectMake(roundf((self.size.width - secondImage.size.width) / 2.0),
+                          roundf((self.size.height - secondImage.size.height) / 2.0),
+                          secondImage.size.width,
+                          secondImage.size.height);
+    
+    return [self imageByMergingWithImage:secondImage secondImageRect:r];
+}
+
+- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect {
+    UIImage *firstImage = self;
+    CGSize imageSize = self.size;
+    UIGraphicsBeginImageContextWithOptions(imageSize, NO, [UIScreen mainScreen].scale);
+    [firstImage drawAtPoint:CGPointMake(roundf((imageSize.width - firstImage.size.width) / 2.0),
+                                        roundf((imageSize.height - firstImage.size.height) / 2.0))];
+    [secondImage drawInRect:secondImageRect];
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return result;
+}
+
+- (UIImage *)imageByCuttingHoleInCenterWithSize:(CGSize)holeSize {
+    CGSize size = self.size;
+    CGPoint centerPoint = CGPointMake((size.width - holeSize.width) / 2.0, (size.height - holeSize.height) / 2.0);
+    
+    UIBezierPath *currentPath = [UIBezierPath bezierPath];
+    CGPoint tempPoint = centerPoint;
+    [currentPath moveToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
+    
+    tempPoint = CGPointMake(centerPoint.x, centerPoint.y + holeSize.height);
+    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
+    tempPoint = CGPointMake(centerPoint.x + holeSize.width, centerPoint.y + holeSize.height);
+    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
+    tempPoint = CGPointMake(centerPoint.x + holeSize.width, centerPoint.y);
+    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
+    [currentPath closePath];
+    
+    UIGraphicsBeginImageContext(size);
+    [self drawAtPoint:CGPointZero];
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextAddPath(context, currentPath.CGPath);
+    CGContextClip(context);
+    CGContextClearRect(context, CGRectMake(0.0, 0.0, size.width, size.height));
+    
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return result;
+}
+
 @end
