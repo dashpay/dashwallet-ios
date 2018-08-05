@@ -14,7 +14,7 @@
 
 //@property (nonatomic, strong) IBOutlet UIView *wallpaper, *wallpaperContainer;
 @property (nonatomic, strong) IBOutlet UIButton *generateButton, *showButton;
-@property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel, *warningLabel;
+@property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel;
 @property (nonatomic, strong) UINavigationController *seedNav;
 
 -(IBAction)generateRecoveryPhrase:(id)sender;
@@ -35,28 +35,6 @@
     self.generateButton.titleLabel.adjustsLetterSpacingToFitWidth = YES;
 #pragma clang diagnostic pop
     
-    
-    NSTextAttachment *noEye = [NSTextAttachment new], *noKey = [NSTextAttachment new];
-    NSMutableAttributedString *s = [[NSMutableAttributedString alloc]
-                                    initWithAttributedString:self.warningLabel.attributedText];
-    
-    noEye.image = [UIImage imageNamed:@"no-eye"];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-eye%"]
-           withAttributedString:[NSAttributedString attributedStringWithAttachment:noEye]];
-    noKey.image = [UIImage imageNamed:@"no-key"];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%no-key%"]
-           withAttributedString:[NSAttributedString attributedStringWithAttachment:noKey]];
-    
-    [s replaceCharactersInRange:[s.string rangeOfString:@"WARNING"] withString:NSLocalizedString(@"WARNING", nil)];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"\nDO NOT let anyone see your recovery\n"
-                                 "phrase or they can spend your dash.\n"]
-                     withString:NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                                  "phrase or they can spend your dash.\n", nil)];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"\nNEVER type your recovery phrase into\n"
-                                 "password managers or elsewhere.\nOther devices may be infected.\n"]
-                     withString:NSLocalizedString(@"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\n"
-                                                  "Other devices may be infected.\n", nil)];
-    self.warningLabel.attributedText = s;
     //self.generateButton.superview.backgroundColor = [UIColor clearColor];
 }
 
@@ -65,9 +43,7 @@
     // Dispose of any resources that can be recreated.
 }
 
--(IBAction)generateRecoveryPhrase:(id)sender {
-    [BREventManager saveEvent:@"welcome:generate"];
-    
+-(BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
     if (! [BRWalletManager sharedInstance].passcodeEnabled) {
         [BREventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
@@ -82,36 +58,25 @@
                                    }];
         [alert addAction:okButton];
         [self presentViewController:alert animated:YES completion:nil];
-        return;
+        return FALSE;
     }
-    
-    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
-    [sender setEnabled:NO];
-    self.seedNav = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedNav"];
-    self.warningLabel.hidden = self.showButton.hidden = NO;
-    self.warningLabel.alpha = self.showButton.alpha = 0.0;
-    
-    [UIView animateWithDuration:0.5 animations:^{
-        self.warningLabel.alpha = self.showButton.alpha = 1.0;
-        self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
-        self.startLabel.alpha = self.recoverLabel.alpha = 0.33;
-        self.generateButton.alpha = 0.33;
-    }];
+    return TRUE;
 }
 
-- (IBAction)show:(id)sender
-{
-    [BREventManager saveEvent:@"welcome:show"];
+-(void)performSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
+    [BREventManager saveEvent:@"welcome:generate"];
     
-    [self.navigationController presentViewController:self.seedNav animated:YES completion:^{
-        self.warningLabel.hidden = self.showButton.hidden = YES;
-        self.navigationController.navigationBar.topItem.titleView.alpha = 1.0;
-        self.startLabel.alpha = self.recoverLabel.alpha = 1.0;
-        self.generateButton.alpha = 1.0;
-        self.generateButton.enabled = YES;
-        self.navigationController.navigationBar.topItem.hidesBackButton = NO;
-        self.generateButton.superview.backgroundColor = [UIColor whiteColor];
-    }];
+//    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
+//    [sender setEnabled:NO];
+//    self.warningLabel.hidden = self.showButton.hidden = NO;
+//    self.warningLabel.alpha = self.showButton.alpha = 0.0;
+//    
+//    [UIView animateWithDuration:0.5 animations:^{
+//        self.warningLabel.alpha = self.showButton.alpha = 1.0;
+//        self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
+//        self.startLabel.alpha = self.recoverLabel.alpha = 0.33;
+//        self.generateButton.alpha = 0.33;
+//    }];
 }
 
 @end

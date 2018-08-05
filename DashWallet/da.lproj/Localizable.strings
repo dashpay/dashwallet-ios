@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngiv adgang for kamera i\nIndstillinger->Anonymitet->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine dash.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nTAG IKKE et screenshot.\nScreenshots er synlige for andre apps\nog enheder.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nnetværksgebyr +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSkriv ALDRIG din gendannelsessætning\ni kodeords-programmer eller lignende.\nAndre enheder kan være inficeret.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "gør det senere";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "LAD IKKE nogen se din\ngendannelsessætning, eller\nde kan bruge dine dash.";
+
+/* No comment provided by engineer. */
 "done" = "færdig";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "flyttet";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "Skriv ALDRIG din gendannelsessætning\ni kodeords-programmer eller lignende.\nAndre enheder kan være inficeret.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "skriv nu din gendannelsessætning ned";

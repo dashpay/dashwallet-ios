@@ -61,9 +61,11 @@
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
     UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
     
-    UIImage * tabBarImage = [[UIImage imageNamed:@"tab-bar-dash"]
-     resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0) resizingMode:UIImageResizingModeStretch];
-    [[UINavigationBar appearance] setBackgroundImage:tabBarImage forBarMetrics:UIBarMetricsDefault];
+//    UIImage * tabBarImage = [[UIImage imageNamed:@"tab-bar-dash"]
+//     resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0) resizingMode:UIImageResizingModeStretch];
+//    [[UINavigationBar appearance] setBackgroundImage:tabBarImage forBarMetrics:UIBarMetricsDefault];
+    
+    [[UINavigationBar appearance] setBarTintColor:[UIColor colorWithRed:0.0 green:0.55 blue:0.89 alpha:1.0]];
 
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
@@ -73,6 +75,9 @@
                                                            NSFontAttributeName:titleBarFont,
                                                            NSForegroundColorAttributeName: [UIColor whiteColor],
                                                            }];
+//    UIImage * backImage = [[UIImage imageNamed:@"BackImage"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+//    [[UINavigationBar appearance] setBackIndicatorImage:backImage];
+//    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
 
     if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
         NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];

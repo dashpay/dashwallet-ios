@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n允许照相机访问\n设置->隐私->照相机->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\n不要让任何人看到你的恢复密语\n否则他们就可以使用您的达世币。\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\n不要使用截图。\n截图对其他应用或设备是可见的。\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\n网络手续费+%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\n永远不要将恢复密语输入到\n密码管理器或其他地方。\n其它设备都可能存在病毒软件。\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n还可尝试 %@";
@@ -216,6 +216,9 @@
 "do it later" = "以后再做";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "不要让任何人看到你的恢复密语\n否则他们就可以使用您的达世币。";
+
+/* No comment provided by engineer. */
 "done" = "完成";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "已移动";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "永远不要将恢复密语输入到\n密码管理器或其他地方。\n其它设备都可能存在病毒软件。";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "下面，请写下你的恢复密语";

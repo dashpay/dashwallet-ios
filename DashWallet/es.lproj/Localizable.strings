@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermitir el acceso a la cámara en\nConfiguración->Privacidad->Cámara->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nNO permitas que nadie vea tu frase de\nrecuperación, podrían usar tus dash.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNO tomes una captura de pantalla.\nLas capturas son visibles para otras aplicaciones\ny dispositivos.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA introduzcas tu frase de\nrecuperación en gestores de contraseñas\nu otros servicios. Los otros dispositivos\npueden estar infectados.";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nintentar de nuevo en %@";
@@ -216,6 +216,9 @@
 "do it later" = "hazlo más tarde";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "NO permitas que nadie vea tu frase de\nrecuperación, podrían usar tus dash.";
+
+/* No comment provided by engineer. */
 "done" = "hecho";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "movido";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "NUNCA introduzcas tu frase de\nrecuperación en gestores de contraseñas\nu otros servicios. Los otros dispositivos\npueden estar infectados.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "a continuación, introduce tu frase de recuperación";

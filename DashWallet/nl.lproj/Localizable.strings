@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLaat jeherstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw dash uit te geven.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nMaak GEEN schermafbeelding.\nSchermafbeeldingen zijn zichtbaar voor andere apps\nen apparaten.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nVoer je herstelzin NOOIT in in wachtwoordbeheerders of ergens anders.\nAndere apparaten kunnen geïnfecteerd zijn.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
@@ -216,6 +216,9 @@
 "do it later" = "voer later uit";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "Laat jeherstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw dash uit te geven.";
+
+/* No comment provided by engineer. */
 "done" = "voltooid";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "verplaatst";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "Voer je herstelzin NOOIT in in wachtwoordbeheerders of ergens anders.\nAndere apparaten kunnen geïnfecteerd zijn.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "schrijf nu je herstelzin op";

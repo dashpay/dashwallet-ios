@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nРазрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nНЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления,\nиначе они смогут потратить Ваши DASH.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nНЕ ДЕЛАЙТЕ скриншот.\nСкриншоты видны другим приложениям\nи устройствам.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНИКОГДА не вводите Вашу фразу восстановления\nв менеджеры паролей или другие приложения.\nДругие устройства могут быть инфицированы.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nПопробуйте еще раз через %@";
@@ -216,6 +216,9 @@
 "do it later" = "Отложить на потом";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления,\nиначе они смогут потратить Ваши DASH.";
+
+/* No comment provided by engineer. */
 "done" = "Готово";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "Перемещено";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "НИКОГДА не вводите Вашу фразу восстановления\nв менеджеры паролей или другие приложения.\nДругие устройства могут быть инфицированы.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Теперь запишите Вашу фразу восстановления";

@@ -216,6 +216,9 @@
 "do it later" = "do it later";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "DO NOT let anyone see your recovery\nphrase or they can spend your dash.";
+
+/* No comment provided by engineer. */
 "done" = "done";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "moved";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "next, write down your recovery phrase";

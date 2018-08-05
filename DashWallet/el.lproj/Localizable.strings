@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nεπιτρέψτε στην κάμερα πρόσβαση στις\nρυθμίσεις-> απορρήτο-> κάμερα->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nΜΗΝ αφήσετε κανέναν να δεί την φράση\nανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nΜΗΝ πάρτε λήψη της οθόνης. Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές\nκαι συσκευές.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nαμοιβή δικτύου +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nΠΟΤΕ ΜΗΝ πληκτρολογείτε τη φράση ανάκτησης σας σε εφαρμογές διαχείρησης κωδικών ή αλλού.\nΆλλες συσκευές ενδέχεται να έχουν μολυνθεί.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "θα το κάνω αργότερα";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "ΜΗΝ αφήσετε κανέναν να δεί την φράση\nανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.";
+
+/* No comment provided by engineer. */
 "done" = "έγινε";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "μετακινηθηκε";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "ΠΟΤΕ ΜΗΝ πληκτρολογείτε τη φράση ανάκτησης σας σε εφαρμογές διαχείρησης κωδικών ή αλλού.\nΆλλες συσκευές ενδέχεται να έχουν μολυνθεί.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "στη συνέχεια, γράψτε την φράση ανακτησής σας";

@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nconsenti l'accesso alla fotocamera in\nImpostazioni->Privacy->Fotocamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nNON lasciare che qualcuno veda la tua\nfrase di recupero o potrà usare i tuoi dash.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNON prenda una screenshot.\nScreenshots sono visibili ad altri apps\ne despositivi.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\ntassa di rete +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nMAI scrivere la tua frase di recupero\nin qualunque altro programma.\nAltri dispositivi possono essere infetti.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nriprova tra %@";
@@ -216,6 +216,9 @@
 "do it later" = "fallo più tardi";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "NON lasciare che qualcuno veda la tua\nfrase di recupero o potrà usare i tuoi dash.";
+
+/* No comment provided by engineer. */
 "done" = "fatto";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "spostato";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "MAI scrivere la tua frase di recupero\nin qualunque altro programma.\nAltri dispositivi possono essere infetti.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";

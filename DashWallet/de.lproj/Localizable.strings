@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nLassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Dash ausgeben.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKEINEN Screenshots erstellen.\nScreenshots sind sichtbar für andere Apps und Geräte.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nNetzwerkgebühr +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nGeben Sie NIEMALS Ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nerneut versuchen in %@";
@@ -216,6 +216,9 @@
 "do it later" = "später";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "Lassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Dash ausgeben.";
+
+/* No comment provided by engineer. */
 "done" = "fertig";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "verschoben";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "Geben Sie NIEMALS Ihre\nWiederherstellungs-Wortfolge in einen\nPasswort-Manager oder ähnliches ein.\nAndere Geräte könnten infiziert sein.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Als nächstes schreiben Sie bitte Ihre Wiederherstellungs-Wortfolge auf";

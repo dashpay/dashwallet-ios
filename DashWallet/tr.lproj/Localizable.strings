@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nAyarlar->Gizlilik->Kamera->%@ \nkısmından kamera erişimine izin verin";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nkimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü dashlerinizi harcayabilirler.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nEkran görüntüsü ALMAYIN.\nEkran görüntüleri diğer uygulamalar ve \ncihazlar tarafından görülebilir.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nASLA kurtarma metninizi herhangi bir şifre yöneticisine veya başka bir yere yazmayın.\nDiğer cihazlarda güvenlik sorunu olabilir.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "daha sonra yap";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "kimsenin kurtarma cümlenizi görmesine İZİN VERMEYİN\n      çünkü dashlerinizi harcayabilirler.";
+
+/* No comment provided by engineer. */
 "done" = "bitti";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "taşınmış";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "ASLA kurtarma metninizi herhangi bir şifre yöneticisine veya başka bir yere yazmayın.\nDiğer cihazlarda güvenlik sorunu olabilir.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "sonra, kurtarma cümlenizi yazın";

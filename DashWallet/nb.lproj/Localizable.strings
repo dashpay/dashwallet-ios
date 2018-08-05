@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ntillat kameratilgang i\nInnstillinger->Personvern->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nIKKE la noen se din gjennopprettingsfrase;\nde kan sende dine dash.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nIKKE TA et skjermbilde\nSkjermbilder er synlige for andre apper\nog enheter.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nnettverksavgift +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSKRIV ALDRI opp din gjenopprettingsfrase\ni en passordbehandler eller andre steder.\nAndre enheter kan være kompromittert.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "gjør det senere";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "IKKE la noen se din gjennopprettingsfrase;\nde kan sende dine dash.";
+
+/* No comment provided by engineer. */
 "done" = "utført";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "flyttet";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "SKRIV ALDRI opp din gjenopprettingsfrase\ni en passordbehandler eller andre steder.\nAndre enheter kan være kompromittert.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "deretter, skriv ned din gjenopprettingsfrase";

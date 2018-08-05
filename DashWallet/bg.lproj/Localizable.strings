@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешава достъпа до камерата\nНастройки->Неприкосновеност->Камера->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nНЕ ПОЗВОЛЯВАЙТЕ на никой да види вашата фраза\nза възстановяване или могат да похарчат вашата наличност от dash.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nНЕ ПРАВЕТЕ снимки.\nСнимките са видими от другите приложения и устройства.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nтакса на мрежата +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nНИКОГА не пишете вашата парола за възстановяване в\nуправлението за пароли или на друго място.\nДруги устройства могат да са заразени.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nопитай отново в %@";
@@ -216,6 +216,9 @@
 "do it later" = "направете го по-късно";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "НЕ ПОЗВОЛЯВАЙТЕ на никой да види вашата фраза\nза възстановяване или могат да похарчат вашата наличност от dash.";
+
+/* No comment provided by engineer. */
 "done" = "направен";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "преместен";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "НИКОГА не пишете вашата парола за възстановяване в\nуправлението за пароли или на друго място.\nДруги устройства могат да са заразени.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "следва, напиши отдолу своята фраза за възстановяване";

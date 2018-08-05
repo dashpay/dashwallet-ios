@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermitir o acesso de câmera em\nAjustes->Privacidade->Câmera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nNão deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu dash.\n";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNão tire uma Captura de Tela.\nCapturas de tela são visíveis para outros dispositivos e aplicativos.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\ntaxa da rede +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar.\nOutros dispositivos podem ser infectados.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "fazer mais tarde";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "Não deixe que ninguém veja sua frase de recuperação ou eles podem gastar seu dash.";
+
+/* No comment provided by engineer. */
 "done" = "feito";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "movido";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar.\nOutros dispositivos podem ser infectados.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "em seguida, anote sua frase de recuperação";

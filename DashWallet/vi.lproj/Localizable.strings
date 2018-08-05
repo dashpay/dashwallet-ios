@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbật tính năng truy cập chụp ảnh trong phần\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi \ncủa bạn hoặc họ sẽ tiêu mất số dash của bạn.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKHÔNG NÊN chụp ảnh màn hình.\nVì ảnh chụp màn hình hiển thị cho các ứng dụng khác\nvà các thiết bị khác.\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nĐỪNG BAO GIỜ nhập cụm từ phục hồi của bạn vào\ntrình quản lý mật khẩu hoặc nơi nào khác\nNhững thiết bị khác có thể bị nhiễm virus.\n";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "làm việc này sau";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "ĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi \ncủa bạn hoặc họ sẽ tiêu mất số dash của bạn.";
+
+/* No comment provided by engineer. */
 "done" = "xong";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "đã di chuyển";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "ĐỪNG BAO GIỜ nhập cụm từ phục hồi của bạn vào\ntrình quản lý mật khẩu hoặc nơi nào khác\nNhững thiết bị khác có thể bị nhiễm virus.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "tiếp theo, ghi xuống cụm từ phục hồi";

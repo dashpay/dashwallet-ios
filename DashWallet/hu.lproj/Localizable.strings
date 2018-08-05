@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nengedélyezd a kamera használatát a\nBeállítások->Adatvédelem->Kamera->%@ menüpontban";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nNE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\ndashjaidat.";
+"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNE csinálj képernyőmentést!\nA képernyőmentések elérhetőek más\nalkalmazások és eszközök számára!\n";
@@ -63,7 +63,7 @@
 "\nnetwork fee +%@ (%@)" = "\nhálózati díj +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nSOHA ne gépeld be a helyreállítási\nkódmondatodat jelszókezelő\nalkalmazásokba vagy máshová,\nhiszen fertőzöttek lehetnek.";
+"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +216,9 @@
 "do it later" = "később leírom";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "NE engedd, hogy más lássa a helyreállítási\nkódmondatodat, különben elköltheti a\ndashjaidat.";
+
+/* No comment provided by engineer. */
 "done" = "kész";
 
 /* No comment provided by engineer. */
@@ -304,6 +307,9 @@
 
 /* No comment provided by engineer. */
 "moved" = "átvezetve";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "SOHA ne gépeld be a helyreállítási\nkódmondatodat jelszókezelő\nalkalmazásokba vagy máshová,\nhiszen fertőzöttek lehetnek.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "következő lépésként írd le a helyreállítási kódmondatodat";
