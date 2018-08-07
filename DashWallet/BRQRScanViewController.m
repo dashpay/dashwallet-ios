@@ -77,7 +77,7 @@
                                                          handler:nil];
         [alertController addAction:okAction];
         
-        UIAlertAction *settingsAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        UIAlertAction *settingsAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
             if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
                 [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];

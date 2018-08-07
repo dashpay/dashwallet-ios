@@ -270,7 +270,7 @@
 "ignore" = "yoksay";
 
 /* No comment provided by engineer. */
-"import private key" = "özel anahtarı içe aktar";
+"Import private key" = "özel anahtarı içe aktar";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ÖNEMLİ";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "ayarlar";
+"Settings" = "ayarlar";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "işlem ücretleri bu anahtarda kullanılabilir olan paradan daha pahalıya mal olabilir(küçük \"para\" deposu nedeniyle)";
 
 /* No comment provided by engineer. */
-"transaction history" = "işlem geçmişi";
+"Transaction history" = "işlem geçmişi";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "işlem reddedildi";

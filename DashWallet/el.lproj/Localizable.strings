@@ -270,7 +270,7 @@
 "ignore" = "παράβλεψη";
 
 /* No comment provided by engineer. */
-"import private key" = "εισαγωγή ιδιωτικού κλειδιού";
+"Import private key" = "εισαγωγή ιδιωτικού κλειδιού";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ΣΗΜΑΝΤΙΚΟ";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "ρυθμίσεις";
+"Settings" = "ρυθμίσεις";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "οι αμοιβή δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
 
 /* No comment provided by engineer. */
-"transaction history" = "ιστορικό συναλλαγής";
+"Transaction history" = "ιστορικό συναλλαγής";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "η συναλλαγή απορρίφθηκε";

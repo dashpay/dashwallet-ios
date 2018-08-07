@@ -270,7 +270,7 @@
 "ignore" = "ignorera";
 
 /* No comment provided by engineer. */
-"import private key" = "importera privat nyckel";
+"Import private key" = "importera privat nyckel";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "VIKTIGT";
@@ -480,7 +480,7 @@
 "set a trusted node" = "lägg till som en pålitlig node";
 
 /* No comment provided by engineer. */
-"settings" = "inställningar";
+"Settings" = "inställningar";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsavgiften skulle överstiga de medel som nyckeln har tillgängligt (på grund av \"damminsättningar\")";
 
 /* No comment provided by engineer. */
-"transaction history" = "transaktionshistorik";
+"Transaction history" = "transaktionshistorik";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaktion avvisad";

@@ -128,7 +128,7 @@
     }
     else {
         self.payButton.title = NSLocalizedString(@"request", nil);
-        self.payButton.tintColor = [UIColor colorWithRed:0.0 green:96.0/255.0 blue:1.0 alpha:1.0];
+        self.payButton.tintColor = [UIColor whiteColor];
         self.navigationItem.rightBarButtonItem = self.payButton;
         self.navigationController.navigationBar.barStyle = UIStatusBarStyleDefault;
     }
@@ -441,7 +441,7 @@
         BRBubbleView * tipView = [BRBubbleView viewWithText:self.to
                                                    tipPoint:CGPointMake(self.bottomButton.center.x, self.bottomButton.center.y - 10.0)
                                                tipDirection:BRBubbleTipDirectionDown];
-        tipView.font = [UIFont systemFontOfSize:15.0];
+        tipView.font = [UIFont systemFontOfSize:14.0];
         tipView.userInteractionEnabled = YES;
         [self.view addSubview:[tipView popIn]];
         self.tipView = tipView;

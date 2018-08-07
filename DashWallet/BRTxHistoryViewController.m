@@ -67,7 +67,6 @@ static NSString *dateFormat(NSString *template)
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id backgroundObserver, balanceObserver, txStatusObserver;
 @property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
-@property (nonatomic, strong) UIImageView *wallpaper;
 
 @end
 
@@ -78,14 +77,6 @@ static NSString *dateFormat(NSString *template)
     [super viewDidLoad];
 
     self.txDates = [NSMutableDictionary dictionary];
-    self.wallpaper = [[UIImageView alloc] initWithFrame:self.navigationController.view.bounds];
-    self.wallpaper.image = [UIImage imageNamed:@"wallpaper-default"];
-    self.wallpaper.contentMode = UIViewContentModeScaleAspectFill;
-    self.wallpaper.clipsToBounds = YES;
-    self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2,
-                                        self.navigationController.view.frame.size.height -
-                                        self.wallpaper.frame.size.height/2);
-    [self.navigationController.view insertSubview:self.wallpaper atIndex:0];
     self.navigationController.delegate = self;
     self.moreTx = YES;
 }
@@ -255,7 +246,6 @@ static NSString *dateFormat(NSString *template)
         self.syncFinishedObserver = nil;
         if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
         self.syncFailedObserver = nil;
-        self.wallpaper.clipsToBounds = YES;
         
         //self.buyController = nil;
     }
@@ -306,12 +296,6 @@ static NSString *dateFormat(NSString *template)
             }
         }
     }
-}
-
-- (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
-{    
-    [cell viewWithTag:100].hidden = (path.row > 0);
-    [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:tableView numberOfRowsInSection:path.section]);
 }
 
 - (NSString *)dateForTx:(BRTransaction *)tx
@@ -505,8 +489,8 @@ static NSString *dateFormat(NSString *template)
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
-                                      NSLocalizedString(@"transaction history", nil);
-                cell.imageView.image = nil;
+                                      NSLocalizedString(@"Transaction history", nil);
+                cell.imageView.image = [UIImage imageNamed:@"transaction-history"];
             }
             else if (self.transactions.count > 0) {
                 cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
@@ -526,20 +510,10 @@ static NSString *dateFormat(NSString *template)
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
 
-#if SNAPSHOT
-                received = [@[@(0), @(0), @(54000000), @(0), @(0), @(93000000)][indexPath.row] longLongValue];
-                sent = [@[@(1010000), @(10010000), @(0), @(82990000), @(10010000), @(0)][indexPath.row] longLongValue];
-                balance = [@[@(42980000), @(43990000), @(54000000), @(0), @(82990000), @(93000000)][indexPath.row]
-                           longLongValue];
-                [self.txDates removeAllObjects];
-                tx.timestamp = [NSDate timeIntervalSinceReferenceDate] - indexPath.row*100000;
-                confirms = 6;
-#endif
-
                 textLabel.textColor = [UIColor darkTextColor];
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
-                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
+                unconfirmedLabel.backgroundColor = [UIColor clearColor];
                 detailTextLabel.text = [self dateForTx:tx];
                 balanceLabel.attributedText = (manager.didAuthenticate) ? [manager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
                 localBalanceLabel.text = (manager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
@@ -620,21 +594,19 @@ static NSString *dateFormat(NSString *template)
                     break;
                     
                 case 1:
-                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
+                    cell.textLabel.text = NSLocalizedString(@"Import private key", nil);
+                    cell.imageView.image = [UIImage imageNamed:@"scan-qr-code"];
                     break;
 
                 case 2:
                     cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-                    cell.textLabel.text = NSLocalizedString(@"settings", nil);
+                    cell.textLabel.text = NSLocalizedString(@"Settings", nil);
                     cell.imageView.image = [UIImage imageNamed:@"settings"];
                     break;
             }
             
             break;
     }
-    
-    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
     return cell;
 }
 
@@ -643,11 +615,11 @@ static NSString *dateFormat(NSString *template)
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-        case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 44.0 : TRANSACTION_CELL_HEIGHT;
-        case 1: return 44.0;
+        case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 50.0 : TRANSACTION_CELL_HEIGHT;
+        case 1: return 50.0;
     }
     
-    return 44.0;
+    return 50.0;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
@@ -658,7 +630,7 @@ static NSString *dateFormat(NSString *template)
 
     CGRect r = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
                 options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil];
+                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
     
     return r.size.height + 22.0 + 10.0;
 }
@@ -672,7 +644,7 @@ static NSString *dateFormat(NSString *template)
     
     l.text = [self tableView:tableView titleForHeaderInSection:section];
     l.backgroundColor = [UIColor clearColor];
-    l.font = [UIFont systemFontOfSize:13];
+    l.font = [UIFont systemFontOfSize:14];
     l.textColor = [UIColor grayColor];
     l.shadowColor = [UIColor whiteColor];
     l.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -726,7 +698,7 @@ static NSString *dateFormat(NSString *template)
                     //[self showBuy];
                     break;
                     
-                case 1: // import private key
+                case 1: // Import private key
                     [BREventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
@@ -760,8 +732,6 @@ static NSString *dateFormat(NSString *template)
                      *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || (from != self && [to isKindOfClass:[BRSettingsViewController class]])) ? YES : NO;
 
-    if (self.wallpaper.superview != containerView) [containerView insertSubview:self.wallpaper belowSubview:from.view];
-    self.wallpaper.clipsToBounds = NO;
     to.view.center = CGPointMake(containerView.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
     [containerView addSubview:to.view];
 
@@ -769,9 +739,6 @@ static NSString *dateFormat(NSString *template)
     initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         to.view.center = from.view.center;
         from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-        self.wallpaper.center = CGPointMake(self.wallpaper.frame.size.width/2 -
-                                            containerView.frame.size.width*(pop ? 0 : 1)*PARALAX_RATIO,
-                                            self.wallpaper.center.y);
     } completion:^(BOOL finished) {
         if (pop) [from.view removeFromSuperview];
         [transitionContext completeTransition:YES];

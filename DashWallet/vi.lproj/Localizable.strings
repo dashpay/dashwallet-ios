@@ -270,7 +270,7 @@
 "ignore" = "bỏ qua";
 
 /* No comment provided by engineer. */
-"import private key" = "nhập khoá riêng từ ngoài";
+"Import private key" = "nhập khoá riêng từ ngoài";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "QUAN TRỌNG";
@@ -480,7 +480,7 @@
 "set a trusted node" = "thiết lập một nút tin cậy";
 
 /* No comment provided by engineer. */
-"settings" = "thiết lập";
+"Settings" = "thiết lập";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
 
 /* No comment provided by engineer. */
-"transaction history" = " lịch sử giao dịch";
+"Transaction history" = " lịch sử giao dịch";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "giao dịch bị từ chối";

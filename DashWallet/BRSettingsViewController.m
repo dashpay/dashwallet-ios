@@ -481,7 +481,7 @@ _switch_cell:
     
     CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
                 options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil];
+                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
     
     return textRect.size.height + 22.0 + 10.0;
 }
@@ -495,7 +495,7 @@ _switch_cell:
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.font = [UIFont systemFontOfSize:13];
+    titleLabel.font = [UIFont systemFontOfSize:14];
     titleLabel.textColor = [UIColor grayColor];
     titleLabel.shadowColor = [UIColor whiteColor];
     titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);

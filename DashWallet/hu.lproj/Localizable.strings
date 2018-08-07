@@ -270,7 +270,7 @@
 "ignore" = "elvet";
 
 /* No comment provided by engineer. */
-"import private key" = "privát kulcs importálása";
+"Import private key" = "privát kulcs importálása";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "FONTOS";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "beállítások";
+"Settings" = "beállítások";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "a hálózati díj többe kerülne, mint amekkora egyenleg található ezen a privát kulcson (a túl sok kicsi tranzakció aránytalanul nagyobb költsége miatt)";
 
 /* No comment provided by engineer. */
-"transaction history" = "tranzakció történet";
+"Transaction history" = "tranzakció történet";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "tranzakció visszautasítva";

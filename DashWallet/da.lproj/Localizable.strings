@@ -270,7 +270,7 @@
 "ignore" = "ignorér";
 
 /* No comment provided by engineer. */
-"import private key" = "importér privat nøgle";
+"Import private key" = "importér privat nøgle";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "VIGTIGT";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "indstillinger";
+"Settings" = "indstillinger";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsgebyret koster mere end de tilgængelige midler på denne private nøgle (på grund af bittesmå \"støv\"-indskud)";
 
 /* No comment provided by engineer. */
-"transaction history" = "transaktionshistorik";
+"Transaction history" = "transaktionshistorik";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaktion afvist";

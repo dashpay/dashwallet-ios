@@ -270,7 +270,7 @@
 "ignore" = "무시";
 
 /* No comment provided by engineer. */
-"import private key" = "비밀 키 가져오기";
+"Import private key" = "비밀 키 가져오기";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "중요!!";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "설정";
+"Settings" = "설정";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "거래 수수료가 이 비밀 키에 있는 잔액보다 더 들어갑니다. (아주 작은 \"dust\" 입금이 많은 경우 발생합니다)";
 
 /* No comment provided by engineer. */
-"transaction history" = "거래 내역";
+"Transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "거래가 거부됨";

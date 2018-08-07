@@ -378,7 +378,7 @@
 #if DASH_TESTNET
     UILabel *label = [UILabel new];
     
-    label.font = [UIFont systemFontOfSize:13.0 weight:UIFontWeightLight];
+    label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
     label.textColor = [UIColor redColor];
     label.textAlignment = NSTextAlignmentRight;
     label.text = @"testnet";
@@ -402,7 +402,7 @@
     if (manager.watchOnly) { // watch only wallet
         UILabel *label = [UILabel new];
         
-        label.font = [UIFont systemFontOfSize:13];
+        label.font = [UIFont systemFontOfSize:14];
         label.textColor = [UIColor redColor];
         label.textAlignment = NSTextAlignmentRight;
         label.text = @"watch only";
@@ -1109,7 +1109,7 @@
         self.tipView = [BRBubbleView viewWithAttributedText:attributedTip
                                                    tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
                                                tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.font = [UIFont systemFontOfSize:15.0];
+        self.tipView.font = [UIFont systemFontOfSize:14.0];
         self.tipView.userInteractionEnabled = NO;
         UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
         [currentWindow addSubview:[self.tipView popIn]];

@@ -270,7 +270,7 @@
 "ignore" = "無視する";
 
 /* No comment provided by engineer. */
-"import private key" = "秘密鍵をインポート";
+"Import private key" = "秘密鍵をインポート";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "重要！！！";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "設定";
+"Settings" = "設定";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "この秘密鍵にある残高が通常手数料より小さいので送れません。";
 
 /* No comment provided by engineer. */
-"transaction history" = "取引履歴";
+"Transaction history" = "取引履歴";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "取引が拒否されました";

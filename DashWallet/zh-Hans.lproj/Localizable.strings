@@ -270,7 +270,7 @@
 "ignore" = "忽略";
 
 /* No comment provided by engineer. */
-"import private key" = "导入私钥";
+"Import private key" = "导入私钥";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "重要";
@@ -480,7 +480,7 @@
 "set a trusted node" = "设定信任节点";
 
 /* No comment provided by engineer. */
-"settings" = "设置";
+"Settings" = "设置";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift 比特币 id：";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易手续费将比此私钥上可用资金多 (由于极小额存款) ";
 
 /* No comment provided by engineer. */
-"transaction history" = "交易历史记录";
+"Transaction history" = "交易历史记录";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "交易被拒绝";

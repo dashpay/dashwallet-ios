@@ -270,7 +270,7 @@
 "ignore" = "Игнорировать";
 
 /* No comment provided by engineer. */
-"import private key" = "Импортировать закрытый ключ";
+"Import private key" = "Импортировать закрытый ключ";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ВАЖНО";
@@ -480,7 +480,7 @@
 "set a trusted node" = "Указать доверенный узел";
 
 /* No comment provided by engineer. */
-"settings" = "Настройки";
+"Settings" = "Настройки";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "ShapeShift Bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Комиссия за эту транзакцию будет больше, чем сумма на этом приватном ключе (из-за маленьких депозитов)";
 
 /* No comment provided by engineer. */
-"transaction history" = "История транзакций";
+"Transaction history" = "История транзакций";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "Транзакция отклонена";

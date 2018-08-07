@@ -270,7 +270,7 @@
 "ignore" = "ignorieren";
 
 /* No comment provided by engineer. */
-"import private key" = "Privaten Schlüssel importieren";
+"Import private key" = "Privaten Schlüssel importieren";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "WICHTIG";
@@ -480,7 +480,7 @@
 "set a trusted node" = "Zuverlässigen Knoten einrichten";
 
 /* No comment provided by engineer. */
-"settings" = "Einstellungen";
+"Settings" = "Einstellungen";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "Shapeshift Bitcoin ID:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaktionsgebühren sind höher als das Guthaben auf diesem privaten Schlüssel (winziges \"Staub\"-Guthaben)";
 
 /* No comment provided by engineer. */
-"transaction history" = "Transaktionshistorie";
+"Transaction history" = "Transaktionshistorie";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "Transaktion abgelehnt";

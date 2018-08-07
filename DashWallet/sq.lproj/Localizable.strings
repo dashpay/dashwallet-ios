@@ -270,7 +270,7 @@
 "ignore" = "injoro";
 
 /* No comment provided by engineer. */
-"import private key" = "importo çelës privat";
+"Import private key" = "importo çelës privat";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "E RËNDËSISHME";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "konfigurimet";
+"Settings" = "konfigurimet";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "tarifa do të kushtoj më shumë se sa vetë fondet në dispozicion në këtë çelës privat (për shkak të depozitave tepër të vogla)";
 
 /* No comment provided by engineer. */
-"transaction history" = "historia e transaksioneve";
+"Transaction history" = "historia e transaksioneve";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaksioni u refuzua";

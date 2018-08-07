@@ -43,7 +43,6 @@
 @property (nonatomic, strong) IBOutlet UIButton *writeButton;
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
@@ -88,11 +87,6 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
-    if (self.navigationController.viewControllers.firstObject != self) {
-        self.wallpaper.hidden = YES;
-        self.view.backgroundColor = [UIColor clearColor];
-    }
     
     self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
                        style:UIBarButtonItemStylePlain target:self action:@selector(done:)];

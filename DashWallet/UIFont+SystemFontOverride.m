@@ -23,6 +23,25 @@
     return font;
 }
 
++ (UIFont *)systemFontOfSize:(CGFloat)fontSize weight:(UIFontWeight)weight {
+    if (weight == UIFontWeightBold) {
+            return [UIFont fontWithName:@"Montserrat-Bold" size:fontSize];
+    } else if (weight == UIFontWeightThin) {
+        return [UIFont fontWithName:@"Montserrat-Thin" size:fontSize];
+    } else if (weight == UIFontWeightMedium) {
+        return [UIFont fontWithName:@"Montserrat-Medium" size:fontSize];
+    } else if (weight == UIFontWeightRegular) {
+        return [UIFont fontWithName:@"Montserrat-Regular" size:fontSize];
+    } else if (weight == UIFontWeightLight) {
+        return [UIFont fontWithName:@"Montserrat-Light" size:fontSize];
+    } else if (weight == UIFontWeightUltraLight) {
+        return [UIFont fontWithName:@"Montserrat-UltraLight" size:fontSize];
+    } else if (weight == UIFontWeightSemibold) {
+        return [UIFont fontWithName:@"Montserrat-SemiBold" size:fontSize];
+    }
+    return [UIFont fontWithName:@"Montserrat-Regular" size:fontSize];
+}
+
 #pragma clang diagnostic pop
 
 @end

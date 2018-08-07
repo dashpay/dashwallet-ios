@@ -270,7 +270,7 @@
 "ignore" = "ignorovať";
 
 /* No comment provided by engineer. */
-"import private key" = "importovať privátny kľúč";
+"Import private key" = "importovať privátny kľúč";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "DÔLEŽITÉ ";
@@ -480,7 +480,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"settings" = "nastavenia";
+"Settings" = "nastavenia";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
-"transaction history" = "História transakcií";
+"Transaction history" = "História transakcií";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transaction rejected";

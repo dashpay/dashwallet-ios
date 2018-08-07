@@ -70,14 +70,14 @@
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
      forState:UIControlStateNormal];
-    UIFont * titleBarFont = [UIFont systemFontOfSize:19 weight:UIFontWeightSemibold];
+    UIFont * titleBarFont = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
     [[UINavigationBar appearance] setTitleTextAttributes:@{
                                                            NSFontAttributeName:titleBarFont,
                                                            NSForegroundColorAttributeName: [UIColor whiteColor],
                                                            }];
-//    UIImage * backImage = [[UIImage imageNamed:@"BackImage"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-//    [[UINavigationBar appearance] setBackIndicatorImage:backImage];
-//    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
+    UIImage * backImage = [[UIImage imageNamed:@"back-image"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [[UINavigationBar appearance] setBackIndicatorImage:backImage];
+    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
 
     if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
         NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];

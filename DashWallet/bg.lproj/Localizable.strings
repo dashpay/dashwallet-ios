@@ -270,7 +270,7 @@
 "ignore" = "игнорирай";
 
 /* No comment provided by engineer. */
-"import private key" = "Импортирайте частен ключ.";
+"Import private key" = "Импортирайте частен ключ.";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ВАЖНО";
@@ -480,7 +480,7 @@
 "set a trusted node" = "задаване на познат нод";
 
 /* No comment provided by engineer. */
-"settings" = "настройки";
+"Settings" = "настройки";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "таксата за транзакцията може да е по-голяма от наличните средства в този частен ключ(поради малките\"отпадъчни\" депозити)";
 
 /* No comment provided by engineer. */
-"transaction history" = "история на транзакциите";
+"Transaction history" = "история на транзакциите";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "отхвърлена транзакция";

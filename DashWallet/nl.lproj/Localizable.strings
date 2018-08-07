@@ -270,7 +270,7 @@
 "ignore" = "negeer";
 
 /* No comment provided by engineer. */
-"import private key" = "importeer persoonlijke sleutel";
+"Import private key" = "importeer persoonlijke sleutel";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "BELANGRIJK";
@@ -480,7 +480,7 @@
 "set a trusted node" = "stel een vertrouwd punt in";
 
 /* No comment provided by engineer. */
-"settings" = "instellingen";
+"Settings" = "instellingen";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin-id:";
@@ -579,7 +579,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "de transactievergoeding zou meer zijn dan het beschikbare tegoed op deze persoonlijke sleutel (als gevolg van kleine \"stof\"-stortingen)";
 
 /* No comment provided by engineer. */
-"transaction history" = "transactiegeschiedenis";
+"Transaction history" = "transactiegeschiedenis";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transactie geweigerd";

@@ -2,8 +2,8 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "找回钱包";
 
-/* Class = "UILabel"; text = "https://github.com/QuantumExplorer/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet";
+/* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+"5OA-tB-Exg.text" = "https://github.com/dashpay/dashwallet";
 
 /* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "本地货币";

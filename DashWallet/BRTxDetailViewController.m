@@ -334,7 +334,7 @@
                 
                 long long outputAmount = [self.outputAmount[indexPath.row] longLongValue];
                 if (outputAmount == UINT64_MAX) {
-                    UIFont * font = [UIFont systemFontOfSize:17 weight:UIFontWeightLight];
+                    UIFont * font = [UIFont systemFontOfSize:18 weight:UIFontWeightLight];
                     UIFontDescriptor * fontD = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
                     NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
                     
@@ -444,7 +444,7 @@
     
     CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
                 options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:17 weight:UIFontWeightLight]} context:nil];
+                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18 weight:UIFontWeightLight]} context:nil];
     
     return textRect.size.height + 12.0;
 }
@@ -458,7 +458,7 @@
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightLight];
+    titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightLight];
     titleLabel.textColor = [UIColor darkTextColor];
     titleLabel.numberOfLines = 0;
     headerview.backgroundColor = [UIColor clearColor];
