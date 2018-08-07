@@ -39,6 +39,8 @@
 #pragma message "snapshot build"
 #endif
 
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
 @interface BRAppDelegate ()
 
 // the nsnotificationcenter observer for wallet balance
@@ -61,12 +63,14 @@
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
     UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
     
-//    UIImage * tabBarImage = [[UIImage imageNamed:@"tab-bar-dash"]
-//     resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0) resizingMode:UIImageResizingModeStretch];
-//    [[UINavigationBar appearance] setBackgroundImage:tabBarImage forBarMetrics:UIBarMetricsDefault];
+    //This will set the Navigation Bar to the same color as the background and remove unwanted features.
+    [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x00A0EA)];
+    [[UINavigationBar appearance] setTranslucent:NO];
+    [[UINavigationBar appearance] setShadowImage:[[UIImage alloc] init]];
+    [[UINavigationBar appearance] setBackgroundImage:[[UIImage alloc] init]
+                                      forBarPosition:UIBarPositionAny
+                                          barMetrics:UIBarMetricsDefault];
     
-    [[UINavigationBar appearance] setBarTintColor:[UIColor colorWithRed:0.0 green:0.55 blue:0.89 alpha:1.0]];
-
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
      forState:UIControlStateNormal];

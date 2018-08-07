@@ -85,7 +85,6 @@
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                //[(id)[self.navigationController.topViewController.view viewWithTag:412] setText:self.stats];
                 [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
                  forState:UIControlStateNormal];
             }];
@@ -94,7 +93,6 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    //[self.eaController preload];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

@@ -12,7 +12,6 @@
 
 @interface DWGenerateViewController ()
 
-//@property (nonatomic, strong) IBOutlet UIView *wallpaper, *wallpaperContainer;
 @property (nonatomic, strong) IBOutlet UIButton *generateButton, *showButton;
 @property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel;
 @property (nonatomic, strong) UINavigationController *seedNav;

@@ -37,7 +37,6 @@
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *shapeshiftLocalCurrencyLabel, *addressLabel, *amountLabel;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton, *lock;
 @property (nonatomic, strong) IBOutlet UIButton *delButton, *decimalButton,*bottomButton;
-@property (nonatomic, strong) IBOutlet UIImageView *wallpaper;
 @property (nonatomic, strong) IBOutlet UIView *logo;
 
 
@@ -119,7 +118,6 @@
         self.addressLabel.text = (self.to.length > 0) ?
         [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
     }
-    self.wallpaper.hidden = NO;
     
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
@@ -153,7 +151,6 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     self.amount = 0;
-    if (self.navigationController.viewControllers.firstObject != self) self.wallpaper.hidden = animated;
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     self.balanceObserver = nil;

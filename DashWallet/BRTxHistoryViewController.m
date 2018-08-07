@@ -53,7 +53,7 @@ static NSString *dateFormat(NSString *template)
     format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
     format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
     format = [format stringByReplacingOccurrencesOfString:@"H" withString:@"H'h'"
-              options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
+                                                  options:NSBackwardsSearch|NSAnchoredSearch range:NSMakeRange(0, format.length)];
     return format;
 }
 
@@ -75,7 +75,7 @@ static NSString *dateFormat(NSString *template)
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    
     self.txDates = [NSMutableDictionary dictionary];
     self.navigationController.delegate = self;
     self.moreTx = YES;
@@ -88,12 +88,12 @@ static NSString *dateFormat(NSString *template)
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
+    
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
 #if SNAPSHOT
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
-                         inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
+                                                      inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
     manager.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     self.tableView.showsVerticalScrollIndicator = NO;
@@ -101,99 +101,102 @@ static NSString *dateFormat(NSString *template)
     manager.didAuthenticate = YES;
     [self unlock:nil];
     tx.txHash = UINT256_ZERO;
-
+    
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         self.transactions = @[tx, tx, tx, tx, tx, tx];
         [self.tableView reloadData];
         self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:42980000],
                                      [manager localCurrencyStringForDashAmount:42980000]];
     });
-
+    
     return;
 #endif
-
+    
     if (manager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             self.transactions = manager.wallet.allTransactions;
-           
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
             });
         });
     }
-
+    
     if (! self.backgroundObserver) {
         self.backgroundObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
-            object:nil queue:nil usingBlock:^(NSNotification *note) {
-                self.moreTx = YES;
-                self.transactions = manager.wallet.allTransactions;
-                [self.tableView reloadData];
-                self.navigationItem.titleView = self.logo;
-                self.navigationItem.rightBarButtonItem = self.lock;
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
+                                                          object:nil queue:nil usingBlock:^(NSNotification *note) {
+                                                              self.moreTx = YES;
+                                                              self.transactions = manager.wallet.allTransactions;
+                                                              [self.tableView reloadData];
+                                                              self.navigationItem.titleView = self.logo;
+                                                              self.navigationItem.rightBarButtonItem = self.lock;
+                                                          }];
     }
-
+    
     if (! self.balanceObserver) {
         self.balanceObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                BRTransaction *tx = self.transactions.firstObject;
-
-                self.transactions = manager.wallet.allTransactions;
-
-                if (! [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
-                    if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                    else [self updateTitleView];
-                }
-
-                if (self.transactions.firstObject != tx) {
-                    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
-                     withRowAnimation:UITableViewRowAnimationAutomatic];
-                }
-                else [self.tableView reloadData];
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               if (manager.didAuthenticate) {
+                                                                   BRTransaction *tx = self.transactions.firstObject;
+                                                                   
+                                                                   self.transactions = manager.wallet.allTransactions;
+                                                                   if (self.transactions.firstObject != tx) {
+                                                                       [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                                                                                     withRowAnimation:UITableViewRowAnimationAutomatic];
+                                                                   }
+                                                                   else [self.tableView reloadData];
+                                                               }
+                                                               
+                                                               if (! [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
+                                                                   if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                                   else [self updateTitleView];
+                                                               }
+                                                               
+                                                               
+                                                           }];
     }
-
+    
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                self.transactions = manager.wallet.allTransactions;
-                [self.tableView reloadData];
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               self.transactions = manager.wallet.allTransactions;
+                                                               [self.tableView reloadData];
+                                                           }];
     }
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                if ([[BRPeerManager sharedInstance]
-                     timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
-                    [NSDate timeIntervalSinceReferenceDate] &&
-                    manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-                    self.navigationItem.titleView = nil;
-                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
-                }
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               if ([[BRPeerManager sharedInstance]
+                                                                    timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                                   [NSDate timeIntervalSinceReferenceDate] &&
+                                                                   manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                                                                   self.navigationItem.titleView = nil;
+                                                                   self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
+                                                               }
+                                                           }];
     }
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                else [self updateTitleView];
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                               else [self updateTitleView];
+                                                           }];
     }
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                [self updateTitleView];
-            }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                               [self updateTitleView];
+                                                           }];
     }
 }
 
@@ -249,7 +252,7 @@ static NSString *dateFormat(NSString *template)
         
         //self.buyController = nil;
     }
-
+    
     [super viewWillDisappear:animated];
 }
 
@@ -276,7 +279,7 @@ static NSString *dateFormat(NSString *template)
 - (void)setTransactions:(NSArray *)transactions
 {
     uint32_t height = self.blockHeight;
-
+    
     if (! [BRWalletManager sharedInstance].didAuthenticate &&
         [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
         _transactions = @[];
@@ -285,7 +288,7 @@ static NSString *dateFormat(NSString *template)
     else {
         if (transactions.count <= 5) self.moreTx = NO;
         _transactions = (self.moreTx) ? [transactions subarrayWithRange:NSMakeRange(0, 5)] : [transactions copy];
-    
+        
         if (! [BRWalletManager sharedInstance].didAuthenticate) {
             for (BRTransaction *tx in _transactions) {
                 if (tx.blockHeight == TX_UNCONFIRMED ||
@@ -314,9 +317,9 @@ static NSString *dateFormat(NSString *template)
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
     NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
     NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
-
+    
     if (date) return date;
-
+    
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
@@ -336,7 +339,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)unlock:(id)sender
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-
+    
     if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate) {
         [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
@@ -367,9 +370,9 @@ static NSString *dateFormat(NSString *template)
     //TODO: show scanner in settings rather than dismissing
     [BREventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
-
+    
     nav.view.alpha = 0.0;
-
+    
     [nav dismissViewControllerAnimated:NO completion:^{
         [(id)((BRRootViewController *)nav.viewControllers.firstObject).sendViewController scanQR:nil];
         [UIView animateWithDuration:0.1 delay:1.5 options:0 animations:^{ nav.view.alpha = 1.0; } completion:nil];
@@ -380,7 +383,7 @@ static NSString *dateFormat(NSString *template)
 {
     [BREventManager saveEvent:@"tx_history:show_tx"];
     BRTxDetailViewController *detailController
-        = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
+    = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
     detailController.txDateString = [self dateForTx:sender];
     [self.navigationController pushViewController:detailController animated:YES];
@@ -399,7 +402,7 @@ static NSString *dateFormat(NSString *template)
     
     [self.tableView beginUpdates];
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
-     withRowAnimation:UITableViewRowAnimationFade];
+                          withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
     self.transactions = manager.wallet.allTransactions;
     
@@ -466,30 +469,30 @@ static NSString *dateFormat(NSString *template)
         case 0:
             if (self.transactions.count == 0) return 1;
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
-
+            
         case 1:
             return (buyEnabled ? 3 : 2);
     }
-
+    
     return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *noTxIdent = @"NoTxCell", *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell",
-                    *disclosureIdent = @"DisclosureCell";
+    *disclosureIdent = @"DisclosureCell";
     UITableViewCell *cell = nil;
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
-            *detailTextLabel;
+    *detailTextLabel;
     UIImageView * shapeshiftImageView;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
-
+    
     switch (indexPath.section) {
         case 0:
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
-                                      NSLocalizedString(@"Transaction history", nil);
+                NSLocalizedString(@"Transaction history", nil);
                 cell.imageView.image = [UIImage imageNamed:@"transaction-history"];
             }
             else if (self.transactions.count > 0) {
@@ -502,14 +505,14 @@ static NSString *dateFormat(NSString *template)
                 balanceLabel = (id)[cell viewWithTag:7];
                 localBalanceLabel = (id)[cell viewWithTag:8];
                 shapeshiftImageView = (id)[cell viewWithTag:9];
-
+                
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
-                         sent = [manager.wallet amountSentByTransaction:tx],
-                         balance = [manager.wallet balanceAfterTransaction:tx];
+                sent = [manager.wallet amountSentByTransaction:tx],
+                balance = [manager.wallet balanceAfterTransaction:tx];
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
-
+                
                 textLabel.textColor = [UIColor darkTextColor];
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
@@ -518,7 +521,7 @@ static NSString *dateFormat(NSString *template)
                 balanceLabel.attributedText = (manager.didAuthenticate) ? [manager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
                 localBalanceLabel.text = (manager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
                 shapeshiftImageView.hidden = !tx.associatedShapeshift;
-
+                
                 if (confirms == 0 && ! [manager.wallet transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
@@ -566,7 +569,7 @@ static NSString *dateFormat(NSString *template)
                     sentLabel.text = NSLocalizedString(@"received", nil);
                     sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
-
+                
                 if (! unconfirmedLabel.hidden) {
                     unconfirmedLabel.layer.cornerRadius = 3.0;
                     unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
@@ -582,7 +585,7 @@ static NSString *dateFormat(NSString *template)
             else cell = [tableView dequeueReusableCellWithIdentifier:noTxIdent];
             
             break;
-
+            
         case 1:
             cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
             bool buyEnabled = FALSE;
@@ -597,7 +600,7 @@ static NSString *dateFormat(NSString *template)
                     cell.textLabel.text = NSLocalizedString(@"Import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"scan-qr-code"];
                     break;
-
+                    
                 case 2:
                     cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
                     cell.textLabel.text = NSLocalizedString(@"Settings", nil);
@@ -625,12 +628,12 @@ static NSString *dateFormat(NSString *template)
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
     NSString *sectionTitle = [self tableView:tableView titleForHeaderInSection:section];
-
+    
     if (sectionTitle.length == 0) return 22.0;
-
+    
     CGRect r = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
-                options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
+                                          options:NSStringDrawingUsesLineFragmentOrigin
+                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
     
     return r.size.height + 22.0 + 10.0;
 }
@@ -655,7 +658,7 @@ static NSString *dateFormat(NSString *template)
     l.frame = r;
     v.backgroundColor = [UIColor clearColor];
     [v addSubview:l];
-
+    
     return v;
 }
 
@@ -676,17 +679,17 @@ static NSString *dateFormat(NSString *template)
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *destinationController = nil;
-
+    
     switch (indexPath.section) {
         case 0: // transaction
             if (self.moreTx && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(more:) withObject:tableView afterDelay:0.0];
             }
             else if (self.transactions.count > 0) [self showTx:self.transactions[indexPath.row]]; // transaction details
-
+            
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             break;
-
+            
         case 1:
         {
             bool buyEnabled = FALSE;//[[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash];
@@ -702,14 +705,14 @@ static NSString *dateFormat(NSString *template)
                     [BREventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
-
+                    
                 case 2: // settings
                     [BREventManager saveEvent:@"tx_history:settings"];
                     destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
                     [self.navigationController pushViewController:destinationController animated:YES];
                     break;
             }
-
+            
             break;
         }
     }
@@ -729,27 +732,27 @@ static NSString *dateFormat(NSString *template)
 {
     UIView *containerView = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-                     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     BOOL pop = (to == self || (from != self && [to isKindOfClass:[BRSettingsViewController class]])) ? YES : NO;
-
+    
     to.view.center = CGPointMake(containerView.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
     [containerView addSubview:to.view];
-
+    
     [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-    initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        to.view.center = from.view.center;
-        from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-    } completion:^(BOOL finished) {
-        if (pop) [from.view removeFromSuperview];
-        [transitionContext completeTransition:YES];
-    }];
+          initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+              to.view.center = from.view.center;
+              from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+          } completion:^(BOOL finished) {
+              if (pop) [from.view removeFromSuperview];
+              [transitionContext completeTransition:YES];
+          }];
 }
 
 // MARK: - UINavigationControllerDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
-animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
-toViewController:(UIViewController *)toVC
+                                  animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+                                                 toViewController:(UIViewController *)toVC
 {
     return self;
 }
@@ -757,7 +760,7 @@ toViewController:(UIViewController *)toVC
 // MARK: - UIViewControllerTransitioningDelegate
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
-presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+                                                                  presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
 {
     return self;
 }
