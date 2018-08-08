@@ -113,6 +113,7 @@
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
 		FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
 		FB3FA3D61F2364140071FCC5 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
+		FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A01E414877001A1C8B /* NSString+Dash.m */; };
 		FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
@@ -572,6 +573,8 @@
 		FB43112A1FA2D45800784EBC /* sq */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sq; path = sq.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB43112C1FA2D45900784EBC /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB43112E1FA2D45900784EBC /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		FB43BC70211B8A5E00BC9879 /* DWActionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWActionTableViewCell.h; sourceTree = "<group>"; };
+		FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWActionTableViewCell.m; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -701,6 +704,7 @@
 		752E289B19234A3F00DB5A3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FB43BC6F211B8A0E00BC9879 /* Cells */,
 				7525B617192453840041C0F2 /* BRNavigationBar.h */,
 				7525B618192453840041C0F2 /* BRNavigationBar.m */,
 				759816E519357D6F005060EA /* BRBubbleView.h */,
@@ -1108,6 +1112,15 @@
 				FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */,
 			);
 			name = MBProgressHUD;
+			sourceTree = "<group>";
+		};
+		FB43BC6F211B8A0E00BC9879 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				FB43BC70211B8A5E00BC9879 /* DWActionTableViewCell.h */,
+				FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */,
+			);
+			name = Cells;
 			sourceTree = "<group>";
 		};
 		FBF267A61E414A58001A1C8B /* x11 */ = {
@@ -1594,6 +1607,7 @@
 				752E28D019234C3600DB5A3C /* BRBloomFilter.m in Sources */,
 				752E28D619234C3600DB5A3C /* BRPeer.m in Sources */,
 				752E28D819234C3600DB5A3C /* BRPeerManager.m in Sources */,
+				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
 				752E28D419234C3600DB5A3C /* BRPaymentProtocol.m in Sources */,
 				752E28D519234C3600DB5A3C /* BRPaymentRequest.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,

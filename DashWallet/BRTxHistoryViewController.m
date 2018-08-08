@@ -38,6 +38,7 @@
 #import "BREventManager.h"
 #import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
+#import "DWActionTableViewCell.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
@@ -589,37 +590,39 @@ static NSString *dateFormat(NSString *template)
             break;
             
         case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+        {
             bool buyEnabled = FALSE;
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                     cell.textLabel.text = NSLocalizedString(@"Buy Dash", nil);
                     cell.imageView.image = [UIImage imageNamed:@"dash-buy-blue-small"];
                     break;
                     
                 case 1:
                 {
+                    cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                    DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
                     cell.textLabel.text = NSLocalizedString(@"Import private key", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"scan-qr-code"];
-                    UIView *bgColorView = [[UIView alloc] init];
-                    bgColorView.backgroundColor = UIColorFromRGB(0x012060);
-                    [cell setSelectedBackgroundView:bgColorView];
+                    actionCell.imageIcon = [UIImage imageNamed:@"scan-qr-code"];
+                    actionCell.selectedImageIcon = [UIImage imageNamed:@"scan-qr-code-selected"];
                     break;
                 }
                 case 2:
                 {
+                    
                     cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+                    DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
                     cell.textLabel.text = NSLocalizedString(@"Settings", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"settings"];
-                    UIView *bgColorView = [[UIView alloc] init];
-                    bgColorView.backgroundColor = UIColorFromRGB(0x012060);
-                    [cell setSelectedBackgroundView:bgColorView];
+                    actionCell.imageIcon = [UIImage imageNamed:@"settings"];
+                    actionCell.selectedImageIcon = [UIImage imageNamed:@"settings-selected"];
                     break;
                 }
             }
             
             break;
+        }
     }
     return cell;
 }
