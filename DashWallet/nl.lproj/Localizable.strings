@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nprobeer opnieuw over %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "over";
+"About" = "over";
 
 /* No comment provided by engineer. */
 "always require passcode" = "altijd toegangscode vereisen";
@@ -126,7 +126,7 @@
 "change" = "wijzig";
 
 /* No comment provided by engineer. */
-"change passcode" = "wijzig toegangscode";
+"Change passcode" = "wijzig toegangscode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "bedrag aanpassen?";
@@ -231,7 +231,7 @@
 "enable" = "Inschakele";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "Schakel het ontvangen van meldingen in";
+"Enable receive notifications" = "Schakel het ontvangen van meldingen in";
 
 /* No comment provided by engineer. */
 "enter" = "voer in";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "sluit af";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "mislukte portemonnee-update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ontvangen %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "herstelzin";
+/* Recovery phrase */
+"Recovery phrase" = "herstelzin";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "de herstelzin komt niet overeen";
@@ -423,7 +426,7 @@
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "scan blockchain opnieuw";
+"Rescan blockchain" = "scan blockchain opnieuw";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan de blockchain opnieuw wanneer je het vermoeden hebt dat je transacties mist of problemen hebt met versturen (opnieuw scannen kan enkele minuten duren)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "naar: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "touch id-limiet";
+"Touch ID limit" = "touch id-limiet";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "touch id-uitgavelimiet";

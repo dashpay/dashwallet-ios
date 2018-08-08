@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\ntente novamente em %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "sobre";
+"About" = "sobre";
 
 /* No comment provided by engineer. */
 "always require passcode" = "sempre exija a senha";
@@ -126,7 +126,7 @@
 "change" = "alterar";
 
 /* No comment provided by engineer. */
-"change passcode" = "alterar senha";
+"Change passcode" = "alterar senha";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "alterar o valor do pagamento?";
@@ -231,7 +231,7 @@
 "enable" = "habilitar";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "ativar receber notificações";
+"Enable receive notifications" = "ativar receber notificações";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "sair";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "atualização da carteira falhou";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "recebeu %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "frase de recuperação";
+/* Recovery phrase */
+"Recovery phrase" = "frase de recuperação";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "frase de recuperação não corresponde";
@@ -423,7 +426,7 @@
 "rescan" = "reescanear";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "reescanear a rede blockchain";
+"Rescan blockchain" = "reescanear a rede blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "reescaneie a rede blockchain se você acha que estão faltando transações ou se está tendo problemas no envio (o reescaneamento pode demorar vários minutos)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "limite de uso do touch id";
+"Touch ID limit" = "limite de uso do touch id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "limite de gastos por touch id";

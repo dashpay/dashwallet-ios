@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nprøv igen om %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "om";
+"About" = "om";
 
 /* No comment provided by engineer. */
 "always require passcode" = "kræv altid adgangskode";
@@ -126,7 +126,7 @@
 "change" = "ændr";
 
 /* No comment provided by engineer. */
-"change passcode" = "skift adgangskode";
+"Change passcode" = "skift adgangskode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ændr betalingsbeløb?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "modtog %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "gendannelsesssætning";
+/* Recovery phrase */
+"Recovery phrase" = "gendannelsesssætning";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "gendannelsessætninger ikke ens";
@@ -423,7 +426,7 @@
 "rescan" = "scan igen";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "scan blokkæden igen";
+"Rescan blockchain" = "scan blokkæden igen";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan blokkæden igen hvis du tror, du mangler transaktioner, eller har problemer med at sende (ny scanning kan tage adskillige minutter)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "grænse for touch id";
+"Touch ID limit" = "grænse for touch id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "betalingsgrænse for touch id";

@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\n%1$d %2$@ でもう一度お試しください。";
 
 /* No comment provided by engineer. */
-"about" = "このアプリについて";
+"About" = "このアプリについて";
 
 /* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
@@ -126,7 +126,7 @@
 "change" = "変更";
 
 /* No comment provided by engineer. */
-"change passcode" = "パスコードを変更";
+"Change passcode" = "パスコードを変更";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "送金額だけ変更しますか？";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "着金あり %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "復元フレーズ";
+/* Recovery phrase */
+"Recovery phrase" = "復元フレーズ";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "復元フレーズが一致しません";
@@ -423,7 +426,7 @@
 "rescan" = "再スキャン";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "ブロックチェーンの再スキャン";
+"Rescan blockchain" = "ブロックチェーンの再スキャン";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "送金トラブルや反映されていない取引があると\n疑われた時、ブロックチェーンの再スキャンを\nおすすめします。\n(再スキャンには数分程度かかる場合があります)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "Touch IDの送金可能額";
+"Touch ID limit" = "Touch IDの送金可能額";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "Touch IDの送金可能額";

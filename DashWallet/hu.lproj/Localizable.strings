@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\npróbáld újra %1$d %2$@ múlva";
 
 /* No comment provided by engineer. */
-"about" = "névjegy";
+"About" = "névjegy";
 
 /* No comment provided by engineer. */
 "always require passcode" = "mindig kérjen jelkódot";
@@ -126,7 +126,7 @@
 "change" = "módosít";
 
 /* No comment provided by engineer. */
-"change passcode" = "jelkód módosítása";
+"Change passcode" = "jelkód módosítása";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "módosítod a kifizetési összeget?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "fogadva: %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "helyreállítási kódmondat";
+/* Recovery phrase */
+"Recovery phrase" = "helyreállítási kódmondat";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "helyreállítási kódmondat nem egyezik";
@@ -423,7 +426,7 @@
 "rescan" = "újraszkennelés";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "blockchain újraszkennelése";
+"Rescan blockchain" = "blockchain újraszkennelése";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "szkenneld újra a blockchaint, ha úgy érzed, hogy hiányoznak tranzakciók a tárcádból, vagy ha gondjaid vannak a pénzküldéssel (az újraszkennelés több percet is igénybe vehet)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "touch id limit";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "touch id költési limit";

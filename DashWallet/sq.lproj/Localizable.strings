@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nprovoni prapë në %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "rreth";
+"About" = "rreth";
 
 /* No comment provided by engineer. */
 "always require passcode" = "gjithmonë kërko kodkalimin";
@@ -126,7 +126,7 @@
 "change" = "ndrysho";
 
 /* No comment provided by engineer. */
-"change passcode" = "ndrysho kodkalimin";
+"Change passcode" = "ndrysho kodkalimin";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ndrysho shumën e pagesës?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "pranuat %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "fraza rikthyese";
+/* Recovery phrase */
+"Recovery phrase" = "fraza rikthyese";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "fraza rikthyese nuk përputhet";
@@ -423,7 +426,7 @@
 "rescan" = "riskano";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "riskano blockchain";
+"Rescan blockchain" = "riskano blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "riskano blockchain nëse mendon që po ju mungon ndonjë transaksion, ose keni probleme me dërgim të pagesës (riskanimi mund të merr kohë disa minuta)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "touch id limiti";
+"Touch ID limit" = "touch id limiti";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "touch id limiti shpenzues";

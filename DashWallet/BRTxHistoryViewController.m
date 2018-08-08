@@ -40,6 +40,7 @@
 #import <WebKit/WebKit.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 static NSString *dateFormat(NSString *template)
 {
@@ -487,6 +488,7 @@ static NSString *dateFormat(NSString *template)
     UIImageView * shapeshiftImageView;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
+    
     switch (indexPath.section) {
         case 0:
             if (self.moreTx && indexPath.row >= self.transactions.count) {
@@ -597,15 +599,24 @@ static NSString *dateFormat(NSString *template)
                     break;
                     
                 case 1:
+                {
                     cell.textLabel.text = NSLocalizedString(@"Import private key", nil);
                     cell.imageView.image = [UIImage imageNamed:@"scan-qr-code"];
+                    UIView *bgColorView = [[UIView alloc] init];
+                    bgColorView.backgroundColor = UIColorFromRGB(0x012060);
+                    [cell setSelectedBackgroundView:bgColorView];
                     break;
-                    
+                }
                 case 2:
+                {
                     cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
                     cell.textLabel.text = NSLocalizedString(@"Settings", nil);
                     cell.imageView.image = [UIImage imageNamed:@"settings"];
+                    UIView *bgColorView = [[UIView alloc] init];
+                    bgColorView.backgroundColor = UIColorFromRGB(0x012060);
+                    [cell setSelectedBackgroundView:bgColorView];
                     break;
+                }
             }
             
             break;

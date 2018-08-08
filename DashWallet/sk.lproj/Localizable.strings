@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nskúsiť znova za %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "o";
+"About" = "o";
 
 /* No comment provided by engineer. */
 "always require passcode" = "vždy vyžadovať číselné heslo";
@@ -126,7 +126,7 @@
 "change" = "zmeniť";
 
 /* No comment provided by engineer. */
-"change passcode" = "change passcode";
+"Change passcode" = "Change passcode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "change payment amount?";
@@ -231,7 +231,7 @@
 "enable" = "zapnúť";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "zadať";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "ukončiť";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "prijaté %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "recovery phrase";
+/* Recovery phrase */
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "recovery phrase doesn't match";
@@ -423,7 +426,7 @@
 "rescan" = "pre-skenovať";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "znova prehľadať reťazec blokov";
+"Rescan blockchain" = "znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "touch id limit";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "touch id spending limit";

@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nförsök igen om %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "om";
+"About" = "om";
 
 /* No comment provided by engineer. */
 "always require passcode" = "kräv alltid lösenord";
@@ -126,7 +126,7 @@
 "change" = "ändra";
 
 /* No comment provided by engineer. */
-"change passcode" = "ändra lösenord";
+"Change passcode" = "ändra lösenord";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ändra belopp?";
@@ -231,7 +231,7 @@
 "enable" = "tillåt";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "tillåt motta notifikationer";
+"Enable receive notifications" = "tillåt motta notifikationer";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "gå ur";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "misslyckades med plånboks uppdateringen";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "tog emot %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "återställningsfras";
+/* Recovery phrase */
+"Recovery phrase" = "återställningsfras";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "återställningsfrasen stämmer inte";
@@ -423,7 +426,7 @@
 "rescan" = "återläs";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "återläs blockkedjan";
+"Rescan blockchain" = "återläs blockkedjan";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "återläs blockkedjan om du misstänker att det saknas transaktioner, eller om du har problem att skicka dash (återläsning kan ta flera minuter)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "till: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "gräns för touch id";
+"Touch ID limit" = "gräns för touch id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "touch id beloppsgräns";

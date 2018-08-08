@@ -608,8 +608,26 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 // true if touch id is enabled
 - (BOOL)isTouchIdEnabled
 {
-    return ([LAContext class] &&
-            [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
+    if (@available(iOS 11.0, *)) {
+        if (![LAContext class]) return FALSE; //sanity check
+        LAContext * context = [LAContext new];
+        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeTouchID);
+    } else {
+        return ([LAContext class] &&
+                [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
+    }
+}
+
+// true if touch id is enabled
+- (BOOL)isFaceIdEnabled
+{
+    if (@available(iOS 11.0, *)) {
+        if (![LAContext class]) return FALSE; //sanity check
+        LAContext * context = [LAContext new];
+        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeFaceID);
+    } else {
+        return FALSE;
+    }
 }
 
 // true if device passcode is enabled
@@ -862,7 +880,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 }
 
 -(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
+    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Recovery phrase", nil) message:nil
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -1997,11 +2015,11 @@ replacementString:(NSString *)string
             if (self.extendedBIP44PublicKey && ![[self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:self.extendedBIP44PublicKey]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+                                                withObject:NSLocalizedString(@"Recovery phrase", nil) afterDelay:3.0];
             } else if (oldData && ![[self.sequence deprecatedIncorrectExtendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:oldData]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+                                                withObject:NSLocalizedString(@"Recovery phrase", nil) afterDelay:3.0];
             }
             else {
                 if (oldData) {

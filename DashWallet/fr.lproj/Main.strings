@@ -5,13 +5,13 @@
 /* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
 "5OA-tB-Exg.text" = "https://github.com/dashpay/dashwallet";
 
-/* Class = "UILabel"; text = "local currency"; ObjectID = "8e2-ar-Ehc"; */
+/* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "devise locale";
 
 /* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
 "A4M-yq-26d.normalTitle" = "générer une phrase de récupération";
 
-/* Class = "UILabel"; text = "start/recover another wallet"; ObjectID = "D1b-HB-lKH"; */
+/* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "créer ou récupérer un autre portefeuille";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
@@ -77,8 +77,8 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "aucune transaction";
 
-/* Class = "UILabel"; text = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\n\nBasé sur breadwallet\n\ncette application est open source";
+/* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\n\nBasé sur breadwallet\n\nCette application est open source";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "créez un nouveau portefeuille en générant une phrase de récupération";

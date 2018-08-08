@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
-"about" = "hakkında";
+"About" = "hakkında";
 
 /* No comment provided by engineer. */
 "always require passcode" = "her zaman parola gerektir";
@@ -126,7 +126,7 @@
 "change" = "değiştir";
 
 /* No comment provided by engineer. */
-"change passcode" = "şifreyi değiştir";
+"Change passcode" = "şifreyi değiştir";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ödeme tutarı değişsin mi?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ alındı (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "kurtarma cümlesi";
+/* Recovery phrase */
+"Recovery phrase" = "kurtarma cümlesi";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "kurtarma cümlesi eşleşmiyor";
@@ -423,7 +426,7 @@
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "blok zincirini yeniden tara";
+"Rescan blockchain" = "blok zincirini yeniden tara";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "kaçırdığınız bazı işlemlerin olduğunu düşünüyorsanız veya göndermede sorun yaşıyorsanız blok zincirini tekrar taratın (yeniden tarama bir kaç dakika sürebilir)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "kimlik sınırına dokunun";
+"Touch ID limit" = "kimlik sınırına dokunun";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "kimlik gönderme sınırına dokunun";

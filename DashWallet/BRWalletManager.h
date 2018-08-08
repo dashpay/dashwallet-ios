@@ -68,6 +68,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 @property (nonatomic, readonly) NSString * _Nullable authPrivateKey; // private key for signing authenticated api calls
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
+@property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled; // true if face id is enabled
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter

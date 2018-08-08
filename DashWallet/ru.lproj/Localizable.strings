@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nПопробуйте еще раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "О программе";
+"About" = "О программе";
 
 /* No comment provided by engineer. */
 "always require passcode" = "Всегда требовать код доступа";
@@ -126,7 +126,7 @@
 "change" = "Изменить";
 
 /* No comment provided by engineer. */
-"change passcode" = "Изменить код доступа";
+"Change passcode" = "Изменить код доступа";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "Изменить сумму платежа?";
@@ -231,7 +231,7 @@
 "enable" = "Включить";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "Уведомлять о получении";
+"Enable receive notifications" = "Уведомлять о получении";
 
 /* No comment provided by engineer. */
 "enter" = "Ввести";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "Выход";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "Не удалось обновить кошелек";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "Получено %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "Фраза восстановления";
+/* Recovery phrase */
+"Recovery phrase" = "Фраза восстановления";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Фраза восстановления не подходит";
@@ -423,7 +426,7 @@
 "rescan" = "Повторное сканирование";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "Пересканировать цепочку блоков";
+"Rescan blockchain" = "Пересканировать цепочку блоков";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Пересканировать цепочку блоков, если вы считаете, что могли пропустить транзакцию или возникли проблемы с отправкой (повторное сканирование может занять несколько минут)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "Кому: %@ (через ShapeShift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "Лимит Touch ID";
+"Touch ID limit" = "Лимит Touch ID";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "Лимит расходов Touch ID";

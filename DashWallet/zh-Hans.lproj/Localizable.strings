@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
 
 /* No comment provided by engineer. */
-"about" = "关于";
+"About" = "关于";
 
 /* No comment provided by engineer. */
 "always require passcode" = "总是要求密码";
@@ -126,7 +126,7 @@
 "change" = "改变";
 
 /* No comment provided by engineer. */
-"change passcode" = "修改密码";
+"Change passcode" = "修改密码";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "更改付款金额？";
@@ -231,7 +231,7 @@
 "enable" = "激活";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "打开接收提示";
+"Enable receive notifications" = "打开接收提示";
 
 /* No comment provided by engineer. */
 "enter" = "进入";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "退出";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "钱包升级失败";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "收到 %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "恢复密语";
+/* Recovery phrase */
+"Recovery phrase" = "恢复密语";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "恢复密语不匹配";
@@ -423,7 +426,7 @@
 "rescan" = "重新扫描";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "重新扫描区块链";
+"Rescan blockchain" = "重新扫描区块链";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "若你认为你的交易缺失，或发送交易遇到了问题，请重新扫描区块链 (重新扫描可能需要几分钟)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "至：%@ (通过 Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "指纹解锁限制";
+"Touch ID limit" = "指纹解锁限制";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "指纹解锁支出限额";

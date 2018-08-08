@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = " \nΔοκιμάστε ξανά σε %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "σχετικά με";
+"About" = "σχετικά με";
 
 /* No comment provided by engineer. */
 "always require passcode" = "πάντα να ζητείται κωδικός πρόσβασης";
@@ -126,7 +126,7 @@
 "change" = "αλλαγή";
 
 /* No comment provided by engineer. */
-"change passcode" = "αλλάξτε κωδικό πρόσβασης";
+"Change passcode" = "αλλάξτε κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "αλλαγή του ποσού πληρωμής?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ελήφθη %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "φράση ανάκτησης";
+/* Recovery phrase */
+"Recovery phrase" = "φράση ανάκτησης";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
@@ -423,7 +426,7 @@
 "rescan" = "επανάληψη της σάρωσης";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "σάρωση της αλυσίδας μπλόκ";
+"Rescan blockchain" = "σάρωση της αλυσίδας μπλόκ";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "κάντε επανάληψη της σάρωσης της αλυσίδας των μπλόκ αν νομίζετε ότι μπορεί να έχετε συναλλαγές που λείπουν ή άν έχετε προβλήματα αποστολής (η νέα σάρωση μπορεί να πάρει αρκετά λεπτά)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "αναγνωριστικό όριο αφής";
+"Touch ID limit" = "αναγνωριστικό όριο αφής";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";

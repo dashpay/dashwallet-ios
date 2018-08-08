@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
-"about" = "정보";
+"About" = "정보";
 
 /* No comment provided by engineer. */
 "always require passcode" = "항상 비밀번호 필요";
@@ -126,7 +126,7 @@
 "change" = "변경";
 
 /* No comment provided by engineer. */
-"change passcode" = "암호 변경";
+"Change passcode" = "암호 변경";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "보낼 금액을 변경하시겠습니까?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "enable receive notifications";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) 받음";
 
-/* recovery phrase */
-"recovery phrase" = "복원 문구";
+/* Recovery phrase */
+"Recovery phrase" = "복원 문구";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
@@ -423,7 +426,7 @@
 "rescan" = "재스캔";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "블록체인 재스캔";
+"Rescan blockchain" = "블록체인 재스캔";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "보이지 않는 거래내역이 있는 것 같거나, 송금하는 데 문제가 있다면 블록체인을 재스캔 해보세요(재스캔은 몇 분 정도 걸릴 수 있습니다)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "Touch ID 제한";
+"Touch ID limit" = "Touch ID 제한";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "Touch ID 사용 제한 금액";

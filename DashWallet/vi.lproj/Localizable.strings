@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nthử lại %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "giới thiệu";
+"About" = "giới thiệu";
 
 /* No comment provided by engineer. */
 "always require passcode" = "luôn cần mật khẩu";
@@ -126,7 +126,7 @@
 "change" = "thay đổi";
 
 /* No comment provided by engineer. */
-"change passcode" = "thay đổi mật khẩu";
+"Change passcode" = "thay đổi mật khẩu";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "thay đổi số lượng cần chi?";
@@ -231,7 +231,7 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "bật thông báo khi nhận được";
+"Enable receive notifications" = "bật thông báo khi nhận được";
 
 /* No comment provided by engineer. */
 "enter" = "nhập";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "thoát";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "không cập nhận được ví";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "nhận %@ (%@)";
 
-/* recovery phrase */
-"recovery phrase" = "cụm từ phục hồi";
+/* Recovery phrase */
+"Recovery phrase" = "cụm từ phục hồi";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "cụm từ phục hồi không đúng";
@@ -423,7 +426,7 @@
 "rescan" = "quét lại";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "quét lại blockchain";
+"Rescan blockchain" = "quét lại blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "quét lại blockchain nếu bạn nghĩ rằng mình đã thiếu các giao dịch, hoặc gặp vấn đề khi gửi (quét lại có thể mất vài phút)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "đến: %@ (theo Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "chạm giới hạn id";
+"Touch ID limit" = "chạm giới hạn id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "chạm giới hạn chi tiêu id";

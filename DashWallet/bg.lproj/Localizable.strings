@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nопитайте отново след %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "относно";
+"About" = "относно";
 
 /* No comment provided by engineer. */
 "always require passcode" = "винаги изисквайте парола";
@@ -126,7 +126,7 @@
 "change" = "промяна";
 
 /* No comment provided by engineer. */
-"change passcode" = "смяна на парола";
+"Change passcode" = "смяна на парола";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "промяна сумата на плащането?";
@@ -231,7 +231,7 @@
 "enable" = "включено";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "включено уведомяване при получаване ";
+"Enable receive notifications" = "включено уведомяване при получаване ";
 
 /* No comment provided by engineer. */
 "enter" = "вход";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "изход";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "неуспешно актуализиране на портфейла";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "фраза за възстановяване";
+/* Recovery phrase */
+"Recovery phrase" = "фраза за възстановяване";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "фразата за възстановяване не съвпада";
@@ -423,7 +426,7 @@
 "rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "повторно сканиране на блокверигата";
+"Rescan blockchain" = "повторно сканиране на блокверигата";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "сканирайте повторно блокверигата ако мислите, че може да има липсващи транзакции или трудности при изпращане (повторното сканиране може да отнеме няколко минути)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "до: %@ (чрез Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "достигнат id лимит";
+"Touch ID limit" = "достигнат id лимит";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "достигнат id лимит за похарчване";

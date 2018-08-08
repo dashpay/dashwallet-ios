@@ -9,6 +9,8 @@
 #import "DWGenerateViewController.h"
 #import "BREventManager.h"
 #import "BRWalletManager.h"
+#import "BRSeedViewController.h"
+#import "DWWarningViewController.h"
 
 @interface DWGenerateViewController ()
 
@@ -64,7 +66,7 @@
 
 -(void)performSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
     [BREventManager saveEvent:@"welcome:generate"];
-    
+
 //    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
 //    [sender setEnabled:NO];
 //    self.warningLabel.hidden = self.showButton.hidden = NO;
@@ -76,6 +78,15 @@
 //        self.startLabel.alpha = self.recoverLabel.alpha = 0.33;
 //        self.generateButton.alpha = 0.33;
 //    }];
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    UINavigationController * navigationController = segue.destinationViewController;
+    BRSeedViewController * seedViewController = (BRSeedViewController*)navigationController.topViewController;
+    DWWarningViewController * warningViewController = [self.storyboard
+     instantiateViewControllerWithIdentifier:@"WarningViewController"];
+    [navigationController pushViewController:warningViewController animated:NO];
+
 }
 
 @end

@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nréessayez dans %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "à propos";
+"About" = "à propos";
 
 /* No comment provided by engineer. */
 "always require passcode" = "toujours exiger le code d'accès";
@@ -126,7 +126,7 @@
 "change" = "modifier";
 
 /* No comment provided by engineer. */
-"change passcode" = "modifier le code d'accès";
+"Change passcode" = "modifier le code d'accès";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "modifier le montant du paiement ?";
@@ -231,7 +231,7 @@
 "enable" = "activer";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "activer les notifications";
+"Enable receive notifications" = "activer les notifications";
 
 /* No comment provided by engineer. */
 "enter" = "entrer";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "quitter";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ reçus (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "phrase de récupération";
+/* Recovery phrase */
+"Recovery phrase" = "phrase de récupération";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "la phrase de récupération ne correspond pas";
@@ -423,7 +426,7 @@
 "rescan" = "réanalyser";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "réanalyser la chaîne de blocs";
+"Rescan blockchain" = "réanalyser la chaîne de blocs";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "réanalysez la chaîne de blocs si vous pensez que vous avez des transactions manquantes, ou si vous avez des problèmes d'envoi (la réanalyse peut prendre quelques minutes)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "vers: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "limite de touch id";
+"Touch ID limit" = "limite de touch id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "limite de dépense de touch id";

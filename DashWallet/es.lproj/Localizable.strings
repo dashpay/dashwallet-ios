@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\ninténtalo de nuevo %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "acerca de";
+"About" = "acerca de";
 
 /* No comment provided by engineer. */
 "always require passcode" = "siempre requiere el numero de seguridad";
@@ -126,7 +126,7 @@
 "change" = "cambiar";
 
 /* No comment provided by engineer. */
-"change passcode" = "cambiar código de acceso";
+"Change passcode" = "cambiar código de acceso";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "¿cambiar la cantidad a pagar?";
@@ -231,7 +231,7 @@
 "enable" = "habilitar";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "habilitar recibir notificaciones";
+"Enable receive notifications" = "habilitar recibir notificaciones";
 
 /* No comment provided by engineer. */
 "enter" = "entrar";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "salir";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "falló actualización de cartera";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "recibido %1$@ (%2$@)";
 
-/* recovery phrase */
-"recovery phrase" = "frase de recuperación";
+/* Recovery phrase */
+"Recovery phrase" = "frase de recuperación";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "la frase de recuperación no coincide";
@@ -423,7 +426,7 @@
 "rescan" = "escanear de nuevo";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "escanear de nuevo la cadena de bloques";
+"Rescan blockchain" = "escanear de nuevo la cadena de bloques";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "escanee de nuevo la cadena de bloques si piensa que puede tener transacciones no reflejadas, o si tiene problemas de envío (el escaneado puede durar algunos minutos)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "a: %@ (vía Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "límite de touch id";
+"Touch ID limit" = "límite de touch id";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "límite de gasto de touch id";

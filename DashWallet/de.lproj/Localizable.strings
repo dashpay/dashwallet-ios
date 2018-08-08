@@ -72,7 +72,7 @@
 "\ntry again in %d %@" = "\nVersuchen Sie es erneut in %1$d %2$@";
 
 /* No comment provided by engineer. */
-"about" = "Über";
+"About" = "Über";
 
 /* No comment provided by engineer. */
 "always require passcode" = "Zugangscode immer abfragen";
@@ -126,7 +126,7 @@
 "change" = "Ändern";
 
 /* No comment provided by engineer. */
-"change passcode" = "Zugangscode ändern";
+"Change passcode" = "Zugangscode ändern";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "Zahlungsbetrag ändern?";
@@ -231,7 +231,7 @@
 "enable" = "Erlauben";
 
 /* No comment provided by engineer. */
-"enable receive notifications" = "Empfang von Hinweisen ermöglichen";
+"Enable receive notifications" = "Empfang von Hinweisen ermöglichen";
 
 /* No comment provided by engineer. */
 "enter" = "Eingabe";
@@ -247,6 +247,9 @@
 
 /* No comment provided by engineer. */
 "exit" = "Beenden";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "Wallet Update gescheitert";
@@ -392,8 +395,8 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) empfangen";
 
-/* recovery phrase */
-"recovery phrase" = "Wiederherstellungs-Wortfolge";
+/* Recovery phrase */
+"Recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Wiederherstellungs-Wortfolge stimmt nicht überein";
@@ -423,7 +426,7 @@
 "rescan" = "Erneut scannen";
 
 /* No comment provided by engineer. */
-"rescan blockchain" = "Blockchain erneut scannen";
+"Rescan blockchain" = "Blockchain erneut scannen";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Scannen Sie die Blockchain erneut wenn Sie denken dass eingehende Transaktionen fehlen, oder Sie Probleme beim Senden haben (Dies kann einige Minuten dauern)";
@@ -567,7 +570,7 @@
 "to: %@ (via Shapeshift)" = "an: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"touch id limit" = "Touch-ID Limit";
+"Touch ID limit" = "Touch-ID Limit";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "Touch-ID Ausgabelimite";

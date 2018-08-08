@@ -34,9 +34,4 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)show:(id)sender
-{
-    [BREventManager saveEvent:@"welcome:show"];
-}
-
 @end
