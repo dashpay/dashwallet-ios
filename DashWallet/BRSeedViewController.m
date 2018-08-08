@@ -108,7 +108,7 @@
     NSTimeInterval delay = WRITE_TOGGLE_DELAY;
  
     // remove done button if we're not the root of the nav stack
-    if (self.navigationController.viewControllers.firstObject != self) {
+    if (![self.navigationController isNavigationBarHidden]) {
         self.toolbar.hidden = YES;
     }
     else delay *= 2; // extra delay before showing toggle when starting a new wallet

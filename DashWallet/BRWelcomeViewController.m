@@ -51,6 +51,8 @@
     // Do any additional setup after loading the view.
     
     self.navigationController.delegate = self;
+    
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 
     self.createWalletButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.recoverButton.titleLabel.adjustsFontSizeToFitWidth = YES;

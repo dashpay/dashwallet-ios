@@ -18,9 +18,6 @@
 @property (nonatomic, strong) IBOutlet UILabel *startLabel, *recoverLabel;
 @property (nonatomic, strong) UINavigationController *seedNav;
 
--(IBAction)generateRecoveryPhrase:(id)sender;
--(IBAction)show:(id)sender;
-
 @end
 
 @implementation DWGenerateViewController
@@ -44,8 +41,17 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(BOOL)prefersStatusBarHidden {
+    return FALSE;
+}
+
+
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 -(BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
-    if (! [BRWalletManager sharedInstance].passcodeEnabled) {
+    if (![BRWalletManager sharedInstance].passcodeEnabled) {
         [BREventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
@@ -64,29 +70,8 @@
     return TRUE;
 }
 
--(void)performSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
-    [BREventManager saveEvent:@"welcome:generate"];
-
-//    [self.navigationController.navigationBar.topItem setHidesBackButton:YES animated:YES];
-//    [sender setEnabled:NO];
-//    self.warningLabel.hidden = self.showButton.hidden = NO;
-//    self.warningLabel.alpha = self.showButton.alpha = 0.0;
-//    
-//    [UIView animateWithDuration:0.5 animations:^{
-//        self.warningLabel.alpha = self.showButton.alpha = 1.0;
-//        self.navigationController.navigationBar.topItem.titleView.alpha = 0.33*0.5;
-//        self.startLabel.alpha = self.recoverLabel.alpha = 0.33;
-//        self.generateButton.alpha = 0.33;
-//    }];
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    UINavigationController * navigationController = segue.destinationViewController;
-    BRSeedViewController * seedViewController = (BRSeedViewController*)navigationController.topViewController;
-    DWWarningViewController * warningViewController = [self.storyboard
-     instantiateViewControllerWithIdentifier:@"WarningViewController"];
-    [navigationController pushViewController:warningViewController animated:NO];
-
+    [BREventManager saveEvent:@"welcome:generate"];
 }
 
 @end

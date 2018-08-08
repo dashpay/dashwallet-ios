@@ -79,7 +79,8 @@
                                                            NSFontAttributeName:titleBarFont,
                                                            NSForegroundColorAttributeName: [UIColor whiteColor],
                                                            }];
-    UIImage * backImage = [[UIImage imageNamed:@"back-image"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    
+    UIImage * backImage = [[UIImage imageNamed:@"back-button"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     [[UINavigationBar appearance] setBackIndicatorImage:backImage];
     [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
 
