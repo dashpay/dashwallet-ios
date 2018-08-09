@@ -54,13 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nzezwalaj na dostęp do kamery w\nUstawienia->Prywatność->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nNIE rób zrzutu ekranu.\nScreeny są widoczne dla innych aplikacji\ni urządzeń.\n";
-
-/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nprowizje sieci +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nspróbuj ponownie za %@";
@@ -216,6 +210,9 @@
 "DO NOT let anyone see your recovery phrase or they can spend your dash." = "NIE pozwól nikomu zobaczyć twoją frazę odzyskiwania danych albo ta osoba będzie mogła wydać twoje dashy.";
 
 /* No comment provided by engineer. */
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+
+/* No comment provided by engineer. */
 "done" = "zrobione";
 
 /* No comment provided by engineer. */
@@ -309,7 +306,7 @@
 "moved" = "przeniesiono";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "NIGDY nie wpisuj twojej frazy odzyskiwania danych\ndo menedżerów haseł ani w innych miejscach.\nInne urządzenia mogą być zainfekowane.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "następnie, zapisz frazę odzyskiwania danych";

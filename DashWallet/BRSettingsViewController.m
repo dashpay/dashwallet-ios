@@ -558,16 +558,11 @@ _switch_cell:
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                  message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
-                                          [NSLocalizedString(@"\nDO NOT let anyone see your recovery\n"
-                                                             "phrase or they can spend your dash.\n", nil)
+                                          [NSLocalizedString(@"DO NOT let anyone see your recovery phrase or they can spend your dash.", nil)
                                            stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-                                          [NSLocalizedString(@"\nNEVER type your recovery phrase into\n"
-                                                             "password managers or elsewhere.\n"
-                                                             "Other devices may be infected.\n", nil)
+                                          [NSLocalizedString(@"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.", nil)
                                            stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]],
-                                          [NSLocalizedString(@"\nDO NOT take a screenshot.\n"
-                                                             "Screenshots are visible to other apps\n"
-                                                             "and devices.\n", nil)
+                                          [NSLocalizedString(@"DO NOT take a screenshot. Screenshots are visible to other apps and devices.", nil)
                                            stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]]
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction

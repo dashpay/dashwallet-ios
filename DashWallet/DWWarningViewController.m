@@ -9,6 +9,7 @@
 #import "DWWarningViewController.h"
 #import "BREventManager.h"
 #import "BRWalletManager.h"
+#import "BRSeedViewController.h"
 
 @interface DWWarningViewController ()
 
@@ -32,6 +33,11 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    BRSeedViewController * seedViewController = segue.destinationViewController;
+    seedViewController.inSetupMode = TRUE;
 }
 
 @end

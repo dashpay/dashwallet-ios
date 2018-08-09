@@ -54,13 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ntillat kameratilgang i\nInnstillinger->Personvern->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nIKKE TA et skjermbilde\nSkjermbilder er synlige for andre apper\nog enheter.\n";
-
-/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnettverksavgift +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +210,9 @@
 "DO NOT let anyone see your recovery phrase or they can spend your dash." = "IKKE la noen se din gjennopprettingsfrase; de kan sende dine dash.";
 
 /* No comment provided by engineer. */
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+
+/* No comment provided by engineer. */
 "done" = "utført";
 
 /* No comment provided by engineer. */
@@ -309,7 +306,7 @@
 "moved" = "flyttet";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "SKRIV ALDRI opp din gjenopprettingsfrase\ni en passordbehandler eller andre steder.\nAndre enheter kan være kompromittert.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "deretter, skriv ned din gjenopprettingsfrase";

@@ -54,16 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを\n簡単に盗むことができます。";
-
-/* No comment provided by engineer. */
-"\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nスクリーンショットをご遠慮下さい。\n他のアプリや端末に復元フレーズが\n見えてしまう危険性があります。\n";
-
-/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nNEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.\n" = "パスワード管理アプリや、\n信用できない端末に復元フレーズは\n絶対に打ち込んだり\n写真を撮ったりしないで下さい。\nウィルスやマルウェアによって\n盗まれる可能性があります。";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -216,6 +207,12 @@
 "do it later" = "後でやります";
 
 /* No comment provided by engineer. */
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを\n簡単に盗むことができます。";
+
+/* No comment provided by engineer. */
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+
+/* No comment provided by engineer. */
 "done" = "完了";
 
 /* No comment provided by engineer. */
@@ -309,7 +306,7 @@
 "moved" = "移動されました";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected." = "NEVER type your recovery phrase into\npassword managers or elsewhere.\nOther devices may be infected.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "復元フレーズを紙に書き留めて下さい！";

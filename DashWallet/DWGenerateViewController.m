@@ -9,7 +9,6 @@
 #import "DWGenerateViewController.h"
 #import "BREventManager.h"
 #import "BRWalletManager.h"
-#import "BRSeedViewController.h"
 #import "DWWarningViewController.h"
 
 @interface DWGenerateViewController ()

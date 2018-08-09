@@ -28,5 +28,6 @@
 @interface BRSeedViewController : UIViewController
 
 @property (nonatomic, strong) NSString *seedPhrase;
+@property (nonatomic, assign) BOOL inSetupMode;
 
 @end

@@ -108,7 +108,7 @@
     NSTimeInterval delay = WRITE_TOGGLE_DELAY;
  
     // remove done button if we're not the root of the nav stack
-    if (![self.navigationController isNavigationBarHidden]) {
+    if (!self.inSetupMode) {
         self.toolbar.hidden = YES;
     }
     else delay *= 2; // extra delay before showing toggle when starting a new wallet
@@ -165,7 +165,7 @@
         self.resignActiveObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                if (![self.navigationController isNavigationBarHidden]) {
+                if (!self.inSetupMode) {
                     [self.navigationController popViewControllerAnimated:NO];
                 }
             }];
@@ -176,7 +176,7 @@
         self.screenshotObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                if (![self.navigationController isNavigationBarHidden]) {
+                if (!self.inSetupMode) {
                     
                     UIAlertController * alert = [UIAlertController
                                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
@@ -250,7 +250,7 @@
 - (IBAction)done:(id)sender
 {
     [BREventManager saveEvent:@"seed:dismiss"];
-    if (self.navigationController.viewControllers.firstObject != self) return;
+    if (!self.inSetupMode) return;
     
     self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
