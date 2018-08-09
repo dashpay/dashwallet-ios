@@ -54,9 +54,6 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nРазрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
-
-/* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nНЕ ДЕЛАЙТЕ скриншот.\nСкриншоты видны другим приложениям\nи устройствам.\n";
 
 /* No comment provided by engineer. */
@@ -216,7 +213,7 @@
 "do it later" = "Отложить на потом";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления,\nиначе они смогут потратить Ваши DASH.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
 
 /* No comment provided by engineer. */
 "done" = "Готово";

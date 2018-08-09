@@ -54,9 +54,6 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
-
-/* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKEINEN Screenshots erstellen.\nScreenshots sind sichtbar für andere Apps und Geräte.\n";
 
 /* No comment provided by engineer. */
@@ -216,7 +213,7 @@
 "do it later" = "später";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "Lassen Sie NIEMANDEN Ihre\nWiederherstellungs-Wortfolge sehen, wer\ndiese kennt kann Ihre Dash ausgeben.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "Lassen Sie NIEMANDEN Ihre Wiederherstellungs-Wortfolge sehen, wer diese kennt kann Ihre Dash ausgeben.";
 
 /* No comment provided by engineer. */
 "done" = "fertig";

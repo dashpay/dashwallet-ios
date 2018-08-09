@@ -54,9 +54,6 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
-
-/* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nMaak GEEN schermafbeelding.\nSchermafbeeldingen zijn zichtbaar voor andere apps\nen apparaten.\n";
 
 /* No comment provided by engineer. */
@@ -216,7 +213,7 @@
 "do it later" = "voer later uit";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "Laat jeherstel zin aan NIEMAND zien,\nanders hebben zij de mogelijkheid om\njouw dash uit te geven.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "Laat jeherstel zin aan NIEMAND zien, anders hebben zij de mogelijkheid om jouw dash uit te geven.";
 
 /* No comment provided by engineer. */
 "done" = "voltooid";

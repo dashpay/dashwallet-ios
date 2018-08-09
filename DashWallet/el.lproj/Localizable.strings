@@ -54,9 +54,6 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nεπιτρέψτε στην κάμερα πρόσβαση στις\nρυθμίσεις-> απορρήτο-> κάμερα->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
-
-/* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nΜΗΝ πάρτε λήψη της οθόνης. Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές\nκαι συσκευές.\n";
 
 /* No comment provided by engineer. */
@@ -216,7 +213,7 @@
 "do it later" = "θα το κάνω αργότερα";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "ΜΗΝ αφήσετε κανέναν να δεί την φράση\nανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "ΜΗΝ αφήσετε κανέναν να δεί την φράση ανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.";
 
 /* No comment provided by engineer. */
 "done" = "έγινε";

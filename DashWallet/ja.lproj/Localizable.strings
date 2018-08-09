@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "復元フレーズは絶対に\n誰にも見せないで下さい！\n復元フレーズを知っている人は\nあなたのダッシュを\n簡単に盗むことができます。\n";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを\n簡単に盗むことができます。";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nスクリーンショットをご遠慮下さい。\n他のアプリや端末に復元フレーズが\n見えてしまう危険性があります。\n";
@@ -214,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "do it later" = "後でやります";
-
-/* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "DO NOT let anyone see your recovery\nphrase or they can spend your dash.";
 
 /* No comment provided by engineer. */
 "done" = "完了";

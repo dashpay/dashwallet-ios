@@ -54,9 +54,6 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ntillat kameratilgang i\nInnstillinger->Personvern->Kamera->%@";
 
 /* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
-
-/* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nIKKE TA et skjermbilde\nSkjermbilder er synlige for andre apper\nog enheter.\n";
 
 /* No comment provided by engineer. */
@@ -216,7 +213,7 @@
 "do it later" = "gjør det senere";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "IKKE la noen se din gjennopprettingsfrase;\nde kan sende dine dash.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "IKKE la noen se din gjennopprettingsfrase; de kan sende dine dash.";
 
 /* No comment provided by engineer. */
 "done" = "utført";

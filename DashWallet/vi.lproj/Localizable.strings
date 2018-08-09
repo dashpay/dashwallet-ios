@@ -53,8 +53,6 @@
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbật tính năng truy cập chụp ảnh trong phần\nSettings->Privacy->Camera->%@";
 
-/* No comment provided by engineer. */
-"\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n" = "\nDO NOT let anyone see your recovery\nphrase or they can spend your dash.\n";
 
 /* No comment provided by engineer. */
 "\nDO NOT take a screenshot.\nScreenshots are visible to other apps\nand devices.\n" = "\nKHÔNG NÊN chụp ảnh màn hình.\nVì ảnh chụp màn hình hiển thị cho các ứng dụng khác\nvà các thiết bị khác.\n";
@@ -216,7 +214,7 @@
 "do it later" = "làm việc này sau";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery\nphrase or they can spend your dash." = "ĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi \ncủa bạn hoặc họ sẽ tiêu mất số dash của bạn.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "ĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi của bạn hoặc họ sẽ tiêu mất số dash của bạn.";
 
 /* No comment provided by engineer. */
 "done" = "xong";
