@@ -43,4 +43,6 @@ UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 - (void)stopActivityWithSuccess:(BOOL)success;
 - (void)ping;
 
+- (IBAction)unwindToRootViewController:(UIStoryboardSegue *)segue;
+
 @end

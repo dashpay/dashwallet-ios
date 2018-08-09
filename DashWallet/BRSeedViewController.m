@@ -251,10 +251,9 @@
 {
     [BREventManager saveEvent:@"seed:dismiss"];
     if (!self.inSetupMode) return;
-    
-    self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    [self.navigationController.presentingViewController.presentingViewController dismissViewControllerAnimated:YES
-     completion:nil];
+//    self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+//    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES
+//     completion:nil];
 }
 
 - (IBAction)toggleWrite:(id)sender

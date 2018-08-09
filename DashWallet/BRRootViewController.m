@@ -416,7 +416,6 @@
                                                                                 withExtension:@"aiff"], &_pingsound);
     
     if (! manager.noWallet) {
-        //TODO: do some kickass quick logo animation, fast circle spin that slows
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
     }
@@ -1417,6 +1416,12 @@
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
     return self;
+}
+
+// MARK: - Segues
+
+- (IBAction)unwindToRootViewController:(UIStoryboardSegue *)segue {
+    //nothing goes here
 }
 
 // MARK: - UIGestureRecognizerDelegate
