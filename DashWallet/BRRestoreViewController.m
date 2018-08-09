@@ -56,6 +56,7 @@
     // TODO: autocomplete based on 4 letter prefixes of mnemonic words
     
     self.textView.layer.cornerRadius = 5.0;
+    self.textView.textContainerInset = UIEdgeInsetsMake(12, 12, 12, 12);
     
     self.keyboardObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillShowNotification object:nil queue:nil
@@ -380,7 +381,7 @@
         }
         else if (! noWallet) {
             [self.textView resignFirstResponder];
-            [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
+            [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.75];
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
