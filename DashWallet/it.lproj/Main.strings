@@ -119,8 +119,8 @@
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
 "adc-g6-wnP.text" = "Shapeshift in corso";
 
-/* Class = "UILabel"; text = "Instant Send"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Instant Send";
+/* Class = "UILabel"; text = "Use Instant Send"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "Use Instant Send";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "stato:";
