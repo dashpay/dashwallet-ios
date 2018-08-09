@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "csökkentsem a kifizetés összegét ennyivel: %1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"request" = "igénylés";
+"Request" = "igénylés";
 
 /* No comment provided by engineer. */
 "request an amount" = "összeg igénylése";

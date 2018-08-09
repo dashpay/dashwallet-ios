@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@) ile ödeme miktarı düşürülsün mü?";
 
 /* No comment provided by engineer. */
-"request" = "istek";
+"Request" = "istek";
 
 /* No comment provided by engineer. */
 "request an amount" = "bir miktar isteyin";

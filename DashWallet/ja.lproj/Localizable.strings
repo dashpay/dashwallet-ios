@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
 
 /* No comment provided by engineer. */
-"request" = "請求";
+"Request" = "請求";
 
 /* No comment provided by engineer. */
 "request an amount" = "指定金額を請求";

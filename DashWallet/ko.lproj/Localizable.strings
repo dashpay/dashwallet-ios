@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
 
 /* No comment provided by engineer. */
-"request" = "요청";
+"Request" = "요청";
 
 /* No comment provided by engineer. */
 "request an amount" = "지불 요청하기";

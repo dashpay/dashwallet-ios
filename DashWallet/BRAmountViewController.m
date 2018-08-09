@@ -124,7 +124,7 @@
         if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
     }
     else {
-        self.payButton.title = NSLocalizedString(@"request", nil);
+        self.payButton.title = NSLocalizedString(@"Request", nil);
         self.payButton.tintColor = [UIColor whiteColor];
         self.navigationItem.rightBarButtonItem = self.payButton;
     }

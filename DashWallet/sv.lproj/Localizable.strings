@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "minska beloppet med\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"request" = "begäran";
+"Request" = "begäran";
 
 /* No comment provided by engineer. */
 "request an amount" = "begär ett belopp";

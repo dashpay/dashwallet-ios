@@ -2424,7 +2424,7 @@ bitpay.com/rates and poloniex</string>
                     <navigationItem key="navigationItem" id="xhy-mj-rkK">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="2TI-4e-OIp">
-                            <rect key="frame" x="138" y="9" width="100" height="27"/>
+                            <rect key="frame" x="137.66666666666666" y="8.6666666666666643" width="100" height="27"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
@@ -2569,7 +2569,8 @@ bitpay.com/rates and poloniex</string>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CsT-dR-Qwt">
                                 <rect key="frame" x="12" y="93" width="351" height="455"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="meW-Ti-6kp" id="PtM-jM-XLi"/>
@@ -2810,17 +2811,18 @@ bitpay.com/rates and poloniex</string>
                                     <constraint firstAttribute="height" constant="0.5" id="4GD-iB-GIa"/>
                                 </constraints>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bUC-MN-PXO">
-                                <rect key="frame" x="20.000000000000007" y="162.66666666666669" width="106.66666666666669" height="133.66666666666669"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="1" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bUC-MN-PXO" customClass="DWNumberButton">
+                                <rect key="frame" x="20" y="162.66666666666669" width="104" height="130.66666666666669"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="1">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2828,17 +2830,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="bJl-Ge-5HM"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xaD-eI-0iC">
-                                <rect key="frame" x="134.66666666666666" y="162.66666666666669" width="106.33333333333334" height="133.66666666666669"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="2" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xaD-eI-0iC" customClass="DWNumberButton">
+                                <rect key="frame" x="136" y="162.66666666666669" width="103.66666666666669" height="130.66666666666669"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="2">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2846,17 +2849,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="48D-Jn-Udq"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnY-9p-vg6">
-                                <rect key="frame" x="249" y="162.66666666666669" width="106" height="133.66666666666669"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="3" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                    <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EnY-9p-vg6" customClass="DWNumberButton">
+                                <rect key="frame" x="251.66666666666666" y="162.66666666666669" width="103.33333333333334" height="130.66666666666669"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="3">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2864,17 +2868,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="MnP-A3-YqI"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VQH-pt-DQg">
-                                <rect key="frame" x="20.000000000000007" y="304.33333333333331" width="106.66666666666669" height="133.33333333333331"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="4" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VQH-pt-DQg" customClass="DWNumberButton">
+                                <rect key="frame" x="20" y="305.33333333333331" width="104" height="130.33333333333331"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="4">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2882,17 +2887,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="tgV-5i-BR0"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Af-Xt-dHE">
-                                <rect key="frame" x="134.66666666666666" y="304.33333333333331" width="106.33333333333334" height="133.33333333333331"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="5" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Af-Xt-dHE" customClass="DWNumberButton">
+                                <rect key="frame" x="136" y="305.33333333333331" width="103.66666666666669" height="130.33333333333331"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="5">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2900,17 +2906,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="KTf-gB-U5J"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="43w-iO-MOK">
-                                <rect key="frame" x="249" y="304.33333333333331" width="106" height="133.33333333333331"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="6" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="43w-iO-MOK" customClass="DWNumberButton">
+                                <rect key="frame" x="251.66666666666666" y="305.33333333333331" width="103.33333333333334" height="130.33333333333331"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="6">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2918,17 +2925,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="qqH-5B-gFS"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-uc-kOc">
-                                <rect key="frame" x="20.000000000000007" y="445.66666666666674" width="106.66666666666669" height="133"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="7" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-uc-kOc" customClass="DWNumberButton">
+                                <rect key="frame" x="20" y="447.66666666666674" width="104" height="130"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="7">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2936,17 +2944,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="bbz-co-2Rw"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="24A-83-L7p">
-                                <rect key="frame" x="134.66666666666666" y="445.66666666666674" width="106.33333333333334" height="133"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="8" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="24A-83-L7p" customClass="DWNumberButton">
+                                <rect key="frame" x="136" y="447.66666666666674" width="103.66666666666669" height="130"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="8">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2954,17 +2963,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="Uqc-qH-oP1"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-qg-5Cf">
-                                <rect key="frame" x="249" y="445.66666666666674" width="106" height="133"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="9" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ika-qg-5Cf" customClass="DWNumberButton">
+                                <rect key="frame" x="251.66666666666666" y="447.66666666666674" width="103.33333333333334" height="130"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="9">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2972,17 +2982,18 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="ozD-nB-YZd"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cz1-M6-v6N">
-                                <rect key="frame" x="20.000000000000007" y="586.66666666666663" width="106.66666666666669" height="133.33333333333337"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="." backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cz1-M6-v6N" customClass="DWNumberButton">
+                                <rect key="frame" x="20" y="589.66666666666663" width="104" height="130.33333333333337"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title=".">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
                                     <color key="titleColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" backgroundImage="button-bg-blue-pressed">
+                                <state key="highlighted">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2990,11 +3001,12 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="okD-6F-HjW"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OKR-t9-9Lk">
-                                <rect key="frame" x="134.66666666666666" y="586.66666666666663" width="106.33333333333334" height="133.33333333333337"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" title="0" backgroundImage="button-bg-blue">
-                                    <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OKR-t9-9Lk" customClass="DWNumberButton">
+                                <rect key="frame" x="136" y="589.66666666666663" width="103.66666666666669" height="130.33333333333337"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="40"/>
+                                <state key="normal" title="0">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <state key="disabled" backgroundImage="button-bg-disabled">
@@ -3008,10 +3020,11 @@ bitpay.com/rates and poloniex</string>
                                     <action selector="number:" destination="La8-tY-sM4" eventType="touchUpInside" id="cdg-bi-4Ez"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X53-jN-wEO">
-                                <rect key="frame" x="249" y="586.66666666666663" width="106" height="133.33333333333337"/>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X53-jN-wEO" customClass="DWNumberButton">
+                                <rect key="frame" x="251.66666666666666" y="589.66666666666663" width="103.33333333333334" height="130.33333333333337"/>
+                                <color key="backgroundColor" red="0.0" green="0.12941176469999999" blue="0.3803921569" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-UltraLight" family="Helvetica Neue" pointSize="50"/>
-                                <state key="normal" image="deletetoleft" backgroundImage="button-bg-blue">
+                                <state key="normal" image="deletetoleft-pressed">
                                     <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -3065,74 +3078,76 @@ bitpay.com/rates and poloniex</string>
                         <constraints>
                             <constraint firstItem="83W-1O-V9b" firstAttribute="leading" secondItem="TBf-3l-ujT" secondAttribute="trailing" constant="-169" id="1I0-eI-h94"/>
                             <constraint firstItem="OKR-t9-9Lk" firstAttribute="bottom" secondItem="Cz1-M6-v6N" secondAttribute="bottom" id="1Re-xO-nUt"/>
+                            <constraint firstItem="jcY-uc-kOc" firstAttribute="leading" secondItem="VQH-pt-DQg" secondAttribute="leading" id="1XH-HD-pla"/>
                             <constraint firstItem="0OZ-Q5-FOm" firstAttribute="width" secondItem="2U5-tK-XSF" secondAttribute="width" id="2FN-3I-NO7"/>
-                            <constraint firstItem="X53-jN-wEO" firstAttribute="height" secondItem="43w-iO-MOK" secondAttribute="height" id="3xn-rF-TDd"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="leading" secondItem="jcY-uc-kOc" secondAttribute="trailing" constant="8" id="4FN-sC-4M2"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="height" secondItem="xaD-eI-0iC" secondAttribute="height" id="6g8-Ae-9D4"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="width" secondItem="jcY-uc-kOc" secondAttribute="width" id="7fM-Lf-O7G"/>
+                            <constraint firstItem="jcY-uc-kOc" firstAttribute="bottom" secondItem="24A-83-L7p" secondAttribute="bottom" id="3Nu-1d-o14"/>
+                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="top" secondItem="X53-jN-wEO" secondAttribute="top" id="4Fg-EV-owp"/>
+                            <constraint firstItem="24A-83-L7p" firstAttribute="bottom" secondItem="Ika-qg-5Cf" secondAttribute="bottom" id="4vO-8l-2Pc"/>
+                            <constraint firstItem="VQH-pt-DQg" firstAttribute="trailing" secondItem="bUC-MN-PXO" secondAttribute="trailing" id="6Fv-mS-3mC"/>
+                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="trailing" secondItem="xaD-eI-0iC" secondAttribute="trailing" id="7zw-WN-3rw"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="height" secondItem="Cz1-M6-v6N" secondAttribute="height" id="8IN-gF-IRv"/>
-                            <constraint firstItem="43w-iO-MOK" firstAttribute="leading" secondItem="2Af-Xt-dHE" secondAttribute="trailing" constant="8" id="8hW-bY-5Wv"/>
-                            <constraint firstItem="X53-jN-wEO" firstAttribute="height" secondItem="EnY-9p-vg6" secondAttribute="height" id="9En-J0-BUs"/>
                             <constraint firstItem="VQH-pt-DQg" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="9mu-Bb-AaW"/>
                             <constraint firstItem="0OZ-Q5-FOm" firstAttribute="top" secondItem="2U5-tK-XSF" secondAttribute="top" id="AO1-WS-9GQ"/>
-                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="width" secondItem="VQH-pt-DQg" secondAttribute="width" id="CTo-rF-Xm0"/>
+                            <constraint firstItem="43w-iO-MOK" firstAttribute="leading" secondItem="EnY-9p-vg6" secondAttribute="leading" id="Ap7-Fl-9ZJ"/>
+                            <constraint firstItem="xaD-eI-0iC" firstAttribute="top" secondItem="EnY-9p-vg6" secondAttribute="top" id="BCF-Bk-h7l"/>
+                            <constraint firstItem="xaD-eI-0iC" firstAttribute="bottom" secondItem="EnY-9p-vg6" secondAttribute="bottom" id="Biq-fs-Yq4"/>
+                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="trailing" secondItem="jcY-uc-kOc" secondAttribute="trailing" id="CVa-YC-tIe"/>
+                            <constraint firstItem="24A-83-L7p" firstAttribute="top" secondItem="Ika-qg-5Cf" secondAttribute="top" id="Cdu-Z1-9SP"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="bottom" secondItem="Cz1-M6-v6N" secondAttribute="bottom" constant="58" id="DaM-P2-LkJ"/>
-                            <constraint firstItem="Ika-qg-5Cf" firstAttribute="leading" secondItem="24A-83-L7p" secondAttribute="trailing" constant="8" id="EUx-Ir-XKf"/>
-                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="leading" secondItem="VQH-pt-DQg" secondAttribute="trailing" constant="8" id="FNP-a0-zbK"/>
+                            <constraint firstItem="bUC-MN-PXO" firstAttribute="bottom" secondItem="xaD-eI-0iC" secondAttribute="bottom" id="Eer-rF-Lc8"/>
+                            <constraint firstItem="24A-83-L7p" firstAttribute="leading" secondItem="2Af-Xt-dHE" secondAttribute="leading" id="FQF-bU-lEw"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="NVx-Sw-vEc" secondAttribute="trailing" constant="20" id="HRB-kp-bf5"/>
-                            <constraint firstItem="43w-iO-MOK" firstAttribute="top" secondItem="EnY-9p-vg6" secondAttribute="bottom" constant="8" id="HtH-SD-EfF"/>
-                            <constraint firstItem="X53-jN-wEO" firstAttribute="top" secondItem="Ika-qg-5Cf" secondAttribute="bottom" constant="8" id="I5l-Kk-Whv"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="height" secondItem="2Af-Xt-dHE" secondAttribute="height" id="ISE-hq-hAg"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="J8B-Ra-0Jf"/>
-                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="leading" secondItem="Cz1-M6-v6N" secondAttribute="trailing" constant="8" id="JGj-Hf-qcE"/>
                             <constraint firstItem="2U5-tK-XSF" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="Ksa-Hh-DnT"/>
-                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="top" secondItem="xaD-eI-0iC" secondAttribute="bottom" constant="8" id="LGW-Wh-2lP"/>
                             <constraint firstItem="AIC-c4-j2z" firstAttribute="leading" secondItem="ymr-Br-n9y" secondAttribute="leadingMargin" constant="4" id="MLo-bo-euS"/>
-                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="bottom" secondItem="X53-jN-wEO" secondAttribute="bottom" id="Mkr-Id-V5t"/>
-                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="width" secondItem="43w-iO-MOK" secondAttribute="width" id="NnE-HH-Xeb"/>
-                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="QJX-dJ-4KF"/>
+                            <constraint firstItem="24A-83-L7p" firstAttribute="trailing" secondItem="2Af-Xt-dHE" secondAttribute="trailing" id="O4m-ai-ZeH"/>
+                            <constraint firstItem="VQH-pt-DQg" firstAttribute="leading" secondItem="bUC-MN-PXO" secondAttribute="leading" id="PjK-ze-6Pm"/>
+                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="trailing" secondItem="24A-83-L7p" secondAttribute="trailing" id="QrS-64-g3u"/>
                             <constraint firstItem="xaD-eI-0iC" firstAttribute="width" secondItem="EnY-9p-vg6" secondAttribute="width" id="TOu-l4-axY"/>
+                            <constraint firstItem="Ika-qg-5Cf" firstAttribute="leading" secondItem="43w-iO-MOK" secondAttribute="leading" id="TXH-EW-wwp"/>
                             <constraint firstItem="TBf-3l-ujT" firstAttribute="baseline" secondItem="AIC-c4-j2z" secondAttribute="baseline" id="TaI-T5-wEw"/>
-                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="top" secondItem="jcY-uc-kOc" secondAttribute="bottom" constant="8" id="UJg-Bu-dDO"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="height" secondItem="OKR-t9-9Lk" secondAttribute="height" id="VTS-LP-Hic"/>
-                            <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="X53-jN-wEO" secondAttribute="trailing" constant="20" id="Wjv-Gt-Mcq"/>
+                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="top" secondItem="jcY-uc-kOc" secondAttribute="bottom" constant="12" id="UJg-Bu-dDO"/>
+                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="leading" secondItem="jcY-uc-kOc" secondAttribute="leading" id="V27-sR-vMd"/>
+                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="top" secondItem="43w-iO-MOK" secondAttribute="top" id="VWQ-vn-EmY"/>
                             <constraint firstItem="o24-a7-ayU" firstAttribute="baseline" secondItem="TBf-3l-ujT" secondAttribute="baseline" id="XJx-eb-CaU"/>
                             <constraint firstItem="o24-a7-ayU" firstAttribute="leading" secondItem="83W-1O-V9b" secondAttribute="trailing" constant="-8" id="XWk-AE-C0Q"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="EnY-9p-vg6" secondAttribute="trailing" constant="20" id="Xdp-3u-wWO"/>
                             <constraint firstItem="0OZ-Q5-FOm" firstAttribute="height" secondItem="2U5-tK-XSF" secondAttribute="height" id="YgL-V3-eK1"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="xaD-eI-0iC" secondAttribute="top" id="a9d-tt-UVw"/>
+                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="leading" secondItem="xaD-eI-0iC" secondAttribute="leading" id="aJq-A5-V13"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="height" secondItem="jcY-uc-kOc" secondAttribute="height" id="aRt-xn-XOn"/>
-                            <constraint firstItem="jcY-uc-kOc" firstAttribute="top" secondItem="VQH-pt-DQg" secondAttribute="bottom" constant="8" id="awm-cC-qJk"/>
-                            <constraint firstItem="X53-jN-wEO" firstAttribute="height" secondItem="Ika-qg-5Cf" secondAttribute="height" id="b41-m1-M61"/>
-                            <constraint firstItem="xaD-eI-0iC" firstAttribute="leading" secondItem="bUC-MN-PXO" secondAttribute="trailing" constant="8" id="bch-er-ji1"/>
-                            <constraint firstItem="X53-jN-wEO" firstAttribute="leading" secondItem="OKR-t9-9Lk" secondAttribute="trailing" constant="8" id="bf6-DE-9Kw"/>
-                            <constraint firstItem="jcY-uc-kOc" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="cMD-P8-Xpn"/>
+                            <constraint firstItem="jcY-uc-kOc" firstAttribute="top" secondItem="VQH-pt-DQg" secondAttribute="bottom" constant="12" id="awm-cC-qJk"/>
+                            <constraint firstItem="VQH-pt-DQg" firstAttribute="bottom" secondItem="2Af-Xt-dHE" secondAttribute="bottom" id="baY-OW-a0e"/>
+                            <constraint firstItem="xaD-eI-0iC" firstAttribute="leading" secondItem="bUC-MN-PXO" secondAttribute="trailing" constant="12" id="bch-er-ji1"/>
+                            <constraint firstItem="Ika-qg-5Cf" firstAttribute="trailing" secondItem="43w-iO-MOK" secondAttribute="trailing" id="eOm-kP-jgo"/>
                             <constraint firstItem="qsg-bt-8aj" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="fRs-Rk-0rr"/>
+                            <constraint firstItem="jcY-uc-kOc" firstAttribute="trailing" secondItem="VQH-pt-DQg" secondAttribute="trailing" id="fcJ-Zg-Pyb"/>
                             <constraint firstAttribute="trailingMargin" secondItem="o24-a7-ayU" secondAttribute="trailing" constant="4" id="g7A-RZ-ahL"/>
+                            <constraint firstItem="X53-jN-wEO" firstAttribute="trailing" secondItem="Ika-qg-5Cf" secondAttribute="trailing" id="gAo-hL-N6Z"/>
                             <constraint firstItem="xaD-eI-0iC" firstAttribute="width" secondItem="bUC-MN-PXO" secondAttribute="width" id="gKL-gX-6XW"/>
-                            <constraint firstItem="EnY-9p-vg6" firstAttribute="leading" secondItem="xaD-eI-0iC" secondAttribute="trailing" constant="8" id="gaI-Iz-Mbb"/>
+                            <constraint firstItem="VQH-pt-DQg" firstAttribute="top" secondItem="2Af-Xt-dHE" secondAttribute="top" id="gX5-eD-dnH"/>
+                            <constraint firstItem="EnY-9p-vg6" firstAttribute="leading" secondItem="xaD-eI-0iC" secondAttribute="trailing" constant="12" id="gaI-Iz-Mbb"/>
                             <constraint firstItem="0OZ-Q5-FOm" firstAttribute="leading" secondItem="2U5-tK-XSF" secondAttribute="leading" id="glK-DZ-jqB"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="height" secondItem="VQH-pt-DQg" secondAttribute="height" id="hK7-a9-qXm"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="bottom" secondItem="qsg-bt-8aj" secondAttribute="bottom" constant="45.5" id="hQ8-7s-N3Y"/>
-                            <constraint firstItem="VQH-pt-DQg" firstAttribute="top" secondItem="bUC-MN-PXO" secondAttribute="bottom" constant="8" id="ixW-xW-pwo"/>
+                            <constraint firstItem="2Af-Xt-dHE" firstAttribute="bottom" secondItem="43w-iO-MOK" secondAttribute="bottom" id="hgB-qy-pct"/>
+                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="leading" secondItem="24A-83-L7p" secondAttribute="leading" id="iVJ-MD-gQR"/>
+                            <constraint firstItem="VQH-pt-DQg" firstAttribute="top" secondItem="bUC-MN-PXO" secondAttribute="bottom" constant="12" id="ixW-xW-pwo"/>
+                            <constraint firstItem="Cz1-M6-v6N" firstAttribute="top" secondItem="OKR-t9-9Lk" secondAttribute="top" id="j3p-Mr-jhX"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="EnY-9p-vg6" secondAttribute="top" id="jXQ-zk-dqu"/>
                             <constraint firstItem="TBf-3l-ujT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="AIC-c4-j2z" secondAttribute="trailing" constant="5" id="kuG-nu-Mie"/>
+                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="bottom" secondItem="X53-jN-wEO" secondAttribute="bottom" id="mAd-k7-CiZ"/>
+                            <constraint firstItem="43w-iO-MOK" firstAttribute="trailing" secondItem="EnY-9p-vg6" secondAttribute="trailing" id="mwV-2Y-5O3"/>
                             <constraint firstItem="NVx-Sw-vEc" firstAttribute="leading" secondItem="Dgy-LD-D1e" secondAttribute="leading" constant="20" id="my5-Bp-AzY"/>
                             <constraint firstItem="83W-1O-V9b" firstAttribute="centerY" secondItem="TBf-3l-ujT" secondAttribute="baseline" id="nAr-id-3uq"/>
+                            <constraint firstItem="jcY-uc-kOc" firstAttribute="top" secondItem="24A-83-L7p" secondAttribute="top" id="nzY-px-wsB"/>
                             <constraint firstItem="o24-a7-ayU" firstAttribute="top" secondItem="Dgy-LD-D1e" secondAttribute="top" constant="19" id="pRd-bj-xuE"/>
-                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="width" secondItem="X53-jN-wEO" secondAttribute="width" id="pp6-lb-8sd"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="qsg-bt-8aj" secondAttribute="trailing" constant="20" id="rbl-uL-gje"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="top" secondItem="2Af-Xt-dHE" secondAttribute="bottom" constant="8" id="sSH-wb-rwl"/>
-                            <constraint firstItem="24A-83-L7p" firstAttribute="width" secondItem="Ika-qg-5Cf" secondAttribute="width" id="srE-fo-QoP"/>
-                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="width" secondItem="Cz1-M6-v6N" secondAttribute="width" id="szV-ko-947"/>
-                            <constraint firstItem="Ika-qg-5Cf" firstAttribute="top" secondItem="43w-iO-MOK" secondAttribute="bottom" constant="8" id="v1p-Kc-QgN"/>
+                            <constraint firstItem="X53-jN-wEO" firstAttribute="leading" secondItem="Ika-qg-5Cf" secondAttribute="leading" id="sTl-Rg-lXY"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="bottom" secondItem="2U5-tK-XSF" secondAttribute="bottom" constant="4" id="vDg-Pl-JFj"/>
                             <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="2U5-tK-XSF" secondAttribute="trailing" constant="10" id="vfg-Eq-K25"/>
                             <constraint firstItem="NVx-Sw-vEc" firstAttribute="top" secondItem="83W-1O-V9b" secondAttribute="bottom" constant="-10" id="wHU-qD-XQr"/>
-                            <constraint firstItem="OKR-t9-9Lk" firstAttribute="top" secondItem="24A-83-L7p" secondAttribute="bottom" constant="8" id="wfS-gd-BHd"/>
-                            <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="43w-iO-MOK" secondAttribute="trailing" constant="20" id="xdH-DG-M3s"/>
                             <constraint firstItem="bUC-MN-PXO" firstAttribute="top" secondItem="NVx-Sw-vEc" secondAttribute="top" constant="13" id="xg8-oN-0vj"/>
-                            <constraint firstItem="Dgy-LD-D1e" firstAttribute="trailing" secondItem="Ika-qg-5Cf" secondAttribute="trailing" constant="20" id="zKB-24-BKE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Dgy-LD-D1e"/>
                     </view>
@@ -3210,7 +3225,6 @@ bitpay.com/rates and poloniex</string>
         <image name="dash-center-logo" width="175" height="142"/>
         <image name="dash-digital-cash" width="172" height="82"/>
         <image name="dashwallet-white" width="100" height="27"/>
-        <image name="deletetoleft" width="29" height="23"/>
         <image name="deletetoleft-pressed" width="29" height="23"/>
         <image name="flash" width="33" height="33"/>
         <image name="lock" width="12" height="16"/>

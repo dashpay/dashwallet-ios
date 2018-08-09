@@ -402,7 +402,7 @@
 "reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"request" = "verzoek";
+"Request" = "verzoek";
 
 /* No comment provided by engineer. */
 "request an amount" = "verzoek een bedrag";
