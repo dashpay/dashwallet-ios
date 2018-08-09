@@ -123,6 +123,10 @@
     
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be dealocated immediately
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        paragraphStyle.lineSpacing = 20;
+        paragraphStyle.alignment = NSTextAlignmentCenter;
+        NSDictionary * attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:16 weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
         if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
             CGRect r;
             NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
@@ -143,10 +147,11 @@
                 
                 [s appendString:w];
             }
-            
-            self.seedLabel.text = s;
+            self.seedLabel.attributedText = [[NSAttributedString alloc] initWithString:s attributes:attributes];;
         }
-        else self.seedLabel.text = self.seedPhrase;
+        else {
+            self.seedLabel.attributedText = [[NSAttributedString alloc] initWithString:self.seedPhrase attributes:attributes];
+        }
         
         self.seedPhrase = nil;
     }

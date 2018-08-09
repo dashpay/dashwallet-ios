@@ -32,6 +32,10 @@
 #import "NSString+Dash.h"
 #import "BRBubbleView.h"
 
+#define GRAY80_COLOR [UIColor colorWithWhite:0.80 alpha:1.0]
+#define OFFWHITE_COLOR [UIColor colorWithWhite:0.95 alpha:1.0]
+#define OFFBLUE_COLOR [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f]
+
 @interface BRAmountViewController ()
 
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *shapeshiftLocalCurrencyLabel, *addressLabel, *amountLabel;
@@ -56,7 +60,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
@@ -67,8 +72,8 @@
     self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"pay", nil)
                                                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.payButton.tintColor = [UIColor colorWithRed:168.0/255.0 green:230.0/255.0 blue:1.0 alpha:1.0];
-    self.amountLabel.attributedText = [manager attributedStringForDashAmount:0 withTintColor:[UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f] dashSymbolSize:CGSizeMake(15, 16)];
-    self.amountLabel.textColor = [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f];
+    self.amountLabel.attributedText = [manager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
+    self.amountLabel.textColor = OFFBLUE_COLOR;
     [self.decimalButton setTitle:manager.dashFormat.currencyDecimalSeparator forState:UIControlStateNormal];
     
     self.swapLeftLabel = [UILabel new];
@@ -100,12 +105,7 @@
 }
 
 -(UIStatusBarStyle)preferredStatusBarStyle {
-    if (self.navigationController.viewControllers.firstObject != self) {
-        return UIStatusBarStyleLightContent;
-    }
-    else {
-        return UIStatusBarStyleDefault;
-    }
+    return UIStatusBarStyleLightContent;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -122,13 +122,11 @@
     if (self.navigationController.viewControllers.firstObject != self) {
         self.navigationItem.leftBarButtonItem = nil;
         if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
-        self.navigationController.navigationBar.barStyle = UIStatusBarStyleLightContent;
     }
     else {
         self.payButton.title = NSLocalizedString(@"request", nil);
         self.payButton.tintColor = [UIColor whiteColor];
         self.navigationItem.rightBarButtonItem = self.payButton;
-        self.navigationController.navigationBar.barStyle = UIStatusBarStyleDefault;
     }
     
     self.balanceObserver =
@@ -177,7 +175,7 @@
         
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? [UIColor grayColor] : [UIColor colorWithWhite:0.75 alpha:1.0] dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
             [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager bitcoinCurrencyStringForAmount:amount]]];
         }
@@ -186,14 +184,14 @@
     } else {
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"("];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? [UIColor grayColor] : [UIColor colorWithWhite:0.75 alpha:1.0] dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
             [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager localCurrencyStringForDashAmount:amount]]];
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
     }
-    self.localCurrencyLabel.textColor = (amount > 0) ? [UIColor grayColor] : [UIColor colorWithWhite:0.75 alpha:1.0];
+    self.localCurrencyLabel.textColor = (amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR;
     
     if (self.usingShapeshift) {
         self.shapeshiftLocalCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",[manager localCurrencyStringForDashAmount:amount]];
@@ -329,7 +327,7 @@
     if (self.swapLeftLabel.hidden) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
         self.swapLeftLabel.textColor = (self.amountLabel.text.length > 0) ? self.amountLabel.textColor :
-        [UIColor colorWithWhite:0.75 alpha:1.0];
+        OFFBLUE_COLOR;
         self.swapLeftLabel.frame = self.localCurrencyLabel.frame;
         [self.localCurrencyLabel.superview addSubview:self.swapLeftLabel];
         self.swapLeftLabel.hidden = NO;
@@ -339,7 +337,7 @@
     if (self.swapRightLabel.hidden) {
         self.swapRightLabel.attributedText = self.amountLabel.attributedText;
         self.swapRightLabel.textColor = (self.amountLabel.text.length > 0) ? self.amountLabel.textColor :
-        [UIColor colorWithWhite:0.75 alpha:1.0];
+        OFFBLUE_COLOR;
         self.swapRightLabel.frame = self.amountLabel.frame;
         [self.amountLabel.superview addSubview:self.swapRightLabel];
         self.swapRightLabel.hidden = NO;
@@ -394,7 +392,7 @@
         self.swapRightLabel.attributedText = self.amountLabel.attributedText;
         self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
         self.swapRightLabel.textColor = (self.amountLabel.text.length > 0) ? self.amountLabel.textColor :
-        [UIColor colorWithWhite:0.75 alpha:1.0];
+        OFFBLUE_COLOR;
         [self.swapLeftLabel sizeToFit];
         [self.swapRightLabel sizeToFit];
         self.swapLeftLabel.center = self.swapRightLabel.center = p;
@@ -560,17 +558,17 @@
     
     if (formattedAmount.length == 0 || self.amountLabelIsEmpty) { // ""
         if (self.usingShapeshift) {
-            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m bitcoinCurrencyStringForAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:[UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f] dashSymbolSize:CGSizeMake(15, 16)];
+            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m bitcoinCurrencyStringForAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
         } else {
-            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m localCurrencyStringForDashAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:[UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f] dashSymbolSize:CGSizeMake(15, 16)];
+            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m localCurrencyStringForDashAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
         }
-        amountLabel.textColor = [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f];
+        amountLabel.textColor = OFFBLUE_COLOR;
     } else {
+        amountLabel.textColor = OFFWHITE_COLOR;
         if (!self.swapped) {
-            amountLabel.textColor = [UIColor blackColor];
             amountLabel.attributedText = [formattedAmount attributedStringForDashSymbolWithTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
         } else {
-            amountLabel.textColor = [UIColor blackColor];
+            
             amountLabel.text = formattedAmount;
         }
     }

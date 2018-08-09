@@ -26,7 +26,7 @@
 /* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
 "QQS-Me-RNh.title" = "ricordamelo più tardi";
 
-/* Class = "UILabel"; text = "please write it down"; ObjectID = "Td7-xP-kmB"; */
+/* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
 "Td7-xP-kmB.text" = "appuntala per favore";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
