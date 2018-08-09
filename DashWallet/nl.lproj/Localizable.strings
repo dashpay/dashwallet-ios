@@ -213,7 +213,7 @@
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
 
 /* No comment provided by engineer. */
-"done" = "voltooid";
+"Done" = "Done";
 
 /* No comment provided by engineer. */
 "double spend" = "dubbel uitgegeven";
@@ -400,6 +400,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
 "Request" = "verzoek";

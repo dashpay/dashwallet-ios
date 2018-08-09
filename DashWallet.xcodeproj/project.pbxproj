@@ -115,7 +115,8 @@
 		FB3FA3D61F2364140071FCC5 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
 		FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
 		FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC74211CC68E00BC9879 /* DWNumberButton.m */; };
-		FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWActionButton.m */; };
+		FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */; };
+		FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A01E414877001A1C8B /* NSString+Dash.m */; };
 		FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
@@ -579,8 +580,10 @@
 		FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWActionTableViewCell.m; sourceTree = "<group>"; };
 		FB43BC73211CC68E00BC9879 /* DWNumberButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberButton.h; sourceTree = "<group>"; };
 		FB43BC74211CC68E00BC9879 /* DWNumberButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberButton.m; sourceTree = "<group>"; };
-		FB43BC76211CD15500BC9879 /* DWActionButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWActionButton.h; sourceTree = "<group>"; };
-		FB43BC77211CD15500BC9879 /* DWActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWActionButton.m; sourceTree = "<group>"; };
+		FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBlueActionButton.h; sourceTree = "<group>"; };
+		FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBlueActionButton.m; sourceTree = "<group>"; };
+		FB43BC79211CE0F800BC9879 /* DWWhiteActionButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWhiteActionButton.h; sourceTree = "<group>"; };
+		FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWhiteActionButton.m; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -726,8 +729,10 @@
 				22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */,
 				FB43BC73211CC68E00BC9879 /* DWNumberButton.h */,
 				FB43BC74211CC68E00BC9879 /* DWNumberButton.m */,
-				FB43BC76211CD15500BC9879 /* DWActionButton.h */,
-				FB43BC77211CD15500BC9879 /* DWActionButton.m */,
+				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
+				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
+				FB43BC79211CE0F800BC9879 /* DWWhiteActionButton.h */,
+				FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1594,6 +1599,7 @@
 				FBFC2E9C211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */,
 				22DE8CF11D02407F007F07F3 /* BRWalletConstants.m in Sources */,
 				FBF2680F1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
+				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				BA7B535C1BDBC36700355E8D /* BRTransaction+Utils.m in Sources */,
 				758DBD0E1980634900389E2A /* BRTxDetailViewController.m in Sources */,
@@ -1602,7 +1608,7 @@
 				2AC92C8A1FEB0B8B008CAEE0 /* BRQRScanViewModel.m in Sources */,
 				752E28D119234C3600DB5A3C /* BRKey.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* BRScanViewController.m in Sources */,
-				FB43BC78211CD15500BC9879 /* DWActionButton.m in Sources */,
+				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
 				2204604E1B9F61E600D07B61 /* BREventManager.m in Sources */,
 				FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */,
 				752E28D219234C3600DB5A3C /* BRKey+BIP38.m in Sources */,

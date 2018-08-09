@@ -213,7 +213,7 @@
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
 
 /* No comment provided by engineer. */
-"done" = "完了";
+"Done" = "Done";
 
 /* No comment provided by engineer. */
 "double spend" = "２重支払い";
@@ -400,6 +400,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
+
+/* No comment provided by engineer. */
+"Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
 "Request" = "請求";

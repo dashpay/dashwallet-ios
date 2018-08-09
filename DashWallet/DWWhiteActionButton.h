@@ -1,5 +1,5 @@
 //
-//  DWActionButton.h
+//  DWWhiteActionButton.h
 //  dashwallet
 //
 //  Created by Sam Westrich on 8/10/18.
@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DWActionButton : UIButton
+@interface DWWhiteActionButton : UIButton
 
 @end

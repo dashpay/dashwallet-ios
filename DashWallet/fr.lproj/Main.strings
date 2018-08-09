@@ -23,9 +23,6 @@
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "envoyée";
 
-/* Class = "UIBarButtonItem"; title = "remind me later"; ObjectID = "QQS-Me-RNh"; */
-"QQS-Me-RNh.title" = "me la rappeler plus tard";
-
 /* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
 "Td7-xP-kmB.text" = "veuillez l'écrire sur papier";
 
@@ -148,3 +145,6 @@
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
 "Wym-3X-CXY.text" = "WARNING";
+
+/* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
+"UQm-Kc-aR1.normalTitle" = "Remind me later";

@@ -28,7 +28,7 @@
 #import "BRPeerManager.h"
 #import "NSMutableData+Bitcoin.h"
 #import "BREventManager.h"
-
+#import "DWWhiteActionButton.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
@@ -41,8 +41,7 @@
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *writeLabel;
 @property (nonatomic, strong) IBOutlet UIButton *writeButton;
-@property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, strong) IBOutlet UIBarButtonItem *remindButton, *doneButton;
+@property (strong, nonatomic) IBOutlet DWWhiteActionButton *doneButton;
 
 @property (nonatomic, strong) id resignActiveObserver, screenshotObserver;
 
@@ -86,10 +85,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    
-    self.doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", nil)
-                       style:UIBarButtonItemStylePlain target:self action:@selector(done:)];
     
     
 #if DEBUG
@@ -109,7 +104,7 @@
  
     // remove done button if we're not the root of the nav stack
     if (!self.inSetupMode) {
-        self.toolbar.hidden = YES;
+        self.doneButton.hidden = YES;
     }
     else delay *= 2; // extra delay before showing toggle when starting a new wallet
     
@@ -245,29 +240,18 @@
     }];
 }
 
-// MARK: - IBAction
-
-- (IBAction)done:(id)sender
-{
-    [BREventManager saveEvent:@"seed:dismiss"];
-    if (!self.inSetupMode) return;
-//    self.navigationController.presentingViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-//    [self.navigationController.presentingViewController dismissViewControllerAnimated:YES
-//     completion:nil];
-}
-
 - (IBAction)toggleWrite:(id)sender
 {
     [BREventManager saveEvent:@"seed:toggle_write"];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
 
     if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {
-        [self.toolbar setItems:@[self.toolbar.items[0], self.doneButton] animated:YES];
+        [self.doneButton setTitle:NSLocalizedString(@"Done",nil) forState:UIControlStateNormal];
         [self.writeButton setImage:[UIImage imageNamed:@"checkbox-checked"] forState:UIControlStateNormal];
         [defs removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     }
     else {
-        [self.toolbar setItems:@[self.toolbar.items[0], self.remindButton] animated:YES];
+        [self.doneButton setTitle:NSLocalizedString(@"Remind me later",nil) forState:UIControlStateNormal];
         [self.writeButton setImage:[UIImage imageNamed:@"checkbox-empty"] forState:UIControlStateNormal];
         [defs setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
     }

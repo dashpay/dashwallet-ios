@@ -213,7 +213,7 @@
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
 
 /* No comment provided by engineer. */
-"done" = "완료";
+"Done" = "Done";
 
 /* No comment provided by engineer. */
 "double spend" = "이중지불";
@@ -400,6 +400,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
+
+/* No comment provided by engineer. */
+"Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
 "Request" = "요청";
