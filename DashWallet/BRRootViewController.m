@@ -1380,14 +1380,14 @@
         [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
         self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                          containerView.frame.size.height/4.0);
+                                                          containerView.frame.size.height/4.0 - self.navigationController.navigationBar.frame.size.height);
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
               initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
                   from.view.center = CGPointMake(from.view.center.x, containerView.frame.size.height*3/2);
                   self.pageViewController.view.alpha = 1.0;
                   self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
-                                                                    containerView.frame.size.height/2);
+                                                                    containerView.frame.size.height/2 - self.navigationController.navigationBar.frame.size.height);
               } completion:^(BOOL finished) {
                   item.rightBarButtonItem = rightButton;
                   item.titleView = titleView;
