@@ -59,7 +59,7 @@
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
 "eJ2-5h-DO2.text" = "未承認";
 
-/* Class = "UINavigationItem"; title = "confirm:"; ObjectID = "fQN-xb-SYb"; */
+/* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
 "fQN-xb-SYb.title" = "意思の再確認：";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */

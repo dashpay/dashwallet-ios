@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "cerrar app";
 
-/* confirm */
-"confirm" = "confirmar";
+/* Confirm */
+"Confirm" = "confirmar";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmado en el bloque #%d";

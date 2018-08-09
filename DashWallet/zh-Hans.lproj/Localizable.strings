@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "关闭App";
 
-/* confirm */
-"confirm" = "确认";
+/* Confirm */
+"Confirm" = "确认";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "在区块#%d中已确认";

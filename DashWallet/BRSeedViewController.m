@@ -160,7 +160,7 @@
         self.resignActiveObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                if (self.navigationController.viewControllers.firstObject != self) {
+                if (![self.navigationController isNavigationBarHidden]) {
                     [self.navigationController popViewControllerAnimated:NO];
                 }
             }];
@@ -171,7 +171,7 @@
         self.screenshotObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
             object:nil queue:nil usingBlock:^(NSNotification *note) {
-                if (self.navigationController.viewControllers.firstObject != self) {
+                if (![self.navigationController isNavigationBarHidden]) {
                     
                     UIAlertController * alert = [UIAlertController
                                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)

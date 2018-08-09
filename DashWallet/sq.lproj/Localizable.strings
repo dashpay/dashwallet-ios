@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "mbyll aplikacionin";
 
-/* confirm */
-"confirm" = "confirm";
+/* Confirm */
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "konfirmuar në bllokun #%d";

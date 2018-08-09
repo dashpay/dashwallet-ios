@@ -395,7 +395,7 @@
         <scene sceneID="4aM-cf-dfl">
             <objects>
                 <navigationController definesPresentationContext="YES" id="HCk-Gb-uZI" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="AnC-Sa-145" customClass="BRNavigationBar">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" translucent="NO" id="AnC-Sa-145">
                         <rect key="frame" x="0.0" y="44" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <textAttributes key="titleTextAttributes">
@@ -1399,17 +1399,14 @@
             </objects>
             <point key="canvasLocation" x="1276" y="2158"/>
         </scene>
-        <!--confirm:-->
+        <!--Confirm:-->
         <scene sceneID="2Hc-ez-bvO">
             <objects>
-                <viewController storyboardIdentifier="WipeViewController" modalTransitionStyle="crossDissolve" id="5j4-Re-grj" customClass="BRRestoreViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WipeViewController" extendedLayoutIncludesOpaqueBars="YES" modalTransitionStyle="crossDissolve" id="5j4-Re-grj" customClass="BRRestoreViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="u2L-lU-MXZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" alpha="0.14999999999999999" contentMode="scaleAspectFill" image="wallpaper-default" translatesAutoresizingMaskIntoConstraints="NO" id="N12-14-Jsp">
-                                <rect key="frame" x="0.0" y="88" width="758" height="724"/>
-                            </imageView>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="289" translatesAutoresizingMaskIntoConstraints="NO" id="YC6-rN-4P5">
                                 <rect key="frame" x="32" y="94" width="311" height="51.333333333333343"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
@@ -1430,21 +1427,19 @@
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstAttribute="bottom" secondItem="N12-14-Jsp" secondAttribute="bottom" id="3Sp-6Y-lFN"/>
                             <constraint firstItem="Q4J-7m-uCP" firstAttribute="bottom" secondItem="3D6-D7-2JP" secondAttribute="bottom" constant="230" id="6gr-Qb-fmy"/>
-                            <constraint firstItem="N12-14-Jsp" firstAttribute="top" secondItem="Q4J-7m-uCP" secondAttribute="top" id="GVl-14-Aoi"/>
                             <constraint firstItem="3D6-D7-2JP" firstAttribute="leading" secondItem="Q4J-7m-uCP" secondAttribute="leading" constant="12" id="H1q-RD-UrJ"/>
                             <constraint firstItem="3D6-D7-2JP" firstAttribute="top" secondItem="YC6-rN-4P5" secondAttribute="bottom" constant="12" id="Hzn-9K-qd0"/>
                             <constraint firstItem="Q4J-7m-uCP" firstAttribute="trailing" secondItem="3D6-D7-2JP" secondAttribute="trailing" constant="12" id="NtE-Jt-OpD"/>
                             <constraint firstItem="YC6-rN-4P5" firstAttribute="top" secondItem="Q4J-7m-uCP" secondAttribute="top" constant="6" id="bmC-9u-liL"/>
-                            <constraint firstItem="N12-14-Jsp" firstAttribute="leading" secondItem="Q4J-7m-uCP" secondAttribute="leading" id="ey4-Ef-sWX"/>
                             <constraint firstItem="Q4J-7m-uCP" firstAttribute="centerX" secondItem="YC6-rN-4P5" secondAttribute="centerX" id="nLu-eA-b0A"/>
                             <constraint firstItem="YC6-rN-4P5" firstAttribute="leading" secondItem="u2L-lU-MXZ" secondAttribute="leadingMargin" constant="16" id="tW6-qm-xVY"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Q4J-7m-uCP"/>
                     </view>
-                    <navigationItem key="navigationItem" title="confirm:" id="fQN-xb-SYb">
+                    <navigationItem key="navigationItem" title="Confirm:" id="fQN-xb-SYb">
                         <barButtonItem key="leftBarButtonItem" systemItem="stop" id="2vu-AA-9sh">
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="cancel:" destination="5j4-Re-grj" id="3jF-fF-7CC"/>
                             </connections>

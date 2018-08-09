@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "ukončiť applikáciu";
 
-/* confirm */
-"confirm" = "potvrdiť:";
+/* Confirm */
+"Confirm" = "potvrdiť:";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potvrdené v bloku #%d";

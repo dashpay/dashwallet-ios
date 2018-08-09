@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "затвори приложението";
 
-/* confirm */
-"confirm" = "потвърдено";
+/* Confirm */
+"Confirm" = "потвърдено";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "потвърдено в блок #%d";

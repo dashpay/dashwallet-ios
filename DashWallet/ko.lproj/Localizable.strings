@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
 
-/* confirm */
-"confirm" = "confirm";
+/* Confirm */
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";

@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "stäng app";
 
-/* confirm */
-"confirm" = "bekräfta";
+/* Confirm */
+"Confirm" = "bekräfta";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekräftad i block #%d";

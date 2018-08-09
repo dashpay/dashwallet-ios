@@ -79,14 +79,16 @@
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    [titleLabel setText:(self.navigationController.viewControllers.firstObject != self)?NSLocalizedString(@"Recovery phrase",@"Recovery phrase"):NSLocalizedString(@"confirm",@"confirm")];
-    [titleLabel setTextColor:[UIColor blackColor]];
+    [titleLabel setText:(self.navigationController.viewControllers.firstObject != self)?NSLocalizedString(@"Recovery phrase",@"Recovery phrase"):NSLocalizedString(@"Confirm",@"Confirm")];
+    [titleLabel setTextColor:[UIColor whiteColor]];
     self.navigationItem.titleView = titleLabel;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 
     [self.textView becomeFirstResponder];
 }
@@ -96,6 +98,14 @@
     self.textView.text = nil;
     
     [super viewWillDisappear:animated];
+}
+
+-(BOOL)prefersStatusBarHidden {
+    return FALSE;
+}
+
+-(UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
 }
 
 - (void)dealloc

@@ -152,8 +152,8 @@
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
 
-/* confirm */
-"confirm" = "xác thực";
+/* Confirm */
+"Confirm" = "xác thực";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "đã được xác thực trong khối #%d";

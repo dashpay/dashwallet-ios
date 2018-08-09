@@ -726,7 +726,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                 }
             }
             if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"confirm", nil)
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Confirm", nil)
                                                                                message:authprompt
                                                                         preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
