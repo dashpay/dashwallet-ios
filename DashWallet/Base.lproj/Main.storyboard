@@ -481,11 +481,13 @@
                             </button>
                             <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progressViewStyle="bar" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="3jf-fx-Ie3">
                                 <rect key="frame" x="0.0" y="88" width="375" height="2.6666666666666714"/>
-                                <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="tintColor" red="0.49411764705882355" green="0.82745098039215681" blue="0.12941176470588234" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="progressTintColor" red="0.4941176471" green="0.82745098039999998" blue="0.12941176469999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="trackTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </progressView>
                             <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progressViewStyle="bar" progress="0.10000000000000003" translatesAutoresizingMaskIntoConstraints="NO" id="eZp-EX-faL">
                                 <rect key="frame" x="0.0" y="88" width="375" height="2.6666666666666714"/>
+                                <color key="tintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                             </progressView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B1V-5u-az7">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
@@ -1109,8 +1111,8 @@
                                     <constraint firstAttribute="height" constant="20" id="pK4-82-q4U"/>
                                 </constraints>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use Instant Send" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbm-03-nu4">
-                                <rect key="frame" x="28.000000000000007" y="583.33333333333337" width="119.66666666666669" height="17.333333333333371"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Use InstantSend" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lbm-03-nu4">
+                                <rect key="frame" x="40" y="585.33333333333337" width="116" height="17.333333333333371"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -1147,7 +1149,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <gestureRecognizers/>
                         <constraints>
                             <constraint firstItem="dJ4-yH-e9Q" firstAttribute="leading" secondItem="lis-Qt-01n" secondAttribute="leading" id="2Ct-YB-o6J"/>
@@ -1168,13 +1170,13 @@
                             <constraint firstItem="lis-Qt-01n" firstAttribute="bottom" secondItem="vcU-No-j7B" secondAttribute="bottom" id="Ikc-Ep-2uD"/>
                             <constraint firstItem="lnR-VB-sVM" firstAttribute="top" secondItem="lis-Qt-01n" secondAttribute="top" id="Iq0-LN-gag"/>
                             <constraint firstItem="taX-nY-KZL" firstAttribute="leading" secondItem="lis-Qt-01n" secondAttribute="leading" id="JEa-lk-696"/>
-                            <constraint firstItem="lbm-03-nu4" firstAttribute="leading" secondItem="bfj-xS-5rN" secondAttribute="leading" constant="8" id="K3d-K6-PFD"/>
+                            <constraint firstItem="lbm-03-nu4" firstAttribute="leading" secondItem="bfj-xS-5rN" secondAttribute="leading" constant="20" id="K3d-K6-PFD"/>
                             <constraint firstItem="lis-Qt-01n" firstAttribute="trailing" secondItem="Miu-hY-NqY" secondAttribute="trailing" id="LIX-id-11v"/>
                             <constraint firstItem="lis-Qt-01n" firstAttribute="trailing" secondItem="dJ4-yH-e9Q" secondAttribute="trailing" id="M1G-dT-1ae"/>
                             <constraint firstItem="2jR-QE-A2g" firstAttribute="top" secondItem="ce6-Wi-wk4" secondAttribute="bottom" id="Mta-2T-cIk"/>
                             <constraint firstItem="vcU-No-j7B" firstAttribute="leading" secondItem="lis-Qt-01n" secondAttribute="leading" id="OES-vg-6TJ"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="height" secondItem="ce6-Wi-wk4" secondAttribute="height" id="TXg-Ml-GsC"/>
-                            <constraint firstItem="lbm-03-nu4" firstAttribute="baseline" secondItem="aeV-sO-1m0" secondAttribute="baseline" constant="-10" id="Tq9-AY-eFN"/>
+                            <constraint firstItem="lbm-03-nu4" firstAttribute="baseline" secondItem="aeV-sO-1m0" secondAttribute="baseline" constant="-8" id="Tq9-AY-eFN"/>
                             <constraint firstItem="dJ4-yH-e9Q" firstAttribute="top" secondItem="bfj-xS-5rN" secondAttribute="bottom" id="TyI-co-pPr"/>
                             <constraint firstItem="F30-En-QkL" firstAttribute="bottom" secondItem="aeV-sO-1m0" secondAttribute="bottom" id="U0Q-Kz-p0l"/>
                             <constraint firstItem="aeV-sO-1m0" firstAttribute="top" secondItem="4Ur-j7-v3L" secondAttribute="bottom" constant="10" id="Vaa-BL-frv"/>
@@ -2452,7 +2454,7 @@ bitpay.com/rates and poloniex</string>
                     <navigationItem key="navigationItem" id="xhy-mj-rkK">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="2TI-4e-OIp">
-                            <rect key="frame" x="138" y="9" width="100" height="27"/>
+                            <rect key="frame" x="137.66666666666666" y="8.6666666666666643" width="100" height="27"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
