@@ -851,13 +851,14 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XV7-2s-hZs">
-                                <rect key="frame" x="8" y="526" width="359" height="40"/>
+                                <rect key="frame" x="8" y="522" width="359" height="40"/>
                                 <gestureRecognizers/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="IAL-YH-UYR"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                 <state key="normal" title="1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW">
+                                    <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <attributedString key="userComments">
@@ -873,7 +874,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ng6-uV-YUC" customClass="DWShareActionButton">
-                                <rect key="frame" x="93.666666666666671" y="574" width="187.66666666666663" height="30"/>
+                                <rect key="frame" x="93.666666666666671" y="564" width="187.66666666666663" height="30"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="5PH-ym-KxU"/>
@@ -897,9 +898,9 @@
                         <gestureRecognizers/>
                         <constraints>
                             <constraint firstItem="LDt-79-hdf" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" id="2VL-Lz-wCf"/>
-                            <constraint firstItem="LDt-79-hdf" firstAttribute="leading" secondItem="bFo-w9-Ygt" secondAttribute="leadingMargin" constant="-16" id="4No-M2-7Hb"/>
+                            <constraint firstItem="LDt-79-hdf" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="4nT-t4-90q"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="height" secondItem="LDt-79-hdf" secondAttribute="height" id="6oc-XO-IL9"/>
-                            <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="8" id="7pr-Px-FAo"/>
+                            <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="4" id="7pr-Px-FAo"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerX" secondItem="Tcv-OZ-Abu" secondAttribute="centerX" id="CBr-ND-UkV"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="centerX" secondItem="qel-3J-2VC" secondAttribute="centerX" id="Cbc-27-Go0"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ng6-uV-YUC" secondAttribute="trailing" constant="40" id="DYF-Ai-k8A"/>
@@ -910,7 +911,7 @@
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerY" secondItem="bFo-w9-Ygt" secondAttribute="centerY" constant="30" id="XPm-Qw-ucZ"/>
                             <constraint firstItem="PTm-4L-adQ" firstAttribute="top" secondItem="LDt-79-hdf" secondAttribute="bottom" constant="1.5" id="cCU-b2-B23"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="top" secondItem="Tcv-OZ-Abu" secondAttribute="top" id="dnB-NB-OMz"/>
-                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="top" secondItem="XV7-2s-hZs" secondAttribute="bottom" constant="8" id="elG-63-ehC"/>
+                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="top" secondItem="XV7-2s-hZs" secondAttribute="bottom" constant="2" id="elG-63-ehC"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="jn3-ui-GdX"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="nlj-VI-J9W"/>
                             <constraint firstItem="LDt-79-hdf" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="xLW-Of-ERh"/>
