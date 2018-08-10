@@ -581,6 +581,7 @@ static NSString *dateFormat(NSString *template)
                 if (! unconfirmedLabel.hidden) {
                     unconfirmedLabel.layer.cornerRadius = 9.0;
                     unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"   "];
+                    unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.85 alpha:1.0];
                 }
                 else {
                     sentLabel.layer.cornerRadius = 9.0;

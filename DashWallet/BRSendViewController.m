@@ -1030,11 +1030,12 @@ static NSString *sanitizeString(NSString *s)
                     [self cancelOrChangeAmount];
                     return;
                 }
-                
-                if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
-                    [self.navigationController popToRootViewControllerAnimated:YES];
+                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[BRAmountViewController class]]) {
+                    [self.navigationController.presentedViewController dismissViewControllerAnimated:TRUE completion:^{
+                        
+                    }];
                 }
-                
+
                 __block BOOL waiting = YES, sent = NO;
                 
                 [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
