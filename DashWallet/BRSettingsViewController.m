@@ -443,7 +443,10 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    if (tableView == self.selectorController.tableView && self.selectorOptions.count == 0) return self.noOptionsText;
+    if (tableView == self.selectorController.tableView) {
+        if (self.selectorOptions.count == 0) return self.noOptionsText;
+        return nil;
+    }
     
     switch (section) {
         case 0:
