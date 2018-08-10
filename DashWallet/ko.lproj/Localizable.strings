@@ -180,6 +180,9 @@
 "couldn't transmit payment to dash network" = "지불 내용을 대쉬 네트워크에 전송할 수 없었습니다";
 
 /* No comment provided by engineer. */
+"CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
 "Dash address" = "대쉬 주소";
 
 /* No comment provided by engineer. */
@@ -250,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "from:" = "보낸 주소:";
+
+/* No comment provided by engineer. */
+"GENERAL" = "GENERAL";
 
 /* No comment provided by engineer. */
 "hour" = "시간";

@@ -180,6 +180,9 @@
 "couldn't transmit payment to dash network" = "de betaling kan niet worden verstuurd naar het dash-netwerk";
 
 /* No comment provided by engineer. */
+"CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
 "Dash address" = "Dash-adres";
 
 /* No comment provided by engineer. */
@@ -250,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "from:" = "van:";
+
+/* No comment provided by engineer. */
+"GENERAL" = "GENERAL";
 
 /* No comment provided by engineer. */
 "hour" = "uur";

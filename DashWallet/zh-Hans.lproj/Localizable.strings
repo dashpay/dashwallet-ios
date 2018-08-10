@@ -180,6 +180,9 @@
 "couldn't transmit payment to dash network" = "无法将交易发送到达世币网络";
 
 /* No comment provided by engineer. */
+"CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
 "Dash address" = "达世币地址";
 
 /* No comment provided by engineer. */
@@ -250,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "from:" = "来自：";
+
+/* No comment provided by engineer. */
+"GENERAL" = "GENERAL";
 
 /* No comment provided by engineer. */
 "hour" = "小时";

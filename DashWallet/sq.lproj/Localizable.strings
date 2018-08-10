@@ -180,6 +180,9 @@
 "couldn't transmit payment to dash network" = "nuk mund të transmetohet pagesa në rrjetin dash";
 
 /* No comment provided by engineer. */
+"CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
 "Dash address" = "Dash adresa";
 
 /* No comment provided by engineer. */
@@ -250,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "from:" = "nga:";
+
+/* No comment provided by engineer. */
+"GENERAL" = "GENERAL";
 
 /* No comment provided by engineer. */
 "hour" = "orë";

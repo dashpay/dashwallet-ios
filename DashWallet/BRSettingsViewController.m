@@ -342,7 +342,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     if (tableView == self.selectorController.tableView) return 1;
-    return 3;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -350,9 +350,8 @@
     if (tableView == self.selectorController.tableView) return self.selectorOptions.count;
     
     switch (section) {
-        case 0: return 2;
-        case 1: return (self.touchId || self.faceId) ? 3 : 2;
-        case 2: return 3;
+        case 0: return 2 + ((self.touchId || self.faceId) ? 3 : 2);
+        case 1: return 3;
     }
     
     return 0;
@@ -390,18 +389,12 @@
                 case 1:
                     cell.textLabel.text = NSLocalizedString(@"Recovery phrase", nil);
                     break;
-            }
-            
-            break;
-            
-        case 1:
-            switch (indexPath.row) {
-                case 0:
+                case 2:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
                     cell.detailTextLabel.text = manager.localCurrencyCode;
                     break;
-            
-                case 1:
+                    
+                case 3:
                     if (self.touchId || self.faceId) {
                         cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
                         cell.textLabel.text = (self.touchId)?NSLocalizedString(@"Touch ID limit", nil):NSLocalizedString(@"Face ID limit", nil);
@@ -410,21 +403,20 @@
                         goto _switch_cell;
                     }
                     break;
-                case 2:
+                case 4:
                 {
-_switch_cell:
+                _switch_cell:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"SwitchCell" forIndexPath:indexPath];
                     BRUserDefaultsSwitchCell *switchCell = (BRUserDefaultsSwitchCell *)cell;
                     switchCell.titleLabel.text = NSLocalizedString(@"Enable receive notifications", nil);
                     [switchCell setUserDefaultsKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
                     break;
                 }
-                    
             }
             
             break;
             
-        case 2:
+        case 1:
             switch (indexPath.row) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
@@ -455,15 +447,12 @@ _switch_cell:
     
     switch (section) {
         case 0:
-            return nil;
+            return NSLocalizedString(@"GENERAL",nil);
             
         case 1:
-            return nil;
+            return NSLocalizedString(@"CRITICAL",nil);
             
         case 2:
-            return nil;
-            
-        case 3:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
     }
@@ -490,12 +479,12 @@ _switch_cell:
 {
     UIView *sectionHeader = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
                                                          [self tableView:tableView heightForHeaderInSection:section])];
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 0.0, sectionHeader.frame.size.width - 20.0,
-                                                           sectionHeader.frame.size.height - 22.0)];
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(16.0, 10.0, sectionHeader.frame.size.width - 20.0,
+                                                           sectionHeader.frame.size.height - 12.0)];
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.font = [UIFont systemFontOfSize:14];
+    titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
     titleLabel.textColor = [UIColor grayColor];
     titleLabel.shadowColor = [UIColor whiteColor];
     titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -670,18 +659,12 @@ _switch_cell:
                 case 1: // recovery phrase
                     [self showRecoveryPhrase];
                     break;
-            }
-            
-            break;
-            
-        case 1:
-            switch (indexPath.row) {
-                case 0: // local currency
+                case 2: // local currency
                     [self showCurrencySelector];
                     
                     break;
                     
-                case 1: // touch id spending limit
+                case 3: // touch id spending limit
                     if (self.touchId || self.faceId) {
                         [self performSelector:@selector(touchIdLimit:) withObject:nil afterDelay:0.0];
                         break;
@@ -689,7 +672,7 @@ _switch_cell:
                         goto _deselect_switch;
                     }
                     break;
-                case 2:
+                case 4:
 _deselect_switch:
                     {
                         [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -699,7 +682,7 @@ _deselect_switch:
             
             break;
             
-        case 2:
+        case 1:
             switch (indexPath.row) {
                 case 0: // change passcode
                     [BREventManager saveEvent:@"settings:change_pin"];

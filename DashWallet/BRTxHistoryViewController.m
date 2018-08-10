@@ -43,6 +43,7 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+#define OFFBLUE_COLOR [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f]
 
 static NSString *dateFormat(NSString *template)
 {
@@ -520,7 +521,7 @@ static NSString *dateFormat(NSString *template)
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
                 
-                textLabel.textColor = UIColorFromRGB(0x008DE4);
+                textLabel.textColor = [UIColor darkTextColor];
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.backgroundColor = [UIColor clearColor];
@@ -556,21 +557,21 @@ static NSString *dateFormat(NSString *template)
                 }
                 sentLabel.textColor = [UIColor whiteColor];
                 if (sent > 0 && received == sent) {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:sent];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:sent withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:sent]];
                     sentLabel.text = NSLocalizedString(@"Moved", nil);
                     sentLabel.backgroundColor = UIColorFromRGB(0x008DE4);
                 }
                 else if (sent > 0) {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:received - sent];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:received - sent withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"Sent", nil);
                     sentLabel.backgroundColor = UIColorFromRGB(0xD0021B);
                 }
                 else {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:received];
+                    textLabel.attributedText = [manager attributedStringForDashAmount:received withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received]];
                     sentLabel.text = NSLocalizedString(@"Received", nil);
