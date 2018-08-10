@@ -303,7 +303,7 @@
 "more..." = "περισσότερα...";
 
 /* No comment provided by engineer. */
-"moved" = "μετακινηθηκε";
+"Moved" = "μετακινηθηκε";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Λάβετε dash σε αυτή τη διεύθυνση: %@";
 
 /* No comment provided by engineer. */
-"received" = "ελήφθησαν";
+"Received" = "ελήφθησαν";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ελήφθη %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "στείλτε αίτημα ως μήνυμα";
 
 /* No comment provided by engineer. */
-"sent" = "εστάλη";
+"Sent" = "εστάλη";
 
 /* No comment provided by engineer. */
 "sent!" = "εστάλη!";

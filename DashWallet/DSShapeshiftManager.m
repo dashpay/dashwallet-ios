@@ -229,7 +229,7 @@
   
  Status: Received (we see a new deposit but have not finished processing it)
      {
-         status:"received",
+         status:"Received",
          address:[address]           //matches address submitted
      }
   

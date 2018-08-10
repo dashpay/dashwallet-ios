@@ -75,7 +75,7 @@
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableViewCell>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCell" rowHeight="75" id="apT-vb-EOy">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCell" rowHeight="75" id="apT-vb-EOy" customClass="DWTransactionTableViewCell">
                                 <rect key="frame" x="0.0" y="97" width="375" height="75"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="apT-vb-EOy" id="6S0-4K-BGB">
@@ -90,10 +90,10 @@
                                             </constraints>
                                         </view>
                                         <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="unconfirmed" textAlignment="center" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="73" translatesAutoresizingMaskIntoConstraints="NO" id="eJ2-5h-DO2">
-                                            <rect key="frame" x="15" y="20.666666666666668" width="93" height="20.000000000000004"/>
+                                            <rect key="frame" x="15" y="18.666666666666668" width="93" height="24.000000000000004"/>
                                             <color key="backgroundColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="alh-vl-szr"/>
+                                                <constraint firstAttribute="height" constant="24" id="alh-vl-szr"/>
                                             </constraints>
                                             <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                             <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -101,11 +101,11 @@
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="6" contentMode="left" horizontalHuggingPriority="249" text="sent" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="27.5" translatesAutoresizingMaskIntoConstraints="NO" id="FjB-H2-BnK">
-                                            <rect key="frame" x="14.999999999999996" y="20.666666666666668" width="39.666666666666657" height="20.000000000000004"/>
+                                            <rect key="frame" x="15.000000000000002" y="18.666666666666668" width="30.666666666666671" height="24.000000000000004"/>
                                             <constraints>
-                                                <constraint firstAttribute="height" constant="20" id="QMP-Yf-1fL"/>
+                                                <constraint firstAttribute="height" constant="24" id="QMP-Yf-1fL"/>
                                             </constraints>
-                                            <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
+                                            <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                             <size key="shadowOffset" width="0.0" height="0.0"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="ƀ 1,000,000" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="87.5" translatesAutoresizingMaskIntoConstraints="NO" id="PSx-oa-hSL" userLabel="ƀ 1,000,000">
@@ -209,8 +209,8 @@
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="mUj-av-ePC" secondAttribute="trailing" id="1HK-Zn-2a8"/>
                                         <constraint firstAttribute="bottom" secondItem="mUj-av-ePC" secondAttribute="bottom" constant="-1" id="1qQ-Zf-hAA"/>
-                                        <constraint firstItem="PSx-oa-hSL" firstAttribute="top" secondItem="FjB-H2-BnK" secondAttribute="top" id="3xr-qa-8NP"/>
-                                        <constraint firstItem="eJ2-5h-DO2" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="top" id="6yQ-fp-xao"/>
+                                        <constraint firstItem="PSx-oa-hSL" firstAttribute="top" secondItem="FjB-H2-BnK" secondAttribute="top" constant="2" id="3xr-qa-8NP"/>
+                                        <constraint firstItem="eJ2-5h-DO2" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="top" constant="-2" id="6yQ-fp-xao"/>
                                         <constraint firstItem="mUj-av-ePC" firstAttribute="leading" secondItem="6S0-4K-BGB" secondAttribute="leading" id="768-OW-ZQP"/>
                                         <constraint firstItem="pXc-8D-8Gh" firstAttribute="top" secondItem="PSx-oa-hSL" secondAttribute="bottom" constant="5" id="836-R4-FBl"/>
                                         <constraint firstAttribute="trailing" secondItem="PSx-oa-hSL" secondAttribute="leading" constant="130" id="9Af-rg-OKI"/>
@@ -238,6 +238,16 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <outlet property="amountLabel" destination="PSx-oa-hSL" id="IW7-8U-34h"/>
+                                    <outlet property="confirmationsLabel" destination="eJ2-5h-DO2" id="aw0-ac-CY7"/>
+                                    <outlet property="dateLabel" destination="pXc-8D-8Gh" id="HJ9-vh-rmb"/>
+                                    <outlet property="directionLabel" destination="FjB-H2-BnK" id="5u4-Cn-CJ0"/>
+                                    <outlet property="fiatAmountLabel" destination="qNV-Ka-14n" id="8RG-ls-M5E"/>
+                                    <outlet property="remainingAmountLabel" destination="ue1-2S-fEr" id="BDZ-OY-Hsj"/>
+                                    <outlet property="remainingFiatAmountLabel" destination="O7K-cF-GAA" id="gNS-3V-LUP"/>
+                                    <outlet property="shapeshiftImageView" destination="zUE-VM-MXo" id="xpW-3U-I0k"/>
+                                </connections>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="gray" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="DisclosureCell" textLabel="DQw-C2-pbB" style="IBUITableViewCellStyleDefault" id="97g-EP-kSv" customClass="DWActionTableViewCell">
                                 <rect key="frame" x="0.0" y="172" width="375" height="51"/>
@@ -1048,7 +1058,7 @@
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
-                                <state key="highlighted" image="cameraguide-small-blue">
+                                <state key="highlighted" image="cameraguide-blue-small">
                                     <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2442,7 +2452,7 @@ bitpay.com/rates and poloniex</string>
                     <navigationItem key="navigationItem" id="xhy-mj-rkK">
                         <nil key="title"/>
                         <view key="titleView" contentMode="scaleToFill" id="2TI-4e-OIp">
-                            <rect key="frame" x="137.66666666666666" y="8.6666666666666643" width="100" height="27"/>
+                            <rect key="frame" x="138" y="9" width="100" height="27"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" image="dashwallet-white" translatesAutoresizingMaskIntoConstraints="NO" id="8lh-UZ-tbs">
@@ -3240,8 +3250,8 @@ bitpay.com/rates and poloniex</string>
         <image name="button-bg-disabled" width="10" height="11"/>
         <image name="button-bg-white-pressed" width="11" height="10"/>
         <image name="cameraguide" width="234" height="234"/>
+        <image name="cameraguide-blue-small" width="20" height="20"/>
         <image name="cameraguide-small" width="20" height="20"/>
-        <image name="cameraguide-small-blue" width="16" height="16"/>
         <image name="checkbox-empty" width="22" height="22"/>
         <image name="dash-center-logo" width="175" height="142"/>
         <image name="dash-digital-cash" width="172" height="82"/>

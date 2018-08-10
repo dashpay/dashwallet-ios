@@ -303,7 +303,7 @@
 "more..." = "mere...";
 
 /* No comment provided by engineer. */
-"moved" = "flyttet";
+"Moved" = "flyttet";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Modtag dash på denne adresse: %@";
 
 /* No comment provided by engineer. */
-"received" = "modtaget";
+"Received" = "modtaget";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "modtog %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "send anmodning som besked";
 
 /* No comment provided by engineer. */
-"sent" = "sendt";
+"Sent" = "sendt";
 
 /* No comment provided by engineer. */
 "sent!" = "sendt!";

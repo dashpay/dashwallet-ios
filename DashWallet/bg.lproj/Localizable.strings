@@ -303,7 +303,7 @@
 "more..." = "още...";
 
 /* No comment provided by engineer. */
-"moved" = "преместен";
+"Moved" = "преместен";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Получавате dash на този адрес: %@";
 
 /* No comment provided by engineer. */
-"received" = "получени";
+"Received" = "получени";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "получени %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "изпрати искане като съобщение";
 
 /* No comment provided by engineer. */
-"sent" = "изпратено";
+"Sent" = "изпратено";
 
 /* No comment provided by engineer. */
 "sent!" = "изпратено!";

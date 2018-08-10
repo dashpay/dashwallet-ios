@@ -303,7 +303,7 @@
 "more..." = "더보기...";
 
 /* No comment provided by engineer. */
-"moved" = "이동 완료";
+"Moved" = "이동 완료";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "이 주소로 대쉬을 받습니다: %@";
 
 /* No comment provided by engineer. */
-"received" = "받음";
+"Received" = "받음";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) 받음";
@@ -471,7 +471,7 @@
 "send request as message" = "메시지로 지불 요청 보내기";
 
 /* No comment provided by engineer. */
-"sent" = "보냄";
+"Sent" = "보냄";
 
 /* No comment provided by engineer. */
 "sent!" = "보냈습니다!";

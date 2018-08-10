@@ -303,7 +303,7 @@
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
-"moved" = "överförd";
+"Moved" = "överförd";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Ta emot dash på denna adress: %@";
 
 /* No comment provided by engineer. */
-"received" = "mottagna";
+"Received" = "mottagna";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "tog emot %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "skicka begäran som meddelande";
 
 /* No comment provided by engineer. */
-"sent" = "skickat";
+"Sent" = "skickat";
 
 /* No comment provided by engineer. */
 "sent!" = "skickat!";

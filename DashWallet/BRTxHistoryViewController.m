@@ -39,6 +39,7 @@
 #import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
 #import "DWActionTableViewCell.h"
+#import "DWTransactionTableViewCell.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
@@ -494,20 +495,23 @@ static NSString *dateFormat(NSString *template)
         case 0:
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
                 cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
                 NSLocalizedString(@"Transaction history", nil);
-                cell.imageView.image = [UIImage imageNamed:@"transaction-history"];
+                actionCell.imageIcon = [UIImage imageNamed:@"transaction-history"];
+                actionCell.selectedImageIcon = [UIImage imageNamed:@"transaction-history-selected"];
             }
             else if (self.transactions.count > 0) {
                 cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-                textLabel = (id)[cell viewWithTag:1];
-                detailTextLabel = (id)[cell viewWithTag:2];
-                unconfirmedLabel = (id)[cell viewWithTag:3];
-                localCurrencyLabel = (id)[cell viewWithTag:5];
-                sentLabel = (id)[cell viewWithTag:6];
-                balanceLabel = (id)[cell viewWithTag:7];
-                localBalanceLabel = (id)[cell viewWithTag:8];
-                shapeshiftImageView = (id)[cell viewWithTag:9];
+                DWTransactionTableViewCell * transactionCell = (DWTransactionTableViewCell *)cell;
+                textLabel = transactionCell.amountLabel;
+                detailTextLabel = transactionCell.dateLabel;
+                unconfirmedLabel = transactionCell.confirmationsLabel;
+                localCurrencyLabel = transactionCell.fiatAmountLabel;
+                sentLabel = transactionCell.directionLabel;
+                balanceLabel = transactionCell.remainingAmountLabel;
+                localBalanceLabel = transactionCell.remainingFiatAmountLabel;
+                shapeshiftImageView = transactionCell.shapeshiftImageView;
                 
                 BRTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
@@ -550,38 +554,36 @@ static NSString *dateFormat(NSString *template)
                     unconfirmedLabel.hidden = YES;
                     sentLabel.hidden = NO;
                 }
-                
+                sentLabel.textColor = [UIColor whiteColor];
                 if (sent > 0 && received == sent) {
                     textLabel.attributedText = [manager attributedStringForDashAmount:sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:sent]];
-                    sentLabel.text = NSLocalizedString(@"moved", nil);
-                    sentLabel.textColor = [UIColor blackColor];
+                    sentLabel.text = NSLocalizedString(@"Moved", nil);
+                    sentLabel.backgroundColor = UIColorFromRGB(0x008DE4);
                 }
                 else if (sent > 0) {
                     textLabel.attributedText = [manager attributedStringForDashAmount:received - sent];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received - sent]];
-                    sentLabel.text = NSLocalizedString(@"sent", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
+                    sentLabel.text = NSLocalizedString(@"Sent", nil);
+                    sentLabel.backgroundColor = UIColorFromRGB(0xD0021B);
                 }
                 else {
                     textLabel.attributedText = [manager attributedStringForDashAmount:received];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [manager localCurrencyStringForDashAmount:received]];
-                    sentLabel.text = NSLocalizedString(@"received", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+                    sentLabel.text = NSLocalizedString(@"Received", nil);
+                    sentLabel.backgroundColor = UIColorFromRGB(0x7ED321);
                 }
                 
                 if (! unconfirmedLabel.hidden) {
-                    unconfirmedLabel.layer.cornerRadius = 3.0;
-                    unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
+                    unconfirmedLabel.layer.cornerRadius = 9.0;
+                    unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"   "];
                 }
                 else {
-                    sentLabel.layer.cornerRadius = 3.0;
-                    sentLabel.layer.borderWidth = 0.5;
-                    sentLabel.text = [sentLabel.text stringByAppendingString:@"  "];
-                    sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
+                    sentLabel.layer.cornerRadius = 9.0;
+                    sentLabel.text = [sentLabel.text stringByAppendingString:@"   "];
                     sentLabel.highlightedTextColor = sentLabel.textColor;
                 }
             }
@@ -632,7 +634,7 @@ static NSString *dateFormat(NSString *template)
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-        case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 50.0 : TRANSACTION_CELL_HEIGHT;
+        case 0: return TRANSACTION_CELL_HEIGHT;
         case 1: return 50.0;
     }
     
@@ -641,15 +643,16 @@ static NSString *dateFormat(NSString *template)
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    NSString *sectionTitle = [self tableView:tableView titleForHeaderInSection:section];
-    
-    if (sectionTitle.length == 0) return 22.0;
-    
-    CGRect r = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
-                                          options:NSStringDrawingUsesLineFragmentOrigin
-                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
-    
-    return r.size.height + 22.0 + 10.0;
+    return 0;
+//    NSString *sectionTitle = [self tableView:tableView titleForHeaderInSection:section];
+//
+//    if (sectionTitle.length == 0) return 22.0;
+//
+//    CGRect r = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
+//                                          options:NSStringDrawingUsesLineFragmentOrigin
+//                                       attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
+//
+//    return r.size.height + 22.0 + 10.0;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section

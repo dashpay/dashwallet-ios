@@ -303,7 +303,7 @@
 "more..." = "mehr...";
 
 /* No comment provided by engineer. */
-"moved" = "verschoben";
+"Moved" = "verschoben";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Dash an dieser Adresse empfangen: %@";
 
 /* No comment provided by engineer. */
-"received" = "empfangen";
+"Received" = "empfangen";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) empfangen";
@@ -471,7 +471,7 @@
 "send request as message" = "Anfrage per SMS senden";
 
 /* No comment provided by engineer. */
-"sent" = "gesendet";
+"Sent" = "gesendet";
 
 /* No comment provided by engineer. */
 "sent!" = "gesendet!";

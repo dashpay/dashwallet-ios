@@ -303,7 +303,7 @@
 "more..." = "更多...";
 
 /* No comment provided by engineer. */
-"moved" = "已移动";
+"Moved" = "已移动";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "在此地址接收达世币： %@";
 
 /* No comment provided by engineer. */
-"received" = "收到";
+"Received" = "收到";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "收到 %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "以短信形式发送请求";
 
 /* No comment provided by engineer. */
-"sent" = "已发送";
+"Sent" = "已发送";
 
 /* No comment provided by engineer. */
 "sent!" = "已发送！";

@@ -303,7 +303,7 @@
 "more..." = "さらに…";
 
 /* No comment provided by engineer. */
-"moved" = "移動されました";
+"Moved" = "移動されました";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "このアドレスでダッシュを受取る： %@";
 
 /* No comment provided by engineer. */
-"received" = "受取済み";
+"Received" = "受取済み";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "着金あり %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "リクエストをメッセージにて共有";
 
 /* No comment provided by engineer. */
-"sent" = "送信済み";
+"Sent" = "送信済み";
 
 /* No comment provided by engineer. */
 "sent!" = "送金成功！";

@@ -303,7 +303,7 @@
 "more..." = "daha fazla...";
 
 /* No comment provided by engineer. */
-"moved" = "taşınmış";
+"Moved" = "taşınmış";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Bitcoinleri şu adresten al: %@";
 
 /* No comment provided by engineer. */
-"received" = "alındı";
+"Received" = "alındı";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ alındı (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "isteği mesaj olarak gönder";
 
 /* No comment provided by engineer. */
-"sent" = "gönderilen";
+"Sent" = "gönderilen";
 
 /* No comment provided by engineer. */
 "sent!" = "gönderildi!";

@@ -303,7 +303,7 @@
 "more..." = "tovább...";
 
 /* No comment provided by engineer. */
-"moved" = "átvezetve";
+"Moved" = "átvezetve";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -384,7 +384,7 @@
 "Receive dash at this address: %@" = "Fogadj dasht ezen a címen: %@";
 
 /* No comment provided by engineer. */
-"received" = "fogadva";
+"Received" = "fogadva";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "fogadva: %1$@ (%2$@)";
@@ -471,7 +471,7 @@
 "send request as message" = "kérelem küldése üzenetként";
 
 /* No comment provided by engineer. */
-"sent" = "elküldve";
+"Sent" = "elküldve";
 
 /* No comment provided by engineer. */
 "sent!" = "elküldve!";
