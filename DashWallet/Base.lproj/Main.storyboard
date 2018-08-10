@@ -851,10 +851,10 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XV7-2s-hZs">
-                                <rect key="frame" x="8" y="522" width="359" height="40"/>
+                                <rect key="frame" x="8" y="531" width="359" height="30"/>
                                 <gestureRecognizers/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="IAL-YH-UYR"/>
+                                    <constraint firstAttribute="height" constant="30" id="IAL-YH-UYR"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                 <state key="normal" title="1WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW">
@@ -874,7 +874,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ng6-uV-YUC" customClass="DWShareActionButton">
-                                <rect key="frame" x="93.666666666666671" y="564" width="187.66666666666663" height="30"/>
+                                <rect key="frame" x="93.666666666666671" y="576" width="187.66666666666663" height="30"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="5PH-ym-KxU"/>
@@ -893,6 +893,18 @@
                                     <action selector="address:" destination="XLw-gP-lYw" eventType="touchUpInside" id="krq-qm-Jqu"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8IY-3t-DGx">
+                                <rect key="frame" x="0.0" y="561" width="375" height="13"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iVw-Uv-3sp">
+                                <rect key="frame" x="0.0" y="518" width="375" height="13"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qzi-m2-ZCY">
+                                <rect key="frame" x="1" y="606" width="375" height="64"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <gestureRecognizers/>
@@ -900,20 +912,32 @@
                             <constraint firstItem="LDt-79-hdf" firstAttribute="top" secondItem="qel-3J-2VC" secondAttribute="bottom" id="2VL-Lz-wCf"/>
                             <constraint firstItem="LDt-79-hdf" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="4nT-t4-90q"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="height" secondItem="LDt-79-hdf" secondAttribute="height" id="6oc-XO-IL9"/>
-                            <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="4" id="7pr-Px-FAo"/>
+                            <constraint firstItem="iVw-Uv-3sp" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="7Ij-O6-Hab"/>
+                            <constraint firstItem="iVw-Uv-3sp" firstAttribute="height" secondItem="8IY-3t-DGx" secondAttribute="height" id="8Xk-hY-Qxo"/>
+                            <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" secondItem="8IY-3t-DGx" secondAttribute="trailing" id="9en-Yp-jXT"/>
+                            <constraint firstItem="iVw-Uv-3sp" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" id="BNl-KA-rDO"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerX" secondItem="Tcv-OZ-Abu" secondAttribute="centerX" id="CBr-ND-UkV"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="centerX" secondItem="qel-3J-2VC" secondAttribute="centerX" id="Cbc-27-Go0"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ng6-uV-YUC" secondAttribute="trailing" constant="40" id="DYF-Ai-k8A"/>
+                            <constraint firstItem="8IY-3t-DGx" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="EzZ-nw-P9m"/>
                             <constraint firstItem="qel-3J-2VC" firstAttribute="top" secondItem="N4m-rf-eq3" secondAttribute="bottom" id="GDa-1O-Tfk"/>
+                            <constraint firstItem="8IY-3t-DGx" firstAttribute="top" secondItem="XV7-2s-hZs" secondAttribute="bottom" id="IqY-Dk-4qZ"/>
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" constant="8" id="LqU-Rt-BVF"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" secondItem="XV7-2s-hZs" secondAttribute="trailing" constant="8" id="MGc-L3-fmW"/>
                             <constraint firstItem="Ng6-uV-YUC" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" multiplier="0.5" id="MZE-fq-Ltm"/>
+                            <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="iVw-Uv-3sp" secondAttribute="bottom" id="SyQ-BO-tkQ"/>
+                            <constraint firstItem="Qzi-m2-ZCY" firstAttribute="top" secondItem="Ng6-uV-YUC" secondAttribute="bottom" id="WGx-N7-2K3"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerY" secondItem="bFo-w9-Ygt" secondAttribute="centerY" constant="30" id="XPm-Qw-ucZ"/>
+                            <constraint firstItem="8IY-3t-DGx" firstAttribute="height" secondItem="Qzi-m2-ZCY" secondAttribute="height" multiplier="0.2" id="Zjx-mc-QQW"/>
+                            <constraint firstItem="Qzi-m2-ZCY" firstAttribute="trailing" secondItem="Tcv-OZ-Abu" secondAttribute="trailing" constant="1" id="aoa-HC-6BY"/>
                             <constraint firstItem="PTm-4L-adQ" firstAttribute="top" secondItem="LDt-79-hdf" secondAttribute="bottom" constant="1.5" id="cCU-b2-B23"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="top" secondItem="Tcv-OZ-Abu" secondAttribute="top" id="dnB-NB-OMz"/>
-                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="top" secondItem="XV7-2s-hZs" secondAttribute="bottom" constant="2" id="elG-63-ehC"/>
+                            <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" secondItem="iVw-Uv-3sp" secondAttribute="trailing" id="hUm-6y-cWd"/>
+                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="top" secondItem="8IY-3t-DGx" secondAttribute="bottom" constant="2" id="isU-CW-fqi"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="jn3-ui-GdX"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="nlj-VI-J9W"/>
+                            <constraint firstItem="Qzi-m2-ZCY" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" constant="1" id="ong-sT-TR8"/>
+                            <constraint firstItem="Tcv-OZ-Abu" firstAttribute="bottom" secondItem="Qzi-m2-ZCY" secondAttribute="bottom" constant="20" id="shB-5T-mDy"/>
                             <constraint firstItem="LDt-79-hdf" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="xLW-Of-ERh"/>
                             <constraint firstItem="Ng6-uV-YUC" firstAttribute="centerX" secondItem="Tcv-OZ-Abu" secondAttribute="centerX" id="ztX-FM-3D9"/>
                         </constraints>
@@ -952,7 +976,7 @@
                     </connections>
                 </swipeGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1988" y="1429.8350824587708"/>
+            <point key="canvasLocation" x="1988" y="1429.8029556650247"/>
         </scene>
         <!--Send View Controller-->
         <scene sceneID="sMR-re-NXa">
