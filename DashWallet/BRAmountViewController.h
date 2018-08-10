@@ -42,6 +42,7 @@
 @property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSString *to;
 @property (nonatomic, assign) BOOL usingShapeshift;
+@property (nonatomic, assign) BOOL requestingAmount;
 @property (nonatomic, strong) NSString * payeeCurrency;
 
 @end

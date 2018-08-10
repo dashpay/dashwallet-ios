@@ -363,7 +363,7 @@
 "password protected key" = "lösenordskyddad nyckel";
 
 /* No comment provided by engineer. */
-"pay" = "Betala";
+"Pay" = "Betala";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "betalningsmottagarens identitet är inte certifierad";

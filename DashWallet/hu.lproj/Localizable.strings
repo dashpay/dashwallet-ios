@@ -363,7 +363,7 @@
 "password protected key" = "jelszóval védett kulcs";
 
 /* No comment provided by engineer. */
-"pay" = "Fizetés";
+"Pay" = "Fizetés";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "a kedvezményezett (személy)azonossága nem ellenőrizhető";

@@ -363,7 +363,7 @@
 "password protected key" = "προστατευμένο κλειδί με κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
-"pay" = "πληρώστε";
+"Pay" = "πληρώστε";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";

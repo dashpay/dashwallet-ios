@@ -964,6 +964,7 @@
                     <connections>
                         <outlet property="addressButton" destination="XV7-2s-hZs" id="jn1-4G-QVT"/>
                         <outlet property="qrView" destination="PTm-4L-adQ" id="Ti4-bc-a9W"/>
+                        <segue destination="3ah-ch-e9l" kind="presentation" identifier="RequestAmountSegue" id="VuN-TM-yYg"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gHQ-qn-UpO" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -988,7 +989,7 @@
                     </connections>
                 </swipeGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1988" y="1429.8029556650247"/>
+            <point key="canvasLocation" x="2039" y="1778"/>
         </scene>
         <!--Send View Controller-->
         <scene sceneID="sMR-re-NXa">
@@ -1218,6 +1219,7 @@
                         <outlet property="sendLabel" destination="l5l-JR-LKA" id="uWh-qp-akV"/>
                         <outlet property="shapeshiftLabel" destination="adc-g6-wnP" id="u0R-FU-WdX"/>
                         <outlet property="shapeshiftView" destination="Miu-hY-NqY" id="sxe-Ek-Idq"/>
+                        <segue destination="3ah-ch-e9l" kind="presentation" identifier="SendAmountSegue" id="5Qa-eb-Gru"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6F7-JO-CPd" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -3268,4 +3270,7 @@ bitpay.com/rates and poloniex</string>
         <image name="wallpaper-default" width="758" height="568"/>
         <image name="x" width="20" height="16"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="5Qa-eb-Gru"/>
+    </inferredMetricsTieBreakers>
 </document>

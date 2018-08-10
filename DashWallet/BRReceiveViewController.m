@@ -382,6 +382,7 @@
                                                            instantiateViewControllerWithIdentifier:@"AmountNav"];
             
             ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
+            ((BRAmountViewController *)amountNavController.topViewController).requestingAmount = TRUE;
             [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
             [BREventManager saveEvent:@"receive:request_amount"];
                                 }]];

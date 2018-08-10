@@ -363,7 +363,7 @@
 "password protected key" = "패스워드로 암호화된 키";
 
 /* No comment provided by engineer. */
-"pay" = "지불";
+"Pay" = "지불";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "수취인의 신원이 인증 되지 않았씁니다";

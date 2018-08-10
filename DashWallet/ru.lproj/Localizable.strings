@@ -363,7 +363,7 @@
 "password protected key" = "Защищённый паролем ключ";
 
 /* No comment provided by engineer. */
-"pay" = "Оплатить";
+"Pay" = "Оплатить";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "Сертификат личности получателя некорректен";

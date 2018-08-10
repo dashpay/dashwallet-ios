@@ -363,7 +363,7 @@
 "password protected key" = "密码保护的密钥";
 
 /* No comment provided by engineer. */
-"pay" = "支付";
+"Pay" = "支付";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "收款人身份未经过认证";

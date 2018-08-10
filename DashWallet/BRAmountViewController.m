@@ -69,7 +69,7 @@
     [charset addCharactersInString:manager.dashFormat.currencyDecimalSeparator];
     self.charset = charset;
     
-    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"pay", nil)
+    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"Pay", nil)
                                                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.payButton.tintColor = [UIColor colorWithRed:168.0/255.0 green:230.0/255.0 blue:1.0 alpha:1.0];
     self.amountLabel.attributedText = [manager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
@@ -119,7 +119,7 @@
         [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), self.to] : nil;
     }
     
-    if (self.navigationController.viewControllers.firstObject != self) {
+    if (!self.requestingAmount) {
         self.navigationItem.leftBarButtonItem = nil;
         if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
     }
@@ -573,7 +573,7 @@
         }
     }
     
-    if (self.navigationController.viewControllers.firstObject != self) {
+    if (!self.requestingAmount) {
         if (! m.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
             [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
         }

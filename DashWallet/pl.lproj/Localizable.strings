@@ -363,7 +363,7 @@
 "password protected key" = "klucz chroniony hasłem";
 
 /* No comment provided by engineer. */
-"pay" = "Zapłać";
+"Pay" = "Zapłać";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "tożsamość odbiorcy nie jest certyfikowana";

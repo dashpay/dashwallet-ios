@@ -363,7 +363,7 @@
 "password protected key" = "パスワード保護された鍵";
 
 /* No comment provided by engineer. */
-"pay" = "送金";
+"Pay" = "送金";
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "支払先の認証データが不正です";

@@ -169,7 +169,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)dealloc
 {
-
+    
 }
 
 -(BOOL)processURLAddressList:(NSURL*)url {
@@ -705,25 +705,11 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         else if (amount == 0 || amount == UINT64_MAX) {
-            BRAmountViewController *amountController = [self.storyboard
-                                                        instantiateViewControllerWithIdentifier:@"AmountViewController"];
-            
-            amountController.delegate = self;
             self.request = protoReq;
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
-            if (protoReq.commonName.length > 0) {
-                if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
-                    amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
-                }
-                else if (protoReq.errorMessage.length > 0) {
-                    amountController.to = [REDX @" " stringByAppendingString:sanitizeString(protoReq.commonName)];
-                }
-                else amountController.to = sanitizeString(protoReq.commonName);
-            }
-            else amountController.to = address;
             [self updateTitleView];
-            [self.navigationController pushViewController:amountController animated:YES];
+            [self performSegueWithIdentifier:@"SendAmountSegue" sender:self];
             return;
         }
         else if (amount < TX_MIN_OUTPUT_AMOUNT) {
@@ -856,26 +842,11 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         else if (amount == 0 || amount == UINT64_MAX) {
-            BRAmountViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AmountViewController"];
             self.scheme = currency;
-            c.usingShapeshift = TRUE;
-            c.delegate = self;
             self.request = protoReq;
             self.shapeshiftRequest = protoReq;
             self.associatedShapeshift = shapeshift;
-            if (protoReq.commonName.length > 0) {
-                if (valid && ! [protoReq.pkiType isEqual:@"none"]) {
-                    c.to = [LOCK @" " stringByAppendingString:sanitizeString(address)];
-                }
-                else if (protoReq.errorMessage.length > 0) {
-                    c.to = [REDX @" " stringByAppendingString:sanitizeString(address)];
-                }
-                else c.to = sanitizeString(shapeshift.withdrawalAddress);
-            }
-            else c.to = address;
-            BRWalletManager *manager = [BRWalletManager sharedInstance];
-            c.navigationItem.titleView = [self titleLabel];
-            [self.navigationController pushViewController:c animated:YES];
+            [self performSegueWithIdentifier:@"SendAmountSegue" sender:self];
             return;
         }
         else if (amount < TX_MIN_OUTPUT_AMOUNT) {
@@ -920,6 +891,30 @@ static NSString *sanitizeString(NSString *s)
         self.shapeshiftRequest = protoReq;
         self.scheme = currency;
         [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/manager.bitcoinDashPrice.doubleValue];
+    }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"SendAmountSegue"]) {
+        BRAmountViewController *amountController = (BRAmountViewController *)((UINavigationController*)segue.destinationViewController).topViewController;
+        
+        amountController.delegate = self;
+        if ([self.scheme isEqualToString:@"bitcoin"]) {
+            amountController.usingShapeshift = TRUE;
+            amountController.to = sanitizeString(self.associatedShapeshift.withdrawalAddress);
+        } else {
+            NSString *address = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+            if (self.request.commonName.length > 0) {
+                if (self.request.isValid && ! [self.request.pkiType isEqual:@"none"]) {
+                    amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(self.request.commonName)];
+                }
+                else if (self.request.errorMessage.length > 0) {
+                    amountController.to = [REDX @" " stringByAppendingString:sanitizeString(self.request.commonName)];
+                }
+                else amountController.to = sanitizeString(self.request.commonName);
+            }
+            else amountController.to = address;
+        }
     }
 }
 
@@ -1634,7 +1629,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (IBAction)startNFC:(id)sender NS_AVAILABLE_IOS(11.0) {
     [BREventManager saveEvent:@"send:nfc"];
-        NFCNDEFReaderSession *session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT) invalidateAfterFirstRead:NO];
+    NFCNDEFReaderSession *session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT) invalidateAfterFirstRead:NO];
     session.alertMessage = NSLocalizedString(@"Please place your phone near NFC device.",nil);
     [session beginSession];
 }
@@ -1846,7 +1841,7 @@ static NSString *sanitizeString(NSString *s)
         if (error) {
             request.r = nil;
         }
-
+        
         if (error && !request.isValid) {
             UIAlertController *alert = [UIAlertController
                                         alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
