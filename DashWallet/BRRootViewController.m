@@ -1320,7 +1320,11 @@
         [containerView addSubview:self.burger];
         [containerView layoutIfNeeded];
         
-        self.burger.center = CGPointMake(26.0, self.topLayoutGuide.length - 24);
+        if (@available(iOS 11.0, *)) {
+            self.burger.center = CGPointMake(26.0, containerView.safeAreaLayoutGuide.layoutFrame.origin.y + 20);
+        } else {
+            self.burger.center = CGPointMake(26.0, self.topLayoutGuide.length - 24);
+        }
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
         
