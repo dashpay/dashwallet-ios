@@ -148,3 +148,6 @@
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
 "UQm-Kc-aR1.normalTitle" = "Remind me later";
+
+/* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
+"Ng6-uV-YUC.normalTitle" = "Share";

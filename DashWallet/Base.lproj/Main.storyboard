@@ -73,7 +73,7 @@
                                         <constraint firstAttribute="centerY" secondItem="t1j-JZ-FW0" secondAttribute="centerY" constant="-0.5" id="q6c-1b-7I1"/>
                                     </constraints>
                                 </tableViewCellContentView>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCell" rowHeight="75" id="apT-vb-EOy">
                                 <rect key="frame" x="0.0" y="97" width="375" height="75"/>
@@ -237,7 +237,7 @@
                                         <constraint firstItem="zUE-VM-MXo" firstAttribute="leading" secondItem="pXc-8D-8Gh" secondAttribute="trailing" constant="3" id="z9y-51-szJ"/>
                                     </constraints>
                                 </tableViewCellContentView>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="gray" accessoryType="disclosureIndicator" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="DisclosureCell" textLabel="DQw-C2-pbB" style="IBUITableViewCellStyleDefault" id="97g-EP-kSv" customClass="DWActionTableViewCell">
                                 <rect key="frame" x="0.0" y="172" width="375" height="51"/>
@@ -322,20 +322,10 @@
                                                 </fragment>
                                             </attributedString>
                                         </label>
-                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xSz-TA-va3">
-                                            <rect key="frame" x="0.0" y="50.666666666666664" width="394" height="0.3333333333333357"/>
-                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <constraints>
-                                                <constraint firstAttribute="height" constant="0.5" id="cRF-IC-OBe"/>
-                                            </constraints>
-                                        </view>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="xSz-TA-va3" firstAttribute="left" secondItem="6TW-uW-kf9" secondAttribute="left" id="CUb-Ln-X6O"/>
                                         <constraint firstItem="wS5-hp-E6Y" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6TW-uW-kf9" secondAttribute="leading" constant="16" id="Fal-BI-tjn"/>
                                         <constraint firstItem="6PR-ZB-8Cn" firstAttribute="top" secondItem="6TW-uW-kf9" secondAttribute="top" id="GhI-i7-Esp"/>
-                                        <constraint firstItem="xSz-TA-va3" firstAttribute="top" secondItem="6PR-ZB-8Cn" secondAttribute="bottom" constant="50" id="O3E-5w-TPc"/>
-                                        <constraint firstItem="wS5-hp-E6Y" firstAttribute="right" secondItem="xSz-TA-va3" secondAttribute="right" constant="-35" id="ThT-Yo-dxp"/>
                                         <constraint firstItem="6PR-ZB-8Cn" firstAttribute="trailing" secondItem="wS5-hp-E6Y" secondAttribute="trailing" constant="35" id="V5Q-JM-ezq"/>
                                         <constraint firstItem="6PR-ZB-8Cn" firstAttribute="leading" secondItem="6TW-uW-kf9" secondAttribute="leading" id="m4q-k0-AVo"/>
                                     </constraints>
@@ -882,6 +872,26 @@
                                     <action selector="address:" destination="XLw-gP-lYw" eventType="touchUpInside" id="eU0-6G-fFI"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ng6-uV-YUC" customClass="DWShareActionButton">
+                                <rect key="frame" x="93.666666666666671" y="574" width="187.66666666666663" height="30"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="5PH-ym-KxU"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
+                                <state key="normal" title="Share">
+                                    <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <state key="selected">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="address:" destination="XLw-gP-lYw" eventType="touchUpInside" id="krq-qm-Jqu"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <gestureRecognizers/>
@@ -892,15 +902,19 @@
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="top" secondItem="NFx-Li-ByS" secondAttribute="bottom" constant="8" id="7pr-Px-FAo"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerX" secondItem="Tcv-OZ-Abu" secondAttribute="centerX" id="CBr-ND-UkV"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="centerX" secondItem="qel-3J-2VC" secondAttribute="centerX" id="Cbc-27-Go0"/>
+                            <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Ng6-uV-YUC" secondAttribute="trailing" constant="40" id="DYF-Ai-k8A"/>
                             <constraint firstItem="qel-3J-2VC" firstAttribute="top" secondItem="N4m-rf-eq3" secondAttribute="bottom" id="GDa-1O-Tfk"/>
                             <constraint firstItem="XV7-2s-hZs" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" constant="8" id="LqU-Rt-BVF"/>
                             <constraint firstItem="Tcv-OZ-Abu" firstAttribute="trailing" secondItem="XV7-2s-hZs" secondAttribute="trailing" constant="8" id="MGc-L3-fmW"/>
+                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" multiplier="0.5" id="MZE-fq-Ltm"/>
                             <constraint firstItem="NFx-Li-ByS" firstAttribute="centerY" secondItem="bFo-w9-Ygt" secondAttribute="centerY" constant="30" id="XPm-Qw-ucZ"/>
                             <constraint firstItem="PTm-4L-adQ" firstAttribute="top" secondItem="LDt-79-hdf" secondAttribute="bottom" constant="1.5" id="cCU-b2-B23"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="top" secondItem="Tcv-OZ-Abu" secondAttribute="top" id="dnB-NB-OMz"/>
+                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="top" secondItem="XV7-2s-hZs" secondAttribute="bottom" constant="8" id="elG-63-ehC"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="jn3-ui-GdX"/>
                             <constraint firstItem="N4m-rf-eq3" firstAttribute="leading" secondItem="Tcv-OZ-Abu" secondAttribute="leading" id="nlj-VI-J9W"/>
                             <constraint firstItem="LDt-79-hdf" firstAttribute="width" secondItem="bFo-w9-Ygt" secondAttribute="width" id="xLW-Of-ERh"/>
+                            <constraint firstItem="Ng6-uV-YUC" firstAttribute="centerX" secondItem="Tcv-OZ-Abu" secondAttribute="centerX" id="ztX-FM-3D9"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Tcv-OZ-Abu"/>
                         <connections>
@@ -1005,7 +1019,7 @@
                                 <inset key="imageEdgeInsets" minX="-10" minY="0.0" maxX="10" maxY="0.0"/>
                                 <size key="titleShadowOffset" width="0.0" height="1"/>
                                 <state key="normal" title="Scan QR Code" image="cameraguide-small"/>
-                                <state key="disabled" image="cameraguide-small" backgroundImage="button-bg-blue-pressed">
+                                <state key="disabled" image="cameraguide-small">
                                     <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
@@ -2439,13 +2453,13 @@ bitpay.com/rates and poloniex</string>
                                 <color key="textColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DO NOT let anyone see your recovery phrase or they can spend your dash." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AH2-hg-79I">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DO NOT let anyone see your recovery phrase or they can spend your dash." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AH2-hg-79I">
                                 <rect key="frame" x="104" y="243.66666666666666" width="251" height="51.333333333333343"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7h3-k2-QrR">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7h3-k2-QrR">
                                 <rect key="frame" x="104" y="315" width="251" height="68.333333333333314"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
                                 <nil key="textColor"/>
