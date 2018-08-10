@@ -520,7 +520,7 @@ static NSString *dateFormat(NSString *template)
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
                 
-                textLabel.textColor = [UIColor darkTextColor];
+                textLabel.textColor = UIColorFromRGB(0x008DE4);
                 sentLabel.hidden = YES;
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.backgroundColor = [UIColor clearColor];
