@@ -122,7 +122,6 @@
     _selectorController.transitioningDelegate = self.navigationController.viewControllers.firstObject;
     _selectorController.tableView.dataSource = self;
     _selectorController.tableView.delegate = self;
-    _selectorController.tableView.backgroundColor = [UIColor clearColor];
     return _selectorController;
 }
 
