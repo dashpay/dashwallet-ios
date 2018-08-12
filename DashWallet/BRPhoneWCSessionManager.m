@@ -151,10 +151,13 @@
             }
             
             if (! image && req.data) {
-                image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+                image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0/255.0 blue:228.0/255.0]];
             }
 
-            image = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+            UIImage *resizedImage = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+            UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+            UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+
             replyHandler(image ? @{AW_QR_CODE_BITS_KEY: UIImagePNGRepresentation(image)} : @{});
             break;
         }
@@ -293,7 +296,11 @@
         image = [UIImage imageWithQRCodeData:req color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
     }
     
-    return [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+    UIImage *resizedImage = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+    UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+    UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+    
+    return result;
 }
 
 // MARK: - data helper methods
