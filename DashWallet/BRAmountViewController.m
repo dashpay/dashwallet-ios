@@ -244,6 +244,9 @@
                 [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
             }
         }];
+    } else if (manager.didAuthenticate) {
+        [self updateTitleView];
+        [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
     }
 
 }
