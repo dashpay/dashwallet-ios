@@ -1321,7 +1321,22 @@
         [containerView layoutIfNeeded];
         
         CGRect rect =[self.navigationController.navigationBar convertRect:CGRectMake(0, 0, self.navigationController.navigationBar.frame.size.width, self.navigationController.navigationBar.frame.size.height)  toView:containerView];
-        self.burger.center = CGPointMake(26.0, rect.origin.y + (rect.size.height / 2) - 1);
+        float startX = 0; //a little hacky but good enough for now.
+        switch ((int)containerView.frame.size.width) {
+            case 320:
+                startX = 26;
+                break;
+            case 375:
+                startX = 26;
+                break;
+            case 414:
+                startX = 30;
+                break;
+            default:
+                startX = containerView.frame.size.width/14.4;
+                break;
+        }
+        self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);
         self.burger.hidden = NO;
         [self.burger setX:YES completion:nil];
         
@@ -1371,7 +1386,23 @@
         self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"none"];
         self.burger.hidden = NO;
         [containerView layoutIfNeeded];
-        self.burger.center = CGPointMake(26.0, self.topLayoutGuide.length - 24);
+        CGRect rect =[self.navigationController.navigationBar convertRect:CGRectMake(0, 0, self.navigationController.navigationBar.frame.size.width, self.navigationController.navigationBar.frame.size.height)  toView:containerView];
+        float startX = 0; //a little hacky but good enough for now.
+        switch ((int)containerView.frame.size.width) {
+            case 320:
+                startX = 26;
+                break;
+            case 375:
+                startX = 26;
+                break;
+            case 414:
+                startX = 30;
+                break;
+            default:
+                startX = containerView.frame.size.width/14.4;
+                break;
+        }
+        self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);
         [self.burger setX:NO completion:nil];
         self.pageViewController.view.alpha = 0.0;
         self.pageViewController.view.center = CGPointMake(self.pageViewController.view.center.x,
