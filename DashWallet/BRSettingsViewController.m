@@ -492,7 +492,7 @@
     titleLabel.shadowColor = [UIColor whiteColor];
     titleLabel.shadowOffset = CGSizeMake(0.0, 1.0);
     titleLabel.numberOfLines = 0;
-    sectionHeader.backgroundColor = [UIColor clearColor];
+    sectionHeader.backgroundColor = self.tableView.backgroundColor;
     [sectionHeader addSubview:titleLabel];
     
     return sectionHeader;
