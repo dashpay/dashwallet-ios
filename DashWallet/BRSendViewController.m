@@ -478,7 +478,11 @@ static NSString *sanitizeString(NSString *s)
     BRTransaction *tx = nil;
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
-    
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"bad payment request", nil)
@@ -490,7 +494,7 @@ static NSString *sanitizeString(NSString *s)
                                    handler:^(UIAlertAction * action) {
                                    }];
         [alert addAction:okButton];
-        [self presentViewController:alert animated:YES completion:nil];
+        [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
         [self cancel:nil];
         return;
     }
@@ -520,7 +524,7 @@ static NSString *sanitizeString(NSString *s)
                                        handler:^(UIAlertAction * action) {
                                        }];
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -550,7 +554,7 @@ static NSString *sanitizeString(NSString *s)
                                            }];
             [alert addAction:ignoreButton];
             [alert addAction:cancelButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             return;
         } else if (wantsInstant && !self.sendInstantly) {
             self.request = protoReq;
@@ -580,7 +584,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [alert addAction:ignoreButton];
                 [alert addAction:enableButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             } else {
                 
                 UIAlertController * alert = [UIAlertController
@@ -605,7 +609,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [alert addAction:ignoreButton];
                 [alert addAction:enableButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             }
             return;
             
@@ -621,7 +625,7 @@ static NSString *sanitizeString(NSString *s)
                                        }];
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED usingInstantSend:TRUE] < amount)) {
@@ -649,7 +653,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [alert addAction:cancelButton];
                 [alert addAction:retryButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             } else {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
@@ -671,7 +675,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [alert addAction:cancelButton];
                 [alert addAction:enableButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                 return;
             }
         } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
@@ -700,7 +704,7 @@ static NSString *sanitizeString(NSString *s)
             
             [alert addAction:ignoreButton];
             [alert addAction:cancelButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             
             return;
         }
@@ -727,7 +731,7 @@ static NSString *sanitizeString(NSString *s)
             
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -746,7 +750,7 @@ static NSString *sanitizeString(NSString *s)
             
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -838,7 +842,7 @@ static NSString *sanitizeString(NSString *s)
             
             [alert addAction:ignoreButton];
             [alert addAction:cancelButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             return;
         }
         else if (amount == 0 || amount == UINT64_MAX) {
@@ -864,7 +868,7 @@ static NSString *sanitizeString(NSString *s)
             
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -883,7 +887,7 @@ static NSString *sanitizeString(NSString *s)
             
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
         }
@@ -922,6 +926,12 @@ static NSString *sanitizeString(NSString *s)
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
+    
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (self.amount <= manager.wallet.balance + fuzz && self.amount > 0) {
@@ -952,7 +962,7 @@ static NSString *sanitizeString(NSString *s)
             
             [alert addAction:cancelButton];
             [alert addAction:reduceButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             self.amount = amount;
         }
         else {
@@ -969,7 +979,7 @@ static NSString *sanitizeString(NSString *s)
             
             
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
         }
     }
     else {
@@ -984,7 +994,7 @@ static NSString *sanitizeString(NSString *s)
                                        
                                    }];
         [alert addAction:okButton];
-        [self presentViewController:alert animated:YES completion:nil];
+        [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
     }
 }
 
@@ -992,6 +1002,11 @@ static NSString *sanitizeString(NSString *s)
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     __block BOOL previouslyWasAuthenticated = manager.didAuthenticate;
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
     
     if (! tx) { // tx is nil if there were insufficient wallet funds
         if (manager.didAuthenticate) {
@@ -1021,7 +1036,7 @@ static NSString *sanitizeString(NSString *s)
                                                
                                            }];
                 [alert addAction:okButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             } else {
                 
                 if (! previouslyWasAuthenticated) manager.didAuthenticate = NO;
@@ -1054,7 +1069,7 @@ static NSString *sanitizeString(NSString *s)
                                                            
                                                        }];
                             [alert addAction:okButton];
-                            [self presentViewController:alert animated:YES completion:nil];
+                            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                             [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
                             [self cancel:nil];
                         }
@@ -1125,7 +1140,7 @@ static NSString *sanitizeString(NSString *s)
                                                                                       
                                                                                   }];
                                                        [alert addAction:okButton];
-                                                       [self presentViewController:alert animated:YES completion:nil];
+                                                       [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                                                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:NO];
                                                        [self cancel:nil];
                                                    }
@@ -1321,6 +1336,11 @@ static NSString *sanitizeString(NSString *s)
 - (void)cancelOrChangeAmount
 {
     if (self.canChangeAmount && self.request && self.amount == 0) {
+        UIViewController * viewControllerToShowAlert = self;
+        if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+            UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+            viewControllerToShowAlert = presentedController.topViewController;
+        }
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"change payment amount?", nil)
                                      message:nil
@@ -1339,7 +1359,7 @@ static NSString *sanitizeString(NSString *s)
                                        }];
         [alert addAction:cancelButton];
         [alert addAction:changeButton];
-        [self presentViewController:alert animated:YES completion:nil];
+        [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
         self.amount = UINT64_MAX;
     }
     else [self cancel:nil];
@@ -1668,6 +1688,11 @@ static NSString *sanitizeString(NSString *s)
 
 
 -(void)verifyShapeshiftAmountIsInBounds:(uint64_t)amount completionBlock:(void (^)(void))completionBlock failureBlock:(void (^)(void))failureBlock {
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
     [[DSShapeshiftManager sharedInstance] GET_marketInfo:^(NSDictionary *marketInfo, NSError *error) {
         if (error) {
             failureBlock();
@@ -1681,7 +1706,7 @@ static NSString *sanitizeString(NSString *s)
                                        handler:^(UIAlertAction * action) {
                                        }];
             [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
+            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
         } else {
             BRWalletManager *manager = [BRWalletManager sharedInstance];
             if ([DSShapeshiftManager sharedInstance].min > (amount * .97)) {
@@ -1697,7 +1722,7 @@ static NSString *sanitizeString(NSString *s)
                                            handler:^(UIAlertAction * action) {
                                            }];
                 [alert addAction:okButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                 return;
             } else if ([DSShapeshiftManager sharedInstance].limit < (amount * 1.03)) {
                 failureBlock();
@@ -1712,7 +1737,7 @@ static NSString *sanitizeString(NSString *s)
                                            handler:^(UIAlertAction * action) {
                                            }];
                 [alert addAction:okButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                 return;
             }
             completionBlock();
@@ -1723,6 +1748,11 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
 {
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
     MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
     hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
     
@@ -1747,7 +1777,7 @@ static NSString *sanitizeString(NSString *s)
                                            handler:^(UIAlertAction * action) {
                                            }];
                 [alert addAction:okButton];
-                [self presentViewController:alert animated:YES completion:nil];
+                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                 return;
             }
             NSString * depositAddress = shiftInfo[@"deposit"];
@@ -1772,6 +1802,11 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
 {
+    UIViewController * viewControllerToShowAlert = self;
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+        viewControllerToShowAlert = presentedController.topViewController;
+    }
     MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
     hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
     [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
@@ -1802,7 +1837,7 @@ static NSString *sanitizeString(NSString *s)
                                                handler:^(UIAlertAction * action) {
                                                }];
                     [alert addAction:okButton];
-                    [self presentViewController:alert animated:YES completion:nil];
+                    [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
                     return;
                 }
                 NSString * depositAddress = shiftInfo[@"deposit"];
