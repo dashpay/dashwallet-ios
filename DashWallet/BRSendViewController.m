@@ -1362,7 +1362,7 @@ static NSString *sanitizeString(NSString *s)
     if ([tipView.text hasPrefix:SCAN_TIP]) {
         self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP
                                          tipPoint:CGPointMake(self.clipboardButton.center.x, self.clipboardButton.center.y + 10.0)
-                                     tipDirection:BRBubbleTipDirectionUp];
+                                     tipDirection:BRBubbleTipDirectionDown];
         self.tipView.backgroundColor = tipView.backgroundColor;
         self.tipView.font = tipView.font;
         self.tipView.userInteractionEnabled = NO;
