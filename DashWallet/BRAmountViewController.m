@@ -120,7 +120,6 @@
     }
     
     if (!self.requestingAmount) {
-        self.navigationItem.leftBarButtonItem = nil;
         if ([[BRWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
     }
     else {
