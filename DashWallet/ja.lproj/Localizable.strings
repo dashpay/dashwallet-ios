@@ -264,13 +264,13 @@
 "hours" = "時間";
 
 /* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "復元フレーズを無くしたら、自分のコインが失われることに同意します";
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "もし復元フレーズを無くしたら、自分のコインが失われることに同意します";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "もし消去したければ、次の文をご入力ください。\"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "もしまだ消去されたければ、次の文をご入力ください： \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "無視する";
@@ -558,7 +558,7 @@
 "this private key is empty" = "この秘密鍵は承認済み残高がありません";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "このリクエストには即時支払いが必要ですが、あなたには即時送金に必要な6つの承認と十分な入金がありません。お店に普通の取引を受け入れるか聞くか、数分間待ってください。";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "このリクエストには即時支払いが必要ですが、あなたには即時送金に必要な６つの承認と十分な入金がありません。お店に普通の取引を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "このリクエストには即時支払いが必要ですが、あなたは即時支払いを無効にしています。";

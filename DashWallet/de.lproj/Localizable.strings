@@ -3,7 +3,7 @@
 " and " = " und ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@steht für 'mDASH'.%@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ steht für 'mDASH'.%@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ darf nicht auf die Kamera zugreifen";
@@ -72,10 +72,10 @@
 "amount too small" = "Betrag zu niedrig";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+"Application %@ is requesting a payment to" = "Die Anwendung %@ fordert eine Zahlung an";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Die %@ Anwendung fordert eine Adresse an, damit Sie bezahlt werden können. Möchten Sie dies genehmigen?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Anwendung %@ möchte ihren öffentlichen Master-Key empfangen. Ihre Gelder können damit nicht versendet werden, lediglich beobachtet.";
@@ -264,13 +264,13 @@
 "hours" = "Stunden";
 
 /* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ich akzeptiere, dass ich meine Coins verlieren werden, wenn ich die Wiederherstellungsphrase verlieren sollte";
 
 /* No comment provided by engineer. */
 "id:" = "ID:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Wenn Sie es immer noch entleeren möchten, geben Sie es bitte ein: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "ignorieren";
@@ -381,7 +381,7 @@
 "pending" = "vorbehaltlich";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "PiIN eingeben für Wallet Upgrade";
+"please enter pin to upgrade wallet" = "PIN eingeben für Wallet Upgrade";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Bitte halte dein Telefon nahe an das NFC-Gerät.";
@@ -558,13 +558,13 @@
 "this private key is empty" = "Dieser private Schlüssel ist ohne Guthaben";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Diese Anfrage verlangt nach einer sofortigen Zahlung, Sie haben jedoch nicht genügend Eingaben mit 6 Bestätigungen, die für InstantSend notwendig sind, Sie können den Händler darum bitten, dass er eine normale Transaktion akzeptiert oder ein paar Minuten wartet.";
 
 /* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
+"this request requires an instant payment but you have disabled instant payments" = "Dies ist eine Zahlungsanforderung für InstantSend, Sie haben jedoch InstantSend deaktiviert.";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Diese Wallet ist nicht leer oder die Synchronisierung wurde noch nicht abgeschlossen, ohne die Wiederherstellungsphrase können Sie diese nicht löschen.";
 
 /* No comment provided by engineer. */
 "to:" = "An:";

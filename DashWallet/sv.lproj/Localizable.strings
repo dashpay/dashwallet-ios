@@ -285,7 +285,7 @@
 "instant payment" = "Omedelbar betalning";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send kräver tillräckligt många inputs med 6 bekräftelser, skicka ändå som en normal transaktion?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "täckning saknas";
@@ -558,7 +558,7 @@
 "this private key is empty" = "denna privata nyckel är tom";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Denna begäran kräver en direktbetalning men du har inte tillräckligt med inputs, du måste minst ha 6 bekräftelser av Instant Send. Du kan ändra din betalning till en normal transaktion eller vänta några minuter.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "denna begäran kräver en direktbetalning men du har inaktiverat direktbetalning";

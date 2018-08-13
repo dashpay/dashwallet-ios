@@ -285,7 +285,7 @@
 "instant payment" = "الدفع الفوري";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "إرسال فوري يتطلب مدخلات كافية مع 6 تأكيدات ، وإرسال على أي حال كمعاملة عادية؟";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "رصيد غير كاف";
@@ -558,7 +558,7 @@
 "this private key is empty" = "هذا المفتاح الخاص فارغ";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "يتطلب هذا الطلب دفعة فورية ولكن ليس لديك ما يكفي من المدخلات مع 6 تأكيدات مطلوبة من إرسال فوري ، يمكنك أن تطلب من التاجر قبول معاملة عادية أو الانتظار لبضع دقائق.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "يتطلب هذا الطلب دفعة فورية ولكنك عطلت الدفعات الفورية";

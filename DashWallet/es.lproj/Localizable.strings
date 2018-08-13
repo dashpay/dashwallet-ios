@@ -558,7 +558,7 @@
 "this private key is empty" = "esta clave privada está vacía";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esta petición requiere un pago instantáneo pero no cuentas con las 6 confirmaciones necesarias para hacer Envío Instantáneo, puedes pedirle al negocio que reciba una transacción normal o esperar unos minutos.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esta petición requiere un pago instantáneo pero no cuentas con las 6 confirmaciones necesarias para hacer InstantSend, puedes pedirle al negocio que reciba una transacción normal o esperar unos minutos.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "Esta petición requiere un pago instantáneo pero tienes los pagos instantáneos dehabilitados";
