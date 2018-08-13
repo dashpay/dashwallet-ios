@@ -609,10 +609,6 @@
 		FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataClass.m"; sourceTree = "<group>"; };
 		FBF2680C1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
 		FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
-		FBF2DED821217DA300ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
-		FBF2DED921217DA300ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Main.strings; sourceTree = "<group>"; };
-		FBF2DEDA21217DA400ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/MainInterface.strings; sourceTree = "<group>"; };
-		FBF2DEDB21217DA400ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -1424,7 +1420,6 @@
 				vi,
 				th,
 				"zh-Hant-TW",
-				ar,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -1778,7 +1773,6 @@
 				FB4311281FA2D45600784EBC /* da */,
 				FB43112E1FA2D45900784EBC /* ko */,
 				FB43BC8A21217BB800BC9879 /* zh-Hant-TW */,
-				FBF2DED821217DA300ADB0A2 /* ar */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";
@@ -1807,7 +1801,6 @@
 				FB0ACBA01F9ABB6200F4AB52 /* vi */,
 				FB4310F11FA027DB00784EBC /* th */,
 				FB43BC8D21217BB900BC9879 /* zh-Hant-TW */,
-				FBF2DEDB21217DA400ADB0A2 /* ar */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1837,7 +1830,6 @@
 				FB43110E1FA2D41C00784EBC /* sk */,
 				FB4311101FA2D41D00784EBC /* vi */,
 				FB43BC8C21217BB800BC9879 /* zh-Hant-TW */,
-				FBF2DEDA21217DA400ADB0A2 /* ar */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -1879,7 +1871,6 @@
 				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
 				FB4310EE1FA027DB00784EBC /* th */,
 				FB43BC8B21217BB800BC9879 /* zh-Hant-TW */,
-				FBF2DED921217DA300ADB0A2 /* ar */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

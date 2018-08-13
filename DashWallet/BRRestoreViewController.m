@@ -147,7 +147,7 @@
             } else {
                 UIAlertController * actionSheet = [UIAlertController
                                                    alertControllerWithTitle:NSLocalizedString(@"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase", nil)
-                                                   message:NSLocalizedString(@"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"", nil)
+                                                   message:[NSString stringWithFormat:NSLocalizedString(@"If you still would like to wipe it please input: \"%@\"", nil),NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil)]
                                                    preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
                                              actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -158,7 +158,7 @@
                 [actionSheet addAction:okButton];
                 [self presentViewController:actionSheet animated:YES completion:nil];
             }
-        } else if ([[phrase lowercaseString] isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) {
+        } else if ([[phrase lowercaseString] isEqualToString:[NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil) lowercaseString]]) {
                 [BREventManager saveEvent:@"restore:wipe_full_wallet"];
             UIAlertController * actionSheet = [UIAlertController
                                                alertControllerWithTitle:nil
@@ -305,7 +305,7 @@
             break;
         }
 
-        if ([phrase isEqualToString:@"wipe"] || [[phrase lowercaseString] isEqualToString:@"i accept that i will lose my coins if i no longer possess the recovery phrase"]) { // shortcut word to force the wipe option to appear
+        if ([phrase isEqualToString:@"wipe"] || [[phrase lowercaseString] isEqualToString:[NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil) lowercaseString]]) { // shortcut word to force the wipe option to appear
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }

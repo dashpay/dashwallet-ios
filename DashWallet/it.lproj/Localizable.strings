@@ -267,7 +267,10 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "Se desideri veramente cancellarlo, perfavore inserisci: \"accetto di perdere le mie monete se non possiedo la frase di recupero\"";
+"If you still would like to wipe it please input: \"%@\"" = "Se desideri veramente cancellarlo, perfavore inserisci: \"%@\"";
+
+/* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "accetto di perdere le mie monete se non possiedo la frase di recupero";
 
 /* No comment provided by engineer. */
 "ignore" = "ignora";

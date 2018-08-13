@@ -267,7 +267,10 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "Ако все още искате да го изтриете, моля въведете: \"Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване\"";
+"If you still would like to wipe it please input: \"%@\"" = "Ако все още искате да го изтриете, моля въведете: \"%@\"";
+
+/* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване";
 
 /* No comment provided by engineer. */
 "ignore" = "игнорирай";
