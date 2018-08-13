@@ -36,7 +36,7 @@
 "\n%d attempts remaining\n" = "\npozostało %d prób\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+"\n(local requested amount: %@)" = "(żądana ilość: 1%@)";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\npozostała jedna próba\n";
@@ -63,7 +63,7 @@
 "\ntry again in %d %@" = "\nspróbuj ponownie za %1$d %2$@";
 
 /* No comment provided by engineer. */
-"About" = "o aplikacji";
+"About" = "O aplikacji";
 
 /* No comment provided by engineer. */
 "always require passcode" = "zawsze wymagaj hasła";
@@ -117,7 +117,7 @@
 "change" = "zmień";
 
 /* No comment provided by engineer. */
-"Change passcode" = "zmień hasło";
+"Change passcode" = "Zmień hasło";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "zmienić kwotę płatności?";
@@ -144,7 +144,7 @@
 "close app" = "zamknij aplikację";
 
 /* Confirm */
-"Confirm" = "potwierdź";
+"Confirm" = "Potwierdź";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potwierdzone w bloku #%d";
@@ -180,7 +180,7 @@
 "couldn't transmit payment to dash network" = "nie można przekazać płatności do sieci dash";
 
 /* No comment provided by engineer. */
-"CRITICAL" = "CRITICAL";
+"CRITICAL" = "KRYTYCZNY";
 
 /* No comment provided by engineer. */
 "Dash address" = "Adres dash";
@@ -213,10 +213,10 @@
 "DO NOT let anyone see your recovery phrase or they can spend your dash." = "NIE pozwól nikomu zobaczyć twoją frazę odzyskiwania danych albo ta osoba będzie mogła wydać twoje dashy.";
 
 /* No comment provided by engineer. */
-"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "NIE rób zrzutu ekranu. Screeny są widoczne dla innych aplikacji i urządzeń.";
 
 /* No comment provided by engineer. */
-"Done" = "Done";
+"Done" = "Zrobione";
 
 /* No comment provided by engineer. */
 "double spend" = "podwójny wydatek";
@@ -228,7 +228,7 @@
 "enable" = "włącz";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "pozwól na otrzymywanie powiadomień";
+"Enable receive notifications" = "Pozwól na otrzymywanie powiadomień";
 
 /* No comment provided by engineer. */
 "enter" = "Wejdź";
@@ -246,7 +246,7 @@
 "exit" = "wyjście";
 
 /* No comment provided by engineer. */
-"Face ID limit" = "Face ID limit";
+"Face ID limit" = "Limit identyfikacji twarzy";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "aktualizacja protfela nie powiodła się";
@@ -255,7 +255,7 @@
 "from:" = "od:";
 
 /* No comment provided by engineer. */
-"GENERAL" = "GENERAL";
+"GENERAL" = "GENERALNY";
 
 /* No comment provided by engineer. */
 "hour" = "godzina";
@@ -273,7 +273,7 @@
 "ignore" = "ignoruj";
 
 /* No comment provided by engineer. */
-"Import private key" = "importuj klucz prywatny";
+"Import private key" = "Importuj klucz prywatny";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "WAŻNE";
@@ -309,16 +309,16 @@
 "more..." = "więcej...";
 
 /* No comment provided by engineer. */
-"Moved" = "przeniesiono";
+"Moved" = "Przeniesiono";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NIGDY nie wpisuj twojej frazy odzyskiwania danych do menedżerów haseł ani w innych miejscach. Inne urządzenia mogą być zainfekowane.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "następnie, zapisz frazę odzyskiwania danych";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "Urządzenie NFC nie wysłało poprawnego adresu Dash lub Bitcoin.";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "brak danych kursu wymiany";
@@ -381,7 +381,7 @@
 "please enter pin to upgrade wallet" = "wprowadź pin w celu aktualizacji portfela";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Please place your phone near NFC device.";
+"Please place your phone near NFC device." = "Przyłóż telefon do urządzenia NFC ";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "kurs: %@ = %@\naktualizacja: %@\nblok #%d z %d\nilość podłączonych węzłów: %d\ndl węzeł: %@";
@@ -390,13 +390,13 @@
 "Receive dash at this address: %@" = "Otrzymaj wpłatę na ten adres: %@";
 
 /* No comment provided by engineer. */
-"Received" = "otrzymano";
+"Received" = "Otrzymano";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "otrzymano %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "fraza odzyskiwania danych";
+"Recovery phrase" = "Fraza do odzysku portfela";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "fraza odzyskiwania nieprawidłowa";
@@ -408,10 +408,10 @@
 "reduce payment amount by\n%@ (%@)?" = "zmniejszyć kwotę płatności o\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"Remind me later" = "Remind me later";
+"Remind me later" = "Przypomnij mi później";
 
 /* No comment provided by engineer. */
-"Request" = "wniosek";
+"Request" = "Wniosek";
 
 /* No comment provided by engineer. */
 "request an amount" = "wniosek o kwotę";
@@ -429,7 +429,7 @@
 "rescan" = "ponownie zeskanuj";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "ponownie skanuj łańcuch bloków";
+"Rescan blockchain" = "Przeskanuj blockchain ponownie";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "ponownie skanuj łańcuch bloków, jeśli uważasz, że może brakować transakcji, lub masz problemy z wysyłaniem (skanowanie może potrwać dłuższą chwilę)";
@@ -477,7 +477,7 @@
 "send request as message" = "wyślij żądanie jako wiadomość";
 
 /* No comment provided by engineer. */
-"Sent" = "wysłano";
+"Sent" = "Wysłano";
 
 /* No comment provided by engineer. */
 "sent!" = "wysłano!";
@@ -486,7 +486,7 @@
 "set a trusted node" = "ustaw zaufany węzeł";
 
 /* No comment provided by engineer. */
-"Settings" = "ustawienia";
+"Settings" = "Ustawienia";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -573,7 +573,7 @@
 "to: %@ (via Shapeshift)" = "do: %@ (poprzez Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "limit dotykowego id";
+"Touch ID limit" = "Limit identyfikacji odcisku palca";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "limit wydatków dotykowego id";
@@ -585,7 +585,7 @@
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "prowizje kosztowałyby więcej niż środki dostępne na tym kluczu prywatnym (ze względu na małe depozyty; tak zwany \"pył\")";
 
 /* No comment provided by engineer. */
-"Transaction history" = "historia transakcji";
+"Transaction history" = "Historia transakcji";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "transakcja odrzucona";

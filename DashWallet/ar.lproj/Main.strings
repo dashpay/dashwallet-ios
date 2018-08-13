@@ -1,90 +1,90 @@
 
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "กู้คืน wallet";
+"4w7-k8-9wY.normalTitle" = "إسترجاع المحفظة";
 
 /* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
 "5OA-tB-Exg.text" = "https://github.com/dashpay/dashwallet";
 
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "สกุลเงินท้องถิ่น";
+"8e2-ar-Ehc.text" = "العملة المحلية";
 
 /* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "สร้างวลีกู้คืน";
+"A4M-yq-26d.normalTitle" = "خلق جملة الاسترداد";
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "เริ่ม/กู้คืน wallet อื่น";
+"D1b-HB-lKH.text" = "بدء / إسترجاع محفظة أخرى";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "ข้อมูลอัตราแลกเปลี่ยน\nbitpay.com/rates and poloniex.com";
+"D4H-hd-LsX.text" = "بيانات سعر الصرف المقدمة\nبواسطة bitpay.com/rates و poloniex.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "หากคุณโทรศัพท์หาย คุณจำต้องใช้วลีนี้เพื่อกู้คืน wallet ของคุณ";
+"EQG-Km-ZKY.text" = "إذا فقدت هاتفك ، فستحتاج إلى هذه العبارة لاستعادة محفظتك";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
-"FjB-H2-BnK.text" = "ส่ง";
+"FjB-H2-BnK.text" = "أرسلت ";
 
 /* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "กรุณาเขียนมันลงไป";
+"Td7-xP-kmB.text" = "يرجى كتابتها";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
-"UyF-OV-QVY.text" = "ไม่เชื่อมต่อ";
+"UyF-OV-QVY.text" = "غير متصل ";
 
 /* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "ตั้งค่า";
+"W8m-Eh-Nf9.title" = "الإعدادات";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "จำนวน:";
+"XJu-9x-HqQ.text" = "الكمية:";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
-"YC6-rN-4P5.text" = "ป้อนวลีกู้คืน wallet ของคุณ เพื่อลบและสร้าง / เรียกคืนข้อมูลใหม่ ยอดคงเหลือปัจจุบันยังคงใช้วลีกู้คืนนนี้";
+"YC6-rN-4P5.text" = "أدخل جملة إسترجاع المحفظة هذه لمسحها وبدء / استرجاع آخر. يبقى رصيدك الحالي في هذه الجملة.";
 
 /* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "ชำระที่อยู่จากคลิปบอร์ด";
+"bfj-xS-5rN.normalTitle" = "دفع لعنوان الحافظة ";
 
 /* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "สแกนโค้ด QR";
+"ce6-Wi-wk4.normalTitle" = "الماسح الضوئي لرمز QR ";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
-"cyp-mV-Bhd.text" = "ฉันได้เขียนลงไปแล้ว";
+"cyp-mV-Bhd.text" = "كتبت ذلك : ";
 
 /* Class = "UIButton"; normalTitle = "New Wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "wallet ใหม่";
+"dOa-zm-TDG.normalTitle" = "محفظة جديدة";
 
 /* Class = "UILabel"; text = "If you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
-"dX6-jg-5IA.text" = "หากคุณโทรศัพท์หาย คุณจำต้องใช้วลีนี้เพื่อกู้คืน wallet ของคุณ";
+"dX6-jg-5IA.text" = "إذا فقدت هاتفك ، فستحتاج إلى هذه الجملة لإسترجاع محفظتك.";
 
 /* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
-"eJ2-5h-DO2.text" = "ไม่มีการยืนยัน";
+"eJ2-5h-DO2.text" = "غير مؤكد ";
 
 /* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "ยืนยัน :";
+"fQN-xb-SYb.title" = "تأكد:";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "ส่ง dash";
+"l5l-JR-LKA.text" = "إرسال داش";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
-"ooJ-EA-DFl.title" = "วลีกู้คืน​ : ";
+"ooJ-EA-DFl.title" = "جملة الاسترجاع :";
 
 /* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "ได้รับ dash";
+"qel-3J-2VC.text" = "تلقي داش ";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
-"s4T-yd-VfX.title" = "รายละเอียดธุรกรรม";
+"s4T-yd-VfX.title" = "تفاصيل المعاملة ";
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
-"t1j-JZ-FW0.text" = "ไม่มีธุรกรรม";
+"t1j-JZ-FW0.text" = "لا توجد اي معاملات";
 
 /* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nลิขสิทธิ์ © 2018 Dash Core\n\nขึ้นอยู่กับ Breadwallet\n\nแอพลิเคชั่นนี้เป็นโอเพ่อซอร์ส";
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nحقوق الطبع والنشر © 2018 Dash Core\n\nمبنية على breadwallet\n\nهذا التطبيق مفتوح المصدر";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "สร้าง wallet ใหม่ โดยการสร้างวลีกู้คืน";
+"wDZ-DN-szv.text" = "انشاء محفظة جديدة عن طريق خلق تعبير استرداد المحفظة";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
-"83W-1O-V9b.normalTitle" = "↔︎";
+"83W-1O-V9b.normalTitle" = "↔︎ ";
 
 /* Class = "UIButton"; normalTitle = "."; ObjectID = "Cz1-M6-v6N"; */
-"Cz1-M6-v6N.normalTitle" = ".";
+"Cz1-M6-v6N.normalTitle" = ". ";
 
 /* Class = "UIButton"; normalTitle = "0"; ObjectID = "OKR-t9-9Lk"; */
 "OKR-t9-9Lk.normalTitle" = "0";
@@ -117,37 +117,37 @@
 "Ika-qg-5Cf.normalTitle" = "9";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift กำลังดำเนินการ";
+"adc-g6-wnP.text" = "جاري Shapeshift ";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "ส่งทันที";
+"lbm-03-nu4.text" = "الإرسال الفوري";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "สถานะ:";
+"x2u-C3-wz6.text" = "الحالة: ";
 
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "คัดลอก logs";
+"Irz-6P-zvD.normalTitle" = "نسخ السجلات ";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
-"7gb-Nc-x8C.text" = "wallet ใหม่";
+"7gb-Nc-x8C.text" = "محفظة جديدة";
 
 /* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
-"7h3-k2-QrR.text" = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
+"7h3-k2-QrR.text" = "لا تكتب جملة إسترجاعك في مديري كلمات المرور أو في أي مكان آخر قد تكون الأجهزة الأخرى غير محمية.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "ห้ามให้บุคคลอื่นเห็นข้อมูลกู้คืนของคุณ วลี หรือ เขาสามารถใช้ dash ของคุณได้";
+"AH2-hg-79I.text" = "لا تترك أي أحد ان يرى جملة إسترجاعك أو سوف يتم إستخدام محفظتك بدون علمك";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "แสดงวลี";
+"FJd-qY-pGg.normalTitle" = "إظهار الجملة";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
-"Wym-3X-CXY.text" = "คำเตือน";
+"Wym-3X-CXY.text" = "تحذير";
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
-"UQm-Kc-aR1.normalTitle" = "เตือนฉันภายหลัง";
+"UQm-Kc-aR1.normalTitle" = "ذكرني لاحقا";
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
-"Ng6-uV-YUC.normalTitle" = "แชร์";
+"Ng6-uV-YUC.normalTitle" = "مشاركة";

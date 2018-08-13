@@ -590,6 +590,10 @@
 		FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWShareActionButton.m; sourceTree = "<group>"; };
 		FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTransactionTableViewCell.m; sourceTree = "<group>"; };
 		FB43BC80211D96C500BC9879 /* DWTransactionTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTransactionTableViewCell.h; sourceTree = "<group>"; };
+		FB43BC8A21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/BREventConfirmView.strings"; sourceTree = "<group>"; };
+		FB43BC8B21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Main.strings"; sourceTree = "<group>"; };
+		FB43BC8C21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/MainInterface.strings"; sourceTree = "<group>"; };
+		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -617,6 +621,10 @@
 		FBF2680B1E419318001A1C8B /* DSShapeshiftEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataClass.m"; sourceTree = "<group>"; };
 		FBF2680C1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
 		FBF2680D1E419318001A1C8B /* DSShapeshiftEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
+		FBF2DED821217DA300ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		FBF2DED921217DA300ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Main.strings; sourceTree = "<group>"; };
+		FBF2DEDA21217DA400ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		FBF2DEDB21217DA400ADB0A2 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -1430,6 +1438,8 @@
 				bg,
 				vi,
 				th,
+				"zh-Hant-TW",
+				ar,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -1785,6 +1795,8 @@
 				FB43112A1FA2D45800784EBC /* sq */,
 				FB43112C1FA2D45900784EBC /* nb */,
 				FB43112E1FA2D45900784EBC /* ko */,
+				FB43BC8A21217BB800BC9879 /* zh-Hant-TW */,
+				FBF2DED821217DA300ADB0A2 /* ar */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";
@@ -1815,6 +1827,8 @@
 				FB0ACB9E1F9AB76800F4AB52 /* bg */,
 				FB0ACBA01F9ABB6200F4AB52 /* vi */,
 				FB4310F11FA027DB00784EBC /* th */,
+				FB43BC8D21217BB900BC9879 /* zh-Hant-TW */,
+				FBF2DEDB21217DA400ADB0A2 /* ar */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1846,6 +1860,8 @@
 				FB43110C1FA2D3FD00784EBC /* bg */,
 				FB43110E1FA2D41C00784EBC /* sk */,
 				FB4311101FA2D41D00784EBC /* vi */,
+				FB43BC8C21217BB800BC9879 /* zh-Hant-TW */,
+				FBF2DEDA21217DA400ADB0A2 /* ar */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -1889,6 +1905,8 @@
 				FB0ACB9D1F9AB76800F4AB52 /* bg */,
 				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
 				FB4310EE1FA027DB00784EBC /* th */,
+				FB43BC8B21217BB800BC9879 /* zh-Hant-TW */,
+				FBF2DED921217DA300ADB0A2 /* ar */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

@@ -18,7 +18,7 @@
 "D4H-hd-LsX.text" = "Курсы обмена предоставлены\nbitpay.com/rates и poloniex.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "Вам понадобится эта фраза, чтобы восстановить Ваш кошелек, если Вы потеряете свой телефон.";
+"EQG-Km-ZKY.text" = "Вам понадобится эта фраза, чтобы восстановить Ваш кошелёк, если Вы потеряете свой телефон";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "Отправлено";
@@ -57,7 +57,7 @@
 "eJ2-5h-DO2.text" = "Не подтверждено";
 
 /* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "Подтверждение:";
+"fQN-xb-SYb.title" = "Подтвердить:";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "Отправить DASH:";
@@ -75,7 +75,7 @@
 "t1j-JZ-FW0.text" = "Нет транзакций";
 
 /* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\n\nОсновано на breadwallet\n\nЭто приложение с открытым исходным кодом";
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\n\nОсновано на Breadwallet\n\nЭто приложение с открытым исходным кодом";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Начните создание нового кошелька с генерации фразы восстановления";
@@ -117,10 +117,10 @@
 "Ika-qg-5Cf.normalTitle" = "9";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift еще выполняется";
+"adc-g6-wnP.text" = "Shapeshift ещё выполняется";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Use InstantSend";
+"lbm-03-nu4.text" = "InstantSend";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "Cтатус:";
@@ -132,22 +132,22 @@
 "Irz-6P-zvD.normalTitle" = "копировать журнал";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
-"7gb-Nc-x8C.text" = "New Wallet";
+"7gb-Nc-x8C.text" = "Новый кошелёк";
 
 /* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
-"7h3-k2-QrR.text" = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"7h3-k2-QrR.text" = "НИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
+"AH2-hg-79I.text" = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "Show Passphrase";
+"FJd-qY-pGg.normalTitle" = "Показать фразу";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
-"Wym-3X-CXY.text" = "WARNING";
+"Wym-3X-CXY.text" = "ВНИМАНИЕ";
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
-"UQm-Kc-aR1.normalTitle" = "Remind me later";
+"UQm-Kc-aR1.normalTitle" = "Напомнить позже";
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
-"Ng6-uV-YUC.normalTitle" = "Share";
+"Ng6-uV-YUC.normalTitle" = "Поделиться";

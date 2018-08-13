@@ -4,6 +4,31 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>dashwallet</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.9.1</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>0</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionMainStoryboard</key>
+		<string>MainInterface</string>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.widget-extension</string>
+	</dict>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Montserrat-Regular.otf</string>
@@ -20,30 +45,5 @@
 		<string>Montserrat-SemiBoldItalic.otf</string>
 		<string>Montserrat-ThinItalic.otf</string>
 	</array>
-	<key>CFBundleDisplayName</key>
-	<string>dashwallet</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
-	<key>CFBundlePackageType</key>
-	<string>XPC!</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.9.0</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>0</string>
-	<key>NSExtension</key>
-	<dict>
-		<key>NSExtensionMainStoryboard</key>
-		<string>MainInterface</string>
-		<key>NSExtensionPointIdentifier</key>
-		<string>com.apple.widget-extension</string>
-	</dict>
 </dict>
 </plist>

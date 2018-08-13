@@ -15,10 +15,10 @@
 "D1b-HB-lKH.text" = "ウォレットの新規作成及び復元";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "為替データ提供：\nbitpay.com/rates";
+"D4H-hd-LsX.text" = "為替データ提供：\nbitpay.com/rates and poloniex.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "携帯電話を紛失した場合、このフレーズでウォレットが復元できます。";
+"EQG-Km-ZKY.text" = "携帯電話を失くされた場合、このフレーズでウォレットが復元できます。";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "送信済み";
@@ -57,7 +57,7 @@
 "eJ2-5h-DO2.text" = "未承認";
 
 /* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "意思の再確認：";
+"fQN-xb-SYb.title" = "承認：";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "送金する:";
@@ -75,10 +75,10 @@
 "t1j-JZ-FW0.text" = "取引がありません";
 
 /* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\ncopyright © 2018 Dash Core\n\nBased on breadwallet\n\nthis app is open source";
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\n著作権 © 2018 Dash Core\n\nBreadwalletをベースにしています。\n\nこのアプリはオープンソースです。";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "新しい復元フレーズを生成し、\n新規ウォレットを作ります。";
+"wDZ-DN-szv.text" = "新しい復元フレーズを生成し、新規ウォレットを作ります。";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
@@ -117,10 +117,10 @@
 "Ika-qg-5Cf.normalTitle" = "9";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshiftで交換中";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Use InstantSend";
+"lbm-03-nu4.text" = "即時送金";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "ステータス:";
@@ -129,25 +129,25 @@
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "copy logs";
+"Irz-6P-zvD.normalTitle" = "ログをコピーする";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
-"7gb-Nc-x8C.text" = "New Wallet";
+"7gb-Nc-x8C.text" = "新規ウォレット";
 
 /* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
-"7h3-k2-QrR.text" = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"7h3-k2-QrR.text" = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
+"AH2-hg-79I.text" = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを簡単に盗むことができます。";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "Show Passphrase";
+"FJd-qY-pGg.normalTitle" = "フレーズを表示";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
-"Wym-3X-CXY.text" = "WARNING";
+"Wym-3X-CXY.text" = "警告";
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
-"UQm-Kc-aR1.normalTitle" = "Remind me later";
+"UQm-Kc-aR1.normalTitle" = "後で通知して下さい";
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
-"Ng6-uV-YUC.normalTitle" = "Share";
+"Ng6-uV-YUC.normalTitle" = "シェアする";

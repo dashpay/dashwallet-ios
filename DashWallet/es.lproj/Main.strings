@@ -1,30 +1,30 @@
 
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "recuperar cartera";
+"4w7-k8-9wY.normalTitle" = "Recuperar cartera";
 
 /* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
 "5OA-tB-Exg.text" = "https://github.com/dashpay/dashwallet";
 
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "moneda local";
+"8e2-ar-Ehc.text" = "Moneda local";
 
 /* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "generar frase de recuperación";
+"A4M-yq-26d.normalTitle" = "Generar frase de recuperación";
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "comenzar/recuperar otra cartera";
+"D1b-HB-lKH.text" = "Iniciar / Recuperar otra billetera";
 
 /* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "datos de tasa de cambio proporcionados por\nbitpay.com/rates";
+"D4H-hd-LsX.text" = "Datos de tasa de cambio proporcionados por\nbitpay.com/rates y poloniex.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "si alguna vez pierdes tu teléfono, necesitarás esta frase para recuperar tu cartera";
+"EQG-Km-ZKY.text" = "Si alguna vez pierdes tu teléfono, necesitarás esta frase para recuperar tu cartera";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "enviado";
 
 /* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "anótela, por favor";
+"Td7-xP-kmB.text" = "Anótela, por favor";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "sin conexión";
@@ -48,7 +48,7 @@
 "cyp-mV-Bhd.text" = "Ya la escribí:";
 
 /* Class = "UIButton"; normalTitle = "New Wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "nueva cartera";
+"dOa-zm-TDG.normalTitle" = "Nueva cartera";
 
 /* Class = "UILabel"; text = "If you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "si alguna vez pierdes tu teléfono, necesitarás esta frase para recuperar tu cartera";
@@ -57,7 +57,7 @@
 "eJ2-5h-DO2.text" = "sin confirmar";
 
 /* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "confirmar:";
+"fQN-xb-SYb.title" = "Confirmar:";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "enviar dinero:";
@@ -75,10 +75,10 @@
 "t1j-JZ-FW0.text" = "ninguna transacción";
 
 /* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet v%ver%%net%\nderechos reservados © 2018 Dash Core\nBasado en breadwallet\nesta aplicación es de código abierto";
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nDerechos reservados © 2018 Dash Core\n\nBasado en Breadwallet\n\nEsta aplicación es de código abierto";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "crear una cartera nueva mediante la generación de una frase de recuperación";
+"wDZ-DN-szv.text" = "Crear una cartera nueva mediante la generación de una frase de recuperación";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "lel";
@@ -102,7 +102,7 @@
 "VQH-pt-DQg.normalTitle" = "4";
 
 /* Class = "UIButton"; normalTitle = "5"; ObjectID = "2Af-Xt-dHE"; */
-"2Af-Xt-dHE.normalTitle" = "6 no wait... 4?";
+"2Af-Xt-dHE.normalTitle" = "5";
 
 /* Class = "UIButton"; normalTitle = "6"; ObjectID = "43w-iO-MOK"; */
 "43w-iO-MOK.normalTitle" = "6";
@@ -120,7 +120,7 @@
 "adc-g6-wnP.text" = "Shapeshift en proceso";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Envío instantáneo";
+"lbm-03-nu4.text" = "InstantSend";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "Estado:";
@@ -132,22 +132,22 @@
 "Irz-6P-zvD.normalTitle" = "copiar escritos";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
-"7gb-Nc-x8C.text" = "New Wallet";
+"7gb-Nc-x8C.text" = "Nueva cartera";
 
 /* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
-"7h3-k2-QrR.text" = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"7h3-k2-QrR.text" = "NUNCA introduzcas tu frase de recuperación en gestores de contraseñas u otros servicios. Los otros dispositivos pueden estar infectados.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
+"AH2-hg-79I.text" = "NO permitas que nadie vea tu frase de recuperación, podrían usar tus dash.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "Show Passphrase";
+"FJd-qY-pGg.normalTitle" = "Mostrar frase";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
-"Wym-3X-CXY.text" = "WARNING";
+"Wym-3X-CXY.text" = "ADVERTENCIA";
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
-"UQm-Kc-aR1.normalTitle" = "Remind me later";
+"UQm-Kc-aR1.normalTitle" = "Recordármelo más tarde";
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
-"Ng6-uV-YUC.normalTitle" = "Share";
+"Ng6-uV-YUC.normalTitle" = "Compartir";

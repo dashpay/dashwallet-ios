@@ -36,7 +36,7 @@
 "\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+"\n(local requested amount: %@)" = "\n(本地请求金额: %@)";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
@@ -72,10 +72,10 @@
 "amount too small" = "金额过小";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+"Application %@ is requesting a payment to" = "应用程序 %@ 正在请求付款给";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "应用程序 %@ 正在请求一个地址用来发送交易给您.  您是否同意?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "应用程序 %@ 想要获取你的公钥。它可以被用作查看你的钱包记录，但无法用来移动你钱包中的达世币。";
@@ -180,7 +180,7 @@
 "couldn't transmit payment to dash network" = "无法将交易发送到达世币网络";
 
 /* No comment provided by engineer. */
-"CRITICAL" = "CRITICAL";
+"CRITICAL" = "重要";
 
 /* No comment provided by engineer. */
 "Dash address" = "达世币地址";
@@ -213,10 +213,10 @@
 "DO NOT let anyone see your recovery phrase or they can spend your dash." = "不要让任何人看到你的恢复密语否则他们就可以使用您的达世币。";
 
 /* No comment provided by engineer. */
-"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "不要使用截图。截图对其他应用或设备是可见的。";
 
 /* No comment provided by engineer. */
-"Done" = "Done";
+"Done" = "完成";
 
 /* No comment provided by engineer. */
 "double spend" = "双重花费";
@@ -246,7 +246,7 @@
 "exit" = "退出";
 
 /* No comment provided by engineer. */
-"Face ID limit" = "Face ID limit";
+"Face ID limit" = "面容ID限制";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "钱包升级失败";
@@ -255,7 +255,7 @@
 "from:" = "来自：";
 
 /* No comment provided by engineer. */
-"GENERAL" = "GENERAL";
+"GENERAL" = "通用";
 
 /* No comment provided by engineer. */
 "hour" = "小时";
@@ -267,7 +267,7 @@
 "id:" = "id：";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
+"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "如果您仍想清空钱包, 请输入 : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"";
 
 /* No comment provided by engineer. */
 "ignore" = "忽略";
@@ -312,13 +312,13 @@
 "Moved" = "已移动";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永远不要将恢复密语输入到密码管理器或其他地方。其它设备都可能存在病毒软件。";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "下面，请写下你的恢复密语";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC设备未发送有效的达世币或比特币地址";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "没有汇率信息";
@@ -381,7 +381,7 @@
 "please enter pin to upgrade wallet" = "请输入密码进行钱包升级";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Please place your phone near NFC device.";
+"Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "比率：%@ = %@\n升级版本：%@\n区块 #%d of %d\n已链接节点：%d\ndl节点：%@";
@@ -408,7 +408,7 @@
 "reduce payment amount by\n%@ (%@)?" = "减少付款金额\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"Remind me later" = "Remind me later";
+"Remind me later" = "以后提醒我";
 
 /* No comment provided by engineer. */
 "Request" = "请求";
@@ -438,7 +438,7 @@
 "reset" = "重置";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "重试";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "扫描别人的二维码来获得他们的达世币或者比特币币地址。您可以向任何一个地址发送付款。";
@@ -555,13 +555,13 @@
 "this private key is empty" = "这个私钥为空";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此请求需要即时付款, 但您没有足够6次确认的交易输入来进行即时发送. 您可以询问商家接受普通付款, 或等待几分钟.";
 
 /* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
+"this request requires an instant payment but you have disabled instant payments" = "此请求需要即时付款, 但您已禁用了即时支付功能";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "此钱包并不是空的或同步尚未完成, 如果没有恢复密语, 请不要清空钱包";
 
 /* No comment provided by engineer. */
 "to:" = "到：";
@@ -573,7 +573,7 @@
 "to: %@ (via Shapeshift)" = "至：%@ (通过 Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "指纹解锁限制";
+"Touch ID limit" = "触控ID限制";
 
 /* No comment provided by engineer. */
 "touch id spending limit" = "指纹解锁支出限额";

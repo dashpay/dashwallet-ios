@@ -1,0 +1,663 @@
+
+/* No comment provided by engineer. */
+" and " = " و ";
+
+/* No comment provided by engineer. */
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@غير مسموح بالوصول إلى الكاميرا";
+
+/* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nالرصيد: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%dالتأكيدات";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 تأكيدات";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 تأكيد";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\"إنها ليست جملة الإسترجاع";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\nالمجموع %1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nإذا فقدت هاتفك ، فستحتاج إلى جملة لإسترجاع محفظتك";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d المحاولات المتبقية\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(المبلغ المحلي المطلوب: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 محاولة متبقية\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\nالمبلغ %1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nيجيب إضافة رقم مرور الجهاز لحماية محفظتك. انتقل إلى الإعدادات وشغِّل رقم المرور للمتابعة";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nهذا العنوان مستخدم من قبل \nعناوين داش مخصصة للاستخدام مرة واحدة فقط\n\nإعادة الاستخدام يقلل من الخصوصية لك وللمتلقي ويمكن أن يؤدي إلى الخسارة إذا كان المستلم لا يتحكم مباشرة في العنوان";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nالسماح بالدخول إلى الكاميرا\nالإعدادات->الخصوصية->الكاميرا->%@";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nرسوم الشبكة + %1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %@" = "\nأعد المحاولة في %@";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nأعد المحاولة في %1$d  %2$@";
+
+/* No comment provided by engineer. */
+"About" = "عن";
+
+/* No comment provided by engineer. */
+"always require passcode" = "يتطلب دائما الرقم السري";
+
+/* No comment provided by engineer. */
+"amount too small" = "المبلغ قليل جدا";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "التطبيق %@ يطلب الدفع إلى";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "التطبيق %@ يطلب عنوانًا حتى يمكنه الدفع لك. هل ترغب في اعتماد هذا؟";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "التطبيق %@ ترغب في استلام مفتاحك الرئيسي. هذا يمكن أن تستخدم لتتبع محفظتك ، وهذا لا يمكن أن تستخدم لتحريك داش الخاص بك.";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "كلمة المرور السيئة ، حاول مرة أخرى";
+
+/* No comment provided by engineer. */
+"bad payment request" = "طلب دفع سيئة";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "عنوان طلب دفع سيئ";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "عنوان الدفع سيء";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "جملة الإسترجاع سيئة";
+
+/* No comment provided by engineer. */
+"Bitcoin address (shapeshift)" = "عنوان بيتكوين ( التحويل )";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "لا يمكن أن تكون مدفوعات بيتكوين أقل من %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "كتلة # %1$d من %2$d";
+
+/* No comment provided by engineer. */
+"Buy Dash" = "شراء داش ";
+
+/* No comment provided by engineer. */
+"Buy dash in dashwallet!" = "شراء داش من محفظة داش";
+
+/* No comment provided by engineer. */
+"cancel" = "إلغاء";
+
+/* No comment provided by engineer. */
+"change" = "تغير";
+
+/* No comment provided by engineer. */
+"Change passcode" = "تغير الرقم السري";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "تغير مبلغ الدفع؟";
+
+/* No comment provided by engineer. */
+"checking address balance..." = "التحقق من رصيد العنوان ...";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "التحقق من رصيد المفتاح الخاص ...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "إختر رقم سري %@";
+
+/* No comment provided by engineer. */
+"clear" = "مسح";
+
+/* No comment provided by engineer. */
+"clear trusted node?" = "مسح نود المونوقين؟";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "لا تحتوي الحافظة على عنوان داش أو عنوان بيتكوين صالح";
+
+/* No comment provided by engineer. */
+"close app" = "إختر تطبيق";
+
+/* Confirm */
+"Confirm" = "تأكد";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "تأكيد في الكتلة # %d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "مهلة";
+
+/* No comment provided by engineer. */
+"copied" = "نسخ";
+
+/* No comment provided by engineer. */
+"copy" = "إنسخ";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "إنسخ العنوان إلى الحافظة";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "إنسخ الطلب إلى الحافظة";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "إنسخ عنوان المحفظة إلى الحافظة";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "لا يمكن التحقق من رصيد العنوان";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "لا يمكنك عمل معاملة";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "لا يمكنك إزالة الرصيد";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to dash network" = "لا يمكن نقل الدفع إلى شبكة الشرطة";
+
+/* No comment provided by engineer. */
+"CRITICAL" = "إنتقادي";
+
+/* No comment provided by engineer. */
+"Dash address" = "عنوان داش";
+
+/* No comment provided by engineer. */
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "يمكن أيضًا نسخ عناوين داش إلى الحافظة. يبدأ عنوان داش دائمًا بـ \"X\" أو \"7\".";
+
+/* No comment provided by engineer. */
+"dash network fee" = "رسوم شبكة داش";
+
+/* No comment provided by engineer. */
+"dash payments can't be less than %@" = "لا يمكن أن تكون دفعات الداش أقل من %@";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "صفقة داش لم توقع";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "لا يمكن أن تكون مخرجات معاملات داش أقل من %@";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "تسوية أمان الجهاز\nيمكن لأي تطبيق \"جيلبريك\" الوصول إلى بيانات التطبيق الآخر (وسرقة رصيدك في داش).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "تسوية أمان الجهاز\nيمكن لأي تطبيق \"جيلبريك\" الوصول إلى بيانات التطبيق الآخر (وسرقة رصيدك في داش). امسح هذه المحفظة على الفور واسترجعها على جهاز آمن.";
+
+/* No comment provided by engineer. */
+"do it later" = "افعله لاحقا";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "لا تترك أي أحد ان يرى جملة إسترجاعك أو سوف يتم إستخدام محفظتك بدون علمك";
+
+/* No comment provided by engineer. */
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "لا تأخذ لقطة لشاشة. تكون لقطات الشاشة مرئية للتطبيقات الأخرى والأجهزة";
+
+/* No comment provided by engineer. */
+"Done" = "تم";
+
+/* No comment provided by engineer. */
+"double spend" = "ضعف الانفاق";
+
+/* No comment provided by engineer. */
+"email not configured" = "البريد الإلكتروني لم يتم تكوينه";
+
+/* No comment provided by engineer. */
+"enable" = "متاح";
+
+/* No comment provided by engineer. */
+"Enable receive notifications" = "متاح تلقي الإشعارات";
+
+/* No comment provided by engineer. */
+"enter" = "أدخل";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "أدخل رقمك السري القديم";
+
+/* No comment provided by engineer. */
+"error signing dash transaction" = "خطأ في تسجيل صفقة داش";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "خطأ في صفقة توقيع";
+
+/* No comment provided by engineer. */
+"exit" = "خروج";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "محدد وجه التعريف";
+
+/* No comment provided by engineer. */
+"failed wallet update" = "فشل تحديث المحفظة";
+
+/* No comment provided by engineer. */
+"from:" = "من:";
+
+/* No comment provided by engineer. */
+"GENERAL" = "عام";
+
+/* No comment provided by engineer. */
+"hour" = "ساعة";
+
+/* No comment provided by engineer. */
+"hours" = "ساعات";
+
+/* No comment provided by engineer. */
+"id:" = "رقم التعريف:";
+
+/* No comment provided by engineer. */
+"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "إذا كنت لا تزال ترغب في مسحها ، فيرجى إدخال: \"أقبل أنني سأفقد عملاتي إذا لم أعد أمتلك جملة الإسترجاع\"";
+
+/* No comment provided by engineer. */
+"ignore" = "تجاهل";
+
+/* No comment provided by engineer. */
+"Import private key" = "استيراد المفتاح الخاص";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "مهم";
+
+/* No comment provided by engineer. */
+"instant payment" = "الدفع الفوري";
+
+/* No comment provided by engineer. */
+"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "إرسال فوري يتطلب مدخلات كافية مع 6 تأكيدات ، وإرسال على أي حال كمعاملة عادية؟";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "رصيد غير كاف";
+
+/* No comment provided by engineer. */
+"insufficient funds for dash network fee" = "أموال غير كافية لرسوم الشبكة داش";
+
+/* No comment provided by engineer. */
+"INVALID" = "غير صالحة";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "دع الآخرين يفحصون رمز QR هذا للحصول على عنوان داش. يمكن لأي شخص إرسال داش إلى محفظتك عن طريق نقلها إلى عنوانك.";
+
+/* No comment provided by engineer. */
+"minute" = "دقيقة";
+
+/* No comment provided by engineer. */
+"minutes" = "دقائق";
+
+/* No comment provided by engineer. */
+"missing certificate" = "شهادة مفقودة";
+
+/* No comment provided by engineer. */
+"more..." = "أكثر...";
+
+/* No comment provided by engineer. */
+"Moved" = "تحرك";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "لا تكتب جملة إسترجاعك في مديري كلمات المرور أو في أي مكان آخر قد تكون الأجهزة الأخرى غير محمية.";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "بعد ذلك ، اكتب جملة إسترجاعك";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC لم ينقل جهاز عنوان داش أو عنوان بتكوين صالحًا";
+
+/* No comment provided by engineer. */
+"no exchange rate data" = "لا توجد بيانات سعر الصرف";
+
+/* No comment provided by engineer. */
+"no peers found" = "لا يوجد أقران";
+
+/* No comment provided by engineer. */
+"not a dash or bitcoin QR code" = "لا يوجد QR لداش او للبيتكوين";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "عنوان البيتكوين غير صالح";
+
+/* No comment provided by engineer. */
+"not a valid dash address" = "عنوان داش غير صالح";
+
+/* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "عنوان البيتكوين أو داش غير صالحين";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "مفتاح الخاص غير صالح";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "غير متصل بشبكة داش";
+
+/* No comment provided by engineer. */
+"ok" = "حاضر";
+
+/* No comment provided by engineer. */
+"OK" = "حسنا ";
+
+/* No comment provided by engineer. */
+"passcode" = "رقم السري";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "رقم السري %@";
+
+/* No comment provided by engineer. */
+"password" = "كلمة المرور";
+
+/* No comment provided by engineer. */
+"password protected key" = "مفتاح محمي بكلمة مرور";
+
+/* No comment provided by engineer. */
+"Pay" = "دفع";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "هوية المدفوع لأمره غير معتمدة";
+
+/* No comment provided by engineer. */
+"payment address" = "عنوان الدفع";
+
+/* No comment provided by engineer. */
+"payment output" = "إخراج الدفع";
+
+/* No comment provided by engineer. */
+"pending" = "قيد الانتظار";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "يرجى إدخال رقم سري  لترقية المحفظة";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "يرجى وضع هاتفك بالقرب من جهاز NFC.";
+
+/* No comment provided by engineer. */
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "تقيم: %@ = %@\nتحديث:%@\nكتلة # %d على %d\nأقران متصلين:%d\nأقران دل:%@";
+
+/* No comment provided by engineer. */
+"Receive dash at this address: %@" = "إستلام داش في هذا العنوان: %@";
+
+/* No comment provided by engineer. */
+"Received" = "تم الاستلام";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "تم الاستلام %1$@ (%2$@)";
+
+/* Recovery phrase */
+"Recovery phrase" = "إسترجاع الجملة";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "إسترجاع الجملة غير متطابقة";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "استرجاع الجملة يجب ان تكون %d كلمات";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "تقليل مبلغ الدفع بواسطة\n%1$@ (%2$@)؟";
+
+/* No comment provided by engineer. */
+"Remind me later" = "ذكرني لاحقا";
+
+/* No comment provided by engineer. */
+"Request" = "طلب";
+
+/* No comment provided by engineer. */
+"request an amount" = "طلب مبلغ";
+
+/* No comment provided by engineer. */
+"request expired" = "طلب منتهي الصلاحية";
+
+/* No comment provided by engineer. */
+"request is for an instant payment but you have disabled instant payments" = "طلب الدفع الفوري ولكنك قمت بتعطيل المدفوعات الفورية";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "الشبكة المطلوبة \"%1$@\" بدلا من\"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "إعادة تفحص";
+
+/* No comment provided by engineer. */
+"Rescan blockchain" = "إعادة فحص بلوكشين";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "إعادة فحص بلوكشين إذا كنت تعتقد أن لديك معاملات مفقودة ، أو تواجه مشكلة في الإرسال (يمكن أن تستغرق إعادة الفحص عدة دقائق)";
+
+/* No comment provided by engineer. */
+"reset" = "إعادة تعيين";
+
+/* No comment provided by engineer. */
+"retry" = "إعادة المحاولة";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "فحص رمز QR لشخص آخر للحصول على عنوان داش أو البيتكوين. يمكنك إرسال دفعة لأي شخص لديه عنوان.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. إنشاء عبارة استرداد جديدة والحفاظ على سريتها.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. أموالك معرضة للخطر. نقل رصيدك إلى محفظة أخرى.";
+
+/* No comment provided by engineer. */
+"second" = "تانية";
+
+/* No comment provided by engineer. */
+"seconds" = "تواني";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "رأيت من %1$d على %2$d أقران";
+
+/* No comment provided by engineer. */
+"send" = "إرسال ";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "إرسال %1$@ (%2$@) من هذا المفتاح الخاص في محفظتك؟ سوف تتلقى شبكة داش رسوم %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "أرسل العنوان كبريد إلكتروني";
+
+/* No comment provided by engineer. */
+"send address as message" = "أرسل العنوان كرسالة";
+
+/* No comment provided by engineer. */
+"send request as email" = "إرسال الطلب كالبريد الإلكتروني";
+
+/* No comment provided by engineer. */
+"send request as message" = "أرسل الطلب كرسالة";
+
+/* No comment provided by engineer. */
+"Sent" = "أرسلت ";
+
+/* No comment provided by engineer. */
+"sent!" = "أرسلت!";
+
+/* No comment provided by engineer. */
+"set a trusted node" = "وضع نود الموتوقين";
+
+/* No comment provided by engineer. */
+"Settings" = "الإعدادات";
+
+/* No comment provided by engineer. */
+"shapeshift bitcoin id:" = "رقم تعريف لتحويل البيتكوين:";
+
+/* No comment provided by engineer. */
+"shapeshift failed" = "فشل في التحويل";
+
+/* No comment provided by engineer. */
+"shapeshift status:" = "حالة التحويل:";
+
+/* No comment provided by engineer. */
+"shapeshift succeeded" = "التحويل نجح";
+
+/* No comment provided by engineer. */
+"show" = "إظهار";
+
+/* No comment provided by engineer. */
+"show phrase" = "إظهار الجملة";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "الرسائل القصيرة غير متوفرة حاليا";
+
+/* No comment provided by engineer. */
+"spent address" = "أمضى عنوان";
+
+/* No comment provided by engineer. */
+"spent input" = "ينفق المدخلات";
+
+/* No comment provided by engineer. */
+"Starting Shapeshift!" = "بدأ التحويل";
+
+/* No comment provided by engineer. */
+"status:" = "الحالة: ";
+
+/* No comment provided by engineer. */
+"swept!" = "اجتاحت!";
+
+/* No comment provided by engineer. */
+"Syncing:" = "المزامنة:";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "المبلغ الذي تريد تغييره مرتفع للغاية ، يرجى إدخال قيمة تحته %@";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "المبلغ الذي تريد تغييره قليل جدًا ، يرجى إدخال قيمة %@";
+
+/* No comment provided by engineer. */
+"the app will now close" = "سيتم إغلاق التطبيق الآن";
+
+/* No comment provided by engineer. */
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "هذا هو عنوان داش الخاص بك. انقر لنسخها أو إرسالها عبر البريد الإلكتروني أو الرسائل القصيرة. سيتغير العنوان في كل مرة تتلقى فيها الأموال ، ولكن العناوين القديمة تعمل دائمًا.";
+
+/* No comment provided by engineer. */
+"This is your dash balance." = "هذا هو رصيدك.";
+
+/* No comment provided by engineer. */
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "هذا هو رصيدك. داش هي عملة. تغير سعر الصرف مع السوق.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "عنوان الدفع هذا موجود بالفعل في محفظتك";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "هذا المفتاح الخاص موجود بالفعل في محفظتك";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "هذا المفتاح الخاص فارغ";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "يتطلب هذا الطلب دفعة فورية ولكن ليس لديك ما يكفي من المدخلات مع 6 تأكيدات مطلوبة من إرسال فوري ، يمكنك أن تطلب من التاجر قبول معاملة عادية أو الانتظار لبضع دقائق.";
+
+/* No comment provided by engineer. */
+"this request requires an instant payment but you have disabled instant payments" = "يتطلب هذا الطلب دفعة فورية ولكنك عطلت الدفعات الفورية";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "هذه المحفظة ليست فارغة أو لم تنتهِ المزامنة ، ولا يجوز مسحها بدون جملة الإسترجاع";
+
+/* No comment provided by engineer. */
+"to:" = "إلى:";
+
+/* No comment provided by engineer. */
+"to: %@" = "إلى: %@";
+
+/* No comment provided by engineer. */
+"to: %@ (via Shapeshift)" = "إلى:%@  (via Shapeshift)";
+
+/* No comment provided by engineer. */
+"Touch ID limit" = "إلمس لمعرفة الحد";
+
+/* No comment provided by engineer. */
+"touch id spending limit" = "إلمس رقم التعريف لحد الإنفاق";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "المعاملة ألغيت ، مهلة الشبكة";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "تكلف رسوم المعاملات أكثر من الأموال المتوفرة على هذا المفتاح الخاص (بسبب رواسب \"الغبار\" الصغيرة)";
+
+/* No comment provided by engineer. */
+"Transaction history" = "سجل المعاملات";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "المعاملات المرفوضة";
+
+/* No comment provided by engineer. */
+"trust" = "التقة";
+
+/* No comment provided by engineer. */
+"Try It!" = "جربها!";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "تشغيل رمز على الجهاز";
+
+/* No comment provided by engineer. */
+"Unable to get new qr code" = "غير قادر على الحصول على كود QR جديد";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "استجابة غير متوقعة من %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "عنوان غير معروف";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "عنوان غير معروف";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "مستند غير معتمد أو ضائع";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "نوع توقيع غير معتمد";
+
+/* No comment provided by engineer. */
+"unsupported url" = "عنوان الرابط غير معتمد";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "شهادة غير موثوق بها";
+
+/* No comment provided by engineer. */
+"unverified" = "غير مثبت عليه";
+
+/* Updating Price */
+"Updating Price" = "تحديث السعر";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "التحقق ، في انتظار التأكيد";
+
+/* No comment provided by engineer. */
+"verify passcode" = "تحقق من رمز المرور";
+
+/* No comment provided by engineer. */
+"wallet address" = "عنوان المحفظة";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "المحفظة معطلة";
+
+/* No comment provided by engineer. */
+"WARNING" = "تحذير";
+
+/* No comment provided by engineer. */
+"wipe" = "مسح";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "أكتب جملة إسترجاعك في الأسفل";
+
+/* No comment provided by engineer. */
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "يمكنك شراء داش من \nمحفظة داش بالمال او\nعن تحويل بنكي.";
+
+/* No comment provided by engineer. */
+"you must enter your pin in order to enter dashwallet" = "يجب عليك إدخال رقم السري الشخصي الخاص بك من أجل إدخال محفظة داش";
+
+/* No comment provided by engineer. */
+"you received dash!" = "لقد تلقيت داش!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "محفظتك قد تكون غير متزامنة.\nغالبا ما يمكن إصلاح هذا عن طريق مسح بلوكشين.";

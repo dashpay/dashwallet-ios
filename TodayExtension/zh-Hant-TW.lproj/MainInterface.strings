@@ -1,12 +1,12 @@
 
 /* Class = "UILabel"; text = "scan QR code"; ObjectID = "JgG-Ah-UZk"; */
-"JgG-Ah-UZk.text" = "สแกนโค้ด QR";
+"JgG-Ah-UZk.text" = "掃瞄二維碼";
 
 /* Class = "UILabel"; text = "receive"; ObjectID = "KJN-zr-IQB"; */
-"KJN-zr-IQB.text" = "ได้รับ";
+"KJN-zr-IQB.text" = "接收";
 
 /* Class = "UILabel"; text = "send"; ObjectID = "QMM-JV-cTG"; */
-"QMM-JV-cTG.text" = "ส่ง";
+"QMM-JV-cTG.text" = "發送";
 
 /* Class = "UIButton"; normalTitle = "setup wallet"; ObjectID = "fgE-Q8-uG8"; */
-"fgE-Q8-uG8.normalTitle" = "ตั้งค่า wallet";
+"fgE-Q8-uG8.normalTitle" = "設置錢包";
