@@ -117,7 +117,7 @@
 "change" = "modifier";
 
 /* No comment provided by engineer. */
-"Change passcode" = "Modifier le code";
+"Change passcode" = "Modifier le code d’accès";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "modifier le montant du paiement ?";
@@ -228,7 +228,7 @@
 "enable" = "activer";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Activer la réception de notifications";
+"Enable receive notifications" = "Recevoir des notifications";
 
 /* No comment provided by engineer. */
 "enter" = "entrer";

@@ -39,10 +39,10 @@
 "YC6-rN-4P5.text" = "Entrez la phrase de récupération de ce portefeuille pour l'effacer, puis en créer ou en récupérer un autre. Votre solde actuel reste lié à cette phrase.";
 
 /* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
-"bfj-xS-5rN.normalTitle" = "adresse depuis le presse-papier";
+"bfj-xS-5rN.normalTitle" = "Adresse depuis le presse-papier";
 
 /* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
-"ce6-Wi-wk4.normalTitle" = "scanner un code QR";
+"ce6-Wi-wk4.normalTitle" = "Scanner un code QR";
 
 /* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
 "cyp-mV-Bhd.text" = "Je l'ai écrite sur papier :";
@@ -129,7 +129,7 @@
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "registre de copie";
+"Irz-6P-zvD.normalTitle" = "Copier infos debug";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
 "7gb-Nc-x8C.text" = "Nouveau portefeuille";
@@ -141,7 +141,7 @@
 "AH2-hg-79I.text" = "NE LAISSEZ PERSONNE voir votre phrase de récupération, sinon n'importe qui pourra dépenser vos dashs.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "Afficher la phrase de passe";
+"FJd-qY-pGg.normalTitle" = "Afficher la phrase de récupération";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
 "Wym-3X-CXY.text" = "AVERTISSEMENT";
