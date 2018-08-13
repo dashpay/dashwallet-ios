@@ -285,7 +285,7 @@
 "instant payment" = "anında ödeme";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Anında Gönder için 6 onaylı yeterli girdi gerekir, yine de sıradan işlem olarak gönder?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Anında Gönder için 6 onaylı yeterli girdi gerekir, yine de sıradan işlem olarak gönder?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "yetersiz bakiye";
@@ -558,7 +558,7 @@
 "this private key is empty" = "bu özel anahtar boş";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "bu istek bir anında ödeme gerektiriyor ama siz anında ödemeleri devredışı bıraktınız";

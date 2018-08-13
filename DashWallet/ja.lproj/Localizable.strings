@@ -285,7 +285,7 @@
 "instant payment" = "即時支払い";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "インスタント送金には十分な入金と６つの承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "インスタント送金には十分な入金と６つの承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "残高不足";
@@ -558,7 +558,7 @@
 "this private key is empty" = "この秘密鍵は承認済み残高がありません";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "このリクエストには即時支払いが必要ですが、あなたには即時送金に必要な6つの承認と十分な入金がありません。お店に普通の取引を受け入れるか聞くか、数分間待ってください。";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "このリクエストには即時支払いが必要ですが、あなたには即時送金に必要な6つの承認と十分な入金がありません。お店に普通の取引を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "このリクエストには即時支払いが必要ですが、あなたは即時支払いを無効にしています。";

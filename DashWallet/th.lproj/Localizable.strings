@@ -285,7 +285,7 @@
 "instant payment" = "ชำระเงินด่วน";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "การส่งด่วนจะต้องใช้ข้อมูลยืนยัน 6 รายการ , ต้องการส่งแบบธรรมดาหรือไม่?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "การส่งด่วนจะต้องใช้ข้อมูลยืนยัน 6 รายการ , ต้องการส่งแบบธรรมดาหรือไม่?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "ยอดเงินไม่เพียงพอ";
@@ -558,7 +558,7 @@
 "this private key is empty" = "คีย์ส่วนตัวว่างเปล่า";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณได้ยกเลิกการชำระเงินทันที";

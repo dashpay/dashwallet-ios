@@ -285,7 +285,7 @@
 "instant payment" = "pagamento immediato";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "l'Instant Send richiede sufficienti input con 6 conferme, inviare comunque come normale transazione?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "l'InstantSend richiede sufficienti input con 6 conferme, inviare comunque come normale transazione?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "fondi insufficienti";
@@ -558,7 +558,7 @@
 "this private key is empty" = "questa chiave privata è vuota";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Questa richiesta richiede un pagamento immediato ma non hai abbastanza input con 6 conferme richieste da Instant Send, puoi chiedere al commerciante di accettare una transazione normale o attendere qualche minuto.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Questa richiesta richiede un pagamento immediato ma non hai abbastanza input con 6 conferme richieste da InstantSend, puoi chiedere al commerciante di accettare una transazione normale o attendere qualche minuto.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "questa operazione richiede un pagamento immediato ma hai disabilitato i pagamenti immediati";

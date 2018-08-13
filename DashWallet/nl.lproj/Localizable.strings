@@ -285,7 +285,7 @@
 "instant payment" = "directe betaling";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Directe betaling vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Directe betaling vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "saldo niet toereikend";
@@ -558,7 +558,7 @@
 "this private key is empty" = "deze persoonlijke sleutel is leeg";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor Instand Send, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor Instand Send, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "dit verzoek heeft een onmiddellijke betaling nodig maar onmiddellijke betalingen heb je uitgeschakeld";

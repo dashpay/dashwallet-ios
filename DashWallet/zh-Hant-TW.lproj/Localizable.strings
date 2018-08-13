@@ -285,7 +285,7 @@
 "instant payment" = "即時付款";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時到帳需要足夠的輸入和6次確認的資金，以正常交易發送出去嗎?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時到帳需要足夠的輸入和6次確認的資金，以正常交易發送出去嗎?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "餘額不足";
@@ -558,7 +558,7 @@
 "this private key is empty" = "此私鑰是空的";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此請求需要即時付款，即時發送需要6次確認的資金，而你沒有足夠的輸入資金來完成，您可以要求商家接受正常交易或等待幾分鐘。";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此請求需要即時付款，即時發送需要6次確認的資金，而你沒有足夠的輸入資金來完成，您可以要求商家接受正常交易或等待幾分鐘。";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "此請求需要使用即時付款，但您已禁用即時付款功能";

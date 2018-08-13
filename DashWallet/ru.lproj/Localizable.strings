@@ -285,7 +285,7 @@
 "instant payment" = "Мгновенный платёж";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "Недостаточно средств";
@@ -558,7 +558,7 @@
 "this private key is empty" = "Этот закрытый ключ пустой";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно ресурсов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно ресурсов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "Это запрос о мгновенном переводе, но вы отключили опцию мгновенных переводов.";

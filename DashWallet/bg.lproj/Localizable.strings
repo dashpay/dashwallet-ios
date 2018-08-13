@@ -285,7 +285,7 @@
 "instant payment" = "instant payment";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "Недостатъчно средства";
@@ -558,7 +558,7 @@
 "this private key is empty" = "този частен ключ е празен";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква  мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на Instant Send, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква  мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "тази заявка изисква мигновено плащане, но Вие сте изключили мигновените плащанията";

@@ -285,7 +285,7 @@
 "instant payment" = "okamžitá platba";
 
 /* No comment provided by engineer. */
-"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "insufficient funds";
@@ -558,7 +558,7 @@
 "this private key is empty" = "tento privátny kľúč je prázdny";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";

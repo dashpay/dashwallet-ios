@@ -635,7 +635,7 @@ static NSString *sanitizeString(NSString *s)
             if (requiresInstantValue) {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
-                                             message:NSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by Instant Send, you may ask the merchant to accept a normal transaction or wait a few minutes.",
+                                             message:NSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.",
                                                                        nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
@@ -657,7 +657,7 @@ static NSString *sanitizeString(NSString *s)
             } else {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"instant payment", nil)
-                                             message:NSLocalizedString(@"Instant Send requires enough inputs with 6 confirmations, send anyways as regular transaction?",
+                                             message:NSLocalizedString(@"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?",
                                                                        nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
