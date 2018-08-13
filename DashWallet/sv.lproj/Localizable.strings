@@ -264,10 +264,13 @@
 "hours" = "timmar";
 
 /* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+
+/* No comment provided by engineer. */
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input : \"I accept that I will lose my coins if I no longer possess the recovery phrase\"" = "Om du fortfarande vill radera, var god och skriv: \"Jag accepterar att jag kommer att förlora alla mina coins om jag inte längre har återställningsfrasen\"";
+"If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "ignorera";

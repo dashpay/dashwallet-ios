@@ -264,13 +264,13 @@
 "hours" = "小時";
 
 /* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+
+/* No comment provided by engineer. */
 "id:" = "id:";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "如果你仍然想擦拭它，請輸入: \"%@\"";
-
-/* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
 
 /* No comment provided by engineer. */
 "ignore" = "忽略";

@@ -264,13 +264,13 @@
 "hours" = "saat";
 
 /* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eğer kurtarma metnime sahip olmazsam paralarımı kaybedeceğimi kabul ediyorum";
+
+/* No comment provided by engineer. */
 "id:" = "kimlik:";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin : \"%@\"";
-
-/* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eğer kurtarma metnime sahip olmazsam paralarımı kaybedeceğimi kabul ediyorum";
 
 /* No comment provided by engineer. */
 "ignore" = "yoksay";

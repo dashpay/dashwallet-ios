@@ -264,13 +264,13 @@
 "hours" = "ชั่วโมง";
 
 /* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
+
+/* No comment provided by engineer. */
 "id:" = "ไอดี:";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่ \" %@ \"";
-
-/* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
 
 /* No comment provided by engineer. */
 "ignore" = "เพิกเฉย";
