@@ -249,6 +249,9 @@
 "Face ID limit" = "페이스 아이디 제한";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "Face ID 사용 제한 금액";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "지갑 업데이트 실패";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "터치 아이디 제한";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "Touch ID 사용 제한 금액";
+"Touch ID spending limit" = "Touch ID 사용 제한 금액";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "거래 취소, 네트워크 시간 초과";

@@ -249,6 +249,9 @@
 "Face ID limit" = "Face ID limiti";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "Kimlik gönderme sınırına dokunun";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "cüzdan güncellemesi başarısız";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "Touch ID limiti";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "kimlik gönderme sınırına dokunun";
+"Touch ID spending limit" = "Kimlik gönderme sınırına dokunun";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "işlem iptal edildi, ağ zaman aşımına uğradı";

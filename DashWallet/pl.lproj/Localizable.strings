@@ -249,6 +249,9 @@
 "Face ID limit" = "Limit identyfikacji twarzy";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "Limit wydatków dotykowego id";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "aktualizacja protfela nie powiodła się";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "Limit identyfikacji odcisku palca";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "limit wydatków dotykowego id";
+"Touch ID spending limit" = "Limit wydatków dotykowego id";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transakcja anulowana, przekroczono limit czasu oczekiwania sieci";

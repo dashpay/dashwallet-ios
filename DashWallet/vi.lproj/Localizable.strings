@@ -249,6 +249,9 @@
 "Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "chạm giới hạn chi tiêu id";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "không cập nhận được ví";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "chạm giới hạn id";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "chạm giới hạn chi tiêu id";
+"Touch ID spending limit" = "chạm giới hạn chi tiêu id";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "giao dịch bị huỷ, hết thời gian";

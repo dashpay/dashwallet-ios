@@ -669,8 +669,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             if (!authenticated) {
                 completion(nil);
             } else {
-                // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
-                // still counts towards the next touch id spending limit
+                // BUG: if user manually chooses to enter pin, the Touch ID spending limit is reset, but the tx being authorized
+                // still counts towards the next Touch ID spending limit
                 if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
                 completion([self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil]);
             }

@@ -249,6 +249,9 @@
 "Face ID limit" = "面容ID限制";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "指纹解锁支出限额";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "钱包升级失败";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "触控ID限制";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "指纹解锁支出限额";
+"Touch ID spending limit" = "指纹解锁支出限额";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "交易被取消，网络超时";

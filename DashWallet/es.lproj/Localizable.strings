@@ -249,6 +249,9 @@
 "Face ID limit" = "Límite de Face ID";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "Límite de gasto de Face ID";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "falló actualización de cartera";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "Límite de Touch ID";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "límite de gasto de touch id";
+"Touch ID spending limit" = "Límite de gasto de Touch ID";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transacción cancelada, excedido el tiempo de red";

@@ -309,7 +309,7 @@
             self.selectedOption = self.selectorOptions[(log10(manager.spendingLimit) < 6) ? 0 :
                                                        (NSUInteger)log10(manager.spendingLimit) - 6];
             self.noOptionsText = nil;
-            self.selectorController.title = NSLocalizedString(@"touch id spending limit", nil);
+            self.selectorController.title = (self.touchId)?NSLocalizedString(@"Touch ID spending limit", nil):NSLocalizedString(@"Face ID spending limit", nil);
             [self.navigationController pushViewController:self.selectorController animated:YES];
             [self.selectorController.tableView reloadData];
         } else {
@@ -666,7 +666,7 @@
                     
                     break;
                     
-                case 3: // touch id spending limit
+                case 3: // Touch ID spending limit
                     if (self.touchId || self.faceId) {
                         [self performSelector:@selector(touchIdLimit:) withObject:nil afterDelay:0.0];
                         break;

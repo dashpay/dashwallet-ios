@@ -249,6 +249,9 @@
 "Face ID limit" = "Лимит Face ID";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "Лимит расходов Face ID";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "Не удалось обновить кошелёк";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "Лимит Touch ID";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "Лимит расходов Touch ID";
+"Touch ID spending limit" = "Лимит расходов Touch ID";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "Транзакция отменена, время ожидания сети истекло";

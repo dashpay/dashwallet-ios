@@ -249,6 +249,9 @@
 "Face ID limit" = "ขีดจำกัด Face ID";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "จำกัดใช้ Face ID";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "อัพเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "ขีดจำกัด Touch ID";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "จำกัดใช้ touch id ";
+"Touch ID spending limit" = "จำกัดใช้ Touch ID";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "ธุรกรรมถูกยกเลิก  เครือข่ายหมดเวลา";

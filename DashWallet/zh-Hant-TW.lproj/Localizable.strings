@@ -249,6 +249,9 @@
 "Face ID limit" = "Face ID 解鎖的限制";
 
 /* No comment provided by engineer. */
+"Face ID spending limit" = "指紋辨識解鎖的支付上限";
+
+/* No comment provided by engineer. */
 "failed wallet update" = "錢包更新失敗";
 
 /* No comment provided by engineer. */
@@ -579,7 +582,7 @@
 "Touch ID limit" = "指紋辨識解鎖的限制";
 
 /* No comment provided by engineer. */
-"touch id spending limit" = "指紋辨識解鎖的支付上限";
+"Touch ID spending limit" = "指紋辨識解鎖的支付上限";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "交易取消，網絡超時";
