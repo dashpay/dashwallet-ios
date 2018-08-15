@@ -1332,8 +1332,11 @@
             case 414:
                 startX = 30;
                 break;
+            case 768:
+                startX = 30;
+                break;
             default:
-                startX = containerView.frame.size.width/14.4;
+                startX = MAX(containerView.frame.size.width/14.4, 30);
                 break;
         }
         self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);
@@ -1398,8 +1401,11 @@
             case 414:
                 startX = 30;
                 break;
+            case 768:
+                startX = 30;
+                break;
             default:
-                startX = containerView.frame.size.width/14.4;
+                startX = MAX(containerView.frame.size.width/14.4, 30);
                 break;
         }
         self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);

@@ -390,7 +390,14 @@
     [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         
     }]];
-    
+    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+    {
+        [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
+        actionSheet.popoverPresentationController.sourceView = sender;
+        actionSheet.popoverPresentationController.sourceRect = ((UIButton*)sender).bounds;
+        actionSheet.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    }
+
     // Present action sheet.
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
