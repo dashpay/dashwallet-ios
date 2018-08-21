@@ -119,6 +119,7 @@
 		FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */; };
 		FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
+		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBF267A11E414877001A1C8B /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267A01E414877001A1C8B /* NSString+Dash.m */; };
 		FBF267FD1E414AA2001A1C8B /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF267FC1E414AA2001A1C8B /* DSShapeshiftManager.m */; };
@@ -582,6 +583,7 @@
 		FB43BC8B21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Main.strings"; sourceTree = "<group>"; };
 		FB43BC8C21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/MainInterface.strings"; sourceTree = "<group>"; };
 		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
@@ -1009,6 +1011,7 @@
 				FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */,
 				7579F7FE19231D4600CA56F4 /* ThirdParty */,
 				75D5F3C8191EC270004AB296 /* Supporting Files */,
+				FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */,
 			);
 			path = DashWallet;
 			sourceTree = "<group>";
@@ -1467,6 +1470,7 @@
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
+				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				FBFC2EBD21137A7A00D20C57 /* Montserrat-Bold.otf in Resources */,
 				FBFC2ECD21137A7A00D20C57 /* Montserrat-Light.otf in Resources */,
 			);
@@ -2054,7 +2058,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -2086,7 +2089,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -2322,7 +2324,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -2514,7 +2515,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
