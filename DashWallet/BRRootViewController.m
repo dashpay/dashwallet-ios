@@ -1322,22 +1322,10 @@
         
         CGRect rect =[self.navigationController.navigationBar convertRect:CGRectMake(0, 0, self.navigationController.navigationBar.frame.size.width, self.navigationController.navigationBar.frame.size.height)  toView:containerView];
         float startX = 0; //a little hacky but good enough for now.
-        switch ((int)containerView.frame.size.width) {
-            case 320:
-                startX = 26;
-                break;
-            case 375:
-                startX = 26;
-                break;
-            case 414:
-                startX = 30;
-                break;
-            case 768:
-                startX = 30;
-                break;
-            default:
-                startX = MAX(containerView.frame.size.width/14.4, 30);
-                break;
+        if (containerView.frame.size.width> 375) {
+            startX = 30;
+        } else {
+            startX = 26;
         }
         self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);
         self.burger.hidden = NO;
@@ -1391,22 +1379,10 @@
         [containerView layoutIfNeeded];
         CGRect rect =[self.navigationController.navigationBar convertRect:CGRectMake(0, 0, self.navigationController.navigationBar.frame.size.width, self.navigationController.navigationBar.frame.size.height)  toView:containerView];
         float startX = 0; //a little hacky but good enough for now.
-        switch ((int)containerView.frame.size.width) {
-            case 320:
-                startX = 26;
-                break;
-            case 375:
-                startX = 26;
-                break;
-            case 414:
-                startX = 30;
-                break;
-            case 768:
-                startX = 30;
-                break;
-            default:
-                startX = MAX(containerView.frame.size.width/14.4, 30);
-                break;
+        if (containerView.frame.size.width> 375) {
+            startX = 30;
+        } else {
+            startX = 26;
         }
         self.burger.center = CGPointMake(startX, rect.origin.y + (rect.size.height / 2) - 1);
         [self.burger setX:NO completion:nil];

@@ -128,7 +128,7 @@
                 UIAlertController * actionSheet = [UIAlertController
                                              alertControllerWithTitle:nil
                                              message:nil
-                                             preferredStyle:UIAlertControllerStyleActionSheet];
+                                                   preferredStyle:(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)?UIAlertControllerStyleAlert:UIAlertControllerStyleActionSheet];
                 UIAlertAction* cancelButton = [UIAlertAction
                                              actionWithTitle:NSLocalizedString(@"cancel", nil)
                                              style:UIAlertActionStyleCancel
@@ -163,7 +163,7 @@
             UIAlertController * actionSheet = [UIAlertController
                                                alertControllerWithTitle:nil
                                                message:nil
-                                               preferredStyle:UIAlertControllerStyleActionSheet];
+                                               preferredStyle:(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)?UIAlertControllerStyleAlert:UIAlertControllerStyleActionSheet];
             UIAlertAction* cancelButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"cancel", nil)
                                            style:UIAlertActionStyleCancel
@@ -189,7 +189,7 @@
                     UIAlertController * actionSheet = [UIAlertController
                                                        alertControllerWithTitle:nil
                                                        message:nil
-                                                       preferredStyle:UIAlertControllerStyleActionSheet];
+                                                       preferredStyle:(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)?UIAlertControllerStyleAlert:UIAlertControllerStyleActionSheet];
                     UIAlertAction* cancelButton = [UIAlertAction
                                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                                    style:UIAlertActionStyleCancel
