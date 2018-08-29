@@ -76,9 +76,8 @@
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
                     self.selectorController.title =
-                        [NSString stringWithFormat:@"%@ = %@",
-                         [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
-                         [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue]];
+                    [NSString stringWithFormat:@"1 DASH = %@",
+                     [manager localCurrencyStringForDashAmount:DUFFS]];
                 }
             }];
     }
@@ -330,9 +329,7 @@
     manager.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, manager.dashFormat.maximumFractionDigits));
     [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
     manager.localCurrencyCode = manager.localCurrencyCode; // force balance notification
-    self.selectorController.title = [NSString stringWithFormat:@"%@ = %@",
-                                     [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
-                                     [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue]];
+    self.selectorController.title = [NSString stringWithFormat:@"1 DASH = %@", [manager localCurrencyStringForDashAmount:DUFFS]];
     [self.tableView reloadData];
 }
 
@@ -601,9 +598,8 @@
     if (currencyCodeIndex < options.count) self.selectedOption = options[currencyCodeIndex];
     self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
     self.selectorController.title =
-        [NSString stringWithFormat:@"%@ = %@",
-         [manager localCurrencyStringForDashAmount:(localPrice > DBL_EPSILON) ? DUFFS/localPrice : 0],
-         [manager stringForDashAmount:(localPrice > DBL_EPSILON) ? DUFFS/localPrice : 0]];
+        [NSString stringWithFormat:@"1 DASH = %@",
+         [manager localCurrencyStringForDashAmount:DUFFS]];
     [self.navigationController pushViewController:self.selectorController animated:YES];
     [self.selectorController.tableView reloadData];
     

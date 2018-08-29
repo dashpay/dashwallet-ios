@@ -51,6 +51,7 @@
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
+#define VES_TICKER_URL  @"https://api.coinhills.com/v1/cspa/btc/vef/"
 #define TICKER_REFRESH_TIME 60.0
 
 #define SEED_ENTROPY_LENGTH   (128/8)
@@ -222,6 +223,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyDashPrice;
+@property (nonatomic, strong) NSNumber * _Nullable bitcoinVESPrice;
 
 @end
 
@@ -340,6 +342,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updateBitcoinExchangeRate];
+        [self updateVESExchangeRate];
         [self updateDashExchangeRate];
         [self updateDashCentralExchangeRateFallback];
     });
@@ -1511,9 +1514,29 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             }
             
             if ([d[@"code"] isEqual:@"BTC"]) continue;
-            [codes addObject:d[@"code"]];
-            [names addObject:d[@"name"]];
-            [rates addObject:d[@"rate"]];
+            
+            
+            if ([d[@"code"] isEqual:@"VEF"] || [d[@"code"] isEqual:@"VES"]) {
+                
+                if (self.bitcoinVESPrice) {
+                    [codes addObject:@"VES"];
+                    [names addObject:@"Venezuelan Bolívar Soberano"];
+                    [rates addObject:self.bitcoinVESPrice];
+                } else {
+                    NSString * currencyCode = [_currencyCodes containsObject:@"VEF"]?@"VEF":([_currencyCodes containsObject:@"VES"]?@"VES":nil);
+                    if (currencyCode) {
+                        //keep same price (don't update)
+                        NSInteger index = [_currencyCodes indexOfObject:currencyCode];
+                        [codes addObject:d[@"code"]];
+                        [names addObject:@"Venezuelan Bolívar Soberano"];
+                        [rates addObject:_currencyPrices[index]];
+                    }
+                }
+            } else {
+                [codes addObject:d[@"code"]];
+                [names addObject:d[@"name"]];
+                [rates addObject:d[@"rate"]];
+            }
         }
         
         _currencyCodes = codes;
@@ -1535,6 +1558,49 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     
 }
 
+- (void)updateVESExchangeRate
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateVESExchangeRate) object:nil];
+    [self performSelector:@selector(updateVESExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
+    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    
+    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:VES_TICKER_URL]
+                                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
+    
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
+        if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
+            NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
+            return;
+        }
+        
+        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+        NSError *error = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
+        
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        } else if (![json[@"data"] objectForKey:@"CSPA:BTC/VEF"] && ![json[@"data"] objectForKey:@"CSPA:BTC/VES"]) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        }
+        
+        NSDictionary * exchangeData = [json[@"data"] objectForKey:@"CSPA:BTC/VEF"];
+        if (!exchangeData) exchangeData = [json[@"data"] objectForKey:@"CSPA:BTC/VES"];
+        
+        if (![exchangeData objectForKey:@"cspa"]) {
+            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            return;
+        }
+        self.bitcoinVESPrice = [exchangeData objectForKey:@"cspa"];
+        
+    }] resume];
+    
+}
 
 // MARK: - query unspent outputs
 
