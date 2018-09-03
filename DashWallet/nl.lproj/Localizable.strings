@@ -36,7 +36,7 @@
 "\n%d attempts remaining\n" = "\nnog %d pogingen\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(lokaal verzocht bedrag: %@)";
+"\n(local requested amount: %@)" = "\n(lokaal gevraagd bedrag: %@)";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nnog 1 poging\n";
@@ -126,7 +126,7 @@
 "checking address balance..." = "bezig met controleren van saldo...";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "bezig met controleren van saldo van persoonlijke sleutel...";
+"checking private key balance..." = "bezig met controleren van balans van persoonlijke sleutel...";
 
 /* No comment provided by engineer. */
 "choose passcode for %@" = "kies toegangscode voor %@";
@@ -225,7 +225,7 @@
 "email not configured" = "e-mail is niet ingesteld";
 
 /* No comment provided by engineer. */
-"enable" = "Inschakelen";
+"enable" = "Inschakele";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Schakel het ontvangen van meldingen in";
@@ -249,7 +249,7 @@
 "Face ID limit" = "Face ID limiet";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Face id-uitgavelimiet";
+"Face ID spending limit" = "Face ID uitgavelimiet";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "mislukte portemonnee-update";
@@ -267,7 +267,7 @@
 "hours" = "uur";
 
 /* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
@@ -453,7 +453,7 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Genereer een nieuwe herstelzin en houdt deze geheim.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Je tegoed loopt gevaar. Verplaats je saldo naar een andere portemonnee.";
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Je tegoed loopt gevaar. Verplaats je tegoed naar een andere portemonnee.";
 
 /* No comment provided by engineer. */
 "second" = "seconde";
@@ -582,7 +582,7 @@
 "Touch ID limit" = "touch ID limiet";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "Touch id-uitgavelimiet";
+"Touch ID spending limit" = "Touch ID uitgavelimiet";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transactie geannuleerd, netwerktime-out";

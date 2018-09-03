@@ -1,24 +1,24 @@
 
 /* Class = "WKInterfaceController"; title = "Receive Money"; ObjectID = "3Fr-v5-6pR"; */
-"3Fr-v5-6pR.title" = "ได้รับเงิน";
+"3Fr-v5-6pR.title" = "Ontvang geld";
 
 /* Class = "WKInterfaceController"; title = "Cancel"; ObjectID = "4rD-ne-4oP"; */
-"4rD-ne-4oP.title" = "ยกเลิก";
+"4rD-ne-4oP.title" = "Annuleer";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
-"Gat-bm-t3w.text" = "เปิดแอพลิเคชั่น dashwallet เพื่อตั้งค่า wallet ของคุณ";
+"Gat-bm-t3w.text" = "Open de iPhone-app dashwallet om je portemonnee aan te maken";
 
 /* Class = "WKInterfaceButton"; title = "OK"; ObjectID = "R3B-Zx-omu"; */
-"R3B-Zx-omu.title" = "โอเค";
+"R3B-Zx-omu.title" = "Oké";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
-"VXj-KF-nqM.text" = "เปิดแอพลิเคชั่น dashwallet เพื่อตั้งค่า wallet ของคุณ";
+"VXj-KF-nqM.text" = "Open de iPhone-app dashwallet om je portemonnee aan te maken";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
-"ZKF-gb-hhm.title" = "ยอดคงเหลือ";
+"ZKF-gb-hhm.title" = "Balans";
 
 /* Class = "WKInterfaceLabel"; text = "Transactions"; ObjectID = "r80-H8-ngA"; */
-"r80-H8-ngA.text" = "ธุรกรรม";
+"r80-H8-ngA.text" = "Transacties";
 
 /* Class = "WKInterfaceButton"; title = "0"; ObjectID = "4mi-Wz-WHA"; */
 "4mi-Wz-WHA.title" = "0";

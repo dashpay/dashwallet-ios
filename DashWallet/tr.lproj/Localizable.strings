@@ -192,13 +192,13 @@
 "dash network fee" = "dash ağ ücreti";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash ödemesi %@'den az olamaz";
+"dash payments can't be less than %@" = "dash ödemesi %@ altında olamaz";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "dash işlemi imzalanmamış";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash işlemi çıkışı %@'den küçük olamaz";
+"dash transaction outputs can't be less than %@" = "dash işlemi çıkışı %@ altında olamaz";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve dashlerinizi çalabilir).";
@@ -249,7 +249,7 @@
 "Face ID limit" = "Face ID limiti";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Kimlik gönderme sınırına dokunun";
+"Face ID spending limit" = "Face ID spending limit";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "cüzdan güncellemesi başarısız";
@@ -273,7 +273,7 @@
 "id:" = "kimlik:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin : \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "yoksay";
@@ -561,7 +561,7 @@
 "this private key is empty" = "bu özel anahtar boş";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "bu istek bir anında ödeme gerektiriyor ama siz anında ödemeleri devredışı bıraktınız";
@@ -582,7 +582,7 @@
 "Touch ID limit" = "Touch ID limiti";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "Kimlik gönderme sınırına dokunun";
+"Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "işlem iptal edildi, ağ zaman aşımına uğradı";

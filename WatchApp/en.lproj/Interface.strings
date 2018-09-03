@@ -30,7 +30,7 @@
 "AgC-eL-Hgc.title" = "";
 
 /* Class = "WKInterfaceLabel"; text = "⌫"; ObjectID = "DcN-TW-QTh"; */
-"DcN-TW-QTh.text" = "";
+"DcN-TW-QTh.text" = "⌫";
 
 /* Class = "WKInterfaceButton"; title = "1"; ObjectID = "JJr-7L-vPm"; */
 "JJr-7L-vPm.title" = "1";

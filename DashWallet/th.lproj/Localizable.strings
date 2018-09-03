@@ -33,7 +33,7 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nถ้าคุณทำโทรศัพท์หาย คุณจะต้องการมันเพื่อกู้คืน wallet ของคุณ";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่ \n";
+"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่\n";
 
 /* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
@@ -45,7 +45,7 @@
 "\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nการตั้งรหัสผ่านนั้นเป็นจำเป็น เพื่อป้องกันความปลอดภัยของ wallet ของคุณ  เข้าไปที่การตั้งค่า และ กดเปิดรหัสผ่าน";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nการตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ  เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nที่อยู่ที่ถูกใช้แล้ว\nที่อยู่ dash มีไว้ใช้งานได้เพียงครั้งเดียว\n\nการใช้ซ้ำจะทำให้ความเป็นส่วนตัวทั้งของคุณและผู้รับลดน้อยลงและสามารถเกิดความเสียหายได้ ถ้าผู้รับไม่สามารถควบคุมที่อยู่ได้";
@@ -72,10 +72,10 @@
 "amount too small" = "จำนวนเงินน้อยเกินไป";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "แอพพลิเคชั่น %@ กำลังขอใบชำระเงิน";
+"Application %@ is requesting a payment to" = "แบบฟอร์ม%@ ชำระเงิน";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "แอพพลิเคชั่น%@ กำลังขอที่อยู่เพื่อให้สามารถชำระเงินได้ คุณต้องการให้สิทธิ์นี้หรือไม่";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "แบบฟอร์ม%@ กำลังขอที่อยู่เพื่อให้สามารถชำระเงินได้ คุณต้องการให้สิทธิ์นี้หรือไม่";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "แอพพลิเคชั่น %@ ต้องการ Master Public Key ของคุณ มันสามารถติดตาม wallet ของคุณ, มันไม่สามารถเคลื่อนย้าย Dash ของคุณได้";
@@ -84,10 +84,10 @@
 "bad password, try again" = "รหัสไม่ถูกต้อง, ลองอีกครั้ง";
 
 /* No comment provided by engineer. */
-"bad payment request" = "คำขอชำระเงินไม่ถูกต้อง";
+"bad payment request" = "ใบชำระเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "URL คำขอชำระเงินไม่ถูกต้อง";
+"bad payment request URL" = "URL ใบชำระเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "bad payment URL" = "URL ใบชำระเงินไม่ถูกต้อง";
@@ -108,7 +108,7 @@
 "Buy Dash" = "ขาย Dash";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "ขาย dash ใน dashwallet!";
+"Buy dash in dashwallet!" = "ขาย dash ใน dashwallet";
 
 /* No comment provided by engineer. */
 "cancel" = "ยกเลิก";
@@ -237,7 +237,7 @@
 "enter old passcode" = "เข้าสู่รหัสเก่า";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม dash";
+"error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าธุรกรรม dash";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
@@ -273,7 +273,7 @@
 "id:" = "ไอดี:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่ \" %@ \"";
+"If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "เพิกเฉย";
@@ -336,7 +336,7 @@
 "not a dash or bitcoin QR code" = "ไม่ใช่ โค้ด QR ของ dash  หรือ  bitcoin";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "ไม่ใช่ที่อยู่ bitcoin ที่ถูกต้อง";
+"not a valid bitcoin address" = "ไม่ใช่ที่อยู่ bitcoin address ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
@@ -354,10 +354,10 @@
 "ok" = "โอเค";
 
 /* No comment provided by engineer. */
-"OK" = "โอเค";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"passcode" = "รหัสการเข้าถึง";
+"passcode" = "รหัสผ่าน";
 
 /* No comment provided by engineer. */
 "passcode for %@" = "รหัสการเข้าถึงสำหรับ %@";
@@ -420,7 +420,7 @@
 "Request" = "ขอร้อง";
 
 /* No comment provided by engineer. */
-"request an amount" = "คำขอวงเงิน";
+"request an amount" = "ขอวงเงิน";
 
 /* No comment provided by engineer. */
 "request expired" = "คำขอหมดอายุ";
@@ -447,13 +447,13 @@
 "retry" = "ลองใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อดูที่อยู่ dash หรือ ที่  bitcoin ของพวกเขา คุณสามารถส่งการชำระเงินไปยังผู้ที่มีที่อยู่ได้";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อดูที่อยู่ dash หรือ ที่  bitcoin ของพวกเขา";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  สร้างวลีกู้คืนใหม่และเก็บเป็นความลับ";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  เงินทุนของคุณมีความเสี่ยง  โอนย้ายยอดเงินไปยัง wallet อื่น";
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  เงินทุนของคุณมีความเสี่ยง  โอนย้ายยอดเงินไปยัง wallet ";
 
 /* No comment provided by engineer. */
 "second" = "ที่สอง";
@@ -534,7 +534,7 @@
 "Syncing:" = "ซิงค์";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "จำนวนเงินที่คุณต้องการ Shapeshift นั้นสูงเกินไป , กรุณาใส่จำนวนเงินไม่เกิน %@";
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "จำนวนเงินที่คุณต้องการ Shapeshift นั้นอยู่เกินไป , กรุณาใส่จำนวนเงินไม่เกิน %@";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too low, please input a value over %@" = "จำนวนเงินที่คุณต้องการ Shapeshift นั้นตำ่เกินไป กรุณาใส่จำนวนเงินมากกว่า %@";
@@ -546,7 +546,7 @@
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "นี่คือที่อยู่ dash ของคุณ แตะเพื่อคัดลอกหรือส่งโดยอีเมล์หรือข้อความ ที่อยู่จะเปลี่ยนแปลงทุกครั้งที่คุณรับเงิน แต่ที่อยู่เดิมจะทำงานได้เสมอ";
 
 /* No comment provided by engineer. */
-"This is your dash balance." = "นี่คือยอดเงิน dash ทั้งหมดของคุณ";
+"This is your dash balance." = "นี่คือยอดรวม dash ของคุณ";
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "นี่คือยอดเงิน dash ทั้งหมดของคุณ  Dash เป็นสกุลเงิน อัตราแลกเปลี่ยนมีการเปลี่ยนแปลงกับตลาด";

@@ -72,7 +72,7 @@
 "amount too small" = "金額太小";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "應用程式 %@ 正在請求付款給";
+"Application %@ is requesting a payment to" = "應用程序 %@ 正在請求付款";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "應用程式 %@正在請求一個位址用來支付給你。你想授權嗎?";
@@ -249,7 +249,7 @@
 "Face ID limit" = "Face ID 解鎖的限制";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "指紋辨識解鎖的支付上限";
+"Face ID spending limit" = "Face ID 的支付上限";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "錢包更新失敗";
@@ -273,7 +273,7 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "如果你仍然想擦拭它，請輸入: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "如果你仍然想擦拭它，請輸入： \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "忽略";
@@ -318,7 +318,7 @@
 "Moved" = "已移動";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永遠不要將恢復詞組輸入到密碼管理器或其他地方其它設備都可能被病毒感染。\n";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永遠不要將恢復詞組輸入到密碼管理器或其他地方其它設備都可能被病毒感染。";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "下一步，請寫下你的恢復詞組";
@@ -534,7 +534,7 @@
 "Syncing:" = "同步中:";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "你希望透過shapeshift 來轉換的金額過高，請輸入一個比%@低的金額";
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "你希望透過shapeshift 來轉換的金額過高，請輸入一個比%@低的金額";
 
 /* No comment provided by engineer. */
 "The amount you wanted to shapeshift is too low, please input a value over %@" = "你希望透過shapeshift 來轉換的金額過低，請輸入一個比%@高的金額";
@@ -582,7 +582,7 @@
 "Touch ID limit" = "指紋辨識解鎖的限制";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "指紋辨識解鎖的支付上限";
+"Touch ID spending limit" = "Touch ID 的支付上限";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "交易取消，網絡超時";

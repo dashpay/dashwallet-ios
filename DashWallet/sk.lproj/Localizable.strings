@@ -3,7 +3,7 @@
 " and " = " a ";
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ znamená 'mDASH'. %2$@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ znamená 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nemá povolený prístup ku kamere";
@@ -24,7 +24,7 @@
 "1 confirmation" = "1 potvrdenie";
 
 /* No comment provided by engineer. */
-"\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
+"\"%@\" is not a recovery phrase word" = "\"%@\" nie je slovom obnovenia";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         celkovo %1$@ (%2$@)";
@@ -36,7 +36,7 @@
 "\n%d attempts remaining\n" = "\nzostávajú %d pokusy\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+"\n(local requested amount: %@)" = "\n(miestna vyžadovaná suma: %@)";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\nzostáva 1 pokus\n";
@@ -45,13 +45,13 @@
 "\n\n     amount %@ (%@)" = "\n\n suma %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNa zabezpečenie vašej peňaženky je potrebný prístupový kód zariadenia. Ak chcete pokračovať, prejdite na nastavenia a zapnite prístupový kód.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npovoliť prístup ku kamere\nNastavenia->Súkromie->Kamera->%@";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nsieťový poplatok +%1$@ (%2$@)";
@@ -63,7 +63,7 @@
 "\ntry again in %d %@" = "\nskúsiť znova za %1$d %2$@";
 
 /* No comment provided by engineer. */
-"About" = "o";
+"About" = "O programe";
 
 /* No comment provided by engineer. */
 "always require passcode" = "vždy vyžadovať číselné heslo";
@@ -117,7 +117,7 @@
 "change" = "zmeniť";
 
 /* No comment provided by engineer. */
-"Change passcode" = "Change passcode";
+"Change passcode" = "Zmeniť prístupový kód";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "change payment amount?";
@@ -144,7 +144,7 @@
 "close app" = "ukončiť applikáciu";
 
 /* Confirm */
-"Confirm" = "potvrdiť:";
+"Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potvrdené v bloku #%d";
@@ -180,7 +180,7 @@
 "couldn't transmit payment to dash network" = "couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"CRITICAL" = "CRITICAL";
+"CRITICAL" = "KRITICKĚ";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash adresa";
@@ -210,13 +210,13 @@
 "do it later" = "vykonať neskôr";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "NEDOVOĽTE, aby niekto videl Vašu frázu pre obnovenie, lebo by mohol minúť Vaše Dashe.";
 
 /* No comment provided by engineer. */
-"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "Nepoužívajte snímku obrazovky. Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia.";
 
 /* No comment provided by engineer. */
-"Done" = "Done";
+"Done" = "Hotovo";
 
 /* No comment provided by engineer. */
 "double spend" = "double spend";
@@ -228,7 +228,7 @@
 "enable" = "zapnúť";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Enable receive notifications";
+"Enable receive notifications" = "Povoliť upozornenia pri prijatí";
 
 /* No comment provided by engineer. */
 "enter" = "zadať";
@@ -246,10 +246,10 @@
 "exit" = "ukončiť";
 
 /* No comment provided by engineer. */
-"Face ID limit" = "Face ID limit";
+"Face ID limit" = "Limit pre Face ID";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Face ID spending limit";
+"Face ID spending limit" = "Limit na míňanie cez Face ID";
 
 /* No comment provided by engineer. */
 "failed wallet update" = "failed wallet update";
@@ -258,7 +258,7 @@
 "from:" = "od:";
 
 /* No comment provided by engineer. */
-"GENERAL" = "GENERAL";
+"GENERAL" = "VŠEOBECNÉ";
 
 /* No comment provided by engineer. */
 "hour" = "hodina";
@@ -267,19 +267,19 @@
 "hours" = "hodiny";
 
 /* No comment provided by engineer. */
-"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
 
 /* No comment provided by engineer. */
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Ak si ju stále prajete zmazať, prosím zadajte: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "ignorovať";
 
 /* No comment provided by engineer. */
-"Import private key" = "importovať privátny kľúč";
+"Import private key" = "Importovať privátny kľúč";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "DÔLEŽITÉ ";
@@ -288,7 +288,7 @@
 "instant payment" = "okamžitá platba";
 
 /* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vyžaduje dostatok vstupov s aspoň 6 potvrdeniami. Odoslať ako obyčajnú transakciu?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "insufficient funds";
@@ -315,16 +315,16 @@
 "more..." = "viac...";
 
 /* No comment provided by engineer. */
-"Moved" = "presunuté";
+"Moved" = "Presunuté";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NIKDY nezadávajte frázu pre obnovenie do správcov hesiel alebo inde. Iné zariadenia môžu byť infikované.";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "next, write down your recovery phrase";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC zariadenie nevyslalo validnú dash alebo bitcoin adresu";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "no exchange rate data";
@@ -387,22 +387,22 @@
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Please place your phone near NFC device.";
+"Please place your phone near NFC device." = "Umiestnite Váš telefón blízko NFC zariadenia.";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Receive dash at this address: %@";
 
 /* No comment provided by engineer. */
-"Received" = "prijté";
+"Received" = "Prijté";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "prijaté %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Fráza pre obnovenie";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "recovery phrase doesn't match";
@@ -414,10 +414,10 @@
 "reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"Remind me later" = "Remind me later";
+"Remind me later" = "Pripomenúť neskôr";
 
 /* No comment provided by engineer. */
-"Request" = "žiadosť";
+"Request" = "Požiadavok";
 
 /* No comment provided by engineer. */
 "request an amount" = "request an amount";
@@ -435,7 +435,7 @@
 "rescan" = "pre-skenovať";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "znova prehľadať reťazec blokov";
+"Rescan blockchain" = "Znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
@@ -483,7 +483,7 @@
 "send request as message" = "send request as message";
 
 /* No comment provided by engineer. */
-"Sent" = "poslané";
+"Sent" = "Poslané";
 
 /* No comment provided by engineer. */
 "sent!" = "poslané!";
@@ -492,7 +492,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"Settings" = "nastavenia";
+"Settings" = "Nastavenia";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -561,7 +561,7 @@
 "this private key is empty" = "tento privátny kľúč je prázdny";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Táto požiadavka chce okamžitú platbu, ale nemáte dostatok vstupov so 6 potvrdeniami, ktoré vyžaduje InstantSend. Môžete požiadať obchodníka o prijatie bežnej transakcie, alebo počkať niekoľko minút.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
@@ -579,10 +579,10 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "Touch ID limit";
+"Touch ID limit" = "Limit pre Touch ID";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "Touch ID spending limit";
+"Touch ID spending limit" = "Limit na míňanie cez Touch ID";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transaction canceled, network timeout";
@@ -651,7 +651,7 @@
 "WARNING" = "UPOZORNENIE";
 
 /* No comment provided by engineer. */
-"wipe" = "wipe";
+"wipe" = "vymazať";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
