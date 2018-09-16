@@ -50,8 +50,9 @@
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
+#define BITCOIN_VES_PRICE @"BITCOIN_VES_PRICE"
 #define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
-#define VES_TICKER_URL  @"https://api.coinhills.com/v1/cspa/btc/vef/"
+#define VES_TICKER_URL  @"https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/"
 #define TICKER_REFRESH_TIME 60.0
 
 #define SEED_ENTROPY_LENGTH   (128/8)
@@ -325,6 +326,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             }
         }
     }];
+    self.bitcoinVESPrice = [[NSUserDefaults standardUserDefaults] objectForKey:BITCOIN_VES_PRICE];
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedInit];
     return self;
 }
@@ -341,8 +343,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateBitcoinExchangeRate];
         [self updateVESExchangeRate];
+        [self updateBitcoinExchangeRate];
         [self updateDashExchangeRate];
         [self updateDashCentralExchangeRateFallback];
     });
@@ -1578,25 +1580,25 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
         
-        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            return;
-        } else if (![json[@"data"] objectForKey:@"CSPA:BTC/VEF"] && ![json[@"data"] objectForKey:@"CSPA:BTC/VES"]) {
+        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"VES"] isKindOfClass:[NSDictionary class]]) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             return;
         }
-        
-        NSDictionary * exchangeData = [json[@"data"] objectForKey:@"CSPA:BTC/VEF"];
-        if (!exchangeData) exchangeData = [json[@"data"] objectForKey:@"CSPA:BTC/VES"];
-        
-        if (![exchangeData objectForKey:@"cspa"]) {
-            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            return;
+        if (!self.bitcoinVESPrice) {
+            [self updateBitcoinExchangeRate];
         }
-        self.bitcoinVESPrice = [exchangeData objectForKey:@"cspa"];
+        NSDictionary * exchangeData = json[@"VES"];
+        if (exchangeData[@"avg_1h"]) {
+            self.bitcoinVESPrice = exchangeData[@"avg_1h"];
+        } else if (exchangeData[@"avg_6h"]) {
+            self.bitcoinVESPrice = exchangeData[@"avg_6h"];
+        } else if (exchangeData[@"avg_12h"]) {
+            self.bitcoinVESPrice = exchangeData[@"avg_12h"];
+        } else if (exchangeData[@"avg_24h"]) {
+            self.bitcoinVESPrice = exchangeData[@"avg_24h"];
+        }
+        [[NSUserDefaults standardUserDefaults] setObject:self.bitcoinVESPrice forKey:@"BITCOIN_VES_PRICE"];
         
     }] resume];
     
