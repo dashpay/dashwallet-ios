@@ -620,49 +620,72 @@
                 }
                 [self presentViewController:alert animated:YES completion:nil];
             }
-            //if (!success) exit(0);
-            if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
-            self.splash.hidden = YES;
-            
-            self.navigationController.navigationBar.hidden = NO;
-            self.pageViewController.view.alpha = 1.0;
-            [self.receiveViewController updateAddress];
-            if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-            
-            if (self.navigationController.visibleViewController == self) {
-                [self setNeedsStatusBarAppearanceUpdate];
-            }
-            
-#if SNAPSHOT
-            return;
-#endif
-            if (!authenticated) {
-                if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-                    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-                        if (authenticated) {
-                            [self unlock:nil];
-                        }
-                    }];
+            [manager checkPassphraseWasShownCorrectly:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled) {
+                if (needsCheck) {
+                    UIAlertController * alert = [UIAlertController
+                             alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
+                             message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
+                             preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* enterButton = [UIAlertAction
+                                                 actionWithTitle:NSLocalizedString(@"show", nil)
+                                                 style:UIAlertActionStyleDefault
+                                                 handler:^(UIAlertAction * action) {
+                                                     //[self protectedViewDidAppear];
+                                                 }];
+                    UIAlertAction* ignoreButton = [UIAlertAction
+                                                  actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                  handler:^(UIAlertAction * action) {
+                                                      
+                                                  }];
+                    [alert addAction:ignoreButton];
+                    [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+                    [self presentViewController:alert animated:YES completion:nil];
                 }
-            }
-            
-            if (self.navigationController.visibleViewController == self) {
-                if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-            }
-            
-            if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                [[BRPeerManager sharedInstance] connect];
-                [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
                 
-                if (self.url) {
-                    [self.sendViewController handleURL:self.url];
-                    self.url = nil;
+                if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
+                self.splash.hidden = YES;
+                
+                self.navigationController.navigationBar.hidden = NO;
+                self.pageViewController.view.alpha = 1.0;
+                [self.receiveViewController updateAddress];
+                if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+                
+                if (self.navigationController.visibleViewController == self) {
+                    [self setNeedsStatusBarAppearanceUpdate];
                 }
-                else if (self.file) {
-                    [self.sendViewController handleFile:self.file];
-                    self.file = nil;
+                
+#if SNAPSHOT
+                return;
+#endif
+                if (!authenticated) {
+                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                        [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                            if (authenticated) {
+                                [self unlock:nil];
+                            }
+                        }];
+                    }
                 }
-            }
+                
+                if (self.navigationController.visibleViewController == self) {
+                    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+                }
+                
+                if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+                    [[BRPeerManager sharedInstance] connect];
+                    [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+                    
+                    if (self.url) {
+                        [self.sendViewController handleURL:self.url];
+                        self.url = nil;
+                    }
+                    else if (self.file) {
+                        [self.sendViewController handleFile:self.file];
+                        self.file = nil;
+                    }
+                }
+            }];
         }];
     }
 }

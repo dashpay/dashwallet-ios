@@ -71,6 +71,7 @@
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 #define SECURE_TIME_KEY         @"SECURE_TIME"
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
+#define SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE @"SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE"
 
 #define MNEMONIC_KEY        @"mnemonic"
 #define CREATION_TIME_KEY   @"creationtime"
@@ -84,6 +85,7 @@
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
+#define IDEO_SP   @"\xE3\x80\x80" // ideographic space (utf-8)
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
@@ -477,6 +479,95 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     }
 }
 
+// There was an issue with passphrases not showing correctly on iPhone 5s and also on devices in Japanese
+// (^CheckPassphraseCompletionBlock)(BOOL needsCheck,BOOL authenticated,BOOL cancelled)
+-(void)checkPassphraseWasShownCorrectly:(CheckPassphraseCompletionBlock)completion;
+{
+    NSTimeInterval seedCreationTime = self.seedCreationTime;
+    NSError * error = nil;
+    BOOL showedWarningForPassphrase = getKeychainInt(SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, &error);
+    if (seedCreationTime < 1534266000 || !showedWarningForPassphrase) {
+        completion(NO,NO,NO);
+        return;
+    }
+    NSString *language = NSBundle.mainBundle.preferredLocalizations.firstObject;
+    if ([language isEqualToString:@"japanese"]) { // there was almost always a problem in Japanese
+        completion(YES,NO,NO);
+        return;
+    }
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+
+        [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+            if (!authenticated) {
+                completion(YES,NO,cancelled);
+                return;
+            }
+            @autoreleasepool {
+                NSString * seedPhrase = authenticated?getKeychainString(MNEMONIC_KEY, nil):nil;
+                if (!seedPhrase) {
+                    completion(YES,YES,NO);
+                    return;
+                }
+                
+                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+                paragraphStyle.lineSpacing = 20;
+                paragraphStyle.alignment = NSTextAlignmentCenter;
+                NSInteger fontSize = 16;
+                NSDictionary * attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
+
+                if (seedPhrase.length > 0 && [seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
+                    NSInteger lineCount = 1;
+                    NSMutableString *s,*l;
+
+                        CGRect r;
+                        s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
+                        l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
+                        for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                                                                     (CFStringRef)seedPhrase, CFSTR(" ")))) {
+                            if (l.length > 0) [l appendString:IDEO_SP];
+                            [l appendString:w];
+                            r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
+                                             attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium]} context:nil];
+                            
+                            if (r.size.width >= screenRect.size.width - 54*2 - 16) {
+                                [s appendString:@"\n"];
+                                l.string = w;
+                                lineCount++;
+                            }
+                            else if (s.length > 0) [s appendString:IDEO_SP];
+                            
+                            [s appendString:w];
+                        }
+                        if (lineCount > 3) {
+                            completion(YES,YES,NO);
+                            return;
+                        }
+                    }
+                
+                else {
+                    NSInteger lineCount = 0;
+
+                        attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
+                        CGSize labelSize = (CGSize){screenRect.size.width - 54*2 - 16, MAXFLOAT};
+                        CGRect requiredSize = [seedPhrase boundingRectWithSize:labelSize  options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil];
+                        int charSize = lroundf(((UIFont*)attributes[NSFontAttributeName]).lineHeight + 12);
+                        int rHeight = lroundf(requiredSize.size.height);
+                        lineCount = rHeight/charSize;
+                        
+                        if (lineCount > 3) {
+                            completion(YES,YES,NO);
+                            return;
+                            
+                        }
+
+                }
+                completion(NO,YES,NO);
+                
+            }
+        }];
+
+}
+
 // true if this is a "watch only" wallet with no signing ability
 - (BOOL)watchOnly
 {
@@ -562,6 +653,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
             masterPubKeyBIP32 = [NSData data];
         }
         if (seedPhrase) {
+            setKeychainInt(1, SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, NO);
             setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
             setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
         }

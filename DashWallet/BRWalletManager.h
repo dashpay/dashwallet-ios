@@ -46,6 +46,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @protocol BRMnemonic;
 
 typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL authenticated,BOOL cancelled); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
+typedef void (^CheckPassphraseCompletionBlock)(BOOL needsCheck,BOOL authenticated,BOOL cancelled);
 typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
@@ -125,6 +126,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)setSeedPhrase:(NSString* _Nullable)seedPhrase;
 
 -(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion;
+-(void)checkPassphraseWasShownCorrectly:(_Nullable CheckPassphraseCompletionBlock)completion;
 
 -(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 -(NSTimeInterval)lockoutWaitTime;
