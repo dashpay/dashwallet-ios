@@ -66,6 +66,9 @@
 "About" = "關於";
 
 /* No comment provided by engineer. */
+"Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
 "always require passcode" = "總是要求密碼";
 
 /* No comment provided by engineer. */
@@ -285,6 +288,9 @@
 "IMPORTANT" = "重要";
 
 /* No comment provided by engineer. */
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+
+/* No comment provided by engineer. */
 "instant payment" = "即時付款";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "pending" = "處理中";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
+"Please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "請將手機放在NFC設備附近。";

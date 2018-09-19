@@ -66,6 +66,9 @@
 "About" = "À propos";
 
 /* No comment provided by engineer. */
+"Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
 "always require passcode" = "toujours exiger le code d'accès";
 
 /* No comment provided by engineer. */
@@ -285,6 +288,9 @@
 "IMPORTANT" = "IMPORTANT";
 
 /* No comment provided by engineer. */
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+
+/* No comment provided by engineer. */
 "instant payment" = "paiement instantané";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "pending" = "en cours";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "veuillez entrer le code PIN pour mettre à jour le portefeuille";
+"Please enter pin to upgrade wallet" = "Veuillez entrer le code PIN pour mettre à jour le portefeuille";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Veuillez placer votre téléphone près de l'appareil NFC.";

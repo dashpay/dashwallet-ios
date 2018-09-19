@@ -449,7 +449,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (!data && oldData) {
         NSLog(@"fixing public key");
         //upgrade scenario
-        [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [self authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
                 completion(NO,YES,NO,cancelled);
                 return;
@@ -480,32 +480,29 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 }
 
 // There was an issue with passphrases not showing correctly on iPhone 5s and also on devices in Japanese
-// (^CheckPassphraseCompletionBlock)(BOOL needsCheck,BOOL authenticated,BOOL cancelled)
+// (^CheckPassphraseCompletionBlock)(BOOL needsCheck,BOOL authenticated,BOOL cancelled,NSString * _Nullable seedPhrase)
 -(void)checkPassphraseWasShownCorrectly:(CheckPassphraseCompletionBlock)completion;
 {
-    NSTimeInterval seedCreationTime = self.seedCreationTime;
+    NSTimeInterval seedCreationTime = self.seedCreationTime + NSTimeIntervalSince1970;
     NSError * error = nil;
     BOOL showedWarningForPassphrase = getKeychainInt(SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, &error);
-    if (seedCreationTime < 1534266000 || !showedWarningForPassphrase) {
-        completion(NO,NO,NO);
+    if (seedCreationTime < 1534266000 || showedWarningForPassphrase) {
+        completion(NO,NO,NO,nil);
         return;
     }
     NSString *language = NSBundle.mainBundle.preferredLocalizations.firstObject;
-    if ([language isEqualToString:@"japanese"]) { // there was almost always a problem in Japanese
-        completion(YES,NO,NO);
-        return;
-    }
     CGRect screenRect = [[UIScreen mainScreen] bounds];
 
-        [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [self authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
-                completion(YES,NO,cancelled);
+                completion(NO,NO,cancelled,nil);
                 return;
             }
             @autoreleasepool {
                 NSString * seedPhrase = authenticated?getKeychainString(MNEMONIC_KEY, nil):nil;
                 if (!seedPhrase) {
-                    completion(YES,YES,NO);
+                    setKeychainInt(1, SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, NO);
+                    completion(YES,YES,NO,seedPhrase);
                     return;
                 }
                 
@@ -539,7 +536,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                             [s appendString:w];
                         }
                         if (lineCount > 3) {
-                            completion(YES,YES,NO);
+                            setKeychainInt(1, SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, NO);
+                            completion(YES,YES,NO,seedPhrase);
                             return;
                         }
                     }
@@ -555,13 +553,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                         lineCount = rHeight/charSize;
                         
                         if (lineCount > 3) {
-                            completion(YES,YES,NO);
+                            setKeychainInt(1, SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, NO);
+                            completion(YES,YES,NO,seedPhrase);
                             return;
                             
                         }
 
                 }
-                completion(NO,YES,NO);
+                setKeychainInt(1, SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, NO);
+                completion(NO,YES,NO,seedPhrase);
                 
             }
         }];

@@ -507,6 +507,69 @@
     [super viewDidAppear:animated];
 }
 
+-(void)forceUpdate:(BOOL)cancelled {
+    UIAlertController * alert;
+    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    if (cancelled) {
+        alert = [UIAlertController
+                 alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
+                 message:NSLocalizedString(@"you must enter your pin in order to enter dashwallet", nil)
+                 preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* exitButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"exit", nil)
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         exit(0);
+                                     }];
+        UIAlertAction* enterButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"enter", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          [self protectedViewDidAppear];
+                                      }];
+        [alert addAction:exitButton];
+        [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+    } else {
+        __block NSUInteger wait = [manager lockoutWaitTime];
+        NSString * waitTime = [NSString waitTimeFromNow:wait];
+        
+        alert = [UIAlertController
+                 alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
+                 message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
+                          waitTime]
+                 preferredStyle:UIAlertControllerStyleAlert];
+        NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+            wait--;
+            alert.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
+                             [NSString waitTimeFromNow:wait]];
+            if (!wait) {
+                [timer invalidate];
+                [alert dismissViewControllerAnimated:TRUE completion:^{
+                    [self protectedViewDidAppear];
+                }];
+            }
+        }];
+        UIAlertAction* resetButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"reset", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          [timer invalidate];
+                                          [manager showResetWalletWithCancelHandler:^{
+                                              [self protectedViewDidAppear];
+                                          }];
+                                      }];
+        UIAlertAction* exitButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"exit", nil)
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         exit(0);
+                                     }];
+        [alert addAction:resetButton];
+        [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+    }
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 - (void)protectedViewDidAppear
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
@@ -560,67 +623,13 @@
     else {
         [manager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
-                UIAlertController * alert;
-                if (cancelled) {
-                    alert = [UIAlertController
-                             alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
-                             message:NSLocalizedString(@"you must enter your pin in order to enter dashwallet", nil)
-                             preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* exitButton = [UIAlertAction
-                                                 actionWithTitle:NSLocalizedString(@"exit", nil)
-                                                 style:UIAlertActionStyleDefault
-                                                 handler:^(UIAlertAction * action) {
-                                                     exit(0);
-                                                 }];
-                    UIAlertAction* enterButton = [UIAlertAction
-                                                  actionWithTitle:NSLocalizedString(@"enter", nil)
-                                                  style:UIAlertActionStyleDefault
-                                                  handler:^(UIAlertAction * action) {
-                                                      [self protectedViewDidAppear];
-                                                  }];
-                    [alert addAction:exitButton];
-                    [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-                } else {
-                    __block NSUInteger wait = [manager lockoutWaitTime];
-                    NSString * waitTime = [NSString waitTimeFromNow:wait];
-                    
-                    alert = [UIAlertController
-                             alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
-                             message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
-                                      waitTime]
-                             preferredStyle:UIAlertControllerStyleAlert];
-                    NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-                        wait--;
-                        alert.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
-                                         [NSString waitTimeFromNow:wait]];
-                        if (!wait) {
-                            [timer invalidate];
-                            [alert dismissViewControllerAnimated:TRUE completion:^{
-                                [self protectedViewDidAppear];
-                            }];
-                        }
-                    }];
-                    UIAlertAction* resetButton = [UIAlertAction
-                                                  actionWithTitle:NSLocalizedString(@"reset", nil)
-                                                  style:UIAlertActionStyleDefault
-                                                  handler:^(UIAlertAction * action) {
-                                                      [timer invalidate];
-                                                      [manager showResetWalletWithCancelHandler:^{
-                                                          [self protectedViewDidAppear];
-                                                      }];
-                                                  }];
-                    UIAlertAction* exitButton = [UIAlertAction
-                                                 actionWithTitle:NSLocalizedString(@"exit", nil)
-                                                 style:UIAlertActionStyleDefault
-                                                 handler:^(UIAlertAction * action) {
-                                                     exit(0);
-                                                 }];
-                    [alert addAction:resetButton];
-                    [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-                }
-                [self presentViewController:alert animated:YES completion:nil];
+                [self forceUpdate:cancelled];
             }
-            [manager checkPassphraseWasShownCorrectly:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled) {
+            [manager checkPassphraseWasShownCorrectly:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
+                if (!authenticated) {
+                    [self forceUpdate:cancelled];
+                }
+                
                 if (needsCheck) {
                     UIAlertController * alert = [UIAlertController
                              alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
@@ -630,7 +639,9 @@
                                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                                  style:UIAlertActionStyleDefault
                                                  handler:^(UIAlertAction * action) {
-                                                     //[self protectedViewDidAppear];
+                                                     BRSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                                         seedController.seedPhrase = seedPhrase;
+                                                     [self.navigationController pushViewController:seedController animated:YES];
                                                  }];
                     UIAlertAction* ignoreButton = [UIAlertAction
                                                   actionWithTitle:NSLocalizedString(@"ignore", nil)

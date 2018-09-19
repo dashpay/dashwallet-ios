@@ -66,6 +66,9 @@
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
+"Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
@@ -285,6 +288,9 @@
 "IMPORTANT" = "重要！！！";
 
 /* No comment provided by engineer. */
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+
+/* No comment provided by engineer. */
 "instant payment" = "即時支払い";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "pending" = "保留中";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "ウォレットをアップグレードするためにピンコード入力してください。";
+"Please enter pin to upgrade wallet" = "ウォレットをアップグレードするためにピンコード入力してください。";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "あなたの携帯電話をNFCデバイスに近づけてください";

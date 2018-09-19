@@ -66,6 +66,9 @@
 "About" = "σχετικά με";
 
 /* No comment provided by engineer. */
+"Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
 "always require passcode" = "πάντα να ζητείται κωδικός πρόσβασης";
 
 /* No comment provided by engineer. */
@@ -285,6 +288,9 @@
 "IMPORTANT" = "ΣΗΜΑΝΤΙΚΟ";
 
 /* No comment provided by engineer. */
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+
+/* No comment provided by engineer. */
 "instant payment" = "instant payment";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "pending" = "pending";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
