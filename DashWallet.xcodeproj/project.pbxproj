@@ -604,6 +604,8 @@
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
+		FBB4E3872152679E008040B7 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = it; path = it.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		FBB4E388215267FF008040B7 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ko; path = ko.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 		FBF2679F1E414877001A1C8B /* NSString+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Dash.h"; sourceTree = "<group>"; };
 		FBF267A01E414877001A1C8B /* NSString+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Dash.m"; sourceTree = "<group>"; };
 		FBF267A81E414A68001A1C8B /* Blake.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Blake.c; sourceTree = "<group>"; };
@@ -1863,6 +1865,8 @@
 				75C0E3C31B1BA29F007BC531 /* ja */,
 				75C0E3C41B1BA2A5007BC531 /* es */,
 				75C0E3C51B1BA2AE007BC531 /* zh-Hans */,
+				FBB4E3872152679E008040B7 /* it */,
+				FBB4E388215267FF008040B7 /* ko */,
 			);
 			name = BIP39Words.plist;
 			sourceTree = "<group>";

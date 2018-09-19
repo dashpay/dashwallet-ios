@@ -125,24 +125,37 @@
         NSDictionary * attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
         UIEdgeInsets edgeInsets = self.seedLabel.layoutMargins;
         if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x3000) { // ideographic language
-            CGRect r;
-            NSMutableString *s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
-            *l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
-            for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
-                                                                                         (CFStringRef)self.seedPhrase, CFSTR(" ")))) {
-                if (l.length > 0) [l appendString:IDEO_SP];
-                [l appendString:w];
-                r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
-                                 attributes:@{NSFontAttributeName:self.seedLabel.font} context:nil];
-                
-                if (r.size.width >= self.view.bounds.size.width - 54*2 - edgeInsets.left - edgeInsets.right) {
-                    [s appendString:@"\n"];
-                    l.string = w;
+            NSInteger lineCount;
+            NSMutableString *s,*l;
+            do {
+                lineCount = 1;
+                CGRect r;
+                s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
+                l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
+                for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
+                                                                                             (CFStringRef)self.seedPhrase, CFSTR(" ")))) {
+                    if (l.length > 0) [l appendString:IDEO_SP];
+                    [l appendString:w];
+                    r = [l boundingRectWithSize:CGRectInfinite.size options:NSStringDrawingUsesLineFragmentOrigin
+                                     attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium]} context:nil];
+                    
+                    if (r.size.width >= self.view.bounds.size.width - 54*2 - edgeInsets.left - edgeInsets.right) {
+                        [s appendString:@"\n"];
+                        l.string = w;
+                        lineCount++;
+                    }
+                    else if (s.length > 0) [s appendString:IDEO_SP];
+                    
+                    [s appendString:w];
                 }
-                else if (s.length > 0) [s appendString:IDEO_SP];
-                
-                [s appendString:w];
-            }
+                if (lineCount > 3) {
+                    fontSize--;
+                    if (fontSize < 5) break;
+                    
+                }
+            } while (lineCount > 3);
+            attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
+
             self.seedLabel.attributedText = [[NSAttributedString alloc] initWithString:s attributes:attributes];
         }
         else {
