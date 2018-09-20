@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Face ID лимит за похарчване";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "неуспешно актуализиране на портфейла";
+"Failed wallet update" = "неуспешно актуализиране на портфейла";
 
 /* No comment provided by engineer. */
 "from:" = "от:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Вече може да купите dash в\ndashwallet в брой или с\nбанков превод.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "трябва да въведете своя ПИН, за да влезете в dashwallet";
+"You must enter your pin in order to enter dashwallet" = "трябва да въведете своя ПИН, за да влезете в dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "ти получи dash!";

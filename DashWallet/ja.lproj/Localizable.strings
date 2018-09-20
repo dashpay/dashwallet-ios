@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Face IDの送金可能額";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "ウォレットのアップデートに失敗しました";
+"Failed wallet update" = "ウォレットのアップデートに失敗しました";
 
 /* No comment provided by engineer. */
 "from:" = "送金元:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってダッシュウォレット内でダッシュが購入できます。";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "ダッシュウォレットにログインするためにはピンコードを入力してください。";
+"You must enter your pin in order to enter dashwallet" = "ダッシュウォレットにログインするためにはピンコードを入力してください。";
 
 /* No comment provided by engineer. */
 "you received dash!" = "ダッシュの着金確認！";

@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Face ID 사용 제한 금액";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "지갑 업데이트 실패";
+"Failed wallet update" = "지갑 업데이트 실패";
 
 /* No comment provided by engineer. */
 "from:" = "보낸 주소:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "현금이나 은행 송금으로\n이제 Dash지갑에서\nDash를 구매할 수 있습니다.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "Dash 지갑에 엑세스하려면 PIN 넘버를 입력해야합니다";
+"You must enter your pin in order to enter dashwallet" = "Dash 지갑에 엑세스하려면 PIN 넘버를 입력해야합니다";
 
 /* No comment provided by engineer. */
 "you received dash!" = "대쉬을 받았습니다!";

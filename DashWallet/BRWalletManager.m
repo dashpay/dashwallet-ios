@@ -976,7 +976,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     return wait;
 }
 
--(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
+-(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
     UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Recovery phrase", nil) message:nil
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
@@ -985,6 +985,17 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         textField.font = [UIFont systemFontOfSize:15.0];
         textField.delegate = self;
     }];
+    if (resetWipeHandlerBlock) {
+    UIAlertAction* wipeButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                   style:UIAlertActionStyleDestructive
+                                   handler:^(UIAlertAction * action) {
+                                       if (resetWipeHandlerBlock) {
+                                           resetWipeHandlerBlock();
+                                       }
+                                   }];
+        [alertController addAction:wipeButton];
+    }
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
@@ -993,6 +1004,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                             resetCancelHandlerBlock();
                                        }
                                    }];
+    
     [alertController addAction:cancelButton];
     [self presentAlertController:alertController animated:YES completion:nil];
     self.resetAlertController = alertController;
@@ -1027,7 +1039,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                   actionWithTitle:NSLocalizedString(@"reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
-                                      [self showResetWalletWithCancelHandler:nil];
+                                      [self showResetWalletWithWipeHandler:nil cancelHandler:nil];
                                   }];
     UIAlertAction* okButton = [UIAlertAction
                                actionWithTitle:NSLocalizedString(@"ok", nil)

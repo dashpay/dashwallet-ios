@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Giới hạn chi tiêu với Face ID";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "không cập nhận được ví";
+"Failed wallet update" = "không cập nhận được ví";
 
 /* No comment provided by engineer. */
 "from:" = "từ:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Bây giờ bạn có thể mua dash trong\nví dashwallet hoặc\nchuyển khoản.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "bạn cần nhập mã pin của bạn để truy cập ví dashwallet";
+"You must enter your pin in order to enter dashwallet" = "bạn cần nhập mã pin của bạn để truy cập ví dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "bạn đã nhận được dash!";

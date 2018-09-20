@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Limite de dépense avec FaceID";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "failed wallet update";
+"Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
 "from:" = "de :";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Vous pouvez maintenant acheter du dash \ndans dashwallet avec du cash ou\npar transfert banquaire.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "vous devrez entrer votre pin (mot de passe) pour entrer dans l'application";
+"You must enter your pin in order to enter dashwallet" = "vous devrez entrer votre pin (mot de passe) pour entrer dans l'application";
 
 /* No comment provided by engineer. */
 "you received dash!" = "vous avez reçu des dash !";

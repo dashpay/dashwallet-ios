@@ -507,13 +507,34 @@
     [super viewDidAppear:animated];
 }
 
+-(void)wipeAlert {
+    UIAlertController * wipeAlert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"Are you sure?", nil)
+                                     message:NSLocalizedString(@"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.",nil)                                             preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                 actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                 style:UIAlertActionStyleDefault
+                                 handler:^(UIAlertAction * action) {
+                                     [self protectedViewDidAppear];
+                                 }];
+    UIAlertAction* wipeButton = [UIAlertAction
+                                  actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                  style:UIAlertActionStyleDestructive
+                                  handler:^(UIAlertAction * action) {
+                                      [self protectedViewDidAppear];
+                                  }];
+    [wipeAlert addAction:cancelButton];
+    [wipeAlert addAction:wipeButton];
+    [self presentViewController:wipeAlert animated:YES completion:nil];
+}
+
 -(void)forceUpdate:(BOOL)cancelled {
     UIAlertController * alert;
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     if (cancelled) {
         alert = [UIAlertController
-                 alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
-                 message:NSLocalizedString(@"you must enter your pin in order to enter dashwallet", nil)
+                 alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
+                 message:NSLocalizedString(@"You must enter your pin in order to enter dashwallet", nil)
                  preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* exitButton = [UIAlertAction
                                      actionWithTitle:NSLocalizedString(@"exit", nil)
@@ -534,7 +555,7 @@
         NSString * waitTime = [NSString waitTimeFromNow:wait];
         
         alert = [UIAlertController
-                 alertControllerWithTitle:NSLocalizedString(@"failed wallet update", nil)
+                 alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
                  message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
                           waitTime]
                  preferredStyle:UIAlertControllerStyleAlert];
@@ -554,7 +575,9 @@
                                       style:UIAlertActionStyleDefault
                                       handler:^(UIAlertAction * action) {
                                           [timer invalidate];
-                                          [manager showResetWalletWithCancelHandler:^{
+                                          [manager showResetWalletWithWipeHandler:^{
+                                              
+                                          } cancelHandler:^{
                                               [self protectedViewDidAppear];
                                           }];
                                       }];

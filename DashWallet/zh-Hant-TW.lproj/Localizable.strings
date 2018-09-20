@@ -255,7 +255,7 @@
 "Face ID spending limit" = "Face ID 的支付上限";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "錢包更新失敗";
+"Failed wallet update" = "錢包更新失敗";
 
 /* No comment provided by engineer. */
 "from:" = "來自:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你現在可以在達世幣錢包中用\n現金或銀行轉帳\n來購買達世幣。";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "你必須輸入你的PIN才能進入達世幣錢包";
+"You must enter your pin in order to enter dashwallet" = "你必須輸入你的PIN才能進入達世幣錢包";
 
 /* No comment provided by engineer. */
 "you received dash!" = "你收到了達世幣!";

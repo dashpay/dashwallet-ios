@@ -255,7 +255,7 @@
 "Face ID spending limit" = "จำกัดใช้ Face ID";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "อัพเดต wallet ล้มเหลว";
+"Failed wallet update" = "อัพเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
 "from:" = "จาก:";
@@ -666,7 +666,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "ขณะนี้คุณสามารถซื้อ dash \nผ่านเงินใน dash wallet หรือ \nโอนผ่านธนาคารได้";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "คุณต้องป้อน pin ของคุณ เพื่อเข้าถึง dashwallet";
+"You must enter your pin in order to enter dashwallet" = "คุณต้องป้อน pin ของคุณ เพื่อเข้าถึง dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "คุณได้รับ dash ";

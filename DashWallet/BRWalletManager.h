@@ -51,6 +51,7 @@ typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^ResetCancelHandlerBlock)(void);
+typedef void (^ResetWipeHandlerBlock)(void);
 
 @interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
@@ -128,7 +129,7 @@ completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion;
 -(void)checkPassphraseWasShownCorrectly:(_Nullable CheckPassphraseCompletionBlock)completion;
 
--(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
+-(void)showResetWalletWithWipeHandler:(_Nullable ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 -(NSTimeInterval)lockoutWaitTime;
 
 @end
