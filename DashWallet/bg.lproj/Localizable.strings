@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложението %@ иска да получи вашият Master Public Key.  Това може да бъде използване за проследяване на вашият портфейл,но не може да се използва за преместване на вашите Dash.";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "грешна парола, опитайте отново";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Купи dash в dashwallet!";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "отказ";

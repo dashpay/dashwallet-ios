@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "forkert adgangskode; prøv igen";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "annullér";

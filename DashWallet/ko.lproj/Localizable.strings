@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "어플리케이션 %@ 에서 마스터 공개키를 수신하려고 합니다. 이것은 지갑을 추적하는데 사용할 수 있으며 Dash를 이동하는 데 사용할 수 없습니다.";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Dash지갑으로 Dash 구매하기!";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "취소";

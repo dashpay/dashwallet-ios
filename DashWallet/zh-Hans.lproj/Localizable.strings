@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "应用程序 %@ 想要获取你的公钥。它可以被用作查看你的钱包记录，但无法用来移动你钱包中的达世币。";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "密码错误，请重试";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "在钱包中购买达世币！";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "取消";

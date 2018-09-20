@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "feil passord, prøv igjen";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "avbryt";
@@ -255,7 +261,7 @@
 "Face ID spending limit" = "Face ID spending limit";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "failed wallet update";
+"Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
 "from:" = "fra:";
@@ -390,7 +396,7 @@
 "pending" = "pending";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -666,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "you must enter your pin in order to enter dashwallet";
+"You must enter your pin in order to enter dashwallet" = "You must enter your pin in order to enter dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "du har mottatt dash!";

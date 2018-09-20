@@ -495,7 +495,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 
         [self authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
-                completion(NO,NO,cancelled,nil);
+                completion(YES,NO,cancelled,nil);
                 return;
             }
             @autoreleasepool {

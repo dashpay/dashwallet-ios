@@ -649,7 +649,7 @@
                 [self forceUpdate:cancelled];
             }
             [manager checkPassphraseWasShownCorrectly:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
-                if (!authenticated) {
+                if (needsCheck && !authenticated) {
                     [self forceUpdate:cancelled];
                 }
                 

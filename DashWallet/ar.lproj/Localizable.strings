@@ -84,6 +84,9 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "التطبيق %@ ترغب في استلام مفتاحك الرئيسي. هذا يمكن أن تستخدم لتتبع محفظتك ، وهذا لا يمكن أن تستخدم لتحريك داش الخاص بك.";
 
 /* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "كلمة المرور السيئة ، حاول مرة أخرى";
 
 /* No comment provided by engineer. */
@@ -112,6 +115,9 @@
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "شراء داش من محفظة داش";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "إلغاء";
@@ -255,7 +261,7 @@
 "Face ID spending limit" = "Face ID spending limit";
 
 /* No comment provided by engineer. */
-"failed wallet update" = "فشل تحديث المحفظة";
+"Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
 "from:" = "من:";
@@ -390,7 +396,7 @@
 "pending" = "قيد الانتظار";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "يرجى إدخال رقم سري  لترقية المحفظة";
+"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "يرجى وضع هاتفك بالقرب من جهاز NFC.";
@@ -666,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "يمكنك شراء داش من \nمحفظة داش بالمال او\nعن تحويل بنكي.";
 
 /* No comment provided by engineer. */
-"you must enter your pin in order to enter dashwallet" = "يجب عليك إدخال رقم السري الشخصي الخاص بك من أجل إدخال محفظة داش";
+"You must enter your pin in order to enter dashwallet" = "You must enter your pin in order to enter dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "لقد تلقيت داش!";
