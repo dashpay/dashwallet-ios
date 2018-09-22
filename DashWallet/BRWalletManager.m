@@ -2149,6 +2149,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
 replacementString:(NSString *)string
 {
+    @autoreleasepool {
+        
     if (textField == self.pinField) {
         NSString * currentPin = [textField.text stringByReplacingCharactersInRange:range withString:string];
         NSUInteger l = currentPin.length;
@@ -2170,6 +2172,24 @@ replacementString:(NSString *)string
                                                  [self.pinAlertController.title substringFromIndex:7]];
             }
         }
+    } else {
+        NSString * currentString = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        if (![currentString isEqualToString:@""]) {
+            NSArray * actions = [self.resetAlertController actions];
+            for (UIAlertAction * action in actions) {
+                if ([action.title isEqualToString:NSLocalizedString(@"wipe", nil)]) {
+                    action.enabled = false;
+                }
+            }
+        } else {
+            NSArray * actions = [self.resetAlertController actions];
+            for (UIAlertAction * action in actions) {
+                if ([action.title isEqualToString:NSLocalizedString(@"wipe", nil)]) {
+                    action.enabled = true;
+                }
+            }
+        }
+    }
     }
     return YES;
 }

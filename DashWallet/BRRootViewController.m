@@ -521,7 +521,13 @@
                                   actionWithTitle:NSLocalizedString(@"wipe", nil)
                                   style:UIAlertActionStyleDestructive
                                   handler:^(UIAlertAction * action) {
-                                      [self protectedViewDidAppear];
+
+                                      [[BRWalletManager sharedInstance] setSeedPhrase:nil];
+                                      [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
+                                      [[NSUserDefaults standardUserDefaults] synchronize];
+                                      
+                                    [self presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+                                                        completion:nil];
                                   }];
     [wipeAlert addAction:cancelButton];
     [wipeAlert addAction:wipeButton];
@@ -576,7 +582,7 @@
                                       handler:^(UIAlertAction * action) {
                                           [timer invalidate];
                                           [manager showResetWalletWithWipeHandler:^{
-                                              
+                                              [self wipeAlert];
                                           } cancelHandler:^{
                                               [self protectedViewDidAppear];
                                           }];
@@ -658,7 +664,7 @@
                              alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
                              message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
                              preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* enterButton = [UIAlertAction
+                    UIAlertAction* showButton = [UIAlertAction
                                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                                  style:UIAlertActionStyleDefault
                                                  handler:^(UIAlertAction * action) {
@@ -672,8 +678,10 @@
                                                   handler:^(UIAlertAction * action) {
                                                       
                                                   }];
+                    
                     [alert addAction:ignoreButton];
-                    [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+                    [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+                    [alert setPreferredAction:showButton];
                     [self presentViewController:alert animated:YES completion:nil];
                 }
                 

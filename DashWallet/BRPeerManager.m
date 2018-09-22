@@ -118,7 +118,8 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
     { 860000, "000000000000001ed76fb953e7e96daf7000f657594a909540b0da6aa2252393", 1524751102, 0x1933df60u },
     { 880000, "000000000000001c980f140d5ff954581b0b35d680e03f4aeba30505cb1072a6", 1527903835, 0x1962d4edu },
     { 900000, "000000000000001eedab948c433a50b1131a8e15c8c2beef4be237701feff7b5", 1531055382, 0x1945cebcu },
-    { 920000, "00000000000000341469d7ab5aa190cbf49a19ac69afcf8cfd608d7f8cdf7245", 1534206756, 0x1950c940u }
+    { 920000, "00000000000000341469d7ab5aa190cbf49a19ac69afcf8cfd608d7f8cdf7245", 1534206756, 0x1950c940u },
+    { 940000, "000000000000001232b541264361386c0ea40ac3f0b72814b48a16a249c5386c", 1537357320, 0x1952e364u }
 };
 
 static const char *dns_seeds[] = {
@@ -274,6 +275,7 @@ static const char *dns_seeds[] = {
                     
                     freeaddrinfo(servinfo);
                 }
+                NSLog(@"DNS lookup %s done", dns_seeds[i]);
             });
             
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
