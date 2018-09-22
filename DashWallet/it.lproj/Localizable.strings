@@ -1,15 +1,15 @@
 
 /* No comment provided by engineer. */
-" and " = "e";
+" and " = " e ";
 
 /* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@sta per 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ la app non ha il permesso di accedere alla fotocamera";
+"%@ is not allowed to access the camera" = "%@ non ha il permesso di accedere alla videocamera";
 
 /* No comment provided by engineer. */
-"%@\n\nbalance: %@ (%@)" = "%1$@\n\nbilancio: %2$@ (%3$@)";
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nequilibrio: %2$@ (%3$@)";
 
 /* No comment provided by engineer. */
 "%d confirmations" = "%d conferme";
@@ -30,7 +30,7 @@
 "\n         total %@ (%@)" = "\n         totale %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nse perdi il tuo telefono, ti servirà per recuperare il tuo portafoglio";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nse perdi il tuo telefono, ti basterà per recuperare il tuo portafoglio";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d tentativi rimanenti\n";
@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nconsenti l'accesso alla fotocamera in\nImpostazioni->Privacy->Fotocamera->%@";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\ncommissione di rete +%1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\ntassa di rete +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nriprova tra %@";
@@ -66,7 +66,7 @@
 "About" = "A proposito di";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Azione Necessaria";
 
 /* No comment provided by engineer. */
 "always require passcode" = "è sempre richiesto il codice di accesso";
@@ -78,13 +78,13 @@
 "Application %@ is requesting a payment to" = "<br>L'applicazione %@ richiede un pagamento";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "L'applicazione %@ richiede un indirizzo cosi' che possa pagarti. Vuoi autorizzarla?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "L'applicazione %@ richiede un indirizzo cosi' che possa pagarti. Potresti autorizzarlo?";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'applicazione %@vorrebbe ricevere la tua Chiave Pubblica Principale. Tale \"chiave\" può essere utilizzata per tracciare il tuo portafoglio, ma non può essere usata per spostare i tuoi Dash.";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'applicazione %@vorrebbe ricevere la tua Chiave Pubblica Principale. Può essere utilizzata per tracciare il tuo portafoglio, ma non può essere usata per spostare i tuoi Dash.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Sei sicuro??";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "password errata, riprova";
@@ -114,10 +114,10 @@
 "Buy Dash" = "Compra Dash";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Compra dash in \"dashwallet\"!";
+"Buy dash in dashwallet!" = "Compra dash nel portafoglio dash!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Cancellando questo dispositivo non avrai più accesso ai fondi su questo dispositivo. Questo dovrebbe essere fatto solo se non hai più accesso alla tua \"passphrase\" e hai anche dimenticato il tuo codice pin.";
 
 /* No comment provided by engineer. */
 "cancel" = "annulla";
@@ -132,7 +132,7 @@
 "change payment amount?" = "cambiare l'ammontare del pagamento?";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "verificando il saldo del'indirizzo...";
+"checking address balance..." = "verificando il saldo del indirizzo...";
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "verificando il saldo della chiave privata...";
@@ -174,10 +174,10 @@
 "copy request to clipboard" = "copia richiesta negli appunti";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "copiare indirizzo di portafoglio negli appunti?";
+"copy wallet addresses to clipboard?" = "copia indirizzo di portafoglio negli appunti?";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "impossibile verificare il saldo del indirizzo";
+"couldn't check address balance" = "impossibile verificando il saldo del indirizzo";
 
 /* No comment provided by engineer. */
 "couldn't make payment" = "impossibile effettuare il pagamento";
@@ -198,7 +198,7 @@
 "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Gli indirizzi Dash possono anche essere copiati negli Appunti. Un indirizzo dash inizia sempre con 'X' o '7'.";
 
 /* No comment provided by engineer. */
-"dash network fee" = "commissione di rete dash";
+"dash network fee" = "tassa di rete dash";
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
@@ -213,7 +213,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi dash). Elimina subito questo portafoglio e ripristinalo in un dispositivo sicuro.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi dash). Elimina subito questo portafoglio e ripristina su un dispositivo sicuro.";
 
 /* No comment provided by engineer. */
 "do it later" = "fallo più tardi";
@@ -258,10 +258,10 @@
 "Face ID limit" = "Limite \"Face ID\"";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Face ID spending limit";
+"Face ID spending limit" = "Limite di spesa Face ID";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "aggiornamento portafoglio fallito";
+"Failed wallet update" = "\nAggiornamento del portafoglio fallito";
 
 /* No comment provided by engineer. */
 "from:" = "da:";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "IMPORTANTE";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "\nIn una versione precedente di Dashwallet, quando inizialmente visualizzava la passphrase su un dispositivo, abbiamo determinato che la \"app\" non visualizzava correttamente tutte le 12 parole seme. Quindi per favore scrivi (prendi nota) di nuovo la tua passphrase completa.";
 
 /* No comment provided by engineer. */
 "instant payment" = "pagamento immediato";
@@ -306,13 +306,13 @@
 "insufficient funds" = "fondi insufficienti";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "fondi insufficienti per la commissione di rete dash";
+"insufficient funds for dash network fee" = "fondi insufficienti per la tassa di rete dash";
 
 /* No comment provided by engineer. */
 "INVALID" = "INVALIDO";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Permetti agli altri di scansionare questo codice QR per ricevere i tuoi dash. Chiunque può inviare dash al tuo portafoglio conoscendo il tuo indirizzo wallet.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Permetti agli altri di scansionare questo codice QR per trovare il tuo indirizzo dash. Chiunque può spedire dash al tuo portafoglio trasferendoli al tuo indirizzo.";
 
 /* No comment provided by engineer. */
 "minute" = "minuto";
@@ -342,7 +342,7 @@
 "no exchange rate data" = "nessun dato del tasso di cambio";
 
 /* No comment provided by engineer. */
-"no peers found" = "nessun \"peers\" trovato";
+"no peers found" = "nessun pari trovato";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "non è un codice QR dash o bitcoin";
@@ -369,10 +369,10 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"passcode" = "codice di accesso";
+"passcode" = "codice accesso";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "codice di accesso per %@";
+"passcode for %@" = "codice accesso per %@";
 
 /* No comment provided by engineer. */
 "password" = "password";
@@ -384,7 +384,7 @@
 "Pay" = "Paga";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "l'identità del beneficiario non è certificata";
+"payee identity isn't certified" = "l'identità del beneficiario non è certificato";
 
 /* No comment provided by engineer. */
 "payment address" = "indirizzo pagamento";
@@ -396,7 +396,7 @@
 "pending" = "in attesa di";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
+"Please enter pin to upgrade wallet" = "\nInserisci il PIN per aggiornare il portafoglio";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Perfavore posiziona il tuo telefono vicino al dispositivo NFC.";
@@ -450,7 +450,7 @@
 "Rescan blockchain" = "Riscansione blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "riscansiona la catena di blocchi se pensi di aver perso transazioni, o se hai problemi a effettuarle (ri-scansionare può richiedere vari minuti)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "riscansiona la catena di blocchi se pensi di aver perso transazioni, o se hai problemi a effettuarle (riscansionare può richiedere vari minuti)";
 
 /* No comment provided by engineer. */
 "reset" = "resetta";
@@ -462,7 +462,7 @@
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scansiona il codice QR di qualcun altro per vedere il suo indirizzo dash o bitcoin. Puoi effettuare un pagamento verso chiunque abbia un indirizzo.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. Genera una nuova frase di recupero e tienila segreta (prima di effettuare tale operazione è consigliabile trasferire i fondi in un wallet sicuro).";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. Genera una nuova frase di recupero e tienila segreta.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. I tuoi fondi sono a rischio. Trasferisci il tuo saldo a un altro portafoglio.";
@@ -477,7 +477,7 @@
 "seen by %d of %d peers" = "visto da %1$d di %2$d pari";
 
 /* No comment provided by engineer. */
-"send" = "Invia";
+"send" = "invia";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Inviare %1$@ (%2$@) da questa chiave privata al tuo portafoglio? La rete dash riceverà una tassa di %3$@ (%4$@).";
@@ -519,7 +519,7 @@
 "shapeshift succeeded" = "shapeshift avvenuto con successo";
 
 /* No comment provided by engineer. */
-"show" = "visualizza";
+"show" = "mostra";
 
 /* No comment provided by engineer. */
 "show phrase" = "mostra frase";
@@ -528,13 +528,13 @@
 "sms not currently available" = "sms non disponibili al momento";
 
 /* No comment provided by engineer. */
-"spent address" = "indirizzi esauriti";
+"spent address" = "indirizzo speso";
 
 /* No comment provided by engineer. */
-"spent input" = "\"imput\" esauriti";
+"spent input" = "introito esaurito";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Avvio Shapeshift!";
+"Starting Shapeshift!" = "Iniziando Shapeshift!";
 
 /* No comment provided by engineer. */
 "status:" = "stato:";
@@ -546,10 +546,10 @@
 "Syncing:" = "Sincronizzazione:";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "L'importo che vuoi usare con Shapeshift è troppo elevato, inserire un valore minore di%@";
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "L'importo per cui volete usare Shapeshift è troppo elevato, inserire un valore minore di%@";
 
 /* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "L'importo che vuoi usare con Shapeshift è troppo basso, inserire un valore maggiore di %@";
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "L'importo per cui volete usare Shapeshift è troppo basso, inserire un valore maggiore di %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "l'app verrà chiusa";
@@ -576,7 +576,7 @@
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Questa richiesta richiede un pagamento immediato ma non hai abbastanza input con 6 conferme richieste da InstantSend, puoi chiedere al commerciante di accettare una transazione normale o attendere qualche minuto.";
 
 /* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "questa operazione richiede un pagamento immediato ma hai disabilitato i pagamenti immediati";
+"this request requires an instant payment but you have disabled instant payments" = "questa richiesta richiede un pagamento immediato ma hai disabilitato i pagamenti immediati";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Questo portafoglio non è vuoto o la sincronizzazione non è terminata, non puoi cancellarlo senza la frase di recupero";
@@ -594,10 +594,10 @@
 "Touch ID limit" = "Limite  \"Touch ID\"";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "limite di spesa \"Touch ID\"";
+"Touch ID spending limit" = "Limite di spesa Touch ID";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transazione cancellata, per \"timeout\" della rete";
+"transaction canceled, network timeout" = "transazione cancellata, rete sospesa";
 
 /* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "i costi di transazione costerebbero più dei fondi disponibili su questa chiave privata (a causa dei micro depositi \"dust\")";
@@ -672,10 +672,10 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Ora puoi comprare Dash nel\nportafoglio dash con contanti o con\nbonifico bancario.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Devi inserire il tuo pin per accedere al portafoglio dash";
+"You must enter your pin in order to enter dashwallet" = "\nDevi inserire il tuo pin per accedere a dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "hai ricevuto dei dash!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe  non essere sincronizzato.\nDi solito si risolve  ri-scansionando la catena di blocchi.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe essere non sincronizzato.\nDi solito si rimedia riscansionando la catena di blocchi.";

@@ -15,7 +15,7 @@
 "%d confirmations" = "%d confirmações";
 
 /* No comment provided by engineer. */
-", " = ",";
+", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 confirmações";
@@ -66,7 +66,7 @@
 "About" = "Sobre";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Ação necessária";
 
 /* No comment provided by engineer. */
 "always require passcode" = "sempre exija a senha";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplicação %@gostaria de receber sua chave mestra pública. Isso pode ser usado para manter acompanhamento de sua carteira, ela não pode ser usada para mover seu Dash.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Você tem certeza?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "senha incorreta, tente novamente";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Compre Dash na dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Ao limpar este dispositivo, você não terá mais acesso a fundos neste dispositivo. Isso só deve ser feito se você não tiver mais acesso à sua frase secreta e também tiver esquecido o código PIN.";
 
 /* No comment provided by engineer. */
 "cancel" = "cancelar";
@@ -261,7 +261,7 @@
 "Face ID spending limit" = "Limite de gastos por Face ID";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "atualização da carteira falhou";
+"Failed wallet update" = "Falha ao atualizar a carteira ";
 
 /* No comment provided by engineer. */
 "from:" = "de:";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "IMPORTANTE";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Em uma versão anterior do Dashwallet, ao exibir inicialmente sua frase secreta neste dispositivo, determinamos que este aplicativo não exibiu corretamente todas as 12 palavras-semente. Por favor, anote sua senha completa novamente.";
 
 /* No comment provided by engineer. */
 "instant payment" = "pagamento instantâneo";
@@ -396,7 +396,7 @@
 "pending" = "pendente";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "por favor coloque o pin para fazer a atualização da carteira";
+"Please enter pin to upgrade wallet" = "Por favor, digite pin para atualizar a carteira";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Por favor coloque seu telefone perto do dispositivo NFC";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Agora você pode comprar dash em \ncarteira dash com dinheiro ou \ntransferência bancária.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "você deve inserir seu pin para entrar na carteira dash";
+"You must enter your pin in order to enter dashwallet" = "Você deve inserir seu pin para entrar no dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "você recebeu dash!";

@@ -48,7 +48,7 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUn code d'accès est nécessaire pour sécuriser votre portefeuille. Allez dans les paramètres et activez le code d'accès pour continuer.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE DÉJÀ UTILISÉE\nles adresses dash ne doivent être utilisées par principe qu'une seule fois \n\nleurs réutilisation réduit votre niveau de confidentialité et peut même engendrer une perte si le recipient de la transaction ne possède plus l'accès à l'ancienne adresse";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE DÉJÀ UTILISÉE\nLes adresses Dash ne devraient être utilisées en principe qu'une seule fois \n\nLeur réutilisation réduit votre niveau de confidentialité, et peut même causer une perte de fonds si le destinataire de la transaction ne possède plus d'accès à l'ancienne adresse";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermettre l'accès à la caméra dans\nRéglages->Confidentialité->Appareil photo->%@";
@@ -66,7 +66,7 @@
 "About" = "À propos";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Action requise";
 
 /* No comment provided by engineer. */
 "always require passcode" = "toujours exiger le code d'accès";
@@ -81,10 +81,10 @@
 "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "L'application %@ demande une adresse pour vous payer. Voulez-vous autoriser cette opération ?";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'application %@ aimerait recevoir votre clé publique.  Celle ci peut être utilisé pour garder une trace de vos transactions, elle ne peut pas être utilisé pour transmettre (ou voler) votre argent.";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "L'application %@ voudrait recevoir votre clé publique. Celle-ci peut être utilisée pour garder une trace de vos transactions, elle ne peut pas être utilisée pour déplacer (ou voler) vos fonds.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Êtes-vous certain ?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "mauvais mot de passe, veuillez réessayer";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Acheter du dash dans dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "En effaçant ce portefeuille, vous n'aurez plus accès aux fonds sur cet appareil. Ne le faites que si vous n'avez plus accès ni à votre phrase de passe, ni à votre code PIN.";
 
 /* No comment provided by engineer. */
 "cancel" = "annuler";
@@ -210,10 +210,10 @@
 "dash transaction outputs can't be less than %@" = "les sorties de transaction dash ne peuvent pas être inférieures à %@";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application jailbreakée peut accéder aux données du keychain des autres applications (et voler vos dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application débridée peut accéder aux données du trousseau des autres applis (et voler vos dashs).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application 'jailbreakée' peut accéder aux données keychain des autres applications (et voler vos dash). Effacez immédiatement ce portefeuille et restaurez sur un appareil sécurisé.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application débridée peut accéder aux données du trousseau des autres applications (et voler vos dashs). Effacez immédiatement ce portefeuille et restaurez-le sur un appareil sécurisé.";
 
 /* No comment provided by engineer. */
 "do it later" = "le faire plus tard";
@@ -261,7 +261,7 @@
 "Face ID spending limit" = "Limite de dépense avec FaceID";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "Failed wallet update";
+"Failed wallet update" = "Échec de la mise à jour du portefeuille";
 
 /* No comment provided by engineer. */
 "from:" = "de :";
@@ -294,10 +294,10 @@
 "IMPORTANT" = "IMPORTANT";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Nous avons découvert que, dans une version antérieure du portefeuille Dash, au moment du premier affichage de la phrase de passe sur l'appareil, l'application n'affichait pas correctement l'intégralité des 12 mots de votre phrase de récupération. Veuillez les noter à nouveau.";
 
 /* No comment provided by engineer. */
-"instant payment" = "paiement instantané";
+"instant payment" = "instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend exige des entrées avec 6 confirmations. Envoyer quand même en tant que transaction normale ?";
@@ -312,7 +312,7 @@
 "INVALID" = "INVALIDE";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laissez les autres numériser ce code QR pour obtenir votre adresse dash. N'importe qui peut envoyer des dash à votre portefeuille en les transférant à cette adresse.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laissez les autres numériser ce code QR pour obtenir votre adresse dash. N'importe qui peut envoyer des dash à votre portefeuille en les transférant à votre adresse.";
 
 /* No comment provided by engineer. */
 "minute" = "minute";
@@ -396,7 +396,7 @@
 "pending" = "en cours";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Veuillez entrer le code PIN pour mettre à jour le portefeuille";
+"Please enter pin to upgrade wallet" = "Veuillez saisir votre code PIN pour mettre à jour le portefeuille";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Veuillez placer votre téléphone près de l'appareil NFC.";
@@ -525,7 +525,7 @@
 "show phrase" = "montrer la phrase";
 
 /* No comment provided by engineer. */
-"sms not currently available" = "SMS actuellement indisponible";
+"sms not currently available" = "sms actuellement indisponible";
 
 /* No comment provided by engineer. */
 "spent address" = "adresse dépensée";
@@ -555,7 +555,7 @@
 "the app will now close" = "l'application va se fermer";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ceci est votre adresse dash. Tapotez pour la copier ou pour l'envoyer par e-mail ou par SMS. L'adresse changera à chaque fois que vous recevrez des fonds, mais les anciennes adresses fonctionneront toujours.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ceci est votre adresse dash. Tapotez pour la copier ou pour l'envoyer par e-mail ou par sms. L'adresse changera à chaque fois que vous recevrez des fonds, mais les anciennes adresses fonctionneront toujours.";
 
 /* No comment provided by engineer. */
 "This is your dash balance." = "Voici votre solde Dash.";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Vous pouvez maintenant acheter du dash \ndans dashwallet avec du cash ou\npar transfert banquaire.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "vous devrez entrer votre pin (mot de passe) pour entrer dans l'application";
+"You must enter your pin in order to enter dashwallet" = "Vous devez saisir votre code PIN pour ouvrir le portefeuille Dash";
 
 /* No comment provided by engineer. */
 "you received dash!" = "vous avez reçu des dash !";

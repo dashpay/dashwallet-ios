@@ -66,7 +66,7 @@
 "About" = "Over";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Actie Benodigd";
 
 /* No comment provided by engineer. */
 "always require passcode" = "altijd toegangscode vereisen";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "De applicatie %@ wil je openbare hoofdsleutel inzien. Dit kan worden gebruikt om je portemonnee in de gaten te houden; het kan niet worden gebruikt om je Dash te verplaatsen.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Weet je het zeker?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "onjuist wachtwoord, probeer opnieuw";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Koop dash in dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Door dit apparaat schoon te vegen heb je geen toegang meer tot het geld op dit apparaat. Dit zou alleen gedaan moeten worden als je de herstelzin hebt verloren en ook de pincode kwijt bent.";
 
 /* No comment provided by engineer. */
 "cancel" = "annuleer";
@@ -261,7 +261,7 @@
 "Face ID spending limit" = "Face ID uitgavelimiet";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "mislukte portemonnee-update";
+"Failed wallet update" = "Mislukte update van de portemonnee";
 
 /* No comment provided by engineer. */
 "from:" = "van:";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "BELANGRIJK";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In de vorige versie van Dashwallet, waar aanvankelijk de herstelzin werd getoond, hebben we geconstateerd dat de 12 herstelwoorden niet correct werden weergegeven. Schrijf daarom de herstel zin opnieuw op.";
 
 /* No comment provided by engineer. */
 "instant payment" = "directe betaling";
@@ -396,7 +396,7 @@
 "pending" = "in wachtrij";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "voer je pincode in om de wallet bij te werken";
+"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";

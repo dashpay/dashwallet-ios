@@ -6,7 +6,7 @@
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ es para 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ no está permitido accesar a la cámara";
+"%@ is not allowed to access the camera" = "%@ No se permite acceder a la cámara";
 
 /* No comment provided by engineer. */
 "%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
@@ -15,7 +15,7 @@
 "%d confirmations" = "%d confirmaciones";
 
 /* No comment provided by engineer. */
-", " = ",";
+", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 confirmaciones";
@@ -66,7 +66,7 @@
 "About" = "Acerca de";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Acción Necesaria";
 
 /* No comment provided by engineer. */
 "always require passcode" = "siempre requiere el numero de seguridad";
@@ -78,16 +78,16 @@
 "Application %@ is requesting a payment to" = "La aplicación %@ solicita un pago a";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "La aplicación %@ solicita una dirección para pagarte. Deseas autorizarlo?";
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "La aplicación %@ solicita una dirección para poder pagarte. ¿Te gustaría autorizarlo?";
 
 /* No comment provided by engineer. */
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "La aplicación %@ desea recibir su Llave Maestra Pública. Esto puede ser usado para seguir el rastro de su cartera, no puede ser utilizado para mover su Dash.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "¿Estas seguro?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "contraseña incorrecta, prueba otra vez";
+"bad password, try again" = "contraseña incorrecta, inténtalo de nuevo";
 
 /* No comment provided by engineer. */
 "bad payment request" = "petición de pago incorrecta";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Compra dash en dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Al limpiar este dispositivo, ya no tendrá acceso a los fondos en este dispositivo. Esto solo debe hacerse si ya no tiene acceso a su contraseña y también ha olvidado su código PIN.";
 
 /* No comment provided by engineer. */
 "cancel" = "cancelar";
@@ -261,7 +261,7 @@
 "Face ID spending limit" = "Límite de gasto de Face ID";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "falló actualización de cartera";
+"Failed wallet update" = "Actualización de billetera fallida";
 
 /* No comment provided by engineer. */
 "from:" = "desde:";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "IMPORTANTE";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "En una versión anterior de la Dashwallet, cuando inicialmente se mostraba su frase de recuperación en este dispositivo hemos determinado que esta App no muestra correctamente las 12 palabras semilla. Por favor escriba su frase de recuperación completa de nuevo.";
 
 /* No comment provided by engineer. */
 "instant payment" = "pago instantáneo";
@@ -396,7 +396,7 @@
 "pending" = "pendiente";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "por favor ingrese pin para actualizar la cartera";
+"Please enter pin to upgrade wallet" = "Por favor ingrese su pin para actualizar la billetera";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Coloca tu teléfono cerca del dispositivo NFC.";
@@ -537,7 +537,7 @@
 "Starting Shapeshift!" = "Iniciando Shapeshift!";
 
 /* No comment provided by engineer. */
-"status:" = "Estado:";
+"status:" = "estado:";
 
 /* No comment provided by engineer. */
 "swept!" = "¡barrido!";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Usted puede comprar dash en\ndashwallet con efectivo o\ntransferencia bancaria.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Debe ingresar su pin para entrar a dashwallet";
+"You must enter your pin in order to enter dashwallet" = "Debe ingresar su pin para ingresar a la Dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "¡ha recibido dash!";

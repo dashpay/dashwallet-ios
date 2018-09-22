@@ -26,12 +26,18 @@
 #ifndef IntTypes_h
 #define IntTypes_h
 
-typedef union _UInt512 {
-    uint8_t u8[512/8];
-    uint16_t u16[512/16];
-    uint32_t u32[512/32];
-    uint64_t u64[512/64];
-} UInt512;
+typedef union _UInt128 {
+    uint8_t u8[128/8];
+    uint16_t u16[128/16];
+    uint32_t u32[128/32];
+    uint64_t u64[128/64];
+} UInt128;
+
+typedef union _UInt160 {
+    uint8_t u8[160/8];
+    uint16_t u16[160/16];
+    uint32_t u32[160/32];
+} UInt160;
 
 typedef union _UInt256 {
     uint8_t u8[256/8];
@@ -40,18 +46,16 @@ typedef union _UInt256 {
     uint64_t u64[256/64];
 } UInt256;
 
-typedef union _UInt160 {
-    uint8_t u8[160/8];
-    uint16_t u16[160/16];
-    uint32_t u32[160/32];
-} UInt160;
+typedef union _UInt512 {
+    uint8_t u8[512/8];
+    uint16_t u16[512/16];
+    uint32_t u32[512/32];
+    uint64_t u64[512/64];
+} UInt512;
 
-typedef union _UInt128 {
-    uint8_t u8[128/8];
-    uint16_t u16[128/16];
-    uint32_t u32[128/32];
-    uint64_t u64[128/64];
-} UInt128;
+
+
+
 
 
 #define uint512_eq(a, b)\
@@ -73,6 +77,9 @@ typedef union _UInt128 {
 #define uint256_is_zero(u) (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3]) == 0)
 #define uint160_is_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) == 0)
 #define uint128_is_zero(u) (((u).u64[0] | (u).u64[1]) == 0)
+
+#define uint160_data(u) [NSData dataWithUInt160:u]
+#define uint256_data(u) [NSData dataWithUInt256:u]
 
 #define uint512_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt512)])
 #define uint256_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt256)])

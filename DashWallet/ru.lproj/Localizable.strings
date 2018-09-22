@@ -15,7 +15,7 @@
 "%d confirmations" = "Подтверждений: %d";
 
 /* No comment provided by engineer. */
-", " = ",";
+", " = ", ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 подтверждений";
@@ -48,7 +48,7 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nКод доступа необходим для защиты Вашего кошелька. Перейдите в настройки и включите код доступа, чтобы продолжить.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС УЖЕ ИСПОЛЬЗОВАН\nАдреса Dash предназначены для разового использования\n\nповторное использование адреса снижает приватность как для Вас, так и для получателя и может привести к потере средств, если получатель больше не контролирует этот адрес";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС УЖЕ ИСПОЛЬЗОВАН\nАдреса Dash преднозначены для разового использования\n\nповторное использование адреса снижает приватность как для Вас, так и для получателя и может привести к потере средств, если получатель больше не контролирует этот адрес";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nРазрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
@@ -66,7 +66,7 @@
 "About" = "О программе";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Требуется действие";
 
 /* No comment provided by engineer. */
 "always require passcode" = "Всегда требовать код доступа";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложение %@ хочет получить Ваш основной публичный ключ. Это может быть использовано для отслеживания Вашего кошелька, но не для отправки Ваших DASH.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Вы уверены?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "Некорректный пароль, попробуйте ещё раз";
@@ -105,7 +105,7 @@
 "Bitcoin address (shapeshift)" = "Адрес Bitcoin (ShapeShift)";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Платёж в Bitcoin не может быть меньше, чем %@";
+"bitcoin payments can't be less than %@" = "Платеж в Bitcoin не может быть меньше, чем %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Блок #%1$d из %2$d";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Купить DASH в dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Удалив кошелёк, у Вас больше не будет доступа к средствам на этом устройстве. данное действие следует совершать только в том случае, если у Вас больше нет доступа к вашей кодовой фразе и Вы также забыли свой PIN.";
 
 /* No comment provided by engineer. */
 "cancel" = "Отменить";
@@ -150,7 +150,7 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "Буфер обмена не содержит корректного адреса Dash или Bitcoin";
 
 /* No comment provided by engineer. */
-"close app" = "Закрыть приложение";
+"close app" = "Закрыть программу";
 
 /* Confirm */
 "Confirm" = "Подтвердить";
@@ -282,7 +282,7 @@
 "id:" = "id:";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "Если вы всё ещё хотите провести очистку, пожалуйста введите \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Если вы всё ещё хотите провести очистку, пожалуйста введите: \"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "Игнорировать";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "ВАЖНО";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "В предыдущей версии Dashwallet при первоначальном отображении Вашей кодовой фразы на этом устройстве мы определили, что это приложение неправильно отображает все 12 слов кодовой фразы. Пожалуйста, запишите свою полную кодовую фразу снова.";
 
 /* No comment provided by engineer. */
 "instant payment" = "Мгновенный платёж";
@@ -312,10 +312,10 @@
 "INVALID" = "НЕКОРРЕКТНО";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR-код, чтобы получить Ваш адрес Dash. Кто угодно сможет отправить DASH на Ваш кошелек путём передачи их на Ваш адрес.";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Другие пользователи могут сканировать этот QR-код, чтобы получить Ваш адрес Dash. Кто угодно сможет отправить DASH на Ваш кошелёк путём передачи их на Ваш адрес.";
 
 /* No comment provided by engineer. */
-"minute" = "минута";
+"minute" = "минут";
 
 /* No comment provided by engineer. */
 "minutes" = "минуты";
@@ -435,7 +435,7 @@
 "request an amount" = "Запросить сумму";
 
 /* No comment provided by engineer. */
-"request expired" = "Срок действия запроса истёк";
+"request expired" = "Срок действия запроса истек";
 
 /* No comment provided by engineer. */
 "request is for an instant payment but you have disabled instant payments" = "Запрос для мгновенного платежа, но Вы отключили эту опцию";
@@ -456,7 +456,7 @@
 "reset" = "Сбросить";
 
 /* No comment provided by engineer. */
-"retry" = "повторить";
+"retry" = "повтор";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Отсканируйте чей-нибудь QR-код, чтобы получить его адрес Dash или Bitcoin. Вы можете отправить платёж любому, у кого есть адрес.";
@@ -573,13 +573,13 @@
 "this private key is empty" = "Этот закрытый ключ пустой";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно ресурсов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно входов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "Это запрос о мгновенном переводе, но вы отключили опцию мгновенных переводов.";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства, или синхронизация не была завершена. Вы не сможете очистить его без фразы восстановления.";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства, или синхронизация не была завершена. Вы не сможете очистить его без фразы для восстановления.";
 
 /* No comment provided by engineer. */
 "to:" = "Кому:";
@@ -672,10 +672,10 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Теперь Вы можете купить DASH\nв dashwallet с помощью наличных\nили банковского перевода.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Вы должны ввести PIN для входа в dashwallet";
+"You must enter your pin in order to enter dashwallet" = "Вы должны ввести PIN для входа в Dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "Вы получили DASH!";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелёк рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелек рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";

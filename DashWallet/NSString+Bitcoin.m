@@ -250,9 +250,10 @@ static const UniChar base58chars[] = {
     if (d.length < 4) return nil;
 
     NSData *data = CFBridgingRelease(CFDataCreate(SecureAllocator(), d.bytes, d.length - 4));
+    uint32_t checksum = *(uint32_t *)[d subdataWithRange:NSMakeRange(d.length - 4, 4)].bytes;
 
     // verify checksum
-    if (*(uint32_t *)((const uint8_t *)d.bytes + d.length - 4) != data.SHA256_2.u32[0]) return nil;
+    if (checksum != data.SHA256_2.u32[0]) return nil;
     return data;
 }
 

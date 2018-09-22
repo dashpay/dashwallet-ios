@@ -39,13 +39,13 @@
 "\n(local requested amount: %@)" = "\n(요청된 로컬 금액: %@)";
 
 /* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1회의 시도 남음\n";
+"\n1 attempt remaining\n" = "\n1 회의 시도 남음\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해비밀번호가 필요합니다. 설정에 가서 비밀번호를 활성화해주세요.";
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
 /* No comment provided by engineer. */
 "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 사용된 주소입니다\nDash 주소는 일회성으로만 사용됩니다.\n\n주소 재사용은 사용자와 수신자의 개인정보에 취약하며, 수신자가 주소를 직접 제어하지 않는 경우 손실이 발생할 수 있습니다";
@@ -54,7 +54,7 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 이 애플리케이션의 카메라 접근을 허용해 주십시요.";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\n넷웍 수수료 +%1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n%@ 뒤에 다시 시도해주세요";
@@ -66,7 +66,7 @@
 "About" = "정보";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "조치가 필요함";
 
 /* No comment provided by engineer. */
 "always require passcode" = "항상 비밀번호 필요";
@@ -84,19 +84,19 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "어플리케이션 %@ 에서 마스터 공개키를 수신하려고 합니다. 이것은 지갑을 추적하는데 사용할 수 있으며 Dash를 이동하는 데 사용할 수 없습니다.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */
-"bad payment request" = "형식이 잘못된 청구서";
+"bad payment request" = "잘못된 지불요청";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "형식이 잘못된 청구서 URL";
+"bad payment request URL" = "잘못된 지불요청 URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "형식이 잘못된 청구서 URL";
+"bad payment URL" = "잘못된 지불 URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "잘못된 복원 문구";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Dash지갑으로 Dash 구매하기!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "이 디바이스를 삭제하면 더 이상 이 디바이스의 금액에 액세스할 수 없습니다. 이것은 암호문장에 더 이상 액세스 할 수 없고 PIN코드도 분실한 경우에만 실행해야합니다.";
 
 /* No comment provided by engineer. */
 "cancel" = "취소";
@@ -219,7 +219,7 @@
 "do it later" = "나중에 하기";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "복구 구문을 그 누구에게도 노출시키지 마십시오.\n그렇지 않으면 그들이 당신의 Dash";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "복구 구문을 그 누구에게도 노출시키지 마십시오.\n그들이 당신의 Dash를 소비할 수 있습니다.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "스크린샷을 찍지 마세요. 다른 기기나 앱들이 이 스크린샷을 읽을 수도 있습니다.";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "중요!!";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "이전 버전의 대시 지갑에서 이 디바이스에 암호문장을 처음 표시 할 때, 이 앱이 12 개의 모든 첫 단어들을 올바르게 표시하지 못했음을 확인했습니다. 전체 암호문장을 다시 적어주십시오.";
 
 /* No comment provided by engineer. */
 "instant payment" = "즉시 지불";
@@ -384,7 +384,7 @@
 "Pay" = "지불";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "수취인의 신원이 인증 되지 않았씁니다";
+"payee identity isn't certified" = "수취인의 신원이 인증 되지 않았습니다";
 
 /* No comment provided by engineer. */
 "payment address" = "결제 주소";
@@ -396,7 +396,7 @@
 "pending" = "대기중";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "지갑 업데이트를 위해 PIN 을 입력해주세요";
+"Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "휴대 전화를 NFC 기기 가까이에 두십시오.";
@@ -555,13 +555,13 @@
 "the app will now close" = "앱을 종료합니다";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이게 당신의 대쉬 주소입니다. 탭 해서 복사하거나 이메일, SMS로 다른 사람에게 보내세요. 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 하지만 이전 주소도 언제든지 사용할 수 있습니다.";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이것이 당신의 대쉬 주소입니다. 탭 해서 복사하거나 이메일, SMS로 다른 사람에게 보내세요. 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 하지만 이전 주소도 언제든지 사용할 수 있습니다.";
 
 /* No comment provided by engineer. */
 "This is your dash balance." = "이것이 당신의 대쉬 잔고입니다.";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이게 당신의 대쉬 잔액입니다. 대쉬은 화폐입니다. 환율은 시장 상황에 따라 변합니다.";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이것이 당신의 대쉬 잔액입니다. 대쉬는 화폐입니다. 환율은 시장 상황에 따라 변합니다.";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "이 결제 주소는 당신 지갑에 있는 주소입니다";
@@ -624,7 +624,7 @@
 "unexpected response from %@" = "%@에서 예상치 못한 응답";
 
 /* No comment provided by engineer. */
-"unknown address" = "모르는 주소";
+"unknown address" = "알 수 없는 주소";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "인식할 수 없는 주소";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "현금이나 은행 송금으로\n이제 Dash지갑에서\nDash를 구매할 수 있습니다.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Dash 지갑에 엑세스하려면 PIN 넘버를 입력해야합니다";
+"You must enter your pin in order to enter dashwallet" = "대시 지갑에 액세스하려면 PIN을 입력해야합니다.";
 
 /* No comment provided by engineer. */
 "you received dash!" = "대쉬을 받았습니다!";

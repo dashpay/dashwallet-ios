@@ -66,7 +66,7 @@
 "About" = "Относно";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "Необходимо е действие";
 
 /* No comment provided by engineer. */
 "always require passcode" = "винаги изисквайте парола";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Приложението %@ иска да получи вашият Master Public Key.  Това може да бъде използване за проследяване на вашият портфейл,но не може да се използва за преместване на вашите Dash.";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "Сигурен ли си ?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "грешна парола, опитайте отново";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "Купи dash в dashwallet!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Чрез изтриването на това устройство вече няма да имате достъп до средства на това устройство. Това трябва да се направи само, ако вече нямате достъп до фразата за възстановяване си и сте забравили своя ПИН код.";
 
 /* No comment provided by engineer. */
 "cancel" = "отказ";
@@ -261,7 +261,7 @@
 "Face ID spending limit" = "Face ID лимит за похарчване";
 
 /* No comment provided by engineer. */
-"Failed wallet update" = "неуспешно актуализиране на портфейла";
+"Failed wallet update" = "Неуспешно актуализиране на портфейла";
 
 /* No comment provided by engineer. */
 "from:" = "от:";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "ВАЖНО";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "В предишната версия на Dashwallet, когато първоначално се показва фразата за възстановяване на това устройство, установихме, че това приложение не показва правилно всичките 12 думи за възстановяване. Моля, запишете отново пълната си фраза за възстановяване.";
 
 /* No comment provided by engineer. */
 "instant payment" = "instant payment";
@@ -396,7 +396,7 @@
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
+"Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Вече може да купите dash в\ndashwallet в брой или с\nбанков превод.";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "трябва да въведете своя ПИН, за да влезете в dashwallet";
+"You must enter your pin in order to enter dashwallet" = "Трябва да въведете своя ПИН, за да влезете в dashwallet";
 
 /* No comment provided by engineer. */
 "you received dash!" = "ти получи dash!";

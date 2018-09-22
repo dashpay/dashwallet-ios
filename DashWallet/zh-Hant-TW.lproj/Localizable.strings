@@ -66,7 +66,7 @@
 "About" = "關於";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "需要用戶採取行動";
 
 /* No comment provided by engineer. */
 "always require passcode" = "總是要求密碼";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "應用程式 %@ 想要取得您的主公鑰。 這可以用來追踪你的錢包結餘，但並不能動用你的達世幣。";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "你確定嗎?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "密碼錯誤，請重試";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "在達世幣錢包中購買達世幣!";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "通過擦洗此設備，您將無法再使用此設備上的資金。 只有在您無法再訪問密碼詞組並忘記密碼時，才應該這樣做。";
 
 /* No comment provided by engineer. */
 "cancel" = "取消";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "重要";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "在以前版本的達世幣錢包中，當最初在此設備上顯示您的密碼詞組時，我們已確定此應用程序未正確顯示所有12個種子字。 請再次寫下您的完整密碼詞組。";
 
 /* No comment provided by engineer. */
 "instant payment" = "即時付款";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你現在可以在達世幣錢包中用\n現金或銀行轉帳\n來購買達世幣。";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "你必須輸入你的PIN才能進入達世幣錢包";
+"You must enter your pin in order to enter dashwallet" = "你必須輸入你的密碼才能進入達世幣錢包";
 
 /* No comment provided by engineer. */
 "you received dash!" = "你收到了達世幣!";

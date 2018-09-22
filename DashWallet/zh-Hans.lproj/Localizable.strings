@@ -66,7 +66,7 @@
 "About" = "关于";
 
 /* No comment provided by engineer. */
-"Action Needed" = "Action Needed";
+"Action Needed" = "需要用户执行";
 
 /* No comment provided by engineer. */
 "always require passcode" = "总是要求密码";
@@ -84,7 +84,7 @@
 "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "应用程序 %@ 想要获取你的公钥。它可以被用作查看你的钱包记录，但无法用来移动你钱包中的达世币。";
 
 /* No comment provided by engineer. */
-"Are you sure?" = "Are you sure?";
+"Are you sure?" = "你确定吗？";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "密码错误，请重试";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "在钱包中购买达世币！";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "通过清除此设备，你将无法在此设备上使用你的资金。只有当你无法访问密码并忘记Pin码时才应当这样做。";
 
 /* No comment provided by engineer. */
 "cancel" = "取消";
@@ -258,7 +258,7 @@
 "Face ID limit" = "面容ID限制";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "指纹解锁支出限额";
+"Face ID spending limit" = "面容 ID 支出限额";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "钱包升级失败";
@@ -282,7 +282,7 @@
 "id:" = "id：";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "如果您仍想清空钱包, 请输入 : \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "如果您仍想清空钱包, 请输入：\"%@\"";
 
 /* No comment provided by engineer. */
 "ignore" = "忽略";
@@ -294,7 +294,7 @@
 "IMPORTANT" = "重要";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "在之前的达世币钱包版本中，我们已确定在最初此设备显示你的恢复词组时，此App并没正确的显示全部的12个恢复词。请再次写下你的完整恢复词组。";
 
 /* No comment provided by engineer. */
 "instant payment" = "即时支付";
@@ -396,7 +396,7 @@
 "pending" = "等待中";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "请输入密码进行钱包升级";
+"Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
@@ -594,7 +594,7 @@
 "Touch ID limit" = "触控ID限制";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "指纹解锁支出限额";
+"Touch ID spending limit" = "触控 ID 支出限额";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "交易被取消，网络超时";
@@ -672,7 +672,7 @@
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你现在可以购买达世币\n在钱包中使用现金\n或者银行转账。";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "输入密码后才可以进入你的达世币钱包";
+"You must enter your pin in order to enter dashwallet" = "你必须输入你的密码才能进入达世币钱包";
 
 /* No comment provided by engineer. */
 "you received dash!" = "你收到了达世币！";

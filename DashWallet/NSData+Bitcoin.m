@@ -699,19 +699,19 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
 - (uint16_t)UInt16AtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(uint16_t)) return 0;
-    return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
+    return CFSwapInt16LittleToHost(*(uint16_t *)[self subdataWithRange:NSMakeRange(offset, 2)].bytes);
 }
 
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(uint32_t)) return 0;
-    return CFSwapInt32LittleToHost(*(const uint32_t *)((const uint8_t *)self.bytes + offset));
+    return CFSwapInt32LittleToHost(*(uint32_t *)[self subdataWithRange:NSMakeRange(offset, 4)].bytes);
 }
 
 - (uint64_t)UInt64AtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(uint64_t)) return 0;
-    return CFSwapInt64LittleToHost(*(const uint64_t *)((const uint8_t *)self.bytes + offset));
+    return CFSwapInt64LittleToHost(*(uint64_t *)[self subdataWithRange:NSMakeRange(offset, 8)].bytes);
 }
 
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length
