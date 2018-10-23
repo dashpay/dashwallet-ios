@@ -147,7 +147,10 @@
 "clear trusted node?" = "清除可信節點?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "剪貼板中不包含有效的達世幣或比特幣位址";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "關閉程序";
@@ -336,7 +339,10 @@
 "next, write down your recovery phrase" = "下一步，請寫下你的恢復詞組";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC設備沒有傳輸有效的達世幣或比特幣位址";
+"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "沒有匯率數據";
@@ -345,7 +351,10 @@
 "no peers found" = "沒有找到節點";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "不是一個達世幣或比特幣二維碼";
+"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a dash QR code" = "not a dash QR code";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "不是一個有效的比特幣位址";
@@ -354,7 +363,7 @@
 "not a valid dash address" = "不是一個有效的達世幣位址";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "不是一個有效的達世幣或比特幣位址";
+"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "不是一個有效的私鑰";
@@ -459,7 +468,10 @@
 "retry" = "重試";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "掃描別人的二維碼來獲得他們的比特幣位址。 你可以向任何一個位址支付款項。";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截圖可以被其他程序或者設備獲得。請生成一個新的恢復詞組並妥善保管。";

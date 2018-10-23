@@ -47,7 +47,10 @@
 #import "BRQRScanViewController.h"
 #import "BRQRScanViewModel.h"
 
-#define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
+#define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
+"You can send a payment to anyone with an address.", nil)
+
+#define SCAN_TIP      NSLocalizedString(@"Scan someone else's QR code to get their dash address. "\
 "You can send a payment to anyone with an address.", nil)
 #define CLIPBOARD_TIP NSLocalizedString(@"Dash addresses can also be copied to the clipboard. "\
 "A dash address always starts with 'X' or '7'.", nil)
@@ -421,8 +424,12 @@ static NSString *sanitizeString(NSString *s)
             [self confirmSweep:request.paymentAddress];
         }
         else {
+            if (FALSE) {
+                //this is kept here on purpose to keep the string in our localization script
+                NSString * lString = NSLocalizedString(@"not a valid dash or bitcoin address", nil);
+            }
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"not a valid dash or bitcoin address", nil)
+                                         alertControllerWithTitle:NSLocalizedString(@"not a valid dash address", nil)
                                          message:request.paymentAddress
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
@@ -1616,7 +1623,11 @@ static NSString *sanitizeString(NSString *s)
     
     [sender setEnabled:NO];
     self.clearClipboard = YES;
-    [self payFirstFromArray:set.array errorMessage:NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil)];
+    if (FALSE) {
+        //this is kept here on purpose to keep the string in our localization script
+        NSString * lString = NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil);
+    }
+    [self payFirstFromArray:set.array errorMessage:NSLocalizedString(@"clipboard doesn't contain a valid dash address", nil)];
 }
 
 - (IBAction)reset:(id)sender
@@ -1673,7 +1684,11 @@ static NSString *sanitizeString(NSString *s)
         }
     }
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self payFirstFromArray:array errorMessage:NSLocalizedString(@"NFC device didn't transmit a valid dash or bitcoin address", nil)];
+        if (FALSE) {
+            //this is kept here on purpose to keep the string in our localization script
+            NSString * lString = NSLocalizedString(@"NFC device didn't transmit a valid dash or bitcoin address", nil);
+        }
+        [self payFirstFromArray:array errorMessage:NSLocalizedString(@"NFC device didn't transmit a valid dash address", nil)];
     });
     [session invalidateSession];
 }

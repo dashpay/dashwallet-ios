@@ -147,7 +147,10 @@
 "clear trusted node?" = "glöm pålitbar nod?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "Urklipp innehåller inte en giltig dash eller bitcoin address";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "stäng app";
@@ -336,6 +339,9 @@
 "next, write down your recovery phrase" = "nästa, skriv ner din återhämtning fras";
 
 /* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
@@ -345,7 +351,10 @@
 "no peers found" = "hittade inga likar (peer)";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "inte en dash eller bitcoin QR-kod";
+"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a dash QR code" = "not a dash QR code";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "inte en giltig bitcoin adress";
@@ -354,7 +363,7 @@
 "not a valid dash address" = "inte en giltig dash adress";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "inte en giltig dash eller bitcoin adress";
+"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ogiltig privat nyckel";
@@ -459,7 +468,10 @@
 "retry" = "försök igen";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress eller bitcoinadress via QR-kod. Du kan göra överföringar till alla som har en adress.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skärmbilder är synliga för andra appar och enheter. Skapa en ny återställningsfras och håll den hemlig.";

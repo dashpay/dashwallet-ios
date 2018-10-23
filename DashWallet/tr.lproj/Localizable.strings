@@ -147,7 +147,10 @@
 "clear trusted node?" = "güvenilen düğümü temizle?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "panoda geçerli bir dash veya bitcoin adresi yok";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
@@ -336,7 +339,10 @@
 "next, write down your recovery phrase" = "sonra, kurtarma cümlenizi yazın";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC cihazı geçerli bir dash veya bitcoin adresi göndermedi";
+"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "döviz kuru verisi yok";
@@ -345,7 +351,10 @@
 "no peers found" = "eşler bulunamadı";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "bir dash veya bitcoin QR kodu değildir";
+"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a dash QR code" = "not a dash QR code";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "geçerli bir bitcoin adresi değil";
@@ -354,7 +363,7 @@
 "not a valid dash address" = "geçerli bir dash adresi değil";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "geçerli bir dash veya bitcoin adresi değil";
+"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "geçerli bir özel anahtar değil";
@@ -459,7 +468,10 @@
 "retry" = "tekrar dene";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Başkalarının dash veya bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";

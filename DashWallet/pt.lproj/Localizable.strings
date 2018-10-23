@@ -147,7 +147,10 @@
 "clear trusted node?" = "limpar nó confiável?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard não contém um endereço válido de dash ou de bitcoin";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "fechar o aplicativo";
@@ -336,7 +339,10 @@
 "next, write down your recovery phrase" = "em seguida, anote sua frase de recuperação";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "Dispositivo NFC não transmitiu um endereço válido de dash ou bitcoin";
+"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "não há dados da taxa de câmbio";
@@ -345,7 +351,10 @@
 "no peers found" = "não foram encontrados peers";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "não é um código QR de dash ou bitcoin";
+"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a dash QR code" = "not a dash QR code";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "não um endereço bitcoin válido";
@@ -354,7 +363,7 @@
 "not a valid dash address" = "não um endereço dash válido";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "não um endereço dash ou bitcoin válido";
+"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "a chave privada não é válida";
@@ -459,7 +468,10 @@
 "retry" = "tente novamente";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Gere uma nova frase de recuperação e a mantenha secreta.";
