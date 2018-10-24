@@ -1,0 +1,49 @@
+PODS:
+  - AFJSONRPCClient_DASH (2.1.4):
+    - AFNetworking (~> 3.0)
+  - AFNetworking (3.2.1):
+    - AFNetworking/NSURLSession (= 3.2.1)
+    - AFNetworking/Reachability (= 3.2.1)
+    - AFNetworking/Security (= 3.2.1)
+    - AFNetworking/Serialization (= 3.2.1)
+    - AFNetworking/UIKit (= 3.2.1)
+  - AFNetworking/NSURLSession (3.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.2.1)
+  - AFNetworking/Security (3.2.1)
+  - AFNetworking/Serialization (3.2.1)
+  - AFNetworking/UIKit (3.2.1):
+    - AFNetworking/NSURLSession
+  - DashSync (0.1.0):
+    - AFJSONRPCClient_DASH (= 2.1.4)
+    - secp256k1_dash (= 0.1.0)
+  - KVO-MVVM (0.5.1)
+  - secp256k1_dash (0.1.0)
+
+DEPENDENCIES:
+  - DashSync (from `../DashSync/`)
+  - KVO-MVVM (= 0.5.1)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AFJSONRPCClient_DASH
+    - AFNetworking
+    - KVO-MVVM
+    - secp256k1_dash
+
+EXTERNAL SOURCES:
+  DashSync:
+    :path: "../DashSync/"
+
+SPEC CHECKSUMS:
+  AFJSONRPCClient_DASH: 2e668f5a473509e4e89dc14fc5458b45b664e0a2
+  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  DashSync: bcaea79806cc615a041f77e06377052f476c91fb
+  KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
+  secp256k1_dash: 16bc4c20423f88dc264db75d5611c9c6a5fd1f77
+
+PODFILE CHECKSUM: 561c61b5df975bec003d8ff36bbd452bb2d4d08c
+
+COCOAPODS: 1.5.3
