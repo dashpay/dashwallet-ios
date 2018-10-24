@@ -4,6 +4,7 @@
 //
 //  Created by Aaron Voisine for BreadWallet on 6/4/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
