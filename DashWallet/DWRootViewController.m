@@ -34,9 +34,7 @@
 #import "DWAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
-#import "BRPeerManager.h"
-#import "BRWalletManager.h"
-#import "BRPaymentRequest.h"
+#import <DashSync/DashSync.h>
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
 #import "BREventConfirmView.h"

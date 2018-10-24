@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTransaction.h"
+#import <DashSync/Dashsync.h>
 #import <Foundation/Foundation.h>
 
 typedef enum : NSInteger {
