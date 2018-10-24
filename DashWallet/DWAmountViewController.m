@@ -1,5 +1,5 @@
 //
-//  BRAmountViewController.m
+//  DWAmountViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/4/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRAmountViewController.h"
+#import "DWAmountViewController.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
@@ -36,7 +36,7 @@
 #define OFFWHITE_COLOR [UIColor colorWithWhite:0.95 alpha:1.0]
 #define OFFBLUE_COLOR [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f]
 
-@interface BRAmountViewController ()
+@interface DWAmountViewController ()
 
 @property (nonatomic, strong) IBOutlet UILabel *localCurrencyLabel, *shapeshiftLocalCurrencyLabel, *addressLabel, *amountLabel;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *payButton, *lock;
@@ -55,7 +55,7 @@
 
 @end
 
-@implementation BRAmountViewController
+@implementation DWAmountViewController
 
 - (void)viewDidLoad
 {

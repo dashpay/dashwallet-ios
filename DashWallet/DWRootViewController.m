@@ -1,5 +1,5 @@
 //
-//  BRRootViewController.m
+//  DWRootViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 9/15/13.
@@ -23,12 +23,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRRootViewController.h"
-#import "BRReceiveViewController.h"
-#import "BRSendViewController.h"
-#import "BRSettingsViewController.h"
-#import "BRTxHistoryViewController.h"
-#import "BRRestoreViewController.h"
+#import "DWRootViewController.h"
+#import "DWReceiveViewController.h"
+#import "DWSendViewController.h"
+#import "DWSettingsViewController.h"
+#import "DWTxHistoryViewController.h"
+#import "DWRestoreViewController.h"
 #import "DWSeedViewController.h"
 #import "DWAppDelegate.h"
 #import "BRBubbleView.h"
@@ -55,7 +55,7 @@
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
 #define BALANCE_KEY            @"BALANCE"
 
-@interface BRRootViewController ()
+@interface DWRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UIView *errorBar, *splash, *logo, *blur;
@@ -79,7 +79,7 @@
 
 @end
 
-@implementation BRRootViewController
+@implementation DWRootViewController
 
 -(BOOL)prefersStatusBarHidden {
     return NO;
@@ -154,7 +154,7 @@
                                                           
                                                           
                                                           
-                                                          BRSendViewController *c = self.sendViewController;
+                                                          DWSendViewController *c = self.sendViewController;
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])
                                                                                             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
@@ -181,7 +181,7 @@
                                                               [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                                                           }
                                                           
-                                                          BRSendViewController *sendController = self.sendViewController;
+                                                          DWSendViewController *sendController = self.sendViewController;
                                                           
                                                           [self.pageViewController setViewControllers:(sendController ? @[sendController] : @[])
                                                                                             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
@@ -232,7 +232,7 @@
                                                                                             actionWithTitle:NSLocalizedString(@"wipe", nil)
                                                                                             style:UIAlertActionStyleDestructive
                                                                                             handler:^(UIAlertAction * action) {
-                                                                                                BRRestoreViewController *restoreController =
+                                                                                                DWRestoreViewController *restoreController =
                                                                                                 [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
                                                                                                 
                                                                                                 [self.navigationController pushViewController:restoreController animated:NO];
@@ -438,7 +438,7 @@
                                      actionWithTitle:NSLocalizedString(@"wipe", nil)
                                      style:UIAlertActionStyleDestructive
                                      handler:^(UIAlertAction * action) {
-                                         BRRestoreViewController *restoreController =
+                                         DWRestoreViewController *restoreController =
                                          [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
                                          
                                          [self.navigationController pushViewController:restoreController animated:NO];
@@ -1130,7 +1130,7 @@
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
     if (sender == self.receiveViewController) {
-        BRSendViewController *sendController = self.sendViewController;
+        DWSendViewController *sendController = self.sendViewController;
         
         [(id)self.pageViewController setViewControllers:@[sendController]
                                               direction:UIPageViewControllerNavigationDirectionReverse animated:YES

@@ -1,5 +1,5 @@
 //
-//  BRScanViewController.m
+//  DWScanViewController.m
 //  BreadWallet
 //
 //  Created by Administrator on 7/15/14.
@@ -23,11 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRScanViewController.h"
+#import "DWScanViewController.h"
 #import "BREventManager.h"
 
 
-@interface BRScanViewController ()
+@interface DWScanViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *cameraView;
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
@@ -39,7 +39,7 @@
 @end
 
 
-@implementation BRScanViewController
+@implementation DWScanViewController
 
 - (void)viewDidLoad
 {

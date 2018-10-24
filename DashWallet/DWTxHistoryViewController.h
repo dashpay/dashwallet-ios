@@ -1,5 +1,5 @@
 //
-//  BRTxHistoryViewController.h
+//  DWTxHistoryViewController.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/11/13.
@@ -25,7 +25,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRTxHistoryViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
+@interface DWTxHistoryViewController : UITableViewController <UIAlertViewDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
 @end

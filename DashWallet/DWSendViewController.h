@@ -1,5 +1,5 @@
 //
-//  BRSendViewController.h
+//  DWSendViewController.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -25,10 +25,10 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "BRAmountViewController.h"
+#import "DWAmountViewController.h"
 #import <CoreNFC/CoreNFC.h>
 
-@interface BRSendViewController : UIViewController <UIAlertViewDelegate, BRAmountViewControllerDelegate, NFCNDEFReaderSessionDelegate>
+@interface DWSendViewController : UIViewController <UIAlertViewDelegate, DWAmountViewControllerDelegate, NFCNDEFReaderSessionDelegate>
 
 - (IBAction)tip:(id)sender;
 

@@ -1,5 +1,5 @@
 //
-//  BRReceiveViewController.m
+//  DWReceiveViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRReceiveViewController.h"
+#import "DWReceiveViewController.h"
 #import "DWRootViewController.h"
 #import "BRPaymentRequest.h"
 #import "BRWalletManager.h"
@@ -44,7 +44,7 @@
 //#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
 //                       stringByAppendingPathComponent:@"qr.png"]
 
-@interface BRReceiveViewController ()
+@interface DWReceiveViewController ()
 
 @property (nonatomic, strong) UIImage *qrImage;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -58,7 +58,7 @@
 
 @end
 
-@implementation BRReceiveViewController
+@implementation DWReceiveViewController
 
 - (void)viewDidLoad
 {
@@ -381,8 +381,8 @@
             UINavigationController *amountNavController = [self.storyboard
                                                            instantiateViewControllerWithIdentifier:@"AmountNav"];
             
-            ((BRAmountViewController *)amountNavController.topViewController).delegate = self;
-            ((BRAmountViewController *)amountNavController.topViewController).requestingAmount = TRUE;
+            ((DWAmountViewController *)amountNavController.topViewController).delegate = self;
+            ((DWAmountViewController *)amountNavController.topViewController).requestingAmount = TRUE;
             [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
             [BREventManager saveEvent:@"receive:request_amount"];
                                 }]];
@@ -418,9 +418,9 @@ error:(NSError *)error
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-// MARK: - BRAmountViewControllerDelegate
+// MARK: - DWAmountViewControllerDelegate
 
-- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
+- (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     BRWalletManager *manager = [BRWalletManager sharedInstance];
     
@@ -443,7 +443,7 @@ error:(NSError *)error
 
     [BREventManager saveEvent:@"receive:show_request"];
     UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
-    BRReceiveViewController *receiveController = [self.storyboard
+    DWReceiveViewController *receiveController = [self.storyboard
                                                   instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
     receiveController.paymentRequest = self.paymentRequest;

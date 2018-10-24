@@ -1,5 +1,5 @@
 //
-//  BRSendViewController.m
+//  DWSendViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRSendViewController.h"
+#import "DWSendViewController.h"
 #import "DWRootViewController.h"
-#import "BRAmountViewController.h"
-#import "BRSettingsViewController.h"
+#import "DWAmountViewController.h"
+#import "DWSettingsViewController.h"
 #import "BRBubbleView.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
@@ -44,8 +44,8 @@
 #import "MBProgressHUD.h"
 #import "DSShapeshiftManager.h"
 #import "BRBIP32Sequence.h"
-#import "BRQRScanViewController.h"
-#import "BRQRScanViewModel.h"
+#import "DWQRScanViewController.h"
+#import "DWQRScanViewModel.h"
 
 #define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
@@ -69,7 +69,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface BRSendViewController () <BRQRScanViewModelDelegate>
+@interface DWSendViewController () <DWQRScanViewModelDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) BRTransaction *sweepTx;
@@ -91,7 +91,7 @@ static NSString *sanitizeString(NSString *s)
 
 @end
 
-@implementation BRSendViewController
+@implementation DWSendViewController
 
 - (void)viewDidLoad
 {
@@ -907,7 +907,7 @@ static NSString *sanitizeString(NSString *s)
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"SendAmountSegue"]) {
-        BRAmountViewController *amountController = (BRAmountViewController *)((UINavigationController*)segue.destinationViewController).topViewController;
+        DWAmountViewController *amountController = (DWAmountViewController *)((UINavigationController*)segue.destinationViewController).topViewController;
         
         amountController.delegate = self;
         if ([self.scheme isEqualToString:@"bitcoin"]) {
@@ -1052,7 +1052,7 @@ static NSString *sanitizeString(NSString *s)
                     [self cancelOrChangeAmount];
                     return;
                 }
-                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[BRAmountViewController class]]) {
+                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountViewController class]]) {
                     [self.navigationController.presentedViewController dismissViewControllerAnimated:TRUE completion:^{
                         
                     }];
@@ -1586,7 +1586,7 @@ static NSString *sanitizeString(NSString *s)
     if (! [sender isEqual:self.scanButton]) self.showBalance = YES;
     [sender setEnabled:NO];
     
-    BRQRScanViewController *qrScanViewController = [[BRQRScanViewController alloc] init];
+    DWQRScanViewController *qrScanViewController = [[DWQRScanViewController alloc] init];
     qrScanViewController.viewModel.delegate = self;
     [self presentViewController:qrScanViewController animated:YES completion:nil];
 }
@@ -1693,9 +1693,9 @@ static NSString *sanitizeString(NSString *s)
     [session invalidateSession];
 }
 
-// MARK: - BRAmountViewControllerDelegate
+// MARK: - DWAmountViewControllerDelegate
 
-- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
+- (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
     self.amount = amount;
     [self confirmProtocolRequest:self.request];
@@ -1761,7 +1761,7 @@ static NSString *sanitizeString(NSString *s)
     
 }
 
-- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
+- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
 {
     UIViewController * viewControllerToShowAlert = self;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
@@ -1815,7 +1815,7 @@ static NSString *sanitizeString(NSString *s)
     }];
 }
 
-- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
+- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
 {
     UIViewController * viewControllerToShowAlert = self;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
@@ -1869,9 +1869,9 @@ static NSString *sanitizeString(NSString *s)
     }];
 }
 
-// MARK: - BRQRScanViewModelDelegate
+// MARK: - DWQRScanViewModelDelegate
 
-- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel didScanStandardNonPaymentRequest:(BRPaymentRequest *)request {
+- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanStandardNonPaymentRequest:(BRPaymentRequest *)request {
     [self dismissViewControllerAnimated:YES completion:^{
         if (request.amount > 0) self.canChangeAmount = YES;
         if (request.isValid && self.showBalance) {
@@ -1884,7 +1884,7 @@ static NSString *sanitizeString(NSString *s)
     }];
 }
 
-- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel
+- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
   didScanPaymentRequest:(BRPaymentRequest *)request
         protocolRequest:(BRPaymentProtocolRequest *)protocolRequest
                   error:(NSError *_Nullable)error {
@@ -1919,14 +1919,14 @@ static NSString *sanitizeString(NSString *s)
     }];
 }
 
-- (void)qrScanViewModel:(BRQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(BRPaymentProtocolRequest *)protocolRequest {
+- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(BRPaymentProtocolRequest *)protocolRequest {
     [self dismissViewControllerAnimated:YES completion:^{
         [BREventManager saveEvent:@"send:successful_bip73"];
         [self confirmProtocolRequest:protocolRequest];
     }];
 }
 
-- (void)qrScanViewModelDidCancel:(BRQRScanViewModel *)viewModel {
+- (void)qrScanViewModelDidCancel:(DWQRScanViewModel *)viewModel {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

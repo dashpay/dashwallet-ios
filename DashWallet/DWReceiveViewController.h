@@ -1,5 +1,5 @@
 //
-//  BRReceiveViewController.h
+//  DWReceiveViewController.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -25,11 +25,11 @@
 
 #import <UIKit/UIKit.h>
 #import <MessageUI/MessageUI.h>
-#import "BRAmountViewController.h"
+#import "DWAmountViewController.h"
 
 @class BRPaymentRequest;
 
-@interface BRReceiveViewController : UIViewController<UIActionSheetDelegate, BRAmountViewControllerDelegate,
+@interface DWReceiveViewController : UIViewController<UIActionSheetDelegate, DWAmountViewControllerDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 

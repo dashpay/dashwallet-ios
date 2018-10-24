@@ -1,5 +1,5 @@
 //
-//  BRSeedViewController.m
+//  DWSeedViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/12/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRSeedViewController.h"
+#import "DWSeedViewController.h"
 #import "BRWalletManager.h"
 #import "BRPeerManager.h"
 #import "NSMutableData+Bitcoin.h"
@@ -36,7 +36,7 @@
 #define IDEO_SP   @"\xE3\x80\x80" // ideographic space (utf-8)
 
 
-@interface BRSeedViewController ()
+@interface DWSeedViewController ()
 
 //TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *writeLabel;
@@ -48,7 +48,7 @@
 @end
 
 
-@implementation BRSeedViewController
+@implementation DWSeedViewController
 
 - (instancetype)customInit
 {

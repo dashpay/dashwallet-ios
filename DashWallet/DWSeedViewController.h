@@ -26,7 +26,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BRSeedViewController : UIViewController
+@interface DWSeedViewController : UIViewController
 
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, assign) BOOL inSetupMode;

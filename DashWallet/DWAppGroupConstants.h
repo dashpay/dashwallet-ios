@@ -1,5 +1,5 @@
 //
-//  BRAppGroupConstants.h
+//  DWAppGroupConstants.h
 //  BreadWallet
 //
 //  Created by Henry Tsai on 6/13/15.

@@ -1,5 +1,5 @@
 //
-//  BRAmountViewController.h
+//  DWAmountViewController.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/4/13.
@@ -25,21 +25,21 @@
 
 #import <UIKit/UIKit.h>
 
-@class BRAmountViewController;
+@class DWAmountViewController;
 
-@protocol BRAmountViewControllerDelegate <NSObject>
+@protocol DWAmountViewControllerDelegate <NSObject>
 @required
 
-- (void)amountViewController:(BRAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
+- (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount;
 @optional
-- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount;
-- (void)amountViewController:(BRAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount;
+- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount;
+- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount;
 
 @end
 
-@interface BRAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
+@interface DWAmountViewController : UIViewController<UITextFieldDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, assign) id<BRAmountViewControllerDelegate> delegate;
+@property (nonatomic, assign) id<DWAmountViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSString *to;
 @property (nonatomic, assign) BOOL usingShapeshift;
 @property (nonatomic, assign) BOOL requestingAmount;

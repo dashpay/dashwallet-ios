@@ -1,5 +1,5 @@
 //
-//  BRQRScanViewController.h
+//  DWQRScanViewController.h
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 21/12/2017.
@@ -27,11 +27,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class BRQRScanViewModel;
+@class DWQRScanViewModel;
 
-@interface BRQRScanViewController : UIViewController
+@interface DWQRScanViewController : UIViewController
 
-@property (readonly, strong, nonatomic) BRQRScanViewModel *viewModel;
+@property (readonly, strong, nonatomic) DWQRScanViewModel *viewModel;
 
 @end
 

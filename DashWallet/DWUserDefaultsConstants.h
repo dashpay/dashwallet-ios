@@ -1,5 +1,5 @@
 //
-//  BRUserDefaultsConstants.h
+//  DWUserDefaultsConstants.h
 //  BreadWallet
 //
 //  Created by Samuel Sutch on 12/29/15.
@@ -23,10 +23,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#ifndef BRUserDefaultsConstants_h
-#define BRUserDefaultsConstants_h
+#ifndef DWUserDefaultsConstants_h
+#define DWUserDefaultsConstants_h
 
 #define USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY"
 #define USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY"
 
-#endif /* BRUserDefaultsConstants_h */
+#endif /* DWUserDefaultsConstants_h */

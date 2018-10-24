@@ -1,5 +1,5 @@
 //
-//  BRTxHistoryViewController.m
+//  DWTxHistoryViewController.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 6/11/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxHistoryViewController.h"
+#import "DWTxHistoryViewController.h"
 #import "DWRootViewController.h"
 #import "DWSettingsViewController.h"
 #import "DWTxDetailViewController.h"
@@ -61,7 +61,7 @@ static NSString *dateFormat(NSString *template)
     return format;
 }
 
-@interface BRTxHistoryViewController ()
+@interface DWTxHistoryViewController ()
 
 @property (nonatomic, strong) IBOutlet UIView *logo;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
@@ -74,7 +74,7 @@ static NSString *dateFormat(NSString *template)
 
 @end
 
-@implementation BRTxHistoryViewController
+@implementation DWTxHistoryViewController
 
 - (void)viewDidLoad
 {

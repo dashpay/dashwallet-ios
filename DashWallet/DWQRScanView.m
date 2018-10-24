@@ -1,5 +1,5 @@
 //
-//  BRQRScanView.m
+//  DWQRScanView.m
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 21/12/2017.
@@ -25,15 +25,15 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import "BRQRScanViewModel.h"
+#import "DWQRScanViewModel.h"
 
-#import "BRQRScanView.h"
+#import "DWQRScanView.h"
 
-static void *BRQRScanViewContext = &BRQRScanViewContext;
+static void *DWQRScanViewContext = &DWQRScanViewContext;
 static NSString *const kQRCodeObjectKeyPath = @"viewModel.qrCodeObject";
 static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type";
 
-@interface BRQRScanView ()
+@interface DWQRScanView ()
 
 @property (weak, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 @property (weak, nonatomic) CAShapeLayer *qrCodeLayer;
@@ -41,7 +41,7 @@ static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type"
 
 @end
 
-@implementation BRQRScanView
+@implementation DWQRScanView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -62,7 +62,7 @@ static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type"
         UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
                                                                                       target:self
                                                                                       action:@selector(cancelButtonAction:)];
-        if (BRQRScanViewModel.isTorchAvailable) {
+        if (DWQRScanViewModel.isTorchAvailable) {
             UIBarButtonItem *flexItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                                                                                       target:nil
                                                                                       action:nil];
@@ -106,15 +106,15 @@ static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type"
         NSKeyValueObservingOptions kvoOptions = (NSKeyValueObservingOptionInitial |
                                                  NSKeyValueObservingOptionNew |
                                                  NSKeyValueObservingOptionOld);
-        [self addObserver:self forKeyPath:kQRCodeObjectKeyPath options:kvoOptions context:BRQRScanViewContext];
-        [self addObserver:self forKeyPath:kQRCodeObjectTypeKeyPath options:kvoOptions context:BRQRScanViewContext];
+        [self addObserver:self forKeyPath:kQRCodeObjectKeyPath options:kvoOptions context:DWQRScanViewContext];
+        [self addObserver:self forKeyPath:kQRCodeObjectTypeKeyPath options:kvoOptions context:DWQRScanViewContext];
     }
     return self;
 }
 
 - (void)dealloc {
-    [self removeObserver:self forKeyPath:kQRCodeObjectKeyPath context:BRQRScanViewContext];
-    [self removeObserver:self forKeyPath:kQRCodeObjectTypeKeyPath context:BRQRScanViewContext];
+    [self removeObserver:self forKeyPath:kQRCodeObjectKeyPath context:DWQRScanViewContext];
+    [self removeObserver:self forKeyPath:kQRCodeObjectTypeKeyPath context:DWQRScanViewContext];
 }
 
 - (void)layoutSubviews {
@@ -123,7 +123,7 @@ static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type"
     self.previewLayer.frame = self.bounds;
 }
 
-- (void)setViewModel:(BRQRScanViewModel *)viewModel {
+- (void)setViewModel:(DWQRScanViewModel *)viewModel {
     _viewModel = viewModel;
     
     NSAssert([NSThread isMainThread], @"Current thread is other than main");
@@ -230,7 +230,7 @@ static NSString *const kQRCodeObjectTypeKeyPath = @"viewModel.qrCodeObject.type"
 #pragma mark NSKeyValueObserving
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *, id> *)change context:(void *)context {
-    if (context == BRQRScanViewContext) {
+    if (context == DWQRScanViewContext) {
         id newValue = nil;
         NSKeyValueChange changeType = [change[NSKeyValueChangeKindKey] unsignedIntegerValue];
         if (changeType == NSKeyValueChangeSetting) {

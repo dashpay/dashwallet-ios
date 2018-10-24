@@ -1,5 +1,5 @@
 //
-//  BRAppDelegate.h
+//  DWAppDelegate.h
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -28,7 +28,7 @@
 #define BRURLNotification            @"BRURLNotification"
 #define BRFileNotification           @"BRFileNotification"
 
-@interface BRAppDelegate : UIResponder <UIApplicationDelegate>
+@interface DWAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 

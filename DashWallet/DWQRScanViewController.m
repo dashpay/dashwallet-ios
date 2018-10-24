@@ -1,5 +1,5 @@
 //
-//  BRQRScanViewController.m
+//  DWQRScanViewController.m
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 21/12/2017.
@@ -23,32 +23,32 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRQRScanView.h"
-#import "BRQRScanViewModel.h"
+#import "DWQRScanView.h"
+#import "DWQRScanViewModel.h"
 #import "BREventManager.h"
 
-#import "BRQRScanViewController.h"
+#import "DWQRScanViewController.h"
 
-@interface BRQRScanViewController ()
+@interface DWQRScanViewController ()
 
-@property (strong, nonatomic) BRQRScanView *view;
+@property (strong, nonatomic) DWQRScanView *view;
 
 @end
 
-@implementation BRQRScanViewController
+@implementation DWQRScanViewController
 
 @dynamic view;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _viewModel = [[BRQRScanViewModel alloc] init];
+        _viewModel = [[DWQRScanViewModel alloc] init];
     }
     return self;
 }
 
 - (void)loadView {
-    self.view = [[BRQRScanView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.view = [[DWQRScanView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }
 

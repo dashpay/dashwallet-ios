@@ -30,7 +30,7 @@
 #import "BRPeerManager.h"
 #import "BRTransaction+Utils.h"
 #import "BRWalletManager.h"
-#import "BRAppGroupConstants.h"
+#import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import <WatchConnectivity/WatchConnectivity.h>
 

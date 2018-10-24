@@ -9,7 +9,7 @@
 #import "DWWarningViewController.h"
 #import "BREventManager.h"
 #import "BRWalletManager.h"
-#import "BRSeedViewController.h"
+#import "DWSeedViewController.h"
 
 @interface DWWarningViewController ()
 
@@ -36,7 +36,7 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    BRSeedViewController * seedViewController = segue.destinationViewController;
+    DWSeedViewController * seedViewController = segue.destinationViewController;
     seedViewController.inSetupMode = TRUE;
 }
 

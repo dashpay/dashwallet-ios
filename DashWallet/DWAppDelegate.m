@@ -1,5 +1,5 @@
 //
-//  BRAppDelegate.m
+//  DWAppDelegate.m
 //  BreadWallet
 //
 //  Created by Aaron Voisine on 5/8/13.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRAppDelegate.h"
+#import "DWAppDelegate.h"
 #import "BRPeerManager.h"
 #import "BRWalletManager.h"
 #import "BREventManager.h"
@@ -41,7 +41,7 @@
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
-@interface BRAppDelegate ()
+@interface DWAppDelegate ()
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
@@ -51,7 +51,7 @@
 
 @end
 
-@implementation BRAppDelegate
+@implementation DWAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -140,7 +140,7 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
 //    [self updatePlatformOnComplete:^{
-//        NSLog(@"[BRAppDelegate] updatePlatform completed!");
+//        NSLog(@"[DWAppDelegate] updatePlatform completed!");
 //    }];
 }
 

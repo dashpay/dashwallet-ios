@@ -1,5 +1,5 @@
 //
-//  BRScanViewController.h
+//  DWScanViewController.h
 //  BreadWallet
 //
 //  Created by Administrator on 7/15/14.
@@ -26,7 +26,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface BRScanViewController : UIViewController
+@interface DWScanViewController : UIViewController
 
 @property (nonatomic, weak) id<AVCaptureMetadataOutputObjectsDelegate> delegate;
 @property (nonatomic, strong) IBOutlet UILabel *message;
