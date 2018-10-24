@@ -2,7 +2,7 @@
 //  DWSeedViewController.h
 //  Dashwallet
 //
-//  Originally Created by Aaron Voisine on 6/12/13.
+//  Originally Created by Aaron Voisine for BreadWallet on 6/12/13.
 //  Since Updated by Quantum Explorer
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //

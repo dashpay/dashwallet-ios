@@ -1,8 +1,8 @@
 //
 //  main.m
-//  BreadWallet
+//  DashWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
+//  Created by Aaron Voisine for BreadWallet on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy

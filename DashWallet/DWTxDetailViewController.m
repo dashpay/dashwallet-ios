@@ -1,8 +1,8 @@
 //
 //  DWTxDetailViewController.m
-//  BreadWallet
+//  DashWallet
 //
-//  Created by Aaron Voisine on 7/23/14.
+//  Created by Aaron Voisine for BreadWallet on 7/23/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy

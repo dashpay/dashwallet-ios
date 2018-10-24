@@ -1,6 +1,6 @@
 //
 //  DWAppGroupConstants.h
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry Tsai on 6/13/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>

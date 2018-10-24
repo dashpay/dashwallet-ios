@@ -1,5 +1,5 @@
 //
-//  BreadWalletUISnapshot.swift
+//  DashWalletUISnapshot.swift
 //
 //  Created by James MacWhyte on 12/9/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>

@@ -1,7 +1,7 @@
 //
 //  BRBouncyBurgerButton.m
 //
-//  Created by Aaron Voisine on 6/5/14.
+//  Created by Aaron Voisine for BreadWallet on 6/5/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
