@@ -25,7 +25,7 @@
 //  THE SOFTWARE.
 
 #import <XCTest/XCTest.h>
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRBIP32Sequence.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRTransaction.h"
@@ -33,7 +33,7 @@
 #import "BRKey+BIP38.h"
 #import "BRBloomFilter.h"
 #import "BRMerkleBlock.h"
-#import "BRPaymentRequest.h"
+#import "DSPaymentRequest.h"
 #import "BRPaymentProtocol.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -566,79 +566,79 @@
 
 - (void)testPaymentRequest
 {
-    BRPaymentRequest *r = [BRPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy"];
+    DSPaymentRequest *r = [DSPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emc"];
+    r = [DSPaymentRequest requestWithString:@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emc"];
     XCTAssertFalse(r.isValid);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emc", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy"];
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=1"];
-    XCTAssertEqual(100000000, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=1"];
+    XCTAssertEqual(100000000, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=1", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.00000001"];
-    XCTAssertEqual(1, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.00000001"];
+    XCTAssertEqual(1, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.00000001", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=21000000"];
-    XCTAssertEqual(2100000000000000, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=21000000"];
+    XCTAssertEqual(2100000000000000, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=21000000", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
     // test for floating point rounding issues, these values cannot be exactly represented with an IEEE 754 double
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999999"];
-    XCTAssertEqual(2099999999999999, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999999"];
+    XCTAssertEqual(2099999999999999, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999999", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999995"];
-    XCTAssertEqual(2099999999999995, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999995"];
+    XCTAssertEqual(2099999999999995, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.99999995", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.9999999"];
-    XCTAssertEqual(2099999999999990, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.9999999"];
+    XCTAssertEqual(2099999999999990, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=20999999.9999999", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.07433"];
-    XCTAssertEqual(7433000, r.amount, @"[BRPaymentRequest requestWithString:]");
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.07433"];
+    XCTAssertEqual(7433000, r.amount, @"[DSPaymentRequest requestWithString:]");
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=0.07433", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
     // invalid amount string
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=foobar"];
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?amount=foobar"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
     // test correct encoding of '&' in argument value
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?label=foo%26bar"];
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?label=foo%26bar"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?label=foo%26bar", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
     // test handling of ' ' in label or message
-    r = [BRPaymentRequest
+    r = [DSPaymentRequest
          requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?label=foo bar&message=bar foo"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?label=foo%20bar&message=bar%20foo", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
     // test bip73
-    r = [BRPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?r=https://foobar.com"];
+    r = [DSPaymentRequest requestWithString:@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?r=https://foobar.com"];
     XCTAssertEqualObjects(@"dash:Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy?r=https://foobar.com", r.string,
-                          @"[BRPaymentRequest requestWithString:]");
+                          @"[DSPaymentRequest requestWithString:]");
     
-    r = [BRPaymentRequest requestWithString:@"dash:?r=https://foobar.com"];
+    r = [DSPaymentRequest requestWithString:@"dash:?r=https://foobar.com"];
     XCTAssertTrue(r.isValid);
-    XCTAssertEqualObjects(@"dash:?r=https://foobar.com", r.string, @"[BRPaymentRequest requestWithString:]");
+    XCTAssertEqualObjects(@"dash:?r=https://foobar.com", r.string, @"[DSPaymentRequest requestWithString:]");
 }
 
 // MARK: - testTransaction
@@ -1271,33 +1271,33 @@
 
 - (void)testWalletManager
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForDashString:nil], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:nil], 0, @"[DSWalletManager amountForDashString:]");
     
-    XCTAssertEqual([manager amountForDashString:@""], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:@""], 0, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:0];
-    XCTAssertEqual([manager amountForDashString:s], 0, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 0, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:100000000];
-    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:1];
-    XCTAssertEqual([manager amountForDashString:s], 1, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 1, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2100000000000000];
-    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999999];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999995];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[DSWalletManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999990];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[BRWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[DSWalletManager amountForDashString:]");
 }
 
 // MARK: - testBloomFilter

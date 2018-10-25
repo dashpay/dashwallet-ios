@@ -26,10 +26,10 @@
 #import "BRPhoneWCSessionManager.h"
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
-#import "BRPaymentRequest.h"
+#import "DSPaymentRequest.h"
 #import "BRPeerManager.h"
 #import "BRTransaction+Utils.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import <WatchConnectivity/WatchConnectivity.h>
@@ -62,19 +62,19 @@
             [self sendApplicationContext];
             
             self.balanceObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     if ([BRPeerManager sharedInstance].syncProgress == 1.0) [self sendApplicationContext];
                 }];
 
             self.syncFinishedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification
                 object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
 
             self.syncFailedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
@@ -137,8 +137,8 @@
             break;
             
         case AWSessionRquestDataTypeQRCodeBits: {
-            BRWalletManager *manager = [BRWalletManager sharedInstance];
-            BRPaymentRequest *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress];
+            DSWalletManager *manager = [DSWalletManager sharedInstance];
+            DSPaymentRequest *req = [DSPaymentRequest requestWithString:manager.wallet.receiveAddress];
 
             req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
             NSLog(@"watch requested a qr code amount %lld", req.amount);
@@ -209,7 +209,7 @@
 
 - (BRAppleWatchData *)applicationContextData
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSArray *transactions = manager.wallet.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
@@ -232,7 +232,7 @@
     return appleWatchData;
 }
 
-- (NSString *)lastTransactionStringFromTransaction:(BRTransaction *)transaction
+- (NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction
 {
     if (transaction) {
         NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
@@ -283,8 +283,8 @@
 
 - (UIImage *)qrCode
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
-    NSData *req = [BRPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    NSData *req = [DSPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
     NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     UIImage *image = nil;
     
@@ -314,7 +314,7 @@
     }
 
 #if SNAPSHOT
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     [transactionListData removeAllObjects];
 

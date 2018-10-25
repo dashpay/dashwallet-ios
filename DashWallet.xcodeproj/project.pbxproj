@@ -59,9 +59,7 @@
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BA6645961BD924EB007A6BB1 /* BRAWTransactionRowControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6645951BD924EB007A6BB1 /* BRAWTransactionRowControl.swift */; };
 		BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
-		BA7B53511BDA9A2800355E8D /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
-		BA7B53551BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
 		BA7B53751BDBDB0500355E8D /* BRAWWatchDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53741BDBDB0500355E8D /* BRAWWatchDataManager.swift */; };
 		BA7B537B1BDD1DCF00355E8D /* LoadingIndicator.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA7B537A1BDD1DCF00355E8D /* LoadingIndicator.xcassets */; };
 		BA913BE21BD57E4D005A7C0E /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE01BD57E4D005A7C0E /* Interface.storyboard */; };
@@ -91,6 +89,8 @@
 		FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
+		FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
+		FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBF3F42B1E42AF8F00C7248E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */; };
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
@@ -1179,6 +1179,7 @@
 				BA913BE61BD57E4D005A7C0E /* Sources */,
 				BA913BE71BD57E4D005A7C0E /* Frameworks */,
 				BA913BE81BD57E4D005A7C0E /* Resources */,
+				8D87C3D02190AF025F8B48D8 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1495,6 +1496,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8D87C3D02190AF025F8B48D8 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AFNetworking.root-NSURLSession-Security-Serialization/AFNetworking.framework",
+				"${BUILT_PRODUCTS_DIR}/DashSync-watchOS/DashSync.framework",
+				"${BUILT_PRODUCTS_DIR}/secp256k1_dash-watchOS/secp256k1_dash.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DashSync.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/secp256k1_dash.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		A80531A10CF1AE66138E56C3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1520,15 +1543,13 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/AFJSONRPCClient_DASH/AFJSONRPCClient_DASH.framework",
 				"${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework",
-				"${BUILT_PRODUCTS_DIR}/DashSync/DashSync.framework",
+				"${BUILT_PRODUCTS_DIR}/DashSync-iOS/DashSync.framework",
 				"${BUILT_PRODUCTS_DIR}/KVO-MVVM/KVO_MVVM.framework",
-				"${BUILT_PRODUCTS_DIR}/secp256k1_dash/secp256k1_dash.framework",
+				"${BUILT_PRODUCTS_DIR}/secp256k1_dash-iOS/secp256k1_dash.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFJSONRPCClient_DASH.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DashSync.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KVO_MVVM.framework",
@@ -1654,13 +1675,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */,
 				2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */,
-				BA7B53551BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
 				BA7B53751BDBDB0500355E8D /* BRAWWatchDataManager.swift in Sources */,
 				BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */,
 				BAA0E8CA1BD9273700DF4236 /* BRAWGlanceInterfaceController.swift in Sources */,
+				FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */,
 				BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */,
-				BA7B53511BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
 				BAA6E3EF1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift in Sources */,
 				BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */,
 				BA6645961BD924EB007A6BB1 /* BRAWTransactionRowControl.swift in Sources */,

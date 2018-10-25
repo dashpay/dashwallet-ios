@@ -1,5 +1,5 @@
 //
-//  BRWalletManager.m
+//  DSWalletManager.m
 //  DashWallet
 //
 //  Created by Aaron Voisine for BreadWallet on 3/2/14.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
 #import "BRBIP39Mnemonic.h"
@@ -206,9 +206,9 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     }
 }
 
-typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletManager * context);
+typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletManager * context);
 
-@interface BRWalletManager()
+@interface DSWalletManager()
 
 @property (nonatomic, strong) BRWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
@@ -230,7 +230,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
 
 @end
 
-@implementation BRWalletManager
+@implementation DSWalletManager
 
 + (instancetype)sharedInstance
 {
@@ -404,9 +404,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                 _wallet = nil;
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
                                                                         object:nil];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
                                                                         object:nil];
                 });
 #endif
@@ -661,8 +661,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletManagerSeedChangedNotification object:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
     });
 }
 
@@ -1134,7 +1134,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                                    }];
     [self.pinAlertController addAction:cancelButton];
     
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
         NSError * error = nil;
         uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
         
@@ -1259,7 +1259,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     if (! _wallet) return;
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
     });
 }
 
@@ -1285,7 +1285,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
         self.pinField.delegate = self;
         self.pinAlertController.title = title;
     }
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
         [context setVerifyPin:currentPin withCompletion:completion];
         return TRUE;
     };
@@ -1308,7 +1308,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
                          animations:^{ v.center = p; } completion:nil];
     }];
     
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,BRWalletManager * context) {
+    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
         if ([currentPin isEqual:previousPin]) {
             context.pinField.text = nil;
             setKeychainString(previousPin, PIN_KEY, NO);
@@ -1464,7 +1464,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,BRWalletMana
     //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
     _bitcoinDashPrice = newPrice;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
     });
 }
 

@@ -26,15 +26,15 @@
 
 #import "DWReceiveViewController.h"
 #import "DWRootViewController.h"
-#import "BRPaymentRequest.h"
-#import "BRWalletManager.h"
+#import "DSPaymentRequest.h"
+#import "DSWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
 #import "BRBubbleView.h"
 #import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import "BREventManager.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
@@ -65,12 +65,12 @@
 {
     [super viewDidLoad];
 
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
-    BRPaymentRequest *req;
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPaymentRequest *req;
 
     self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     req = (_paymentRequest) ? _paymentRequest :
-          [BRPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
+          [DSPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
 
     if (req.isValid) {
         if (! _qrImage) {
@@ -84,7 +84,7 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [manager localCurrencyStringForDashAmount:req.amount]];
@@ -120,8 +120,8 @@
     }
     CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
-        BRPaymentRequest *req = self.paymentRequest;
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPaymentRequest *req = self.paymentRequest;
         UIImage *image = nil;
         
         if ([req.data isEqual:[self.groupDefs objectForKey:APP_GROUP_REQUEST_DATA_KEY]]) {
@@ -159,7 +159,7 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                BRWalletManager *manager = [BRWalletManager sharedInstance];
+                DSWalletManager *manager = [DSWalletManager sharedInstance];
                 NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
                 NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                           [manager localCurrencyStringForDashAmount:req.amount]];
@@ -168,7 +168,7 @@
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
-                        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification
+                        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -188,8 +188,8 @@
 
 - (void)checkRequestStatus
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
-    BRPaymentRequest *req = self.paymentRequest;
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPaymentRequest *req = self.paymentRequest;
     uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
     if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
@@ -213,16 +213,16 @@
     }
 }
 
-- (BRPaymentRequest *)paymentRequest
+- (DSPaymentRequest *)paymentRequest
 {
     if (_paymentRequest) return _paymentRequest;
-    return [BRPaymentRequest requestWithString:self.paymentAddress];
+    return [DSPaymentRequest requestWithString:self.paymentAddress];
 }
 
 - (NSString *)paymentAddress
 {
     if (_paymentRequest) return _paymentRequest.paymentAddress;
-    return [BRWalletManager sharedInstance].wallet.receiveAddress;
+    return [DSWalletManager sharedInstance].wallet.receiveAddress;
 }
 
 - (BOOL)nextTip
@@ -423,7 +423,7 @@ error:(NSError *)error
 
 - (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     if (amount < manager.wallet.minOutputAmount) {
         UIAlertController * alert = [UIAlertController

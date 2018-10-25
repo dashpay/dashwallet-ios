@@ -29,7 +29,7 @@
 #import "DWSettingsViewController.h"
 #import "DWTxDetailViewController.h"
 #import "DWSeedViewController.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRTransaction.h"
 #import "NSString+Bitcoin.h"
@@ -94,7 +94,7 @@ static NSString *dateFormat(NSString *template)
 {
     [super viewWillAppear:animated];
     
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
 #if SNAPSHOT
     BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
@@ -141,7 +141,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.balanceObserver) {
         self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (manager.didAuthenticate) {
                                                                    BRTransaction *tx = self.transactions.firstObject;
@@ -188,7 +188,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                else [self updateTitleView];
@@ -197,7 +197,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                [self updateTitleView];
@@ -207,7 +207,7 @@ static NSString *dateFormat(NSString *template)
 
 
 -(UILabel*)titleLabel {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
@@ -221,7 +221,7 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
@@ -285,7 +285,7 @@ static NSString *dateFormat(NSString *template)
 {
     uint32_t height = self.blockHeight;
     
-    if (! [BRWalletManager sharedInstance].didAuthenticate &&
+    if (! [DSWalletManager sharedInstance].didAuthenticate &&
         [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
         _transactions = @[];
         if (transactions.count > 0) self.moreTx = YES;
@@ -294,7 +294,7 @@ static NSString *dateFormat(NSString *template)
         if (transactions.count <= 5) self.moreTx = NO;
         _transactions = (self.moreTx) ? [transactions subarrayWithRange:NSMakeRange(0, 5)] : [transactions copy];
         
-        if (! [BRWalletManager sharedInstance].didAuthenticate) {
+        if (! [DSWalletManager sharedInstance].didAuthenticate) {
             for (BRTransaction *tx in _transactions) {
                 if (tx.blockHeight == TX_UNCONFIRMED ||
                     (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
@@ -343,7 +343,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)unlock:(id)sender
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate) {
@@ -397,7 +397,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)more:(id)sender
 {
     [BREventManager saveEvent:@"tx_history:more"];
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
     if (! manager.didAuthenticate) {
@@ -490,7 +490,7 @@ static NSString *dateFormat(NSString *template)
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
     *detailTextLabel;
     UIImageView * shapeshiftImageView;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     
     switch (indexPath.section) {

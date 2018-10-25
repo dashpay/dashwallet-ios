@@ -28,7 +28,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "BREventManager.h"
-#import "BRPaymentRequest.h"
+#import "DSPaymentRequest.h"
 
 #import "DWQRScanViewModel.h"
 
@@ -274,7 +274,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     });
     
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    BRPaymentRequest *request = [BRPaymentRequest requestWithString:addr];
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr];
     if (request.isValid || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
@@ -284,7 +284,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         
         if (request.r.length > 0) { // start fetching payment protocol request right away
             __weak __typeof__(self) weakSelf = self;
-            [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
+            [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
                          completion:^(BRPaymentProtocolRequest *req, NSError *error) {
                              dispatch_async(dispatch_get_main_queue(), ^{
                                  __strong __typeof__(weakSelf) strongSelf = weakSelf;
@@ -300,7 +300,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         }
     } else {
         __weak __typeof__(self) weakSelf = self;
-        [BRPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
+        [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
                      completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
                          dispatch_async(dispatch_get_main_queue(), ^{
                              __strong __typeof__(weakSelf) strongSelf = weakSelf;

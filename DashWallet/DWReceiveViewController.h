@@ -28,13 +28,13 @@
 #import <MessageUI/MessageUI.h>
 #import "DWAmountViewController.h"
 
-@class BRPaymentRequest;
+@class DSPaymentRequest;
 
 @interface DWReceiveViewController : UIViewController<UIActionSheetDelegate, DWAmountViewControllerDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
-@property (nonatomic, strong) BRPaymentRequest *paymentRequest;
+@property (nonatomic, strong) DSPaymentRequest *paymentRequest;
 
 - (IBAction)tip:(id)sender;
 - (void)updateAddress;

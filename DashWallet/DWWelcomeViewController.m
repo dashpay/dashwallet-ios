@@ -26,7 +26,7 @@
 
 #import "DWWelcomeViewController.h"
 #import "DWRootViewController.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BREventManager.h"
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
@@ -120,7 +120,7 @@
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
 
-        if (! [BRWalletManager sharedInstance].noWallet) { // sanity check
+        if (! [DSWalletManager sharedInstance].noWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
 

@@ -1,5 +1,5 @@
 //
-//  BRWalletManager.h
+//  DSWalletManager.h
 //  DashWallet
 //
 //  Created by Aaron Voisine for BreadWallet on 3/2/14.
@@ -41,7 +41,7 @@
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
 
-FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSWalletManagerSeedChangedNotification;
 
 @protocol BRMnemonic;
 
@@ -53,7 +53,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^ResetCancelHandlerBlock)(void);
 typedef void (^ResetWipeHandlerBlock)(void);
 
-@interface BRWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
+@interface DSWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, readonly) BRWallet * _Nullable wallet;
 @property (nonatomic, readonly) BOOL noWallet; // true if keychain is available and we know that no wallet exists on it

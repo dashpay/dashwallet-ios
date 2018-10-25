@@ -26,7 +26,7 @@
 
 #import "DWAppDelegate.h"
 #import "BRPeerManager.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BREventManager.h"
 #import "BRPhoneWCSessionManager.h"
 #import "DSShapeshiftManager.h"
@@ -97,7 +97,7 @@
     // start the event manager
     [[BREventManager sharedEventManager] up];
     
-    [BRWalletManager sharedInstance];
+    [DSWalletManager sharedInstance];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -125,7 +125,7 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (self.balance == UINT64_MAX) self.balance = [BRWalletManager sharedInstance].wallet.balance;
+        if (self.balance == UINT64_MAX) self.balance = [DSWalletManager sharedInstance].wallet.balance;
         [self registerForPushNotifications];
     });
 }
@@ -220,7 +220,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch sync finished");
             if (completion) completion(UIBackgroundFetchResultNewData);
@@ -228,7 +228,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch sync failed");
             if (completion) completion(UIBackgroundFetchResultFailed);
@@ -250,12 +250,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 - (void)setupBalanceNotification:(UIApplication *)application
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     self.balance = UINT64_MAX; // this gets set in applicationDidBecomActive:
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRWalletBalanceChangedNotification object:nil queue:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
         usingBlock:^(NSNotification * _Nonnull note) {
             if (self.balance < manager.wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];

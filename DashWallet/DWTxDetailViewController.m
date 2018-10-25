@@ -25,7 +25,7 @@
 
 #import "DWTxDetailViewController.h"
 #import "BRTransaction.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRPeerManager.h"
 #import "BRCopyLabel.h"
 #import "NSString+Bitcoin.h"
@@ -62,7 +62,7 @@
         self.txStatusObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRTransaction *tx = [[BRWalletManager sharedInstance].wallet
+                BRTransaction *tx = [[DSWalletManager sharedInstance].wallet
                                      transactionForHash:self.transaction.txHash];
                 
                 if (tx) self.transaction = tx;
@@ -86,7 +86,7 @@
 
 - (void)setTransaction:(BRTransaction *)transaction
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     uint64_t fee = [manager.wallet feeForTransaction:transaction];
     NSUInteger outputAmountIndex = 0;
@@ -206,7 +206,7 @@
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount;
     NSUInteger relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
     NSString *s;

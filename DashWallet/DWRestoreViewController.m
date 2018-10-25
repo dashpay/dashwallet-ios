@@ -25,7 +25,7 @@
 //  THE SOFTWARE.
 
 #import "DWRestoreViewController.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRMnemonic.h"
 #import "BRAddressEntity.h"
 #import "NSMutableData+Bitcoin.h"
@@ -121,7 +121,7 @@
     [BREventManager saveEvent:@"restore:wipe"];
     
     @autoreleasepool {
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         BRPeerManager *peerManager = [BRPeerManager sharedInstance];
         if ([phrase isEqual:@"wipe"]) {
             if ((manager.wallet.balance == 0) && ([peerManager timestampForBlockHeight:peerManager.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
@@ -229,7 +229,7 @@
 - (void)wipeWallet
 {
     
-    [[BRWalletManager sharedInstance] setSeedPhrase:nil];
+    [[DSWalletManager sharedInstance] setSeedPhrase:nil];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -287,7 +287,7 @@
     if (! [text isEqual:@"\n"]) return YES; // not done entering phrase
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
-        BRWalletManager *manager = [BRWalletManager sharedInstance];
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
         NSString *phrase = [manager.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
         BOOL isLocal = YES, noWallet = manager.noWallet;
         

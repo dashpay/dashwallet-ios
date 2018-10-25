@@ -25,7 +25,7 @@
 //  THE SOFTWARE.
 
 #import "DWSeedViewController.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 #import "BRPeerManager.h"
 #import "NSMutableData+Bitcoin.h"
 #import "BREventManager.h"
@@ -53,7 +53,7 @@
 
 - (instancetype)customInit
 {
-    BRWalletManager *manager = [BRWalletManager sharedInstance];
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
     if (manager.noWallet) {
         self.seedPhrase = [manager generateRandomSeed];
@@ -218,7 +218,7 @@
                                                                   [self presentViewController:alert animated:YES completion:nil];
                                                               }
                                                               else {
-                                                                  [[BRWalletManager sharedInstance] setSeedPhrase:nil];
+                                                                  [[DSWalletManager sharedInstance] setSeedPhrase:nil];
                                                                   UINavigationController * navigationController = (UINavigationController*)self.presentingViewController;
                                                                   [self dismissViewControllerAnimated:TRUE completion:nil];
                                                                   
