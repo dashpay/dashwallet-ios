@@ -25,12 +25,6 @@
 //  THE SOFTWARE.
 
 #import "DWAmountViewController.h"
-#import "DSPaymentRequest.h"
-#import "DSWalletManager.h"
-#import "BRPeerManager.h"
-#import "BRTransaction.h"
-#import "BREventManager.h"
-#import "NSString+Dash.h"
 #import "BRBubbleView.h"
 
 #define GRAY80_COLOR [UIColor colorWithWhite:0.80 alpha:1.0]
@@ -63,19 +57,18 @@
     [super viewDidLoad];
     
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     NSMutableCharacterSet *charset = [NSMutableCharacterSet decimalDigitCharacterSet];
     
-    [charset addCharactersInString:manager.dashFormat.currencyDecimalSeparator];
+    [charset addCharactersInString:priceManager.dashFormat.currencyDecimalSeparator];
     self.charset = charset;
     
     self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"Pay", nil)
                                                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.payButton.tintColor = [UIColor colorWithRed:168.0/255.0 green:230.0/255.0 blue:1.0 alpha:1.0];
-    self.amountLabel.attributedText = [manager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
+    self.amountLabel.attributedText = [priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
     self.amountLabel.textColor = OFFBLUE_COLOR;
-    [self.decimalButton setTitle:manager.dashFormat.currencyDecimalSeparator forState:UIControlStateNormal];
+    [self.decimalButton setTitle:priceManager.dashFormat.currencyDecimalSeparator forState:UIControlStateNormal];
     
     self.swapLeftLabel = [UILabel new];
     self.swapLeftLabel.font = self.localCurrencyLabel.font;
@@ -121,7 +114,7 @@
     }
     
     if (!self.requestingAmount) {
-        if ([[DSWalletManager sharedInstance] didAuthenticate]) [self unlock:nil];
+        if ([[DSAuthenticationManager sharedInstance] didAuthenticate]) [self unlock:nil];
     }
     else {
         self.payButton.title = NSLocalizedString(@"Request", nil);
@@ -130,10 +123,10 @@
     }
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if ([BRPeerManager sharedInstance].syncProgress < 1.0) return; // wait for sync before updating balance
-                                                      if ([[DSWalletManager sharedInstance] didAuthenticate]) {
+                                                      if ([DWEnvironment sharedInstance].currentChainPeerManager.syncProgress < 1.0) return; // wait for sync before updating balance
+                                                      if ([[DSAuthenticationManager sharedInstance] didAuthenticate]) {
                                                           [self updateTitleView];
                                                       }
                                                   }];
@@ -158,15 +151,15 @@
 
 - (void)updateLocalCurrencyLabel
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     uint64_t amount;
     if (self.usingShapeshift) {
-        amount = (self.swapped) ? [manager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
-        [manager amountForDashString:self.amountLabel.text] * .98;
-        if (amount) amount += (self.swapped) ?1.0/[[manager localCurrencyDashPrice] floatValue] * pow(10.0, manager.dashFormat.maximumFractionDigits):1.0/[[manager localCurrencyBitcoinPrice] floatValue] * pow(10.0, manager.bitcoinFormat.maximumFractionDigits);
+        amount = (self.swapped) ? [priceManager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
+        [priceManager amountForDashString:self.amountLabel.text] * .98;
+        if (amount) amount += (self.swapped) ?1.0/[[priceManager localCurrencyDashPrice] floatValue] * pow(10.0, priceManager.dashFormat.maximumFractionDigits):1.0/[[priceManager localCurrencyBitcoinPrice] floatValue] * pow(10.0, priceManager.bitcoinFormat.maximumFractionDigits);
     } else {
-        amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountLabel.text] :
-        [manager amountForDashString:self.amountLabel.text];
+        amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
+        [priceManager amountForDashString:self.amountLabel.text];
     }
     
     self.swapLeftLabel.hidden = YES;
@@ -175,18 +168,18 @@
         
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
-            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager bitcoinCurrencyStringForAmount:amount]]];
+            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:amount]]];
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
     } else {
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"("];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
-            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager localCurrencyStringForDashAmount:amount]]];
+            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[priceManager localCurrencyStringForDashAmount:amount]]];
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
@@ -194,18 +187,19 @@
     self.localCurrencyLabel.textColor = (amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR;
     
     if (self.usingShapeshift) {
-        self.shapeshiftLocalCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",[manager localCurrencyStringForDashAmount:amount]];
+        self.shapeshiftLocalCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",[priceManager localCurrencyStringForDashAmount:amount]];
     }
 }
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                              [priceManager localCurrencyStringForDashAmount:wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -213,10 +207,11 @@
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+        DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+        NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                  [priceManager localCurrencyStringForDashAmount:wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -233,19 +228,19 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    [BREventManager saveEvent:@"amount:unlock"];
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    [DSEventManager saveEvent:@"amount:unlock"];
     
-    if (sender && ! manager.didAuthenticate) {
-        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+    if (sender && ! authenticationManager.didAuthenticate) {
+        [authenticationManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
-                [BREventManager saveEvent:@"amount:successful_unlock"];
+                [DSEventManager saveEvent:@"amount:successful_unlock"];
                 
                 [self updateTitleView];
                 [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
             }
         }];
-    } else if (manager.didAuthenticate) {
+    } else if (authenticationManager.didAuthenticate) {
         [self updateTitleView];
         [self.navigationItem setRightBarButtonItem:self.payButton animated:(sender) ? YES : NO];
     }
@@ -284,33 +279,33 @@
         [self.tipView popOut];
         self.tipView = nil;
     }
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     if (self.usingShapeshift) {
         
-        self.amount = (self.swapped) ? [manager amountForBitcoinString:self.amountLabel.text]:
-        [manager amountForDashString:self.amountLabel.text];
+        self.amount = (self.swapped) ? [priceManager amountForBitcoinString:self.amountLabel.text]:
+        [priceManager amountForDashString:self.amountLabel.text];
         
         if (self.amount == 0){
-            [BREventManager saveEvent:@"amount:pay_zero"];
+            [DSEventManager saveEvent:@"amount:pay_zero"];
             return;
         }
         
-        [BREventManager saveEvent:@"amount:pay_using_shapeshift"];
+        [DSEventManager saveEvent:@"amount:pay_using_shapeshift"];
         
         if (self.swapped) {
-            [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount/manager.bitcoinDashPrice.doubleValue];
+            [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount/priceManager.bitcoinDashPrice.doubleValue];
         } else
             [self.delegate amountViewController:self shapeshiftDashAmount:self.amount];
     }else {
-        self.amount = (self.swapped) ? [manager amountForLocalCurrencyString:self.amountLabel.text] :
-        [manager amountForDashString:self.amountLabel.text];
+        self.amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
+        [priceManager amountForDashString:self.amountLabel.text];
         
         if (self.amount == 0){
-            [BREventManager saveEvent:@"amount:pay_zero"];
+            [DSEventManager saveEvent:@"amount:pay_zero"];
             return;
         }
         
-        [BREventManager saveEvent:@"amount:pay"];
+        [DSEventManager saveEvent:@"amount:pay"];
         
         [self.delegate amountViewController:self selectedAmount:self.amount];
     }
@@ -318,14 +313,14 @@
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"amount:dismiss"];
+    [DSEventManager saveEvent:@"amount:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)swapCurrency:(id)sender
 {
     self.swapped = ! self.swapped;
-    [BREventManager saveEvent:@"amount:swap_currency"];
+    [DSEventManager saveEvent:@"amount:swap_currency"];
     
     if (self.swapLeftLabel.hidden) {
         self.swapLeftLabel.text = self.localCurrencyLabel.text;
@@ -348,31 +343,31 @@
     }
     
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     NSString *s = (self.swapped) ? self.localCurrencyLabel.text : self.amountLabel.text;
     uint64_t amount =
-    [manager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
+    [priceManager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
     if (self.usingShapeshift) {
         
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:self.localCurrencyLabel.textColor dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:self.localCurrencyLabel.textColor dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
-            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager bitcoinCurrencyStringForAmount:amount]]];
+            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:amount]]];
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
-        self.amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[manager bitcoinCurrencyStringForAmount:amount]]:[manager attributedStringForDashAmount:amount withTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
+        self.amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:amount]]:[priceManager attributedStringForDashAmount:amount withTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
     } else {
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"("];
         if (self.swapped) {
-            [attributedString appendAttributedString:[manager attributedStringForDashAmount:amount withTintColor:self.localCurrencyLabel.textColor dashSymbolSize:CGSizeMake(11, 12)]];
+            [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:self.localCurrencyLabel.textColor dashSymbolSize:CGSizeMake(11, 12)]];
         } else {
-            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[manager localCurrencyStringForDashAmount:amount]]];
+            [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[priceManager localCurrencyStringForDashAmount:amount]]];
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
-        self.amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[manager localCurrencyStringForDashAmount:amount]]:[manager attributedStringForDashAmount:amount withTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
+        self.amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager localCurrencyStringForDashAmount:amount]]:[priceManager attributedStringForDashAmount:amount withTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
     }
     
     [self.view layoutIfNeeded];
@@ -414,13 +409,13 @@
     }];
     
     if (self.usingShapeshift) {
-        self.shapeshiftLocalCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",[manager localCurrencyStringForDashAmount:0]];
+        self.shapeshiftLocalCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",[priceManager localCurrencyStringForDashAmount:0]];
     }
 }
 
 - (IBAction)releaseSwapButton:(id)sender
 {
-    [BREventManager saveEvent:@"amount:release_swap"];
+    [DSEventManager saveEvent:@"amount:release_swap"];
     [UIView animateWithDuration:0.1 animations:^{
         //self.swapLeftLabel.transform = CGAffineTransformIdentity;
         self.swapLeftLabel.textColor = self.localCurrencyLabel.textColor;
@@ -451,14 +446,14 @@
 -(void)updateAmountLabel:(UILabel *)amountLabel shouldChangeCharactersInRange:(NSRange)range
        replacementString:(NSString *)string
 {
-    DSWalletManager *m = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     NSNumberFormatter *formatter;
     if (self.usingShapeshift) {
-        formatter = (self.swapped) ? m.bitcoinFormat:m.dashFormat;
+        formatter = (self.swapped) ? priceManager.bitcoinFormat:priceManager.dashFormat;
     } else {
-        formatter = (self.swapped) ? m.localFormat:m.dashFormat;
+        formatter = (self.swapped) ? priceManager.localFormat:priceManager.dashFormat;
     }
-    NSNumberFormatter *basicFormatter = m.unknownFormat;
+    NSNumberFormatter *basicFormatter = priceManager.unknownFormat;
     NSUInteger minDigits = formatter.minimumFractionDigits;
     
     formatter.minimumFractionDigits = 0;
@@ -561,9 +556,9 @@
     
     if (formattedAmount.length == 0 || self.amountLabelIsEmpty) { // ""
         if (self.usingShapeshift) {
-            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m bitcoinCurrencyStringForAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
+            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:0]]:[priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
         } else {
-            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[m localCurrencyStringForDashAmount:0]]:[m attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
+            amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager localCurrencyStringForDashAmount:0]]:[priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
         }
         amountLabel.textColor = OFFBLUE_COLOR;
     } else {
@@ -575,9 +570,9 @@
             amountLabel.text = formattedAmount;
         }
     }
-    
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     if (!self.requestingAmount) {
-        if (! m.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
+        if (! authenticationManager.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
             [self.navigationItem setRightBarButtonItem:self.lock animated:YES];
         }
         else if ((formattedAmount.length > 0 && !self.amountLabelIsEmpty && [number floatValue]) && self.navigationItem.rightBarButtonItem != self.payButton) {

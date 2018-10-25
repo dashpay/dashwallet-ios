@@ -34,12 +34,9 @@
 #import "DWAppDelegate.h"
 #import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
-#import <DashSync/DashSync.h>
 #import "UIImage+Utils.h"
-#import "BREventManager.h"
 #import "BREventConfirmView.h"
-#import "Reachability.h"
-#import "NSString+Dash.h"
+
 #import <WebKit/WebKit.h>
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <sys/stat.h>
@@ -134,12 +131,10 @@
         [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-48.0]];
     }
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
     self.urlObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet) {
+                                                      if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
                                                           if (self.navigationController.topViewController != self) {
                                                               [self.navigationController popToRootViewControllerAnimated:YES];
                                                           }
@@ -171,7 +166,7 @@
     self.fileObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRFileNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet) {
+                                                      if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
                                                           if (self.navigationController.topViewController != self) {
                                                               [self.navigationController popToRootViewControllerAnimated:YES];
                                                           }
@@ -197,10 +192,10 @@
     self.foregroundObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillEnterForegroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (! manager.noWallet) {
-                                                               BREventManager *eventMan = [BREventManager sharedEventManager];
+                                                           if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
+                                                               DSEventManager *eventMan = [DSEventManager sharedEventManager];
                                                                
-                                                               [[BRPeerManager sharedInstance] connect];
+                                                               [[DSPeerManager sharedInstance] connect];
                                                                [self.sendViewController updateClipboardText];
                                                                
                                                                if (eventMan.isInSampleGroup && ! eventMan.hasAskedForPermission) {
@@ -270,8 +265,7 @@
     self.backgroundObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (! manager.noWallet) { // lockdown the app
-                                                               manager.didAuthenticate = NO;
+                                                           if ([DWEnvironment sharedInstance].currentChain.hasAWallet) { // lockdown the app
                                                                self.navigationItem.titleView = self.logo;
                                                                self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                                                                self.navigationItem.rightBarButtonItem = self.lock;
@@ -309,9 +303,9 @@
     self.reachabilityObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if (! manager.noWallet && self.reachability.currentReachabilityStatus != NotReachable &&
+                                                      if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.currentReachabilityStatus != NotReachable &&
                                                           [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                                                          [[BRPeerManager sharedInstance] connect];
+                                                          [[DSPeerManager sharedInstance] connect];
                                                       }
                                                       else if (! manager.noWallet && self.reachability.currentReachabilityStatus == NotReachable) {
                                                           [self showErrorBar];
@@ -319,9 +313,9 @@
                                                   }];
     
     self.balanceObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      double progress = [BRPeerManager sharedInstance].syncProgress;
+                                                      double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
                                                       
                                                       if (_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
                                                           self.balance = _balance; // this updates the local currency value with the latest exchange rate
@@ -334,14 +328,14 @@
                                                   }];
     
     self.seedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletManagerSeedChangedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.receiveViewController updateAddress];
                                                            self.balance = manager.wallet.balance;
                                                        }];
     
     self.syncStartedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.reachability.currentReachabilityStatus == NotReachable) return;
                                                            [self hideErrorBarWithCompletion:nil];
@@ -349,7 +343,7 @@
                                                        }];
     
     self.syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
@@ -361,7 +355,7 @@
                                                        }];
     
     self.syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
@@ -398,7 +392,7 @@
      }];
 #endif
     
-    if (manager.watchOnly) { // watch only wallet
+    if ([DSEnvironment sharedInstance].watchOnly) { // watch only wallet
         UILabel *label = [UILabel new];
         
         label.font = [UIFont systemFontOfSize:14];
@@ -714,7 +708,7 @@
                 }
                 
                 if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                    [[BRPeerManager sharedInstance] connect];
+                    [[DSPeerManager sharedInstance] connect];
                     [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
                     
                     if (self.url) {
@@ -879,7 +873,7 @@
 
 - (void)showSyncing
 {
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
     
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.shouldShowTips = NO;
@@ -898,7 +892,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([[BRPeerManager sharedInstance] timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] +
+        if ([[DSPeerManager sharedInstance] timestampForBlockHeight:[DSPeerManager sharedInstance].lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.shouldShowTips = NO;
@@ -918,7 +912,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
@@ -955,12 +949,12 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
-    double progress = [BRPeerManager sharedInstance].syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
     
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                             [BRPeerManager sharedInstance].lastBlockHeight,
-                             [BRPeerManager sharedInstance].estimatedBlockHeight];
+                             [DSPeerManager sharedInstance].lastBlockHeight,
+                             [DSPeerManager sharedInstance].estimatedBlockHeight];
     }
     
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
@@ -1149,13 +1143,13 @@
         if (manager.bitcoinDashPrice) {
             tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,manager.bitcoinDashPrice.doubleValue,BTC,[manager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-             [[BRPeerManager sharedInstance] lastBlockHeight],
-             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+             [[DSPeerManager sharedInstance] lastBlockHeight],
+             [[DSPeerManager sharedInstance] estimatedBlockHeight]];
         } else {
             tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@",BALANCE_TIP]:
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-             [[BRPeerManager sharedInstance] lastBlockHeight],
-             [[BRPeerManager sharedInstance] estimatedBlockHeight]];
+             [[DSPeerManager sharedInstance] lastBlockHeight],
+             [[DSPeerManager sharedInstance] estimatedBlockHeight]];
         }
         NSMutableAttributedString *attributedTip = [[NSMutableAttributedString alloc]
                                                     initWithString:[tip stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
@@ -1182,10 +1176,10 @@
         [self updateTitleView];
         [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     } else {
-        [BREventManager saveEvent:@"root:unlock"];
+        [DSEventManager saveEvent:@"root:unlock"];
         [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
-                [BREventManager saveEvent:@"root:unlock_success"];
+                [DSEventManager saveEvent:@"root:unlock_success"];
                 [self updateTitleView];
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
             }
@@ -1195,11 +1189,11 @@
 
 - (IBAction)connect:(id)sender
 {
-    [BREventManager saveEvent:@"root:connect"];
+    [DSEventManager saveEvent:@"root:connect"];
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
     
-    [[BRPeerManager sharedInstance] connect];
-    [BREventManager saveEvent:@"root:connect_success"];
+    [[DSPeerManager sharedInstance] connect];
+    [DSEventManager saveEvent:@"root:connect_success"];
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 }
 
@@ -1422,7 +1416,7 @@
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            [[BRPeerManager sharedInstance] connect];
+            [[DSPeerManager sharedInstance] connect];
             [self.sendViewController updateClipboardText];
         }
         

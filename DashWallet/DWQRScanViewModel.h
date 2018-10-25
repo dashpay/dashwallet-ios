@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class AVCaptureSession;
 @class AVMetadataMachineReadableCodeObject;
 @class DSPaymentRequest;
-@class BRPaymentProtocolRequest;
+@class DSPaymentProtocolRequest;
 
 typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
     QRCodeObjectTypeProcessing,
@@ -78,11 +78,11 @@ didScanStandardNonPaymentRequest:(DSPaymentRequest *)request;
 
 - (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
   didScanPaymentRequest:(DSPaymentRequest *)request
-        protocolRequest:(BRPaymentProtocolRequest *)protocolRequest
+        protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
                   error:(NSError *_Nullable)error;
 
 - (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
-didScanBIP73PaymentProtocolRequest:(BRPaymentProtocolRequest *)protocolRequest;
+didScanBIP73PaymentProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest;
 
 - (void)qrScanViewModelDidCancel:(DWQRScanViewModel *)viewModel;
 

@@ -26,8 +26,7 @@
 
 #import "DWWelcomeViewController.h"
 #import "DWRootViewController.h"
-#import "DSWalletManager.h"
-#import "BREventManager.h"
+#import <DashSync/DashSync.h>
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
@@ -116,11 +115,11 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [BREventManager saveEvent:@"welcome:shown"];
+    [DSEventManager saveEvent:@"welcome:shown"];
 
     dispatch_async(dispatch_get_main_queue(), ^{ // animation sometimes doesn't work if run directly in viewDidAppear
 
-        if (! [DSWalletManager sharedInstance].noWallet) { // sanity check
+        if ([DWEnvironment sharedInstance].currentWallet) { // sanity check
             [self.navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
         }
 
@@ -226,10 +225,10 @@ presentingController:(UIViewController *)presenting sourceController:(UIViewCont
 
 -(void)performSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
     if ([identifier isEqualToString:@"GenerateViewController"]) {
-        [BREventManager saveEvent:@"welcome:new_wallet"];
+        [DSEventManager saveEvent:@"welcome:new_wallet"];
 
     } else if ([identifier isEqualToString:@"RecoverViewController"]) {
-        [BREventManager saveEvent:@"welcome:recover_wallet"];
+        [DSEventManager saveEvent:@"welcome:recover_wallet"];
     }
 }
 

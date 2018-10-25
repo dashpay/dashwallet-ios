@@ -27,8 +27,8 @@
 #import "DWSeedViewController.h"
 #import "DSWalletManager.h"
 #import "BRBubbleView.h"
-#import "BRPeerManager.h"
-#import "BREventManager.h"
+#import "DSPeerManager.h"
+#import "DSEventManager.h"
 #import "BRUserDefaultsSwitchCell.h"
 #import <SafariServices/SafariServices.h>
 #import <asl.h>
@@ -84,7 +84,7 @@
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
                  forState:UIControlStateNormal];
@@ -145,17 +145,17 @@
            [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
            [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
            [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:manager.secureTime]].lowercaseString,
-           [BRPeerManager sharedInstance].lastBlockHeight,
-           [BRPeerManager sharedInstance].estimatedBlockHeight,
-           [BRPeerManager sharedInstance].peerCount,
-           [BRPeerManager sharedInstance].downloadPeerName];
+           [DSPeerManager sharedInstance].lastBlockHeight,
+           [DSPeerManager sharedInstance].estimatedBlockHeight,
+           [DSPeerManager sharedInstance].peerCount,
+           [DSPeerManager sharedInstance].downloadPeerName];
 }
 
 // MARK: - IBAction
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"settings:dismiss"];
+    [DSEventManager saveEvent:@"settings:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -170,7 +170,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 - (IBAction)copyLogs:(id)sender
 {
-    [BREventManager saveEvent:@"settings:copy_logs"];
+    [DSEventManager saveEvent:@"settings:copy_logs"];
     aslmsg q = asl_new(ASL_TYPE_QUERY), m;
     aslresponse r = asl_search(NULL, q);
     NSMutableString *s = [NSMutableString string];
@@ -251,8 +251,8 @@
                                                  
                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
-                                                 [[BRPeerManager sharedInstance] disconnect];
-                                                 [[BRPeerManager sharedInstance] connect];
+                                                 [[DSPeerManager sharedInstance] disconnect];
+                                                 [[DSPeerManager sharedInstance] connect];
                                                  break;
                                              }
                                              
@@ -279,8 +279,8 @@
                                       style:UIAlertActionStyleDestructive
                                       handler:^(UIAlertAction * action) {
                                           [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-                                          [[BRPeerManager sharedInstance] disconnect];
-                                          [[BRPeerManager sharedInstance] connect];
+                                          [[DSPeerManager sharedInstance] disconnect];
+                                          [[DSPeerManager sharedInstance] connect];
                                       }];
         [alert addAction:clearButton];
         [alert addAction:cancelButton];
@@ -290,7 +290,7 @@
 
 - (IBAction)touchIdLimit:(id)sender
 {
-    [BREventManager saveEvent:@"settings:touch_id_limit"];
+    [DSEventManager saveEvent:@"settings:touch_id_limit"];
     DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
@@ -319,7 +319,7 @@
 
 - (IBAction)navBarSwipe:(id)sender
 {
-    [BREventManager saveEvent:@"settings:nav_bar_swipe"];
+    [DSEventManager saveEvent:@"settings:nav_bar_swipe"];
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger digits = (((manager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
@@ -509,7 +509,7 @@
 
 - (void)showAbout
 {
-    [BREventManager saveEvent:@"settings:show_about"];
+    [DSEventManager saveEvent:@"settings:show_about"];
     UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
     UILabel *l = (id)[c.view viewWithTag:411];
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
@@ -542,7 +542,7 @@
 
 - (void)showRecoveryPhrase
 {
-    [BREventManager saveEvent:@"settings:show_recovery_phrase"];
+    [DSEventManager saveEvent:@"settings:show_recovery_phrase"];
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                  message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
@@ -581,7 +581,7 @@
 
 - (void)showCurrencySelector
 {
-    [BREventManager saveEvent:@"settings:show_currency_selector"];
+    [DSEventManager saveEvent:@"settings:show_currency_selector"];
     NSUInteger currencyCodeIndex = 0;
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     double localPrice = manager.localCurrencyDashPrice.doubleValue;
@@ -683,18 +683,18 @@ _deselect_switch:
         case 1:
             switch (indexPath.row) {
                 case 0: // change passcode
-                    [BREventManager saveEvent:@"settings:change_pin"];
+                    [DSEventManager saveEvent:@"settings:change_pin"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     [manager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
                     break;
 
                 case 1: // start/recover another wallet (handled by storyboard)
-                    [BREventManager saveEvent:@"settings:recover"];
+                    [DSEventManager saveEvent:@"settings:recover"];
                     break;
                     
                 case 2: // rescan blockchain
-                    [[BRPeerManager sharedInstance] rescan];
-                    [BREventManager saveEvent:@"settings:rescan"];
+                    [[DSPeerManager sharedInstance] rescan];
+                    [DSEventManager saveEvent:@"settings:rescan"];
                     [self done:nil];
                     break;
             }

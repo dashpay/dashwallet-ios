@@ -30,13 +30,13 @@
 #import "DWTxDetailViewController.h"
 #import "DWSeedViewController.h"
 #import "DSWalletManager.h"
-#import "BRPeerManager.h"
-#import "BRTransaction.h"
+#import "DSPeerManager.h"
+#import "DSTransaction.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
-#import "BREventManager.h"
+#import "DSEventManager.h"
 #import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
 #import "DWActionTableViewCell.h"
@@ -97,7 +97,7 @@ static NSString *dateFormat(NSString *template)
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     
 #if SNAPSHOT
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
                                                       inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
     
     manager.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
@@ -144,7 +144,7 @@ static NSString *dateFormat(NSString *template)
         [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (manager.didAuthenticate) {
-                                                                   BRTransaction *tx = self.transactions.firstObject;
+                                                                   DSTransaction *tx = self.transactions.firstObject;
                                                                    
                                                                    self.transactions = manager.wallet.allTransactions;
                                                                    if (self.transactions.firstObject != tx) {
@@ -165,7 +165,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerTxStatusNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                self.transactions = manager.wallet.allTransactions;
                                                                [self.tableView reloadData];
@@ -174,10 +174,10 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([[BRPeerManager sharedInstance]
-                                                                    timestampForBlockHeight:[BRPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([[DSPeerManager sharedInstance]
+                                                                    timestampForBlockHeight:[DSPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSinceReferenceDate] &&
                                                                    manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                                                                    self.navigationItem.titleView = nil;
@@ -275,7 +275,7 @@ static NSString *dateFormat(NSString *template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = [BRPeerManager sharedInstance].lastBlockHeight;
+    uint32_t h = [DSPeerManager sharedInstance].lastBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -295,7 +295,7 @@ static NSString *dateFormat(NSString *template)
         _transactions = (self.moreTx) ? [transactions subarrayWithRange:NSMakeRange(0, 5)] : [transactions copy];
         
         if (! [DSWalletManager sharedInstance].didAuthenticate) {
-            for (BRTransaction *tx in _transactions) {
+            for (DSTransaction *tx in _transactions) {
                 if (tx.blockHeight == TX_UNCONFIRMED ||
                     (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
                 _transactions = [_transactions subarrayWithRange:NSMakeRange(0, [_transactions indexOfObject:tx])];
@@ -306,7 +306,7 @@ static NSString *dateFormat(NSString *template)
     }
 }
 
-- (NSString *)dateForTx:(BRTransaction *)tx
+- (NSString *)dateForTx:(DSTransaction *)tx
 {
     static NSDateFormatter *monthDayHourFormatter = nil;
     static NSDateFormatter *yearMonthDayHourFormatter = nil;
@@ -320,7 +320,7 @@ static NSString *dateFormat(NSString *template)
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
-    NSTimeInterval now = [[BRPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
+    NSTimeInterval now = [[DSPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
     NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
     
     if (date) return date;
@@ -337,7 +337,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)done:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:dismiss"];
+    [DSEventManager saveEvent:@"tx_history:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -345,11 +345,11 @@ static NSString *dateFormat(NSString *template)
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     
-    if (sender) [BREventManager saveEvent:@"tx_history:unlock"];
+    if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
     if (! manager.didAuthenticate) {
         [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
-                if (sender) [BREventManager saveEvent:@"tx_history:unlock_success"];
+                if (sender) [DSEventManager saveEvent:@"tx_history:unlock_success"];
                 
                 [self updateTitleView];
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
@@ -373,7 +373,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)scanQR:(id)sender
 {
     //TODO: show scanner in settings rather than dismissing
-    [BREventManager saveEvent:@"tx_history:scan_qr"];
+    [DSEventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
     
     nav.view.alpha = 0.0;
@@ -386,7 +386,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)showTx:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:show_tx"];
+    [DSEventManager saveEvent:@"tx_history:show_tx"];
     DWTxDetailViewController *detailController
     = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
@@ -396,7 +396,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)more:(id)sender
 {
-    [BREventManager saveEvent:@"tx_history:more"];
+    [DSEventManager saveEvent:@"tx_history:more"];
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     NSUInteger txCount = self.transactions.count;
     
@@ -515,7 +515,7 @@ static NSString *dateFormat(NSString *template)
                 localBalanceLabel = transactionCell.remainingFiatAmountLabel;
                 shapeshiftImageView = transactionCell.shapeshiftImageView;
                 
-                BRTransaction *tx = self.transactions[indexPath.row];
+                DSTransaction *tx = self.transactions[indexPath.row];
                 uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
                 sent = [manager.wallet amountSentByTransaction:tx],
                 balance = [manager.wallet balanceAfterTransaction:tx];
@@ -716,18 +716,18 @@ static NSString *dateFormat(NSString *template)
             long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
             switch (adjustedRow) {
                 case 0: // buy dash
-                    [BREventManager saveEvent:@"tx_history:buy_btc"];
+                    [DSEventManager saveEvent:@"tx_history:buy_btc"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     //[self showBuy];
                     break;
                     
                 case 1: // Import private key
-                    [BREventManager saveEvent:@"tx_history:import_priv_key"];
+                    [DSEventManager saveEvent:@"tx_history:import_priv_key"];
                     [self scanQR:nil];
                     break;
                     
                 case 2: // settings
-                    [BREventManager saveEvent:@"tx_history:settings"];
+                    [DSEventManager saveEvent:@"tx_history:settings"];
                     destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
                     [self.navigationController pushViewController:destinationController animated:YES];
                     break;

@@ -28,7 +28,7 @@
 #import "DSWalletManager.h"
 #import "BRBIP32Sequence.h"
 #import "BRBIP39Mnemonic.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "BRKey.h"
 #import "BRKey+BIP38.h"
 #import "BRBloomFilter.h"
@@ -652,12 +652,12 @@
     
     [script appendScriptPubKeyForAddress:k.address];
     
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script]
                                                    outputAddresses:@[k.address, k.address] outputAmounts:@[@100000000, @4900000000]];
     
     [tx signWithPrivateKeys:@[k.privateKey]];
     
-    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
     
     NSUInteger height = [tx blockHeightUntilFreeForAmounts:@[@5000000000] withBlockHeights:@[@1]];
     uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
@@ -665,15 +665,15 @@
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
     
     NSData *d = tx.data;
     
-    tx = [BRTransaction transactionWithMessage:d];
+    tx = [DSTransaction transactionWithMessage:d];
     
-    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
+    XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
     
-    tx = [[BRTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
+    tx = [[DSTransaction alloc] initWithInputHashes:@[hash, hash, hash, hash, hash, hash, hash, hash, hash, hash]
                                        inputIndexes:@[@0, @0,@0, @0, @0, @0, @0, @0, @0, @0]
                                        inputScripts:@[script, script, script, script, script, script, script, script, script, script]
                                     outputAddresses:@[k.address, k.address, k.address, k.address, k.address, k.address, k.address, k.address,
@@ -683,7 +683,7 @@
     
     [tx signWithPrivateKeys:@[k.privateKey]];
     
-    XCTAssertTrue([tx isSigned], @"[BRTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
     
     height = [tx blockHeightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
                                                   @1000000, @1000000, @1000000]
@@ -696,12 +696,12 @@
     NSLog(@"height = %lu", (unsigned long)height);
     NSLog(@"priority = %llu", priority);
     
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[BRTransaction priorityForAmounts:withAges:]");
+    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
     
     d = tx.data;
-    tx = [BRTransaction transactionWithMessage:d];
+    tx = [DSTransaction transactionWithMessage:d];
     
-    XCTAssertEqualObjects(d, tx.data, @"[BRTransaction transactionWithMessage:]");
+    XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
 }
 
 // MARK: - testBIP39Mnemonic
@@ -1157,7 +1157,7 @@
     NSArray * inputScripts = @[script];
     NSArray * outputAddresses = @[w.receiveAddress];
     NSArray * outputAmounts = @[@(DUFFS)];
-    BRTransaction *tx = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                    outputAddresses:outputAddresses outputAmounts:outputAmounts];
     
     [tx signWithPrivateKeys:@[k.privateKey]];
@@ -1165,7 +1165,7 @@
     
     XCTAssertEqual(w.balance, DUFFS, @"[BRWallet registerTransaction]");
     
-    tx = [BRTransaction new];
+    tx = [DSTransaction new];
     [tx addInputHash:UINT256_ZERO index:2 script:script signature:NULL sequence:UINT32_MAX - 1];
     [tx addOutputAddress:w.receiveAddress amount:DUFFS];
     tx.lockTime = 1000;
@@ -1204,37 +1204,37 @@
     
     [allAddresses addObject:@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h"];
     
-    BRTransaction *tx1 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx1 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XnsafFUbkcPBi9KEa3cQgE7EMMTTYaNS3h", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J"];
     
-    BRTransaction *tx2 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx2 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XgrsfVaLgXKimVwhekNNNQzFrykrbDmz6J", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq"];
     
-    BRTransaction *tx3 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx3 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XoJVWknX7R6gBKRSGMCG8U4vPKwGihCgHq", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV"];
     
-    BRTransaction *tx4 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx4 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XjSZL2LeJ1Un8r7Lz9rHWLggKkvT5mc1pV", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH"];
     
-    BRTransaction *tx5 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx5 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XrLVS73GdwMbGQxJWqdboq5QQmZ6ePLzpH", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T"];
     
-    BRTransaction *tx6 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx6 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XkZRnRwg6oFSVTG4P8VUeaM5EGmzxQGx2T", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [allAddresses addObject:@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6"];
     
-    BRTransaction *tx7 = [[BRTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
+    DSTransaction *tx7 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
                                                     outputAddresses:@[@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
     
     [tx1 signWithPrivateKeys:@[k.privateKey]];
@@ -1500,18 +1500,18 @@
     "73fffb26937cf83ed6d2efaa771d2d2c697844b83948c98252b5f352edd4fe96b29cbe0c9ca3d107a3eb790dab5ddd73de6c748f2047db"
     "425c80c39135473cacad3619baaf28e391da4a6c7b82b74".hexToData;
     
-    BRPaymentProtocolRequest *req = [BRPaymentProtocolRequest requestWithData:d];
+    DSPaymentProtocolRequest *req = [DSPaymentProtocolRequest requestWithData:d];
     
-    XCTAssertEqualObjects(req.data, d, @"[BRPaymentProtocolRequest toData]");
+    XCTAssertEqualObjects(req.data, d, @"[DSPaymentProtocolRequest toData]");
     
     // test that the x509 certs are valid, but the payment request is expired
-    XCTAssertFalse([req isValid], @"[BRPaymentProtocolRequest isValid]");
+    XCTAssertFalse([req isValid], @"[DSPaymentProtocolRequest isValid]");
     XCTAssertEqualObjects(req.errorMessage,
                           @"untrusted certificate - One or more certificates have expired or are not valid yet.",
-                          @"[BRPaymentProtocolRequest isValid]");
+                          @"[DSPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);
-    XCTAssertEqualObjects(req.commonName, @"bitpay.com",  @"[BRPaymentProtocolRequest commonName]");
+    XCTAssertEqualObjects(req.commonName, @"bitpay.com",  @"[DSPaymentProtocolRequest commonName]");
     
     d = @"0a00125f5472616e73616374696f6e207265636569766564206279204269745061792e20496e766f6963652077696c6c206265206d617"
     "26b6564206173207061696420696620746865207472616e73616374696f6e20697320636f6e6669726d65642e".hexToData;
@@ -1582,18 +1582,18 @@
     "253be1e69dfa780dc06b6f48edfa15de6d0ccec22d9faaf67b535e8b2778cdf6184da2f2d1792d34c6440988327329e9c5ae18c34dda16"
     "dcdfbf419f7fd27bf575b6f9c95b1f090021640af5c02ad027b5d76053a5840bc4d6104dd87efc31bcc3a8aefc3100235be61c03a50556"
     "6777185dd6f932baeb5d5e2d4398d01140d48".hexToData;
-    req = [BRPaymentProtocolRequest requestWithData:d];
+    req = [DSPaymentProtocolRequest requestWithData:d];
     
-    XCTAssertEqualObjects(req.data, d, @"[BRPaymentProtocolRequest toData]");
+    XCTAssertEqualObjects(req.data, d, @"[DSPaymentProtocolRequest toData]");
     
     // test that the x509 certs are valid, but the payment request is expired (BUG: XXXX the cert is now expired!)
-    XCTAssertFalse([req isValid], @"[BRPaymentProtocolRequest isValid]");
+    XCTAssertFalse([req isValid], @"[DSPaymentProtocolRequest isValid]");
     XCTAssertEqualObjects(req.errorMessage,
                           @"untrusted certificate - One or more certificates have expired or are not valid yet.",
-                          @"[BRPaymentProtocolRequest isValid]");
+                          @"[DSPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);
-    XCTAssertEqualObjects(req.commonName, @"coinbase.com",  @"[BRPaymentProtocolRequest commonName]");
+    XCTAssertEqualObjects(req.commonName, @"coinbase.com",  @"[DSPaymentProtocolRequest commonName]");
     
     
     d = @"08011209783530392b736861311aee210ae10a3082055d30820445a0030201020210131b73f7cc0dd0ef4fd9baa161dfd202300d06092"
@@ -1684,16 +1684,16 @@
     "77107aee87b589e1c6d4ba92f6cc9ad7489a3b6a2dccbc62178a7440f563b266aa185c50e72ca97d0abab243c72ce30b8a2ab82a2dd03"
     "e45460f549f41765ee6ebd4aadfaaa5d3ce1cea9bc0253b2187193797e27753259eda7a0367c".hexToData;
     
-    req = [BRPaymentProtocolRequest requestWithData:d];
+    req = [DSPaymentProtocolRequest requestWithData:d];
     
-    XCTAssertEqualObjects(req.data, d, @"[BRPaymentProtocolRequest toData]");
+    XCTAssertEqualObjects(req.data, d, @"[DSPaymentProtocolRequest toData]");
     
     // test that the x509 certs are valid, but the payment request is expired
-    XCTAssertFalse([req isValid], @"[BRPaymentProtocolRequest isValid]");
-    //    XCTAssertEqualObjects(req.errorMessage, @"request expired", @"[BRPaymentProtocolRequest isValid]");
+    XCTAssertFalse([req isValid], @"[DSPaymentProtocolRequest isValid]");
+    //    XCTAssertEqualObjects(req.errorMessage, @"request expired", @"[DSPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);
-    XCTAssertEqualObjects(req.commonName, @"payments.bitonic.eu",  @"[BRPaymentProtocolRequest commonName]");
+    XCTAssertEqualObjects(req.commonName, @"payments.bitonic.eu",  @"[DSPaymentProtocolRequest commonName]");
 }
 
 // MARK: - UIImage+Utils

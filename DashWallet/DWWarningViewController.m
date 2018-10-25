@@ -7,8 +7,7 @@
 //
 
 #import "DWWarningViewController.h"
-#import "BREventManager.h"
-#import "DSWalletManager.h"
+#import <DashSync/DashSync.h>
 #import "DWSeedViewController.h"
 
 @interface DWWarningViewController ()

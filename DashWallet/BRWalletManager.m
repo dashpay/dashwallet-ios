@@ -28,11 +28,11 @@
 #import "BRKey+BIP38.h"
 #import "BRBIP39Mnemonic.h"
 #import "BRBIP32Sequence.h"
-#import "BRTransaction.h"
-#import "BRTransactionEntity.h"
+#import "DSTransaction.h"
+#import "DSTransactionEntity.h"
 #import "BRTxMetadataEntity.h"
 #import "BRAddressEntity.h"
-#import "BREventManager.h"
+#import "DSEventManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
@@ -215,7 +215,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 @property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
-@property (nonatomic, strong) void (^sweepCompletion)(BRTransaction *tx, uint64_t fee, NSError *error);
+@property (nonatomic, strong) void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error);
 @property (nonatomic, strong) UIAlertController *pinAlertController;
 @property (nonatomic, strong) UIAlertController *resetAlertController;
 @property (nonatomic, strong) UITextField *pinField;
@@ -396,7 +396,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 #else
                 [[NSManagedObject context] performBlockAndWait:^{
                     [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-                    [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+                    [DSTransactionEntity deleteObjects:[DSTransactionEntity allObjects]];
                     [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
                     [NSManagedObject saveContext];
                 }];
@@ -600,7 +600,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         
         [[NSManagedObject context] performBlockAndWait:^{
             [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
+            [DSTransactionEntity deleteObjects:[DSTransactionEntity allObjects]];
             [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
             [NSManagedObject saveContext];
         }];
@@ -871,7 +871,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 - (void)performLocalAuthenticationSynchronously:(LAContext *)context
                                          prompt:(NSString *)prompt
                                      completion:(void(^)(BOOL authenticated, BOOL shouldTryAnotherMethod))completion {
-    [BREventManager saveEvent:@"wallet_manager:touchid_auth"];
+    [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
     
     __block NSInteger result = 0;
     context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
@@ -1068,7 +1068,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     //after that you get locked out once immediately with a message saying
     //then you have 4 attempts with exponentially increasing intervals to get your password right
     
-    [BREventManager saveEvent:@"wallet_manager:pin_auth"];
+    [DSEventManager saveEvent:@"wallet_manager:pin_auth"];
     
     NSError *error = nil;
     NSString *pin = getKeychainString(PIN_KEY, &error);
@@ -1352,7 +1352,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         return; // error reading existing pin from keychain
     }
     
-    [BREventManager saveEvent:@"wallet_manager:set_pin"];
+    [DSEventManager saveEvent:@"wallet_manager:set_pin"];
     
     if (pin.length == 4) { //already had a pin, replacing it
         [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
@@ -1810,7 +1810,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
-             completion:(void (^)(BRTransaction *tx, uint64_t fee, NSError *error))completion
+             completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
 {
     if (! completion) return;
     
@@ -1900,7 +1900,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     
     [self utxosForAddresses:@[key.address]
                  completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-                     BRTransaction *tx = [BRTransaction new];
+                     DSTransaction *tx = [DSTransaction new];
                      uint64_t balance = 0, feeAmount = 0;
                      NSUInteger i = 0;
                      

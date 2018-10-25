@@ -25,14 +25,7 @@
 //  THE SOFTWARE.
 
 #import "DWRestoreViewController.h"
-#import "DSWalletManager.h"
-#import "BRMnemonic.h"
-#import "BRAddressEntity.h"
-#import "NSMutableData+Bitcoin.h"
-#import "NSString+Bitcoin.h"
-#import "NSManagedObject+Sugar.h"
-#import "BREventManager.h"
-#import "BRPeerManager.h"
+#import <DashSync/DashSync.h>
 
 #define PHRASE_LENGTH 12
 
@@ -118,14 +111,14 @@
 
 - (void)wipeWithPhrase:(NSString *)phrase
 {
-    [BREventManager saveEvent:@"restore:wipe"];
+    [DSEventManager saveEvent:@"restore:wipe"];
     
     @autoreleasepool {
         DSWalletManager *manager = [DSWalletManager sharedInstance];
-        BRPeerManager *peerManager = [BRPeerManager sharedInstance];
+        DSPeerManager *peerManager = [DSPeerManager sharedInstance];
         if ([phrase isEqual:@"wipe"]) {
             if ((manager.wallet.balance == 0) && ([peerManager timestampForBlockHeight:peerManager.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
-                [BREventManager saveEvent:@"restore:wipe_empty_wallet"];
+                [DSEventManager saveEvent:@"restore:wipe_empty_wallet"];
                 UIAlertController * actionSheet = [UIAlertController
                                              alertControllerWithTitle:nil
                                              message:nil
@@ -160,7 +153,7 @@
                 [self presentViewController:actionSheet animated:YES completion:nil];
             }
         } else if ([[phrase lowercaseString] isEqualToString:[NSLocalizedString(@"I accept that I will lose my coins if I no longer possess the recovery phrase", nil) lowercaseString]]) {
-                [BREventManager saveEvent:@"restore:wipe_full_wallet"];
+                [DSEventManager saveEvent:@"restore:wipe_full_wallet"];
             UIAlertController * actionSheet = [UIAlertController
                                                alertControllerWithTitle:nil
                                                message:nil
@@ -185,7 +178,7 @@
                 if ([[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:44]
                      isEqual:manager.extendedBIP44PublicKey] || [[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
                                                                  isEqual:manager.extendedBIP44PublicKey] || [phrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
-                    [BREventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
+                    [DSEventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
                     UIAlertController * actionSheet = [UIAlertController
                                                        alertControllerWithTitle:nil
                                                        message:nil
@@ -207,7 +200,7 @@
                     [self presentViewController:actionSheet animated:YES completion:nil];
                 }
                 else if (phrase) {
-                    [BREventManager saveEvent:@"restore:wipe_bad_recovery_phrase"];
+                    [DSEventManager saveEvent:@"restore:wipe_bad_recovery_phrase"];
                     UIAlertController * alert = [UIAlertController
                                                  alertControllerWithTitle:@""
                                                  message:NSLocalizedString(@"recovery phrase doesn't match", nil)
@@ -262,7 +255,7 @@
 
 - (IBAction)cancel:(id)sender
 {
-    [BREventManager saveEvent:@"restore:cancel"];
+    [DSEventManager saveEvent:@"restore:cancel"];
     
     if (self.navigationController.presentingViewController) {
         [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
@@ -331,7 +324,7 @@
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
         else if (incorrect) {
-            [BREventManager saveEvent:@"restore:invalid_word"];
+            [DSEventManager saveEvent:@"restore:invalid_word"];
             textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrect];
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@""
@@ -348,7 +341,7 @@
             [self presentViewController:alert animated:YES completion:nil];
         }
         else if (a.count != PHRASE_LENGTH) {
-            [BREventManager saveEvent:@"restore:invalid_num_words"];
+            [DSEventManager saveEvent:@"restore:invalid_num_words"];
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@""
                                          message:[NSString stringWithFormat:NSLocalizedString(@"recovery phrase must have %d words", nil),
@@ -364,7 +357,7 @@
             [self presentViewController:alert animated:YES completion:nil];
         }
         else if (isLocal && ! [manager.mnemonic phraseIsValid:phrase]) {
-            [BREventManager saveEvent:@"restore:bad_phrase"];
+            [DSEventManager saveEvent:@"restore:bad_phrase"];
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@""
                                          message:NSLocalizedString(@"bad recovery phrase", nil)

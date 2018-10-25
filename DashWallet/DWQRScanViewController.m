@@ -25,7 +25,7 @@
 
 #import "DWQRScanView.h"
 #import "DWQRScanViewModel.h"
-#import "BREventManager.h"
+#import "DSEventManager.h"
 
 #import "DWQRScanViewController.h"
 
@@ -62,7 +62,7 @@
     [super viewWillAppear:animated];
     
     if (self.viewModel.isCameraDeniedOrRestricted) {
-        [BREventManager saveEvent:@"scan:camera_denied"];
+        [DSEventManager saveEvent:@"scan:camera_denied"];
         NSString *displayName = [NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"];
         NSString *titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
                                  displayName];

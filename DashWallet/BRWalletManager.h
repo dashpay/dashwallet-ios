@@ -102,7 +102,7 @@ completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amoun
 // given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
-completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
+completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
 - (int64_t)amountForDashString:(NSString * _Nullable)string;

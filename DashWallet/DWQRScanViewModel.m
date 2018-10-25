@@ -25,11 +25,6 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import "NSString+Bitcoin.h"
-#import "NSString+Dash.h"
-#import "BREventManager.h"
-#import "DSPaymentRequest.h"
-
 #import "DWQRScanViewModel.h"
 
 static NSTimeInterval const kReqeustTimeout = 5.0;
@@ -264,7 +259,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     
     [self pauseQRCodeSearch];
     
-    [BREventManager saveEvent:@"send:scanned_qr"];
+    [DSEventManager saveEvent:@"send:scanned_qr"];
     
     AVMetadataMachineReadableCodeObject *codeObject = metadataObjects[index];
     
@@ -274,18 +269,18 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     });
     
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr];
-    if (request.isValid || [addr isValidBitcoinPrivateKey] || [addr isValidDashPrivateKey] || [addr isValidDashBIP38Key]) {
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:[DWEnvironment sharedInstance].currentChain];
+    if (request.isValid || [addr isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
         });
         
-        [BREventManager saveEvent:@"send:valid_qr_scan"];
+        [DSEventManager saveEvent:@"send:valid_qr_scan"];
         
         if (request.r.length > 0) { // start fetching payment protocol request right away
             __weak __typeof__(self) weakSelf = self;
-            [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
-                         completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+            [DSPaymentRequest fetch:request.r scheme:request.scheme onChain:[DWEnvironment sharedInstance].currentChain timeout:kReqeustTimeout
+                         completion:^(DSPaymentProtocolRequest *req, NSError *error) {
                              dispatch_async(dispatch_get_main_queue(), ^{
                                  __strong __typeof__(weakSelf) strongSelf = weakSelf;
                                  [strongSelf.delegate qrScanViewModel:strongSelf
@@ -300,8 +295,8 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         }
     } else {
         __weak __typeof__(self) weakSelf = self;
-        [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:kReqeustTimeout
-                     completion:^(BRPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
+        [DSPaymentRequest fetch:request.r scheme:request.scheme onChain:[DWEnvironment sharedInstance].currentChain timeout:kReqeustTimeout
+                     completion:^(DSPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
                          dispatch_async(dispatch_get_main_queue(), ^{
                              __strong __typeof__(weakSelf) strongSelf = weakSelf;
                              
@@ -333,7 +328,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
                                  
                                  [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
                                  
-                                 [BREventManager saveEvent:@"send:unsuccessful_bip73"];
+                                 [DSEventManager saveEvent:@"send:unsuccessful_bip73"];
                              }
                          });
                      }];

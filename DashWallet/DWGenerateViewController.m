@@ -7,7 +7,7 @@
 //
 
 #import "DWGenerateViewController.h"
-#import "BREventManager.h"
+#import "DSEventManager.h"
 #import "DSWalletManager.h"
 #import "DWWarningViewController.h"
 
@@ -51,7 +51,7 @@
 
 -(BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
     if (![DSWalletManager sharedInstance].passcodeEnabled) {
-        [BREventManager saveEvent:@"welcome:passcode_disabled"];
+        [DSEventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
                                      message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
@@ -70,7 +70,7 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    [BREventManager saveEvent:@"welcome:generate"];
+    [DSEventManager saveEvent:@"welcome:generate"];
 }
 
 @end

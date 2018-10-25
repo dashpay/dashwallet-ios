@@ -22,9 +22,9 @@
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
 		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
+		469D144FEF3143B7960BAD21 /* Pods_dashwallet_no_watch.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A169BE797EC811F83373CCB9 /* Pods_dashwallet_no_watch.framework */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
-		752E28F119234E8100DB5A3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 752E28F019234E8100DB5A3C /* Reachability.m */; settings = {COMPILER_FLAGS = "-w"; }; };
 		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
@@ -53,6 +53,7 @@
 		76C77ECE4A15F12186E4D939 /* Pods_DashWalletTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE7D12A6F7701D11AAA3C1D /* Pods_DashWalletTests.framework */; };
 		7910CF0A443B4895BCDE180B /* Pods_WatchApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0057ED5B9A3FB884B812EECA /* Pods_WatchApp.framework */; };
 		7AB905C559D7EE407AD410D7 /* Pods_TodayExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52084EBD60C405468CD10EE5 /* Pods_TodayExtension.framework */; };
+		8470F03D19AB360E5DC557B3 /* Pods_dashwallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D38D4862A16572873CFCF3D /* Pods_dashwallet.framework */; };
 		84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
 		AC904E0A9BCC8D09DB2E1652 /* Pods_WatchApp_Extension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56DE721EA97FF156C07D8D0E /* Pods_WatchApp_Extension.framework */; };
 		BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */; };
@@ -92,6 +93,78 @@
 		FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
+		FBEF3A95218235A800917AB6 /* BRUserDefaultsSwitchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */; };
+		FBEF3A96218235A800917AB6 /* BRBouncyBurgerButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */; };
+		FBEF3A97218235A800917AB6 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
+		FBEF3A98218235A800917AB6 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
+		FBEF3A99218235A800917AB6 /* UIFont+SystemFontOverride.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */; };
+		FBEF3A9A218235A800917AB6 /* DWWhiteActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */; };
+		FBEF3A9B218235A800917AB6 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
+		FBEF3A9C218235A800917AB6 /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* DWTxDetailViewController.m */; };
+		FBEF3A9D218235A800917AB6 /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 7548CF3619556FD700EF827F /* BRCopyLabel.m */; };
+		FBEF3A9E218235A800917AB6 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
+		FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
+		FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */; };
+		FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
+		FBEF3AA2218235A800917AB6 /* BRPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */; };
+		FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
+		FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
+		FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
+		FBEF3AA6218235A800917AB6 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWReceiveViewController.m */; };
+		FBEF3AA7218235A800917AB6 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BBE192ACD46002505AB /* DWAmountViewController.m */; };
+		FBEF3AA8218235A800917AB6 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
+		FBEF3AA9218235A800917AB6 /* DWRestoreViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E2192C0E9D0061CB20 /* DWRestoreViewController.m */; };
+		FBEF3AAA218235A800917AB6 /* DWWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* DWWelcomeViewController.m */; };
+		FBEF3AAB218235A800917AB6 /* DWSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* DWSeedViewController.m */; };
+		FBEF3AAC218235A800917AB6 /* DWNumberButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC74211CC68E00BC9879 /* DWNumberButton.m */; };
+		FBEF3AAD218235A800917AB6 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
+		FBEF3AAE218235A800917AB6 /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
+		FBEF3AAF218235A800917AB6 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
+		FBEF3AB0218235A800917AB6 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
+		FBEF3AB1218235A800917AB6 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */; };
+		FBEF3AB2218235A800917AB6 /* DWWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2EFA211413EB00D20C57 /* DWWarningViewController.m */; };
+		FBEF3AB3218235A800917AB6 /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
+		FBEF3AB4218235A800917AB6 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
+		FBEF3AB5218235A800917AB6 /* DWSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757C89511A2FCE420076B373 /* DWSettingsViewController.m */; };
+		FBEF3AB6218235A800917AB6 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
+		FBEF3AB7218235A800917AB6 /* DWAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3D1191EC270004AB296 /* DWAppDelegate.m */; };
+		FBEF3AB8218235A800917AB6 /* DWRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* DWRootViewController.m */; };
+		FBEF3AB9218235A800917AB6 /* DWSendViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB35193290F600AB4465 /* DWSendViewController.m */; };
+		FBEF3ABB218235A800917AB6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
+		FBEF3ABD218235A800917AB6 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
+		FBEF3ABE218235A800917AB6 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
+		FBEF3ABF218235A800917AB6 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
+		FBEF3AC0218235A800917AB6 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
+		FBEF3AC1218235A800917AB6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
+		FBEF3AC2218235A800917AB6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */; };
+		FBEF3AC3218235A800917AB6 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 225383001C694D7400968BEE /* CoreLocation.framework */; };
+		FBEF3AC4218235A800917AB6 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */; };
+		FBEF3AC5218235A800917AB6 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */; };
+		FBEF3AC6218235A800917AB6 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222E7F551C46E9B8009AB45D /* Security.framework */; };
+		FBEF3AC7218235A800917AB6 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 222040C51C1A1940005CE1C3 /* WebKit.framework */; };
+		FBEF3AC8218235A800917AB6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
+		FBEF3ACB218235A800917AB6 /* Montserrat-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA021137A7800D20C57 /* Montserrat-Italic.otf */; };
+		FBEF3ACC218235A800917AB6 /* Montserrat-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAE21137A7A00D20C57 /* Montserrat-Thin.otf */; };
+		FBEF3ACD218235A800917AB6 /* Montserrat-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA721137A7900D20C57 /* Montserrat-SemiBoldItalic.otf */; };
+		FBEF3ACE218235A800917AB6 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
+		FBEF3ACF218235A800917AB6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
+		FBEF3AD0218235A800917AB6 /* Montserrat-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA521137A7900D20C57 /* Montserrat-ExtraLight.otf */; };
+		FBEF3AD1218235A800917AB6 /* Montserrat-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAF21137A7A00D20C57 /* Montserrat-LightItalic.otf */; };
+		FBEF3AD2218235A800917AB6 /* Montserrat-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */; };
+		FBEF3AD3218235A800917AB6 /* Montserrat-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */; };
+		FBEF3AD4218235A800917AB6 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
+		FBEF3AD5218235A800917AB6 /* Montserrat-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA121137A7800D20C57 /* Montserrat-ThinItalic.otf */; };
+		FBEF3AD6218235A800917AB6 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
+		FBEF3AD7218235A800917AB6 /* Montserrat-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA321137A7900D20C57 /* Montserrat-ExtraLightItalic.otf */; };
+		FBEF3AD8218235A800917AB6 /* BREventConfirmView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 755FC9EF1BF1DF1B00164ABB /* BREventConfirmView.xib */; };
+		FBEF3AD9218235A800917AB6 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
+		FBEF3ADA218235A800917AB6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DC191EC270004AB296 /* Main.storyboard */; };
+		FBEF3ADB218235A800917AB6 /* Montserrat-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EAD21137A7A00D20C57 /* Montserrat-MediumItalic.otf */; };
+		FBEF3ADC218235A800917AB6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
+		FBEF3ADD218235A800917AB6 /* Montserrat-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA221137A7900D20C57 /* Montserrat-Bold.otf */; };
+		FBEF3ADE218235A800917AB6 /* Montserrat-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA621137A7900D20C57 /* Montserrat-Light.otf */; };
+		FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
+		FBEF3AF221823CD800917AB6 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
 		FBF3F42B1E42AF8F00C7248E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */; };
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
@@ -196,6 +269,20 @@
 			remoteGlobalIDString = BAE12BE41B2DEE7F00895CC5;
 			remoteInfo = TodayExtension;
 		};
+		FBEF3A8E218235A800917AB6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75001D3D1A1EE89500585F55;
+			remoteInfo = submodules;
+		};
+		FBEF3A90218235A800917AB6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAE12BE41B2DEE7F00895CC5;
+			remoteInfo = TodayExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -236,9 +323,9 @@
 
 /* Begin PBXFileReference section */
 		0057ED5B9A3FB884B812EECA /* Pods_WatchApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WatchApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0460B3700ACED894ABF56310 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		0A0F0784925A318771D7E4C3 /* Pods-DashWalletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
+		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		2142023B66B3AB7DC260D9A9 /* Pods-TodayExtension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testflight.xcconfig"; sourceTree = "<group>"; };
 		220460531BA0BEEE00D07B61 /* BREventConfirmView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventConfirmView.h; sourceTree = "<group>"; };
@@ -253,6 +340,7 @@
 		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
 		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
 		22F45A0F1C3329EB00B07A15 /* DWUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDefaultsConstants.h; sourceTree = "<group>"; };
+		27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testflight.xcconfig"; sourceTree = "<group>"; };
 		29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
 		2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewController.m; sourceTree = "<group>"; };
@@ -264,12 +352,13 @@
 		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
 		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		3608B4F4C9E8A955F7AB66BA /* Pods_DashWalletUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DashWalletUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4BF2A4C78C1841796379A928 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
+		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		52084EBD60C405468CD10EE5 /* Pods_TodayExtension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TodayExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		56DE721EA97FF156C07D8D0E /* Pods_WatchApp_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WatchApp_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6DD543F043443B124EF4FBD2 /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
+		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1101AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
@@ -292,8 +381,6 @@
 		7525B618192453840041C0F2 /* BRNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRNavigationBar.m; sourceTree = "<group>"; };
 		752E28CC19234C3600DB5A3C /* BRWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWalletManager.h; sourceTree = "<group>"; };
 		752E28CD19234C3600DB5A3C /* BRWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletManager.m; sourceTree = "<group>"; };
-		752E28EF19234E8100DB5A3C /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = SOURCE_ROOT; };
-		752E28F019234E8100DB5A3C /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = SOURCE_ROOT; };
 		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		7548CF3519556FD700EF827F /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
 		7548CF3619556FD700EF827F /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
@@ -307,37 +394,10 @@
 		757C89501A2FCE420076B373 /* DWSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSettingsViewController.h; sourceTree = "<group>"; };
 		757C89511A2FCE420076B373 /* DWSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWSettingsViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		757E40C41DEBDD6B00D1CE57 /* scalar_low_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scalar_low_impl.h; sourceTree = "<group>"; };
-		757E40C51DEBDD6B00D1CE57 /* scalar_low.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scalar_low.h; sourceTree = "<group>"; };
 		75878BBD192ACD46002505AB /* DWAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
 		75878BBE192ACD46002505AB /* DWAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		75878BC0192AEC3F002505AB /* DWReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxHistoryViewController.h; sourceTree = "<group>"; };
-		758B16241AA9ADC4002C65DD /* secp256k1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1.h; sourceTree = "<group>"; };
-		758B16301AA9ADC4002C65DD /* ecdsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa.h; sourceTree = "<group>"; };
-		758B16311AA9ADC4002C65DD /* ecdsa_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa_impl.h; sourceTree = "<group>"; };
-		758B16321AA9ADC4002C65DD /* eckey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eckey.h; sourceTree = "<group>"; };
-		758B16331AA9ADC4002C65DD /* eckey_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eckey_impl.h; sourceTree = "<group>"; };
-		758B16341AA9ADC4002C65DD /* ecmult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult.h; sourceTree = "<group>"; };
-		758B16351AA9ADC4002C65DD /* ecmult_gen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_gen.h; sourceTree = "<group>"; };
-		758B16361AA9ADC4002C65DD /* ecmult_gen_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_gen_impl.h; sourceTree = "<group>"; };
-		758B16371AA9ADC4002C65DD /* ecmult_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_impl.h; sourceTree = "<group>"; };
-		758B16381AA9ADC4002C65DD /* field.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field.h; sourceTree = "<group>"; };
-		758B16391AA9ADC4002C65DD /* field_10x26.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_10x26.h; sourceTree = "<group>"; };
-		758B163A1AA9ADC4002C65DD /* field_10x26_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_10x26_impl.h; sourceTree = "<group>"; };
-		758B163F1AA9ADC4002C65DD /* field_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_impl.h; sourceTree = "<group>"; };
-		758B16401AA9ADC4002C65DD /* group.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = group.h; sourceTree = "<group>"; };
-		758B16411AA9ADC4002C65DD /* group_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = group_impl.h; sourceTree = "<group>"; };
-		758B16421AA9ADC4002C65DD /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
-		758B16431AA9ADC4002C65DD /* hash_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_impl.h; sourceTree = "<group>"; };
-		758B164A1AA9ADC4002C65DD /* num.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num.h; sourceTree = "<group>"; };
-		758B164D1AA9ADC4002C65DD /* num_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num_impl.h; sourceTree = "<group>"; };
-		758B164E1AA9ADC4002C65DD /* scalar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar.h; sourceTree = "<group>"; };
-		758B16511AA9ADC4002C65DD /* scalar_8x32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_8x32.h; sourceTree = "<group>"; };
-		758B16521AA9ADC4002C65DD /* scalar_8x32_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_8x32_impl.h; sourceTree = "<group>"; };
-		758B16531AA9ADC4002C65DD /* scalar_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_impl.h; sourceTree = "<group>"; };
-		758B16541AA9ADC4002C65DD /* secp256k1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = secp256k1.c; sourceTree = "<group>"; };
-		758B16581AA9ADC4002C65DD /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 		758DBD0C1980634900389E2A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		758DBD0D1980634900389E2A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
@@ -388,20 +448,12 @@
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
 		75EDC0E61CD92CE00090B838 /* DashWalletUITests-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DashWalletUITests-Bridging-Header.h"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
-		75F2E0B81BE5596200EAE861 /* secp256k1_ecdh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_ecdh.h; sourceTree = "<group>"; };
-		75F2E0B91BE5596200EAE861 /* secp256k1_recovery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = secp256k1_recovery.h; sourceTree = "<group>"; };
-		75F2E0BB1BE5599100EAE861 /* basic-config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "basic-config.h"; sourceTree = "<group>"; };
-		75F2E0BC1BE559AE00EAE861 /* ecmult_const_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ecmult_const_impl.h; sourceTree = "<group>"; };
-		75F2E0BD1BE559AE00EAE861 /* ecmult_const.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ecmult_const.h; sourceTree = "<group>"; };
-		75F2E0C01BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
-		75F2E0C41BE559F200EAE861 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
 		75F747501BF41A9F006A6BE8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/BREventConfirmView.xib; sourceTree = "<group>"; };
 		75F747521BF41AD0006A6BE8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FAF1BFAB97000D56BBA /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FB11BFAB97200D56BBA /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FB31BFAB97500D56BBA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FB51BFAB97A00D56BBA /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
-		7C1D21692EE088514FD19B04 /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
 		7E9BCB73BE35FC9F0B276257 /* Pods-DashWalletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.release.xcconfig"; sourceTree = "<group>"; };
 		7EEDF75116E60BB9EE9C80FB /* Pods-WatchApp.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testnet.xcconfig"; sourceTree = "<group>"; };
 		84F68C881975E9E2002FC300 /* DWScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWScanViewController.h; sourceTree = "<group>"; };
@@ -409,8 +461,11 @@
 		87872BF3D40B38CD0FC246AB /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
 		8D38D4862A16572873CFCF3D /* Pods_dashwallet.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dashwallet.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		934DC791C539EABD2EE14E81 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
 		9AE7D12A6F7701D11AAA3C1D /* Pods_DashWalletTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DashWalletTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A169BE797EC811F83373CCB9 /* Pods_dashwallet_no_watch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dashwallet_no_watch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9ADF8F00D78A593DB286203 /* Pods-DashWalletUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.testflight.xcconfig"; sourceTree = "<group>"; };
+		AA118F99071BC98E7056E3F4 /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
 		AAC103D2F3C1CE8C7A598E78 /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
 		B49B8EA157CD1A34396D7677 /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
 		B52496DA3D9493651DD32EE1 /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
@@ -450,6 +505,7 @@
 		BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTodayViewController.m; sourceTree = "<group>"; };
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
+		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		E6C3F25E2C725454B6074C9E /* Pods-DashWalletUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		F12049B257DDE750DE332799 /* Pods-WatchApp.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testflight.xcconfig"; sourceTree = "<group>"; };
 		FB021E511E47E17200D17638 /* FBShimmering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmering.h; sourceTree = "<group>"; };
@@ -525,6 +581,11 @@
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB9CC26F1F8E27B80079309F /* DWGenerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGenerateViewController.h; sourceTree = "<group>"; };
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
+		FBEF3AEB218235A800917AB6 /* dashwallet no watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dashwallet no watch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FBEF3AEC218235A900917AB6 /* dashwallet copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "dashwallet copy-Info.plist"; path = "/Users/samuelw/Documents/src/dashwallet/dashwallet copy-Info.plist"; sourceTree = "<absolute>"; };
+		FBEF3AED2182395800917AB6 /* DashSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DashSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWEnvironment.h; sourceTree = "<group>"; };
+		FBEF3AF021823CD800917AB6 /* DWEnvironment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWEnvironment.m; sourceTree = "<group>"; };
 		FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -574,6 +635,7 @@
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
 				22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */,
 				E594A2546067A50322E08631 /* Pods_dashwallet.framework in Frameworks */,
+				8470F03D19AB360E5DC557B3 /* Pods_dashwallet.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -607,6 +669,26 @@
 			files = (
 				754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */,
 				7AB905C559D7EE407AD410D7 /* Pods_TodayExtension.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBEF3ABC218235A800917AB6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBEF3ABD218235A800917AB6 /* SafariServices.framework in Frameworks */,
+				FBEF3ABE218235A800917AB6 /* UserNotifications.framework in Frameworks */,
+				FBEF3ABF218235A800917AB6 /* ImageIO.framework in Frameworks */,
+				FBEF3AC0218235A800917AB6 /* CoreGraphics.framework in Frameworks */,
+				FBEF3AC1218235A800917AB6 /* UIKit.framework in Frameworks */,
+				FBEF3AC2218235A800917AB6 /* QuartzCore.framework in Frameworks */,
+				FBEF3AC3218235A800917AB6 /* CoreLocation.framework in Frameworks */,
+				FBEF3AC4218235A800917AB6 /* libsqlite3.tbd in Frameworks */,
+				FBEF3AC5218235A800917AB6 /* SystemConfiguration.framework in Frameworks */,
+				FBEF3AC6218235A800917AB6 /* Security.framework in Frameworks */,
+				FBEF3AC7218235A800917AB6 /* WebKit.framework in Frameworks */,
+				FBEF3AC8218235A800917AB6 /* libbz2.tbd in Frameworks */,
+				469D144FEF3143B7960BAD21 /* Pods_dashwallet_no_watch.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -652,6 +734,8 @@
 			children = (
 				752E28CC19234C3600DB5A3C /* BRWalletManager.h */,
 				752E28CD19234C3600DB5A3C /* BRWalletManager.m */,
+				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
+				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -672,67 +756,8 @@
 			children = (
 				FB021E581E4DEFD300D17638 /* MBProgressHUD */,
 				FB021E501E47E17200D17638 /* FBShimmering */,
-				752E28EF19234E8100DB5A3C /* Reachability.h */,
-				752E28F019234E8100DB5A3C /* Reachability.m */,
-				758B161A1AA9ADC4002C65DD /* secp256k1 */,
 			);
 			name = ThirdParty;
-			sourceTree = "<group>";
-		};
-		758B161A1AA9ADC4002C65DD /* secp256k1 */ = {
-			isa = PBXGroup;
-			children = (
-				758B16231AA9ADC4002C65DD /* include */,
-				758B162A1AA9ADC4002C65DD /* src */,
-			);
-			path = secp256k1;
-			sourceTree = SOURCE_ROOT;
-		};
-		758B16231AA9ADC4002C65DD /* include */ = {
-			isa = PBXGroup;
-			children = (
-				758B16241AA9ADC4002C65DD /* secp256k1.h */,
-				75F2E0B81BE5596200EAE861 /* secp256k1_ecdh.h */,
-				75F2E0B91BE5596200EAE861 /* secp256k1_recovery.h */,
-			);
-			path = include;
-			sourceTree = "<group>";
-		};
-		758B162A1AA9ADC4002C65DD /* src */ = {
-			isa = PBXGroup;
-			children = (
-				75F2E0BB1BE5599100EAE861 /* basic-config.h */,
-				758B16301AA9ADC4002C65DD /* ecdsa.h */,
-				758B16311AA9ADC4002C65DD /* ecdsa_impl.h */,
-				758B16321AA9ADC4002C65DD /* eckey.h */,
-				758B16331AA9ADC4002C65DD /* eckey_impl.h */,
-				758B16341AA9ADC4002C65DD /* ecmult.h */,
-				75F2E0BD1BE559AE00EAE861 /* ecmult_const.h */,
-				75F2E0BC1BE559AE00EAE861 /* ecmult_const_impl.h */,
-				758B16351AA9ADC4002C65DD /* ecmult_gen.h */,
-				758B16361AA9ADC4002C65DD /* ecmult_gen_impl.h */,
-				758B16371AA9ADC4002C65DD /* ecmult_impl.h */,
-				758B16381AA9ADC4002C65DD /* field.h */,
-				758B16391AA9ADC4002C65DD /* field_10x26.h */,
-				758B163A1AA9ADC4002C65DD /* field_10x26_impl.h */,
-				758B163F1AA9ADC4002C65DD /* field_impl.h */,
-				758B16401AA9ADC4002C65DD /* group.h */,
-				758B16411AA9ADC4002C65DD /* group_impl.h */,
-				758B16421AA9ADC4002C65DD /* hash.h */,
-				758B16431AA9ADC4002C65DD /* hash_impl.h */,
-				75F2E0BE1BE559F200EAE861 /* modules */,
-				758B164A1AA9ADC4002C65DD /* num.h */,
-				758B164D1AA9ADC4002C65DD /* num_impl.h */,
-				758B164E1AA9ADC4002C65DD /* scalar.h */,
-				758B16511AA9ADC4002C65DD /* scalar_8x32.h */,
-				758B16521AA9ADC4002C65DD /* scalar_8x32_impl.h */,
-				758B16531AA9ADC4002C65DD /* scalar_impl.h */,
-				757E40C41DEBDD6B00D1CE57 /* scalar_low_impl.h */,
-				757E40C51DEBDD6B00D1CE57 /* scalar_low.h */,
-				758B16541AA9ADC4002C65DD /* secp256k1.c */,
-				758B16581AA9ADC4002C65DD /* util.h */,
-			);
-			path = src;
 			sourceTree = "<group>";
 		};
 		75BA5D02192296010040304C /* Controllers */ = {
@@ -781,6 +806,7 @@
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
 				EBFC2EA47915CD4F5BA81564 /* Pods */,
+				FBEF3AEC218235A900917AB6 /* dashwallet copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -793,6 +819,7 @@
 				31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */,
 				BA913BDE1BD57E4D005A7C0E /* WatchApp.app */,
 				BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */,
+				FBEF3AEB218235A800917AB6 /* dashwallet no watch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -800,6 +827,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FBEF3AED2182395800917AB6 /* DashSync.framework */,
 				FB248B621F79BB7C00405AE0 /* SafariServices.framework */,
 				FB248B5C1F73803100405AE0 /* UserNotifications.framework */,
 				FBF3F4301E42B02800C7248E /* ImageIO.framework */,
@@ -820,6 +848,7 @@
 				0057ED5B9A3FB884B812EECA /* Pods_WatchApp.framework */,
 				56DE721EA97FF156C07D8D0E /* Pods_WatchApp_Extension.framework */,
 				8D38D4862A16572873CFCF3D /* Pods_dashwallet.framework */,
+				A169BE797EC811F83373CCB9 /* Pods_dashwallet_no_watch.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -867,31 +896,6 @@
 				75CE50B51B5216F100DBC18C /* Info.plist */,
 			);
 			path = DashWalletTests;
-			sourceTree = "<group>";
-		};
-		75F2E0BE1BE559F200EAE861 /* modules */ = {
-			isa = PBXGroup;
-			children = (
-				75F2E0BF1BE559F200EAE861 /* ecdh */,
-				75F2E0C31BE559F200EAE861 /* recovery */,
-			);
-			path = modules;
-			sourceTree = "<group>";
-		};
-		75F2E0BF1BE559F200EAE861 /* ecdh */ = {
-			isa = PBXGroup;
-			children = (
-				75F2E0C01BE559F200EAE861 /* main_impl.h */,
-			);
-			path = ecdh;
-			sourceTree = "<group>";
-		};
-		75F2E0C31BE559F200EAE861 /* recovery */ = {
-			isa = PBXGroup;
-			children = (
-				75F2E0C41BE559F200EAE861 /* main_impl.h */,
-			);
-			path = recovery;
 			sourceTree = "<group>";
 		};
 		BA913BDF1BD57E4D005A7C0E /* WatchApp */ = {
@@ -973,10 +977,14 @@
 				29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */,
 				CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */,
 				556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */,
-				7C1D21692EE088514FD19B04 /* Pods-dashwallet.debug.xcconfig */,
-				0460B3700ACED894ABF56310 /* Pods-dashwallet.testnet.xcconfig */,
-				4BF2A4C78C1841796379A928 /* Pods-dashwallet.release.xcconfig */,
-				6DD543F043443B124EF4FBD2 /* Pods-dashwallet.testflight.xcconfig */,
+				AA118F99071BC98E7056E3F4 /* Pods-dashwallet.debug.xcconfig */,
+				362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */,
+				934DC791C539EABD2EE14E81 /* Pods-dashwallet.release.xcconfig */,
+				1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */,
+				D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */,
+				5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */,
+				3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */,
+				27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -1179,7 +1187,6 @@
 				BA913BE61BD57E4D005A7C0E /* Sources */,
 				BA913BE71BD57E4D005A7C0E /* Frameworks */,
 				BA913BE81BD57E4D005A7C0E /* Resources */,
-				8D87C3D02190AF025F8B48D8 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1207,6 +1214,29 @@
 			productName = TodayExtension;
 			productReference = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		FBEF3A8C218235A800917AB6 /* dashwallet no watch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FBEF3AE6218235A800917AB6 /* Build configuration list for PBXNativeTarget "dashwallet no watch" */;
+			buildPhases = (
+				78A453EAE172C885DE4CF21D /* [CP] Check Pods Manifest.lock */,
+				FBEF3A94218235A800917AB6 /* Sources */,
+				FBEF3ABC218235A800917AB6 /* Frameworks */,
+				FBEF3ACA218235A800917AB6 /* Resources */,
+				FBEF3AE3218235A800917AB6 /* Icon Versioning */,
+				FBEF3AE4218235A800917AB6 /* ShellScript */,
+				29CDADBBE1FBA759B353AC49 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FBEF3A8D218235A800917AB6 /* PBXTargetDependency */,
+				FBEF3A8F218235A800917AB6 /* PBXTargetDependency */,
+			);
+			name = "dashwallet no watch";
+			productName = DashWallet;
+			productReference = FBEF3AEB218235A800917AB6 /* dashwallet no watch.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -1269,6 +1299,9 @@
 							};
 						};
 					};
+					FBEF3A8C218235A800917AB6 = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 75D5F3B9191EC270004AB296 /* Build configuration list for PBXProject "DashWallet" */;
@@ -1303,6 +1336,7 @@
 			projectRoot = "";
 			targets = (
 				75D5F3BD191EC270004AB296 /* dashwallet */,
+				FBEF3A8C218235A800917AB6 /* dashwallet no watch */,
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* DashWalletTests */,
 				31D68B4F1C23B6C10030FAAA /* DashWalletUITests */,
@@ -1421,6 +1455,33 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FBEF3ACA218235A800917AB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBEF3ACB218235A800917AB6 /* Montserrat-Italic.otf in Resources */,
+				FBEF3ACC218235A800917AB6 /* Montserrat-Thin.otf in Resources */,
+				FBEF3ACD218235A800917AB6 /* Montserrat-SemiBoldItalic.otf in Resources */,
+				FBEF3ACE218235A800917AB6 /* Images.xcassets in Resources */,
+				FBEF3ACF218235A800917AB6 /* Localizable.strings in Resources */,
+				FBEF3AD0218235A800917AB6 /* Montserrat-ExtraLight.otf in Resources */,
+				FBEF3AD1218235A800917AB6 /* Montserrat-LightItalic.otf in Resources */,
+				FBEF3AD2218235A800917AB6 /* Montserrat-SemiBold.otf in Resources */,
+				FBEF3AD3218235A800917AB6 /* Montserrat-Medium.otf in Resources */,
+				FBEF3AD4218235A800917AB6 /* Montserrat-Regular.otf in Resources */,
+				FBEF3AD5218235A800917AB6 /* Montserrat-ThinItalic.otf in Resources */,
+				FBEF3AD6218235A800917AB6 /* coinflip.aiff in Resources */,
+				FBEF3AD7218235A800917AB6 /* Montserrat-ExtraLightItalic.otf in Resources */,
+				FBEF3AD8218235A800917AB6 /* BREventConfirmView.xib in Resources */,
+				FBEF3AD9218235A800917AB6 /* FixedPeers.plist in Resources */,
+				FBEF3ADA218235A800917AB6 /* Main.storyboard in Resources */,
+				FBEF3ADB218235A800917AB6 /* Montserrat-MediumItalic.otf in Resources */,
+				FBEF3ADC218235A800917AB6 /* LaunchScreen.storyboard in Resources */,
+				FBEF3ADD218235A800917AB6 /* Montserrat-Bold.otf in Resources */,
+				FBEF3ADE218235A800917AB6 /* Montserrat-Light.otf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -1440,6 +1501,30 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		29CDADBBE1FBA759B353AC49 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework",
+				"${BUILT_PRODUCTS_DIR}/DashSync/DashSync.framework",
+				"${BUILT_PRODUCTS_DIR}/KVO-MVVM/KVO_MVVM.framework",
+				"${BUILT_PRODUCTS_DIR}/secp256k1_dash/secp256k1_dash.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DashSync.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KVO_MVVM.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/secp256k1_dash.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		4F32946C767072BBC965A5C3 /* [CP] Check Pods Manifest.lock */ = {
@@ -1478,6 +1563,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		78A453EAE172C885DE4CF21D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-dashwallet no watch-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		8A568AAF75ECC063AA72DD3A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1494,28 +1597,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8D87C3D02190AF025F8B48D8 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/AFNetworking.root-NSURLSession-Security-Serialization/AFNetworking.framework",
-				"${BUILT_PRODUCTS_DIR}/DashSync-watchOS/DashSync.framework",
-				"${BUILT_PRODUCTS_DIR}/secp256k1_dash-watchOS/secp256k1_dash.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DashSync.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/secp256k1_dash.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A80531A10CF1AE66138E56C3 /* [CP] Check Pods Manifest.lock */ = {
@@ -1544,9 +1625,9 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework",
-				"${BUILT_PRODUCTS_DIR}/DashSync-iOS/DashSync.framework",
+				"${BUILT_PRODUCTS_DIR}/DashSync/DashSync.framework",
 				"${BUILT_PRODUCTS_DIR}/KVO-MVVM/KVO_MVVM.framework",
-				"${BUILT_PRODUCTS_DIR}/secp256k1_dash-iOS/secp256k1_dash.framework",
+				"${BUILT_PRODUCTS_DIR}/secp256k1_dash/secp256k1_dash.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -1572,7 +1653,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"";
+			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"\n";
 		};
 		DD2839496F426BDB0829397D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1603,7 +1684,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi";
+			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
+		};
+		FBEF3AE3218235A800917AB6 /* Icon Versioning */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Icon Versioning";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"\n";
+		};
+		FBEF3AE4218235A800917AB6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1655,10 +1763,10 @@
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				757C89521A2FCE420076B373 /* DWSettingsViewController.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
+				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				75D5F3D2191EC270004AB296 /* DWAppDelegate.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
-				752E28F119234E8100DB5A3C /* Reachability.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1700,6 +1808,52 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FBEF3A94218235A800917AB6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBEF3A95218235A800917AB6 /* BRUserDefaultsSwitchCell.m in Sources */,
+				FBEF3A96218235A800917AB6 /* BRBouncyBurgerButton.m in Sources */,
+				FBEF3A97218235A800917AB6 /* BRAppleWatchData.m in Sources */,
+				FBEF3A98218235A800917AB6 /* DWShareActionButton.m in Sources */,
+				FBEF3A99218235A800917AB6 /* UIFont+SystemFontOverride.m in Sources */,
+				FBEF3A9A218235A800917AB6 /* DWWhiteActionButton.m in Sources */,
+				FBEF3A9B218235A800917AB6 /* UIImage+Utils.m in Sources */,
+				FBEF3A9C218235A800917AB6 /* DWTxDetailViewController.m in Sources */,
+				FBEF3A9D218235A800917AB6 /* BRCopyLabel.m in Sources */,
+				FBEF3A9E218235A800917AB6 /* DWQRScanViewModel.m in Sources */,
+				FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */,
+				FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */,
+				FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */,
+				FBEF3AA2218235A800917AB6 /* BRPhoneWCSessionManager.m in Sources */,
+				FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */,
+				FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */,
+				FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */,
+				FBEF3AA6218235A800917AB6 /* DWReceiveViewController.m in Sources */,
+				FBEF3AA7218235A800917AB6 /* DWAmountViewController.m in Sources */,
+				FBEF3AA8218235A800917AB6 /* BRBubbleView.m in Sources */,
+				FBEF3AA9218235A800917AB6 /* DWRestoreViewController.m in Sources */,
+				FBEF3AAA218235A800917AB6 /* DWWelcomeViewController.m in Sources */,
+				FBEF3AAB218235A800917AB6 /* DWSeedViewController.m in Sources */,
+				FBEF3AAC218235A800917AB6 /* DWNumberButton.m in Sources */,
+				FBEF3AAD218235A800917AB6 /* DWQRScanViewController.m in Sources */,
+				FBEF3AAE218235A800917AB6 /* DWGenerateViewController.m in Sources */,
+				FBEF3AAF218235A800917AB6 /* BRAppleWatchTransactionData.m in Sources */,
+				FBEF3AB0218235A800917AB6 /* FBShimmeringView.m in Sources */,
+				FBEF3AB1218235A800917AB6 /* MBProgressHUD.m in Sources */,
+				FBEF3AB2218235A800917AB6 /* DWWarningViewController.m in Sources */,
+				FBEF3AB3218235A800917AB6 /* DWTxHistoryViewController.m in Sources */,
+				FBEF3AB4218235A800917AB6 /* DWQRScanView.m in Sources */,
+				FBEF3AB5218235A800917AB6 /* DWSettingsViewController.m in Sources */,
+				FBEF3AB6218235A800917AB6 /* DWTransactionTableViewCell.m in Sources */,
+				FBEF3AF221823CD800917AB6 /* DWEnvironment.m in Sources */,
+				FBEF3AB7218235A800917AB6 /* DWAppDelegate.m in Sources */,
+				FBEF3AB8218235A800917AB6 /* DWRootViewController.m in Sources */,
+				FBEF3AB9218235A800917AB6 /* DWSendViewController.m in Sources */,
+				FBEF3ABB218235A800917AB6 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1732,6 +1886,16 @@
 			isa = PBXTargetDependency;
 			target = BAE12BE41B2DEE7F00895CC5 /* TodayExtension */;
 			targetProxy = BAE12BF01B2DEE7F00895CC5 /* PBXContainerItemProxy */;
+		};
+		FBEF3A8D218235A800917AB6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75001D3D1A1EE89500585F55 /* submodules */;
+			targetProxy = FBEF3A8E218235A800917AB6 /* PBXContainerItemProxy */;
+		};
+		FBEF3A8F218235A800917AB6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAE12BE41B2DEE7F00895CC5 /* TodayExtension */;
+			targetProxy = FBEF3A90218235A800917AB6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2038,7 +2202,7 @@
 		};
 		75D5F3F7191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7C1D21692EE088514FD19B04 /* Pods-dashwallet.debug.xcconfig */;
+			baseConfigurationReference = AA118F99071BC98E7056E3F4 /* Pods-dashwallet.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2070,7 +2234,7 @@
 		};
 		75D5F3F8191EC270004AB296 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4BF2A4C78C1841796379A928 /* Pods-dashwallet.release.xcconfig */;
+			baseConfigurationReference = 934DC791C539EABD2EE14E81 /* Pods-dashwallet.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2314,7 +2478,7 @@
 		};
 		CEE253D31E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6DD543F043443B124EF4FBD2 /* Pods-dashwallet.testflight.xcconfig */;
+			baseConfigurationReference = 1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2511,7 +2675,7 @@
 		};
 		FB9CC19B1F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0460B3700ACED894ABF56310 /* Pods-dashwallet.testnet.xcconfig */;
+			baseConfigurationReference = 362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -2639,6 +2803,131 @@
 			};
 			name = Testnet;
 		};
+		FBEF3AE7218235A800917AB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/secp256k1",
+					"$(SRCROOT)",
+				);
+				INFOPLIST_FILE = "dashwallet copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		FBEF3AE8218235A800917AB6 /* Testnet */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/secp256k1",
+					"$(SRCROOT)",
+				);
+				INFOPLIST_FILE = "dashwallet copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Testnet;
+		};
+		FBEF3AE9218235A800917AB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/secp256k1",
+					"$(SRCROOT)",
+				);
+				INFOPLIST_FILE = "dashwallet copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		FBEF3AEA218235A800917AB6 /* Testflight */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/secp256k1",
+					"$(SRCROOT)",
+				);
+				INFOPLIST_FILE = "dashwallet copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Testflight;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2726,6 +3015,17 @@
 				FB9CC19C1F8511620079309F /* Testnet */,
 				BAE12BF51B2DEE7F00895CC5 /* Release */,
 				CEE253D41E26A9BC00A25B15 /* Testflight */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FBEF3AE6218235A800917AB6 /* Build configuration list for PBXNativeTarget "dashwallet no watch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FBEF3AE7218235A800917AB6 /* Debug */,
+				FBEF3AE8218235A800917AB6 /* Testnet */,
+				FBEF3AE9218235A800917AB6 /* Release */,
+				FBEF3AEA218235A800917AB6 /* Testflight */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -26,10 +26,7 @@
 #import "BRPhoneWCSessionManager.h"
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
-#import "DSPaymentRequest.h"
-#import "BRPeerManager.h"
-#import "BRTransaction+Utils.h"
-#import "DSWalletManager.h"
+#import <DashSync/DashSync.h>
 #import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import <WatchConnectivity/WatchConnectivity.h>
@@ -62,19 +59,19 @@
             [self sendApplicationContext];
             
             self.balanceObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-                    if ([BRPeerManager sharedInstance].syncProgress == 1.0) [self sendApplicationContext];
+                    if ([DWEnvironment sharedInstance].currentChainPeerManager.syncProgress == 1.0) [self sendApplicationContext];
                 }];
 
             self.syncFinishedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification
                 object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
 
             self.syncFailedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
@@ -137,8 +134,8 @@
             break;
             
         case AWSessionRquestDataTypeQRCodeBits: {
-            DSWalletManager *manager = [DSWalletManager sharedInstance];
-            DSPaymentRequest *req = [DSPaymentRequest requestWithString:manager.wallet.receiveAddress];
+            DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+            DSPaymentRequest *req = [DSPaymentRequest requestWithString:account.receiveAddress onChain:[DWEnvironment sharedInstance].currentChain];
 
             req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
             NSLog(@"watch requested a qr code amount %lld", req.amount);
@@ -209,21 +206,22 @@
 
 - (BRAppleWatchData *)applicationContextData
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSArray *transactions = manager.wallet.recentTransactions;
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    NSArray *transactions = account.recentTransactions;
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
     
-    appleWatchData.balance = [manager stringForDashAmount:manager.wallet.balance];
-    appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForDashAmount:manager.wallet.balance];
+    appleWatchData.balance = [priceManager stringForDashAmount:account.balance];
+    appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:account.balance];
 #if SNAPSHOT
     appleWatchData.balance = [manager stringForDashAmount:42980000],
     appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForDashAmount:42980000];
 #endif
-    appleWatchData.receiveMoneyAddress = manager.wallet.receiveAddress;
+    appleWatchData.receiveMoneyAddress = account.receiveAddress;
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
-    appleWatchData.hasWallet = ! manager.noWallet;
+    appleWatchData.hasWallet = !account; //if there is no account there is no wallet
     
     if (transactions.count > 0) {
         appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
@@ -242,18 +240,19 @@
             timeDescriptionString = transaction.dateText;
         }
 
-        switch (transaction.transactionType) {
-        case BRAWTransactionTypeSent: transactionTypeString = @"sent"; break;
-        case BRAWTransactionTypeReceive: transactionTypeString = @"received"; break;
-        case BRAWTransactionTypeMove: transactionTypeString = @"moved"; break;
-        case BRAWTransactionTypeInvalid: transactionTypeString = @"invalid transaction"; break;
+        switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
+            case BRAWTransactionTypeSent: transactionTypeString = @"sent"; break;
+            case BRAWTransactionTypeReceive: transactionTypeString = @"received"; break;
+            case BRAWTransactionTypeMove: transactionTypeString = @"moved"; break;
+            case BRAWTransactionTypeInvalid: transactionTypeString = @"invalid transaction"; break;
         }
-
+        NSString * amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
+        NSString * localCurrencyText = [transaction localCurrencyTextForAmountReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
         return [NSString
             stringWithFormat:@"%@ %@ %@ , %@", transactionTypeString,
-                             [transaction.amountText stringByReplacingOccurrencesOfString:@"-" withString:@""],
-                             (transaction.localCurrencyTextForAmount.length > 2)
-                                 ? transaction.localCurrencyTextForAmount
+                             [amountText stringByReplacingOccurrencesOfString:@"-" withString:@""],
+                             (localCurrencyText.length > 2)
+                                 ? localCurrencyText
                                  : @"",
                              timeDescriptionString];
     }
@@ -283,8 +282,8 @@
 
 - (UIImage *)qrCode
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSData *req = [DSPaymentRequest requestWithString:manager.wallet.receiveAddress].data;
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    NSData *req = [DSPaymentRequest requestWithString:account.receiveAddress onChain:account.wallet.chain].data;
     NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     UIImage *image = nil;
     
@@ -309,7 +308,7 @@
 {
     NSMutableArray *transactionListData = [[NSMutableArray alloc] init];
     
-    for (BRTransaction *transaction in transactions) {
+    for (DSTransaction *transaction in transactions) {
         [transactionListData addObject:[BRAppleWatchTransactionData appleWatchTransactionDataFrom:transaction]];
     }
 
@@ -319,7 +318,7 @@
     [transactionListData removeAllObjects];
 
     for (int i = 0; i < 6; i++) {
-        BRTransaction *tx = [BRTransaction new];
+        DSTransaction *tx = [DSTransaction new];
         BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
         int64_t amount =
             [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i] longLongValue];

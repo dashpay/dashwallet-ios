@@ -30,17 +30,17 @@
 #import "DWSettingsViewController.h"
 #import "BRBubbleView.h"
 #import "DSWalletManager.h"
-#import "BRPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSPaymentRequest.h"
 #import "BRPaymentProtocol.h"
 #import "BRKey.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "BREventManager.h"
+#import "DSEventManager.h"
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"
 #import "DSShapeshiftManager.h"
@@ -73,8 +73,8 @@ static NSString *sanitizeString(NSString *s)
 @interface DWSendViewController () <DWQRScanViewModelDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
-@property (nonatomic, strong) BRTransaction *sweepTx;
-@property (nonatomic, strong) BRPaymentProtocolRequest *request, *shapeshiftRequest;
+@property (nonatomic, strong) DSTransaction *sweepTx;
+@property (nonatomic, strong) DSPaymentProtocolRequest *request, *shapeshiftRequest;
 @property (nonatomic, strong) NSString *scheme;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, strong) NSURL *url;
@@ -221,7 +221,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleURL:(NSURL *)url
 {
-    [BREventManager saveEvent:@"send:handle_url"
+    [DSEventManager saveEvent:@"send:handle_url"
                withAttributes:@{@"scheme": (url.scheme ? url.scheme : @"(null)"),
                                 @"host": (url.host ? url.host : @"(null)"),
                                 @"path": (url.path ? url.path : @"(null)")}];
@@ -310,7 +310,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleFile:(NSData *)file
 {
-    BRPaymentProtocolRequest *request = [BRPaymentProtocolRequest requestWithData:file];
+    DSPaymentProtocolRequest *request = [DSPaymentProtocolRequest requestWithData:file];
     
     if (request) {
         [self confirmProtocolRequest:request];
@@ -321,10 +321,10 @@ static NSString *sanitizeString(NSString *s)
     BRPaymentProtocolPayment *payment = [BRPaymentProtocolPayment paymentWithData:file];
     
     if (payment.transactions.count > 0) {
-        for (BRTransaction *tx in payment.transactions) {
+        for (DSTransaction *tx in payment.transactions) {
             [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
             
-            [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+            [[DSPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
                 if (error) {
@@ -446,7 +446,7 @@ static NSString *sanitizeString(NSString *s)
     else if (request.r.length > 0) { // payment protocol over HTTP
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
         
-        [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:20.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+        [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:20.0 completion:^(DSPaymentProtocolRequest *req, NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
@@ -471,19 +471,19 @@ static NSString *sanitizeString(NSString *s)
     else [self confirmProtocolRequest:request.protocolRequest currency:request.scheme associatedShapeshift:nil wantsInstant:request.wantsInstant requiresInstantValue:request.instantValueRequired localCurrency:request.currency localCurrencyAmount:request.currencyAmount];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq {
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq {
     [self confirmProtocolRequest:protoReq currency:@"dash" associatedShapeshift:nil localCurrency:nil localCurrencyAmount:nil];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     [self confirmProtocolRequest:protoReq currency:currency associatedShapeshift:shapeshift wantsInstant:self.sendInstantly requiresInstantValue:FALSE localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
 }
 
-- (void)confirmProtocolRequest:(BRPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    BRTransaction *tx = nil;
+    DSTransaction *tx = nil;
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     UIViewController * viewControllerToShowAlert = self;
@@ -793,7 +793,7 @@ static NSString *sanitizeString(NSString *s)
             fee = [manager.wallet feeForTransaction:tx];
         }
         else {
-            BRTransaction * tempTx = [manager.wallet transactionFor:manager.wallet.balance
+            DSTransaction * tempTx = [manager.wallet transactionFor:manager.wallet.balance
                                                                  to:address withFee:NO];
             fee = [manager.wallet feeForTxSize:tempTx.size isInstant:self.sendInstantly inputCount:tempTx.inputHashes.count];
             fee += (manager.wallet.balance - amount) % 100;
@@ -930,7 +930,7 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
--(void)insufficientFundsForTransaction:(BRTransaction *)tx forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
+-(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
@@ -1006,7 +1006,7 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
-- (void)confirmTransaction:(BRTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
+- (void)confirmTransaction:(DSTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
     __block BOOL previouslyWasAuthenticated = manager.didAuthenticate;
@@ -1063,7 +1063,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
                 
-                [[BRPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+                [[DSPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
                     if (error) {
                         if (! waiting && ! sent) {
                             UIAlertController * alert = [UIAlertController
@@ -1201,7 +1201,7 @@ static NSString *sanitizeString(NSString *s)
     [(id)statusView.customView startAnimating];
     [self.view addSubview:[statusView popIn]];
     
-    [manager sweepPrivateKey:privKey withFee:YES completion:^(BRTransaction *tx, uint64_t fee, NSError *error) {
+    [manager sweepPrivateKey:privKey withFee:YES completion:^(DSTransaction *tx, uint64_t fee, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [statusView popOut];
             
@@ -1248,7 +1248,7 @@ static NSString *sanitizeString(NSString *s)
                                                handler:^(UIAlertAction * action) {
                                                    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
                                                    
-                                                   [[BRPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
+                                                   [[DSPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
                                                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                                                        
                                                        if (error) {
@@ -1468,7 +1468,7 @@ static NSString *sanitizeString(NSString *s)
             return;
         }
         else if (req.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
-            [DSPaymentRequest fetch:req.r scheme:req.scheme timeout:5.0 completion:^(BRPaymentProtocolRequest *req, NSError *error) {
+            [DSPaymentRequest fetch:req.r scheme:req.scheme timeout:5.0 completion:^(DSPaymentProtocolRequest *req, NSError *error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (error) { // don't try any more BIP73 urls
                         [self payFirstFromArray:[array objectsAtIndexes:[array
@@ -1583,7 +1583,7 @@ static NSString *sanitizeString(NSString *s)
 - (IBAction)scanQR:(id)sender
 {
     if ([self nextTip]) return;
-    [BREventManager saveEvent:@"send:scan_qr"];
+    [DSEventManager saveEvent:@"send:scan_qr"];
     if (! [sender isEqual:self.scanButton]) self.showBalance = YES;
     [sender setEnabled:NO];
     
@@ -1595,7 +1595,7 @@ static NSString *sanitizeString(NSString *s)
 - (IBAction)payToClipboard:(id)sender
 {
     if ([self nextTip]) return;
-    [BREventManager saveEvent:@"send:pay_clipboard"];
+    [DSEventManager saveEvent:@"send:pay_clipboard"];
     
     NSString *str = [[UIPasteboard generalPasteboard].string
                      stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -1636,7 +1636,7 @@ static NSString *sanitizeString(NSString *s)
     if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }
-    [BREventManager saveEvent:@"send:reset"];
+    [DSEventManager saveEvent:@"send:reset"];
     
     if (self.clearClipboard) [UIPasteboard generalPasteboard].string = @"";
     self.request = nil;
@@ -1649,7 +1649,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (IBAction)cancel:(id)sender
 {
-    [BREventManager saveEvent:@"send:cancel"];
+    [DSEventManager saveEvent:@"send:cancel"];
     self.url = nil;
     self.sweepTx = nil;
     self.amount = 0;
@@ -1661,7 +1661,7 @@ static NSString *sanitizeString(NSString *s)
 }
 
 - (IBAction)startNFC:(id)sender NS_AVAILABLE_IOS(11.0) {
-    [BREventManager saveEvent:@"send:nfc"];
+    [DSEventManager saveEvent:@"send:nfc"];
     NFCNDEFReaderSession *session = [[NFCNDEFReaderSession alloc] initWithDelegate:self queue:dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT) invalidateAfterFirstRead:NO];
     session.alertMessage = NSLocalizedString(@"Please place your phone near NFC device.",nil);
     [session beginSession];
@@ -1887,7 +1887,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
   didScanPaymentRequest:(DSPaymentRequest *)request
-        protocolRequest:(BRPaymentProtocolRequest *)protocolRequest
+        protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
                   error:(NSError *_Nullable)error {
     [self dismissViewControllerAnimated:YES completion:^{
         if (error) {
@@ -1906,23 +1906,23 @@ static NSString *sanitizeString(NSString *s)
             [alert addAction:okButton];
             [self presentViewController:alert animated:YES completion:nil];
             
-            [BREventManager saveEvent:@"send:cancel"];
+            [DSEventManager saveEvent:@"send:cancel"];
         }
         
         if (error) {
-            [BREventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
+            [DSEventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
             [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
         }
         else {
-            [BREventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
+            [DSEventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
             [self confirmProtocolRequest:protocolRequest];
         }
     }];
 }
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(BRPaymentProtocolRequest *)protocolRequest {
+- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {
     [self dismissViewControllerAnimated:YES completion:^{
-        [BREventManager saveEvent:@"send:successful_bip73"];
+        [DSEventManager saveEvent:@"send:successful_bip73"];
         [self confirmProtocolRequest:protocolRequest];
     }];
 }

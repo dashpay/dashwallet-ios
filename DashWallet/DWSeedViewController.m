@@ -25,14 +25,12 @@
 //  THE SOFTWARE.
 
 #import "DWSeedViewController.h"
-#import "DSWalletManager.h"
-#import "BRPeerManager.h"
-#import "NSMutableData+Bitcoin.h"
-#import "BREventManager.h"
 #import "DWWhiteActionButton.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0
+
+#define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 
 #define IDEO_SP   @"\xE3\x80\x80" // ideographic space (utf-8)
 
@@ -53,11 +51,10 @@
 
 - (instancetype)customInit
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
-    if (manager.noWallet) {
-        self.seedPhrase = [manager generateRandomSeed];
-        [[BRPeerManager sharedInstance] connect];
+    if (![DWEnvironment sharedInstance].currentWallet) {
+        [DWEnvironment sharedInstance].currentWallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain];
+        self.seedPhrase = [DWEnvironment sharedInstance].currentWallet.seedPhraseIfAuthenticated;
+        [[DWEnvironment sharedInstance].currentChainPeerManager connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -218,7 +215,7 @@
                                                                   [self presentViewController:alert animated:YES completion:nil];
                                                               }
                                                               else {
-                                                                  [[DSWalletManager sharedInstance] setSeedPhrase:nil];
+                                                                  [[DWEnvironment sharedInstance] clearWallet];
                                                                   UINavigationController * navigationController = (UINavigationController*)self.presentingViewController;
                                                                   [self dismissViewControllerAnimated:TRUE completion:nil];
                                                                   
@@ -273,7 +270,7 @@
 
 - (IBAction)toggleWrite:(id)sender
 {
-    [BREventManager saveEvent:@"seed:toggle_write"];
+    [DSEventManager saveEvent:@"seed:toggle_write"];
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
     if ([defs boolForKey:WALLET_NEEDS_BACKUP_KEY]) {

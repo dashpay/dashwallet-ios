@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRAppleWatchTransactionData.h"
-#import "BRTransaction+Utils.h"
+#import "DSTransaction+Utils.h"
 
 #define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
 #define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
@@ -45,7 +45,7 @@
     return self;
 }
 
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction
++ (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction
 {
     BRAppleWatchTransactionData *appleWatchTransactionData;
     
@@ -56,10 +56,10 @@
         appleWatchTransactionData.dateText = transaction.dateText;
         
         switch (transaction.transactionType) {
-            case BRTransactionTypeSent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
-            case BRTransactionTypeReceive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
-            case BRTransactionTypeMove: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
-            case BRTransactionTypeInvalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
+            case DSTransactionStatus_Sent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
+            case DSTransactionStatus_Receive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
+            case DSTransactionStatus_Move: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
+            case DSTransactionStatus_Invalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
         }
     }
     

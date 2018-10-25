@@ -24,15 +24,8 @@
 //  THE SOFTWARE.
 
 #import "DWTxDetailViewController.h"
-#import "BRTransaction.h"
-#import "DSWalletManager.h"
-#import "BRPeerManager.h"
+#import <DashSync/DashSync.h>
 #import "BRCopyLabel.h"
-#import "NSString+Bitcoin.h"
-#import "NSData+Bitcoin.h"
-#import "BREventManager.h"
-#import "NSString+Dash.h"
-#import "NSData+Dash.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -60,10 +53,9 @@
 
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
-                BRTransaction *tx = [[DSWalletManager sharedInstance].wallet
-                                     transactionForHash:self.transaction.txHash];
+                DSTransaction *tx = [[DWEnvironment sharedInstance].currentAccount transactionForHash:self.transaction.txHash];
                 
                 if (tx) self.transaction = tx;
                 [self.tableView reloadData];
@@ -84,16 +76,18 @@
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
-- (void)setTransaction:(BRTransaction *)transaction
+- (void)setTransaction:(DSTransaction *)transaction
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
-    uint64_t fee = [manager.wallet feeForTransaction:transaction];
+    uint64_t fee = [account feeForTransaction:transaction];
     NSUInteger outputAmountIndex = 0;
     
     _transaction = transaction;
-    self.sent = [manager.wallet amountSentByTransaction:transaction];
-    self.received = [manager.wallet amountReceivedFromTransaction:transaction];
+    self.sent = [account amountSentByTransaction:transaction];
+    self.received = [account amountReceivedFromTransaction:transaction];
     
     for (NSString *inputAddress in transaction.inputAddresses) {
         if (![mutableInputAddresses containsObject:inputAddress]) {
@@ -119,7 +113,7 @@
                         [text addObject:[NSString base58checkWithData:data]];
                         [detail addObject:NSLocalizedString(@"Bitcoin address (shapeshift)", nil)];
                         if (transaction.associatedShapeshift.outputCoinAmount) {
-                            [amount addObject:@([manager amountForUnknownCurrencyString:[transaction.associatedShapeshift.outputCoinAmount stringValue]])];
+                            [amount addObject:@([priceManager amountForUnknownCurrencyString:[transaction.associatedShapeshift.outputCoinAmount stringValue]])];
                         } else {
                             [amount addObject:@(UINT64_MAX)];
                         }
@@ -134,7 +128,7 @@
 
             }
         }
-        else if ([manager.wallet containsAddress:address]) {
+        else if ([account containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
 #if DASH_TESTNET
@@ -203,12 +197,15 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSUInteger peerCount = [BRPeerManager sharedInstance].peerCount;
-    NSUInteger relayCount = [[BRPeerManager sharedInstance] relayCountForTransaction:self.transaction.txHash];
+    DSChainPeerManager *manager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    NSUInteger peerCount = manager.peerCount;
+    NSUInteger relayCount = [manager relayCountForTransaction:self.transaction.txHash];
     NSString *s;
     
     NSInteger indexPathRow = indexPath.row;
@@ -274,13 +271,13 @@
                                             self.transaction.blockHeight, self.txDateString];
                         subtitleLabel.text = self.txDateString;
                     }
-                    else if (! [manager.wallet transactionIsValid:self.transaction]) {
+                    else if (! [account transactionIsValid:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"double spend", nil);
                     }
-                    else if ([manager.wallet transactionIsPending:self.transaction]) {
+                    else if ([account transactionIsPending:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"pending", nil);
                     }
-                    else if (! [manager.wallet transactionIsVerified:self.transaction]) {
+                    else if (! [account transactionIsVerified:self.transaction]) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }
@@ -295,14 +292,14 @@
                     localCurrencyLabel = (id)[cell viewWithTag:5];
 
                     if (self.sent > 0 && self.sent == self.received) {
-                        textLabel.attributedText = [manager attributedStringForDashAmount:self.sent];
+                        textLabel.attributedText = [priceManager attributedStringForDashAmount:self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [manager localCurrencyStringForDashAmount:self.sent]];
+                                                   [priceManager localCurrencyStringForDashAmount:self.sent]];
                     }
                     else {
-                        textLabel.attributedText = [manager attributedStringForDashAmount:self.received - self.sent];
+                        textLabel.attributedText = [priceManager attributedStringForDashAmount:self.received - self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [manager localCurrencyStringForDashAmount:self.received - self.sent]];
+                                                   [priceManager localCurrencyStringForDashAmount:self.received - self.sent]];
                     }
                     
                     break;
@@ -346,15 +343,15 @@
                     
                     BOOL isBitcoinInstead = [self.outputIsBitcoin[indexPath.row] boolValue];
                     if (isBitcoinInstead) {
-                        amountLabel.text = [manager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
+                        amountLabel.text = [priceManager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
                         amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [manager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
+                                                   [priceManager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
                                                                                            longLongValue]]];
                     } else {
-                        amountLabel.attributedText = [manager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
+                        amountLabel.attributedText = [priceManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                                   [manager localCurrencyStringForDashAmount:[self.outputAmount[indexPath.row]
+                                                   [priceManager localCurrencyStringForDashAmount:[self.outputAmount[indexPath.row]
                                                                                         longLongValue]]];
                     }
                     localCurrencyLabel.textColor = amountLabel.textColor;
@@ -372,25 +369,10 @@
                 detailLabel.text = self.inputAddresses[indexPath.row];
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
-                
-#if DASH_TESTNET
-                if ([manager.wallet containsAddress:self.inputAddresses[indexPath.row]]) {
-                    NSUInteger purpose = [manager.wallet addressPurpose:self.inputAddresses[indexPath.row]];
-                    if (purpose == 44) {
-                        subtitleLabel.text = @"wallet address (BIP44)";
-                    } else if (purpose == 0) {
-                        subtitleLabel.text = @"wallet address (BIP32)";
-                    } else {
-                    subtitleLabel.text = @"wallet address (Unknown Purpose)";
-                    }
-                }
-                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
-#else
-                if ([manager.wallet containsAddress:self.inputAddresses[indexPath.row]]) {
+                if ([account containsAddress:self.inputAddresses[indexPath.row]]) {
                     subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
-#endif
             }
             else {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
@@ -472,7 +454,7 @@
     NSUInteger i = [self.tableView.indexPathsForVisibleRows indexOfObject:indexPath];
     UITableViewCell *cell = (i < self.tableView.visibleCells.count) ? self.tableView.visibleCells[i] : nil;
     BRCopyLabel *copyLabel = (id)[cell viewWithTag:2];
-    [BREventManager saveEvent:@"tx_detail:copy_label"];
+    [DSEventManager saveEvent:@"tx_detail:copy_label"];
     
     copyLabel.selectedColor = [UIColor clearColor];
     if (cell.selectionStyle != UITableViewCellSelectionStyleNone) [copyLabel toggleCopyMenu];
