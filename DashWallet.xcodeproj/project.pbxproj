@@ -95,7 +95,6 @@
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBEF3A95218235A800917AB6 /* BRUserDefaultsSwitchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */; };
 		FBEF3A96218235A800917AB6 /* BRBouncyBurgerButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 75AA5F54194143D5003F23BD /* BRBouncyBurgerButton.m */; };
-		FBEF3A97218235A800917AB6 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		FBEF3A98218235A800917AB6 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FBEF3A99218235A800917AB6 /* UIFont+SystemFontOverride.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */; };
 		FBEF3A9A218235A800917AB6 /* DWWhiteActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */; };
@@ -106,7 +105,6 @@
 		FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
 		FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */; };
 		FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
-		FBEF3AA2218235A800917AB6 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */; };
 		FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
 		FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
 		FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -119,7 +117,6 @@
 		FBEF3AAC218235A800917AB6 /* DWNumberButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC74211CC68E00BC9879 /* DWNumberButton.m */; };
 		FBEF3AAD218235A800917AB6 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		FBEF3AAE218235A800917AB6 /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
-		FBEF3AAF218235A800917AB6 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
 		FBEF3AB0218235A800917AB6 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
 		FBEF3AB1218235A800917AB6 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */; };
 		FBEF3AB2218235A800917AB6 /* DWWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2EFA211413EB00D20C57 /* DWWarningViewController.m */; };
@@ -1814,7 +1811,6 @@
 			files = (
 				FBEF3A95218235A800917AB6 /* BRUserDefaultsSwitchCell.m in Sources */,
 				FBEF3A96218235A800917AB6 /* BRBouncyBurgerButton.m in Sources */,
-				FBEF3A97218235A800917AB6 /* BRAppleWatchData.m in Sources */,
 				FBEF3A98218235A800917AB6 /* DWShareActionButton.m in Sources */,
 				FBEF3A99218235A800917AB6 /* UIFont+SystemFontOverride.m in Sources */,
 				FBEF3A9A218235A800917AB6 /* DWWhiteActionButton.m in Sources */,
@@ -1825,7 +1821,6 @@
 				FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */,
 				FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */,
 				FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */,
-				FBEF3AA2218235A800917AB6 /* DWPhoneWCSessionManager.m in Sources */,
 				FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */,
 				FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */,
 				FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */,
@@ -1838,7 +1833,6 @@
 				FBEF3AAC218235A800917AB6 /* DWNumberButton.m in Sources */,
 				FBEF3AAD218235A800917AB6 /* DWQRScanViewController.m in Sources */,
 				FBEF3AAE218235A800917AB6 /* DWGenerateViewController.m in Sources */,
-				FBEF3AAF218235A800917AB6 /* BRAppleWatchTransactionData.m in Sources */,
 				FBEF3AB0218235A800917AB6 /* FBShimmeringView.m in Sources */,
 				FBEF3AB1218235A800917AB6 /* MBProgressHUD.m in Sources */,
 				FBEF3AB2218235A800917AB6 /* DWWarningViewController.m in Sources */,
@@ -2816,6 +2810,11 @@
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					IGNORE_WATCH_TARGET,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2848,6 +2847,11 @@
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					IGNORE_WATCH_TARGET,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2879,6 +2883,11 @@
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					IGNORE_WATCH_TARGET,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2910,6 +2919,11 @@
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashWallet/DashWallet-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					IGNORE_WATCH_TARGET,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",

@@ -27,7 +27,10 @@
 #import "DWAppDelegate.h"
 #import <DashSync/DashSync.h>
 #import <UserNotifications/UserNotifications.h>
+
+#ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
+#endif
 
 #if DASH_TESTNET
 #pragma message "testnet build"
@@ -107,7 +110,9 @@
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
+#ifndef IGNORE_WATCH_TARGET
     [DWPhoneWCSessionManager sharedInstance];
+#endif
     
     [DSShapeshiftManager sharedInstance];
     
@@ -289,8 +294,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                     }
                 }
                 
+#ifndef IGNORE_WATCH_TARGET
                 // send a custom notification to the watch if the watch app is up
                 [[DWPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
+#endif
             }
             
             self.balance = wallet.balance;
