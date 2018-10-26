@@ -7,8 +7,6 @@
 //
 
 #import "DWGenerateViewController.h"
-#import "DSEventManager.h"
-#import "DSWalletManager.h"
 #import "DWWarningViewController.h"
 
 @interface DWGenerateViewController ()
@@ -50,7 +48,7 @@
 }
 
 -(BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
-    if (![DSWalletManager sharedInstance].passcodeEnabled) {
+    if (![[DSAuthenticationManager sharedInstance] isPasscodeEnabled]) {
         [DSEventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)

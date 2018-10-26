@@ -30,18 +30,22 @@
 #else
     self.currentChain = [DSChain mainnet];
 #endif
-    self.currentWallet = [[self.currentChain wallets] firstObject];
-    self.currentAccount = [[self.currentWallet accounts] firstObject];
-    self.currentChainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.currentChain];
+    [self reset];
     
     return self;
 }
 
+-(void)reset {
+    self.currentWallet = [[self.currentChain wallets] firstObject];
+    self.currentAccount = [[self.currentWallet accounts] firstObject];
+    self.currentChainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.currentChain];
+}
 
 
-- (instancetype)clearWallet {
-[[DWEnvironment sharedInstance].currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
-[DWEnvironment sharedInstance].currentWallet = nil;
+- (void)clearWallet {
+[self.currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
+self.currentWallet = nil;
+    self.currentAccount = nil;
 }
 
 @end

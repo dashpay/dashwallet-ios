@@ -48,14 +48,13 @@
 + (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction
 {
     BRAppleWatchTransactionData *appleWatchTransactionData;
-    
     if (transaction) {
         appleWatchTransactionData = [BRAppleWatchTransactionData new];
-        appleWatchTransactionData.amountText = transaction.amountText;
-        appleWatchTransactionData.amountTextInLocalCurrency = transaction.localCurrencyTextForAmount;
+        appleWatchTransactionData.amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
+        appleWatchTransactionData.amountTextInLocalCurrency = [transaction localCurrencyTextForAmountReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
         appleWatchTransactionData.dateText = transaction.dateText;
         
-        switch (transaction.transactionType) {
+        switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
             case DSTransactionStatus_Sent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
             case DSTransactionStatus_Receive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
             case DSTransactionStatus_Move: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;

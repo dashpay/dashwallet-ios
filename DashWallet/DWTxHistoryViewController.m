@@ -29,15 +29,7 @@
 #import "DWSettingsViewController.h"
 #import "DWTxDetailViewController.h"
 #import "DWSeedViewController.h"
-#import "DSWalletManager.h"
-#import "DSPeerManager.h"
-#import "DSTransaction.h"
-#import "NSString+Bitcoin.h"
-#import "NSData+Bitcoin.h"
 #import "UIImage+Utils.h"
-#import "BREventConfirmView.h"
-#import "DSEventManager.h"
-#import "NSString+Dash.h"
 #import <WebKit/WebKit.h>
 #import "DWActionTableViewCell.h"
 #import "DWTransactionTableViewCell.h"
@@ -94,32 +86,13 @@ static NSString *dateFormat(NSString *template)
 {
     [super viewWillAppear:animated];
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     
-#if SNAPSHOT
-    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
-                                                      inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
-    
-    manager.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-    self.tableView.showsVerticalScrollIndicator = NO;
-    self.moreTx = YES;
-    manager.didAuthenticate = YES;
-    [self unlock:nil];
-    tx.txHash = UINT256_ZERO;
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        self.transactions = @[tx, tx, tx, tx, tx, tx];
-        [self.tableView reloadData];
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:42980000],
-                                     [manager localCurrencyStringForDashAmount:42980000]];
-    });
-    
-    return;
-#endif
-    
-    if (manager.didAuthenticate) {
+    if (authenticationManager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            self.transactions = manager.wallet.allTransactions;
+            self.transactions = account.allTransactions;
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
@@ -132,7 +105,7 @@ static NSString *dateFormat(NSString *template)
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
                                                           object:nil queue:nil usingBlock:^(NSNotification *note) {
                                                               self.moreTx = YES;
-                                                              self.transactions = manager.wallet.allTransactions;
+                                                              self.transactions = account.allTransactions;
                                                               [self.tableView reloadData];
                                                               self.navigationItem.titleView = self.logo;
                                                               self.navigationItem.rightBarButtonItem = self.lock;
@@ -141,12 +114,12 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.balanceObserver) {
         self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if (manager.didAuthenticate) {
+                                                               if (authenticationManager.didAuthenticate) {
                                                                    DSTransaction *tx = self.transactions.firstObject;
                                                                    
-                                                                   self.transactions = manager.wallet.allTransactions;
+                                                                   self.transactions = account.allTransactions;
                                                                    if (self.transactions.firstObject != tx) {
                                                                        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
                                                                                      withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -155,7 +128,7 @@ static NSString *dateFormat(NSString *template)
                                                                }
                                                                
                                                                if (! [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
-                                                                   if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                                   if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                    else [self updateTitleView];
                                                                }
                                                                
@@ -165,21 +138,20 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               self.transactions = manager.wallet.allTransactions;
+                                                               self.transactions = account.allTransactions;
                                                                [self.tableView reloadData];
                                                            }];
     }
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([[DSPeerManager sharedInstance]
-                                                                    timestampForBlockHeight:[DSPeerManager sharedInstance].lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([chain timestampForBlockHeight:chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSinceReferenceDate] &&
-                                                                   manager.seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                                                                   account.wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                                                                    self.navigationItem.titleView = nil;
                                                                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                                                                }
@@ -188,18 +160,18 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                               if (!authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                else [self updateTitleView];
                                                            }];
     }
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if (! manager.didAuthenticate) self.navigationItem.titleView = self.logo;
+                                                               if (!authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                [self updateTitleView];
                                                            }];
     }
@@ -207,13 +179,14 @@ static NSString *dateFormat(NSString *template)
 
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:account.balance withTintColor:[UIColor whiteColor]] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                              [priceManager localCurrencyStringForDashAmount:account.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -221,10 +194,11 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:manager.wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+        DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+        NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:account.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:manager.wallet.balance]];
+                                  [priceManager localCurrencyStringForDashAmount:account.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -275,7 +249,8 @@ static NSString *dateFormat(NSString *template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = [DSPeerManager sharedInstance].lastBlockHeight;
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    uint32_t h = chain.lastBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -284,8 +259,8 @@ static NSString *dateFormat(NSString *template)
 - (void)setTransactions:(NSArray *)transactions
 {
     uint32_t height = self.blockHeight;
-    
-    if (! [DSWalletManager sharedInstance].didAuthenticate &&
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    if (!authenticationManager.didAuthenticate &&
         [self.navigationItem.title isEqual:NSLocalizedString(@"Syncing:", nil)]) {
         _transactions = @[];
         if (transactions.count > 0) self.moreTx = YES;
@@ -294,7 +269,7 @@ static NSString *dateFormat(NSString *template)
         if (transactions.count <= 5) self.moreTx = NO;
         _transactions = (self.moreTx) ? [transactions subarrayWithRange:NSMakeRange(0, 5)] : [transactions copy];
         
-        if (! [DSWalletManager sharedInstance].didAuthenticate) {
+        if (!authenticationManager.didAuthenticate) {
             for (DSTransaction *tx in _transactions) {
                 if (tx.blockHeight == TX_UNCONFIRMED ||
                     (tx.blockHeight > height - 5 && tx.blockHeight <= height)) continue;
@@ -320,7 +295,8 @@ static NSString *dateFormat(NSString *template)
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
-    NSTimeInterval now = [[DSPeerManager sharedInstance] timestampForBlockHeight:TX_UNCONFIRMED];
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
     NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
     
     if (date) return date;
@@ -343,11 +319,11 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)unlock:(id)sender
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
-    if (! manager.didAuthenticate) {
-        [manager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+    if (!authenticationManager.didAuthenticate) {
+        [authenticationManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
                 if (sender) [DSEventManager saveEvent:@"tx_history:unlock_success"];
                 
@@ -355,7 +331,7 @@ static NSString *dateFormat(NSString *template)
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
                 
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    self.transactions = manager.wallet.allTransactions;
+                    self.transactions = account.allTransactions;
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (sender && self.transactions.count > 0) {
@@ -397,10 +373,11 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)more:(id)sender
 {
     [DSEventManager saveEvent:@"tx_history:more"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     NSUInteger txCount = self.transactions.count;
     
-    if (! manager.didAuthenticate) {
+    if (!authenticationManager.didAuthenticate) {
         [self unlock:sender];
         return;
     }
@@ -409,7 +386,7 @@ static NSString *dateFormat(NSString *template)
     [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:txCount inSection:0]]
                           withRowAnimation:UITableViewRowAnimationFade];
     self.moreTx = NO;
-    self.transactions = manager.wallet.allTransactions;
+    self.transactions = account.allTransactions;
     
     NSMutableArray *transactions = [NSMutableArray arrayWithCapacity:self.transactions.count];
     
@@ -490,8 +467,9 @@ static NSString *dateFormat(NSString *template)
     UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
     *detailTextLabel;
     UIImageView * shapeshiftImageView;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     
     switch (indexPath.section) {
         case 0:
@@ -516,9 +494,9 @@ static NSString *dateFormat(NSString *template)
                 shapeshiftImageView = transactionCell.shapeshiftImageView;
                 
                 DSTransaction *tx = self.transactions[indexPath.row];
-                uint64_t received = [manager.wallet amountReceivedFromTransaction:tx],
-                sent = [manager.wallet amountSentByTransaction:tx],
-                balance = [manager.wallet balanceAfterTransaction:tx];
+                uint64_t received = [account amountReceivedFromTransaction:tx],
+                sent = [account amountSentByTransaction:tx],
+                balance = [account balanceAfterTransaction:tx];
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
                 
@@ -527,22 +505,22 @@ static NSString *dateFormat(NSString *template)
                 unconfirmedLabel.hidden = NO;
                 unconfirmedLabel.backgroundColor = [UIColor clearColor];
                 detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.attributedText = (manager.didAuthenticate) ? [manager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
-                localBalanceLabel.text = (manager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:balance]] : nil;
+                balanceLabel.attributedText = (authenticationManager.didAuthenticate) ? [priceManager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
+                localBalanceLabel.text = (authenticationManager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [priceManager localCurrencyStringForDashAmount:balance]] : nil;
                 shapeshiftImageView.hidden = !tx.associatedShapeshift;
                 
-                if (confirms == 0 && ! [manager.wallet transactionIsValid:tx]) {
+                if (confirms == 0 && ! [account transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                     balanceLabel.text = localBalanceLabel.text = nil;
                 }
-                else if (confirms == 0 && [manager.wallet transactionIsPending:tx]) {
+                else if (confirms == 0 && [account transactionIsPending:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
                     textLabel.textColor = [UIColor grayColor];
                     balanceLabel.text = localBalanceLabel.text = nil;
                 }
-                else if (confirms == 0 && ! [manager.wallet transactionIsVerified:tx]) {
+                else if (confirms == 0 && ! [account transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
@@ -558,23 +536,23 @@ static NSString *dateFormat(NSString *template)
                 }
                 sentLabel.textColor = [UIColor whiteColor];
                 if (sent > 0 && received == sent) {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:sent withTintColor:textLabel.textColor];
+                    textLabel.attributedText = [priceManager attributedStringForDashAmount:sent withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForDashAmount:sent]];
+                                               [priceManager localCurrencyStringForDashAmount:sent]];
                     sentLabel.text = NSLocalizedString(@"Moved", nil);
                     sentLabel.backgroundColor = UIColorFromRGB(0x008DE4);
                 }
                 else if (sent > 0) {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:received - sent withTintColor:textLabel.textColor];
+                    textLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForDashAmount:received - sent]];
+                                               [priceManager localCurrencyStringForDashAmount:received - sent]];
                     sentLabel.text = NSLocalizedString(@"Sent", nil);
                     sentLabel.backgroundColor = UIColorFromRGB(0xD0021B);
                 }
                 else {
-                    textLabel.attributedText = [manager attributedStringForDashAmount:received withTintColor:textLabel.textColor];
+                    textLabel.attributedText = [priceManager attributedStringForDashAmount:received withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
-                                               [manager localCurrencyStringForDashAmount:received]];
+                                               [priceManager localCurrencyStringForDashAmount:received]];
                     sentLabel.text = NSLocalizedString(@"Received", nil);
                     sentLabel.backgroundColor = UIColorFromRGB(0x7ED321);
                 }

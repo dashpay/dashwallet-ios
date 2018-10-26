@@ -7,19 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <DashSync/DashSync.h>
+
+#define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWEnvironment : NSObject
 
-@property (nonatomic,strong) DSChain * currentChain;
-@property (nonatomic,strong) DSWallet * currentWallet;
-@property (nonatomic,strong) DSAccount * currentAccount;
+@property (nonatomic,strong,nonnull) DSChain * currentChain;
+@property (nonatomic,strong,nullable) DSWallet * currentWallet;
+@property (nonatomic,strong,nullable) DSAccount * currentAccount;
 @property (nonatomic,strong) DSChainPeerManager * currentChainPeerManager;
 
 + (instancetype _Nullable)sharedInstance;
-- (instancetype)clearWallet;
+- (void)clearWallet;
+- (void)reset;
 
 @end
 

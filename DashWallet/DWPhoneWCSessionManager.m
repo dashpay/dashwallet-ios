@@ -1,5 +1,5 @@
 //
-//  BRPhoneWCSessionManager.h
+//  DWPhoneWCSessionManager.h
 //  DashWallet
 //
 //  Created by Henry on 10/27/15.
@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRPhoneWCSessionManager.h"
+#import "DWPhoneWCSessionManager.h"
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
 #import <DashSync/DashSync.h>
@@ -31,18 +31,18 @@
 #import "UIImage+Utils.h"
 #import <WatchConnectivity/WatchConnectivity.h>
 
-@interface BRPhoneWCSessionManager () <WCSessionDelegate>
+@interface DWPhoneWCSessionManager () <WCSessionDelegate>
 
 @property WCSession *session;
 @property id balanceObserver, syncFinishedObserver, syncFailedObserver;
 
 @end
 
-@implementation BRPhoneWCSessionManager
+@implementation DWPhoneWCSessionManager
 
 + (instancetype)sharedInstance
 {
-    static BRPhoneWCSessionManager *sharedInstance = nil;
+    static DWPhoneWCSessionManager *sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{ sharedInstance = [[self alloc] init]; });
     return sharedInstance;
@@ -119,7 +119,7 @@
     didReceiveMessage:(NSDictionary<NSString *, id> *)message
          replyHandler:(void (^)(NSDictionary<NSString *, id> *replyMessage))replyHandler
 {
-    NSLog(@"BRPhoneWCSessionManager didReceiveMessage %@", message);
+    NSLog(@"DWPhoneWCSessionManager didReceiveMessage %@", message);
 
     if ([message[AW_SESSION_REQUEST_TYPE] integerValue] == AWSessionRquestTypeFetchData) {
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {

@@ -73,7 +73,7 @@
 		BAA6E3EB1BD5C78500773205 /* BRAWRootInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EA1BD5C78500773205 /* BRAWRootInterfaceController.swift */; };
 		BAA6E3EF1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EE1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift */; };
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
-		BAC7B6BE1BD9C29900165B84 /* BRPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */; };
+		BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
 		E594A2546067A50322E08631 /* Pods_dashwallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D38D4862A16572873CFCF3D /* Pods_dashwallet.framework */; };
@@ -106,7 +106,7 @@
 		FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
 		FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */; };
 		FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */ = {isa = PBXBuildFile; fileRef = 220460541BA0BEEE00D07B61 /* BREventConfirmView.m */; };
-		FBEF3AA2218235A800917AB6 /* BRPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */; };
+		FBEF3AA2218235A800917AB6 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */; };
 		FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
 		FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
 		FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -494,8 +494,8 @@
 		BAA6E3EA1BD5C78500773205 /* BRAWRootInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWRootInterfaceController.swift; sourceTree = "<group>"; };
 		BAA6E3EE1BD5CA0E00773205 /* BRAWBalanceInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWBalanceInterfaceController.swift; sourceTree = "<group>"; };
 		BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWReceiveMoneyInterfaceController.swift; sourceTree = "<group>"; };
-		BAC7B6BC1BD9C29900165B84 /* BRPhoneWCSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPhoneWCSessionManager.h; sourceTree = "<group>"; };
-		BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPhoneWCSessionManager.m; sourceTree = "<group>"; };
+		BAC7B6BC1BD9C29900165B84 /* DWPhoneWCSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhoneWCSessionManager.h; sourceTree = "<group>"; };
+		BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhoneWCSessionManager.m; sourceTree = "<group>"; };
 		BAC7B6C41BD9C9B600165B84 /* WatchApp Extension-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WatchApp Extension-Bridging-Header.h"; sourceTree = "<group>"; };
 		BAC7B6C81BD9CA8400165B84 /* BRAppleWatchSharedConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchSharedConstants.h; sourceTree = "<group>"; };
 		BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -931,8 +931,8 @@
 			isa = PBXGroup;
 			children = (
 				BAC7B6C81BD9CA8400165B84 /* BRAppleWatchSharedConstants.h */,
-				BAC7B6BC1BD9C29900165B84 /* BRPhoneWCSessionManager.h */,
-				BAC7B6BD1BD9C29900165B84 /* BRPhoneWCSessionManager.m */,
+				BAC7B6BC1BD9C29900165B84 /* DWPhoneWCSessionManager.h */,
+				BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */,
 				BA7B534E1BDA9A2800355E8D /* BRAppleWatchData.h */,
 				BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */,
 				BA7B53521BDAA0A800355E8D /* BRAppleWatchTransactionData.h */,
@@ -1742,7 +1742,7 @@
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
-				BAC7B6BE1BD9C29900165B84 /* BRPhoneWCSessionManager.m in Sources */,
+				BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
@@ -1825,7 +1825,7 @@
 				FBEF3A9F218235A800917AB6 /* DWScanViewController.m in Sources */,
 				FBEF3AA0218235A800917AB6 /* DWBlueActionButton.m in Sources */,
 				FBEF3AA1218235A800917AB6 /* BREventConfirmView.m in Sources */,
-				FBEF3AA2218235A800917AB6 /* BRPhoneWCSessionManager.m in Sources */,
+				FBEF3AA2218235A800917AB6 /* DWPhoneWCSessionManager.m in Sources */,
 				FBEF3AA3218235A800917AB6 /* FBShimmeringLayer.m in Sources */,
 				FBEF3AA4218235A800917AB6 /* DWActionTableViewCell.m in Sources */,
 				FBEF3AA5218235A800917AB6 /* BRNavigationBar.m in Sources */,

@@ -25,10 +25,7 @@
 
 #import "DWSettingsViewController.h"
 #import "DWSeedViewController.h"
-#import "DSWalletManager.h"
 #import "BRBubbleView.h"
-#import "DSPeerManager.h"
-#import "DSEventManager.h"
 #import "BRUserDefaultsSwitchCell.h"
 #import <SafariServices/SafariServices.h>
 #import <asl.h>

@@ -1,5 +1,5 @@
 //
-//  BRPhoneWCSessionManager.h
+//  DWPhoneWCSessionManager.h
 //  DashWallet
 //
 //  Created by Henry on 10/27/15.
@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface BRPhoneWCSessionManager : NSObject
+@interface DWPhoneWCSessionManager : NSObject
 
 @property (nonatomic, readonly) BOOL reachable;
 

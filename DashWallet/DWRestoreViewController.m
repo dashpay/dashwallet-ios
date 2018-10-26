@@ -114,10 +114,10 @@
     [DSEventManager saveEvent:@"restore:wipe"];
     
     @autoreleasepool {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        DSPeerManager *peerManager = [DSPeerManager sharedInstance];
+        DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         if ([phrase isEqual:@"wipe"]) {
-            if ((manager.wallet.balance == 0) && ([peerManager timestampForBlockHeight:peerManager.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
+            if ((wallet.balance == 0) && ([chain timestampForBlockHeight:chain.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
                 [DSEventManager saveEvent:@"restore:wipe_empty_wallet"];
                 UIAlertController * actionSheet = [UIAlertController
                                              alertControllerWithTitle:nil
@@ -175,9 +175,12 @@
             [self presentViewController:actionSheet animated:YES completion:nil];
             return;
         } else {
-                if ([[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:44]
-                     isEqual:manager.extendedBIP44PublicKey] || [[manager.sequence extendedPublicKeyForAccount:0 fromSeed:[manager.mnemonic deriveKeyFromPhrase:phrase withPassphrase:nil] purpose:0]
-                                                                 isEqual:manager.extendedBIP44PublicKey] || [phrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
+            DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase forChain:chain storeSeedPhrase:NO];
+            DSAccount * testingAccount = [wallet accountWithNumber:0];
+            DSAccount * ourAccount = [DWEnvironment sharedInstance].currentAccount;
+            
+                if ([testingAccount.bip32DerivationPath.extendedPublicKey isEqual:ourAccount.bip32DerivationPath.extendedPublicKey] || [testingAccount.bip44DerivationPath.extendedPublicKey isEqual:ourAccount.bip44DerivationPath.extendedPublicKey] || [phrase isEqual:@"wipe"]) { //@"wipe" comes from too many bad auth attempts
                     [DSEventManager saveEvent:@"restore:wipe_good_recovery_phrase"];
                     UIAlertController * actionSheet = [UIAlertController
                                                        alertControllerWithTitle:nil
@@ -222,7 +225,7 @@
 - (void)wipeWallet
 {
     
-    [[DSWalletManager sharedInstance] setSeedPhrase:nil];
+    [[DWEnvironment sharedInstance] clearWallet];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -280,19 +283,18 @@
     if (! [text isEqual:@"\n"]) return YES; // not done entering phrase
     
     @autoreleasepool {  // @autoreleasepool ensures sensitive data will be deallocated immediately
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        NSString *phrase = [manager.mnemonic cleanupPhrase:textView.text], *incorrect = nil;
-        BOOL isLocal = YES, noWallet = manager.noWallet;
+        NSString *phrase = [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:textView.text], *incorrect = nil;
+        BOOL isLocal = YES, noWallet = ![DWEnvironment sharedInstance].currentChain.hasAWallet;
         
         if (! [textView.text hasPrefix:@"watch"] && ! [phrase isEqual:textView.text]) textView.text = phrase;
-        phrase = [manager.mnemonic normalizePhrase:phrase];
+        phrase = [[DSBIP39Mnemonic sharedInstance] normalizePhrase:phrase];
         
         NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(), (CFStringRef)phrase,
                                                                               CFSTR(" ")));
 
         for (NSString *word in a) {
-            if (! [manager.mnemonic wordIsLocal:word]) isLocal = NO;
-            if ([manager.mnemonic wordIsValid:word]) continue;
+            if (![[DSBIP39Mnemonic sharedInstance] wordIsLocal:word]) isLocal = NO;
+            if ([[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) continue;
             incorrect = word;
             break;
         }
@@ -301,28 +303,30 @@
             [self.textView resignFirstResponder];
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.0];
         }
-        else if (incorrect && noWallet && [textView.text hasPrefix:@"watch"]) { // address list watch only wallet
-            manager.seedPhrase = @"wipe";
-
-            [[NSManagedObject context] performBlockAndWait:^{
-                int32_t n = 0;
-                
-                for (NSString *s in [textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet
-                                     alphanumericCharacterSet].invertedSet]) {
-                    if (! [s isValidBitcoinAddress]) continue;
-                    
-                    BRAddressEntity *e = [BRAddressEntity managedObject];
-                    
-                    e.address = s;
-                    e.index = n++;
-                    e.internal = NO;
-                }
-            }];
-            
-            [NSManagedObject saveContext];
-            textView.text = nil;
-            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-        }
+        //to do: recreate this behavior
+//        else if (incorrect && noWallet && [textView.text hasPrefix:@"watch"]) { // address list watch only wallet
+//
+//            manager.seedPhrase = @"wipe";
+//
+//            [[NSManagedObject context] performBlockAndWait:^{
+//                int32_t n = 0;
+//
+//                for (NSString *s in [textView.text componentsSeparatedByCharactersInSet:[NSCharacterSet
+//                                     alphanumericCharacterSet].invertedSet]) {
+//                    if (! [s isValidDashAddressOnChain:[DWEnvironment sharedInstance].currentChain]) continue;
+//
+//                    DSAddressEntity *e = [DSAddressEntity managedObject];
+//
+//                    e.address = s;
+//                    e.index = n++;
+//                    e.internal = NO;
+//                }
+//            }];
+//
+//            [NSManagedObject saveContext];
+//            textView.text = nil;
+//            [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+//        }
         else if (incorrect) {
             [DSEventManager saveEvent:@"restore:invalid_word"];
             textView.selectedRange = [textView.text.lowercaseString rangeOfString:incorrect];
@@ -356,7 +360,7 @@
             [alert addAction:okButton];
             [self presentViewController:alert animated:YES completion:nil];
         }
-        else if (isLocal && ! [manager.mnemonic phraseIsValid:phrase]) {
+        else if (isLocal && ! [[DSBIP39Mnemonic sharedInstance] phraseIsValid:phrase]) {
             [DSEventManager saveEvent:@"restore:bad_phrase"];
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@""
@@ -377,7 +381,9 @@
         }
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
-            manager.seedPhrase = phrase;
+            DSChain * chain = [[DWEnvironment sharedInstance] currentChain];
+            [DSWallet standardWalletWithSeedPhrase:phrase forChain:chain storeSeedPhrase:TRUE];
+            [[DWEnvironment sharedInstance] reset];
             textView.text = nil;
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }

@@ -60,12 +60,13 @@
 {
     [super viewDidLoad];
 
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSWallet * wallet = [[DWEnvironment sharedInstance] currentWallet];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSPaymentRequest *req;
 
     self.groupDefs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     req = (_paymentRequest) ? _paymentRequest :
-          [DSPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY]];
+          [DSPaymentRequest requestWithString:[self.groupDefs stringForKey:APP_GROUP_RECEIVE_ADDRESS_KEY] onChain:wallet.chain];
 
     if (req.isValid) {
         if (! _qrImage) {
@@ -79,10 +80,9 @@
     else [self.addressButton setTitle:nil forState:UIControlStateNormal];
     
     if (req.amount > 0) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
+        NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:req.amount]];
+                                  [priceManager localCurrencyStringForDashAmount:req.amount]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor darkTextColor]}]];
         self.label.attributedText = attributedDashString;
     }
@@ -115,7 +115,6 @@
     }
     CGSize qrViewBounds = (self.qrView ? self.qrView.bounds.size : CGSizeMake(250.0, 250.0));
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
         DSPaymentRequest *req = self.paymentRequest;
         UIImage *image = nil;
         
@@ -154,16 +153,16 @@
             [self.addressButton setTitle:self.paymentAddress forState:UIControlStateNormal];
             
             if (req.amount > 0) {
-                DSWalletManager *manager = [DSWalletManager sharedInstance];
-                NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
+                DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+                NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:req.amount withTintColor:[UIColor darkTextColor] useSignificantDigits:FALSE] mutableCopy];
                 NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                          [manager localCurrencyStringForDashAmount:req.amount]];
+                                          [priceManager localCurrencyStringForDashAmount:req.amount]];
                 [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor darkTextColor]}]];
                 self.label.attributedText = attributedDashString;
                 
                 if (! self.balanceObserver) {
                     self.balanceObserver =
-                        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -171,7 +170,7 @@
                 
                 if (! self.txStatusObserver) {
                     self.txStatusObserver =
-                        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerTxStatusNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
@@ -183,25 +182,27 @@
 
 - (void)checkRequestStatus
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
     DSPaymentRequest *req = self.paymentRequest;
-    uint64_t total = 0, fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
+    uint64_t total = 0, fuzz = [priceManager amountForLocalCurrencyString:[priceManager localCurrencyStringForDashAmount:1]]*2;
     
-    if (! [manager.wallet addressIsUsed:self.paymentAddress]) return;
+    if (! [wallet addressIsUsed:self.paymentAddress]) return;
 
-    for (DSTransaction *tx in manager.wallet.allTransactions) {
+    for (DSTransaction *tx in wallet.allTransactions) {
         if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
         if (tx.blockHeight == TX_UNCONFIRMED &&
-            [[DSPeerManager sharedInstance] relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
-        total += [manager.wallet amountReceivedFromTransaction:tx];
+            [chainPeerManager relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
+        total += [wallet amountReceivedFromTransaction:tx];
                  
         if (total + fuzz >= req.amount) {
             UIView *view = self.navigationController.presentingViewController.view;
 
             [self done:nil];
             [view addSubview:[[[BRBubbleView viewWithText:[NSString
-             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [manager stringForDashAmount:total],
-             [manager localCurrencyStringForDashAmount:total]]
+             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [priceManager stringForDashAmount:total],
+             [priceManager localCurrencyStringForDashAmount:total]]
              center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
             break;
         }
@@ -211,13 +212,13 @@
 - (DSPaymentRequest *)paymentRequest
 {
     if (_paymentRequest) return _paymentRequest;
-    return [DSPaymentRequest requestWithString:self.paymentAddress];
+    return [DSPaymentRequest requestWithString:self.paymentAddress onChain:[DWEnvironment sharedInstance].currentChain];
 }
 
 - (NSString *)paymentAddress
 {
     if (_paymentRequest) return _paymentRequest.paymentAddress;
-    return [DSWalletManager sharedInstance].wallet.receiveAddress;
+    return [DWEnvironment sharedInstance].currentAccount.receiveAddress;
 }
 
 - (BOOL)nextTip
@@ -418,13 +419,13 @@ error:(NSError *)error
 
 - (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
-    if (amount < manager.wallet.minOutputAmount) {
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    if (amount < chain.minOutputAmount) {
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
                                      message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
-                                              [manager stringForDashAmount:manager.wallet.minOutputAmount]]
+                                              [priceManager stringForDashAmount:chain.minOutputAmount]]
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
                                    actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -444,11 +445,11 @@ error:(NSError *)error
     
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
-    NSNumber *number = [manager localCurrencyNumberForDashAmount:amount];
+    NSNumber *number = [priceManager localCurrencyNumberForDashAmount:amount];
     if (number) {
         receiveController.paymentRequest.currencyAmount = number.stringValue;
     }
-    receiveController.paymentRequest.currency = manager.localCurrencyCode;
+    receiveController.paymentRequest.currency = priceManager.localCurrencyCode;
     receiveController.view.backgroundColor = self.parentViewController.parentViewController.view.backgroundColor;
     navController.delegate = receiveController;
     [navController pushViewController:receiveController animated:YES];

@@ -27,6 +27,7 @@
 #import "DWAppDelegate.h"
 #import <DashSync/DashSync.h>
 #import <UserNotifications/UserNotifications.h>
+#import "DWPhoneWCSessionManager.h"
 
 #if DASH_TESTNET
 #pragma message "testnet build"
@@ -92,8 +93,6 @@
 
     // start the event manager
     [[DSEventManager sharedEventManager] up];
-    
-    [DSWalletManager sharedInstance];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
@@ -108,7 +107,7 @@
     //TODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
-    [BRPhoneWCSessionManager sharedInstance];
+    [DWPhoneWCSessionManager sharedInstance];
     
     [DSShapeshiftManager sharedInstance];
     
@@ -121,7 +120,7 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (self.balance == UINT64_MAX) self.balance = [DSWalletManager sharedInstance].wallet.balance;
+        if (self.balance == UINT64_MAX) self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
         [self registerForPushNotifications];
     });
 }
@@ -212,11 +211,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch protected data available");
-            [[DSPeerManager sharedInstance] connect];
+            [[DWEnvironment sharedInstance].currentChainPeerManager connect];
         }];
 
     syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch sync finished");
             if (completion) completion(UIBackgroundFetchResultNewData);
@@ -224,7 +223,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
         queue:nil usingBlock:^(NSNotification *note) {
             NSLog(@"background fetch sync failed");
             if (completion) completion(UIBackgroundFetchResultFailed);
@@ -232,7 +231,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }];
 
     NSLog(@"background fetch starting");
-    [[DSPeerManager sharedInstance] connect];
+    [[DWEnvironment sharedInstance].currentChainPeerManager connect];
 
     // sync events to the server
     [[DSEventManager sharedEventManager] sync];
@@ -246,18 +245,19 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 - (void)setupBalanceNotification:(UIApplication *)application
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     
     self.balance = UINT64_MAX; // this gets set in applicationDidBecomActive:
     
     self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
         usingBlock:^(NSNotification * _Nonnull note) {
-            if (self.balance < manager.wallet.balance) {
+            if (self.balance < wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
                 NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
-                                      [manager stringForDashAmount:manager.wallet.balance - self.balance],
-                                      [manager localCurrencyStringForDashAmount:manager.wallet.balance - self.balance]];
+                                      [priceManager stringForDashAmount:wallet.balance - self.balance],
+                                      [priceManager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
                 
                 NSLog(@"local notifications enabled=%d", send);
                 
@@ -290,10 +290,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
                 }
                 
                 // send a custom notification to the watch if the watch app is up
-                [[BRPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
+                [[DWPhoneWCSessionManager sharedInstance] notifyTransactionString:noteText];
             }
             
-            self.balance = manager.wallet.balance;
+            self.balance = wallet.balance;
         }];
 }
 
