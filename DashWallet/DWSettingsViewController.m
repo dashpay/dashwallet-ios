@@ -52,16 +52,14 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.touchId = [DSWalletManager sharedInstance].touchIdEnabled;
-    self.faceId = [DSWalletManager sharedInstance].faceIdEnabled;
+    self.touchId = [DSAuthenticationManager sharedInstance].touchIdEnabled;
+    self.faceId = [DSAuthenticationManager sharedInstance].faceIdEnabled;
 }
 
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
- 
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
 
     if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];
     self.navBarSwipe = nil;
@@ -69,19 +67,19 @@
     // observe the balance change notification to update the balance display
     if (! self.balanceObserver) {
         self.balanceObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 if (self.selectorType == 0) {
                     self.selectorController.title =
                     [NSString stringWithFormat:@"1 DASH = %@",
-                     [manager localCurrencyStringForDashAmount:DUFFS]];
+                     [[DSPriceManager sharedInstance] localCurrencyStringForDashAmount:DUFFS]];
                 }
             }];
     }
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
                  forState:UIControlStateNormal];
@@ -130,7 +128,9 @@
 - (NSString *)stats
 {
     static NSDateFormatter *fmt = nil;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
 
     if (! fmt) {
         fmt = [NSDateFormatter new];
@@ -139,13 +139,13 @@
 
    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
                                                        "connected peers: %d\ndl peer: %@", NULL),
-           [manager localCurrencyStringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
-           [manager stringForDashAmount:DUFFS/manager.localCurrencyDashPrice.doubleValue],
-           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:manager.secureTime]].lowercaseString,
-           [DSPeerManager sharedInstance].lastBlockHeight,
-           [DSPeerManager sharedInstance].estimatedBlockHeight,
-           [DSPeerManager sharedInstance].peerCount,
-           [DSPeerManager sharedInstance].downloadPeerName];
+           [priceManager localCurrencyStringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
+           [priceManager stringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
+           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
+           chain.lastBlockHeight,
+           chain.estimatedBlockHeight,
+           chainPeerManager.peerCount,
+           chainPeerManager.downloadPeerName];
 }
 
 // MARK: - IBAction
@@ -220,7 +220,7 @@
                                          NSString *fixedPeer = ipField.text;
                                          NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
                                          NSString *host = pair.firstObject;
-                                         NSString *service = (pair.count > 1) ? pair[1] : @(DASH_STANDARD_PORT).stringValue;
+                                         NSString *service = (pair.count > 1) ? pair[1] : @([DWEnvironment sharedInstance].currentChain.standardPort).stringValue;
                                          struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                                          UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                                          
@@ -248,8 +248,8 @@
                                                  
                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
-                                                 [[DSPeerManager sharedInstance] disconnect];
-                                                 [[DSPeerManager sharedInstance] connect];
+                                                 [[DWEnvironment sharedInstance].currentChainPeerManager disconnect];
+                                                 [[DWEnvironment sharedInstance].currentChainPeerManager connect];
                                                  break;
                                              }
                                              
@@ -276,8 +276,8 @@
                                       style:UIAlertActionStyleDestructive
                                       handler:^(UIAlertAction * action) {
                                           [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-                                          [[DSPeerManager sharedInstance] disconnect];
-                                          [[DSPeerManager sharedInstance] connect];
+                                          [[DWEnvironment sharedInstance].currentChainPeerManager disconnect];
+                                          [[DWEnvironment sharedInstance].currentChainPeerManager connect];
                                       }];
         [alert addAction:clearButton];
         [alert addAction:cancelButton];
@@ -288,22 +288,23 @@
 - (IBAction)touchIdLimit:(id)sender
 {
     [DSEventManager saveEvent:@"settings:touch_id_limit"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-
-    [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    
+    [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
         if (authenticated) {
             self.selectorType = 1;
             self.selectorOptions =
             @[NSLocalizedString(@"always require passcode", nil),
-              [NSString stringWithFormat:@"%@      (%@)", [manager stringForDashAmount:DUFFS/10],
-               [manager localCurrencyStringForDashAmount:DUFFS/10]],
-              [NSString stringWithFormat:@"%@   (%@)", [manager stringForDashAmount:DUFFS],
-               [manager localCurrencyStringForDashAmount:DUFFS]],
-              [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:DUFFS*10],
-               [manager localCurrencyStringForDashAmount:DUFFS*10]]];
-            if (manager.spendingLimit > DUFFS*10) manager.spendingLimit = DUFFS*10;
-            self.selectedOption = self.selectorOptions[(log10(manager.spendingLimit) < 6) ? 0 :
-                                                       (NSUInteger)log10(manager.spendingLimit) - 6];
+              [NSString stringWithFormat:@"%@      (%@)", [priceManager stringForDashAmount:DUFFS/10],
+               [priceManager localCurrencyStringForDashAmount:DUFFS/10]],
+              [NSString stringWithFormat:@"%@   (%@)", [priceManager stringForDashAmount:DUFFS],
+               [priceManager localCurrencyStringForDashAmount:DUFFS]],
+              [NSString stringWithFormat:@"%@ (%@)", [priceManager stringForDashAmount:DUFFS*10],
+               [priceManager localCurrencyStringForDashAmount:DUFFS*10]]];
+            if (priceManager.spendingLimit > DUFFS*10) priceManager.spendingLimit = DUFFS*10;
+            self.selectedOption = self.selectorOptions[(log10(priceManager.spendingLimit) < 6) ? 0 :
+                                                       (NSUInteger)log10(priceManager.spendingLimit) - 6];
             self.noOptionsText = nil;
             self.selectorController.title = (self.touchId)?NSLocalizedString(@"Touch ID spending limit", nil):NSLocalizedString(@"Face ID spending limit", nil);
             [self.navigationController pushViewController:self.selectorController animated:YES];
@@ -317,16 +318,16 @@
 - (IBAction)navBarSwipe:(id)sender
 {
     [DSEventManager saveEvent:@"settings:nav_bar_swipe"];
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSUInteger digits = (((manager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    NSUInteger digits = (((priceManager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
-    manager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
+    priceManager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
                                      (digits == 2) ? DITS : DASH];
-    manager.dashFormat.maximumFractionDigits = digits;
-    manager.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, manager.dashFormat.maximumFractionDigits));
+    priceManager.dashFormat.maximumFractionDigits = digits;
+    priceManager.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, priceManager.dashFormat.maximumFractionDigits));
     [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
-    manager.localCurrencyCode = manager.localCurrencyCode; // force balance notification
-    self.selectorController.title = [NSString stringWithFormat:@"1 DASH = %@", [manager localCurrencyStringForDashAmount:DUFFS]];
+    priceManager.localCurrencyCode = priceManager.localCurrencyCode; // force balance notification
+    self.selectorController.title = [NSString stringWithFormat:@"1 DASH = %@", [priceManager localCurrencyStringForDashAmount:DUFFS]];
     [self.tableView reloadData];
 }
 
@@ -355,7 +356,8 @@
     static NSString *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell", *actionIdent = @"ActionCell",
                     *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
         cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
@@ -384,14 +386,14 @@
                     break;
                 case 2:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    cell.detailTextLabel.text = manager.localCurrencyCode;
+                    cell.detailTextLabel.text = priceManager.localCurrencyCode;
                     break;
                     
                 case 3:
                     if (self.touchId || self.faceId) {
                         cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
                         cell.textLabel.text = (self.touchId)?NSLocalizedString(@"Touch ID limit", nil):NSLocalizedString(@"Face ID limit", nil);
-                        cell.detailTextLabel.text = [manager stringForDashAmount:manager.spendingLimit];
+                        cell.detailTextLabel.text = [priceManager stringForDashAmount:priceManager.spendingLimit];
                     } else {
                         goto _switch_cell;
                     }
@@ -540,6 +542,9 @@
 - (void)showRecoveryPhrase
 {
     [DSEventManager saveEvent:@"settings:show_recovery_phrase"];
+    
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
                                  message:[NSString stringWithFormat:@"\n%@\n\n%@\n\n%@\n",
@@ -560,8 +565,7 @@
                                  actionWithTitle:NSLocalizedString(@"show", nil)
                                  style:UIAlertActionStyleDefault
                                  handler:^(UIAlertAction * action) {
-                                     DSWalletManager *manager = [DSWalletManager sharedInstance];
-                                     [manager seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                     [wallet seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
                                          if (seedPhrase.length > 0) {
                                              DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
                                              seedController.seedPhrase = seedPhrase;
@@ -579,24 +583,26 @@
 - (void)showCurrencySelector
 {
     [DSEventManager saveEvent:@"settings:show_currency_selector"];
+    
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    
     NSUInteger currencyCodeIndex = 0;
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    double localPrice = manager.localCurrencyDashPrice.doubleValue;
+    double localPrice = priceManager.localCurrencyDashPrice.doubleValue;
     NSMutableArray *options;
     self.selectorType = 0;
     options = [NSMutableArray array];
     
-    for (NSString *code in manager.currencyCodes) {
-        [options addObject:[NSString stringWithFormat:@"%@ - %@", code, manager.currencyNames[currencyCodeIndex++]]];
+    for (NSString *code in priceManager.currencyCodes) {
+        [options addObject:[NSString stringWithFormat:@"%@ - %@", code, priceManager.currencyNames[currencyCodeIndex++]]];
     }
     
     self.selectorOptions = options;
-    currencyCodeIndex = [manager.currencyCodes indexOfObject:manager.localCurrencyCode];
+    currencyCodeIndex = [priceManager.currencyCodes indexOfObject:priceManager.localCurrencyCode];
     if (currencyCodeIndex < options.count) self.selectedOption = options[currencyCodeIndex];
     self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
     self.selectorController.title =
         [NSString stringWithFormat:@"1 DASH = %@",
-         [manager localCurrencyStringForDashAmount:DUFFS]];
+         [priceManager localCurrencyStringForDashAmount:DUFFS]];
     [self.navigationController pushViewController:self.selectorController animated:YES];
     [self.selectorController.tableView reloadData];
     
@@ -619,7 +625,10 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    
     NSUInteger currencyCodeIndex = 0;
     
     // if we are showing the local currency selector
@@ -628,11 +637,11 @@
         if (indexPath.row < self.selectorOptions.count) self.selectedOption = self.selectorOptions[indexPath.row];
         
         if (self.selectorType == 0) {
-            if (indexPath.row < manager.currencyCodes.count) {
-                manager.localCurrencyCode = manager.currencyCodes[indexPath.row];
+            if (indexPath.row < priceManager.currencyCodes.count) {
+                priceManager.localCurrencyCode = priceManager.currencyCodes[indexPath.row];
             }
         }
-        else manager.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
+        else priceManager.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
         
         if (currencyCodeIndex < self.selectorOptions.count && currencyCodeIndex != indexPath.row) {
             [tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:currencyCodeIndex inSection:0], indexPath]
@@ -682,7 +691,7 @@ _deselect_switch:
                 case 0: // change passcode
                     [DSEventManager saveEvent:@"settings:change_pin"];
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                    [manager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
+                    [authenticationManager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
                     break;
 
                 case 1: // start/recover another wallet (handled by storyboard)
@@ -690,7 +699,7 @@ _deselect_switch:
                     break;
                     
                 case 2: // rescan blockchain
-                    [[DSPeerManager sharedInstance] rescan];
+                    [chainPeerManager rescan];
                     [DSEventManager saveEvent:@"settings:rescan"];
                     [self done:nil];
                     break;
