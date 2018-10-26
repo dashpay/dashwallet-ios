@@ -157,14 +157,10 @@ static NSString *sanitizeString(NSString *s)
     [super viewWillDisappear:animated];
 }
 
-- (void)dealloc
-{
-    
-}
-
 -(BOOL)processURLAddressList:(NSURL*)url {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    if (! [self.url isEqual:url]) {
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+        if (! [self.url isEqual:url]) {
         self.url = url;
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
@@ -194,10 +190,10 @@ static NSString *sanitizeString(NSString *s)
     }
     else {
         [UIPasteboard generalPasteboard].string =
-        [[[manager.wallet.allReceiveAddresses
-           setByAddingObjectsFromSet:manager.wallet.allChangeAddresses]
+        [[[wallet.allReceiveAddresses
+           setByAddingObjectsFromSet:wallet.allChangeAddresses]
           objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-              return [manager.wallet addressIsUsed:obj];
+              return [wallet addressIsUsed:obj];
           }].allObjects componentsJoinedByString:@"\n"];
         
         return YES;
@@ -211,8 +207,7 @@ static NSString *sanitizeString(NSString *s)
                withAttributes:@{@"scheme": (url.scheme ? url.scheme : @"(null)"),
                                 @"host": (url.host ? url.host : @"(null)"),
                                 @"path": (url.path ? url.path : @"(null)")}];
-    
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     if ([url.scheme isEqual:@"dashwallet"]) {
         if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) { // scan qr
             [self scanQR:self.scanButton];
@@ -228,11 +223,10 @@ static NSString *sanitizeString(NSString *s)
             
             if (dictionary[@"request"] && dictionary[@"sender"] && (!dictionary[@"account"] || [dictionary[@"account"] isEqualToString:@"0"])) {
                 if ([dictionary[@"request"] isEqualToString:@"masterPublicKey"]) {
-                    [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
+                    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
                         if (authenticatedOrSuccess) {
-                            BRBIP32Sequence *seq = [BRBIP32Sequence new];
-                            NSString * masterPublicKeySerialized = [seq serializedMasterPublicKey:manager.extendedBIP44PublicKey depth:BIP44_PURPOSE_ACCOUNT_DEPTH];
-                            NSString * masterPublicKeyNoPurposeSerialized = [seq serializedMasterPublicKey:manager.extendedBIP32PublicKey depth:BIP32_PURPOSE_ACCOUNT_DEPTH];
+                            NSString * masterPublicKeySerialized = [account.bip44DerivationPath serializedExtendedPublicKey];
+                            NSString * masterPublicKeyNoPurposeSerialized = [account.bip32DerivationPath serializedExtendedPublicKey];
                             NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&masterPublicKeyBIP32=%@&masterPublicKeyBIP44=%@&account=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],masterPublicKeyNoPurposeSerialized,masterPublicKeySerialized,@"0"]];
                             [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
                                 
@@ -240,9 +234,9 @@ static NSString *sanitizeString(NSString *s)
                         }
                     }];
                 } else if ([dictionary[@"request"] isEqualToString:@"address"]) {
-                    [manager authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
+                    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:[NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?",nil),dictionary[@"sender"]] andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess,BOOL cancelled) {
                         if (authenticatedOrSuccess) {
-                            NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&address=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],manager.wallet.receiveAddress]];
+                            NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://callback=%@&address=%@&source=dashwallet",dictionary[@"sender"],dictionary[@"request"],account.receiveAddress]];
                             [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:^(BOOL success) {
                                 
                             }];
@@ -272,12 +266,12 @@ static NSString *sanitizeString(NSString *s)
                 }
                 components.queryItems = queryItems;
                 NSURL * paymentURL = components.URL;
-                [self confirmRequest:[DSPaymentRequest requestWithURL:paymentURL]];
+                [self confirmRequest:[DSPaymentRequest requestWithURL:paymentURL onChain:[DWEnvironment sharedInstance].currentChain]];
             }
         }
     }
     else if ([url.scheme isEqual:@"dash"]) {
-        [self confirmRequest:[DSPaymentRequest requestWithURL:url]];
+        [self confirmRequest:[DSPaymentRequest requestWithURL:url onChain:[DWEnvironment sharedInstance].currentChain]];
     }
     else {
         UIAlertController * alert = [UIAlertController
@@ -296,7 +290,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)handleFile:(NSData *)file
 {
-    DSPaymentProtocolRequest *request = [DSPaymentProtocolRequest requestWithData:file];
+    DSPaymentProtocolRequest *request = [DSPaymentProtocolRequest requestWithData:file onChain:[DWEnvironment sharedInstance].currentChain];
     
     if (request) {
         [self confirmProtocolRequest:request];
@@ -304,13 +298,13 @@ static NSString *sanitizeString(NSString *s)
     }
     
     // TODO: reject payments that don't match requested amounts/scripts, implement refunds
-    BRPaymentProtocolPayment *payment = [BRPaymentProtocolPayment paymentWithData:file];
-    
+    DSPaymentProtocolPayment *payment = [DSPaymentProtocolPayment paymentWithData:file onChain:[DWEnvironment sharedInstance].currentChain];
+    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
     if (payment.transactions.count > 0) {
         for (DSTransaction *tx in payment.transactions) {
             [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
             
-            [[DSPeerManager sharedInstance] publishTransaction:tx completion:^(NSError *error) {
+            [chainPeerManager publishTransaction:tx completion:^(NSError *error) {
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
                 if (error) {
@@ -337,7 +331,7 @@ static NSString *sanitizeString(NSString *s)
         return;
     }
     
-    BRPaymentProtocolACK *ack = [BRPaymentProtocolACK ackWithData:file];
+    DSPaymentProtocolACK *ack = [DSPaymentProtocolACK ackWithData:file onChain:[DWEnvironment sharedInstance].currentChain];
     
     if (ack) {
         if (ack.memo.length > 0) {
@@ -362,52 +356,10 @@ static NSString *sanitizeString(NSString *s)
     
 }
 
-
-// generate a description of a transaction so the user can review and decide whether to confirm or cancel
-- (NSString *)promptForAmount:(uint64_t)amount
-                          fee:(uint64_t)fee
-                      address:(NSString *)address
-                         name:(NSString *)name
-                         memo:(NSString *)memo
-                     isSecure:(BOOL)isSecure
-                localCurrency:(NSString *)localCurrency
-          localCurrencyAmount:(NSString *)localCurrencyAmount
-{
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
-    
-    //BUG: XXX limit the length of name and memo to avoid having the amount clipped
-    if (! isSecure && self.request.errorMessage.length > 0) prompt = [prompt stringByAppendingString:REDX @" "];
-    if (name.length > 0) prompt = [prompt stringByAppendingString:sanitizeString(name)];
-    if (! isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
-    if (! isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
-    if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
-    prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n\n     amount %@ (%@)", nil),
-              [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
-    
-    if (localCurrency && localCurrencyAmount && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
-        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-        numberFormatter.currencyCode = localCurrency;
-        numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
-        NSNumber *localAmount = [NSDecimalNumber decimalNumberWithString:localCurrencyAmount];
-        NSString *requestedAmount = [numberFormatter stringFromNumber:localAmount];
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
-    }
-    
-    if (fee > 0) {
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
-                  [manager stringForDashAmount:fee], [manager localCurrencyStringForDashAmount:fee]];
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n         total %@ (%@)", nil),
-                  [manager stringForDashAmount:amount], [manager localCurrencyStringForDashAmount:amount]];
-    }
-    
-    return prompt;
-}
-
 - (void)confirmRequest:(DSPaymentRequest *)request
 {
     if (! request.isValid) {
-        if ([request.paymentAddress isValidDashPrivateKey] || [request.paymentAddress isValidDashBIP38Key]) {
+        if ([request.paymentAddress isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] || [request.paymentAddress isValidDashBIP38Key]) {
             [self confirmSweep:request.paymentAddress];
         }
         else {
@@ -432,11 +384,11 @@ static NSString *sanitizeString(NSString *s)
     else if (request.r.length > 0) { // payment protocol over HTTP
         [(id)self.parentViewController.parentViewController startActivityWithTimeout:20.0];
         
-        [DSPaymentRequest fetch:request.r scheme:request.scheme timeout:20.0 completion:^(DSPaymentProtocolRequest *req, NSError *error) {
+        [DSPaymentRequest fetch:request.r scheme:request.scheme onChain:[DWEnvironment sharedInstance].currentChain timeout:20.0 completion:^(DSPaymentProtocolRequest *req, NSError *error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
-                if (error && ! ([request.paymentAddress isValidBitcoinAddress] || [request.paymentAddress isValidDashAddress])) {
+                if (error && ! ([request.paymentAddress isValidDashAddressOnChain:[DWEnvironment sharedInstance].currentChain])) {
                     UIAlertController * alert = [UIAlertController
                                                  alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                                  message:error.localizedDescription
@@ -468,7 +420,10 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift wantsInstant:(BOOL)wantsInstant requiresInstantValue:(BOOL)requiresInstantValue localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSTransaction *tx = nil;
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
@@ -506,8 +461,8 @@ static NSString *sanitizeString(NSString *s)
     else amount = self.amount;
     
     if ([currency isEqualToString:@"dash"]) {
-        NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
-        if ([manager.wallet containsAddress:address]) {
+        NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
+        if ([wallet containsAddress:address]) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@""
                                          message:NSLocalizedString(@"this payment address is already in your wallet", nil)
@@ -522,7 +477,7 @@ static NSString *sanitizeString(NSString *s)
             [self cancel:nil];
             return;
         }
-        else if (! [self.okAddress isEqual:address] && [manager.wallet addressIsUsed:address] &&
+        else if (! [self.okAddress isEqual:address] && [wallet addressIsUsed:address] &&
                  [[UIPasteboard generalPasteboard].string isEqual:address]) {
             self.request = protoReq;
             self.scheme = currency;
@@ -607,7 +562,7 @@ static NSString *sanitizeString(NSString *s)
             }
             return;
             
-        } else if (amount > manager.wallet.balance && amount != UINT64_MAX) {
+        } else if (amount > account.balance && amount != UINT64_MAX) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"insufficient funds", nil)
                                          message:nil
@@ -622,7 +577,7 @@ static NSString *sanitizeString(NSString *s)
             [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             [self cancel:nil];
             return;
-        } else if (wantsInstant && ([manager.wallet maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED usingInstantSend:TRUE] < amount)) {
+        } else if (wantsInstant && ([account maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED usingInstantSend:TRUE] < amount)) {
             self.request = protoReq;
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
@@ -714,7 +669,7 @@ static NSString *sanitizeString(NSString *s)
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                          message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
-                                                  [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
+                                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -733,7 +688,7 @@ static NSString *sanitizeString(NSString *s)
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                          message:[NSString stringWithFormat:NSLocalizedString(@"dash transaction outputs can't be less than %@",
-                                                                                              nil), [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
+                                                                                              nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -755,51 +710,52 @@ static NSString *sanitizeString(NSString *s)
         if (self.amount == 0) {
             
             if (shapeshift) {
-                tx = [manager.wallet transactionForAmounts:protoReq.details.outputAmounts
+                tx = [account transactionForAmounts:protoReq.details.outputAmounts
                                            toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
-                tx = [manager.wallet transactionForAmounts:protoReq.details.outputAmounts
+                tx = [account transactionForAmounts:protoReq.details.outputAmounts
                                            toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         else {
             if (shapeshift) {
-                tx = [manager.wallet transactionForAmounts:@[@(self.amount)]
+                tx = [account transactionForAmounts:@[@(self.amount)]
                                            toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
-                tx = [manager.wallet transactionForAmounts:@[@(self.amount)]
+                tx = [account transactionForAmounts:@[@(self.amount)]
                                            toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         
         if (tx) {
-            amount = [manager.wallet amountSentByTransaction:tx] - [manager.wallet amountReceivedFromTransaction:tx];
-            fee = [manager.wallet feeForTransaction:tx];
+            amount = [account amountSentByTransaction:tx] - [account amountReceivedFromTransaction:tx];
+            fee = [account feeForTransaction:tx];
         }
         else {
-            DSTransaction * tempTx = [manager.wallet transactionFor:manager.wallet.balance
+            DSTransaction * tempTx = [account transactionFor:account.balance
                                                                  to:address withFee:NO];
-            fee = [manager.wallet feeForTxSize:tempTx.size isInstant:self.sendInstantly inputCount:tempTx.inputHashes.count];
-            fee += (manager.wallet.balance - amount) % 100;
+            fee = [chain feeForTxSize:tempTx.size isInstant:self.sendInstantly inputCount:tempTx.inputHashes.count];
+            fee += (account.balance - amount) % 100;
             amount += fee;
         }
         
         for (NSData *script in protoReq.details.outputScripts) {
-            NSString *addr = [NSString addressWithScriptPubKey:script];
+            NSString *addr = [NSString addressWithScriptPubKey:script onChain:chain];
             
             if (! addr) addr = NSLocalizedString(@"unrecognized address", nil);
             if ([address rangeOfString:addr].location != NSNotFound) continue;
             address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
         }
         
-        NSString *prompt = [self promptForAmount:amount
+        NSString *prompt = [[DSAuthenticationManager sharedInstance] promptForAmount:amount
                                              fee:fee
                                          address:address
                                             name:protoReq.commonName
                                             memo:protoReq.details.memo
                                         isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])
+                                    errorMessage:@""
                                    localCurrency:localCurrency
                              localCurrencyAmount:localCurrencyAmount];
         
@@ -809,7 +765,7 @@ static NSString *sanitizeString(NSString *s)
             [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
-        NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject];
+        NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject forChain:chain];
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -851,7 +807,7 @@ static NSString *sanitizeString(NSString *s)
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                          message:[NSString stringWithFormat:NSLocalizedString(@"bitcoin payments can't be less than %@", nil),
-                                                  [manager stringForBitcoinAmount:TX_MIN_OUTPUT_AMOUNT]]
+                                                  [priceManager stringForBitcoinAmount:TX_MIN_OUTPUT_AMOUNT]]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -870,7 +826,7 @@ static NSString *sanitizeString(NSString *s)
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                          message:[NSString stringWithFormat:NSLocalizedString(@"dash transaction outputs can't be less than %@",
-                                                                                              nil), [manager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
+                                                                                              nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"ok", nil)
@@ -888,7 +844,7 @@ static NSString *sanitizeString(NSString *s)
         self.request = protoReq;
         self.shapeshiftRequest = protoReq;
         self.scheme = currency;
-        [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/manager.bitcoinDashPrice.doubleValue];
+        [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/priceManager.bitcoinDashPrice.doubleValue];
     }
 }
 
@@ -901,7 +857,7 @@ static NSString *sanitizeString(NSString *s)
             amountController.usingShapeshift = TRUE;
             amountController.to = sanitizeString(self.associatedShapeshift.withdrawalAddress);
         } else {
-            NSString *address = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject];
+            NSString *address = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
             if (self.request.commonName.length > 0) {
                 if (self.request.isValid && ! [self.request.pkiType isEqual:@"none"]) {
                     amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(self.request.commonName)];
@@ -917,8 +873,9 @@ static NSString *sanitizeString(NSString *s)
 }
 
 -(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    uint64_t fuzz = [priceManager amountForLocalCurrencyString:[priceManager localCurrencyStringForDashAmount:1]]*2;
     
     UIViewController * viewControllerToShowAlert = self;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
@@ -928,15 +885,15 @@ static NSString *sanitizeString(NSString *s)
     
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
-    if (self.amount <= manager.wallet.balance + fuzz && self.amount > 0) {
-        int64_t amount = [manager.wallet maxOutputAmountUsingInstantSend:tx.isInstant];
+    if (self.amount <= account.balance + fuzz && self.amount > 0) {
+        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.isInstant];
         
         if (amount > 0 && amount < self.amount) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"insufficient funds for dash network fee", nil)
                                          message:[NSString stringWithFormat:NSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
-                                                  [manager stringForDashAmount:self.amount - amount],
-                                                  [manager localCurrencyStringForDashAmount:self.amount - amount]]
+                                                  [priceManager stringForDashAmount:self.amount - amount],
+                                                  [priceManager localCurrencyStringForDashAmount:self.amount - amount]]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* cancelButton = [UIAlertAction
                                            actionWithTitle:NSLocalizedString(@"cancel", nil)
@@ -946,8 +903,8 @@ static NSString *sanitizeString(NSString *s)
                                            }];
             UIAlertAction* reduceButton = [UIAlertAction
                                            actionWithTitle:[NSString stringWithFormat:@"%@ (%@)",
-                                                            [manager stringForDashAmount:amount - self.amount],
-                                                            [manager localCurrencyStringForDashAmount:amount - self.amount]]
+                                                            [priceManager stringForDashAmount:amount - self.amount],
+                                                            [priceManager localCurrencyStringForDashAmount:amount - self.amount]]
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
                                                [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
@@ -994,8 +951,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)confirmTransaction:(DSTransaction *)tx toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    __block BOOL previouslyWasAuthenticated = manager.didAuthenticate;
+    __block BOOL previouslyWasAuthenticated = [DSAuthenticationManager sharedInstance].didAuthenticate;
     UIViewController * viewControllerToShowAlert = self;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
@@ -1003,21 +959,23 @@ static NSString *sanitizeString(NSString *s)
     }
     
     if (! tx) { // tx is nil if there were insufficient wallet funds
-        if (manager.didAuthenticate) {
+        if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
             [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         } else {
-            [manager seedWithPrompt:prompt forAmount:amount completion:^(NSData * _Nullable seed) {
+            DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+            [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:wallet
+                                                           forAmount:amount forceAuthentication:YES completion:^(NSData * _Nullable seed) {
                 if (seed) {
                     [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                 } else {
                     [self cancelOrChangeAmount];
                 }
-                if (!previouslyWasAuthenticated) manager.didAuthenticate = NO;
+                if (!previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
             }];
         }
     } else {
-        
-        [manager.wallet signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction) {
+        DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+        [account signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction) {
             if (!signedTransaction) {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
@@ -1033,7 +991,7 @@ static NSString *sanitizeString(NSString *s)
                 [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             } else {
                 
-                if (! previouslyWasAuthenticated) manager.didAuthenticate = NO;
+                if (! previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
                 
                 if (! tx.isSigned) { // double check
                     [self cancelOrChangeAmount];
@@ -1102,22 +1060,22 @@ static NSString *sanitizeString(NSString *s)
                 if (self.request.details.paymentURL.length > 0) {
                     uint64_t refundAmount = 0;
                     NSMutableData *refundScript = [NSMutableData data];
-                    
-                    [refundScript appendScriptPubKeyForAddress:manager.wallet.receiveAddress];
+                    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+                    [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:[DWEnvironment sharedInstance].currentChain];
                     
                     for (NSNumber *amt in self.request.details.outputAmounts) {
                         refundAmount += amt.unsignedLongLongValue;
                     }
                     
                     // TODO: keep track of commonName/memo to associate them with outputScripts
-                    BRPaymentProtocolPayment *payment =
-                    [[BRPaymentProtocolPayment alloc] initWithMerchantData:self.request.details.merchantData
-                                                              transactions:@[tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil];
+                    DSPaymentProtocolPayment *payment =
+                    [[DSPaymentProtocolPayment alloc] initWithMerchantData:self.request.details.merchantData
+                                                              transactions:@[tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil onChain:[DWEnvironment sharedInstance].currentChain];
                     
                     NSLog(@"posting payment to: %@", self.request.details.paymentURL);
                     
-                    [DSPaymentRequest postPayment:payment scheme:@"dash" to:self.request.details.paymentURL timeout:20.0
-                                       completion:^(BRPaymentProtocolACK *ack, NSError *error) {
+                    [DSPaymentRequest postPayment:payment scheme:@"dash" to:self.request.details.paymentURL onChain:[DWEnvironment sharedInstance].currentChain timeout:20.0
+                                       completion:^(DSPaymentProtocolACK *ack, NSError *error) {
                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                                                
@@ -1174,9 +1132,8 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)confirmSweep:(NSString *)privKey
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
     
-    if (! [privKey isValidDashPrivateKey] && ! [privKey isValidDashBIP38Key]) return;
+    if (! [privKey isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] && ! [privKey isValidDashBIP38Key]) return;
     
     BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking private key balance...", nil)
                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
@@ -1187,7 +1144,11 @@ static NSString *sanitizeString(NSString *s)
     [(id)statusView.customView startAnimating];
     [self.view addSubview:[statusView popIn]];
     
-    [manager sweepPrivateKey:privKey withFee:YES completion:^(DSTransaction *tx, uint64_t fee, NSError *error) {
+    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    
+    [account sweepPrivateKey:privKey withFee:YES completion:^(DSTransaction *tx, uint64_t fee, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [statusView popOut];
             
@@ -1228,13 +1189,13 @@ static NSString *sanitizeString(NSString *s)
                                                    [self cancelOrChangeAmount];
                                                }];
                 UIAlertAction* amountButton = [UIAlertAction
-                                               actionWithTitle:[NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:amount],
-                                                                [manager localCurrencyStringForDashAmount:amount]]
+                                               actionWithTitle:[NSString stringWithFormat:@"%@ (%@)", [priceManager stringForDashAmount:amount],
+                                                                [priceManager localCurrencyStringForDashAmount:amount]]
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
                                                    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
                                                    
-                                                   [[DSPeerManager sharedInstance] publishTransaction:self.sweepTx completion:^(NSError *error) {
+                                                   [chainPeerManager publishTransaction:self.sweepTx completion:^(NSError *error) {
                                                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                                                        
                                                        if (error) {
@@ -1272,9 +1233,9 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)showBalance:(NSString *)address
 {
-    if (! [address isValidBitcoinAddress]) return;
+    if (! [address isValidDashAddressOnChain:[DWEnvironment sharedInstance].currentChain]) return;
     
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSInsightManager *insightManager = [DSInsightManager sharedInstance];
     BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking address balance...", nil)
                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
@@ -1284,7 +1245,7 @@ static NSString *sanitizeString(NSString *s)
     [(id)statusView.customView startAnimating];
     [self.view addSubview:[statusView popIn]];
     
-    [manager utxosForAddresses:@[address]
+    [insightManager utxosForAddresses:@[address]
                     completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [statusView popOut];
