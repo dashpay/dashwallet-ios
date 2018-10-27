@@ -77,9 +77,13 @@
 
 @implementation DWRootViewController
 
+// MARK: - Controller values
+
 -(BOOL)prefersStatusBarHidden {
     return NO;
 }
+
+// MARK: - View methods
 
 - (void)viewDidLoad
 {
@@ -87,19 +91,6 @@
     
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     // Do any additional setup after loading the view.
-    
-    // detect jailbreak so we can throw up an idiot warning, in viewDidLoad so it can't easily be swizzled out
-    struct stat s;
-    BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
-    
-    // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
-    for (uint32_t count = _dyld_image_count(), i = 0; i < count && ! jailbroken; i++) {
-        if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) jailbroken = YES;
-    }
-    
-#if TARGET_IPHONE_SIMULATOR
-    jailbroken = NO;
-#endif
     
     _balance = UINT64_MAX;
     
@@ -130,6 +121,118 @@
         [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeRight multiplier:1.0 constant:0.0]];
         [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-48.0]];
     }
+    
+    self.reachability = [Reachability reachabilityForInternetConnection];
+    [self.reachability startNotifier];
+    
+    self.navigationController.delegate = self;
+    
+#if DASH_TESTNET
+    UILabel *label = [UILabel new];
+    
+    label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
+    label.textColor = [UIColor redColor];
+    label.textAlignment = NSTextAlignmentRight;
+    label.text = @"testnet";
+    label.tag = 0xbeef;
+    [label sizeToFit];
+    label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
+                               self.view.frame.size.height - (label.frame.size.height + 5));
+    [self.view addSubview:label];
+#endif
+    
+    if ([DSEnvironment sharedInstance].watchOnly) { // watch only wallet
+        UILabel *label = [UILabel new];
+        
+        label.font = [UIFont systemFontOfSize:14];
+        label.textColor = [UIColor redColor];
+        label.textAlignment = NSTextAlignmentRight;
+        label.text = @"watch only";
+        [label sizeToFit];
+        label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
+                                   self.view.frame.size.height - (label.frame.size.height + 5)*2);
+        [self.view addSubview:label];
+    }
+    
+    // detect jailbreak so we can throw up an idiot warning, in viewDidLoad so it can't easily be swizzled out
+    struct stat s;
+    BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
+    
+    // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
+    for (uint32_t count = _dyld_image_count(), i = 0; i < count && ! jailbroken; i++) {
+        if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) jailbroken = YES;
+    }
+    
+#if TARGET_IPHONE_SIMULATOR
+    jailbroken = NO;
+#endif
+    
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
+                                                                                withExtension:@"aiff"], &_pingsound);
+    
+    if (![[DWEnvironment sharedInstance].currentChain hasAWallet]) {
+        self.splash.hidden = YES;
+        self.navigationController.navigationBar.hidden = NO;
+    }
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    if (jailbroken && wallet.totalReceived + wallet.totalSent > 0) {
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                               "Any 'jailbreak' app can access any other app's keychain data "
+                                                               "(and steal your dash). "
+                                                               "Wipe this wallet immediately and restore on a secure device.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* ignoreButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+        UIAlertAction* wipeButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         DWRestoreViewController *restoreController =
+                                         [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
+                                         
+                                         [self.navigationController pushViewController:restoreController animated:NO];
+                                     }];
+        
+        [alert addAction:ignoreButton];
+        [alert addAction:wipeButton];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+    else if (jailbroken) {
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                                               "Any 'jailbreak' app can access any other app's keychain data "
+                                                               "(and steal your dash).", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* ignoreButton = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+        UIAlertAction* closeButton = [UIAlertAction
+                                      actionWithTitle:NSLocalizedString(@"close app", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          exit(0);
+                                      }];
+        
+        [alert addAction:ignoreButton];
+        [alert addAction:closeButton];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+
+    
+    [self setObserversWithDeviceIsJailbroken:jailbroken];
+}
+
+-(void)setObserversWithDeviceIsJailbroken:(BOOL)jailbroken {
     
     self.urlObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
@@ -365,108 +468,6 @@
                                                            [self showErrorBar];
                                                        }];
     
-    self.reachability = [Reachability reachabilityForInternetConnection];
-    [self.reachability startNotifier];
-    
-    self.navigationController.delegate = self;
-    
-#if DASH_TESTNET
-    UILabel *label = [UILabel new];
-    
-    label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
-    label.textColor = [UIColor redColor];
-    label.textAlignment = NSTextAlignmentRight;
-    label.text = @"testnet";
-    label.tag = 0xbeef;
-    [label sizeToFit];
-    label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
-                               self.view.frame.size.height - (label.frame.size.height + 5));
-    [self.view addSubview:label];
-#endif
-    
-#if SNAPSHOT
-    [self.view viewWithTag:0xbeef].hidden = YES;
-    [self.navigationController
-     presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-     completion:^{
-         [self.navigationController.presentedViewController.view
-          addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
-     }];
-#endif
-    
-    if ([DSEnvironment sharedInstance].watchOnly) { // watch only wallet
-        UILabel *label = [UILabel new];
-        
-        label.font = [UIFont systemFontOfSize:14];
-        label.textColor = [UIColor redColor];
-        label.textAlignment = NSTextAlignmentRight;
-        label.text = @"watch only";
-        [label sizeToFit];
-        label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
-                                   self.view.frame.size.height - (label.frame.size.height + 5)*2);
-        [self.view addSubview:label];
-    }
-    
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
-                                                                                withExtension:@"aiff"], &_pingsound);
-    
-    if ([[DWEnvironment sharedInstance].currentChain hasAWallet]) {
-        self.splash.hidden = YES;
-        self.navigationController.navigationBar.hidden = NO;
-    }
-    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    if (jailbroken && wallet.totalReceived + wallet.totalSent > 0) {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
-                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                                               "Any 'jailbreak' app can access any other app's keychain data "
-                                                               "(and steal your dash). "
-                                                               "Wipe this wallet immediately and restore on a secure device.", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* ignoreButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           
-                                       }];
-        UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
-                                     style:UIAlertActionStyleDestructive
-                                     handler:^(UIAlertAction * action) {
-                                         DWRestoreViewController *restoreController =
-                                         [self.storyboard instantiateViewControllerWithIdentifier:@"WipeViewController"];
-                                         
-                                         [self.navigationController pushViewController:restoreController animated:NO];
-                                     }];
-        
-        [alert addAction:ignoreButton];
-        [alert addAction:wipeButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-    else if (jailbroken) {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
-                                     message:NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
-                                                               "Any 'jailbreak' app can access any other app's keychain data "
-                                                               "(and steal your dash).", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* ignoreButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ignore", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           
-                                       }];
-        UIAlertAction* closeButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"close app", nil)
-                                      style:UIAlertActionStyleDefault
-                                      handler:^(UIAlertAction * action) {
-                                          exit(0);
-                                      }];
-        
-        [alert addAction:ignoreButton];
-        [alert addAction:closeButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
 }
 
 - (void)viewWillAppear:(BOOL)animated

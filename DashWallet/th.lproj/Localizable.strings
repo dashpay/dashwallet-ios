@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "และ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ คือ 'mDASH'  %@เท่ากับ 1 DASH";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d การยืนยัน";
 
 /* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nถ้าคุณทำโทรศัพท์หาย คุณจะต้องการมันเพื่อกู้คืน wallet ของคุณ";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 พยายามที่เหลืออยู่ \n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nการตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ  เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nอนุญาติการเข้าถึงกล้องถ่ายรูป\nการตั้งค่า->ความเป็นส่วนตัว->กล้องถ่ายรูป->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nลองเข้าอีกครั้ง%@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "ใบชำระเงินไม่ถูกต้อง";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "URL ใบชำระเงินไม่ถูกต้อง";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "URL ใบชำระเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "ยืนยันในกลุ่ม #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "หมดเวลาเชื่อมต่อ";
-
-/* No comment provided by engineer. */
 "copied" = "คัดลอก";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "ธุรกรรม dash นี้ ยังไม่ถูกลงนาม";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "รายการธุรกรรม dash ไม่สามารถน้อยกว่า %@  ได้";
@@ -324,9 +294,6 @@
 "minutes" = "นาที";
 
 /* No comment provided by engineer. */
-"missing certificate" = "ไม่พบใบรับรอง";
-
-/* No comment provided by engineer. */
 "more..." = "เพิ่มเติม";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
 
 /* No comment provided by engineer. */
-"no peers found" = "ไม่มีผู้ปล่อย";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ไม่ใช่ใช่คีย์ส่วนตัวที่ถูกต้อง";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "ไม่ได้เชื่อมต่อกับเครือข่าย dash";
 
 /* No comment provided by engineer. */
 "ok" = "โอเค";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "คำขอเพื่อการชำระเงินทันที แต่คุณได้ยกเลิกการชำระทันทีแล้ว";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "ขอให้เครือข่าย \"%1$@\" แทน \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "สแกนอีกครั้ง";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  เงินทุนของคุณมีความเสี่ยง  โอนย้ายยอดเงินไปยัง wallet ";
-
-/* No comment provided by engineer. */
-"second" = "ที่สอง";
-
-/* No comment provided by engineer. */
-"seconds" = "ที่สอง";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "เห็นแล้ว %1$d ของ %2$d ผู้ปล่อย ";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "จำกัดใช้ Touch ID";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "ธุรกรรมถูกยกเลิก  เครือข่ายหมดเวลา";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "ค่าธรรมเนียมการทำธุรกรรมอาจสูงกว่าเงินที่มีอยู่ในคีย์ส่วนตัวนี้ (เนื่องจากเงินฝาก \"dust\" เล็กน้อย)";
 
 /* No comment provided by engineer. */
 "Transaction history" = "ประวัติการทำรายการ";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "การทำธุรกรรมถูกปฏิเสธ";
 
 /* No comment provided by engineer. */
 "trust" = "เชื่อถือ";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "เอกสารไม่รองรับหรือเสียหาย";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "ลายเซ็นไม่รองรับ";
-
-/* No comment provided by engineer. */
 "unsupported url" = "url ไม่รองรับ";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "ใบรับรองไม่น่าเชื่อถือ";
 
 /* No comment provided by engineer. */
 "unverified" = "พิสูจน์ไม่ได้";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "คุณได้รับ dash ";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "wallet ของคุณ อาจไม่ได้รับการซิงค์ ซึ่งมักจะสามารถแก้ไขได้โดยการสแกน blockchain ใหม่";

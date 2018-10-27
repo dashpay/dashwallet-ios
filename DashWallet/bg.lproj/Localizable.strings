@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " и ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ е за 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d потвърждения";
 
 /* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 потвърждения";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" не е фраза за възстановяване";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n       общо %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nако някога загубите телефона си, ще се нуждаете от него, за да възстановите портфейла си";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d оставащи опита\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(локална заявка за сума: %@)";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 оставащ опит\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     количество %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nНеобходима е парола на устройството за опазване на портфейла Ви. Отидете в настройки и включете използването на парола, за да продължите.";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешава достъпа до камерата\nНастройки->Неприкосновеност->Камера->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nмрежова такса +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nопитай отново в %@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "грешна заявка за плащане";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "грешна заявка за плащане URL";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "грешно плащане URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "грешна фраза за възстановяване";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "потвърдено в блок #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "таймаут на връзката";
-
-/* No comment provided by engineer. */
 "copied" = "копирано";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "dash плащането не може да бъде по-малко от %@";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "dash транзакцията не е подписана";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "dash изходите за транзакцията  не може да бъдат по-малко то %@";
@@ -324,9 +294,6 @@
 "minutes" = "минути";
 
 /* No comment provided by engineer. */
-"missing certificate" = "липсващ сертификат";
-
-/* No comment provided by engineer. */
 "more..." = "още...";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "няма данни за обменния курс";
 
 /* No comment provided by engineer. */
-"no peers found" = "няма намерени пиъри";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "не е валиден частен ключ";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "не е свързан към dash мрежата";
 
 /* No comment provided by engineer. */
 "ok" = "ок";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "искането е за  instant payment, но вашите instant payments са изключени";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "исканата мрежа \"%1$@\" вместо \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "повторно сканиране";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Снимките на екрана са видими от други приложения и устройства. Вашите средства са изложени на риск. Прехвърлете средствата си в друг портфейл.";
-
-/* No comment provided by engineer. */
-"second" = "секунда";
-
-/* No comment provided by engineer. */
-"seconds" = "секунди";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "видян от %1$d от%2$d пиъра";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "Touch ID лимит за похарчване";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "отказана транзакция, мрежово прекъсване";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "таксата за транзакцията може да е по-голяма от наличните средства в този частен ключ(поради малките\"отпадъчни\" депозити)";
 
 /* No comment provided by engineer. */
 "Transaction history" = "История на транзакциите";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "отхвърлена транзакция";
 
 /* No comment provided by engineer. */
 "trust" = "доверен";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "неподдържан или повреден документ";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "неподдържан тип подпис";
-
-/* No comment provided by engineer. */
 "unsupported url" = "неподдържан url";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "ненадежден сертификат";
 
 /* No comment provided by engineer. */
 "unverified" = "непроверен";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "ти получи dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";

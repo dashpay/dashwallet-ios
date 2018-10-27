@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " e ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@sta per 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d conferme";
 
 /* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 conferme";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         totale %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nse perdi il tuo telefono, ti basterà per recuperare il tuo portafoglio";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d tentativi rimanenti\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(quantità locale richiesta: %@)";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 tentativo rimasto\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n       importo %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUn codice di accesso è necessario per proteggere il tuo portafoglio. Vai nelle impostazioni e attiva il codice per continuare.";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nconsenti l'accesso alla fotocamera in\nImpostazioni->Privacy->Fotocamera->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\ntassa di rete +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nriprova tra %@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "richiesta di pagamento errata";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "URL di richiesta pagamento errato";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "URL di pagamento errato";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "frase di sicurezza errata";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "confermato nel blocco #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "connessione interrotta";
-
-/* No comment provided by engineer. */
 "copied" = "copiato";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "transazione dash non firmata";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "transazioni dash in uscita non possono essere inferiori a %@";
@@ -324,9 +294,6 @@
 "minutes" = "minuti";
 
 /* No comment provided by engineer. */
-"missing certificate" = "certificato mancante";
-
-/* No comment provided by engineer. */
 "more..." = "di più...";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "nessun dato del tasso di cambio";
 
 /* No comment provided by engineer. */
-"no peers found" = "nessun pari trovato";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "non una chiave privata valida";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "non connesso alla rete dash";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "richiesto un pagamento immediato, ma hai disabilitato i pagamenti immediati";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "richiesta rete \"%1$@\" invece di \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "riscansiona";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "Riscansione blockchain";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Gli screenshot sono visibili ad altri dispositivi e applicazioni. I tuoi fondi sono a rischio. Trasferisci il tuo saldo a un altro portafoglio.";
-
-/* No comment provided by engineer. */
-"second" = "secondo";
-
-/* No comment provided by engineer. */
-"seconds" = "secondi";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "visto da %1$d di %2$d pari";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "Limite di spesa Touch ID";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transazione cancellata, rete sospesa";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "i costi di transazione costerebbero più dei fondi disponibili su questa chiave privata (a causa dei micro depositi \"dust\")";
 
 /* No comment provided by engineer. */
 "Transaction history" = "Storico delle transazioni";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transazione rifiutata";
 
 /* No comment provided by engineer. */
 "trust" = "fiducia";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "documento non supportato o corrotto";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "tipo di firma non supportato";
-
-/* No comment provided by engineer. */
 "unsupported url" = "url non supportato";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "certificato non attendibile";
 
 /* No comment provided by engineer. */
 "unverified" = "non verificato";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "hai ricevuto dei dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe essere non sincronizzato.\nDi solito si rimedia riscansionando la catena di blocchi.";

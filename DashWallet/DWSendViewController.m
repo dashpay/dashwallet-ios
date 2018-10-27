@@ -1645,6 +1645,11 @@ static NSString *sanitizeString(NSString *s)
     [session invalidateSession];
 }
 
+- (void)readerSession:(nonnull NFCNDEFReaderSession *)session didInvalidateWithError:(nonnull NSError *)error  API_AVAILABLE(ios(11.0)){
+    
+}
+
+
 // MARK: - DWAmountViewControllerDelegate
 
 - (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
@@ -1779,7 +1784,7 @@ static NSString *sanitizeString(NSString *s)
     hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
     [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
         //we don't know the exact amount of bitcoins we want to send, we are just sending dash
-DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+        DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
         
         NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.shapeshiftRequest.details.outputScripts.firstObject forChain:[DWEnvironment sharedInstance].currentChain];
         NSString * returnAddress = account.receiveAddress;

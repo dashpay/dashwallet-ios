@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "och";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ är för 'mDASH'. %@ = 1 DASH";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d bekräftelser";
 
 /* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 bekräftelser";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" ingår inte i återställningsfrasen";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         totalt %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nifall du förlorar din mobil behöver du frasen för att återställa plånboken";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d försök återstår\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 försök återstår\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     belopp %1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbevilja kameraåtkomst i Inställningar->Personligt->Kamera->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nnätverksavgift +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nförsök igen om %@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "felaktig betalningsanmodan";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "felaktig URL i betalningsanmodan";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "felaktig betalnings-URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "fel återställningsfras";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "bekräftad i block #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "anslutningen överskred tidsgränsen";
-
-/* No comment provided by engineer. */
 "copied" = "kopierade";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "betalningar kan inte vara mindre än %@";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "transaktionen ej undertecknad";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "transaktionens utflöden får ej understiga %@";
@@ -324,9 +294,6 @@
 "minutes" = "minuter";
 
 /* No comment provided by engineer. */
-"missing certificate" = "saknar certifikat";
-
-/* No comment provided by engineer. */
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "ingen växlingskurs data";
 
 /* No comment provided by engineer. */
-"no peers found" = "hittade inga likar (peer)";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "ogiltig privat nyckel";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "ingen anslutning till dashnätverket";
 
 /* No comment provided by engineer. */
 "ok" = "OK";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "Begäran är för en direktbetalning men du har inaktiverat direktbetalning ";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "begärde nätverk \"%1$@\" istället för \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "återläs";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "återläs blockkedjan";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Skärmbilder är synliga för andra appar och enheter. Dina tillgångar är riskerade. Flytta dem till en annan plånbok.";
-
-/* No comment provided by engineer. */
-"second" = "sekund";
-
-/* No comment provided by engineer. */
-"seconds" = "sekunder";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "sett av %1$d av %2$d likar";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transaktionen avbruten – nätverksavbrott";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsavgiften skulle överstiga de medel som nyckeln har tillgängligt (på grund av \"damminsättningar\")";
 
 /* No comment provided by engineer. */
 "Transaction history" = "transaktionshistorik";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transaktion avvisad";
 
 /* No comment provided by engineer. */
 "trust" = "lita på";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "okänd dokumenttyp eller skadat dokument";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "stöd saknas för signaturtypen";
-
-/* No comment provided by engineer. */
 "unsupported url" = "stöd saknas för URL:en";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "opålitligt certifikat";
 
 /* No comment provided by engineer. */
 "unverified" = "overifierad";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "du har fått dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Din plånbok kan vara osynkroniserad.\nDetta åtgärdas oftast genom en omläsning av blockkedjan.";

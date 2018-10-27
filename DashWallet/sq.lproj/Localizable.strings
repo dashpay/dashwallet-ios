@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d konfirmime";
 
 /* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 konfirmime";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" nuk është një fjalë e frazës rikthyese";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n total %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d tentime kanë mbetur\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 tentim ka mbetur\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n shuma %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë kodkalim është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo kodkalimin dhe vazhdo.";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nlejo çasjen e kamerës në\nSettings->Privacy->Camera->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\ntarifa +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "kërkesë për pages e gabuar";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "URL kërkes për pages e gabuar";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "URL pages e gabuar";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "frazë rikthyese e gabuar";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "konfirmuar në bllokun #%d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "lidhja është shkëputur";
-
-/* No comment provided by engineer. */
 "copied" = "kopjuar";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "dash pagesa nuk mund të jetë më e pak se %@";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "dash transaksioni nuk është firmosur";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "dash transaksion outputet nuk mund të jetë më pak se %@";
@@ -324,9 +294,6 @@
 "minutes" = "minuta";
 
 /* No comment provided by engineer. */
-"missing certificate" = "mungon çertifikata";
-
-/* No comment provided by engineer. */
 "more..." = "më shumë...";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "no exchange rate data";
 
 /* No comment provided by engineer. */
-"no peers found" = "nuk janë gjetur peers";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "jo një dash çelës privat valid";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "nuk jeni konektuar në rrjetin dash";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "kërkohet rrjeti \"%1$@\" në vend të \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "riskano";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "riskano blockchain";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshot shihen nga aplikacionet dhe pajisjet tjera. Fondet e juaja janë në rrezik. Transfero fondet në një kulet tjetër.";
-
-/* No comment provided by engineer. */
-"second" = "second";
-
-/* No comment provided by engineer. */
-"seconds" = "seconds";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "u pa nga %1$d e %2$d peers";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transaksioni u anulua, problem me rrjetin";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "tarifa do të kushtoj më shumë se sa vetë fondet në dispozicion në këtë çelës privat (për shkak të depozitave tepër të vogla)";
 
 /* No comment provided by engineer. */
 "Transaction history" = "historia e transaksioneve";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transaksioni u refuzua";
 
 /* No comment provided by engineer. */
 "trust" = "trust";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "dokument i korruptuar apo i pambështetur";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "tipë i firmosjes që nuk mbështetet";
-
-/* No comment provided by engineer. */
 "unsupported url" = "url e pambështetur";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "çertifikatë e pabesuar";
 
 /* No comment provided by engineer. */
 "unverified" = "i paverifikuar";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "ju pranuat dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Si duket kuleta juaj nuk është e sinkronizuar.\nKjo shpesh mund të rregullohet duke riskanuar blockchain.";

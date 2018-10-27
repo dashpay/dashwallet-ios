@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " و ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%dالتأكيدات";
 
 /* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 تأكيدات";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,13 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\"إنها ليست جملة الإسترجاع";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\nالمجموع %1$@(%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nإذا فقدت هاتفك ، فستحتاج إلى جملة لإسترجاع محفظتك";
 
 /* No comment provided by engineer. */
 "\n%d attempts remaining\n" = "\n%d المحاولات المتبقية\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(المبلغ المحلي المطلوب: %@)";
-
-/* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 محاولة متبقية\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\nالمبلغ %1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nيجيب إضافة رقم مرور الجهاز لحماية محفظتك. انتقل إلى الإعدادات وشغِّل رقم المرور للمتابعة";
@@ -52,9 +37,6 @@
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nالسماح بالدخول إلى الكاميرا\nالإعدادات->الخصوصية->الكاميرا->%@";
-
-/* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nرسوم الشبكة + %1$@(%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nأعد المحاولة في %@";
@@ -91,12 +73,6 @@
 
 /* No comment provided by engineer. */
 "bad payment request" = "طلب دفع سيئة";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "عنوان طلب دفع سيئ";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "عنوان الدفع سيء";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "جملة الإسترجاع سيئة";
@@ -162,9 +138,6 @@
 "confirmed in block #%d" = "تأكيد في الكتلة # %d";
 
 /* No comment provided by engineer. */
-"connect timeout" = "مهلة";
-
-/* No comment provided by engineer. */
 "copied" = "نسخ";
 
 /* No comment provided by engineer. */
@@ -205,9 +178,6 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "لا يمكن أن تكون دفعات الداش أقل من %@";
-
-/* No comment provided by engineer. */
-"dash transaction not signed" = "صفقة داش لم توقع";
 
 /* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "لا يمكن أن تكون مخرجات معاملات داش أقل من %@";
@@ -324,9 +294,6 @@
 "minutes" = "دقائق";
 
 /* No comment provided by engineer. */
-"missing certificate" = "شهادة مفقودة";
-
-/* No comment provided by engineer. */
 "more..." = "أكثر...";
 
 /* No comment provided by engineer. */
@@ -348,9 +315,6 @@
 "no exchange rate data" = "لا توجد بيانات سعر الصرف";
 
 /* No comment provided by engineer. */
-"no peers found" = "لا يوجد أقران";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -367,9 +331,6 @@
 
 /* No comment provided by engineer. */
 "not a valid private key" = "مفتاح الخاص غير صالح";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "غير متصل بشبكة داش";
 
 /* No comment provided by engineer. */
 "ok" = "حاضر";
@@ -450,12 +411,6 @@
 "request is for an instant payment but you have disabled instant payments" = "طلب الدفع الفوري ولكنك قمت بتعطيل المدفوعات الفورية";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "الشبكة المطلوبة \"%1$@\" بدلا من\"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "إعادة تفحص";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "إعادة فحص بلوكشين";
 
 /* No comment provided by engineer. */
@@ -478,12 +433,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. أموالك معرضة للخطر. نقل رصيدك إلى محفظة أخرى.";
-
-/* No comment provided by engineer. */
-"second" = "تانية";
-
-/* No comment provided by engineer. */
-"seconds" = "تواني";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "رأيت من %1$d على %2$d أقران";
@@ -609,16 +558,10 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "المعاملة ألغيت ، مهلة الشبكة";
-
-/* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "تكلف رسوم المعاملات أكثر من الأموال المتوفرة على هذا المفتاح الخاص (بسبب رواسب \"الغبار\" الصغيرة)";
 
 /* No comment provided by engineer. */
 "Transaction history" = "سجل المعاملات";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "المعاملات المرفوضة";
 
 /* No comment provided by engineer. */
 "trust" = "التقة";
@@ -645,13 +588,7 @@
 "unsupported or corrupted document" = "مستند غير معتمد أو ضائع";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "نوع توقيع غير معتمد";
-
-/* No comment provided by engineer. */
 "unsupported url" = "عنوان الرابط غير معتمد";
-
-/* No comment provided by engineer. */
-"untrusted certificate" = "شهادة غير موثوق بها";
 
 /* No comment provided by engineer. */
 "unverified" = "غير مثبت عليه";
@@ -688,6 +625,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "لقد تلقيت داش!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "محفظتك قد تكون غير متزامنة.\nغالبا ما يمكن إصلاح هذا عن طريق مسح بلوكشين.";
