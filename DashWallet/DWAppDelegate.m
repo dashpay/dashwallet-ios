@@ -93,6 +93,8 @@
              userInfo:@{@"file":file}];
         }
     }
+    
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks];
 
     // start the event manager
     [[DSEventManager sharedEventManager] up];

@@ -170,7 +170,7 @@
     AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
                                                                                 withExtension:@"aiff"], &_pingsound);
     
-    if (![[DWEnvironment sharedInstance].currentChain hasAWallet]) {
+    if ([[DWEnvironment sharedInstance].currentChain hasAWallet]) {
         self.splash.hidden = YES;
         self.navigationController.navigationBar.hidden = NO;
     }
@@ -598,6 +598,8 @@
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
+    DSVersionManager * versionManager = [DSVersionManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
@@ -614,118 +616,119 @@
         priceManager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     //todo : this should be implemented in DashSync, not here
-//    if (!chain.hasAWallet && manager.noOldWallet) {
-//        if (! manager.passcodeEnabled) {
-//            UIAlertController * alert = [UIAlertController
-//                                         alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
-//                                         message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
-//                                                                   "turn passcode on to continue.", nil)
-//                                         preferredStyle:UIAlertControllerStyleAlert];
-//            UIAlertAction* closeButton = [UIAlertAction
-//                                          actionWithTitle:NSLocalizedString(@"close app", nil)
-//                                          style:UIAlertActionStyleDefault
-//                                          handler:^(UIAlertAction * action) {
-//                                              exit(0);
-//                                          }];
-//            [alert addAction:closeButton];
-//            [self presentViewController:alert animated:YES completion:nil];
-//        }
-//        else {
-//            [self.navigationController
-//             presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-//             completion:^{
-//                 self.splash.hidden = YES;
-//                 self.navigationController.navigationBar.hidden = NO;
-//                 [self.pageViewController setViewControllers:@[self.receiveViewController]
-//                                                   direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-//             }];
-//
-//            [DSAuthenticationManager sharedInstance].didAuthenticate = YES;
-//            self.showTips = YES;
-//            [self unlock:nil];
-//        }
-//    }
-//    else {
-//        [manager upgradeExtendedKeysWithCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
-//            if (!success && neededUpgrade && !authenticated) {
-//                [self forceUpdate:cancelled];
-//            }
-//            [manager checkPassphraseWasShownCorrectly:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
-//                if (needsCheck && !authenticated) {
-//                    [self forceUpdate:cancelled];
-//                }
-//
-//                if (needsCheck) {
-//                    UIAlertController * alert = [UIAlertController
-//                             alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
-//                             message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
-//                             preferredStyle:UIAlertControllerStyleAlert];
-//                    UIAlertAction* showButton = [UIAlertAction
-//                                                 actionWithTitle:NSLocalizedString(@"show", nil)
-//                                                 style:UIAlertActionStyleDefault
-//                                                 handler:^(UIAlertAction * action) {
-//                                                     DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-//                                                         seedController.seedPhrase = seedPhrase;
-//                                                     [self.navigationController pushViewController:seedController animated:YES];
-//                                                 }];
-//                    UIAlertAction* ignoreButton = [UIAlertAction
-//                                                  actionWithTitle:NSLocalizedString(@"ignore", nil)
-//                                                  style:UIAlertActionStyleCancel
-//                                                  handler:^(UIAlertAction * action) {
-//
-//                                                  }];
-//
-//                    [alert addAction:ignoreButton];
-//                    [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-//                    [alert setPreferredAction:showButton];
-//                    [self presentViewController:alert animated:YES completion:nil];
-//                }
-//
-//                if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
-//                self.splash.hidden = YES;
-//
-//                self.navigationController.navigationBar.hidden = NO;
-//                self.pageViewController.view.alpha = 1.0;
-//                [self.receiveViewController updateAddress];
-//                if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
-//
-//                if (self.navigationController.visibleViewController == self) {
-//                    [self setNeedsStatusBarAppearanceUpdate];
-//                }
-//
-//#if SNAPSHOT
-//                return;
-//#endif
-//                if (!authenticated) {
-//                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-//                        [manager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-//                            if (authenticated) {
-//                                [self unlock:nil];
-//                            }
-//                        }];
-//                    }
-//                }
-//
-//                if (self.navigationController.visibleViewController == self) {
-//                    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-//                }
-//
-//                if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-//                    [[DSPeerManager sharedInstance] connect];
-//                    [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
-//
-//                    if (self.url) {
-//                        [self.sendViewController handleURL:self.url];
-//                        self.url = nil;
-//                    }
-//                    else if (self.file) {
-//                        [self.sendViewController handleFile:self.file];
-//                        self.file = nil;
-//                    }
-//                }
-//            }];
-//        }];
-//    }
+    if (!chain.hasAWallet /*&& manager.noOldWallet*/) {
+        if (!authenticationManager.passcodeEnabled) {
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+                                         message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and "
+                                                                   "turn passcode on to continue.", nil)
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* closeButton = [UIAlertAction
+                                          actionWithTitle:NSLocalizedString(@"close app", nil)
+                                          style:UIAlertActionStyleDefault
+                                          handler:^(UIAlertAction * action) {
+                                              exit(0);
+                                          }];
+            [alert addAction:closeButton];
+            [self presentViewController:alert animated:YES completion:nil];
+        }
+        else {
+            [self.navigationController
+             presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
+             completion:^{
+                 self.splash.hidden = YES;
+                 self.navigationController.navigationBar.hidden = NO;
+                 [self.pageViewController setViewControllers:@[self.receiveViewController]
+                                                   direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+             }];
+
+            [DSAuthenticationManager sharedInstance].didAuthenticate = YES;
+            self.showTips = YES;
+            [self unlock:nil];
+        }
+    }
+    else {
+        DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+        [versionManager upgradeExtendedKeysForWallet:wallet withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+            if (!success && neededUpgrade && !authenticated) {
+                [self forceUpdate:cancelled];
+            }
+            [versionManager checkPassphraseWasShownCorrectlyForWallet:wallet withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
+                if (needsCheck && !authenticated) {
+                    [self forceUpdate:cancelled];
+                }
+
+                if (needsCheck) {
+                    UIAlertController * alert = [UIAlertController
+                             alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
+                             message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
+                             preferredStyle:UIAlertControllerStyleAlert];
+                    UIAlertAction* showButton = [UIAlertAction
+                                                 actionWithTitle:NSLocalizedString(@"show", nil)
+                                                 style:UIAlertActionStyleDefault
+                                                 handler:^(UIAlertAction * action) {
+                                                     DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                                         seedController.seedPhrase = seedPhrase;
+                                                     [self.navigationController pushViewController:seedController animated:YES];
+                                                 }];
+                    UIAlertAction* ignoreButton = [UIAlertAction
+                                                  actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                  handler:^(UIAlertAction * action) {
+
+                                                  }];
+
+                    [alert addAction:ignoreButton];
+                    [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+                    [alert setPreferredAction:showButton];
+                    [self presentViewController:alert animated:YES completion:nil];
+                }
+
+                if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
+                self.splash.hidden = YES;
+
+                self.navigationController.navigationBar.hidden = NO;
+                self.pageViewController.view.alpha = 1.0;
+                [self.receiveViewController updateAddress];
+                if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+
+                if (self.navigationController.visibleViewController == self) {
+                    [self setNeedsStatusBarAppearanceUpdate];
+                }
+
+#if SNAPSHOT
+                return;
+#endif
+                if (!authenticated) {
+                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                        [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                            if (authenticated) {
+                                [self unlock:nil];
+                            }
+                        }];
+                    }
+                }
+
+                if (self.navigationController.visibleViewController == self) {
+                    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+                }
+
+                if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+                    [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+                    [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+
+                    if (self.url) {
+                        [self.sendViewController handleURL:self.url];
+                        self.url = nil;
+                    }
+                    else if (self.file) {
+                        [self.sendViewController handleFile:self.file];
+                        self.file = nil;
+                    }
+                }
+            }];
+        }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
