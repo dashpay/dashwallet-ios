@@ -52,9 +52,7 @@
 - (instancetype)customInit
 {
     if (![DWEnvironment sharedInstance].currentWallet) {
-        DSWallet * wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain];
-        [DWEnvironment sharedInstance].currentWallet = wallet;
-        [[DWEnvironment sharedInstance].currentChain registerWallet:wallet];
+        [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES];
         self.seedPhrase = [DWEnvironment sharedInstance].currentWallet.seedPhraseIfAuthenticated;
         [[DWEnvironment sharedInstance].currentChainPeerManager connect];
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];

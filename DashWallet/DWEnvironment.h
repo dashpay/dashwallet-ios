@@ -15,13 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWEnvironment : NSObject
 
 @property (nonatomic,strong,nonnull) DSChain * currentChain;
-@property (nonatomic,strong,nullable) DSWallet * currentWallet;
-@property (nonatomic,strong,nullable) DSAccount * currentAccount;
+@property (nonatomic,readonly) DSWallet * currentWallet;
+@property (nonatomic,readonly) DSAccount * currentAccount;
 @property (nonatomic,strong) DSChainPeerManager * currentChainPeerManager;
 
 + (instancetype _Nullable)sharedInstance;
 - (void)clearWallet;
-- (void)reset;
 
 @end
 

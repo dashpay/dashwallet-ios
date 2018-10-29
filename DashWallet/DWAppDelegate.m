@@ -94,7 +94,9 @@
         }
     }
     
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks];
+    [DashSync sharedSyncController];
+    
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools];
 
     // start the event manager
     [[DSEventManager sharedEventManager] up];

@@ -127,19 +127,19 @@
     
     self.navigationController.delegate = self;
     
-#if DASH_TESTNET
+    if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     UILabel *label = [UILabel new];
     
     label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
     label.textColor = [UIColor redColor];
     label.textAlignment = NSTextAlignmentRight;
-    label.text = @"testnet";
+    label.text = [[DWEnvironment sharedInstance].currentChain name];
     label.tag = 0xbeef;
     [label sizeToFit];
     label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
                                self.view.frame.size.height - (label.frame.size.height + 5));
     [self.view addSubview:label];
-#endif
+    }
     
     if ([DSEnvironment sharedInstance].watchOnly) { // watch only wallet
         UILabel *label = [UILabel new];
@@ -433,7 +433,7 @@
                                                   }];
     
     self.seedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.receiveViewController updateAddress];
                                                            self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
@@ -992,9 +992,12 @@
     
     counter++;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
+    if ([self.navigationItem.title isEqualToString:@"Syncing: 0.0%%"]) {
+        NSLog(@"no progress");
+    }
     if (progress + DBL_EPSILON >= 1.0) {
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
-        if (! self.shouldShowTips) [self hideTips];
+        if (!self.shouldShowTips) [self hideTips];
         self.shouldShowTips = YES;
         if (![DSAuthenticationManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
     }

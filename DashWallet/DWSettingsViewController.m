@@ -514,9 +514,9 @@
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
     UIButton *b = nil;
     
-#if DASH_TESTNET
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@"%net% (testnet)"];
-#endif
+if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%net% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
+}
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
      withString:[NSString stringWithFormat:@"%@ - %@",
                  NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],

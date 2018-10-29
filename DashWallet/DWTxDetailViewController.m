@@ -131,18 +131,18 @@
         else if ([account containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
-#if DASH_TESTNET
-                NSUInteger purpose = [manager.wallet addressPurpose:address];
-                if (purpose == 44) {
+if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
+                if ([derivationPath isBIP43Based] && [derivationPath purpose] == 44) {
                     [detail addObject:@"wallet address (BIP44)"];
-                } else if (purpose == 0) {
+                } else if ([derivationPath isBIP32Only]) {
                     [detail addObject:@"wallet address (BIP32)"];
                 } else {
-                    [detail addObject:@"wallet address (Unknown Purpose)"];
+                    [detail addObject:[NSString stringWithFormat:@"wallet address (%@)",[derivationPath stringRepresentation]]];
                 }
-#else
+} else {
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
-#endif
+}
                 [amount addObject:@(amt)];
                 [currencyIsBitcoinInstead addObject:@FALSE];
             }
