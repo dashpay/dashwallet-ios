@@ -515,7 +515,7 @@
     UIButton *b = nil;
     
 if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%net% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
+    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%%net%% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
 }
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
      withString:[NSString stringWithFormat:@"%@ - %@",

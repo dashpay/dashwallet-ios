@@ -57,10 +57,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-
-    // use background fetch to stay synced with the blockchain
-    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-
+    NSLog(@"Dashwallet has launched");
+    
     UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
     UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
     
@@ -97,9 +95,6 @@
     [DashSync sharedSyncController];
     
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools];
-
-    // start the event manager
-    [[DSEventManager sharedEventManager] up];
 
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
 
