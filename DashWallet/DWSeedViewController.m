@@ -26,6 +26,7 @@
 
 #import "DWSeedViewController.h"
 #import "DWWhiteActionButton.h"
+#import "DWVersionManager.h"
 
 #define LABEL_MARGIN       20.0
 #define WRITE_TOGGLE_DELAY 15.0

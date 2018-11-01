@@ -366,6 +366,9 @@
 "pending" = "bekliyor";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "lütfen cüzdanı yükseltmek için pin girin";
 
 /* No comment provided by engineer. */

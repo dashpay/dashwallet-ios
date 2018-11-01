@@ -366,6 +366,9 @@
 "pending" = "pendente";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Por favor, digite pin para atualizar a carteira";
 
 /* No comment provided by engineer. */

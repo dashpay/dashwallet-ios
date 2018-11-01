@@ -366,6 +366,9 @@
 "pending" = "대기중";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
 
 /* No comment provided by engineer. */

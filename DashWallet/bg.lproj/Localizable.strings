@@ -366,6 +366,9 @@
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
 
 /* No comment provided by engineer. */

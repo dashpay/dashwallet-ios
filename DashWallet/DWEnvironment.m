@@ -49,6 +49,10 @@
 
 
 - (void)clearWallet {
+    [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.currentChain];
+    [[DashSync sharedSyncController] wipeSporkDataForChain:self.currentChain];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.currentChain];
     [self.currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
 }
 

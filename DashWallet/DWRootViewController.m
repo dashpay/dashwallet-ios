@@ -36,6 +36,7 @@
 #import "BRBouncyBurgerButton.h"
 #import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
+#import "DWVersionManager.h"
 
 #import <WebKit/WebKit.h>
 #import <LocalAuthentication/LocalAuthentication.h>
@@ -599,7 +600,8 @@
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSVersionManager * versionManager = [DSVersionManager sharedInstance];
+    DSVersionManager * dashSyncVersionManager = [DSVersionManager sharedInstance];
+    DWVersionManager * dashwalletVersionManager = [DWVersionManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
@@ -649,11 +651,11 @@
     }
     else {
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-        [versionManager upgradeExtendedKeysForWallet:wallet withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 [self forceUpdate:cancelled];
             }
-            [versionManager checkPassphraseWasShownCorrectlyForWallet:wallet withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
+            [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:wallet withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
                 if (needsCheck && !authenticated) {
                     [self forceUpdate:cancelled];
                 }

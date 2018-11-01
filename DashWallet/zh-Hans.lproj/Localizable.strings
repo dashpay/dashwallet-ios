@@ -366,6 +366,9 @@
 "pending" = "等待中";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
 
 /* No comment provided by engineer. */
