@@ -96,6 +96,8 @@
     
     [DashSync sharedSyncController];
     
+    [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
+    
 #if FRESH_INSTALL
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
 #endif
