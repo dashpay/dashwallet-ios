@@ -16,9 +16,9 @@ PODS:
     - AFNetworking/NSURLSession
   - DashSync (0.1.0):
     - AFNetworking (~> 3.0)
-    - secp256k1_dash (= 0.1.1)
+    - secp256k1_dash (= 0.1.2)
   - KVO-MVVM (0.5.1)
-  - secp256k1_dash (0.1.1)
+  - secp256k1_dash (0.1.2)
 
 DEPENDENCIES:
   - DashSync (from `../DashSync/`)
@@ -36,9 +36,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
-  DashSync: a17326b9b18d01f95eeb9bf0c52995b77244404e
+  DashSync: f81d3101ea2eb603a9b4e191e06837b6c55dfb50
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  secp256k1_dash: f767ae4862f4a6afbb059ef41e7fa27dec4951d4
+  secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
 
 PODFILE CHECKSUM: 38061cd39c1b18bdf0a227b2ac594004589348ad
 

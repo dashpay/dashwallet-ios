@@ -24,14 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <DashSync/DashSync.h>
-
-typedef enum : NSInteger {
-    BRAWTransactionTypeSent,
-    BRAWTransactionTypeReceive,
-    BRAWTransactionTypeMove,
-    BRAWTransactionTypeInvalid
-} BRAWTransactionType;
+#import "DSWatchTransactionData.h"
 
 @interface BRAppleWatchTransactionData : NSObject <NSCoding>
 
@@ -40,6 +33,6 @@ typedef enum : NSInteger {
 @property (nonatomic, strong) NSString *dateText;
 @property (nonatomic) BRAWTransactionType type;
 
-+ (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction;
++ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData;
 
 @end
