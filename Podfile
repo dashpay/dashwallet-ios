@@ -23,16 +23,6 @@ target 'dashwallet' do
 
 end
 
-target 'dashwallet no watch' do
-    # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-    use_frameworks!
-    
-    pod 'DashSync', :path => '../DashSync/'
-    
-    pod 'KVO-MVVM', '0.5.1'
-    
-end
-
 target 'TodayExtension' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
