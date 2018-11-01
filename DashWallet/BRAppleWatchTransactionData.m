@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRAppleWatchTransactionData.h"
-#import "DSTransaction+Utils.h"
 
 #define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
 #define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
@@ -45,22 +44,13 @@
     return self;
 }
 
-+ (instancetype)appleWatchTransactionDataFrom:(DSTransaction *)transaction
++ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData
 {
-    BRAppleWatchTransactionData *appleWatchTransactionData;
-    if (transaction) {
-        appleWatchTransactionData = [BRAppleWatchTransactionData new];
-        appleWatchTransactionData.amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
-        appleWatchTransactionData.amountTextInLocalCurrency = [transaction localCurrencyTextForAmountReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
-        appleWatchTransactionData.dateText = transaction.dateText;
-        
-        switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
-            case DSTransactionStatus_Sent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
-            case DSTransactionStatus_Receive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
-            case DSTransactionStatus_Move: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
-            case DSTransactionStatus_Invalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
-        }
-    }
+    BRAppleWatchTransactionData *appleWatchTransactionData = [BRAppleWatchTransactionData new];
+    appleWatchTransactionData.amountText = transactionData.amountText;
+    appleWatchTransactionData.amountTextInLocalCurrency = transactionData.amountTextInLocalCurrency;
+    appleWatchTransactionData.dateText = transactionData.dateText;
+    appleWatchTransactionData.type = transactionData.type;
     
     return appleWatchTransactionData;
 }
