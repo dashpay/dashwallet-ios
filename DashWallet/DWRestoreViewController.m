@@ -176,7 +176,7 @@
             return;
         } else {
             DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase forChain:chain storeSeedPhrase:NO];
+            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:chain storeSeedPhrase:NO];
             DSAccount * testingAccount = [wallet accountWithNumber:0];
             DSAccount * ourAccount = [DWEnvironment sharedInstance].currentAccount;
             
@@ -381,7 +381,7 @@
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
             DSChain * chain = [[DWEnvironment sharedInstance] currentChain];
-            [DSWallet standardWalletWithSeedPhrase:phrase forChain:chain storeSeedPhrase:TRUE];
+            [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:BIP39_CREATION_TIME forChain:chain storeSeedPhrase:TRUE];
             textView.text = nil;
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
