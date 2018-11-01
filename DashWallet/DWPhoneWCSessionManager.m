@@ -29,6 +29,7 @@
 #import <DashSync/DashSync.h>
 #import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
+#import "DSWatchTransactionDataObject.h"
 #import <WatchConnectivity/WatchConnectivity.h>
 
 @interface DWPhoneWCSessionManager () <WCSessionDelegate>
@@ -309,7 +310,11 @@
     NSMutableArray *transactionListData = [[NSMutableArray alloc] init];
     
     for (DSTransaction *transaction in transactions) {
-        [transactionListData addObject:[BRAppleWatchTransactionData appleWatchTransactionDataFrom:transaction]];
+        DSWatchTransactionDataObject *dataObject = [[DSWatchTransactionDataObject alloc] initWithTransaction:transaction];
+        if (dataObject) {
+            BRAppleWatchTransactionData *transactionData = [BRAppleWatchTransactionData appleWatchTransactionDataFrom:dataObject];
+            [transactionListData addObject:transactionData];
+        }
     }
 
 #if SNAPSHOT
