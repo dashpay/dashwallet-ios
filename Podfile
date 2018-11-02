@@ -1,16 +1,12 @@
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
-
 target 'dashwallet' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-  use_frameworks!
+  platform :ios, '10.0'
   
   pod 'DashSync', :path => '../DashSync/'
   
   pod 'KVO-MVVM', '0.5.1'
 
   # Pods for dashwallet
-
+  
   target 'DashWalletTests' do
     inherit! :search_paths
     # Pods for testing
@@ -24,31 +20,15 @@ target 'dashwallet' do
 end
 
 target 'TodayExtension' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-  use_frameworks!
-  
-  # pod 'DashSync', :path => '../DashSync/'
-
-  # Pods for TodayExtension
 
 end
 
 target 'WatchApp' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-  use_frameworks!
-  
-  # pod 'DashSync', :path => '../DashSync/'
-
-  # Pods for WatchApp
+  platform :watchos, '2.0'
 
 end
 
 target 'WatchApp Extension' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
-  use_frameworks!
-  
-  # pod 'DashSync', :path => '../DashSync/'
-
-  # Pods for WatchApp Extension
+  platform :watchos, '2.0'
 
 end
