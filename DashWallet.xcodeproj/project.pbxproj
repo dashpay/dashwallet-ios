@@ -52,7 +52,6 @@
 		75E2503F1B7691C900A2BB2B /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		7EE06A55AFE483FA7824B06E /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */; };
-		8470F03D19AB360E5DC557B3 /* Pods_dashwallet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D38D4862A16572873CFCF3D /* Pods_dashwallet.framework */; };
 		84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
 		9F918C4315BDF3093311A41C /* libPods-DashWalletUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */; };
 		BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */; };
@@ -553,7 +552,6 @@
 				222E7F561C46E9B8009AB45D /* Security.framework in Frameworks */,
 				222040C61C1A1940005CE1C3 /* WebKit.framework in Frameworks */,
 				22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */,
-				8470F03D19AB360E5DC557B3 /* Pods_dashwallet.framework in Frameworks */,
 				DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
