@@ -618,7 +618,7 @@
         priceManager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
     //todo : this should be implemented in DashSync, not here
-    if (!chain.hasAWallet /*&& manager.noOldWallet*/) {
+    if (!chain.hasAWallet && [dashSyncVersionManager noOldWallet]) {
         if (!authenticationManager.passcodeEnabled) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
@@ -651,7 +651,7 @@
     }
     else {
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-        [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 [self forceUpdate:cancelled];
             }
