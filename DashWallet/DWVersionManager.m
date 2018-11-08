@@ -54,7 +54,7 @@ self.seedObserver =
 -(void)checkPassphraseWasShownCorrectlyForWallet:(DSWallet*)wallet withCompletion:(CheckPassphraseCompletionBlock)completion
 {
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    NSTimeInterval seedCreationTime = wallet.walletCreationTime + NSTimeIntervalSince1970;
+    NSTimeInterval seedCreationTime = wallet.walletCreationTime;
     NSError * error = nil;
     BOOL showedWarningForPassphrase = getKeychainInt(SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE, &error);
     if (seedCreationTime < 1534266000 || showedWarningForPassphrase) {

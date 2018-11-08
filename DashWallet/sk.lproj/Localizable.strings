@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nak niekedy stratíte Váš telefón, budete ho potrebovať pre obnovenie Vašej peňaženky";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nzostávajú %d pokusy\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nzostáva 1 pokus\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNa zabezpečenie vašej peňaženky je potrebný prístupový kód zariadenia. Ak chcete pokračovať, prejdite na nastavenia a zapnite prístupový kód.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nskúsiť znova za %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nskúsiť znova za %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "O programe";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "zlé heslo, skúste znova";
 
 /* No comment provided by engineer. */
 "bad payment request" = "zlý platobný príkaz";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "choose passcode for %@";
 
 /* No comment provided by engineer. */
 "clear" = "vymazať";
@@ -216,13 +201,7 @@
 "enter" = "zadať";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "zadať starý číselný kód";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "error signing dash transaction";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
 "exit" = "ukončiť";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "VŠEOBECNÉ";
-
-/* No comment provided by engineer. */
-"hour" = "hodina";
-
-/* No comment provided by engineer. */
-"hours" = "hodiny";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
-"minute" = "minuta";
-
-/* No comment provided by engineer. */
-"minutes" = "minút";
-
-/* No comment provided by engineer. */
 "more..." = "viac...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "not a valid private key";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "číselný kód";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "číselný kód pre %@";
-
-/* No comment provided by engineer. */
-"password" = "heslo";
-
-/* No comment provided by engineer. */
-"password protected key" = "password protected key";
 
 /* No comment provided by engineer. */
 "Pay" = "Zaplatiť";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "this payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "this private key is already in your wallet";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "tento privátny kľúč je prázdny";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Táto požiadavka chce okamžitú platbu, ale nemáte dostatok vstupov so 6 potvrdeniami, ktoré vyžaduje InstantSend. Môžete požiadať obchodníka o prijatie bežnej transakcie, alebo počkať niekoľko minút.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Limit na míňanie cez Touch ID";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "História transakcií";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "unexpected response from %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "neznáma adresa";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "unverified";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verified, waiting for confirmation";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verify passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "wallet address";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "UPOZORNENIE";

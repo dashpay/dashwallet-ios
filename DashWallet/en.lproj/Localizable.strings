@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 attempt remaining\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\ntry again in %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "About";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "bad password, try again";
 
 /* No comment provided by engineer. */
 "bad payment request" = "bad payment request";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "checking private key balance...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "choose passcode for %@";
 
 /* No comment provided by engineer. */
 "clear" = "clear";
@@ -216,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "enter old passcode";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "error signing dash transaction";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "hour";
-
-/* No comment provided by engineer. */
-"hours" = "hours";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
-"minute" = "minute";
-
-/* No comment provided by engineer. */
-"minutes" = "minutes";
-
-/* No comment provided by engineer. */
 "more..." = "more...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "not a valid private key";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "passcode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "passcode for %@";
-
-/* No comment provided by engineer. */
-"password" = "password";
-
-/* No comment provided by engineer. */
-"password protected key" = "password protected key";
 
 /* No comment provided by engineer. */
 "Pay" = "Pay";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "this payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "this private key is already in your wallet";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "this private key is empty";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Transaction history";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "unexpected response from %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "unknown address";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "unverified";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verified, waiting for confirmation";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verify passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "wallet address";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";

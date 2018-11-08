@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nεάν χάσετε ποτέ το τηλέφωνό σας, θα το χρειαστείτε ώστε να ανακτήσετε το πορτοφόλι σας";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d προσπάθειες που απομένουν\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 προσπάθεια απομένει\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nΈνας κωδικός συσκευής είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = " \nΔοκιμάστε ξανά σε %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "σχετικά με";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
 
 /* No comment provided by engineer. */
 "bad payment request" = "λάθος αίτηση πληρωμής";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "έλεγχος ποσού του ιδιωτικού κλειδιού...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
 
 /* No comment provided by engineer. */
 "clear" = "clear";
@@ -216,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "εισάγετε τον παλιό κωδικό πρόσβασης";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "σφάλμα υπογραφής συναλλαγής dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "σφάλμα υπογραφής συναλλαγής";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "ώρα";
-
-/* No comment provided by engineer. */
-"hours" = "ώρες";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Αφήστε τους άλλους να σαρώσουν αυτόν τον κωδικό QR για να πάρουν την διεύθυνση των dash σας. Ο καθένας μπορεί να στείλει dash στο πορτοφόλι σας, μεταφέροντάς τα στη διεύθυνσή σας.";
 
 /* No comment provided by engineer. */
-"minute" = "λεπτό";
-
-/* No comment provided by engineer. */
-"minutes" = "λεπτά";
-
-/* No comment provided by engineer. */
 "more..." = "περισσότερα...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "δεν είναι ενα έγκυρο ιδιωτικό κλειδί";
-
-/* No comment provided by engineer. */
 "ok" = "Εντάξει";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "κωδικός πρόσβασης";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "κωδικός πρόσβασης για το %@";
-
-/* No comment provided by engineer. */
-"password" = "κωδικός πρόσβασης";
-
-/* No comment provided by engineer. */
-"password protected key" = "προστατευμένο κλειδί με κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
 "Pay" = "πληρώστε";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "αυτό το ιδιωτικό κλειδί είναι άδειο";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "οι αμοιβή δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
-
-/* No comment provided by engineer. */
 "Transaction history" = "ιστορικό συναλλαγής";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "απρόσμενη απάντηση από %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "άγνωστη διεύθυνση";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "χωρίς επαλήθευση";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "επαληθευμένη, αναμονή για επιβεβαίωση";
 
 /* No comment provided by engineer. */
-"verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
-
-/* No comment provided by engineer. */
 "wallet address" = "διεύθυνση πορτοφόλιού";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";

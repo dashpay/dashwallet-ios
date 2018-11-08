@@ -141,7 +141,7 @@
                                                        "connected peers: %d\ndl peer: %@", NULL),
            [priceManager localCurrencyStringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
            [priceManager stringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
-           [fmt stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
+           [fmt stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
            chain.lastBlockHeight,
            chain.estimatedBlockHeight,
            chainPeerManager.peerCount,

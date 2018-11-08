@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nFalls Sie ihr Telefon verlieren, benötigen Sie diesen Satz, um Ihr Wallet wiederherzustellen.";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d Versuche übrig\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 Versuch übrig\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nerneut versuchen in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nVersuchen Sie es erneut in %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "Über";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Sind Sie sicher?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "Falsches Kennwort, bitte erneut versuchen";
 
 /* No comment provided by engineer. */
 "bad payment request" = "fehlerhafte Zahlungsanforderung";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "Guthaben des privaten Schlüssels wird geprüft...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "Wählen Sie den Zugangscode für %@";
 
 /* No comment provided by engineer. */
 "clear" = "Löschen";
@@ -216,13 +201,7 @@
 "enter" = "Eingabe";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "alten Zugangscode eingeben";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "Fehler beim Signieren der Dash-Transaktion";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "Fehler beim Signieren der Transaktion";
 
 /* No comment provided by engineer. */
 "exit" = "Beenden";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "ALLGEMEIN";
-
-/* No comment provided by engineer. */
-"hour" = "Stunde";
-
-/* No comment provided by engineer. */
-"hours" = "Stunden";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ich akzeptiere, dass ich meine Coins verlieren werden, wenn ich die Wiederherstellungsphrase verlieren sollte";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Dash-Adresse zu erhalten. Dash werden so an dieses Wallet geschickt.";
 
 /* No comment provided by engineer. */
-"minute" = "Minute";
-
-/* No comment provided by engineer. */
-"minutes" = "Minuten";
-
-/* No comment provided by engineer. */
 "more..." = "mehr...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "Kein gültiger privater Schlüssel";
-
-/* No comment provided by engineer. */
 "ok" = "Ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "Zugangscode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "Zugangscode für %@";
-
-/* No comment provided by engineer. */
-"password" = "Kennwort";
-
-/* No comment provided by engineer. */
-"password protected key" = "Passwort-geschützter Schlüssel";
 
 /* No comment provided by engineer. */
 "Pay" = "Zahlen";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "Diese Zahlungsadresse ist bereits in Ihrem Wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "Dieser private Schlüssel ist bereits in Ihrem Wallet";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "Dieser private Schlüssel ist ohne Guthaben";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Diese Anfrage verlangt nach einer sofortigen Zahlung, Sie haben jedoch nicht genügend Eingaben mit 6 Bestätigungen, die für InstantSend notwendig sind, Sie können den Händler darum bitten, dass er eine normale Transaktion akzeptiert oder ein paar Minuten wartet.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch-ID Ausgabelimite";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaktionsgebühren sind höher als das Guthaben auf diesem privaten Schlüssel (winziges \"Staub\"-Guthaben)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Transaktionshistorie";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Kann keinen neuen QR-Code erzeugen";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "unerwartete Antwort von %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "unbekannte Adresse";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "ungeprüft";
 
-/* Updating Price */
-"Updating Price" = "Aktualisiere Preis";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "überprüft, auf Bestätigung wartend";
 
 /* No comment provided by engineer. */
-"verify passcode" = "Sicherheitscode verifizieren";
-
-/* No comment provided by engineer. */
 "wallet address" = "Wallet-Adresse";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "Wallet deaktiviert";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNUNG";

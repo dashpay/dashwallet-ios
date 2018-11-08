@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nifall du förlorar din mobil behöver du frasen för att återställa plånboken";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d försök återstår\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 försök återstår\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nförsök igen om %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nförsök igen om %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "om";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "fel lösenord, försök igen";
 
 /* No comment provided by engineer. */
 "bad payment request" = "felaktig betalningsanmodan";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "uppdaterar saldo för den privata nyckeln...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "välj pinkod for %@";
 
 /* No comment provided by engineer. */
 "clear" = "rensa";
@@ -216,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "ange den gamla pinkoden";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "fel vid signering av dashtransaktionen";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "fel vid signering av transaktionen";
 
 /* No comment provided by engineer. */
 "exit" = "gå ur";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "timme";
-
-/* No comment provided by engineer. */
-"hours" = "timmar";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Via denna QR-kod kan andra läsa av din dashadress. Vem som helst kan skicka dash till din plånbok genom att överföra dem till din adress.";
 
 /* No comment provided by engineer. */
-"minute" = "minut";
-
-/* No comment provided by engineer. */
-"minutes" = "minuter";
-
-/* No comment provided by engineer. */
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ogiltig privat nyckel";
-
-/* No comment provided by engineer. */
 "ok" = "OK";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "pinkod";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "pinkod for %@";
-
-/* No comment provided by engineer. */
-"password" = "lösenord";
-
-/* No comment provided by engineer. */
-"password protected key" = "lösenordskyddad nyckel";
 
 /* No comment provided by engineer. */
 "Pay" = "Betala";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "denna betaladress är redan i plånboken";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "denna privata nyckel är redan i plånboken";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "denna privata nyckel är tom";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaktionsavgiften skulle överstiga de medel som nyckeln har tillgängligt (på grund av \"damminsättningar\")";
-
-/* No comment provided by engineer. */
 "Transaction history" = "transaktionshistorik";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Kunde inte få en ny qr kod";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "oväntat svar från %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "okänd adress";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "overifierad";
 
-/* Updating Price */
-"Updating Price" = "Uppdaterar pris";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verifierad, inväntar bekräftelse";
 
 /* No comment provided by engineer. */
-"verify passcode" = "upprepa pinkoden";
-
-/* No comment provided by engineer. */
 "wallet address" = "plånbok adress";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "plånbok inaktiverad";
 
 /* No comment provided by engineer. */
 "WARNING" = "VARNING";

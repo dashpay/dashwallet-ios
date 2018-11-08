@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnëse ndonjëherë e humbni telefonin tuaj, ju duhet kjo për ta rikthyer kuletën";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d tentime kanë mbetur\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 tentim ka mbetur\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë kodkalim është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo kodkalimin dhe vazhdo.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nprovoni prapë në %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "rreth";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "fjalëkalimi gabim, provoni prapë";
 
 /* No comment provided by engineer. */
 "bad payment request" = "kërkesë për pages e gabuar";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "duke kontrolluar bilancin e çelësit privat...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "zgjedhni kodkalimin për %@";
 
 /* No comment provided by engineer. */
 "clear" = "clear";
@@ -216,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "shëno kodkalimin e vjetër";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "gabim duke firmosur dash transaksionin";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "gabim duke firmosur transaksionin";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "orë";
-
-/* No comment provided by engineer. */
-"hours" = "orë";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Lejo të tjerët të skanojn këtë QR kod për ta marrë dash adresën tuaj. Çdokush mund të ju dërgoj dash-a në kuletën tuaj duke i transferuar ato në adresën tuaj.";
 
 /* No comment provided by engineer. */
-"minute" = "minutë";
-
-/* No comment provided by engineer. */
-"minutes" = "minuta";
-
-/* No comment provided by engineer. */
 "more..." = "më shumë...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "jo një dash çelës privat valid";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "kodkalimi";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "kodkalimi për %@";
-
-/* No comment provided by engineer. */
-"password" = "fjalëkalimi";
-
-/* No comment provided by engineer. */
-"password protected key" = "çelës i mbrojtur me fjalëkalim";
 
 /* No comment provided by engineer. */
 "Pay" = "Paguaj";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "kjo adresë ekziston tashmë ne kuletën tuaj";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "ky çelës privat tashmë është në kuletën tuaj";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "çelësi privat është i zbrazët";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "tarifa do të kushtoj më shumë se sa vetë fondet në dispozicion në këtë çelës privat (për shkak të depozitave tepër të vogla)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "historia e transaksioneve";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "reagim i papritur nga %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "adresë e panjohur";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "i paverifikuar";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "e verifikuar, duke pritur për konfirmime";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifiko kodkalimin";
-
-/* No comment provided by engineer. */
 "wallet address" = "verifiko adresën";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "kuleta është ç'aktivizuar";
 
 /* No comment provided by engineer. */
 "WARNING" = "PARALAJMËRIM";

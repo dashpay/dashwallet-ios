@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@ \n\nom du mister telefonen din vil du trenge den for å gjenopprette din lommebok";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d forsøk igjen\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 forsøk igjen\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEn pinkode er nødvendig for å sikre lommeboken din. Gå til innstillinger og slå på pinkode for å fortsette.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nprøv igjen om %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "om";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "feil passord, prøv igjen";
 
 /* No comment provided by engineer. */
 "bad payment request" = "feil med betalingsforespørsel";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "sjekker saldo for den private nøkkelen...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "velg pinkode for %@";
 
 /* No comment provided by engineer. */
 "clear" = "clear";
@@ -216,13 +201,7 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "angi eldre pinkode";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "feil ved signering av Dash-transaksjon";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "feil ved signering av transaksjon";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "time";
-
-/* No comment provided by engineer. */
-"hours" = "timer";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "La andre skanne QR-koden for å få din dash adresse. Alle kan sende deg dash ved å bruke din adresse.";
 
 /* No comment provided by engineer. */
-"minute" = "minutt";
-
-/* No comment provided by engineer. */
-"minutes" = "minutter";
-
-/* No comment provided by engineer. */
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ikke en gyldig privat nøkkel";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "pinkode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "pinkode for %@";
-
-/* No comment provided by engineer. */
-"password" = "passord";
-
-/* No comment provided by engineer. */
-"password protected key" = "passordbeskyttet nøkkel";
 
 /* No comment provided by engineer. */
 "Pay" = "Betal";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "denne betalingsadressen er allerede i din lommebok";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "denne private nøkkelen er allerede i din lommebok";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "denne private nøkkelen er tom";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaksjonsavgifter overstiger mengden midler tilgjengelig på denne private nøkkelen (pga. små \"støv\"-innskudd)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "transaksjonshistorie";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "Uventet svar fra %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "ukjent adresse";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "ubekreftet";
 
-/* Updating Price */
-"Updating Price" = "Updating Price";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verifisert, venter på bekreftelse";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifiser pinkode";
-
-/* No comment provided by engineer. */
 "wallet address" = "adresse til lommebok";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "lommebok deaktivert";
 
 /* No comment provided by engineer. */
 "WARNING" = "ADVARSEL";

@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n如果你丢失了手机，你需要用它来找回你的钱包。";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n你需要一个密码来保护你的钱包。请转到设置并打开密码再继续。";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n还可尝试 %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
 
 /* No comment provided by engineer. */
 "About" = "关于";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "你确定吗？";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "密码错误，请重试";
 
 /* No comment provided by engineer. */
 "bad payment request" = "付款请求错误";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "检查私钥余额...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "选择%@的密码";
 
 /* No comment provided by engineer. */
 "clear" = "清除";
@@ -216,13 +201,7 @@
 "enter" = "进入";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "输入旧密码";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "达世币交易签名错误";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "交易签名错误";
 
 /* No comment provided by engineer. */
 "exit" = "退出";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "通用";
-
-/* No comment provided by engineer. */
-"hour" = "小时";
-
-/* No comment provided by engineer. */
-"hours" = "小时";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失恢复密语，我会丢失我的达世币";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "让别人扫描此二维码，以获得您的达世币地址。任何人都可以通过这个地址将达世币转移到您的钱包。";
 
 /* No comment provided by engineer. */
-"minute" = "分钟";
-
-/* No comment provided by engineer. */
-"minutes" = "几分钟";
-
-/* No comment provided by engineer. */
 "more..." = "更多...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "不是一个有效的私钥";
-
-/* No comment provided by engineer. */
 "ok" = "确定";
 
 /* No comment provided by engineer. */
 "OK" = "好";
-
-/* No comment provided by engineer. */
-"passcode" = "密码";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@的密码";
-
-/* No comment provided by engineer. */
-"password" = "密码";
-
-/* No comment provided by engineer. */
-"password protected key" = "密码保护的密钥";
 
 /* No comment provided by engineer. */
 "Pay" = "支付";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "此付款地址已在你的钱包中";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "这个私钥已在你的钱包中";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "这个私钥为空";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此请求需要即时付款, 但您没有足够6次确认的交易输入来进行即时发送. 您可以询问商家接受普通付款, 或等待几分钟.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "触控 ID 支出限额";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易手续费将比此私钥上可用资金多 (由于极小额存款) ";
-
-/* No comment provided by engineer. */
 "Transaction history" = "交易历史记录";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "未能获得新的QR码";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "从 %@ 来的意外响应";
 
 /* No comment provided by engineer. */
 "unknown address" = "未知地址";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "未验证";
 
-/* Updating Price */
-"Updating Price" = "更新价格";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "已验证，等待确认";
 
 /* No comment provided by engineer. */
-"verify passcode" = "验证密码";
-
-/* No comment provided by engineer. */
 "wallet address" = "钱包地址";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "钱包被禁用";
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";

@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nsi jamais vous perdez votre téléphone, vous en aurez besoin pour récupérer votre portefeuille";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d tentatives restantes\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 tentative restante\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUn code d'accès est nécessaire pour sécuriser votre portefeuille. Allez dans les paramètres et activez le code d'accès pour continuer.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nréessayez dans %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nréessayez dans %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "À propos";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Êtes-vous certain ?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "mauvais mot de passe, veuillez réessayer";
 
 /* No comment provided by engineer. */
 "bad payment request" = "mauvaise demande de paiement";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "vérification du solde de la clé privée...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "choisissez un code d'accès pour %@";
 
 /* No comment provided by engineer. */
 "clear" = "effacer";
@@ -216,13 +201,7 @@
 "enter" = "entrer";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "entrez l'ancien code d'accès";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "erreur de signature de la transaction dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "erreur de signature de la transaction";
 
 /* No comment provided by engineer. */
 "exit" = "quitter";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GÉNÉRAL";
-
-/* No comment provided by engineer. */
-"hour" = "heure";
-
-/* No comment provided by engineer. */
-"hours" = "heures";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Je reconnais que je perdrai tous mes fonds si je ne possède plus la phrase de récupération";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laissez les autres numériser ce code QR pour obtenir votre adresse dash. N'importe qui peut envoyer des dash à votre portefeuille en les transférant à votre adresse.";
 
 /* No comment provided by engineer. */
-"minute" = "minute";
-
-/* No comment provided by engineer. */
-"minutes" = "minutes";
-
-/* No comment provided by engineer. */
 "more..." = "plus...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "n'est pas une clé privée valide";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "code d'accès";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "code d'accès pour %@";
-
-/* No comment provided by engineer. */
-"password" = "mot de passe";
-
-/* No comment provided by engineer. */
-"password protected key" = "clé protégée par mot de passe";
 
 /* No comment provided by engineer. */
 "Pay" = "Payer";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "cette adresse de paiement est déjà dans votre portefeuille";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "cette clé privée est déjà dans votre portefeuille";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "cette clé privée est vide";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Cette requête demande un paiement instantané, mais vous n'avez pas assez d'entrées avec les 6 confirmations exigées par InstantSend. Vous pouvez demander au vendeur d'accepter une transaction normale, ou bien attendre quelques minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Limite de dépense avec TouchID";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "les frais de transaction coûteraient plus que les fonds disponibles sur cette clé privée (à cause de minuscules dépôts \"dust\")";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Historique des transactions";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Impossible de générer un nouveau code qr";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "réponse inattendue de %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "adresse inconnue";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "non vérifiée";
 
-/* Updating Price */
-"Updating Price" = "prix en update";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "vérifiée, en attente de confirmation";
 
 /* No comment provided by engineer. */
-"verify passcode" = "vérifiez le code d'accès";
-
-/* No comment provided by engineer. */
 "wallet address" = "adresse de portefeuille";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "portefeuille désactivé";
 
 /* No comment provided by engineer. */
 "WARNING" = "AVERTISSEMENT";

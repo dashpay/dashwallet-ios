@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnếu bạn bị mất điện thoại, bạn cần nó để khôi phục lại ví của mình";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d lần thử còn lại\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 lần thử còn lại\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nBạn cần có mật khẩu cho thiết bị để bảo vệ ví của mình. Hãy vào phần Settings của điện thoại và bật mật khẩu lên và tiếp tục.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nthử lại %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "Giới thiệu";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Bạn chắc chứ?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "sai mật khẩu, hãy thử lại";
 
 /* No comment provided by engineer. */
 "bad payment request" = "yêu cầu thanh toán không đúng";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "kiểm tra số dư của khoá riêng...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "hãy chọn mật khẩu cho %@";
 
 /* No comment provided by engineer. */
 "clear" = "xoá";
@@ -216,13 +201,7 @@
 "enter" = "nhập";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "nhập mật khẩu cũ";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "lỗi khi ký giao dịch dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "lỗi khi ký giao dịch";
 
 /* No comment provided by engineer. */
 "exit" = "thoát";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "TỔNG THỂ";
-
-/* No comment provided by engineer. */
-"hour" = "giờ";
-
-/* No comment provided by engineer. */
-"hours" = "giờ";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tôi chấp nhận rằng tôi sẽ mất các coin của mình nếu không còn sở hữu cụm từ phục hồi";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
-"minute" = "phút";
-
-/* No comment provided by engineer. */
-"minutes" = "phút";
-
-/* No comment provided by engineer. */
 "more..." = "tiếp...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "không phải một khoá riêng hợp lệ";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "mật khẩu";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "mật khẩu cho %@";
-
-/* No comment provided by engineer. */
-"password" = "mật khẩu";
-
-/* No comment provided by engineer. */
-"password protected key" = "khoá được bảo vệ bởi mật khẩu";
 
 /* No comment provided by engineer. */
 "Pay" = "thanh toán";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "địa chỉ thanh toán này đã có trong ví của bạn";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "khoá riêng này không có gì";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Yêu cầu này cần có một giao dịch tức thời nhưng bạn không có đủ đầu vào với 6 xác thực cần thiết cho InstantSend, bạn có thể phải hỏi người bán hàng xem có chấp nhận giao dịch thông thường hoặc phải đợi một vài phút.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Giới hạn chi tiêu với Touch ID";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Lịch sử giao dịch";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Không thể lấy mã QR mới";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "phản hồi không mong đợi từ %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "địa chỉ không xác định";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "chưa được kiểm tra";
 
-/* Updating Price */
-"Updating Price" = "Đang cập nhật giá";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
 
 /* No comment provided by engineer. */
-"verify passcode" = "kiểm tra mật khẩu";
-
-/* No comment provided by engineer. */
 "wallet address" = "địa chỉ ví";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ví bị tắt";
 
 /* No comment provided by engineer. */
 "WARNING" = "CẢNH BÁO";

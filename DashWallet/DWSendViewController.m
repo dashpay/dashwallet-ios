@@ -1033,7 +1033,7 @@ static NSString *sanitizeString(NSString *s)
                             
                         }
                         sent = YES;
-                        tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
+                        tx.timestamp = [NSDate timeIntervalSince1970];
                         [account registerTransaction:tx];
                         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
@@ -1100,7 +1100,7 @@ static NSString *sanitizeString(NSString *s)
                                                }
                                                else if (! sent) {
                                                    sent = YES;
-                                                   tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
+                                                   tx.timestamp = [NSDate timeIntervalSince1970];
                                                    [account registerTransaction:tx];
                                                    [self.view addSubview:[[[BRBubbleView
                                                                             viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))

@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nإذا فقدت هاتفك ، فستحتاج إلى جملة لإسترجاع محفظتك";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d المحاولات المتبقية\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 محاولة متبقية\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nيجيب إضافة رقم مرور الجهاز لحماية محفظتك. انتقل إلى الإعدادات وشغِّل رقم المرور للمتابعة";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nأعد المحاولة في %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nأعد المحاولة في %1$d  %2$@";
 
 /* No comment provided by engineer. */
 "About" = "عن";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "كلمة المرور السيئة ، حاول مرة أخرى";
 
 /* No comment provided by engineer. */
 "bad payment request" = "طلب دفع سيئة";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "التحقق من رصيد المفتاح الخاص ...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "إختر رقم سري %@";
 
 /* No comment provided by engineer. */
 "clear" = "مسح";
@@ -216,13 +201,7 @@
 "enter" = "أدخل";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "أدخل رقمك السري القديم";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "خطأ في تسجيل صفقة داش";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "خطأ في صفقة توقيع";
 
 /* No comment provided by engineer. */
 "exit" = "خروج";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "عام";
-
-/* No comment provided by engineer. */
-"hour" = "ساعة";
-
-/* No comment provided by engineer. */
-"hours" = "ساعات";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "دع الآخرين يفحصون رمز QR هذا للحصول على عنوان داش. يمكن لأي شخص إرسال داش إلى محفظتك عن طريق نقلها إلى عنوانك.";
 
 /* No comment provided by engineer. */
-"minute" = "دقيقة";
-
-/* No comment provided by engineer. */
-"minutes" = "دقائق";
-
-/* No comment provided by engineer. */
 "more..." = "أكثر...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "مفتاح الخاص غير صالح";
-
-/* No comment provided by engineer. */
 "ok" = "حاضر";
 
 /* No comment provided by engineer. */
 "OK" = "حسنا ";
-
-/* No comment provided by engineer. */
-"passcode" = "رقم السري";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "رقم السري %@";
-
-/* No comment provided by engineer. */
-"password" = "كلمة المرور";
-
-/* No comment provided by engineer. */
-"password protected key" = "مفتاح محمي بكلمة مرور";
 
 /* No comment provided by engineer. */
 "Pay" = "دفع";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "عنوان الدفع هذا موجود بالفعل في محفظتك";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "هذا المفتاح الخاص موجود بالفعل في محفظتك";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "هذا المفتاح الخاص فارغ";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "تكلف رسوم المعاملات أكثر من الأموال المتوفرة على هذا المفتاح الخاص (بسبب رواسب \"الغبار\" الصغيرة)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "سجل المعاملات";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "غير قادر على الحصول على كود QR جديد";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "استجابة غير متوقعة من %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "عنوان غير معروف";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "غير مثبت عليه";
 
-/* Updating Price */
-"Updating Price" = "تحديث السعر";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "التحقق ، في انتظار التأكيد";
 
 /* No comment provided by engineer. */
-"verify passcode" = "تحقق من رمز المرور";
-
-/* No comment provided by engineer. */
 "wallet address" = "عنوان المحفظة";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "المحفظة معطلة";
 
 /* No comment provided by engineer. */
 "WARNING" = "تحذير";

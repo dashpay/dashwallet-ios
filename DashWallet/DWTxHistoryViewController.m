@@ -63,7 +63,6 @@ static NSString *dateFormat(NSString *template)
 @property (nonatomic, assign) BOOL moreTx;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) id backgroundObserver, balanceObserver, txStatusObserver;
-@property (nonatomic, strong) id syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 
 @end
 
@@ -145,35 +144,10 @@ static NSString *dateFormat(NSString *template)
                                                            }];
     }
     
-    if (! self.syncStartedObserver) {
-        self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
-                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([chain timestampForBlockHeight:chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
-                                                                   [NSDate timeIntervalSinceReferenceDate] &&
-                                                                   account.wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-                                                                   self.navigationItem.titleView = nil;
-                                                                   self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
-                                                               }
-                                                           }];
-    }
-    
-    if (! self.syncFinishedObserver) {
-        self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
-                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                               if (!authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                                                               else [self updateTitleView];
-                                                           }];
-    }
-    
-    if (! self.syncFailedObserver) {
-        self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
-                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                               if (!authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
-                                                               [self updateTitleView];
-                                                           }];
+    if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+        [self updateTitleView];
+    } else {
+        self.navigationItem.titleView = self.logo;
     }
 }
 
@@ -222,13 +196,6 @@ static NSString *dateFormat(NSString *template)
         self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
         self.txStatusObserver = nil;
-        if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
-        self.syncStartedObserver = nil;
-        if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-        self.syncFinishedObserver = nil;
-        if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
-        self.syncFailedObserver = nil;
-        
         //self.buyController = nil;
     }
     
@@ -241,9 +208,6 @@ static NSString *dateFormat(NSString *template)
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-    if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
-    if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-    if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
 }
 
 - (uint32_t)blockHeight
@@ -295,16 +259,16 @@ static NSString *dateFormat(NSString *template)
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
-    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
+    NSTimeInterval year = [NSDate timeIntervalSince1970] - 364*24*60*60;
     
     if (date) return date;
     
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]];
+    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:txTime]];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }

@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nถ้าคุณทำโทรศัพท์หาย คุณจะต้องการมันเพื่อกู้คืน wallet ของคุณ";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 พยายามที่เหลืออยู่ \n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nการตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ  เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nลองเข้าอีกครั้ง%@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nลองเข้าอีกครั้ง %1$d%2$@";
 
 /* No comment provided by engineer. */
 "About" = "เกี่ยวกับ";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "รหัสไม่ถูกต้อง, ลองอีกครั้ง";
 
 /* No comment provided by engineer. */
 "bad payment request" = "ใบชำระเงินไม่ถูกต้อง";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "ตรวจสอบความสมดุลของ key ส่วนตัว";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "เลือกรหัสผ่านสำหรับ %@";
 
 /* No comment provided by engineer. */
 "clear" = "ลบออก";
@@ -216,13 +201,7 @@
 "enter" = "เข้าสู่";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "เข้าสู่รหัสเก่า";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าธุรกรรม dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
 
 /* No comment provided by engineer. */
 "exit" = "ออก";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "ทั่วไป";
-
-/* No comment provided by engineer. */
-"hour" = "ชั่วโมง";
-
-/* No comment provided by engineer. */
-"hours" = "ชั่วโมง";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
-"minute" = "นาที";
-
-/* No comment provided by engineer. */
-"minutes" = "นาที";
-
-/* No comment provided by engineer. */
 "more..." = "เพิ่มเติม";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ไม่ใช่ใช่คีย์ส่วนตัวที่ถูกต้อง";
-
-/* No comment provided by engineer. */
 "ok" = "โอเค";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "รหัสผ่าน";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "รหัสการเข้าถึงสำหรับ %@";
-
-/* No comment provided by engineer. */
-"password" = "รหัสผ่าน";
-
-/* No comment provided by engineer. */
-"password protected key" = "คีย์ที่ป้องกันด้วยรหัสผ่าน";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "ที่อยู่การชำระเงินนี้อยู่ใน wallet ของคุณแล้ว";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "คีย์ส่วนตัวนี้อยู่ใน wallet ของคุณแล้ว";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "คีย์ส่วนตัวว่างเปล่า";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "จำกัดใช้ Touch ID";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "ค่าธรรมเนียมการทำธุรกรรมอาจสูงกว่าเงินที่มีอยู่ในคีย์ส่วนตัวนี้ (เนื่องจากเงินฝาก \"dust\" เล็กน้อย)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "ประวัติการทำรายการ";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "ไม่สามารถรับโค้ด QR ใหม่";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "การตอบสนองที่ไม่คาดคิดจาก %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "ไม่พบที่อยู่";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "พิสูจน์ไม่ได้";
 
-/* Updating Price */
-"Updating Price" = "อัพเดตราคา";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "ตรวจสอบแล้ว รอการยืนยัน";
 
 /* No comment provided by engineer. */
-"verify passcode" = "ยืนยันรหัสผ่าน";
-
-/* No comment provided by engineer. */
 "wallet address" = "ที่อยู่ wallet ";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ปิดใช้งาน wallet";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";

@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\neğer telefonunuzu kaybederseniz cüzdanınızı kurtarmak için buna ihtiyacınız olacaktır";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 deneme hakkı kaldı\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nCüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n%@ içinde tekrar deneyin";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
 "About" = "Hakkında";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "hatalı şifre, yeniden deneyin";
 
 /* No comment provided by engineer. */
 "bad payment request" = "hatalı ödeme talebi";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "özel anahtar bakiyesi kontrol ediliyor...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "%@ için şifre seçin";
 
 /* No comment provided by engineer. */
 "clear" = "temizle";
@@ -216,13 +201,7 @@
 "enter" = "gir";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "eski şifreyi giriniz";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "dash işlem kaydı hatası";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "işlem kaydı hatası";
 
 /* No comment provided by engineer. */
 "exit" = "çık";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENEL";
-
-/* No comment provided by engineer. */
-"hour" = "saat";
-
-/* No comment provided by engineer. */
-"hours" = "saat";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eğer kurtarma metnime sahip olmazsam paralarımı kaybedeceğimi kabul ediyorum";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, dashleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
 
 /* No comment provided by engineer. */
-"minute" = "dakika";
-
-/* No comment provided by engineer. */
-"minutes" = "dakika";
-
-/* No comment provided by engineer. */
 "more..." = "daha fazla...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "geçerli bir özel anahtar değil";
-
-/* No comment provided by engineer. */
 "ok" = "tamam";
 
 /* No comment provided by engineer. */
 "OK" = "Tamam";
-
-/* No comment provided by engineer. */
-"passcode" = "şifre";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@ için şifre";
-
-/* No comment provided by engineer. */
-"password" = "şifre";
-
-/* No comment provided by engineer. */
-"password protected key" = "şifre korumalı anahtar";
 
 /* No comment provided by engineer. */
 "Pay" = "Ödeme";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "ödeme adresi zaten cüzdanınızda var";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "bu özel anahtar zaten cüzdanınızda var";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "bu özel anahtar boş";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "işlem ücretleri bu anahtarda kullanılabilir olan paradan daha pahalıya mal olabilir(küçük \"para\" deposu nedeniyle)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "İşlem geçmişi";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Yeni qr kod alınamıyor";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "%@'den beklenmeyen yanıt";
 
 /* No comment provided by engineer. */
 "unknown address" = "bilinmeyen adres";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "doğrulanmadı";
 
-/* Updating Price */
-"Updating Price" = "Fiyat Güncelleniyor";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "doğrulandı, onaylanma için bekleniyor";
 
 /* No comment provided by engineer. */
-"verify passcode" = "şifreyi doğrulayın";
-
-/* No comment provided by engineer. */
 "wallet address" = "cüzdan adresi";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "cüzdan devre dışı";
 
 /* No comment provided by engineer. */
 "WARNING" = "UYARI";

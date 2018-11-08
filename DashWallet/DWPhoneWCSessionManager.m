@@ -331,7 +331,7 @@
         txData.type = (amount >= 0) ? BRAWTransactionTypeReceive : BRAWTransactionTypeSent;
         txData.amountText = [manager stringForDashAmount:amount];
         txData.amountTextInLocalCurrency = [manager localCurrencyStringForDashAmount:amount];
-        tx.timestamp = [NSDate timeIntervalSinceReferenceDate] - i * 100000;
+        tx.timestamp = [NSDate timeIntervalSince1970] - i * 100000;
         txData.dateText = tx.dateText;
         [transactionListData addObject:txData];
     }

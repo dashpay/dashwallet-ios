@@ -117,7 +117,7 @@
         DSChain * chain = [DWEnvironment sharedInstance].currentChain;
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         if ([phrase isEqual:@"wipe"]) {
-            if ((wallet.balance == 0) && ([chain timestampForBlockHeight:chain.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSinceReferenceDate])) {
+            if ((wallet.balance == 0) && ([chain timestampForBlockHeight:chain.lastBlockHeight] + 60 * 2.5 * 5 > [NSDate timeIntervalSince1970])) {
                 [DSEventManager saveEvent:@"restore:wipe_empty_wallet"];
                 UIAlertController * actionSheet = [UIAlertController
                                              alertControllerWithTitle:nil
@@ -176,7 +176,7 @@
             return;
         } else {
             DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:chain storeSeedPhrase:NO];
+            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO];
             DSAccount * testingAccount = [wallet accountWithNumber:0];
             DSAccount * ourAccount = [DWEnvironment sharedInstance].currentAccount;
             

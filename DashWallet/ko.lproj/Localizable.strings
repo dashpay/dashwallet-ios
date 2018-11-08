@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n휴대전화를 잃어버렸을 때, 복원을 위해 복원 문구가 필요합니다";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d회의 시도 남음\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 회의 시도 남음\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\n%@ 뒤에 다시 시도해주세요";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
 "About" = "정보";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "확실합니까?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */
 "bad payment request" = "잘못된 지불요청";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "비밀 키에 남아 있는 잔액 확인중...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
 "clear" = "삭제";
@@ -216,13 +201,7 @@
 "enter" = "입력";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "이전 암호 입력";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "대쉬 거래 서명 중 오류 발생";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "거래 서명 중 오류 발생";
 
 /* No comment provided by engineer. */
 "exit" = "나가기";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "일반";
-
-/* No comment provided by engineer. */
-"hour" = "시간";
-
-/* No comment provided by engineer. */
-"hours" = "시간";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않아 코인을 분실하는 것에 동의합니다";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "다른 사람이 QR코드를 스캔해서 당신의 대쉬 주소를 알수 있습니다. 당신의 대쉬 주소를 알려주면 누구든지 당신의 지갑으로 대쉬을 보낼 수 있습니다.";
 
 /* No comment provided by engineer. */
-"minute" = "분";
-
-/* No comment provided by engineer. */
-"minutes" = "분";
-
-/* No comment provided by engineer. */
 "more..." = "더보기...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "유효한 비밀 키가 아님";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"passcode" = "암호";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@에 대한 암호";
-
-/* No comment provided by engineer. */
-"password" = "패스워드";
-
-/* No comment provided by engineer. */
-"password protected key" = "패스워드로 암호화된 키";
 
 /* No comment provided by engineer. */
 "Pay" = "지불";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "이 결제 주소는 당신 지갑에 있는 주소입니다";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "이 비밀 키는 이미 당신의 지갑에 있습니다";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "이 비밀 키는 잔액이 없습니다";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "이 요청에는 즉석 지불이 필요하지만 인스턴트샌드에 필요한 6 가지 확인 사항이 있는 입력이 충분하지 않은 경우, 판매자에게 정상적인 거래를 수락하도록 요청하거나 몇 분 정도 기다리십시오.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID 사용 제한 금액";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "거래 수수료가 이 비밀 키에 있는 잔액보다 더 들어갑니다. (아주 작은 \"dust\" 입금이 많은 경우 발생합니다)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "새 QR코드를 불러올 수 없습니다";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "%@에서 예상치 못한 응답";
 
 /* No comment provided by engineer. */
 "unknown address" = "알 수 없는 주소";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "확인되지 않음";
 
-/* Updating Price */
-"Updating Price" = "가격 업데이트중";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
 
 /* No comment provided by engineer. */
-"verify passcode" = "비밀번호 확인";
-
-/* No comment provided by engineer. */
 "wallet address" = "지갑 주소";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "지갑 사용 정지됨";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";

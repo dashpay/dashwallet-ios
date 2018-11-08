@@ -24,12 +24,6 @@
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nje hebt het nodig om te portemonnee te herstellen wanneer je je telefoon bent kwijtgeraakt";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nnog %d pogingen\n";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nnog 1 poging\n";
-
-/* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* No comment provided by engineer. */
@@ -40,9 +34,6 @@
 
 /* No comment provided by engineer. */
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nprobeer opnieuw over %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "Over";
@@ -67,9 +58,6 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Weet je het zeker?";
-
-/* No comment provided by engineer. */
-"bad password, try again" = "onjuist wachtwoord, probeer opnieuw";
 
 /* No comment provided by engineer. */
 "bad payment request" = "foutief betaalverzoek";
@@ -112,9 +100,6 @@
 
 /* No comment provided by engineer. */
 "checking private key balance..." = "bezig met controleren van balans van persoonlijke sleutel...";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "kies toegangscode voor %@";
 
 /* No comment provided by engineer. */
 "clear" = "wis";
@@ -216,13 +201,7 @@
 "enter" = "voer in";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "voer oude toegangscode i";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "fout bij het ondertekenen van de dash-transactie";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "fout bij het ondertekenen van de transactie";
 
 /* No comment provided by engineer. */
 "exit" = "sluit af";
@@ -241,12 +220,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "ALGEMEEN";
-
-/* No comment provided by engineer. */
-"hour" = "uur";
-
-/* No comment provided by engineer. */
-"hours" = "uur";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
@@ -288,12 +261,6 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laat anderen deze QR-code scannen om jouw dash-adres te verkrijgen. Iedereen kan dash naar jouw portemonnee versturen door deze te sturen naar jouw adres.";
 
 /* No comment provided by engineer. */
-"minute" = "minuut";
-
-/* No comment provided by engineer. */
-"minutes" = "minuten";
-
-/* No comment provided by engineer. */
 "more..." = "meer...";
 
 /* No comment provided by engineer. */
@@ -330,25 +297,10 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ongeldige persoonlijke sleutel";
-
-/* No comment provided by engineer. */
 "ok" = "oké";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
-
-/* No comment provided by engineer. */
-"passcode" = "toegangscode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "toegangscode voor %@";
-
-/* No comment provided by engineer. */
-"password" = "wachtwoord";
-
-/* No comment provided by engineer. */
-"password protected key" = "met wachtwoord beveiligde sleutel";
 
 /* No comment provided by engineer. */
 "Pay" = "Betaal";
@@ -531,12 +483,6 @@
 "this payment address is already in your wallet" = "dit betaaladres staat al in je portemonnee";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "deze persoonlijke sleutel staat al in je portemonnee";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "deze persoonlijke sleutel is leeg";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
 
 /* No comment provided by engineer. */
@@ -561,9 +507,6 @@
 "Touch ID spending limit" = "Touch ID uitgavelimiet";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "de transactievergoeding zou meer zijn dan het beschikbare tegoed op deze persoonlijke sleutel (als gevolg van kleine \"stof\"-stortingen)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "transactiegeschiedenis";
 
 /* No comment provided by engineer. */
@@ -577,9 +520,6 @@
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Verkrijgen van nieuwe QR-code is mislukt";
-
-/* No comment provided by engineer. */
-"unexpected response from %@" = "onverwacht antwoord van %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "onbekend adres";
@@ -596,20 +536,11 @@
 /* No comment provided by engineer. */
 "unverified" = "niet geverifieerd";
 
-/* Updating Price */
-"Updating Price" = "Bezig met bijwerken van prijs";
-
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "geverifieerd, bezig met wachten op bevestiging";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifieer toegangscode";
-
-/* No comment provided by engineer. */
 "wallet address" = "portemonnee-adres";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "portemonnee uitgeschakeld";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";

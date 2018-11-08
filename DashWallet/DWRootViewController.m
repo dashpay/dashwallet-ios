@@ -702,7 +702,7 @@
                 return;
 #endif
                 if (!authenticated) {
-                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                         [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
                             if (authenticated) {
                                 [self unlock:nil];
@@ -885,7 +885,7 @@
 {
     double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.shouldShowTips = NO;
         self.navigationItem.titleView = nil;
         self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
@@ -894,7 +894,7 @@
 
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout
 {
-    NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval start = [NSDate timeIntervalSince1970];
     
     if (timeout > 1 && start + timeout > self.start + self.timeout) {
         self.timeout = timeout;
@@ -905,7 +905,7 @@
         DSChain * chain = [DWEnvironment sharedInstance].currentChain;
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
         if ([chain timestampForBlockHeight:chain.lastBlockHeight] +
-            WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+            WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
             if (wallet.walletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.shouldShowTips = NO;
                 self.navigationItem.titleView = nil;
@@ -960,7 +960,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
     
     static int counter = 0;
-    NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
+    NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
@@ -1046,7 +1046,7 @@
 {
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
     
     if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
         wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
@@ -1146,7 +1146,7 @@
         [(id)self.pageViewController setViewControllers:@[self.receiveViewController]
                                               direction:UIPageViewControllerNavigationDirectionForward animated:YES completion:nil];
     }
-    else if (self.showTips && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    else if (self.showTips && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.showTips = NO;
     }
     else {
