@@ -17,6 +17,15 @@
 		22B6A4481C0E963900673913 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B6A4471C0E963900673913 /* libbz2.tbd */; };
 		22D3613D1C56F2CD0057CF76 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */; };
 		22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */; };
+		2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */; };
+		2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58321947CBE00E7B563 /* BRPeerEntity.m */; };
+		2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */; };
+		2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58821947CBE00E7B563 /* BRTxInputEntity.m */; };
+		2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58A21947CBE00E7B563 /* BRTxMetadataEntity.m */; };
+		2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58B21947CBE00E7B563 /* BRAddressEntity.m */; };
+		2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59221947CBE00E7B563 /* BRTransactionEntity.m */; };
+		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
+		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
@@ -258,6 +267,24 @@
 		22F45A0F1C3329EB00B07A15 /* DWUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDefaultsConstants.h; sourceTree = "<group>"; };
 		27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testflight.xcconfig"; sourceTree = "<group>"; };
 		29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
+		2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
+		2A11F58321947CBE00E7B563 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
+		2A11F58521947CBE00E7B563 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
+		2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlockEntity.m; sourceTree = "<group>"; };
+		2A11F58821947CBE00E7B563 /* BRTxInputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxInputEntity.m; sourceTree = "<group>"; };
+		2A11F58921947CBE00E7B563 /* BRTransactionEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransactionEntity.h; sourceTree = "<group>"; };
+		2A11F58A21947CBE00E7B563 /* BRTxMetadataEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxMetadataEntity.m; sourceTree = "<group>"; };
+		2A11F58B21947CBE00E7B563 /* BRAddressEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAddressEntity.m; sourceTree = "<group>"; };
+		2A11F58C21947CBE00E7B563 /* BRPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerEntity.h; sourceTree = "<group>"; };
+		2A11F58E21947CBE00E7B563 /* BRTxOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxOutputEntity.h; sourceTree = "<group>"; };
+		2A11F59021947CBE00E7B563 /* BRMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlockEntity.h; sourceTree = "<group>"; };
+		2A11F59121947CBE00E7B563 /* BRTxMetadataEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxMetadataEntity.h; sourceTree = "<group>"; };
+		2A11F59221947CBE00E7B563 /* BRTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransactionEntity.m; sourceTree = "<group>"; };
+		2A11F59321947CBE00E7B563 /* BRTxInputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxInputEntity.h; sourceTree = "<group>"; };
+		2A11F59D2194BD6200E7B563 /* DWDataMigrationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDataMigrationManager.h; sourceTree = "<group>"; };
+		2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDataMigrationManager.m; sourceTree = "<group>"; };
+		2A11F5A12194C1D800E7B563 /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
+		2A11F5A22194C1D800E7B563 /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -590,6 +617,38 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2A11F58021947CBE00E7B563 /* DataMigration */ = {
+			isa = PBXGroup;
+			children = (
+				2A11F58121947CBE00E7B563 /* Entities */,
+				2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */,
+				2A11F59D2194BD6200E7B563 /* DWDataMigrationManager.h */,
+				2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */,
+			);
+			path = DataMigration;
+			sourceTree = "<group>";
+		};
+		2A11F58121947CBE00E7B563 /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				2A11F58521947CBE00E7B563 /* BRAddressEntity.h */,
+				2A11F58B21947CBE00E7B563 /* BRAddressEntity.m */,
+				2A11F59021947CBE00E7B563 /* BRMerkleBlockEntity.h */,
+				2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */,
+				2A11F58C21947CBE00E7B563 /* BRPeerEntity.h */,
+				2A11F58321947CBE00E7B563 /* BRPeerEntity.m */,
+				2A11F58921947CBE00E7B563 /* BRTransactionEntity.h */,
+				2A11F59221947CBE00E7B563 /* BRTransactionEntity.m */,
+				2A11F59321947CBE00E7B563 /* BRTxInputEntity.h */,
+				2A11F58821947CBE00E7B563 /* BRTxInputEntity.m */,
+				2A11F59121947CBE00E7B563 /* BRTxMetadataEntity.h */,
+				2A11F58A21947CBE00E7B563 /* BRTxMetadataEntity.m */,
+				2A11F58E21947CBE00E7B563 /* BRTxOutputEntity.h */,
+				2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */,
+			);
+			path = Entities;
+			sourceTree = "<group>";
+		};
 		2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */ = {
 			isa = PBXGroup;
 			children = (
@@ -627,6 +686,7 @@
 		752E289C19234A4700DB5A3C /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2A11F58021947CBE00E7B563 /* DataMigration */,
 				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
@@ -1503,10 +1563,13 @@
 				22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */,
 				2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */,
 				75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */,
+				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
+				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
 				FBFC2E9C211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
+				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
@@ -1517,6 +1580,7 @@
 				BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
+				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
@@ -1524,6 +1588,7 @@
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* DWRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,
+				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
@@ -1533,12 +1598,16 @@
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
+				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				757C89521A2FCE420076B373 /* DWSettingsViewController.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				75D5F3D2191EC270004AB296 /* DWAppDelegate.m in Sources */,
+				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
+				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
+				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);
@@ -2612,6 +2681,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2A11F5A12194C1D800E7B563 /* BreadWallet 2.xcdatamodel */,
+				2A11F5A22194C1D800E7B563 /* BreadWallet.xcdatamodel */,
+			);
+			currentVersion = 2A11F5A12194C1D800E7B563 /* BreadWallet 2.xcdatamodel */;
+			path = DashWallet.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 75D5F3B6191EC270004AB296 /* Project object */;
 }
