@@ -27,6 +27,9 @@
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
+		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
+		2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */; };
+		2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
@@ -288,6 +291,11 @@
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
+		2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewController.h; sourceTree = "<group>"; };
+		2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewController.m; sourceTree = "<group>"; };
+		2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MigrationStoryboard.storyboard; sourceTree = "<group>"; };
+		2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewModel.h; sourceTree = "<group>"; };
+		2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewModel.m; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
 		2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewController.m; sourceTree = "<group>"; };
 		2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanView.h; sourceTree = "<group>"; };
@@ -649,6 +657,18 @@
 			path = Entities;
 			sourceTree = "<group>";
 		};
+		2AB231CF2196E23200A6E7E6 /* Migration Controller */ = {
+			isa = PBXGroup;
+			children = (
+				2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */,
+				2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */,
+				2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */,
+				2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */,
+				2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */,
+			);
+			path = "Migration Controller";
+			sourceTree = "<group>";
+		};
 		2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */ = {
 			isa = PBXGroup;
 			children = (
@@ -718,6 +738,7 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				2AB231CF2196E23200A6E7E6 /* Migration Controller */,
 				2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */,
 				759FBB32193290F600AB4465 /* DWRootViewController.h */,
 				759FBB33193290F600AB4465 /* DWRootViewController.m */,
@@ -1288,6 +1309,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */,
 				FBFC2EB521137A7A00D20C57 /* Montserrat-Italic.otf in Resources */,
 				FBFC2EED21137A7A00D20C57 /* Montserrat-Thin.otf in Resources */,
 				FBFC2ED121137A7A00D20C57 /* Montserrat-SemiBoldItalic.otf in Resources */,
@@ -1594,6 +1616,7 @@
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
+				2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
@@ -1607,6 +1630,7 @@
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
+				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,

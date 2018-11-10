@@ -22,6 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSUInteger const BatchSize = 100;
+static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
 
 @interface DWDataMigrationManager ()
 
@@ -41,18 +42,30 @@ static NSUInteger const BatchSize = 100;
     return _sharedInstance;
 }
 
-- (void)migrate:(void (^)(BOOL success))completion {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        _storeURL = [docURL URLByAppendingPathComponent:OldDataBaseFileName];
+        _shouldMigrate = [[NSFileManager defaultManager] fileExistsAtPath:_storeURL.path];
+    }
+    return self;
+}
+
+- (void)migrate:(void (^)(BOOL completed))completion {
     __weak __typeof__(self) weakSelf = self;
-    [self setupOldStore:^(BOOL shouldMigrate) {
+    [self setupOldStore:^(BOOL readyToMigration) {
         __strong __typeof__(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
 
-        if (shouldMigrate) {
+        if (readyToMigration) {
             [strongSelf performMigration:completion];
         }
         else {
+            [strongSelf destroyOldPersistentStore];
+            
             if (completion) {
                 completion(NO);
             }
@@ -75,18 +88,19 @@ static NSUInteger const BatchSize = 100;
         completed = completed | [strongSelf migratePeerFromContext:readContext];
         completed = completed | [strongSelf migrateAddressFromContext:readContext];
         // TODO: BRTxMetadataEntity not used in new model?
-
-        if (completion) {
-            completion(completed);
-        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [strongSelf destroyOldPersistentStore];
+            
+            if (completion) {
+                completion(completed);
+            }
+        });
     }];
 }
 
-- (void)setupOldStore:(void (^)(BOOL shouldMigrate))completion {
-    NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-    self.storeURL = [docURL URLByAppendingPathComponent:@"DashWallet.sqlite"];
-
-    if (![[NSFileManager defaultManager] fileExistsAtPath:self.storeURL.path]) {
+- (void)setupOldStore:(void (^)(BOOL readyToMigration))completion {
+    if (!self.shouldMigrate) {
         if (completion) {
             completion(NO);
         }
@@ -101,31 +115,11 @@ static NSUInteger const BatchSize = 100;
     self.persistentContainer = [[NSPersistentContainer alloc] initWithName:@"DashWallet"];
     self.persistentContainer.persistentStoreDescriptions = @[ storeDescription ];
 
-    __weak __typeof__(self) weakSelf = self;
     [self.persistentContainer loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *storeDescription, NSError *_Nullable error) {
-        __strong __typeof__(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
         NSAssert([NSThread isMainThread], @"Main thread assumed");
 
-        if (error != nil) {
-            // failed to load, remove existing database
-            NSManagedObjectModel *mom = [NSManagedObjectModel mergedModelFromBundles:nil];
-            NSPersistentStoreCoordinator *psc = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:mom];
-            [psc destroyPersistentStoreAtURL:strongSelf.storeURL withType:NSSQLiteStoreType options:nil error:nil];
-
-            strongSelf.persistentContainer = nil;
-
-            if (completion) {
-                completion(NO);
-            }
-        }
-        else {
-            if (completion) {
-                completion(YES);
-            }
+        if (completion) {
+            completion(error == nil);
         }
     }];
 }
@@ -329,6 +323,19 @@ static NSUInteger const BatchSize = 100;
     [DSTransactionEntity saveContext];
 
     return YES;
+}
+
+- (void)destroyOldPersistentStore {
+    self.persistentContainer = nil;
+    
+    NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+    NSURL *storeShmURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-shm"]];
+    NSURL *storeWalURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-wal"]];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtURL:self.storeURL error:nil];
+    [fileManager removeItemAtURL:storeShmURL error:nil];
+    [fileManager removeItemAtURL:storeWalURL error:nil];
 }
 
 + (NSFetchRequest *)fetchRequestForEntity:(NSString *)name {

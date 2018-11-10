@@ -25,8 +25,13 @@
 //  THE SOFTWARE.
 
 #import "DWAppDelegate.h"
+
 #import <DashSync/DashSync.h>
 #import <UserNotifications/UserNotifications.h>
+
+#import "DWDataMigrationManager.h"
+#import "DWMigrationViewController.h"
+#import "DWMigrationViewModel.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
@@ -44,7 +49,7 @@
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
-@interface DWAppDelegate ()
+@interface DWAppDelegate () <DWMigrationViewControllerDelegate>
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
@@ -61,76 +66,28 @@
     // Override point for customization after application launch.
     NSLog(@"Dashwallet has launched");
     
-    UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
-    UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
+    [self setupDashWalletAppearance];
     
-    //This will set the Navigation Bar to the same color as the background and remove unwanted features.
-    [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x00A0EA)];
-    [[UINavigationBar appearance] setTranslucent:NO];
-    [[UINavigationBar appearance] setShadowImage:[[UIImage alloc] init]];
-    [[UINavigationBar appearance] setBackgroundImage:[[UIImage alloc] init]
-                                      forBarPosition:UIBarPositionAny
-                                          barMetrics:UIBarMetricsDefault];
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window.backgroundColor = [UIColor blackColor];
     
-    [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
-     setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
-     forState:UIControlStateNormal];
-    UIFont * titleBarFont = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
-    [[UINavigationBar appearance] setTitleTextAttributes:@{
-                                                           NSFontAttributeName:titleBarFont,
-                                                           NSForegroundColorAttributeName: [UIColor whiteColor],
-                                                           }];
-    
-    UIImage * backImage = [[UIImage imageNamed:@"back-button"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    [[UINavigationBar appearance] setBackIndicatorImage:backImage];
-    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
-
-    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
-        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
-
-        if (file.length > 0) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
-             userInfo:@{@"file":file}];
-        }
+    if ([DWDataMigrationManager sharedInstance].shouldMigrate) {
+        [self performMigratingStartWithLaunchOptions:launchOptions];
+    }
+    else {
+        [self performNormalStartWithLaunchOptions:launchOptions];
     }
     
-    [DashSync sharedSyncController];
+    NSParameterAssert(self.window.rootViewController);
+    [self.window makeKeyAndVisible];
     
-    [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
-    
-#if FRESH_INSTALL
-    [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
-#endif
-    
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools];
-
-    //TODO: bitcoin protocol/payment protocol over multipeer connectivity
-
-    //TODO: accessibility for the visually impaired
-
-    //TODO: fast wallet restore using webservice and/or utxo p2p message
-
-    //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
-
-    //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
-
-    //TODO: implement importing of private keys split with shamir's secret sharing:
-    //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
-
-#ifndef IGNORE_WATCH_TARGET
-    [DWPhoneWCSessionManager sharedInstance];
-#endif
-    
-    [DSShapeshiftManager sharedInstance];
-    
-    // observe balance and create notifications
-    [self setupBalanceNotification:application];
-    [self setupPreferenceDefaults];
     return YES;
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
+    // When adding any logic here mind the migration process
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (self.balance == UINT64_MAX) self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
         [self registerForPushNotifications];
@@ -147,6 +104,8 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
+    // When adding any logic here mind the migration process
+    
 //    [self updatePlatformOnComplete:^{
 //        NSLog(@"[DWAppDelegate] updatePlatform completed!");
 //    }];
@@ -255,6 +214,93 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //    }
 }
 
+- (void)performMigratingStartWithLaunchOptions:(NSDictionary *)launchOptions {
+    DWMigrationViewModel *viewModel = [[DWMigrationViewModel alloc] initWithLaunchOptions:launchOptions];
+    DWMigrationViewController *controller = [DWMigrationViewController controller];
+    controller.viewModel = viewModel;
+    controller.delegate = self;
+    
+    self.window.rootViewController = controller;
+}
+
+- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    UIViewController *controller = [storyboard instantiateInitialViewController];
+    self.window.rootViewController = controller;
+    
+    [self setupDashWalletComponentsWithOptions:launchOptions];
+}
+
+- (void)setupDashWalletAppearance {
+    UIPageControl.appearance.pageIndicatorTintColor = [UIColor lightGrayColor];
+    UIPageControl.appearance.currentPageIndicatorTintColor = [UIColor blueColor];
+    
+    //This will set the Navigation Bar to the same color as the background and remove unwanted features.
+    [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x00A0EA)];
+    [[UINavigationBar appearance] setTranslucent:NO];
+    [[UINavigationBar appearance] setShadowImage:[[UIImage alloc] init]];
+    [[UINavigationBar appearance] setBackgroundImage:[[UIImage alloc] init]
+                                      forBarPosition:UIBarPositionAny
+                                          barMetrics:UIBarMetricsDefault];
+    
+    [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
+     setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}
+     forState:UIControlStateNormal];
+    UIFont * titleBarFont = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{
+                                                           NSFontAttributeName:titleBarFont,
+                                                           NSForegroundColorAttributeName: [UIColor whiteColor],
+                                                           }];
+    
+    UIImage * backImage = [[UIImage imageNamed:@"back-button"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [[UINavigationBar appearance] setBackIndicatorImage:backImage];
+    [[UINavigationBar appearance] setBackIndicatorTransitionMaskImage:backImage];
+}
+
+- (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
+    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
+        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
+        
+        if (file.length > 0) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
+                                                              userInfo:@{@"file":file}];
+        }
+    }
+    
+    [DashSync sharedSyncController];
+    
+    [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
+    
+#if FRESH_INSTALL
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
+#endif
+    
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools];
+    
+    //TODO: bitcoin protocol/payment protocol over multipeer connectivity
+    
+    //TODO: accessibility for the visually impaired
+    
+    //TODO: fast wallet restore using webservice and/or utxo p2p message
+    
+    //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
+    
+    //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
+    
+    //TODO: implement importing of private keys split with shamir's secret sharing:
+    //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
+    
+#ifndef IGNORE_WATCH_TARGET
+    [DWPhoneWCSessionManager sharedInstance];
+#endif
+    
+    [DSShapeshiftManager sharedInstance];
+    
+    // observe balance and create notifications
+    [self setupBalanceNotification:[UIApplication sharedApplication]];
+    [self setupPreferenceDefaults];
+}
+
 - (void)setupBalanceNotification:(UIApplication *)application
 {
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
@@ -344,6 +390,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
+}
+
+#pragma mark - DWMigrationViewControllerDelegate
+
+- (void)migrationViewController:(DWMigrationViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions {
+    [self performNormalStartWithLaunchOptions:launchOptions];
 }
 
 @end
