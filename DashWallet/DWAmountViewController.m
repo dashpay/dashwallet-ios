@@ -191,36 +191,49 @@
     }
 }
 
--(UILabel*)titleLabel {
+-(UIButton*)titleButton {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
-    titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    [titleLabel setBackgroundColor:[UIColor clearColor]];
+    UIButton * titleButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 1, 200)];
+    titleButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [titleButton setBackgroundColor:[UIColor clearColor]];
     NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor] useSignificantDigits:TRUE] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
                               [priceManager localCurrencyStringForDashAmount:wallet.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
-    titleLabel.attributedText = attributedDashString;
-    return titleLabel;
+    [titleButton setAdjustsImageWhenHighlighted:NO];
+    [titleButton setAttributedTitle:attributedDashString forState:UIControlStateNormal];
+    [titleButton addTarget:self action:@selector(chooseToSendAllFunds:) forControlEvents:UIControlEventTouchUpInside];
+    return titleButton;
 }
 
 -(void)updateTitleView {
-    if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
+    if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UIButton class]]) {
         DSPriceManager * priceManager = [DSPriceManager sharedInstance];
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
         NSMutableAttributedString * attributedDashString = [[priceManager attributedStringForDashAmount:wallet.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [priceManager localCurrencyStringForDashAmount:wallet.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
-        ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
-        [((UILabel*)self.navigationItem.titleView) sizeToFit];
+        [((UIButton*)self.navigationItem.titleView) setAttributedTitle:attributedDashString forState:UIControlStateNormal];
+        [((UIButton*)self.navigationItem.titleView) sizeToFit];
     } else {
-        self.navigationItem.titleView = [self titleLabel];
+        self.navigationItem.titleView = [self titleButton];
     }
 }
 
 // MARK: - IBAction
+
+- (void)chooseToSendAllFunds:(id)sender {
+    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    uint64_t currentAmount = [priceManager amountForDashString:self.amountLabel.text];
+    if (self.amountLabelIsEmpty) {
+        NSString * amountString = [priceManager stringForDashAmount:wallet.balance];
+        [self updateAmountLabel:self.amountLabel shouldChangeCharactersInRange:NSMakeRange(1, 0)
+          replacementString:amountString];
+    }
+}
 
 - (IBAction)unlock:(id)sender
 {
