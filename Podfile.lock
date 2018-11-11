@@ -40,7 +40,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
   bls-signatures-pod: 2548b1aea18e1fc9f2cf3783193931ec39961f12
-  DashSync: d6c3d3c14c5edcc388bfc8af591d6b275ba8846b
+  DashSync: 88606da64771c7e346d7e018bac2d3d5199fbb1d
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
 
