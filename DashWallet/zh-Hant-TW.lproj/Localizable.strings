@@ -42,6 +42,9 @@
 "Action Needed" = "需要用戶採取行動";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "總是要求密碼";
 
 /* No comment provided by engineer. */
@@ -265,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Moved" = "已移動";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永遠不要將恢復詞組輸入到密碼管理器或其他地方其它設備都可能被病毒感染。";

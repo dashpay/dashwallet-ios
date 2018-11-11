@@ -42,6 +42,9 @@
 "Action Needed" = "Action Needed";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "her zaman parola gerektir";
 
 /* No comment provided by engineer. */
@@ -265,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Moved" = "Taşındı";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Kurtarma cümlenizi ASLA parola yöneticilerine veya başka bir yere yazmayın. Diğer cihazlarda açık olabilir.";

@@ -42,6 +42,9 @@
 "Action Needed" = "Eingreifen erforderlich";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "Zugangscode immer abfragen";
 
 /* No comment provided by engineer. */
@@ -265,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Moved" = "Verschoben";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Geben Sie NIEMALS Ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.";

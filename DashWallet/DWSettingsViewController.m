@@ -336,7 +336,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     if (tableView == self.selectorController.tableView) return 1;
-    return 2;
+    return 3;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -346,6 +346,7 @@
     switch (section) {
         case 0: return 2 + ((self.touchId || self.faceId) ? 3 : 2);
         case 1: return 3;
+        case 2: return 1;
     }
     
     return 0;
@@ -429,7 +430,17 @@
 
             }
             break;
-            
+        case 2:
+            switch (indexPath.row) {
+                case 0:
+                    cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
+                    cell.textLabel.text = NSLocalizedString(@"Network", nil);
+                    cell.detailTextLabel.text = [DWEnvironment sharedInstance].currentChain.name;
+                    break;
+                    
+                default:
+                    break;
+            }
     }
     
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
@@ -451,6 +462,9 @@
             return NSLocalizedString(@"CRITICAL",nil);
             
         case 2:
+            return NSLocalizedString(@"ADVANCED",nil);
+            
+        case 3:
             return NSLocalizedString(@"rescan blockchain if you think you may have missing transactions, "
                                      "or are having trouble sending (rescanning can take several minutes)", nil);
     }
@@ -622,6 +636,38 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     }
 }
 
+-(void)showChangeNetwork {
+    [DSEventManager saveEvent:@"settings:show_change_network"];
+    UIAlertController * actionSheet = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Network", nil)
+                                 message:nil
+                                 preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction* mainnet = [UIAlertAction
+                                   actionWithTitle:DSLocalizedString(@"Mainnet", nil)
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                      [[DWEnvironment sharedInstance] switchToMainnet];
+                                       [self.tableView reloadData];
+                                   }];
+    UIAlertAction* testnet = [UIAlertAction
+                                 actionWithTitle:DSLocalizedString(@"Testnet", nil)
+                                 style:UIAlertActionStyleDefault
+                                 handler:^(UIAlertAction * action) {
+                                     [[DWEnvironment sharedInstance] switchToTestnet];
+                                     [self.tableView reloadData];
+                                 }];
+    
+    UIAlertAction* cancel = [UIAlertAction
+                              actionWithTitle:NSLocalizedString(@"cancel", nil)
+                              style:UIAlertActionStyleCancel
+                              handler:^(UIAlertAction * action) {
+                              }];
+    [actionSheet addAction:mainnet];
+    [actionSheet addAction:testnet];
+    [actionSheet addAction:cancel];
+    [self presentViewController:actionSheet animated:YES completion:nil];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
@@ -706,6 +752,14 @@ _deselect_switch:
             }
             
             break;
+        case 2:
+            switch (indexPath.row) {
+                case 0: // change passcode
+                    [self showChangeNetwork];
+                    break;
+            }
+            break;
+    
     }
 }
 

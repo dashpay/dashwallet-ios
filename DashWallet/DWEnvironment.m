@@ -8,6 +8,8 @@
 
 #import "DWEnvironment.h"
 
+#define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
+
 @implementation DWEnvironment
 
 + (instancetype)sharedInstance
@@ -25,17 +27,28 @@
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
-#if DASH_TESTNET
-    self.currentChain = [DSChain testnet];
-#else
-    self.currentChain = [DSChain mainnet];
-#endif
+    NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+    if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
+        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+    }
     [self reset];
     
     return self;
 }
 
 -(void)reset {
+    NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+    DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
+    switch (chainType) {
+        case DSChainType_MainNet:
+            self.currentChain = [DSChain mainnet];
+            break;
+        case DSChainType_TestNet:
+            self.currentChain = [DSChain testnet];
+            break;
+        default:
+            break;
+    }
     self.currentChainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.currentChain];
 }
 
@@ -54,6 +67,28 @@
     [[DashSync sharedSyncController] wipeSporkDataForChain:self.currentChain];
     [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.currentChain];
     [self.currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
+}
+
+- (void)switchToMainnet {
+    if (self.currentChain != [DSChain mainnet]) {
+        [DSEventManager saveEvent:@"settings:change_network_mainnet"];
+        [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [self reset];
+        [self.currentChainPeerManager connect];
+    }
+}
+
+- (void)switchToTestnet {
+    if (self.currentChain != [DSChain testnet]) {
+        [DSEventManager saveEvent:@"settings:change_network_testnet"];
+        [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setInteger:DSChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
+        [self reset];
+        [self.currentChainPeerManager connect];
+    }
 }
 
 @end
