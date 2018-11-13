@@ -198,6 +198,12 @@
 "enable" = "ทำให้สามารถ";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "เปิดรับการแจ้งเตือน";
 
 /* No comment provided by engineer. */
@@ -307,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "เขียนวลีการกู้คืนของคุณ";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "ขณะนี้คุณสามารถซื้อ dash \nผ่านเงินใน dash wallet หรือ \nโอนผ่านธนาคารได้";

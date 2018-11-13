@@ -198,6 +198,12 @@
 "enable" = "啟用";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "啟用接收通知";
 
 /* No comment provided by engineer. */
@@ -307,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "好";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "付款";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "寫下你的恢復詞組";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你現在可以在達世幣錢包中用\n現金或銀行轉帳\n來購買達世幣。";

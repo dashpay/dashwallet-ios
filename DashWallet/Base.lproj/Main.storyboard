@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeO-Yt-c4D">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BeO-Yt-c4D">
     <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -615,7 +615,7 @@
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="8" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="260" translatesAutoresizingMaskIntoConstraints="NO" id="5aq-jh-ZjP">
-                                <rect key="frame" x="30" y="41" width="315" height="205"/>
+                                <rect key="frame" x="30" y="41" width="315" height="88"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
@@ -623,7 +623,7 @@
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="cameraguide" translatesAutoresizingMaskIntoConstraints="NO" id="uEW-dq-bFQ">
-                                <rect key="frame" x="70.666666666666686" y="267" width="234" height="234"/>
+                                <rect key="frame" x="-46.666666666666657" y="150" width="468.33333333333326" height="468"/>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1VG-Fh-Hjg">
                                 <rect key="frame" x="0.0" y="768" width="375" height="44"/>
@@ -996,6 +996,13 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xtg-Ns-5pF">
+                                <rect key="frame" x="20" y="788" width="0.0" height="0.0"/>
+                                <color key="tintColor" red="0.81906270979999996" green="0.0" blue="0.055772939180000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" red="0.81906270979999996" green="0.0" blue="0.055772939180000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yGf-vb-Qug" userLabel="Layout View">
                                 <rect key="frame" x="0.0" y="88" width="375" height="40"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -1160,6 +1167,7 @@
                             <constraint firstItem="Miu-hY-NqY" firstAttribute="top" secondItem="lis-Qt-01n" secondAttribute="top" id="BYd-JE-3V1"/>
                             <constraint firstItem="lis-Qt-01n" firstAttribute="centerX" secondItem="l5l-JR-LKA" secondAttribute="centerX" id="BsW-Di-um1"/>
                             <constraint firstItem="aeV-sO-1m0" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="lbm-03-nu4" secondAttribute="trailing" constant="5" id="CGc-wi-eOC"/>
+                            <constraint firstItem="xtg-Ns-5pF" firstAttribute="bottom" secondItem="lis-Qt-01n" secondAttribute="bottom" constant="10" id="Du9-mM-xoq"/>
                             <constraint firstItem="ce6-Wi-wk4" firstAttribute="top" secondItem="taX-nY-KZL" secondAttribute="bottom" constant="2" id="G53-cd-dv9"/>
                             <constraint firstItem="bfj-xS-5rN" firstAttribute="leading" secondItem="ce6-Wi-wk4" secondAttribute="leading" id="GUD-dx-vEN"/>
                             <constraint firstItem="F30-En-QkL" firstAttribute="top" secondItem="aeV-sO-1m0" secondAttribute="top" id="Gov-bX-NQb"/>
@@ -1187,6 +1195,7 @@
                             <constraint firstItem="taX-nY-KZL" firstAttribute="top" secondItem="aeV-sO-1m0" secondAttribute="bottom" id="daz-gp-KBm"/>
                             <constraint firstItem="lis-Qt-01n" firstAttribute="centerX" secondItem="ce6-Wi-wk4" secondAttribute="centerX" id="dgu-8P-xXI"/>
                             <constraint firstItem="yGf-vb-Qug" firstAttribute="top" secondItem="lis-Qt-01n" secondAttribute="top" id="fYP-lI-lp8"/>
+                            <constraint firstItem="xtg-Ns-5pF" firstAttribute="leading" secondItem="lis-Qt-01n" secondAttribute="leading" constant="20" id="fwR-3C-9yy"/>
                             <constraint firstItem="Miu-hY-NqY" firstAttribute="leading" secondItem="lis-Qt-01n" secondAttribute="leading" id="g1B-NE-Foh"/>
                             <constraint firstItem="dJ4-yH-e9Q" firstAttribute="height" secondItem="2jR-QE-A2g" secondAttribute="height" id="iy4-nZ-9MA"/>
                             <constraint firstItem="l5l-JR-LKA" firstAttribute="top" secondItem="lnR-VB-sVM" secondAttribute="bottom" id="jYH-xd-wqo"/>
@@ -1209,6 +1218,7 @@
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
                         <outlet property="NFCWidthConstraint" destination="iE6-nK-QF0" id="mgl-la-LeG"/>
+                        <outlet property="chainNameLabel" destination="xtg-Ns-5pF" id="OJc-Bg-Q2N"/>
                         <outlet property="clipboardButton" destination="bfj-xS-5rN" id="mfH-NX-2iX"/>
                         <outlet property="instantSwitch" destination="aeV-sO-1m0" id="T13-wq-XNf"/>
                         <outlet property="leftOfNFCButtonWhitespaceConstraint" destination="tPV-6A-6Xh" id="d3I-WF-sey"/>
@@ -2686,7 +2696,7 @@ bitpay.com/rates and poloniex</string>
                                 <size key="shadowOffset" width="0.0" height="1"/>
                             </label>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PJj-7p-7Bt">
-                                <rect key="frame" x="223.33333333333334" y="527.66666666666663" width="62.000000000000028" height="62"/>
+                                <rect key="frame" x="223.33333333333337" y="516.66666666666663" width="84" height="84"/>
                                 <inset key="contentEdgeInsets" minX="20" minY="20" maxX="20" maxY="20"/>
                                 <state key="normal" image="checkbox-empty"/>
                                 <connections>
@@ -2838,7 +2848,7 @@ bitpay.com/rates and poloniex</string>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NVx-Sw-vEc">
-                                <rect key="frame" x="20" y="149.66666666666666" width="335" height="0.33333333333334281"/>
+                                <rect key="frame" x="20" y="149.66666666666666" width="335" height="0.66666666666665719"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="0.5" id="4GD-iB-GIa"/>
@@ -3247,23 +3257,23 @@ bitpay.com/rates and poloniex</string>
     </scenes>
     <resources>
         <image name="burger" width="20" height="16"/>
-        <image name="button-bg-blue-pressed" width="10" height="44"/>
-        <image name="button-bg-disabled" width="10" height="11"/>
-        <image name="button-bg-white-pressed" width="11" height="10"/>
-        <image name="cameraguide" width="234" height="234"/>
-        <image name="cameraguide-blue-small" width="20" height="20"/>
-        <image name="cameraguide-small" width="20" height="20"/>
-        <image name="checkbox-empty" width="22" height="22"/>
+        <image name="button-bg-blue-pressed" width="10.5" height="44"/>
+        <image name="button-bg-disabled" width="10.5" height="11.5"/>
+        <image name="button-bg-white-pressed" width="11" height="10.5"/>
+        <image name="cameraguide" width="468" height="468"/>
+        <image name="cameraguide-blue-small" width="40" height="40"/>
+        <image name="cameraguide-small" width="40" height="40"/>
+        <image name="checkbox-empty" width="44" height="44"/>
         <image name="dash-center-logo" width="175" height="142"/>
         <image name="dash-digital-cash" width="172" height="82"/>
         <image name="dashwallet-white" width="100" height="27"/>
         <image name="deletetoleft-pressed" width="29" height="23"/>
-        <image name="flash" width="33" height="33"/>
-        <image name="lock" width="12" height="16"/>
+        <image name="flash" width="66" height="66"/>
+        <image name="lock" width="12.5" height="16"/>
         <image name="no-eye" width="48" height="28"/>
         <image name="no-key" width="48" height="37"/>
         <image name="refresh" width="9" height="11"/>
-        <image name="shapeshift" width="64" height="64"/>
+        <image name="shapeshift" width="128" height="128"/>
         <image name="wallpaper-default" width="758" height="568"/>
         <image name="x" width="20" height="16"/>
     </resources>

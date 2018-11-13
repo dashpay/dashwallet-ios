@@ -148,6 +148,14 @@
            chainPeerManager.downloadPeerName];
 }
 
+-(BOOL)enabledAdvancedFeatures {
+    NSUserDefaults * userDefaults =[NSUserDefaults standardUserDefaults];
+    if ([userDefaults objectForKey:ENABLED_ADVANCED_FEATURES]) {
+        return [userDefaults boolForKey:ENABLED_ADVANCED_FEATURES];
+    }
+    return FALSE;
+}
+
 // MARK: - IBAction
 
 - (IBAction)done:(id)sender
@@ -331,6 +339,29 @@
     [self.tableView reloadData];
 }
 
+-(void)showEnableAdvancedFeatures {
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"Enable advanced features?", nil)
+                                 message:NSLocalizedString(@"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+
+                                   }];
+    UIAlertAction* yesButton = [UIAlertAction
+                                  actionWithTitle:NSLocalizedString(@"yes", nil)
+                                  style:UIAlertActionStyleDefault
+                                  handler:^(UIAlertAction * action) {
+                                      [[NSUserDefaults standardUserDefaults] setBool:YES forKey:ENABLED_ADVANCED_FEATURES];
+                                      [self.tableView reloadData];
+                                  }];
+    [alert addAction:yesButton];
+    [alert addAction:cancelButton];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 // MARK: - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -431,6 +462,11 @@
             }
             break;
         case 2:
+            if (![self enabledAdvancedFeatures]) {
+                cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                cell.textLabel.text = NSLocalizedString(@"Enable advanced features", nil);
+                break;
+            } else {
             switch (indexPath.row) {
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
@@ -440,6 +476,7 @@
                     
                 default:
                     break;
+            }
             }
     }
     
@@ -753,12 +790,17 @@ _deselect_switch:
             
             break;
         case 2:
+            if (![self enabledAdvancedFeatures]) {
+                [self showEnableAdvancedFeatures];
+            } else {
             switch (indexPath.row) {
                 case 0: // change passcode
                     [self showChangeNetwork];
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     break;
             }
             break;
+            }
     
     }
 }

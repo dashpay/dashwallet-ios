@@ -198,6 +198,12 @@
 "enable" = "Inschakele";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Schakel het ontvangen van meldingen in";
 
 /* No comment provided by engineer. */
@@ -307,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "Betaal";
@@ -556,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SCHRIJF JE HERSTELZIN OP";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Je kunt nu dash kopen in\ndashwallet d.m.v. geld of\neen bankoverschrijving.";
