@@ -75,6 +75,8 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) IBOutlet UILabel * shapeshiftLabel;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint * NFCWidthConstraint;
 @property (nonatomic, strong) IBOutlet NSLayoutConstraint * leftOfNFCButtonWhitespaceConstraint;
+@property (nonatomic, strong) IBOutlet UILabel *chainNameLabel;
+@property (nonatomic, strong) id chainObserver;
 
 @end
 
@@ -119,14 +121,15 @@ static NSString *sanitizeString(NSString *s)
     shimmeringInnerLabelView.shimmeringPauseDuration = 0.8;
     shimmeringInnerLabelView.shimmeringAnimationOpacity = 0.2;
     [self.shapeshiftView addSubview:shimmeringInnerLabelView];
-    NSArray * shapeshiftsInProgress = [DSShapeshiftEntity shapeshiftsInProgress];
-    if (![shapeshiftsInProgress count]) {
-        
-        self.shapeshiftView.hidden = TRUE;
-    } else {
-        for (DSShapeshiftEntity * shapeshift in shapeshiftsInProgress) {
-            [shapeshift transaction];
-            [self startObservingShapeshift:shapeshift];
+    self.shapeshiftView.hidden = TRUE;
+    if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+        NSArray * shapeshiftsInProgress = [DSShapeshiftEntity shapeshiftsInProgress];
+        if ([shapeshiftsInProgress count]) {
+            self.shapeshiftView.hidden = FALSE;
+            for (DSShapeshiftEntity * shapeshift in shapeshiftsInProgress) {
+                [shapeshift transaction];
+                [self startObservingShapeshift:shapeshift];
+            }
         }
     }
     
@@ -143,6 +146,19 @@ static NSString *sanitizeString(NSString *s)
         [self.NFCWidthConstraint setConstant:0];
         [self.leftOfNFCButtonWhitespaceConstraint setConstant:0];
     }
+    
+    [self checkChain];
+    
+    self.chainObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           [self checkChain];
+                                                       }];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self.chainObserver];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -160,7 +176,7 @@ static NSString *sanitizeString(NSString *s)
 -(BOOL)processURLAddressList:(NSURL*)url {
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-        if (! [self.url isEqual:url]) {
+    if (! [self.url isEqual:url]) {
         self.url = url;
         UIAlertController * alert = [UIAlertController
                                      alertControllerWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
@@ -711,21 +727,21 @@ static NSString *sanitizeString(NSString *s)
             
             if (shapeshift) {
                 tx = [account transactionForAmounts:protoReq.details.outputAmounts
-                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
+                                    toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
                 tx = [account transactionForAmounts:protoReq.details.outputAmounts
-                                           toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
+                                    toOutputScripts:protoReq.details.outputScripts withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         else {
             if (shapeshift) {
                 tx = [account transactionForAmounts:@[@(self.amount)]
-                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
+                                    toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:shapeshift.withdrawalAddress];
                 tx.associatedShapeshift = shapeshift;
             } else {
                 tx = [account transactionForAmounts:@[@(self.amount)]
-                                           toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
+                                    toOutputScripts:@[protoReq.details.outputScripts.firstObject] withFee:YES isInstant:wantsInstant toShapeshiftAddress:nil];
             }
         }
         
@@ -735,7 +751,7 @@ static NSString *sanitizeString(NSString *s)
         }
         else {
             DSTransaction * tempTx = [account transactionFor:account.balance
-                                                                 to:address withFee:NO];
+                                                          to:address withFee:NO];
             fee = [chain feeForTxSize:tempTx.size isInstant:self.sendInstantly inputCount:tempTx.inputHashes.count];
             fee += (account.balance - amount) % 100;
             amount += fee;
@@ -750,14 +766,14 @@ static NSString *sanitizeString(NSString *s)
         }
         
         NSString *prompt = [[DSAuthenticationManager sharedInstance] promptForAmount:amount
-                                             fee:fee
-                                         address:address
-                                            name:protoReq.commonName
-                                            memo:protoReq.details.memo
-                                        isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])
-                                    errorMessage:@""
-                                   localCurrency:localCurrency
-                             localCurrencyAmount:localCurrencyAmount];
+                                                                                 fee:fee
+                                                                             address:address
+                                                                                name:protoReq.commonName
+                                                                                memo:protoReq.details.memo
+                                                                            isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])
+                                                                        errorMessage:@""
+                                                                       localCurrency:localCurrency
+                                                                 localCurrencyAmount:localCurrencyAmount];
         
         // to avoid the frozen pincode keyboard bug, we need to make sure we're scheduled normally on the main runloop
         // rather than a dispatch_async queue
@@ -965,13 +981,13 @@ static NSString *sanitizeString(NSString *s)
             DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
             [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:wallet
                                                            forAmount:amount forceAuthentication:YES completion:^(NSData * _Nullable seed) {
-                if (seed) {
-                    [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
-                } else {
-                    [self cancelOrChangeAmount];
-                }
-                if (!previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
-            }];
+                                                               if (seed) {
+                                                                   [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
+                                                               } else {
+                                                                   [self cancelOrChangeAmount];
+                                                               }
+                                                               if (!previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
+                                                           }];
         }
     } else {
         DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
@@ -1003,7 +1019,7 @@ static NSString *sanitizeString(NSString *s)
                         
                     }];
                 }
-
+                
                 __block BOOL waiting = YES, sent = NO;
                 
                 [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
@@ -1239,7 +1255,7 @@ static NSString *sanitizeString(NSString *s)
     DSInsightManager * insightManager = [DSInsightManager sharedInstance];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     BRBubbleView * statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking address balance...", nil)
-                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
     statusView.font = [UIFont systemFontOfSize:14.0];
     statusView.customView = [[UIActivityIndicatorView alloc]
@@ -1248,46 +1264,46 @@ static NSString *sanitizeString(NSString *s)
     [self.view addSubview:[statusView popIn]];
     
     [insightManager utxosForAddresses:@[address]
-                    completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [statusView popOut];
-                            
-                            if (error) {
-                                UIAlertController * alert = [UIAlertController
-                                                             alertControllerWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
-                                                             message:error.localizedDescription
-                                                             preferredStyle:UIAlertControllerStyleAlert];
-                                UIAlertAction* okButton = [UIAlertAction
-                                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                           style:UIAlertActionStyleCancel
-                                                           handler:^(UIAlertAction * action) {
-                                                           }];
-                                [alert addAction:okButton];
-                                [self presentViewController:alert animated:YES completion:nil];
-                            }
-                            else {
-                                uint64_t balance = 0;
-                                
-                                for (NSNumber *amt in amounts) balance += amt.unsignedLongLongValue;
-                                
-                                NSString *alertMsg = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil),
-                                                      address, [priceManager stringForDashAmount:balance],
-                                                      [priceManager localCurrencyStringForDashAmount:balance]];
-                                
-                                UIAlertController * alert = [UIAlertController
-                                                             alertControllerWithTitle:@""
-                                                             message:alertMsg
-                                                             preferredStyle:UIAlertControllerStyleAlert];
-                                UIAlertAction* okButton = [UIAlertAction
-                                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                           style:UIAlertActionStyleCancel
-                                                           handler:^(UIAlertAction * action) {
-                                                           }];
-                                [alert addAction:okButton];
-                                [self presentViewController:alert animated:YES completion:nil];
-                            }
-                        });
-                    }];
+                           completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
+                               dispatch_async(dispatch_get_main_queue(), ^{
+                                   [statusView popOut];
+                                   
+                                   if (error) {
+                                       UIAlertController * alert = [UIAlertController
+                                                                    alertControllerWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
+                                                                    message:error.localizedDescription
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+                                       UIAlertAction* okButton = [UIAlertAction
+                                                                  actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                  style:UIAlertActionStyleCancel
+                                                                  handler:^(UIAlertAction * action) {
+                                                                  }];
+                                       [alert addAction:okButton];
+                                       [self presentViewController:alert animated:YES completion:nil];
+                                   }
+                                   else {
+                                       uint64_t balance = 0;
+                                       
+                                       for (NSNumber *amt in amounts) balance += amt.unsignedLongLongValue;
+                                       
+                                       NSString *alertMsg = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nbalance: %@ (%@)", nil),
+                                                             address, [priceManager stringForDashAmount:balance],
+                                                             [priceManager localCurrencyStringForDashAmount:balance]];
+                                       
+                                       UIAlertController * alert = [UIAlertController
+                                                                    alertControllerWithTitle:@""
+                                                                    message:alertMsg
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+                                       UIAlertAction* okButton = [UIAlertAction
+                                                                  actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                  style:UIAlertActionStyleCancel
+                                                                  handler:^(UIAlertAction * action) {
+                                                                  }];
+                                       [alert addAction:okButton];
+                                       [self presentViewController:alert animated:YES completion:nil];
+                                   }
+                               });
+                           }];
 }
 
 - (void)cancelOrChangeAmount
@@ -1609,6 +1625,15 @@ static NSString *sanitizeString(NSString *s)
     self.canChangeAmount = self.showBalance = NO;
     self.scanButton.enabled = self.clipboardButton.enabled = YES;
     [self updateClipboardText];
+}
+
+-(void)checkChain {
+    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+        self.chainNameLabel.hidden = FALSE;
+        self.chainNameLabel.text = DSLocalizedString(@"Testnet", nil);
+    } else {
+        self.chainNameLabel.hidden = TRUE;
+    }
 }
 
 - (IBAction)startNFC:(id)sender NS_AVAILABLE_IOS(11.0) {

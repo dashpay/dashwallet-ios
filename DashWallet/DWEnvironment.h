@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype _Nullable)sharedInstance;
 - (void)clearWallet;
+- (void)switchToMainnet;
+- (void)switchToTestnet;
 
 @end
 

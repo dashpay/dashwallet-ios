@@ -42,6 +42,9 @@
 "Action Needed" = "需要用户执行";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "总是要求密码";
 
 /* No comment provided by engineer. */
@@ -195,6 +198,12 @@
 "enable" = "激活";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "打开接收提示";
 
 /* No comment provided by engineer. */
@@ -267,6 +276,9 @@
 "Moved" = "已移动";
 
 /* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永远不要将恢复密语输入到密码管理器或其他地方。其它设备都可能存在病毒软件。";
 
 /* No comment provided by engineer. */
@@ -301,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "好";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "支付";
@@ -550,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "写下你的恢复密语";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你现在可以购买达世币\n在钱包中使用现金\n或者银行转账。";
