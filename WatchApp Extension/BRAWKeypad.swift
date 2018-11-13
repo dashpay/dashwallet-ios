@@ -1,6 +1,6 @@
 //
 //  BRAWKeypad.swift
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Samuel Sutch on 12/27/15.
 //  Copyright (c) 2016 breadwallet LLC

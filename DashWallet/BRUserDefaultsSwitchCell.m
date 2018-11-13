@@ -1,6 +1,6 @@
 //
 //  BRUserDefaultsSwitchCell.m
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Samuel Sutch on 12/29/15.
 //  Copyright (c) 2016 breadwallet LLC

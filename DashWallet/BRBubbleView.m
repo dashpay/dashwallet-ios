@@ -1,8 +1,8 @@
 //
 //  BRBubbleView.m
-//  BreadWallet
+//  DashWallet
 //
-//  Created by Aaron Voisine on 3/10/14.
+//  Created by Aaron Voisine for BreadWallet on 3/10/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy

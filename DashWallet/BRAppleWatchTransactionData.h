@@ -1,6 +1,6 @@
 //
 //  BRAppleWatchTransactionData.h
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
@@ -23,15 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTransaction.h"
 #import <Foundation/Foundation.h>
-
-typedef enum : NSInteger {
-    BRAWTransactionTypeSent,
-    BRAWTransactionTypeReceive,
-    BRAWTransactionTypeMove,
-    BRAWTransactionTypeInvalid
-} BRAWTransactionType;
+#import "DSWatchTransactionData.h"
 
 @interface BRAppleWatchTransactionData : NSObject <NSCoding>
 
@@ -40,6 +33,6 @@ typedef enum : NSInteger {
 @property (nonatomic, strong) NSString *dateText;
 @property (nonatomic) BRAWTransactionType type;
 
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction;
++ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData;
 
 @end

@@ -1,9 +1,10 @@
 //
 //  main.m
-//  BreadWallet
+//  DashWallet
 //
-//  Created by Aaron Voisine on 5/8/13.
+//  Created by Aaron Voisine for BreadWallet on 5/8/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +26,11 @@
 
 #import <UIKit/UIKit.h>
 
-#import "BRAppDelegate.h"
+#import "DWAppDelegate.h"
 
 int main(int argc, char * argv[])
 {
     @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([BRAppDelegate class]));
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([DWAppDelegate class]));
     }
 }

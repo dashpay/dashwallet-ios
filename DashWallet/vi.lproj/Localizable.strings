@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " và ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ là cho 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d xác thực";
 
 /* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0 xác thực";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,7 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         tổng số %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nnếu bạn bị mất điện thoại, bạn cần nó để khôi phục lại ví của mình";
-
-/* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d lần thử còn lại\n";
-
-/* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(số lượng yêu cầu ở địa phương: 1%@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 lần thử còn lại\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nBạn cần có mật khẩu cho thiết bị để bảo vệ ví của mình. Hãy vào phần Settings của điện thoại và bật mật khẩu lên và tiếp tục.";
@@ -54,19 +33,16 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbật tính năng truy cập chụp ảnh trong phần\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nthử lại %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "Giới thiệu";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Cần bạn hành động";
+
+/* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
 "always require passcode" = "luôn cần mật khẩu";
@@ -87,16 +63,7 @@
 "Are you sure?" = "Bạn chắc chứ?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "sai mật khẩu, hãy thử lại";
-
-/* No comment provided by engineer. */
 "bad payment request" = "yêu cầu thanh toán không đúng";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "địa chỉ URL của yêu cầu thanh toán không đúng";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "địa chỉ thanh toán URL không đúng";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "cụm từ phục hồi không đúng";
@@ -138,9 +105,6 @@
 "checking private key balance..." = "kiểm tra số dư của khoá riêng...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "hãy chọn mật khẩu cho %@";
-
-/* No comment provided by engineer. */
 "clear" = "xoá";
 
 /* No comment provided by engineer. */
@@ -160,9 +124,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "đã được xác thực trong khối #%d";
-
-/* No comment provided by engineer. */
-"connect timeout" = "hết thời hạn kết nối";
 
 /* No comment provided by engineer. */
 "copied" = "đã được chép";
@@ -207,9 +168,6 @@
 "dash payments can't be less than %@" = "số dash thanh toán không thể nhỏ hơn %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "giao dịch dash không được ký";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "đầu ra của giao dịch dash không thể ít hơn %@";
 
 /* No comment provided by engineer. */
@@ -240,19 +198,19 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Bật thông báo nhận";
 
 /* No comment provided by engineer. */
 "enter" = "nhập";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "nhập mật khẩu cũ";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "lỗi khi ký giao dịch dash";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "lỗi khi ký giao dịch";
 
 /* No comment provided by engineer. */
 "exit" = "thoát";
@@ -271,12 +229,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "TỔNG THỂ";
-
-/* No comment provided by engineer. */
-"hour" = "giờ";
-
-/* No comment provided by engineer. */
-"hours" = "giờ";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tôi chấp nhận rằng tôi sẽ mất các coin của mình nếu không còn sở hữu cụm từ phục hồi";
@@ -318,19 +270,13 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
-"minute" = "phút";
-
-/* No comment provided by engineer. */
-"minutes" = "phút";
-
-/* No comment provided by engineer. */
-"missing certificate" = "thiếu chứng thực";
-
-/* No comment provided by engineer. */
 "more..." = "tiếp...";
 
 /* No comment provided by engineer. */
 "Moved" = "Đã chuyển";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
@@ -348,9 +294,6 @@
 "no exchange rate data" = "không có thông tin về tỷ giá";
 
 /* No comment provided by engineer. */
-"no peers found" = "không tìm thấy nút ngang hàng";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -366,28 +309,13 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "không phải một khoá riêng hợp lệ";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "chưa được kết nối với mạng lưới của dash";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"passcode" = "mật khẩu";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "mật khẩu cho %@";
-
-/* No comment provided by engineer. */
-"password" = "mật khẩu";
-
-/* No comment provided by engineer. */
-"password protected key" = "khoá được bảo vệ bởi mật khẩu";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "thanh toán";
@@ -403,6 +331,9 @@
 
 /* No comment provided by engineer. */
 "pending" = "đang chờ";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Hãy nhập mã để nâng cấp ví";
@@ -450,12 +381,6 @@
 "request is for an instant payment but you have disabled instant payments" = "yêu cầu này là dành cho giao dịch tức thời nhưng bạn đã tắt tính năng giao dịch tức thời";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "yêu cầu mạng lưới \"%1$@\" à thay cho \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "quét lại";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "Quét lại blockchain";
 
 /* No comment provided by engineer. */
@@ -478,12 +403,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Tiền của bạn có rủi ro. Hãy chuyển số dư của bạn vào một ví khác.";
-
-/* No comment provided by engineer. */
-"second" = "giây";
-
-/* No comment provided by engineer. */
-"seconds" = "giây";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "được thấy bởi %1$d của %2$d các nút";
@@ -579,12 +498,6 @@
 "this payment address is already in your wallet" = "địa chỉ thanh toán này đã có trong ví của bạn";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "khoá riêng này không có gì";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Yêu cầu này cần có một giao dịch tức thời nhưng bạn không có đủ đầu vào với 6 xác thực cần thiết cho InstantSend, bạn có thể phải hỏi người bán hàng xem có chấp nhận giao dịch thông thường hoặc phải đợi một vài phút.";
 
 /* No comment provided by engineer. */
@@ -609,16 +522,7 @@
 "Touch ID spending limit" = "Giới hạn chi tiêu với Touch ID";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "giao dịch bị huỷ, hết thời gian";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Lịch sử giao dịch";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "giao dịch bị từ chối";
 
 /* No comment provided by engineer. */
 "trust" = "tin cậy";
@@ -633,9 +537,6 @@
 "Unable to get new qr code" = "Không thể lấy mã QR mới";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "phản hồi không mong đợi từ %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "địa chỉ không xác định";
 
 /* No comment provided by engineer. */
@@ -645,31 +546,16 @@
 "unsupported or corrupted document" = "không được hỗ trợ hoặc thông tin bị lỗi";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "kiểu chữ ký không được hỗ trợ";
-
-/* No comment provided by engineer. */
 "unsupported url" = "địa chỉ url không được hỗ trợ";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "chứng chỉ không đáng tin";
-
-/* No comment provided by engineer. */
 "unverified" = "chưa được kiểm tra";
-
-/* Updating Price */
-"Updating Price" = "Đang cập nhật giá";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
 
 /* No comment provided by engineer. */
-"verify passcode" = "kiểm tra mật khẩu";
-
-/* No comment provided by engineer. */
 "wallet address" = "địa chỉ ví";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ví bị tắt";
 
 /* No comment provided by engineer. */
 "WARNING" = "CẢNH BÁO";
@@ -681,6 +567,9 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "HÃY GHI LẠI CỤM TỪ PHỤC HỒI";
 
 /* No comment provided by engineer. */
+"yes" = "yes";
+
+/* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Bây giờ bạn có thể mua dash trong\nví dashwallet hoặc\nchuyển khoản.";
 
 /* No comment provided by engineer. */
@@ -688,6 +577,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "bạn đã nhận được dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";

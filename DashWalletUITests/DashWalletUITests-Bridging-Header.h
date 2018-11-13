@@ -2,7 +2,7 @@
 //  DashWalletUITests-Bridging-Header.h
 //  DashWallet
 //
-//  Created by Aaron Voisine on 5/3/16.
+//  Created by Aaron Voisine for BreadWallet on 5/3/16.
 //  Copyright (c) 2016 Dashwallet LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy

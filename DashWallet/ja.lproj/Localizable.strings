@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "また";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ の単位は 'mDASH' %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,9 +12,6 @@
 "%d confirmations" = "%d承認済み";
 
 /* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "0 confirmations" = "0承認済み";
 
 /* No comment provided by engineer. */
@@ -27,22 +21,7 @@
 "\"%@\" is not a recovery phrase word" = "「%@」 は復元フレーズの単語ではありません。";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         合計 %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n携帯電話を紛失した場合、ウォレットを復元するためにはこのフレーズが必要になります。";
-
-/* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n失敗 残り %d 回\n";
-
-/* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(ローカルにリクエストされた金額: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n失敗 残り 1 回\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     送金額 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから進んでください。";
@@ -54,19 +33,16 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\n %@でもう一度お試しください";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@ でもう一度お試しください。";
 
 /* No comment provided by engineer. */
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
 "Action Needed" = "必ず実施して下さい";
+
+/* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
@@ -87,16 +63,7 @@
 "Are you sure?" = "本当に大丈夫ですか？";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "不正なパスワード、もう一度ご入力ください。";
-
-/* No comment provided by engineer. */
 "bad payment request" = "不正な支払い請求";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "不正な支払い請求URL";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "不正な支払いURL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "不正な復元フレーズ";
@@ -138,9 +105,6 @@
 "checking private key balance..." = "秘密鍵の残高を確認中…";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
-
-/* No comment provided by engineer. */
 "clear" = "消去する";
 
 /* No comment provided by engineer. */
@@ -160,9 +124,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "ブロック#%dにて承認";
-
-/* No comment provided by engineer. */
-"connect timeout" = "接続タイムアウト";
 
 /* No comment provided by engineer. */
 "copied" = "コピーしました！";
@@ -207,9 +168,6 @@
 "dash payments can't be less than %@" = "ダッシュの送金は %@ 以上でないと送れません。";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "取引が署名されていません";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "ダッシュの取引出力は %@ 以上でないといけません。";
 
 /* No comment provided by engineer. */
@@ -240,19 +198,19 @@
 "enable" = "有効にする";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "通知の受け取りを有効にする";
 
 /* No comment provided by engineer. */
 "enter" = "入力する";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "現在のパスコードを\nご入力下さい";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "ダッシュ取引署名時エラー";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "取引署名時エラー";
 
 /* No comment provided by engineer. */
 "exit" = "終了する";
@@ -271,12 +229,6 @@
 
 /* No comment provided by engineer. */
 "GENERAL" = "一般";
-
-/* No comment provided by engineer. */
-"hour" = "時間";
-
-/* No comment provided by engineer. */
-"hours" = "時間";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "もし復元フレーズを無くしたら、自分のコインが失われることに同意します";
@@ -318,19 +270,13 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "このQRコードを人に見せる、または\nダッシュアドレスをコピーして人に\n送るとすぐに送金を受け取れます。";
 
 /* No comment provided by engineer. */
-"minute" = "分";
-
-/* No comment provided by engineer. */
-"minutes" = "分";
-
-/* No comment provided by engineer. */
-"missing certificate" = "証明書が見つかりません";
-
-/* No comment provided by engineer. */
 "more..." = "さらに…";
 
 /* No comment provided by engineer. */
 "Moved" = "移動されました";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
@@ -348,9 +294,6 @@
 "no exchange rate data" = "為替レートのデータがありません";
 
 /* No comment provided by engineer. */
-"no peers found" = "通信相手が見つかりませんでした。";
-
-/* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
 
 /* No comment provided by engineer. */
@@ -366,28 +309,13 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "有効な秘密鍵ではありません";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "ダッシュネットワークに接続されていません。";
-
-/* No comment provided by engineer. */
 "ok" = "OK";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"passcode" = "パスコード";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@のパスコード";
-
-/* No comment provided by engineer. */
-"password" = "パスワード";
-
-/* No comment provided by engineer. */
-"password protected key" = "パスワード保護された鍵";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "送金";
@@ -403,6 +331,9 @@
 
 /* No comment provided by engineer. */
 "pending" = "保留中";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "ウォレットをアップグレードするためPINを入力してください";
@@ -450,12 +381,6 @@
 "request is for an instant payment but you have disabled instant payments" = "リクエストは即時支払い用ですが、あなたは即時支払いを無効にしています。";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "ネットワーク「%2$@」の代わりに「%1$@」を要求しました。";
-
-/* No comment provided by engineer. */
-"rescan" = "再スキャン";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "ブロックチェーンの再スキャン";
 
 /* No comment provided by engineer. */
@@ -478,12 +403,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "スクリーンショットは他のアプリやデバイスで閲覧できます。このウォレットは危険に晒されています。直ちに別のウォレットに全残高を移して下さい。";
-
-/* No comment provided by engineer. */
-"second" = "秒";
-
-/* No comment provided by engineer. */
-"seconds" = "秒";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%1$d / %2$d ピアにて伝播確認済";
@@ -579,12 +498,6 @@
 "this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "この秘密鍵は承認済み残高がありません";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金（インスタントセンド）に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
@@ -609,16 +522,7 @@
 "Touch ID spending limit" = "Touch IDの送金可能額";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "取引キャンセルされました、\nネットワークタイムアウトがありました";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "この秘密鍵にある残高が通常手数料より小さいので送れません。";
-
-/* No comment provided by engineer. */
 "Transaction history" = "取引履歴";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "取引が拒否されました";
 
 /* No comment provided by engineer. */
 "trust" = "信頼する";
@@ -633,9 +537,6 @@
 "Unable to get new qr code" = "新しいQRコードが取得できません";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "%@ から予期しない応答";
-
-/* No comment provided by engineer. */
 "unknown address" = "不明なアドレス";
 
 /* No comment provided by engineer. */
@@ -645,31 +546,16 @@
 "unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "サポートされていない署名の種類";
-
-/* No comment provided by engineer. */
 "unsupported url" = "サポートされていないURL";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "信頼されていない証明書";
-
-/* No comment provided by engineer. */
 "unverified" = "未確認";
-
-/* Updating Price */
-"Updating Price" = "価格をアップデートします";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "伝播確認済、承認を待機中";
 
 /* No comment provided by engineer. */
-"verify passcode" = "もう一度パスコードを\nご入力下さい";
-
-/* No comment provided by engineer. */
 "wallet address" = "自分のアドレス";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ウォレット無効";
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";
@@ -681,6 +567,9 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "復元フレーズを書き留めて下さい！";
 
 /* No comment provided by engineer. */
+"yes" = "yes";
+
+/* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってダッシュウォレット内でダッシュが購入できます。";
 
 /* No comment provided by engineer. */
@@ -688,6 +577,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "ダッシュの着金確認！";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";

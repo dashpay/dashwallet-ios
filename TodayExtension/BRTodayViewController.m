@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRTodayViewController.h"
-#import "BRAppGroupConstants.h"
+#import "DWAppGroupConstants.h"
 #import "BRBubbleView.h"
 #import "UIImage+Utils.h"
 #import <NotificationCenter/NotificationCenter.h>

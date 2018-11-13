@@ -1,6 +1,6 @@
 //
 //  BRAppleWatchTransactionData.m
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
@@ -24,7 +24,6 @@
 //  THE SOFTWARE.
 
 #import "BRAppleWatchTransactionData.h"
-#import "BRTransaction+Utils.h"
 
 #define AW_TRANSACTION_DATA_AMOUNT_KEY @"AW_TRANSACTION_DATA_AMOUNT_KEY"
 #define AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY @"AW_TRANSACTION_DATA_AMOUNT_IN_LOCAL_CURRENCY_KEY"
@@ -45,23 +44,13 @@
     return self;
 }
 
-+ (instancetype)appleWatchTransactionDataFrom:(BRTransaction *)transaction
++ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData
 {
-    BRAppleWatchTransactionData *appleWatchTransactionData;
-    
-    if (transaction) {
-        appleWatchTransactionData = [BRAppleWatchTransactionData new];
-        appleWatchTransactionData.amountText = transaction.amountText;
-        appleWatchTransactionData.amountTextInLocalCurrency = transaction.localCurrencyTextForAmount;
-        appleWatchTransactionData.dateText = transaction.dateText;
-        
-        switch (transaction.transactionType) {
-            case BRTransactionTypeSent: appleWatchTransactionData.type = BRAWTransactionTypeSent; break;
-            case BRTransactionTypeReceive: appleWatchTransactionData.type = BRAWTransactionTypeReceive; break;
-            case BRTransactionTypeMove: appleWatchTransactionData.type = BRAWTransactionTypeMove; break;
-            case BRTransactionTypeInvalid: appleWatchTransactionData.type = BRAWTransactionTypeInvalid; break;
-        }
-    }
+    BRAppleWatchTransactionData *appleWatchTransactionData = [BRAppleWatchTransactionData new];
+    appleWatchTransactionData.amountText = transactionData.amountText;
+    appleWatchTransactionData.amountTextInLocalCurrency = transactionData.amountTextInLocalCurrency;
+    appleWatchTransactionData.dateText = transactionData.dateText;
+    appleWatchTransactionData.type = transactionData.type;
     
     return appleWatchTransactionData;
 }

@@ -1,0 +1,49 @@
+PODS:
+  - AFNetworking (3.2.1):
+    - AFNetworking/NSURLSession (= 3.2.1)
+    - AFNetworking/Reachability (= 3.2.1)
+    - AFNetworking/Security (= 3.2.1)
+    - AFNetworking/Serialization (= 3.2.1)
+    - AFNetworking/UIKit (= 3.2.1)
+  - AFNetworking/NSURLSession (3.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.2.1)
+  - AFNetworking/Security (3.2.1)
+  - AFNetworking/Serialization (3.2.1)
+  - AFNetworking/UIKit (3.2.1):
+    - AFNetworking/NSURLSession
+  - bls-signatures-pod (0.2.3)
+  - DashSync (0.1.0):
+    - AFNetworking (~> 3.0)
+    - bls-signatures-pod (= 0.2.3)
+    - secp256k1_dash (= 0.1.2)
+  - KVO-MVVM (0.5.1)
+  - secp256k1_dash (0.1.2)
+
+DEPENDENCIES:
+  - DashSync (from `../DashSync/`)
+  - KVO-MVVM (= 0.5.1)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AFNetworking
+    - bls-signatures-pod
+    - KVO-MVVM
+    - secp256k1_dash
+
+EXTERNAL SOURCES:
+  DashSync:
+    :path: "../DashSync/"
+
+SPEC CHECKSUMS:
+  AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
+  bls-signatures-pod: 2548b1aea18e1fc9f2cf3783193931ec39961f12
+  DashSync: 88606da64771c7e346d7e018bac2d3d5199fbb1d
+  KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
+  secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
+
+PODFILE CHECKSUM: 63bed8beaf1d71f78f84f17e349bf478d4a2c6da
+
+COCOAPODS: 1.5.3
