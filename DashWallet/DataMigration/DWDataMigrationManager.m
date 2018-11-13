@@ -87,7 +87,6 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         completed = completed | [strongSelf migrateMerkleBlockFromContext:readContext];
         completed = completed | [strongSelf migratePeerFromContext:readContext];
         completed = completed | [strongSelf migrateAddressFromContext:readContext];
-        // TODO: BRTxMetadataEntity not used in new model?
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [strongSelf destroyOldPersistentStore];
@@ -150,9 +149,6 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
             input.sequence = inputEntity.sequence;
             input.signature = inputEntity.signature;
             input.txHash = inputEntity.txHash;
-            // TODO:
-            // input.localAddress = ? (optional)
-            // input.prevOutput = ? (optional)
             [inputs addObject:input];
         }
         [transaction addInputs:inputs];
@@ -164,13 +160,8 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
             output.n = outputEntity.n;
             output.script = outputEntity.script;
             output.shapeshiftOutboundAddress = outputEntity.shapeshiftOutboundAddress;
-            // TODO: output.? = outputEntity.spent;
             output.txHash = outputEntity.txHash;
             output.value = outputEntity.value;
-            // TODO:
-            // output.account = ? (optional)
-            // output.localAddress = ? (optional)
-            // output.spentInput = ? (optional)
             [outputs addObject:output];
         }
         [transaction addOutputs:outputs];
@@ -193,7 +184,7 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
 
         DSTransactionHashEntity *transactionHash = [[DSTransactionHashEntity alloc] initWithContext:writeContext];
         transactionHash.blockHeight = entity.blockHeight;
-        transactionHash.timestamp = entity.timestamp - NSTimeIntervalSince1970;
+        transactionHash.timestamp = entity.timestamp + NSTimeIntervalSince1970;
         transactionHash.txHash = entity.txHash;
         transaction.transactionHash = transactionHash;
 
@@ -234,7 +225,7 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         entity.nonce = merkleBlock.nonce;
         entity.prevBlock = merkleBlock.prevBlock;
         entity.target = merkleBlock.target;
-        entity.timestamp = merkleBlock.timestamp;
+        entity.timestamp = merkleBlock.timestamp + NSTimeIntervalSince1970;
         entity.totalTransactions = merkleBlock.totalTransactions;
         entity.version = merkleBlock.version;
 
@@ -271,11 +262,7 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         entity.misbehavin = peer.misbehavin;
         entity.port = peer.port;
         entity.services = peer.services;
-        entity.timestamp = peer.timestamp - NSTimeIntervalSince1970;
-        // TODO:
-        // entity.lastRequestedGovernanceSync = ? (optional)
-        // entity.lastRequestedMasternodeList = ? (optional)
-        // entity.lowPreferenceTill = ? (optional)
+        entity.timestamp = peer.timestamp + NSTimeIntervalSince1970;
 
         [chain addPeersObject:entity];
 
@@ -309,10 +296,6 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         entity.index = address.index;
         entity.internal = address.internal;
         entity.standalone = YES;
-        // TODO:
-        // entity.derivationPath = ? (optional)
-        // entity.usedInInputs = ? (optional)
-        // entity.usedInOutputs = ? (optional)
 
         count++;
         if (count % BatchSize == 0) {
