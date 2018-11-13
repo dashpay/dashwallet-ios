@@ -176,7 +176,7 @@
             return;
         } else {
             DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-            DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO];
+            __unused DSWallet * testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO];
             DSAccount * testingAccount = [wallet accountWithNumber:0];
             DSAccount * ourAccount = [DWEnvironment sharedInstance].currentAccount;
             

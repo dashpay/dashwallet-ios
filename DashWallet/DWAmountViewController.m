@@ -227,7 +227,6 @@
 - (void)chooseToSendAllFunds:(id)sender {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    uint64_t currentAmount = [priceManager amountForDashString:self.amountLabel.text];
     if (self.amountLabelIsEmpty) {
         NSString * amountString = [priceManager stringForDashAmount:wallet.balance];
         [self updateAmountLabel:self.amountLabel shouldChangeCharactersInRange:NSMakeRange(1, 0)

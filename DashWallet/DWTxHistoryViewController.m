@@ -86,7 +86,7 @@ static NSString *dateFormat(NSString *template)
     [super viewWillAppear:animated];
     
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    __unused DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     
     if (authenticationManager.didAuthenticate) {
@@ -571,7 +571,8 @@ static NSString *dateFormat(NSString *template)
             break;
         }
     }
-    return cell;
+    NSParameterAssert(cell);
+    return cell ?: [[UITableViewCell alloc] init];
 }
 
 // MARK: - UITableViewDelegate

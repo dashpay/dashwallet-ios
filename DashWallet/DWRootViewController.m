@@ -246,12 +246,7 @@
                                                           if (self.navigationController.presentedViewController) {
                                                               [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                                                           }
-                                                          
-                                                          NSURL * url = note.userInfo[@"url"];
-                                                          
-                                                          
-                                                          
-                                                          
+                                                                                                                    
                                                           DWSendViewController *c = self.sendViewController;
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])

@@ -174,7 +174,7 @@ static NSString *sanitizeString(NSString *s)
 }
 
 -(BOOL)processURLAddressList:(NSURL*)url {
-    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    __unused DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     if (! [self.url isEqual:url]) {
         self.url = url;
@@ -781,7 +781,6 @@ static NSString *sanitizeString(NSString *s)
             [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
-        NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject forChain:chain];
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -1371,6 +1370,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)updateClipboardText
 {
+    // TODO: clean up, produced results of this method are unused
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *str = [[UIPasteboard generalPasteboard].string
                          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
