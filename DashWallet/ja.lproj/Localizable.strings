@@ -42,6 +42,9 @@
 "Action Needed" = "必ず実施して下さい";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
@@ -195,6 +198,12 @@
 "enable" = "有効にする";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "通知の受け取りを有効にする";
 
 /* No comment provided by engineer. */
@@ -267,6 +276,9 @@
 "Moved" = "移動されました";
 
 /* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
 
 /* No comment provided by engineer. */
@@ -301,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "送金";
@@ -550,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "復元フレーズを書き留めて下さい！";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってダッシュウォレット内でダッシュが購入できます。";

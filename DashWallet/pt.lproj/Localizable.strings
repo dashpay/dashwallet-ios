@@ -42,6 +42,9 @@
 "Action Needed" = "Ação necessária";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "sempre exija a senha";
 
 /* No comment provided by engineer. */
@@ -195,6 +198,12 @@
 "enable" = "habilitar";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Habilitar recebimento de notificações";
 
 /* No comment provided by engineer. */
@@ -267,6 +276,9 @@
 "Moved" = "Movido";
 
 /* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem estar infectados.";
 
 /* No comment provided by engineer. */
@@ -301,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "Pagar";
@@ -550,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ANOTE SUA FRASE DE RECUPERAÇÃO";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Agora você pode comprar dash em \ncarteira dash com dinheiro ou \ntransferência bancária.";

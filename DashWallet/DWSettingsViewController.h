@@ -27,6 +27,7 @@
 #import <MessageUI/MessageUI.h>
 
 #define SETTINGS_MAX_DIGITS_KEY @"SETTINGS_MAX_DIGITS"
+#define ENABLED_ADVANCED_FEATURES @"ENABLED_ADVANCED_FEATURES"
 
 @interface DWSettingsViewController : UITableViewController <UIAlertViewDelegate, MFMailComposeViewControllerDelegate>
 

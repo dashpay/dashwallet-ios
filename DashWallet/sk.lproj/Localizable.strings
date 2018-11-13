@@ -42,6 +42,9 @@
 "Action Needed" = "Action Needed";
 
 /* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
 "always require passcode" = "vždy vyžadovať číselné heslo";
 
 /* No comment provided by engineer. */
@@ -195,6 +198,12 @@
 "enable" = "zapnúť";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Povoliť upozornenia pri prijatí";
 
 /* No comment provided by engineer. */
@@ -267,6 +276,9 @@
 "Moved" = "Presunuté";
 
 /* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NIKDY nezadávajte frázu pre obnovenie do správcov hesiel alebo inde. Iné zariadenia môžu byť infikované.";
 
 /* No comment provided by engineer. */
@@ -301,6 +313,9 @@
 
 /* No comment provided by engineer. */
 "OK" = "OK";
+
+/* No comment provided by engineer. */
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "Zaplatiť";
@@ -550,6 +565,9 @@
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
