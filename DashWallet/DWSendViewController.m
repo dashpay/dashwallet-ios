@@ -295,7 +295,7 @@ static NSString *sanitizeString(NSString *s)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:@"ok"
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];
@@ -329,7 +329,7 @@ static NSString *sanitizeString(NSString *s)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"ok"
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -363,7 +363,7 @@ static NSString *sanitizeString(NSString *s)
                                  message:@""
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:@"ok"
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction * action) {
                                }];
@@ -388,7 +388,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:request.paymentAddress
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -410,7 +410,7 @@ static NSString *sanitizeString(NSString *s)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"ok"
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -454,7 +454,7 @@ static NSString *sanitizeString(NSString *s)
                                      message:protoReq.errorMessage
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:@"ok"
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];
@@ -484,7 +484,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:NSLocalizedString(@"this payment address is already in your wallet", nil)
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -506,13 +506,13 @@ static NSString *sanitizeString(NSString *s)
                                                                    "the recipient doesn't directly control the address", nil)
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* cancelButton = [UIAlertAction
-                                           actionWithTitle:@"cancel"
+                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
                                                [self cancelOrChangeAmount];
                                            }];
             UIAlertAction* ignoreButton = [UIAlertAction
-                                           actionWithTitle:@"ignore"
+                                           actionWithTitle:NSLocalizedString(@"ignore", nil)
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
                                                [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];

@@ -63,7 +63,7 @@
     [charset addCharactersInString:priceManager.dashFormat.currencyDecimalSeparator];
     self.charset = charset;
     
-    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"Pay", nil)
+    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?NSLocalizedString(@"Shapeshift!",nil):NSLocalizedString(@"Pay", nil)
                                                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.payButton.tintColor = [UIColor colorWithRed:168.0/255.0 green:230.0/255.0 blue:1.0 alpha:1.0];
     self.amountLabel.attributedText = [priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];

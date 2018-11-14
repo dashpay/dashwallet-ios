@@ -148,7 +148,7 @@
         label.font = [UIFont systemFontOfSize:14];
         label.textColor = [UIColor redColor];
         label.textAlignment = NSTextAlignmentRight;
-        label.text = @"watch only";
+        label.text = NSLocalizedString(@"watch only", nil);
         [label sizeToFit];
         label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
                                    self.view.frame.size.height - (label.frame.size.height + 5)*2);

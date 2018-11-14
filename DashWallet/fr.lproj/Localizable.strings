@@ -225,6 +225,9 @@
 "Failed wallet update" = "Échec de la mise à jour du portefeuille";
 
 /* No comment provided by engineer. */
+"fetching amount" = "fetching amount";
+
+/* No comment provided by engineer. */
 "from:" = "de :";
 
 /* No comment provided by engineer. */
@@ -292,6 +295,9 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "aucune donnée de taux de change";
+
+/* No comment provided by engineer. */
+"node ip" = "node ip";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
@@ -450,6 +456,9 @@
 "shapeshift succeeded" = "shapeshift réussi";
 
 /* No comment provided by engineer. */
+"Shapeshift!" = "Shapeshift!";
+
+/* No comment provided by engineer. */
 "show" = "montrer";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,9 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "AVERTISSEMENT";
+
+/* No comment provided by engineer. */
+"watch only" = "watch only";
 
 /* No comment provided by engineer. */
 "wipe" = "effacer";

@@ -208,7 +208,7 @@
                                      message:NSLocalizedString(@"set a trusted node", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
         [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = @"node ip";
+            textField.placeholder = NSLocalizedString(@"node ip", nil);
             textField.textColor = [UIColor darkTextColor];
             textField.clearButtonMode = UITextFieldViewModeWhileEditing;
             textField.borderStyle = UITextBorderStyleRoundedRect;

@@ -333,7 +333,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 if (outputAmount == UINT64_MAX) {
                     UIFont * font = [UIFont systemFontOfSize:18 weight:UIFontWeightLight];
                     UIFontDescriptor * fontD = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
-                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
+                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"fetching amount", nil) attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
                     
                     amountLabel.attributedText = attributedString;
                     localCurrencyLabel.textColor = amountLabel.textColor;
