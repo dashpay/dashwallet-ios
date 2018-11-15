@@ -86,7 +86,7 @@ self.seedObserver =
                 NSMutableString *s,*l;
                 
                 CGRect r;
-                s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0)),
+                s = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
                 l = CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), 0));
                 for (NSString *w in CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
                                                                                              (CFStringRef)seedPhrase, CFSTR(" ")))) {
