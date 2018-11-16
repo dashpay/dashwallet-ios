@@ -133,11 +133,6 @@
 
 // MARK: - NCWidgetProviding
 
-- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets
-{
-    return UIEdgeInsetsZero;
-}
-
 // MARK: - UI Events
 
 - (IBAction)scanButtonTapped:(UIButton *)sender

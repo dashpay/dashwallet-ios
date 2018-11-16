@@ -120,8 +120,7 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
     return NO; // disable extensions such as custom keyboards for security purposes
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication
-annotation:(id)annotation
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
     if (! [url.scheme isEqual:@"dash"] && ! [url.scheme isEqual:@"dashwallet"]) {
         UIAlertController * alert = [UIAlertController

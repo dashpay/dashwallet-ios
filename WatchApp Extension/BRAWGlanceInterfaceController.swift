@@ -79,7 +79,7 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
         // when local currency rate is no avaliable, use empty string
         updateContainerVisibility()
         
-        if (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.characters.count <= 2) {
+        if (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.count <= 2) {
             balanceInLocalCurrencyLabel.setHidden(true)
         } else {
             balanceInLocalCurrencyLabel.setHidden(false)

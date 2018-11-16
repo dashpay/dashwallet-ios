@@ -251,10 +251,10 @@
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])
                                                                                             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
-                                                                                                _url = note.userInfo[@"url"];
+                                                                                                self->_url = note.userInfo[@"url"];
                                                                                                 
                                                                                                 if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
-                                                                                                    _url = nil;
+                                                                                                    self->_url = nil;
                                                                                                     [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
                                                                                                 }
                                                                                             }];
@@ -278,10 +278,10 @@
                                                           
                                                           [self.pageViewController setViewControllers:(sendController ? @[sendController] : @[])
                                                                                             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
-                                                                                                _file = note.userInfo[@"file"];
+                                                                                                self->_file = note.userInfo[@"file"];
                                                                                                 
                                                                                                 if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
-                                                                                                    _file = nil;
+                                                                                                    self->_file = nil;
                                                                                                     [sendController handleFile:note.userInfo[@"file"]];
                                                                                                 }
                                                                                             }];
@@ -418,8 +418,8 @@
                                                   usingBlock:^(NSNotification *note) {
                                                       double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
                                                       
-                                                      if (_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
-                                                          self.balance = _balance; // this updates the local currency value with the latest exchange rate
+                                                      if (self->_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
+                                                          self.balance = self->_balance; // this updates the local currency value with the latest exchange rate
                                                           return;
                                                       }
                                                       
@@ -681,7 +681,7 @@
                     [self presentViewController:alert animated:YES completion:nil];
                 }
 
-                if (_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
+                if (self->_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
                 self.splash.hidden = YES;
 
                 self.navigationController.navigationBar.hidden = NO;
