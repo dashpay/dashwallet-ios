@@ -174,7 +174,7 @@ static NSString *sanitizeString(NSString *s)
 }
 
 -(BOOL)processURLAddressList:(NSURL*)url {
-    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
+    __unused DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     if (! [self.url isEqual:url]) {
         self.url = url;
@@ -295,7 +295,7 @@ static NSString *sanitizeString(NSString *s)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:@"ok"
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];
@@ -329,7 +329,7 @@ static NSString *sanitizeString(NSString *s)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"ok"
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -363,7 +363,7 @@ static NSString *sanitizeString(NSString *s)
                                  message:@""
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:@"ok"
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction * action) {
                                }];
@@ -388,7 +388,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:request.paymentAddress
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -410,7 +410,7 @@ static NSString *sanitizeString(NSString *s)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"ok"
+                                               actionWithTitle:NSLocalizedString(@"ok", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -454,7 +454,7 @@ static NSString *sanitizeString(NSString *s)
                                      message:protoReq.errorMessage
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:@"ok"
+                                   actionWithTitle:NSLocalizedString(@"ok", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];
@@ -484,7 +484,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:NSLocalizedString(@"this payment address is already in your wallet", nil)
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -506,13 +506,13 @@ static NSString *sanitizeString(NSString *s)
                                                                    "the recipient doesn't directly control the address", nil)
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* cancelButton = [UIAlertAction
-                                           actionWithTitle:@"cancel"
+                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
                                                [self cancelOrChangeAmount];
                                            }];
             UIAlertAction* ignoreButton = [UIAlertAction
-                                           actionWithTitle:@"ignore"
+                                           actionWithTitle:NSLocalizedString(@"ignore", nil)
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
                                                [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
@@ -781,7 +781,6 @@ static NSString *sanitizeString(NSString *s)
             [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
-        NSString *address = [NSString bitcoinAddressWithScriptPubKey:protoReq.details.outputScripts.firstObject forChain:chain];
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -1371,6 +1370,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)updateClipboardText
 {
+    // TODO: clean up, produced results of this method are unused
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *str = [[UIPasteboard generalPasteboard].string
                          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];

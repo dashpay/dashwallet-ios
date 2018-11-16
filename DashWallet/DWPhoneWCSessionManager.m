@@ -154,7 +154,8 @@
 
             UIImage *resizedImage = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
             UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
-            UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+            __unused UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+            // TODO: figure out if it's mistype below or styled QR-code is not used intentionally
 
             replyHandler(image ? @{AW_QR_CODE_BITS_KEY: UIImagePNGRepresentation(image)} : @{});
             break;

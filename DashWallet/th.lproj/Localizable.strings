@@ -225,6 +225,9 @@
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
+"fetching amount" = "fetching amount";
+
+/* No comment provided by engineer. */
 "from:" = "จาก:";
 
 /* No comment provided by engineer. */
@@ -292,6 +295,9 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
+
+/* No comment provided by engineer. */
+"node ip" = "node ip";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
@@ -450,6 +456,9 @@
 "shapeshift succeeded" = "shapeshift สำเร็จ";
 
 /* No comment provided by engineer. */
+"Shapeshift!" = "Shapeshift!";
+
+/* No comment provided by engineer. */
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
@@ -559,6 +568,9 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
+
+/* No comment provided by engineer. */
+"watch only" = "watch only";
 
 /* No comment provided by engineer. */
 "wipe" = "ลบล้าง";

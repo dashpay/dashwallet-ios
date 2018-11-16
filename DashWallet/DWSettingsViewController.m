@@ -208,7 +208,7 @@
                                      message:NSLocalizedString(@"set a trusted node", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
         [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = @"node ip";
+            textField.placeholder = NSLocalizedString(@"node ip", nil);
             textField.textColor = [UIColor darkTextColor];
             textField.clearButtonMode = UITextFieldViewModeWhileEditing;
             textField.borderStyle = UITextBorderStyleRoundedRect;
@@ -481,7 +481,8 @@
     }
     
     [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
-    return cell;
+    NSParameterAssert(cell);
+    return cell ?: [[UITableViewCell alloc] init];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
@@ -638,7 +639,6 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     
     NSUInteger currencyCodeIndex = 0;
-    double localPrice = priceManager.localCurrencyDashPrice.doubleValue;
     NSMutableArray *options;
     self.selectorType = 0;
     options = [NSMutableArray array];

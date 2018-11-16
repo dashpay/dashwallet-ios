@@ -121,7 +121,7 @@
         paragraphStyle.lineSpacing = 20;
         paragraphStyle.alignment = NSTextAlignmentCenter;
         NSInteger fontSize = 16;
-        NSDictionary * attributes = @{NSFontAttributeName:[UIFont systemFontOfSize:fontSize weight:UIFontWeightMedium],NSForegroundColorAttributeName:[UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle};
+        NSDictionary * attributes = nil;
         UIEdgeInsets edgeInsets = self.seedLabel.layoutMargins;
         if (self.seedPhrase.length > 0 && [self.seedPhrase characterAtIndex:0] > 0x1000) { // ideographic language
             NSInteger lineCount;

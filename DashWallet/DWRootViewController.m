@@ -148,7 +148,7 @@
         label.font = [UIFont systemFontOfSize:14];
         label.textColor = [UIColor redColor];
         label.textAlignment = NSTextAlignmentRight;
-        label.text = @"watch only";
+        label.text = NSLocalizedString(@"watch only", nil);
         [label sizeToFit];
         label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
                                    self.view.frame.size.height - (label.frame.size.height + 5)*2);
@@ -246,12 +246,7 @@
                                                           if (self.navigationController.presentedViewController) {
                                                               [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                                                           }
-                                                          
-                                                          NSURL * url = note.userInfo[@"url"];
-                                                          
-                                                          
-                                                          
-                                                          
+                                                                                                                    
                                                           DWSendViewController *c = self.sendViewController;
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])

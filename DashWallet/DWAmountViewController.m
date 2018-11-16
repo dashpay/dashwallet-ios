@@ -63,7 +63,7 @@
     [charset addCharactersInString:priceManager.dashFormat.currencyDecimalSeparator];
     self.charset = charset;
     
-    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?@"Shapeshift!":NSLocalizedString(@"Pay", nil)
+    self.payButton = [[UIBarButtonItem alloc] initWithTitle:self.usingShapeshift?NSLocalizedString(@"Shapeshift!",nil):NSLocalizedString(@"Pay", nil)
                                                       style:UIBarButtonItemStylePlain target:self action:@selector(pay:)];
     self.payButton.tintColor = [UIColor colorWithRed:168.0/255.0 green:230.0/255.0 blue:1.0 alpha:1.0];
     self.amountLabel.attributedText = [priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
@@ -227,7 +227,6 @@
 - (void)chooseToSendAllFunds:(id)sender {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    uint64_t currentAmount = [priceManager amountForDashString:self.amountLabel.text];
     if (self.amountLabelIsEmpty) {
         NSString * amountString = [priceManager stringForDashAmount:wallet.balance];
         [self updateAmountLabel:self.amountLabel shouldChangeCharactersInRange:NSMakeRange(1, 0)

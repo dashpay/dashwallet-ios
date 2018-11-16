@@ -80,7 +80,7 @@
 {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    __unused DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     uint64_t fee = [account feeForTransaction:transaction];
     NSUInteger outputAmountIndex = 0;
@@ -199,7 +199,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
 {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+    __unused DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
@@ -333,7 +333,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 if (outputAmount == UINT64_MAX) {
                     UIFont * font = [UIFont systemFontOfSize:18 weight:UIFontWeightLight];
                     UIFontDescriptor * fontD = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
-                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
+                    NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"fetching amount", nil) attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
                     
                     amountLabel.attributedText = attributedString;
                     localCurrencyLabel.textColor = amountLabel.textColor;
@@ -391,7 +391,8 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
             break;
     }
     
-    return cell;
+    NSParameterAssert(cell);
+    return cell ?: [[UITableViewCell alloc] init];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
