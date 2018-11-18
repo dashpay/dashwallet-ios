@@ -12,6 +12,9 @@
 "%d confirmations" = "%d confirmaciones";
 
 /* No comment provided by engineer. */
+"%d duffs/byte" = "%d duffs/byte";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 confirmaciones";
 
 /* No comment provided by engineer. */
@@ -463,6 +466,9 @@
 
 /* No comment provided by engineer. */
 "show phrase" = "mostrar frase";
+
+/* No comment provided by engineer. */
+"size:" = "size:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms actualmente no disponible";

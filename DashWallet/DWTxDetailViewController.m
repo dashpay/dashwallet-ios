@@ -50,16 +50,16 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
+    
     if (! self.txStatusObserver) {
         self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                DSTransaction *tx = [[DWEnvironment sharedInstance].currentAccount transactionForHash:self.transaction.txHash];
-                
-                if (tx) self.transaction = tx;
-                [self.tableView reloadData];
-            }];
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               DSTransaction *tx = [[DWEnvironment sharedInstance].currentAccount transactionForHash:self.transaction.txHash];
+                                                               
+                                                               if (tx) self.transaction = tx;
+                                                               [self.tableView reloadData];
+                                                           }];
     }
 }
 
@@ -94,7 +94,7 @@
             [mutableInputAddresses addObject:inputAddress];
         }
     }
-
+    
     for (NSString *address in transaction.outputAddresses) {
         NSData * script = transaction.outputScripts[outputAmountIndex];
         uint64_t amt = [transaction.outputAmounts[outputAmountIndex++] unsignedLongLongValue];
@@ -125,24 +125,24 @@
                     [detail addObject:NSLocalizedString(@"payment output", nil)];
                     [amount addObject:@(-amt)];
                 }
-
+                
             }
         }
         else if ([account containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
-if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-    DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
-                if ([derivationPath isBIP43Based] && [derivationPath purpose] == 44) {
-                    [detail addObject:@"wallet address (BIP44)"];
-                } else if ([derivationPath isBIP32Only]) {
-                    [detail addObject:@"wallet address (BIP32)"];
+                if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
+                    DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
+                    if ([derivationPath isBIP43Based] && [derivationPath purpose] == 44) {
+                        [detail addObject:@"wallet address (BIP44)"];
+                    } else if ([derivationPath isBIP32Only]) {
+                        [detail addObject:@"wallet address (BIP32)"];
+                    } else {
+                        [detail addObject:[NSString stringWithFormat:@"wallet address (%@)",[derivationPath stringRepresentation]]];
+                    }
                 } else {
-                    [detail addObject:[NSString stringWithFormat:@"wallet address (%@)",[derivationPath stringRepresentation]]];
+                    [detail addObject:NSLocalizedString(@"wallet address", nil)];
                 }
-} else {
-                [detail addObject:NSLocalizedString(@"wallet address", nil)];
-}
                 [amount addObject:@(amt)];
                 [currencyIsBitcoinInstead addObject:@FALSE];
             }
@@ -154,7 +154,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
             [currencyIsBitcoinInstead addObject:@FALSE];
         }
     }
-
+    
     if (self.sent > 0 && fee > 0 && fee != UINT64_MAX) {
         [text addObject:@""];
         [detail addObject:NSLocalizedString(@"dash network fee", nil)];
@@ -187,11 +187,11 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
 {
     // Return the number of rows in the section.
     switch (section) {
-        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?5:4):3;
+        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?6:5):4;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
     }
-
+    
     return 1;
 }
 
@@ -219,7 +219,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 if (indexPathRow > 0) indexPathRow += 1;
             }
             switch (indexPathRow) {
-
+                    
                 case 0:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"IdCell" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -228,7 +228,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"id:", nil);
                     s = [NSString hexWithData:[NSData dataWithBytes:self.transaction.txHash.u8
-                                               length:sizeof(UInt256)].reverse];
+                                                             length:sizeof(UInt256)].reverse];
                     detailLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                         [s substringFromIndex:s.length/2]];
                     detailLabel.copyableText = s;
@@ -286,11 +286,28 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                     break;
                     
                 case 4:
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    textLabel = (id)[cell viewWithTag:1];
+                    detailLabel = (id)[cell viewWithTag:2];
+                    subtitleLabel = (id)[cell viewWithTag:3];
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    textLabel.text = NSLocalizedString(@"size:", nil);
+                    uint64_t feeCostPerByte = self.transaction.feeCostPerByte;
+                    if (feeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
+                        subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), feeCostPerByte];
+                    } else {
+                        subtitleLabel.text = nil;
+                    }
+                    detailLabel.text = [@(self.transaction.size) stringValue];
+                    break;
+                    
+                case 5:
                     cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCell"];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel = (id)[cell viewWithTag:1];
                     localCurrencyLabel = (id)[cell viewWithTag:5];
-
+                    
                     if (self.sent > 0 && self.sent == self.received) {
                         textLabel.attributedText = [priceManager attributedStringForDashAmount:self.sent];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
@@ -318,7 +335,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
                 else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
-
+                
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
                 amountLabel = (id)[cell viewWithTag:1];
@@ -326,7 +343,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 detailLabel.text = self.outputText[indexPath.row];
                 subtitleLabel.text = self.outputDetail[indexPath.row];
                 amountLabel.textColor = (self.sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
-                                        [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+                [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 
                 
                 long long outputAmount = [self.outputAmount[indexPath.row] longLongValue];
@@ -347,17 +364,17 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                         amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [priceManager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
-                                                                                           longLongValue]]];
+                                                                                                      longLongValue]]];
                     } else {
                         amountLabel.attributedText = [priceManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [priceManager localCurrencyStringForDashAmount:[self.outputAmount[indexPath.row]
-                                                                                        longLongValue]]];
+                                                                                                   longLongValue]]];
                     }
                     localCurrencyLabel.textColor = amountLabel.textColor;
                     
                 }
-
+                
             }
             else if (self.inputAddresses[indexPath.row] != (id)[NSNull null]) {
                 cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
@@ -386,7 +403,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 amountLabel.text = nil;
                 localCurrencyLabel.text = nil;
             }
-
+            
             [self setBackgroundForCell:cell indexPath:indexPath];
             break;
     }
@@ -426,8 +443,8 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     if (sectionTitle.length == 0) return 22.0;
     
     CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 30.0, CGFLOAT_MAX)
-                options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18 weight:UIFontWeightLight]} context:nil];
+                                                 options:NSStringDrawingUsesLineFragmentOrigin
+                                              attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18 weight:UIFontWeightLight]} context:nil];
     
     return textRect.size.height + 12.0;
 }
@@ -435,9 +452,9 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     UIView *headerview = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
-                                                         [self tableView:tableView heightForHeaderInSection:section])];
+                                                                  [self tableView:tableView heightForHeaderInSection:section])];
     UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 10.0, headerview.frame.size.width - 30.0,
-                                                           headerview.frame.size.height - 12.0)];
+                                                                    headerview.frame.size.height - 12.0)];
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];

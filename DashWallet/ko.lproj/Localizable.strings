@@ -12,6 +12,9 @@
 "%d confirmations" = "%d 승인";
 
 /* No comment provided by engineer. */
+"%d duffs/byte" = "%d duffs/byte";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 컨펌";
 
 /* No comment provided by engineer. */
@@ -463,6 +466,9 @@
 
 /* No comment provided by engineer. */
 "show phrase" = "문구 보기";
+
+/* No comment provided by engineer. */
+"size:" = "size:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "지금 SMS사용이 불가능 합니다";
