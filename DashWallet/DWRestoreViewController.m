@@ -381,7 +381,7 @@
         else {
             //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
             DSChain * chain = [[DWEnvironment sharedInstance] currentChain];
-            [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:BIP39_CREATION_TIME forChain:chain storeSeedPhrase:TRUE];
+            [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME forChain:chain storeSeedPhrase:TRUE];
             textView.text = nil;
             [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         }
