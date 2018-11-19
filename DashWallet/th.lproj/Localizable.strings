@@ -12,6 +12,9 @@
 "%d confirmations" = "%d การยืนยัน";
 
 /* No comment provided by engineer. */
+"%d duffs/byte" = "%d duffs/byte";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
 
 /* No comment provided by engineer. */
@@ -463,6 +466,9 @@
 
 /* No comment provided by engineer. */
 "show phrase" = "แสดงวลี";
+
+/* No comment provided by engineer. */
+"size:" = "size:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms ไม่พร้อมใช้งาน";
