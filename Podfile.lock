@@ -14,10 +14,10 @@ PODS:
   - AFNetworking/Serialization (3.2.1)
   - AFNetworking/UIKit (3.2.1):
     - AFNetworking/NSURLSession
-  - bls-signatures-pod (0.2.4)
+  - bls-signatures-pod (0.2.5)
   - DashSync (0.1.0):
     - AFNetworking (~> 3.0)
-    - bls-signatures-pod (= 0.2.4)
+    - bls-signatures-pod (= 0.2.5)
     - secp256k1_dash (= 0.1.2)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
@@ -39,8 +39,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
-  bls-signatures-pod: 37010863455881049f9aa80d8430226a74f727c1
-  DashSync: 2cd9dd9759360a1586dd9b8b967c9610dd60423c
+  bls-signatures-pod: 9eba0926055dfa6b8dd9b4ad2b647221ffb033a4
+  DashSync: f919e71dc3490b88cf8407797e65ca7bf5fead43
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
 
