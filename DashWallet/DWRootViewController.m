@@ -68,7 +68,7 @@
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSData *file;
 @property (nonatomic, strong) Reachability *reachability;
-@property (nonatomic, strong) id urlObserver, fileObserver, protectedObserver, balanceObserver, seedObserver;
+@property (nonatomic, strong) id urlObserver, fileObserver, balanceObserver, seedObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
 @property (nonatomic, assign) NSTimeInterval timeout, start;
@@ -485,17 +485,6 @@
         [self.navigationController.navigationBar addGestureRecognizer:self.navBarTap];
     }
     
-    if (! self.protectedObserver) {
-        self.protectedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable
-                                                          object:nil queue:nil usingBlock:^(NSNotification *note) {
-                                                              [self performSelector:@selector(protectedViewDidAppear) withObject:nil afterDelay:0.0];
-                                                          }];
-    }
-    
-    if ([UIApplication sharedApplication].protectedDataAvailable) {
-        [self performSelector:@selector(protectedViewDidAppear) withObject:nil afterDelay:0.0];
-    }
     [super viewDidAppear:animated];
 }
 
@@ -525,73 +514,10 @@
     [self presentViewController:wipeAlert animated:YES completion:nil];
 }
 
--(void)forceUpdate:(BOOL)cancelled {
-    UIAlertController * alert;
-    if (cancelled) {
-        alert = [UIAlertController
-                 alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
-                 message:NSLocalizedString(@"You must enter your pin in order to enter dashwallet", nil)
-                 preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* exitButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"exit", nil)
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction * action) {
-                                         exit(0);
-                                     }];
-        UIAlertAction* enterButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"enter", nil)
-                                      style:UIAlertActionStyleDefault
-                                      handler:^(UIAlertAction * action) {
-                                          [self protectedViewDidAppear];
-                                      }];
-        [alert addAction:exitButton];
-        [alert addAction:enterButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-    } else {
-        __block NSUInteger wait = [[DSAuthenticationManager sharedInstance] lockoutWaitTime];
-        NSString * waitTime = [NSString waitTimeFromNow:wait];
-        
-        alert = [UIAlertController
-                 alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
-                 message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
-                          waitTime]
-                 preferredStyle:UIAlertControllerStyleAlert];
-        NSTimer * timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
-            wait--;
-            alert.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil),
-                             [NSString waitTimeFromNow:wait]];
-            if (!wait) {
-                [timer invalidate];
-                [alert dismissViewControllerAnimated:TRUE completion:^{
-                    [self protectedViewDidAppear];
-                }];
-            }
-        }];
-        UIAlertAction* resetButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"reset", nil)
-                                      style:UIAlertActionStyleDefault
-                                      handler:^(UIAlertAction * action) {
-                                          [timer invalidate];
-                                          //todo : redo this logic
-//                                          [manager showResetWalletWithWipeHandler:^{
-//                                              [self wipeAlert];
-//                                          } cancelHandler:^{
-//                                              [self protectedViewDidAppear];
-//                                          }];
-                                      }];
-        UIAlertAction* exitButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"exit", nil)
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction * action) {
-                                         exit(0);
-                                     }];
-        [alert addAction:resetButton];
-        [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-    }
-    [self presentViewController:alert animated:YES completion:nil];
-}
-
 - (void)protectedViewDidAppear
 {
+    [super protectedViewDidAppear];
+    
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
@@ -599,8 +525,6 @@
     DWVersionManager * dashwalletVersionManager = [DWVersionManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     
-    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
-    self.protectedObserver = nil;
     //todo improve this to a better architecture
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
         priceManager.dashFormat.currencySymbol = @"m" BTC NARROW_NBSP;
@@ -648,11 +572,11 @@
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
         [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
-                [self forceUpdate:cancelled];
+                [self forceUpdateWalletAuthentication:cancelled];
             }
             [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:wallet withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
                 if (needsCheck && !authenticated) {
-                    [self forceUpdate:cancelled];
+                    [self forceUpdateWalletAuthentication:cancelled];
                 }
 
                 if (needsCheck) {
@@ -809,7 +733,6 @@
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
-    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     if (self.foregroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.foregroundObserver];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.activeObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.activeObserver];

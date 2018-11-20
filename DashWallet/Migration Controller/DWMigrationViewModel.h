@@ -25,6 +25,8 @@ typedef NS_ENUM(NSUInteger, DWMigrationViewModelState) {
 
 - (void)startMigration;
 
+- (void)cancelMigration;
+
 @end
 
 NS_ASSUME_NONNULL_END
