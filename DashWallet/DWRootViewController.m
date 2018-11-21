@@ -464,6 +464,10 @@
                                                            [self showErrorBar];
                                                        }];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(chainPeerManagerNewBlockNotification)
+                                                 name:DSChainPeerManagerNewBlockNotification
+                                               object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -948,6 +952,22 @@
 - (void)setProgressTo:(NSNumber *)n
 {
     self.progress.progress = n.floatValue;
+}
+
+- (void)chainPeerManagerNewBlockNotification
+{
+    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // not done syncing
+        if (self.progress.hidden) {
+            [self startActivityWithTimeout:0];
+        }
+        else {
+            [self updateProgress];
+        }
+    }
+    else {
+        [self stopActivityWithSuccess:YES];
+    }
 }
 
 - (void)updateProgress
