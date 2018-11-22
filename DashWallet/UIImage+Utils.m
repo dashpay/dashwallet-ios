@@ -28,7 +28,7 @@
 
 @implementation UIImage (Utils)
 
-+ (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color
++ (instancetype)dw_imageWithQRCodeData:(NSData *)data color:(CIColor *)color
 {
     UIImage *image;
     CGImageRef cgImg;
@@ -66,7 +66,7 @@
     return image;
 }
 
-- (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality
+- (UIImage *)dw_resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality
 {
     UIGraphicsBeginImageContext(size);
     
@@ -85,7 +85,7 @@
     return image;
 }
 
-- (UIImage *)blurWithRadius:(CGFloat)radius
+- (UIImage *)dw_blurWithRadius:(CGFloat)radius
 {
     UIGraphicsBeginImageContext(self.size);
     
@@ -144,38 +144,16 @@
     return image;
 }
 
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor
-{
-    UIGraphicsBeginImageContextWithOptions(self.size, NO, [UIScreen mainScreen].scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    CGContextTranslateCTM(context, 0, self.size.height);
-    CGContextScaleCTM(context, 1.0, -1.0);
-    CGRect rect = CGRectMake(0, 0, self.size.width, self.size.height);
-    
-    CGContextSetBlendMode(context, kCGBlendModeNormal);
-    CGContextDrawImage(context, rect, self.CGImage);
-    CGContextSetBlendMode(context, kCGBlendModeSourceIn);
-    [tintColor setFill];
-    CGContextFillRect(context, rect);
-    
-    
-    UIImage *coloredImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return coloredImage;
-}
-
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage {
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage {
     CGRect r = CGRectMake(roundf((self.size.width - secondImage.size.width) / 2.0),
                           roundf((self.size.height - secondImage.size.height) / 2.0),
                           secondImage.size.width,
                           secondImage.size.height);
     
-    return [self imageByMergingWithImage:secondImage secondImageRect:r];
+    return [self dw_imageByMergingWithImage:secondImage secondImageRect:r];
 }
 
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect {
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect {
     UIImage *firstImage = self;
     CGSize imageSize = self.size;
     UIGraphicsBeginImageContextWithOptions(imageSize, NO, [UIScreen mainScreen].scale);
@@ -188,7 +166,7 @@
     return result;
 }
 
-- (UIImage *)imageByCuttingHoleInCenterWithSize:(CGSize)holeSize {
+- (UIImage *)dw_imageByCuttingHoleInCenterWithSize:(CGSize)holeSize {
     CGSize size = self.size;
     CGPoint centerPoint = CGPointMake((size.width - holeSize.width) / 2.0, (size.height - holeSize.height) / 2.0);
     

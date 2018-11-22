@@ -149,12 +149,12 @@
             }
             
             if (! image && req.data) {
-                image = [UIImage imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0/255.0 blue:228.0/255.0]];
+                image = [UIImage dw_imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0/255.0 blue:228.0/255.0]];
             }
 
-            UIImage *resizedImage = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
-            UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
-            __unused UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+            UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+            UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+            __unused UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
             // TODO: figure out if it's mistype below or styled QR-code is not used intentionally
 
             replyHandler(image ? @{AW_QR_CODE_BITS_KEY: UIImagePNGRepresentation(image)} : @{});
@@ -294,12 +294,12 @@
     }
 
     if (! image && req) {
-        image = [UIImage imageWithQRCodeData:req color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
+        image = [UIImage dw_imageWithQRCodeData:req color:[CIColor colorWithRed:0.0 green:0.0 blue:0.0]];
     }
     
-    UIImage *resizedImage = [image resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
-    UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
-    UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+    UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+    UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+    UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
     
     return result;
 }

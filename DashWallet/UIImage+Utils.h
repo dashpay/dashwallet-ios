@@ -28,13 +28,12 @@
 
 @interface UIImage (Utils)
 
-+ (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
++ (instancetype)dw_imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
 
-- (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
-- (UIImage *)blurWithRadius:(CGFloat)radius;
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor;
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage;
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect;
-- (UIImage *)imageByCuttingHoleInCenterWithSize:(CGSize)holeSize;
+- (UIImage *)dw_resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
+- (UIImage *)dw_blurWithRadius:(CGFloat)radius;
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage;
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect;
+- (UIImage *)dw_imageByCuttingHoleInCenterWithSize:(CGSize)holeSize;
 
 @end
