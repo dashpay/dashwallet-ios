@@ -114,8 +114,6 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
         dispatch_async(dispatch_get_main_queue(), ^{
             [strongSelf destroyOldPersistentStore];
             
-            [DSChain resetMainnet];
-            
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             [environment reset];
             
