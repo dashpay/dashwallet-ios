@@ -24,13 +24,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
+#import "DWBaseRootViewController.h"
 
 #define PARALAX_RATIO    0.25
 
 @class DWReceiveViewController, DWSendViewController;
 
-@interface DWRootViewController : UIViewController <UIAlertViewDelegate, UIPageViewControllerDataSource,
+@interface DWRootViewController : DWBaseRootViewController <UIAlertViewDelegate, UIPageViewControllerDataSource,
 UIScrollViewDelegate, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
 UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 

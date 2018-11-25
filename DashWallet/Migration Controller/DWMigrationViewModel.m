@@ -54,6 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)cancelMigration {
+    [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
+    self.state = DWMigrationViewModelStateDone;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

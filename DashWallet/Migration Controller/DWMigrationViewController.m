@@ -42,8 +42,30 @@ NS_ASSUME_NONNULL_BEGIN
             [self.delegate migrationViewController:self didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions];
         }
     }];
+}
 
-    [self.viewModel startMigration];
+- (void)protectedViewDidAppear {
+    [super protectedViewDidAppear];
+    
+    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
+
+    if ([dashSyncVersionManager noOldWallet]) {
+        NSAssert(NO, @"keychain is empty but CoreData database exists (it might be inconsistent debug issue)");
+        
+        [self.viewModel cancelMigration];
+
+        return;
+    }
+
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        if (!success && neededUpgrade && !authenticated) {
+            [self forceUpdateWalletAuthentication:cancelled];
+        }
+        else {
+            [self.viewModel startMigration];
+        }
+    }];
 }
 
 @end

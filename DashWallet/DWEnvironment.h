@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearWallet;
 - (void)switchToMainnet;
 - (void)switchToTestnet;
+-(void)reset;
 
 @end
 

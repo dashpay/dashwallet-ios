@@ -16,18 +16,23 @@
 #import "BRTxMetadataEntity.h"
 #import "BRTxOutputEntity.h"
 
+#import <DashSync/DSAccountEntity+CoreDataClass.h>
 #import <DashSync/DSChainEntity+CoreDataClass.h>
+#import <DashSync/DSChain.h>
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSUInteger const BatchSize = 100;
-static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
+static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
 @interface DWDataMigrationManager ()
 
 @property (strong, nonatomic) NSURL *storeURL;
 @property (nullable, strong, nonatomic) NSPersistentContainer *persistentContainer;
+
+@property (nullable, copy, nonatomic) NSDictionary<NSString *, DSAddressEntity *> *addresses;
+@property (nullable, copy, nonatomic) NSDictionary<NSDictionary <NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs;
 
 @end
 
@@ -65,12 +70,29 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         }
         else {
             [strongSelf destroyOldPersistentStore];
-            
+
             if (completion) {
                 completion(NO);
             }
         }
     }];
+}
+
+- (void)destroyOldPersistentStore {
+    self.persistentContainer = nil;
+    
+    NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+    NSURL *storeShmURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-shm"]];
+    NSURL *storeWalURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-wal"]];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtURL:self.storeURL error:nil];
+    [fileManager removeItemAtURL:storeShmURL error:nil];
+    [fileManager removeItemAtURL:storeWalURL error:nil];
+    
+    // cleanup
+    self.addresses = nil;
+    self.outputs = nil;
 }
 
 #pragma mark Private
@@ -83,14 +105,21 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
             return;
         }
 
-        BOOL completed = [strongSelf migrateTransactionsFromContext:readContext];
+        BOOL completed = [strongSelf migrateAddressFromContext:readContext];
+        completed = completed | [strongSelf migrateTxOutputsFromContext:readContext];
+        completed = completed | [strongSelf migrateTransactionsFromContext:readContext];
         completed = completed | [strongSelf migrateMerkleBlockFromContext:readContext];
         completed = completed | [strongSelf migratePeerFromContext:readContext];
-        completed = completed | [strongSelf migrateAddressFromContext:readContext];
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
             [strongSelf destroyOldPersistentStore];
             
+            DWEnvironment *environment = [DWEnvironment sharedInstance];
+            [environment reset];
+            
+            DSAccount *currentAccount = environment.currentAccount;
+            [currentAccount loadTransactions];
+
             if (completion) {
                 completion(completed);
             }
@@ -135,6 +164,7 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
     }
 
     DSChainEntity *chain = [DWEnvironment sharedInstance].currentChain.chainEntity;
+
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 
     NSUInteger count = 0;
@@ -149,25 +179,33 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
             input.sequence = inputEntity.sequence;
             input.signature = inputEntity.signature;
             input.txHash = inputEntity.txHash;
+            if (input.txHash) {
+                NSDictionary *key = @{ @(input.n): input.txHash };
+                DSTxOutputEntity *output = self.outputs[key];
+                if (output) {
+                    input.prevOutput = output;
+                    input.localAddress = output.localAddress;
+                }
+            }
             [inputs addObject:input];
         }
         [transaction addInputs:inputs];
 
         NSMutableOrderedSet<DSTxOutputEntity *> *outputs = [[NSMutableOrderedSet alloc] init];
         for (BRTxOutputEntity *outputEntity in entity.outputs) {
-            DSTxOutputEntity *output = [[DSTxOutputEntity alloc] initWithContext:writeContext];
-            output.address = outputEntity.address;
-            output.n = outputEntity.n;
-            output.script = outputEntity.script;
-            output.shapeshiftOutboundAddress = outputEntity.shapeshiftOutboundAddress;
-            output.txHash = outputEntity.txHash;
-            output.value = outputEntity.value;
-            [outputs addObject:output];
+            if (outputEntity.txHash) {
+                NSDictionary *key = @{ @(outputEntity.n): outputEntity.txHash };
+                DSTxOutputEntity *output = self.outputs[key];
+                if (output) {
+                    [outputs addObject:output];
+                }
+            }
         }
         [transaction addOutputs:outputs];
 
         if (transaction.associatedShapeshift) {
-            DSShapeshiftEntity *shapeshift = [NSEntityDescription insertNewObjectForEntityForName:@"DSShapeshiftEntity" inManagedObjectContext:writeContext];
+            DSShapeshiftEntity *shapeshift = [NSEntityDescription insertNewObjectForEntityForName:@"DSShapeshiftEntity"
+                                                                           inManagedObjectContext:writeContext];
             shapeshift.errorMessage = [transaction.associatedShapeshift valueForKey:@"errorMessage"];
             shapeshift.expiresAt = [transaction.associatedShapeshift valueForKey:@"expiresAt"];
             shapeshift.inputAddress = [transaction.associatedShapeshift valueForKey:@"inputAddress"];
@@ -195,6 +233,57 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
             [DSTransactionEntity saveContext];
         }
     }
+
+    [DSTransactionEntity saveContext];
+
+    return YES;
+}
+
+- (BOOL)migrateTxOutputsFromContext:(NSManagedObjectContext *)readContext {
+    NSEntityDescription *entityDescription = [BRTxOutputEntity entity];
+    NSFetchRequest *fetchRequest = [self.class fetchRequestForEntity:entityDescription.name];
+
+    NSError *error = nil;
+    NSArray<BRTxOutputEntity *> *objects = [readContext executeFetchRequest:fetchRequest error:&error];
+    if (error) {
+        return NO;
+    }
+
+    DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
+    DSAccountEntity *accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:currentAccount.wallet.uniqueID
+                                                                               index:currentAccount.accountNumber];
+
+    NSManagedObjectContext *writeContext = [NSManagedObject context];
+
+    NSMutableDictionary<NSDictionary <NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs = [NSMutableDictionary dictionary];
+    
+    NSUInteger count = 0;
+    for (BRTxOutputEntity *outputEntity in objects) {
+        DSTxOutputEntity *output = [[DSTxOutputEntity alloc] initWithContext:writeContext];
+        output.address = outputEntity.address;
+        output.n = outputEntity.n;
+        output.script = outputEntity.script;
+        output.shapeshiftOutboundAddress = outputEntity.shapeshiftOutboundAddress;
+        output.txHash = outputEntity.txHash;
+        output.value = outputEntity.value;
+        output.account = accountEntity;
+        if (outputEntity.address) {
+            DSAddressEntity *addressEntity = self.addresses[outputEntity.address];
+            output.localAddress = addressEntity;
+        }
+        
+        if (output.txHash) {
+            NSDictionary *key = @{ @(output.n): output.txHash };
+            outputs[key] = output;
+        }
+        
+        count++;
+        if (count % BatchSize == 0) {
+            [DSTransactionEntity saveContext];
+        }
+    }
+    
+    self.outputs = outputs;
 
     [DSTransactionEntity saveContext];
 
@@ -289,6 +378,12 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 
+    DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
+    DSDerivationPath *derivationPath = currentAccount.defaultDerivationPath;
+    DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
+
+    NSMutableDictionary<NSString *, DSAddressEntity *> *addresses = [NSMutableDictionary dictionary];
+
     NSUInteger count = 0;
     for (BRAddressEntity *address in objects) {
         DSAddressEntity *entity = [[DSAddressEntity alloc] initWithContext:writeContext];
@@ -296,6 +391,12 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         entity.index = address.index;
         entity.internal = address.internal;
         entity.standalone = YES;
+        entity.derivationPath = derivationPathEntity;
+        // `entity.usedInInputs` and `entity.usedInOutputs` relations will be established in transaction migration
+
+        if (entity.address) {
+            addresses[entity.address] = entity;
+        }
 
         count++;
         if (count % BatchSize == 0) {
@@ -303,22 +404,11 @@ static NSString * const OldDataBaseFileName = @"DashWallet.sqlite";
         }
     }
 
+    self.addresses = addresses;
+
     [DSTransactionEntity saveContext];
 
     return YES;
-}
-
-- (void)destroyOldPersistentStore {
-    self.persistentContainer = nil;
-    
-    NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-    NSURL *storeShmURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-shm"]];
-    NSURL *storeWalURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-wal"]];
-    
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    [fileManager removeItemAtURL:self.storeURL error:nil];
-    [fileManager removeItemAtURL:storeShmURL error:nil];
-    [fileManager removeItemAtURL:storeWalURL error:nil];
 }
 
 + (NSFetchRequest *)fetchRequestForEntity:(NSString *)name {

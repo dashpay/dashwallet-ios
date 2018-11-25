@@ -6,14 +6,14 @@
 //  Copyright © 2018 Dash Core. All rights reserved.
 //
 
-#import <KVO-MVVM/KVOUIViewController.h>
+#import "DWBaseRootViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMigrationViewModel;
 @protocol DWMigrationViewControllerDelegate;
 
-@interface DWMigrationViewController : KVOUIViewController
+@interface DWMigrationViewController : DWBaseRootViewController
 
 @property (strong, nonatomic) DWMigrationViewModel *viewModel;
 @property (nullable, weak, nonatomic) id<DWMigrationViewControllerDelegate> delegate;

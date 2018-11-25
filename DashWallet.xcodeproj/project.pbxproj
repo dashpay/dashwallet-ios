@@ -26,6 +26,7 @@
 		2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59221947CBE00E7B563 /* BRTransactionEntity.m */; };
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
+		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
 		2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */; };
@@ -288,6 +289,8 @@
 		2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDataMigrationManager.m; sourceTree = "<group>"; };
 		2A11F5A12194C1D800E7B563 /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
 		2A11F5A22194C1D800E7B563 /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
+		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
+		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -766,6 +769,8 @@
 				FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */,
 				FBFC2EF9211413EB00D20C57 /* DWWarningViewController.h */,
 				FBFC2EFA211413EB00D20C57 /* DWWarningViewController.m */,
+				2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */,
+				2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -1632,6 +1637,7 @@
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
+				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);
