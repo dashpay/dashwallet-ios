@@ -120,9 +120,9 @@
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
         NSData *imageData = [self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY];
         UIImage *image = [UIImage imageWithData:imageData];
-        UIImage *resizedImage = [image resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
+        UIImage *resizedImage = [image dw_resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
         UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
-        UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+        UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
 
         self.qrOverlay.image = result;
         self.qrImage.image = result;

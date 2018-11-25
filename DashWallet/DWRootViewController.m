@@ -396,7 +396,7 @@
                                                            else img = [UIImage imageNamed:@"wallpaper-default"];
                                                            
                                                            [self.blur removeFromSuperview];
-                                                           self.blur = [[UIImageView alloc] initWithImage:[img blurWithRadius:3]];
+                                                           self.blur = [[UIImageView alloc] initWithImage:[img dw_blurWithRadius:3]];
                                                            [keyWindow.subviews.lastObject addSubview:self.blur];
                                                        }];
     
@@ -1168,7 +1168,7 @@
                                          afterScreenUpdates:NO];
     UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
+    UIImage *blurredBgImg = [bgImg dw_blurWithRadius:3];
     
     // display the popup
     __weak BREventConfirmView *view =
