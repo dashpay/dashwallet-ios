@@ -293,9 +293,9 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
                                                                DSEventManager *eventMan = [DSEventManager sharedEventManager];
-                                                               DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+                                                               DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
                                                                
-                                                               [chainPeerManager connect];
+                                                               [chainManager.peerManager connect];
                                                                [self.sendViewController updateClipboardText];
                                                                
                                                                if (eventMan.isInSampleGroup && ! eventMan.hasAskedForPermission) {
@@ -406,7 +406,7 @@
                                                       
                                                       if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.currentReachabilityStatus != NotReachable &&
                                                           [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                                                          [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+                                                          [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
                                                       }
                                                       else if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.currentReachabilityStatus == NotReachable) {
                                                           [self showErrorBar];
@@ -416,7 +416,7 @@
     self.balanceObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+                                                      double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
                                                       
                                                       if (self->_balance != UINT64_MAX && progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // wait for sync
                                                           self.balance = self->_balance; // this updates the local currency value with the latest exchange rate
@@ -436,7 +436,7 @@
                                                        }];
     
     self.syncStartedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.reachability.currentReachabilityStatus == NotReachable) return;
                                                            [self hideErrorBarWithCompletion:nil];
@@ -444,7 +444,7 @@
                                                        }];
     
     self.syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
@@ -456,7 +456,7 @@
                                                        }];
     
     self.syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
                                                            [self showBackupDialogIfNeeded];
@@ -465,8 +465,8 @@
                                                        }];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(chainPeerManagerNewBlockNotification)
-                                                 name:DSChainPeerManagerNewBlockNotification
+                                             selector:@selector(chainNewBlockNotification)
+                                                 name:DSChainNewBlockNotification
                                                object:nil];
 }
 
@@ -639,7 +639,7 @@
                 }
 
                 if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                    [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+                    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
                     [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
 
                     if (self.url) {
@@ -805,7 +805,7 @@
 
 - (void)showSyncing
 {
-    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.shouldShowTips = NO;
@@ -846,7 +846,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
@@ -877,9 +877,9 @@
     self.progress.progress = n.floatValue;
 }
 
-- (void)chainPeerManagerNewBlockNotification
+- (void)chainNewBlockNotification
 {
-    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // not done syncing
         if (self.progress.hidden) {
             [self startActivityWithTimeout:0];
@@ -899,7 +899,7 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
-    double progress = [DWEnvironment sharedInstance].currentChainPeerManager.syncProgress;
+    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
@@ -1140,7 +1140,7 @@
 {
     [DSEventManager saveEvent:@"root:connect"];
     if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
-    [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
     [DSEventManager saveEvent:@"root:connect_success"];
     if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
 }
@@ -1363,7 +1363,7 @@
     }
     else if ([from isKindOfClass:[UINavigationController class]] && to == self.navigationController) { // modal dismiss
         if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-            [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+            [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
             [self.sendViewController updateClipboardText];
         }
         

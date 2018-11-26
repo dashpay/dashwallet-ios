@@ -137,7 +137,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                self.transactions = account.allTransactions;
                                                                [self.tableView reloadData];

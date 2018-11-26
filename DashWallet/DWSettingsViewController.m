@@ -79,7 +79,7 @@
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
             queue:nil usingBlock:^(NSNotification *note) {
                 [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
                  forState:UIControlStateNormal];
@@ -130,7 +130,7 @@
     static NSDateFormatter *fmt = nil;
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSPeerManager * peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
 
     if (! fmt) {
         fmt = [NSDateFormatter new];
@@ -144,8 +144,8 @@
            [fmt stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
            chain.lastBlockHeight,
            chain.estimatedBlockHeight,
-           chainPeerManager.peerCount,
-           chainPeerManager.downloadPeerName];
+           peerManager.peerCount,
+           peerManager.downloadPeerName];
 }
 
 -(BOOL)enabledAdvancedFeatures {
@@ -256,8 +256,8 @@
                                                  
                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
-                                                 [[DWEnvironment sharedInstance].currentChainPeerManager disconnect];
-                                                 [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+                                                 [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
+                                                 [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
                                                  break;
                                              }
                                              
@@ -284,8 +284,8 @@
                                       style:UIAlertActionStyleDestructive
                                       handler:^(UIAlertAction * action) {
                                           [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-                                          [[DWEnvironment sharedInstance].currentChainPeerManager disconnect];
-                                          [[DWEnvironment sharedInstance].currentChainPeerManager connect];
+                                          [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
+                                          [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
                                       }];
         [alert addAction:clearButton];
         [alert addAction:cancelButton];
@@ -709,7 +709,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     
     NSUInteger currencyCodeIndex = 0;
@@ -782,7 +782,7 @@ _deselect_switch:
                     break;
                     
                 case 2: // rescan blockchain
-                    [chainPeerManager rescan];
+                    [chainManager rescan];
                     [DSEventManager saveEvent:@"settings:rescan"];
                     [self done:nil];
                     break;

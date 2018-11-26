@@ -53,7 +53,7 @@
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                DSTransaction *tx = [[DWEnvironment sharedInstance].currentAccount transactionForHash:self.transaction.txHash];
                                                                
@@ -203,9 +203,9 @@
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
-    DSChainPeerManager *manager = [DWEnvironment sharedInstance].currentChainPeerManager;
-    NSUInteger peerCount = manager.peerCount;
-    NSUInteger relayCount = [manager relayCountForTransaction:self.transaction.txHash];
+    DSChainManager *manager = [DWEnvironment sharedInstance].currentChainManager;
+    NSUInteger peerCount = manager.peerManager.peerCount;
+    NSUInteger relayCount = [manager.transactionManager relayCountForTransaction:self.transaction.txHash];
     NSString *s;
     
     NSInteger indexPathRow = indexPath.row;

@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong,nonnull) DSChain * currentChain;
 @property (nonatomic,readonly) DSWallet * currentWallet;
 @property (nonatomic,readonly) DSAccount * currentAccount;
-@property (nonatomic,strong) DSChainPeerManager * currentChainPeerManager;
+@property (nonatomic,strong) DSChainManager * currentChainManager;
 
 + (instancetype _Nullable)sharedInstance;
 - (void)clearWallet;

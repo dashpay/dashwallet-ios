@@ -125,7 +125,7 @@
     self.balanceObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
-                                                      if ([DWEnvironment sharedInstance].currentChainPeerManager.syncProgress < 1.0) return; // wait for sync before updating balance
+                                                      if ([DWEnvironment sharedInstance].currentChainManager.syncProgress < 1.0) return; // wait for sync before updating balance
                                                       if ([[DSAuthenticationManager sharedInstance] didAuthenticate]) {
                                                           [self updateTitleView];
                                                       }

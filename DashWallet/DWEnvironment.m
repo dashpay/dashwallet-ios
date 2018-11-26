@@ -49,7 +49,7 @@
         default:
             break;
     }
-    self.currentChainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.currentChain];
+    self.currentChainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.currentChain];
 }
 
 -(DSWallet*)currentWallet {
@@ -94,7 +94,7 @@
             
         }];
     }
-    [self.currentChainPeerManager connect];
+    [self.currentChainManager.peerManager connect];
 }
 
 @end
