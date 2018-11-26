@@ -933,7 +933,6 @@
     counter++;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     if (progress + DBL_EPSILON >= 1.0) {
-        if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
         if (!self.shouldShowTips) [self hideTips];
         self.shouldShowTips = YES;
         if (![DSAuthenticationManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
