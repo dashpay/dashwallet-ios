@@ -223,7 +223,7 @@
     appleWatchData.receiveMoneyAddress = account.receiveAddress;
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
-    appleWatchData.hasWallet = !account; //if there is no account there is no wallet
+    appleWatchData.hasWallet = !!account; //if there is no account there is no wallet
     
     if (transactions.count > 0) {
         appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
