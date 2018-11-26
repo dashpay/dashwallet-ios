@@ -150,7 +150,7 @@ static NSString *sanitizeString(NSString *s)
     [self checkChain];
     
     self.chainObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self checkChain];
                                                        }];
@@ -315,12 +315,12 @@ static NSString *sanitizeString(NSString *s)
     
     // TODO: reject payments that don't match requested amounts/scripts, implement refunds
     DSPaymentProtocolPayment *payment = [DSPaymentProtocolPayment paymentWithData:file onChain:[DWEnvironment sharedInstance].currentChain];
-    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     if (payment.transactions.count > 0) {
         for (DSTransaction *tx in payment.transactions) {
             [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
             
-            [chainPeerManager publishTransaction:tx completion:^(NSError *error) {
+            [chainManager.transactionManager publishTransaction:tx completion:^(NSError *error) {
                 [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                 
                 if (error) {
@@ -990,7 +990,7 @@ static NSString *sanitizeString(NSString *s)
         }
     } else {
         DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-        DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+        DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
         [account signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction) {
             if (!signedTransaction) {
                 UIAlertController * alert = [UIAlertController
@@ -1023,7 +1023,7 @@ static NSString *sanitizeString(NSString *s)
                 
                 [(id)self.parentViewController.parentViewController startActivityWithTimeout:30.0];
                 
-                [chainPeerManager publishTransaction:tx completion:^(NSError *error) {
+                [chainManager.transactionManager publishTransaction:tx completion:^(NSError *error) {
                     if (error) {
                         if (! waiting && ! sent) {
                             UIAlertController * alert = [UIAlertController
@@ -1162,7 +1162,7 @@ static NSString *sanitizeString(NSString *s)
     
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     
     [account sweepPrivateKey:privKey withFee:YES completion:^(DSTransaction *tx, uint64_t fee, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1211,7 +1211,7 @@ static NSString *sanitizeString(NSString *s)
                                                handler:^(UIAlertAction * action) {
                                                    [(id)self.parentViewController.parentViewController startActivityWithTimeout:30];
                                                    
-                                                   [chainPeerManager publishTransaction:self.sweepTx completion:^(NSError *error) {
+                                                   [chainManager.transactionManager publishTransaction:self.sweepTx completion:^(NSError *error) {
                                                        [(id)self.parentViewController.parentViewController stopActivityWithSuccess:(! error)];
                                                        
                                                        if (error) {

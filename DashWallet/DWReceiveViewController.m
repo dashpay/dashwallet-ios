@@ -46,7 +46,7 @@
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL showTips;
 @property (nonatomic, strong) NSUserDefaults *groupDefs;
-@property (nonatomic, strong) id balanceObserver, txStatusObserver;
+@property (nonatomic, strong) id balanceObserver, txStatusObserver, txReceivedObserver;
 
 @property (nonatomic, strong) IBOutlet UILabel *label;
 @property (nonatomic, strong) IBOutlet UIButton *addressButton;
@@ -100,6 +100,7 @@
 
 - (void)dealloc
 {
+    if (self.txReceivedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txReceivedObserver];
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
@@ -170,11 +171,21 @@
                 
                 if (! self.txStatusObserver) {
                     self.txStatusObserver =
-                    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification
                         object:nil queue:nil usingBlock:^(NSNotification *note) {
                             [self checkRequestStatus];
                         }];
                 }
+                
+                if (! self.txReceivedObserver) {
+                    self.txReceivedObserver =
+                    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionReceivedNotification
+                                                                      object:nil queue:nil usingBlock:^(NSNotification *note) {
+                                                                          [self updateAddress];
+                                                                      }];
+                }
+                
+                
             }
         });
     });
@@ -184,7 +195,7 @@
 {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSChainPeerManager * chainPeerManager = [DWEnvironment sharedInstance].currentChainPeerManager;
+    DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     DSPaymentRequest *req = self.paymentRequest;
     uint64_t total = 0, fuzz = [priceManager amountForLocalCurrencyString:[priceManager localCurrencyStringForDashAmount:1]]*2;
     
@@ -193,7 +204,7 @@
     for (DSTransaction *tx in wallet.allTransactions) {
         if ([tx.outputAddresses containsObject:self.paymentAddress]) continue;
         if (tx.blockHeight == TX_UNCONFIRMED &&
-            [chainPeerManager relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
+            [chainManager.transactionManager relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) continue;
         total += [wallet amountReceivedFromTransaction:tx];
                  
         if (total + fuzz >= req.amount) {

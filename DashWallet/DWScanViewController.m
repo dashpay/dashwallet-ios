@@ -118,7 +118,7 @@
     self.preview.frame = self.view.layer.bounds;
     [self.cameraView.layer addSublayer:self.preview];
 
-    dispatch_async(dispatch_queue_create("qrscanner", NULL), ^{
+    dispatch_async(dispatch_queue_create("org.dashcore.dashwallet.qrscanner", NULL), ^{
         [self.session startRunning];
     });
 }

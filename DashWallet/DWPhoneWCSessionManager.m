@@ -62,17 +62,17 @@
             self.balanceObserver =
             [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-                    if ([DWEnvironment sharedInstance].currentChainPeerManager.syncProgress == 1.0) [self sendApplicationContext];
+                    if ([DWEnvironment sharedInstance].currentChainManager.syncProgress == 1.0) [self sendApplicationContext];
                 }];
 
             self.syncFinishedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification
                 object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
 
             self.syncFailedObserver =
-            [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+            [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                 queue:nil usingBlock:^(NSNotification * _Nonnull note) {
                     [self sendApplicationContext];
                 }];
