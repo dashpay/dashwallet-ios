@@ -298,6 +298,7 @@
     [DSEventManager saveEvent:@"settings:touch_id_limit"];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSChainsManager * chainsManager = [DSChainsManager sharedInstance];
     
     [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
         if (authenticated) {
@@ -310,9 +311,9 @@
                [priceManager localCurrencyStringForDashAmount:DUFFS]],
               [NSString stringWithFormat:@"%@ (%@)", [priceManager stringForDashAmount:DUFFS*10],
                [priceManager localCurrencyStringForDashAmount:DUFFS*10]]];
-            if (priceManager.spendingLimit > DUFFS*10) priceManager.spendingLimit = DUFFS*10;
-            self.selectedOption = self.selectorOptions[(log10(priceManager.spendingLimit) < 6) ? 0 :
-                                                       (NSUInteger)log10(priceManager.spendingLimit) - 6];
+            if (chainsManager.spendingLimit > DUFFS*10) [chainsManager setSpendingLimitIfAuthenticated:DUFFS*10];
+            self.selectedOption = self.selectorOptions[(log10(chainsManager.spendingLimit) < 6) ? 0 :
+                                                       (NSUInteger)log10(chainsManager.spendingLimit) - 6];
             self.noOptionsText = nil;
             self.selectorController.title = (self.touchId)?NSLocalizedString(@"Touch ID spending limit", nil):NSLocalizedString(@"Face ID spending limit", nil);
             [self.navigationController pushViewController:self.selectorController animated:YES];
@@ -390,6 +391,7 @@
     UITableViewCell *cell = nil;
     
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+    DSChainsManager * chainsManager = [DSChainsManager sharedInstance];
     
     if (tableView == self.selectorController.tableView) {
         cell = [self.tableView dequeueReusableCellWithIdentifier:selectorOptionCell];
@@ -425,7 +427,7 @@
                     if (self.touchId || self.faceId) {
                         cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
                         cell.textLabel.text = (self.touchId)?NSLocalizedString(@"Touch ID limit", nil):NSLocalizedString(@"Face ID limit", nil);
-                        cell.detailTextLabel.text = [priceManager stringForDashAmount:priceManager.spendingLimit];
+                        cell.detailTextLabel.text = [priceManager stringForDashAmount:chainsManager.spendingLimit];
                     } else {
                         goto _switch_cell;
                     }
@@ -724,7 +726,7 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                 priceManager.localCurrencyCode = priceManager.currencyCodes[indexPath.row];
             }
         }
-        else priceManager.spendingLimit = (indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0;
+        else [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:(indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0];
         
         if (currencyCodeIndex < self.selectorOptions.count && currencyCodeIndex != indexPath.row) {
             [tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:currencyCodeIndex inSection:0], indexPath]
