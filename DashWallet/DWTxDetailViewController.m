@@ -360,11 +360,13 @@
                     
                     BOOL isBitcoinInstead = [self.outputIsBitcoin[indexPath.row] boolValue];
                     if (isBitcoinInstead) {
+#if SHAPESHIFT_ENABLED
                         amountLabel.text = [priceManager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
                         amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [priceManager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
                                                                                                       longLongValue]]];
+#endif
                     } else {
                         amountLabel.attributedText = [priceManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
                         localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",

@@ -1090,8 +1090,8 @@
     else {
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *tip;
-        if (priceManager.bitcoinDashPrice) {
-            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,priceManager.bitcoinDashPrice.doubleValue,BTC,[priceManager localCurrencyStringForDashAmount:DUFFS]] :
+        if (priceManager.localCurrencyDashPrice) {
+            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %@",BALANCE_TIP_START,DASH,[priceManager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
              [chain lastBlockHeight],
              [chain estimatedBlockHeight]];

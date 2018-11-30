@@ -23,15 +23,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DWSettingsViewController.h"
-#import "DWSeedViewController.h"
-#import "BRBubbleView.h"
-#import "BRUserDefaultsSwitchCell.h"
 #import <SafariServices/SafariServices.h>
 #import <asl.h>
 #import <sys/socket.h>
 #import <netdb.h>
 #import <arpa/inet.h>
+
+#import "DWSettingsViewController.h"
+#import "DWSeedViewController.h"
+#import "BRBubbleView.h"
+#import "BRUserDefaultsSwitchCell.h"
+#import "DSCurrencyPriceObject.h"
+
 
 @interface DWSettingsViewController ()
 
@@ -640,17 +643,13 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     
-    NSUInteger currencyCodeIndex = 0;
-    NSMutableArray *options;
+    NSArray <NSString *> *options = [priceManager.prices valueForKeyPath:@"codeAndName"];
+    DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
+    NSUInteger currencyCodeIndex = [priceManager.prices indexOfObject:price];
+
     self.selectorType = 0;
-    options = [NSMutableArray array];
-    
-    for (NSString *code in priceManager.currencyCodes) {
-        [options addObject:[NSString stringWithFormat:@"%@ - %@", code, priceManager.currencyNames[currencyCodeIndex++]]];
-    }
     
     self.selectorOptions = options;
-    currencyCodeIndex = [priceManager.currencyCodes indexOfObject:priceManager.localCurrencyCode];
     if (currencyCodeIndex < options.count) self.selectedOption = options[currencyCodeIndex];
     self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
     self.selectorController.title =
@@ -722,8 +721,9 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
         if (indexPath.row < self.selectorOptions.count) self.selectedOption = self.selectorOptions[indexPath.row];
         
         if (self.selectorType == 0) {
-            if (indexPath.row < priceManager.currencyCodes.count) {
-                priceManager.localCurrencyCode = priceManager.currencyCodes[indexPath.row];
+            if (indexPath.row < priceManager.prices.count) {
+                DSCurrencyPriceObject *selectedPrice = priceManager.prices[indexPath.row];
+                priceManager.localCurrencyCode = selectedPrice.code;
             }
         }
         else [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:(indexPath.row > 0) ? pow(10, indexPath.row + 6) : 0];
