@@ -67,7 +67,7 @@
 @property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSData *file;
-@property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) DSReachabilityManager *reachability;
 @property (nonatomic, strong) id urlObserver, fileObserver, balanceObserver, seedObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
@@ -123,8 +123,10 @@
         [self.navigationController.navigationBar addConstraint:[NSLayoutConstraint constraintWithItem:self.errorBar attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.navigationController.navigationBar attribute:NSLayoutAttributeBottom multiplier:1.0 constant:-48.0]];
     }
     
-    self.reachability = [Reachability reachabilityForInternetConnection];
-    [self.reachability startNotifier];
+    self.reachability = [DSReachabilityManager sharedManager];
+    if (!self.reachability.monitoring) {
+        [self.reachability startMonitoring];
+    }
     
     self.navigationController.delegate = self;
     
@@ -401,14 +403,14 @@
                                                        }];
     
     self.reachabilityObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil queue:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSReachabilityDidChangeNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
                                                       
-                                                      if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.currentReachabilityStatus != NotReachable &&
+                                                      if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
                                                           [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                                                           [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
                                                       }
-                                                      else if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.currentReachabilityStatus == NotReachable) {
+                                                      else if ([DWEnvironment sharedInstance].currentChain.hasAWallet && self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
                                                           [self showErrorBar];
                                                       }
                                                   }];
@@ -438,7 +440,7 @@
     self.syncStartedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (self.reachability.currentReachabilityStatus == NotReachable) return;
+                                                           if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
                                                            [self hideErrorBarWithCompletion:nil];
                                                            [self startActivityWithTimeout:0];
                                                        }];
@@ -615,7 +617,7 @@
                 self.navigationController.navigationBar.hidden = NO;
                 self.pageViewController.view.alpha = 1.0;
                 [self.receiveViewController updateAddress];
-                if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+                if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
 
                 if (self.navigationController.visibleViewController == self) {
                     [self setNeedsStatusBarAppearanceUpdate];
@@ -733,7 +735,6 @@
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    [self.reachability stopNotifier];
     if (self.navigationController.delegate == self) self.navigationController.delegate = nil;
     if (self.urlObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.urlObserver];
     if (self.fileObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.fileObserver];
@@ -1089,8 +1090,8 @@
     else {
         UINavigationBar *b = self.navigationController.navigationBar;
         NSString *tip;
-        if (priceManager.bitcoinDashPrice) {
-            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %.4f%@ (%@)",BALANCE_TIP_START,DASH,priceManager.bitcoinDashPrice.doubleValue,BTC,[priceManager localCurrencyStringForDashAmount:DUFFS]] :
+        if (priceManager.localCurrencyDashPrice) {
+            tip = (self.shouldShowTips) ? [NSString stringWithFormat:@"%@ \n 1%@ = %@",BALANCE_TIP_START,DASH,[priceManager localCurrencyStringForDashAmount:DUFFS]] :
             [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
              [chain lastBlockHeight],
              [chain estimatedBlockHeight]];
@@ -1138,10 +1139,10 @@
 - (IBAction)connect:(id)sender
 {
     [DSEventManager saveEvent:@"root:connect"];
-    if (! sender && [self.reachability currentReachabilityStatus] == NotReachable) return;
+    if (! sender && [self.reachability networkReachabilityStatus] == DSReachabilityStatusNotReachable) return;
     [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
     [DSEventManager saveEvent:@"root:connect_success"];
-    if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
 }
 
 - (IBAction)navBarTap:(id)sender
@@ -1409,7 +1410,7 @@
                   self.burger.hidden = YES;
                   self.navigationItem.leftBarButtonItem.image = [UIImage imageNamed:@"burger"];
                   [transitionContext completeTransition:YES];
-                  if (self.reachability.currentReachabilityStatus == NotReachable) [self showErrorBar];
+                  if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
               }];
     }
 }
