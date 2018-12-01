@@ -781,6 +781,7 @@ static NSString *sanitizeString(NSString *s)
             [self confirmTransaction:tx toAddress:address withPrompt:prompt forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         });
     } else if ([currency isEqualToString:@"bitcoin"]) {
+#if SHAPESHIFT_ENABLED
         if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
             ! [self.okIdentity isEqual:protoReq.commonName]) {
             self.request = protoReq;
@@ -860,6 +861,7 @@ static NSString *sanitizeString(NSString *s)
         self.shapeshiftRequest = protoReq;
         self.scheme = currency;
         [self amountViewController:nil shapeshiftBitcoinAmount:amount approximateDashAmount:1.03*amount/priceManager.bitcoinDashPrice.doubleValue];
+#endif
     }
 }
 

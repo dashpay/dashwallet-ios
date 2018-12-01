@@ -152,11 +152,13 @@
 - (void)updateLocalCurrencyLabel
 {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    uint64_t amount;
+    uint64_t amount = 0;
     if (self.usingShapeshift) {
+#if SHAPESHIFT_ENABLED
         amount = (self.swapped) ? [priceManager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
         [priceManager amountForDashString:self.amountLabel.text] * .98;
         if (amount) amount += (self.swapped) ?1.0/[[priceManager localCurrencyDashPrice] floatValue] * pow(10.0, priceManager.dashFormat.maximumFractionDigits):1.0/[[priceManager localCurrencyBitcoinPrice] floatValue] * pow(10.0, priceManager.bitcoinFormat.maximumFractionDigits);
+#endif
     } else {
         amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
         [priceManager amountForDashString:self.amountLabel.text];
@@ -165,7 +167,7 @@
     self.swapLeftLabel.hidden = YES;
     self.localCurrencyLabel.hidden = NO;
     if (self.usingShapeshift) {
-        
+#if SHAPESHIFT_ENABLED
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
         if (self.swapped) {
             [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:(amount > 0) ? GRAY80_COLOR : OFFBLUE_COLOR dashSymbolSize:CGSizeMake(11, 12)]];
@@ -174,6 +176,7 @@
         }
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
+#endif
     } else {
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"("];
         if (self.swapped) {
@@ -293,7 +296,7 @@
     }
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     if (self.usingShapeshift) {
-        
+#if SHAPESHIFT_ENABLED
         self.amount = (self.swapped) ? [priceManager amountForBitcoinString:self.amountLabel.text]:
         [priceManager amountForDashString:self.amountLabel.text];
         
@@ -308,6 +311,7 @@
             [self.delegate amountViewController:self shapeshiftBitcoinAmount:self.amount approximateDashAmount:self.amount/priceManager.bitcoinDashPrice.doubleValue];
         } else
             [self.delegate amountViewController:self shapeshiftDashAmount:self.amount];
+#endif
     }else {
         self.amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
         [priceManager amountForDashString:self.amountLabel.text];
@@ -360,7 +364,7 @@
     uint64_t amount =
     [priceManager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
     if (self.usingShapeshift) {
-        
+#if SHAPESHIFT_ENABLED
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
         if (self.swapped) {
             [attributedString appendAttributedString:[priceManager attributedStringForDashAmount:amount withTintColor:self.localCurrencyLabel.textColor dashSymbolSize:CGSizeMake(11, 12)]];
@@ -370,6 +374,7 @@
         [attributedString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:@")"]];
         self.localCurrencyLabel.attributedText = attributedString;
         self.amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:amount]]:[priceManager attributedStringForDashAmount:amount withTintColor:self.amountLabel.textColor dashSymbolSize:CGSizeMake(15, 16)];
+#endif
     } else {
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"("];
         if (self.swapped) {
@@ -568,7 +573,9 @@
     
     if (formattedAmount.length == 0 || self.amountLabelIsEmpty) { // ""
         if (self.usingShapeshift) {
+#if SHAPESHIFT_ENABLED
             amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager bitcoinCurrencyStringForAmount:0]]:[priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
+#endif
         } else {
             amountLabel.attributedText = (self.swapped) ? [[NSAttributedString alloc] initWithString:[priceManager localCurrencyStringForDashAmount:0]]:[priceManager attributedStringForDashAmount:0 withTintColor:OFFBLUE_COLOR dashSymbolSize:CGSizeMake(15, 16)];
         }
