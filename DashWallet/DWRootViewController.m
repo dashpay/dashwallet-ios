@@ -466,7 +466,7 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(chainNewBlockNotification)
-                                                 name:DSChainNewBlockNotification
+                                                 name:DSChainNewChainTipBlockNotification
                                                object:nil];
 }
 
