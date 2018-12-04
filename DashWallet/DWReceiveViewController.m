@@ -125,12 +125,13 @@
         
         if (! image && req.data) {
             image = [UIImage dw_imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0/255.0 blue:228.0/255.0]];
-            CGSize holeSize = CGSizeMake(5.0, 5.0);
-            image = [image dw_imageByCuttingHoleInCenterWithSize:holeSize];
         }
         
         UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
         UIImage *resizedImage = [image dw_resize:qrViewBounds withInterpolationQuality:kCGInterpolationNone];
+        
+        CGSize holeSize = CGSizeMake(67.0, 67.0);
+        resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
 
         self.qrImage = [resizedImage dw_imageByMergingWithImage:overlayLogo];
         

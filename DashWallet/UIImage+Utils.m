@@ -168,18 +168,11 @@
 
 - (UIImage *)dw_imageByCuttingHoleInCenterWithSize:(CGSize)holeSize {
     CGSize size = self.size;
-    CGPoint centerPoint = CGPointMake((size.width - holeSize.width) / 2.0, (size.height - holeSize.height) / 2.0);
+    CGFloat radius = ceil(holeSize.width / 2.0);
+    CGPoint centerPoint = CGPointMake(ceil(size.width / 2.0), ceil(size.height / 2.0));
     
     UIBezierPath *currentPath = [UIBezierPath bezierPath];
-    CGPoint tempPoint = centerPoint;
-    [currentPath moveToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
-    
-    tempPoint = CGPointMake(centerPoint.x, centerPoint.y + holeSize.height);
-    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
-    tempPoint = CGPointMake(centerPoint.x + holeSize.width, centerPoint.y + holeSize.height);
-    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
-    tempPoint = CGPointMake(centerPoint.x + holeSize.width, centerPoint.y);
-    [currentPath addLineToPoint:CGPointMake(tempPoint.x, tempPoint.y)];
+    [currentPath addArcWithCenter:centerPoint radius:radius startAngle:0.0 endAngle:2.0 * M_PI clockwise:YES];
     [currentPath closePath];
     
     UIGraphicsBeginImageContext(size);

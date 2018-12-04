@@ -121,7 +121,9 @@
         NSData *imageData = [self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY];
         UIImage *image = [UIImage imageWithData:imageData];
         UIImage *resizedImage = [image dw_resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
-        UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
+        UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(60.0, 60.0) withInterpolationQuality:kCGInterpolationMedium];
+        CGSize holeSize = CGSizeMake(64.0, 64.0);
+        resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
         UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
 
         self.qrOverlay.image = result;
