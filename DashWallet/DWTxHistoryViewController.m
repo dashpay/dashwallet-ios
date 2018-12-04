@@ -86,11 +86,10 @@ static NSString *dateFormat(NSString *template)
     [super viewWillAppear:animated];
     
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    __unused DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     
     if (authenticationManager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
             self.transactions = account.allTransactions;
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -103,6 +102,7 @@ static NSString *dateFormat(NSString *template)
         self.backgroundObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification
                                                           object:nil queue:nil usingBlock:^(NSNotification *note) {
+                                                              DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
                                                               self.moreTx = YES;
                                                               self.transactions = account.allTransactions;
                                                               [self.tableView reloadData];
@@ -115,6 +115,7 @@ static NSString *dateFormat(NSString *template)
         self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
+                                                               DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
                                                                if (authenticationManager.didAuthenticate) {
                                                                    DSTransaction *tx = self.transactions.firstObject;
                                                                    
@@ -139,6 +140,7 @@ static NSString *dateFormat(NSString *template)
         self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
+                                                               DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
                                                                self.transactions = account.allTransactions;
                                                                [self.tableView reloadData];
                                                            }];
@@ -284,7 +286,6 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)unlock:(id)sender
 {
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
     if (!authenticationManager.didAuthenticate) {
         [authenticationManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
@@ -295,6 +296,7 @@ static NSString *dateFormat(NSString *template)
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
                 
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
                     self.transactions = account.allTransactions;
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
