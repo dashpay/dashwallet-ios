@@ -21,6 +21,9 @@
 "1 confirmation" = "1 bekreftelse";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" er ikke et ord i gjenopprettingsfrasen";
 
 /* No comment provided by engineer. */

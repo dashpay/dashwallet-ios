@@ -293,9 +293,9 @@
                     subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel.text = NSLocalizedString(@"size:", nil);
-                    uint64_t feeCostPerByte = self.transaction.feeCostPerByte;
-                    if (feeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
-                        subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), feeCostPerByte];
+                    uint64_t roundedFeeCostPerByte = self.transaction.roundedFeeCostPerByte;
+                    if (roundedFeeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
+                        subtitleLabel.text = roundedFeeCostPerByte == 1?NSLocalizedString(@"1 duff/byte",nil):[NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), roundedFeeCostPerByte];
                     } else {
                         subtitleLabel.text = nil;
                     }
