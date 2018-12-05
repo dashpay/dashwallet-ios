@@ -21,6 +21,9 @@
 "1 confirmation" = "1 승인";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다";
 
 /* No comment provided by engineer. */

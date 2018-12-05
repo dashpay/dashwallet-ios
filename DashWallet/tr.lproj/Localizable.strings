@@ -21,6 +21,9 @@
 "1 confirmation" = "1 onaylama";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" kurtarma cümlesi kelimesi değil";
 
 /* No comment provided by engineer. */

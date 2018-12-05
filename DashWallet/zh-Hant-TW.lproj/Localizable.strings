@@ -21,6 +21,9 @@
 "1 confirmation" = "1 次確認";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" 不是恢復詞組的單詞";
 
 /* No comment provided by engineer. */

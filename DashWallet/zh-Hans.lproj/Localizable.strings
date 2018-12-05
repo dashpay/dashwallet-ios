@@ -21,6 +21,9 @@
 "1 confirmation" = "1个确认";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"不是一个恢复密语中的单词";
 
 /* No comment provided by engineer. */

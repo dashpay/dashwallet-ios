@@ -21,6 +21,9 @@
 "1 confirmation" = "1 konfirmim";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" nuk është një fjalë e frazës rikthyese";
 
 /* No comment provided by engineer. */
