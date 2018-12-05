@@ -63,30 +63,30 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
+    
     if (self.navBarSwipe) [self.navigationController.navigationBar removeGestureRecognizer:self.navBarSwipe];
     self.navBarSwipe = nil;
-
+    
     // observe the balance change notification to update the balance display
     if (! self.balanceObserver) {
         self.balanceObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                if (self.selectorType == 0) {
-                    self.selectorController.title =
-                    [NSString stringWithFormat:@"1 DASH = %@",
-                     [[DSPriceManager sharedInstance] localCurrencyStringForDashAmount:DUFFS]];
-                }
-            }];
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               if (self.selectorType == 0) {
+                                                                   self.selectorController.title =
+                                                                   [NSString stringWithFormat:@"1 DASH = %@",
+                                                                    [[DSPriceManager sharedInstance] localCurrencyStringForDashAmount:DUFFS]];
+                                                               }
+                                                           }];
     }
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
-            queue:nil usingBlock:^(NSNotification *note) {
-                [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
-                 forState:UIControlStateNormal];
-            }];
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
+                                                                                                                                       forState:UIControlStateNormal];
+                                                           }];
     }
 }
 
@@ -134,21 +134,21 @@
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager * peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
-
+    
     if (! fmt) {
         fmt = [NSDateFormatter new];
         fmt.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"Mdjma" options:0 locale:[NSLocale currentLocale]];
     }
-
-   return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
-                                                       "connected peers: %d\ndl peer: %@", NULL),
-           [priceManager localCurrencyStringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
-           [priceManager stringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
-           [fmt stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
-           chain.lastBlockHeight,
-           chain.estimatedBlockHeight,
-           peerManager.peerCount,
-           peerManager.downloadPeerName];
+    
+    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
+                                                        "connected peers: %d\ndl peer: %@", NULL),
+            [priceManager localCurrencyStringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
+            [priceManager stringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
+            [fmt stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
+            chain.lastBlockHeight,
+            chain.estimatedBlockHeight,
+            peerManager.peerCount,
+            peerManager.downloadPeerName];
 }
 
 -(BOOL)enabledAdvancedFeatures {
@@ -169,9 +169,17 @@
 
 - (IBAction)about:(id)sender
 {
-    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://www.dash.org/forum/topic/ios-dash-digital-wallet-support.112/"]];
+    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://github.com/dashevo/dashwallet-ios?files=1"]];
     [self presentViewController:safariViewController animated:YES completion:nil];
 }
+
+
+- (IBAction)support:(id)sender
+{
+    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://support.dash.org/en/support/solutions"]];
+    [self presentViewController:safariViewController animated:YES completion:nil];
+}
+
 
 #if DEBUG
 #pragma GCC diagnostic push
@@ -184,21 +192,21 @@
     NSMutableString *s = [NSMutableString string];
     time_t t;
     struct tm tm;
-
+    
     while ((m = asl_next(r))) {
         t = strtol(asl_get(m, ASL_KEY_TIME), NULL, 10);
         localtime_r(&t, &tm);
         [s appendFormat:@"%d-%02d-%02d %02d:%02d:%02d %s: %s\n", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour,
          tm.tm_min, tm.tm_sec, asl_get(m, ASL_KEY_SENDER), asl_get(m, ASL_KEY_MSG)];
     }
-
+    
     asl_free(r);
     [UIPasteboard generalPasteboard].string = (s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000];
     
     [self.navigationController.topViewController.view
      addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-     center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0)] popIn]
-     popOutAfterDelay:2.0]];
+                                      center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0)] popIn]
+                 popOutAfterDelay:2.0]];
 }
 #pragma GCC diagnostic pop
 #endif
@@ -223,50 +231,50 @@
                                            [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
                                        }];
         UIAlertAction* trustButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"trust", nil)
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction * action) {
-                                         NSArray * textfields = alert.textFields;
-                                         UITextField * ipField = textfields[0];
-                                         NSString *fixedPeer = ipField.text;
-                                         NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
-                                         NSString *host = pair.firstObject;
-                                         NSString *service = (pair.count > 1) ? pair[1] : @([DWEnvironment sharedInstance].currentChain.standardPort).stringValue;
-                                         struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
-                                         UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-                                         
-                                         NSLog(@"DNS lookup %@", host);
-                                         
-                                         if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
-                                             for (p = servinfo; p != NULL; p = p->ai_next) {
-                                                 if (p->ai_family == AF_INET) {
-                                                     addr.u64[0] = 0;
-                                                     addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                                                     addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                                                 }
-                                                 //                else if (p->ai_family == AF_INET6) {
-                                                 //                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-                                                 //                }
-                                                 else continue;
-                                                 
-                                                 uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                                                 char s[INET6_ADDRSTRLEN];
-                                                 
-                                                 if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-                                                     host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
-                                                 }
-                                                 else host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
-                                                 
-                                                 [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
-                                                                                           forKey:SETTINGS_FIXED_PEER_KEY];
-                                                 [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
-                                                 [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-                                                 break;
-                                             }
-                                             
-                                             freeaddrinfo(servinfo);
-                                         }
-                                     }];
+                                      actionWithTitle:NSLocalizedString(@"trust", nil)
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          NSArray * textfields = alert.textFields;
+                                          UITextField * ipField = textfields[0];
+                                          NSString *fixedPeer = ipField.text;
+                                          NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
+                                          NSString *host = pair.firstObject;
+                                          NSString *service = (pair.count > 1) ? pair[1] : @([DWEnvironment sharedInstance].currentChain.standardPort).stringValue;
+                                          struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
+                                          UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+                                          
+                                          NSLog(@"DNS lookup %@", host);
+                                          
+                                          if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
+                                              for (p = servinfo; p != NULL; p = p->ai_next) {
+                                                  if (p->ai_family == AF_INET) {
+                                                      addr.u64[0] = 0;
+                                                      addr.u32[2] = CFSwapInt32HostToBig(0xffff);
+                                                      addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                                                  }
+                                                  //                else if (p->ai_family == AF_INET6) {
+                                                  //                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                                                  //                }
+                                                  else continue;
+                                                  
+                                                  uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                                                  char s[INET6_ADDRSTRLEN];
+                                                  
+                                                  if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+                                                      host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
+                                                  }
+                                                  else host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
+                                                  
+                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
+                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
+                                                  [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
+                                                  [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+                                                  break;
+                                              }
+                                              
+                                              freeaddrinfo(servinfo);
+                                          }
+                                      }];
         [alert addAction:trustButton];
         [alert addAction:cancelButton];
         [self presentViewController:alert animated:YES completion:nil];
@@ -334,7 +342,7 @@
     NSUInteger digits = (((priceManager.dashFormat.maximumFractionDigits - 2)/3 + 1) % 3)*3 + 2;
     
     priceManager.dashFormat.currencySymbol = [NSString stringWithFormat:@"%@%@" NARROW_NBSP, (digits == 5) ? @"m" : @"",
-                                     (digits == 2) ? DITS : DASH];
+                                              (digits == 2) ? DITS : DASH];
     priceManager.dashFormat.maximumFractionDigits = digits;
     priceManager.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, priceManager.dashFormat.maximumFractionDigits));
     [[NSUserDefaults standardUserDefaults] setInteger:digits forKey:SETTINGS_MAX_DIGITS_KEY];
@@ -352,15 +360,15 @@
                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
-
+                                       
                                    }];
     UIAlertAction* yesButton = [UIAlertAction
-                                  actionWithTitle:NSLocalizedString(@"yes", nil)
-                                  style:UIAlertActionStyleDefault
-                                  handler:^(UIAlertAction * action) {
-                                      [[NSUserDefaults standardUserDefaults] setBool:YES forKey:ENABLED_ADVANCED_FEATURES];
-                                      [self.tableView reloadData];
-                                  }];
+                                actionWithTitle:NSLocalizedString(@"yes", nil)
+                                style:UIAlertActionStyleDefault
+                                handler:^(UIAlertAction * action) {
+                                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:ENABLED_ADVANCED_FEATURES];
+                                    [self.tableView reloadData];
+                                }];
     [alert addAction:yesButton];
     [alert addAction:cancelButton];
     [self presentViewController:alert animated:YES completion:nil];
@@ -390,7 +398,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *disclosureIdent = @"DisclosureCell", *restoreIdent = @"RestoreCell", *actionIdent = @"ActionCell",
-                    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
+    *selectorIdent = @"SelectorCell", *selectorOptionCell = @"SelectorOptionCell";
     UITableViewCell *cell = nil;
     
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
@@ -463,7 +471,7 @@
                     cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                     cell.textLabel.text = NSLocalizedString(@"Rescan blockchain", nil);
                     break;
-
+                    
             }
             break;
         case 2:
@@ -472,16 +480,16 @@
                 cell.textLabel.text = NSLocalizedString(@"Enable advanced features", nil);
                 break;
             } else {
-            switch (indexPath.row) {
-                case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                    cell.textLabel.text = NSLocalizedString(@"Network", nil);
-                    cell.detailTextLabel.text = [DWEnvironment sharedInstance].currentChain.name;
-                    break;
-                    
-                default:
-                    break;
-            }
+                switch (indexPath.row) {
+                    case 0:
+                        cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
+                        cell.textLabel.text = NSLocalizedString(@"Network", nil);
+                        cell.detailTextLabel.text = [DWEnvironment sharedInstance].currentChain.name;
+                        break;
+                        
+                    default:
+                        break;
+                }
             }
     }
     
@@ -524,8 +532,8 @@
     if (sectionTitle.length == 0) return 22.0;
     
     CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(self.view.frame.size.width - 20.0, CGFLOAT_MAX)
-                options:NSStringDrawingUsesLineFragmentOrigin
-                attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
+                                                 options:NSStringDrawingUsesLineFragmentOrigin
+                                              attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14]} context:nil];
     
     return textRect.size.height + 22.0 + 10.0;
 }
@@ -533,9 +541,9 @@
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     UIView *sectionHeader = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
-                                                         [self tableView:tableView heightForHeaderInSection:section])];
+                                                                     [self tableView:tableView heightForHeaderInSection:section])];
     UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(16.0, 10.0, sectionHeader.frame.size.width - 20.0,
-                                                           sectionHeader.frame.size.height - 12.0)];
+                                                                    sectionHeader.frame.size.height - 12.0)];
     
     titleLabel.text = [self tableView:tableView titleForHeaderInSection:section];
     titleLabel.backgroundColor = [UIColor clearColor];
@@ -558,7 +566,7 @@
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
 {
     UIView *sectionFooter = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width,
-                                                         [self tableView:tableView heightForFooterInSection:section])];
+                                                                     [self tableView:tableView heightForFooterInSection:section])];
     sectionFooter.backgroundColor = [UIColor clearColor];
     return sectionFooter;
 }
@@ -571,13 +579,13 @@
     NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
     UIButton *b = nil;
     
-if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%%net%% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
-}
+    if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
+        [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%%net%% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
+    }
     [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
-     withString:[NSString stringWithFormat:@"%@ - %@",
-                 NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
-                 NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
+                     withString:[NSString stringWithFormat:@"%@ - %@",
+                                 NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
+                                 NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
     [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@""];
     l.attributedText = s;
     [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
@@ -588,10 +596,13 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
         b.hidden = NO;
     }
 #endif
-
+    
     b = (id)[c.view viewWithTag:412];
     [b setTitle:self.stats forState:UIControlStateNormal];
     [b addTarget:self action:@selector(fixedPeer:) forControlEvents:UIControlEventTouchUpInside];
+    
+    b = (id)[c.view viewWithTag:414];
+    [b addTarget:self action:@selector(support:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.navigationController pushViewController:c animated:YES];
 }
@@ -646,15 +657,15 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
     NSArray <NSString *> *options = [priceManager.prices valueForKeyPath:@"codeAndName"];
     DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
     NSUInteger currencyCodeIndex = [priceManager.prices indexOfObject:price];
-
+    
     self.selectorType = 0;
     
     self.selectorOptions = options;
     if (currencyCodeIndex < options.count) self.selectedOption = options[currencyCodeIndex];
     self.noOptionsText = NSLocalizedString(@"no exchange rate data", nil);
     self.selectorController.title =
-        [NSString stringWithFormat:@"1 DASH = %@",
-         [priceManager localCurrencyStringForDashAmount:DUFFS]];
+    [NSString stringWithFormat:@"1 DASH = %@",
+     [priceManager localCurrencyStringForDashAmount:DUFFS]];
     [self.navigationController pushViewController:self.selectorController animated:YES];
     [self.selectorController.tableView reloadData];
     
@@ -677,29 +688,29 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
 -(void)showChangeNetwork {
     [DSEventManager saveEvent:@"settings:show_change_network"];
     UIAlertController * actionSheet = [UIAlertController
-                                 alertControllerWithTitle:NSLocalizedString(@"Network", nil)
-                                 message:nil
-                                 preferredStyle:UIAlertControllerStyleActionSheet];
+                                       alertControllerWithTitle:NSLocalizedString(@"Network", nil)
+                                       message:nil
+                                       preferredStyle:UIAlertControllerStyleActionSheet];
     UIAlertAction* mainnet = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"Mainnet", nil)
-                                   style:UIAlertActionStyleDefault
-                                   handler:^(UIAlertAction * action) {
-                                      [[DWEnvironment sharedInstance] switchToMainnet];
-                                       [self.tableView reloadData];
-                                   }];
+                              actionWithTitle:DSLocalizedString(@"Mainnet", nil)
+                              style:UIAlertActionStyleDefault
+                              handler:^(UIAlertAction * action) {
+                                  [[DWEnvironment sharedInstance] switchToMainnet];
+                                  [self.tableView reloadData];
+                              }];
     UIAlertAction* testnet = [UIAlertAction
-                                 actionWithTitle:DSLocalizedString(@"Testnet", nil)
-                                 style:UIAlertActionStyleDefault
-                                 handler:^(UIAlertAction * action) {
-                                     [[DWEnvironment sharedInstance] switchToTestnet];
-                                     [self.tableView reloadData];
-                                 }];
+                              actionWithTitle:DSLocalizedString(@"Testnet", nil)
+                              style:UIAlertActionStyleDefault
+                              handler:^(UIAlertAction * action) {
+                                  [[DWEnvironment sharedInstance] switchToTestnet];
+                                  [self.tableView reloadData];
+                              }];
     
     UIAlertAction* cancel = [UIAlertAction
-                              actionWithTitle:NSLocalizedString(@"cancel", nil)
-                              style:UIAlertActionStyleCancel
-                              handler:^(UIAlertAction * action) {
-                              }];
+                             actionWithTitle:NSLocalizedString(@"cancel", nil)
+                             style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction * action) {
+                             }];
     [actionSheet addAction:mainnet];
     [actionSheet addAction:testnet];
     [actionSheet addAction:cancel];
@@ -730,9 +741,9 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
         
         if (currencyCodeIndex < self.selectorOptions.count && currencyCodeIndex != indexPath.row) {
             [tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:currencyCodeIndex inSection:0], indexPath]
-             withRowAnimation:UITableViewRowAnimationAutomatic];
+                             withRowAnimation:UITableViewRowAnimationAutomatic];
         }
-
+        
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         [self.tableView reloadData];
         return;
@@ -762,10 +773,10 @@ if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                     }
                     break;
                 case 4:
-_deselect_switch:
-                    {
-                        [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                    }
+                _deselect_switch:
+                {
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                }
                     break;
             }
             
@@ -778,7 +789,7 @@ _deselect_switch:
                     [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     [authenticationManager performSelector:@selector(setPinWithCompletion:) withObject:nil afterDelay:0.0];
                     break;
-
+                    
                 case 1: // start/recover another wallet (handled by storyboard)
                     [DSEventManager saveEvent:@"settings:recover"];
                     break;
@@ -795,22 +806,22 @@ _deselect_switch:
             if (![self enabledAdvancedFeatures]) {
                 [self showEnableAdvancedFeatures];
             } else {
-            switch (indexPath.row) {
-                case 0: // change passcode
-                    [self showChangeNetwork];
-                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-                    break;
+                switch (indexPath.row) {
+                    case 0: // change passcode
+                        [self showChangeNetwork];
+                        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                        break;
+                }
+                break;
             }
-            break;
-            }
-    
+            
     }
 }
 
 // MARK: - MFMailComposeViewControllerDelegate
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result
-error:(NSError *)error
+                        error:(NSError *)error
 {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }

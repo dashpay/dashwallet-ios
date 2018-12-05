@@ -2,7 +2,7 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "recuperar carteira";
 
-/* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
+/* Class = "UILabel"; text = "https://github.com/dashevo/dashwallet-ios"; ObjectID = "5OA-tB-Exg"; */
 "5OA-tB-Exg.text" = "https://github.com/QuantumExplorer/dashwallet\n";
 
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
@@ -14,7 +14,7 @@
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "iníciar/recuperar outra carteira";
 
-/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
+/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
 "D4H-hd-LsX.text" = "dados de taxa de câmbio fornecidos por bitpay.com/rates";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
@@ -151,3 +151,6 @@
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
 "Ng6-uV-YUC.normalTitle" = "Share";
+
+/* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
+"cyQ-rq-R9M.normalTitle" = "Contact Support";
