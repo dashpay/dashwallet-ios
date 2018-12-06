@@ -104,7 +104,7 @@
                                       direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
     self.pageViewController.view.frame = self.view.bounds;
     [self addChildViewController:self.pageViewController];
-    [self.view insertSubview:self.pageViewController.view belowSubview:self.splash];
+    [self.view insertSubview:self.pageViewController.view atIndex:0];
     [self.pageViewController didMoveToParentViewController:self];
     
     self.shouldShowTips = TRUE;
@@ -729,6 +729,7 @@
 
 - (void)viewDidLayoutSubviews
 {
+    [super viewDidLayoutSubviews];
     [self scrollViewDidScroll:self.scrollView];
 }
 
