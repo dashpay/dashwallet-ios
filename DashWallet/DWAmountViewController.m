@@ -105,6 +105,11 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+        [self updateTitleView];
+    }
+    
     if (self.usingShapeshift) {
         self.addressLabel.text = (self.to.length > 0) ?
         [NSString stringWithFormat:NSLocalizedString(@"to: %@ (via Shapeshift)", nil), self.to] : nil;
