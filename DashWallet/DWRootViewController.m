@@ -56,12 +56,11 @@
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
 @property (nonatomic, strong) IBOutlet UIView *errorBar, *splash, *logo, *blur;
-@property (nonatomic, strong) IBOutlet UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *lock;
 @property (nonatomic, strong) IBOutlet BRBouncyBurgerButton *burger;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *wallpaperXLeft;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, strong) UIGestureRecognizer *navBarTap;
 @property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL shouldShowTips, showTips, inNextTip, didAppear;
 @property (nonatomic, assign) uint64_t balance;
@@ -112,7 +111,6 @@
     for (UIView *view in self.pageViewController.view.subviews) {
         if (! [view isKindOfClass:[UIScrollView class]]) continue;
         self.scrollView = (id)view;
-        self.scrollView.delegate = self;
         break;
     }
     
@@ -727,12 +725,6 @@
     //    }
 }
 
-- (void)viewDidLayoutSubviews
-{
-    [super viewDidLayoutSubviews];
-    [self scrollViewDidScroll:self.scrollView];
-}
-
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -1260,15 +1252,6 @@
     return (pageViewController.viewControllers.lastObject == self.receiveViewController) ? 1 : 0;
 }
 
-// MARK: - UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
-    CGFloat off = scrollView.contentOffset.x + (scrollView.contentInset.left < 0 ? scrollView.contentInset.left : 0);
-    
-    self.wallpaperXLeft.constant = -PARALAX_RATIO*off;
-}
-
 // MARK: - UIViewControllerAnimatedTransitioning
 
 // This is used for percent driven interactive transitions, as well as for container controllers that have companion
@@ -1294,7 +1277,6 @@
               initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
                   to.view.center = from.view.center;
                   from.view.center = CGPointMake(containerView.frame.size.width*(to == self ? 3 : -1)/2, from.view.center.y);
-                  self.wallpaperXLeft.constant = containerView.frame.size.width*(to == self ? 0 : -1)*PARALAX_RATIO;
               } completion:^(BOOL finished) {
                   if (to == self) {
                       [from.view removeFromSuperview];
