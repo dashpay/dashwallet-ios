@@ -23,18 +23,11 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <SafariServices/SafariServices.h>
-#import <asl.h>
-#import <sys/socket.h>
-#import <netdb.h>
-#import <arpa/inet.h>
-
 #import "DWSettingsViewController.h"
 #import "DWSeedViewController.h"
-#import "BRBubbleView.h"
 #import "BRUserDefaultsSwitchCell.h"
 #import "DSCurrencyPriceObject.h"
-
+#import "DWAboutViewController.h"
 
 @interface DWSettingsViewController ()
 
@@ -45,7 +38,7 @@
 @property (nonatomic, strong) NSString *selectedOption, *noOptionsText;
 @property (nonatomic, assign) NSUInteger selectorType;
 @property (nonatomic, strong) UISwipeGestureRecognizer *navBarSwipe;
-@property (nonatomic, strong) id balanceObserver, txStatusObserver;
+@property (nonatomic, strong) id balanceObserver;
 
 @end
 
@@ -79,15 +72,6 @@
                                                                }
                                                            }];
     }
-    
-    if (! self.txStatusObserver) {
-        self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
-                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                               [(id)[self.navigationController.topViewController.view viewWithTag:412] setTitle:self.stats
-                                                                                                                                       forState:UIControlStateNormal];
-                                                           }];
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -99,8 +83,6 @@
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
         if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
         self.balanceObserver = nil;
-        if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
-        self.txStatusObserver = nil;
     }
     
     [super viewWillDisappear:animated];
@@ -109,7 +91,6 @@
 - (void)dealloc
 {
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
 }
 
 - (UITableViewController *)selectorController
@@ -128,29 +109,6 @@
     [cell viewWithTag:101].hidden = (path.row + 1 < [self tableView:tableView numberOfRowsInSection:path.section]);
 }
 
-- (NSString *)stats
-{
-    static NSDateFormatter *fmt = nil;
-    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-    DSPeerManager * peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
-    
-    if (! fmt) {
-        fmt = [NSDateFormatter new];
-        fmt.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"Mdjma" options:0 locale:[NSLocale currentLocale]];
-    }
-    
-    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
-                                                        "connected peers: %d\ndl peer: %@", NULL),
-            [priceManager localCurrencyStringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
-            [priceManager stringForDashAmount:DUFFS/priceManager.localCurrencyDashPrice.doubleValue],
-            [fmt stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DSAuthenticationManager sharedInstance].secureTime]].lowercaseString,
-            chain.lastBlockHeight,
-            chain.estimatedBlockHeight,
-            peerManager.peerCount,
-            peerManager.downloadPeerName];
-}
-
 -(BOOL)enabledAdvancedFeatures {
     NSUserDefaults * userDefaults =[NSUserDefaults standardUserDefaults];
     if ([userDefaults objectForKey:ENABLED_ADVANCED_FEATURES]) {
@@ -165,143 +123,6 @@
 {
     [DSEventManager saveEvent:@"settings:dismiss"];
     [self.navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (IBAction)about:(id)sender
-{
-    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://github.com/dashevo/dashwallet-ios?files=1"]];
-    [self presentViewController:safariViewController animated:YES completion:nil];
-}
-
-
-- (IBAction)support:(id)sender
-{
-    SFSafariViewController * safariViewController = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:@"https://support.dash.org/en/support/solutions"]];
-    [self presentViewController:safariViewController animated:YES completion:nil];
-}
-
-
-#if DEBUG
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-- (IBAction)copyLogs:(id)sender
-{
-    [DSEventManager saveEvent:@"settings:copy_logs"];
-    aslmsg q = asl_new(ASL_TYPE_QUERY), m;
-    aslresponse r = asl_search(NULL, q);
-    NSMutableString *s = [NSMutableString string];
-    time_t t;
-    struct tm tm;
-    
-    while ((m = asl_next(r))) {
-        t = strtol(asl_get(m, ASL_KEY_TIME), NULL, 10);
-        localtime_r(&t, &tm);
-        [s appendFormat:@"%d-%02d-%02d %02d:%02d:%02d %s: %s\n", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour,
-         tm.tm_min, tm.tm_sec, asl_get(m, ASL_KEY_SENDER), asl_get(m, ASL_KEY_MSG)];
-    }
-    
-    asl_free(r);
-    [UIPasteboard generalPasteboard].string = (s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000];
-    
-    [self.navigationController.topViewController.view
-     addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-                                      center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0)] popIn]
-                 popOutAfterDelay:2.0]];
-}
-#pragma GCC diagnostic pop
-#endif
-
-- (IBAction)fixedPeer:(id)sender
-{
-    if (! [[NSUserDefaults standardUserDefaults] stringForKey:SETTINGS_FIXED_PEER_KEY]) {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:nil
-                                     message:NSLocalizedString(@"set a trusted node", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = NSLocalizedString(@"node ip", nil);
-            textField.textColor = [UIColor darkTextColor];
-            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-            textField.borderStyle = UITextBorderStyleRoundedRect;
-        }];
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-                                       }];
-        UIAlertAction* trustButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"trust", nil)
-                                      style:UIAlertActionStyleDefault
-                                      handler:^(UIAlertAction * action) {
-                                          NSArray * textfields = alert.textFields;
-                                          UITextField * ipField = textfields[0];
-                                          NSString *fixedPeer = ipField.text;
-                                          NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
-                                          NSString *host = pair.firstObject;
-                                          NSString *service = (pair.count > 1) ? pair[1] : @([DWEnvironment sharedInstance].currentChain.standardPort).stringValue;
-                                          struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
-                                          UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-                                          
-                                          NSLog(@"DNS lookup %@", host);
-                                          
-                                          if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
-                                              for (p = servinfo; p != NULL; p = p->ai_next) {
-                                                  if (p->ai_family == AF_INET) {
-                                                      addr.u64[0] = 0;
-                                                      addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                                                      addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                                                  }
-                                                  //                else if (p->ai_family == AF_INET6) {
-                                                  //                    addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-                                                  //                }
-                                                  else continue;
-                                                  
-                                                  uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                                                  char s[INET6_ADDRSTRLEN];
-                                                  
-                                                  if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-                                                      host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
-                                                  }
-                                                  else host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
-                                                  
-                                                  [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
-                                                                                            forKey:SETTINGS_FIXED_PEER_KEY];
-                                                  [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
-                                                  [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-                                                  break;
-                                              }
-                                              
-                                              freeaddrinfo(servinfo);
-                                          }
-                                      }];
-        [alert addAction:trustButton];
-        [alert addAction:cancelButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-    else {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:nil
-                                     message:NSLocalizedString(@"clear trusted node?", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           [self.tableView deselectRowAtIndexPath:self.tableView.indexPathForSelectedRow animated:YES];
-                                       }];
-        UIAlertAction* clearButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"clear", nil)
-                                      style:UIAlertActionStyleDestructive
-                                      handler:^(UIAlertAction * action) {
-                                          [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-                                          [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
-                                          [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-                                      }];
-        [alert addAction:clearButton];
-        [alert addAction:cancelButton];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
 }
 
 - (IBAction)touchIdLimit:(id)sender
@@ -574,37 +395,8 @@
 - (void)showAbout
 {
     [DSEventManager saveEvent:@"settings:show_about"];
-    UIViewController *c = [self.storyboard instantiateViewControllerWithIdentifier:@"AboutViewController"];
-    UILabel *l = (id)[c.view viewWithTag:411];
-    NSMutableAttributedString *s = [[NSMutableAttributedString alloc] initWithAttributedString:l.attributedText];
-    UIButton *b = nil;
-    
-    if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-        [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:[NSString stringWithFormat:@"%%net%% (%@)",[[DWEnvironment sharedInstance].currentChain name]]];
-    }
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
-                     withString:[NSString stringWithFormat:@"%@ - %@",
-                                 NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
-                                 NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
-    [s replaceCharactersInRange:[s.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@""];
-    l.attributedText = s;
-    [l.superview.gestureRecognizers.firstObject addTarget:self action:@selector(about:)];
-#if DEBUG
-    {
-        b = (id)[c.view viewWithTag:413];
-        [b addTarget:self action:@selector(copyLogs:) forControlEvents:UIControlEventTouchUpInside];
-        b.hidden = NO;
-    }
-#endif
-    
-    b = (id)[c.view viewWithTag:412];
-    [b setTitle:self.stats forState:UIControlStateNormal];
-    [b addTarget:self action:@selector(fixedPeer:) forControlEvents:UIControlEventTouchUpInside];
-    
-    b = (id)[c.view viewWithTag:414];
-    [b addTarget:self action:@selector(support:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.navigationController pushViewController:c animated:YES];
+    DWAboutViewController *aboutViewController = [DWAboutViewController controller];
+    [self.navigationController pushViewController:aboutViewController animated:YES];
 }
 
 - (void)showRecoveryPhrase
