@@ -42,7 +42,7 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"About" = "σχετικά με";
+"About" = "About";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
@@ -99,7 +99,7 @@
 "change" = "αλλαγή";
 
 /* No comment provided by engineer. */
-"Change passcode" = "αλλάξτε κωδικό πρόσβασης";
+"Change passcode" = "Change passcode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "αλλαγή του ποσού πληρωμής?";
@@ -186,7 +186,7 @@
 "do it later" = "θα το κάνω αργότερα";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "ΜΗΝ αφήσετε κανέναν να δεί την φράση ανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
@@ -225,7 +225,7 @@
 "Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";
+"Face ID spending limit" = "Face ID spending limit";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Failed wallet update";
@@ -252,7 +252,7 @@
 "ignore" = "παράβλεψη";
 
 /* No comment provided by engineer. */
-"Import private key" = "εισαγωγή ιδιωτικού κλειδιού";
+"Import private key" = "Import private key";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "ΣΗΜΑΝΤΙΚΟ";
@@ -282,7 +282,7 @@
 "more..." = "περισσότερα...";
 
 /* No comment provided by engineer. */
-"Moved" = "μετακινηθηκε";
+"Moved" = "Moved";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -306,7 +306,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "δεν είναι κωδικός QR για dash ή το bitcoin";
 
 /* No comment provided by engineer. */
 "not a dash QR code" = "not a dash QR code";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "δεν είναι μια έγκυρη διεύθυνση dash";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση dash ή το bitcoin";
 
 /* No comment provided by engineer. */
 "ok" = "Εντάξει";
@@ -360,13 +360,13 @@
 "Receive dash at this address: %@" = "Λάβετε dash σε αυτή τη διεύθυνση: %@";
 
 /* No comment provided by engineer. */
-"Received" = "ελήφθησαν";
+"Received" = "Received";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ελήφθη %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "φράση ανάκτησης";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
@@ -381,7 +381,7 @@
 "Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
-"Request" = "αίτηση";
+"Request" = "Request";
 
 /* No comment provided by engineer. */
 "request an amount" = "αίτηση για ένα ποσό";
@@ -393,7 +393,7 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "σάρωση της αλυσίδας μπλόκ";
+"Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "κάντε επανάληψη της σάρωσης της αλυσίδας των μπλόκ αν νομίζετε ότι μπορεί να έχετε συναλλαγές που λείπουν ή άν έχετε προβλήματα αποστολής (η νέα σάρωση μπορεί να πάρει αρκετά λεπτά)";
@@ -408,7 +408,7 @@
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Σάρωση του κώδικα QR κάποιου άλλου ατόμου για να πάρετε τη διεύθυνση dash ή το bitcoin τους. Μπορείτε να στείλετε μια πληρωμή σε οποιοδήποτε με μια διεύθυνση.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Παράξτε μια νέα φράση ανάκτησης και κρατήστε την μυστική.";
@@ -438,7 +438,7 @@
 "send request as message" = "στείλτε αίτημα ως μήνυμα";
 
 /* No comment provided by engineer. */
-"Sent" = "εστάλη";
+"Sent" = "Sent";
 
 /* No comment provided by engineer. */
 "sent!" = "εστάλη!";
@@ -534,13 +534,13 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "αναγνωριστικό όριο αφής";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
-"Touch ID spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";
+"Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"Transaction history" = "ιστορικό συναλλαγής";
+"Transaction history" = "Transaction history";
 
 /* No comment provided by engineer. */
 "trust" = "trust";

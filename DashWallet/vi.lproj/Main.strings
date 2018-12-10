@@ -1,30 +1,30 @@
 
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
-"4w7-k8-9wY.normalTitle" = "phục hồi ví";
+"4w7-k8-9wY.normalTitle" = "Khôi phục Ví";
 
 /* Class = "UILabel"; text = "https://github.com/dashevo/dashwallet-ios"; ObjectID = "5OA-tB-Exg"; */
 "5OA-tB-Exg.text" = "https://github.com/dashevo/dashwallet-ios";
 
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "tiền bản địa";
+"8e2-ar-Ehc.text" = "Tiền địa phương";
 
 /* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
-"A4M-yq-26d.normalTitle" = "sinh câu để khôi phục";
+"A4M-yq-26d.normalTitle" = "Sinh cụm từ phục hồi";
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "bắt đầu/khôi phục từ một ví khác";
+"D1b-HB-lKH.text" = "Bắt đầu / Khôi phục một ví khác";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "dữ liệu về tỷ giá giao dịch được cung cấp bởi\nbitpay.com/rates và poloniex.com";
+"D4H-hd-LsX.text" = "Exchange rate data provided by\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
-"EQG-Km-ZKY.text" = "nếu bạn mất điện thoại, bạn cần phải có câu này để khôi phục lại ví của bạn";
+"EQG-Km-ZKY.text" = "Nếu bạn mất điện thoại, bạn sẽ cần cụm từ phục hồi để khôi phục lại ví của bạn";
 
 /* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
 "FjB-H2-BnK.text" = "đã gửi";
 
 /* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
-"Td7-xP-kmB.text" = "hãy ghi xuống";
+"Td7-xP-kmB.text" = "Hãy ghi xuống";
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "không được kết nối";
@@ -48,7 +48,7 @@
 "cyp-mV-Bhd.text" = "Tôi đã viết xuống:";
 
 /* Class = "UIButton"; normalTitle = "New Wallet"; ObjectID = "dOa-zm-TDG"; */
-"dOa-zm-TDG.normalTitle" = "tạo ví mới";
+"dOa-zm-TDG.normalTitle" = "Tạo ví mới";
 
 /* Class = "UILabel"; text = "If you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
 "dX6-jg-5IA.text" = "Nếu bạn mất điện thoại, bạn sẽ cần đến câu này để khôi phục lại ví của bạn.";
@@ -57,7 +57,7 @@
 "eJ2-5h-DO2.text" = "chưa được xác thực";
 
 /* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
-"fQN-xb-SYb.title" = "xác thực:";
+"fQN-xb-SYb.title" = "Xác nhận:";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
 "l5l-JR-LKA.text" = "Gửi DASH";
@@ -75,10 +75,10 @@
 "t1j-JZ-FW0.text" = "không có giao dịch nào";
 
 /* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "dashwallet  v%ver%%net%\nBản quyền © 2018 Dash Core\n\nDựa trên ví breadwallet\n\nđây là ứng dụng mã nguồn mở";
+"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nBản quyền © 2018 bởi Dash Core\n\nPhát triển dựa trên Breadwallet\n\nỨng dụng này là loại mã nguồn mở";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
-"wDZ-DN-szv.text" = "khởi tạo một ví mới bằng việc sinh ra một câu khôi phục ví";
+"wDZ-DN-szv.text" = "Bắt đầu một ví mới bằng việc sinh ra cụm từ phục hồi của ví";
 
 /* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
 "83W-1O-V9b.normalTitle" = "↔︎";
@@ -117,10 +117,10 @@
 "Ika-qg-5Cf.normalTitle" = "9";
 
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
-"adc-g6-wnP.text" = "Shapeshift in progress";
+"adc-g6-wnP.text" = "Shapeshift đang xử lý";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "Use InstantSend";
+"lbm-03-nu4.text" = "Sử dụng InstantSend";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "tình trạng:";
@@ -129,28 +129,28 @@
 "F30-En-QkL.normalTitle" = "NFC";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "copy logs";
+"Irz-6P-zvD.normalTitle" = "sao chép logs";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
-"7gb-Nc-x8C.text" = "New Wallet";
+"7gb-Nc-x8C.text" = "Tạo ví mới";
 
 /* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
-"7h3-k2-QrR.text" = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+"7h3-k2-QrR.text" = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
+"AH2-hg-79I.text" = "ĐỪNG để bất cứ ai nhìn thấy cụm từ phục hồi của bạn nếu không họ sẽ tiêu hết số Dash của bạn.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
-"FJd-qY-pGg.normalTitle" = "Show Passphrase";
+"FJd-qY-pGg.normalTitle" = "Hiển thị mật khẩu";
 
 /* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
-"Wym-3X-CXY.text" = "WARNING";
+"Wym-3X-CXY.text" = "CẢNH BÁO";
 
 /* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
-"UQm-Kc-aR1.normalTitle" = "Remind me later";
+"UQm-Kc-aR1.normalTitle" = "Hãy nhắc tôi sau";
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
-"Ng6-uV-YUC.normalTitle" = "Share";
+"Ng6-uV-YUC.normalTitle" = "Chia sẻ";
 
 /* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
 "cyQ-rq-R9M.normalTitle" = "Contact Support";

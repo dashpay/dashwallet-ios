@@ -117,10 +117,10 @@
 "clear trusted node?" = "ลบ node ที่เชื่อถือได้ออกหรือไม่?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "คลิปบอร์ดไม่มีที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "คลิปบอร์ดไม่มีอยู่ใน dash หรือ ที่อยู่ของ bitcoin";
 
 /* No comment provided by engineer. */
 "close app" = "ปิดแอพพลิเคชั่น";
@@ -294,10 +294,10 @@
 "next, write down your recovery phrase" = "ต่อไป , เขียนวลีกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+"NFC device didn't transmit a valid dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ Dash หรือ ที่อยู่ Bitcoin ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
@@ -306,10 +306,10 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "ไม่ใช่ โค้ด QR ของ dash  หรือ  bitcoin";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
+"not a dash QR code" = "ไม่ใช่โค้ด QR ของ dash ";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "ไม่ใช่ที่อยู่ bitcoin address ที่ถูกต้อง";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "ไม่ใช่ที่อยู่ dash หรือ bitcoin ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "ok" = "โอเค";
@@ -345,7 +345,7 @@
 "pending" = "อยู่ระหว่างดำเนินการ";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
@@ -405,10 +405,10 @@
 "retry" = "ลองใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อรับที่อยู่ dash ของพวกเขา คุณสามารถส่งการชำระเงินให้กับทุกคนที่มีที่อยู่ได้";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อดูที่อยู่ dash หรือ ที่  bitcoin ของพวกเขา";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  สร้างวลีกู้คืนใหม่และเก็บเป็นความลับ";

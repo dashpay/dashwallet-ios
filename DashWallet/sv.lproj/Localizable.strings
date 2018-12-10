@@ -42,7 +42,7 @@
 "\ntry again in %@" = "\nförsök igen om %@";
 
 /* No comment provided by engineer. */
-"About" = "om";
+"About" = "About";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
@@ -99,7 +99,7 @@
 "change" = "ändra";
 
 /* No comment provided by engineer. */
-"Change passcode" = "ändra lösenord";
+"Change passcode" = "Change passcode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ändra belopp?";
@@ -120,13 +120,13 @@
 "clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "Urklipp innehåller inte en giltig dash eller bitcoin address";
 
 /* No comment provided by engineer. */
 "close app" = "stäng app";
 
 /* Confirm */
-"Confirm" = "bekräfta";
+"Confirm" = "Bekräfta";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bekräftad i block #%d";
@@ -186,7 +186,7 @@
 "do it later" = "gör det senare";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "LÅT INTE NÅGON se din återställningsfras – annars kan hen spendera dina dash.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
@@ -210,7 +210,7 @@
 "Enable advanced features?" = "Enable advanced features?";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "tillåt motta notifikationer";
+"Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -252,7 +252,7 @@
 "ignore" = "ignorera";
 
 /* No comment provided by engineer. */
-"Import private key" = "importera privat nyckel";
+"Import private key" = "Import private key";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "VIKTIGT";
@@ -282,7 +282,7 @@
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
-"Moved" = "överförd";
+"Moved" = "Moved";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -306,7 +306,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "inte en dash eller bitcoin QR-kod";
 
 /* No comment provided by engineer. */
 "not a dash QR code" = "not a dash QR code";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "inte en giltig dash adress";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "inte en giltig dash eller bitcoin adress";
 
 /* No comment provided by engineer. */
 "ok" = "OK";
@@ -345,7 +345,7 @@
 "pending" = "bearbetar";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "skriv in din pin-kod för att uppdatera plånboken";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
@@ -360,13 +360,13 @@
 "Receive dash at this address: %@" = "Ta emot dash på denna adress: %@";
 
 /* No comment provided by engineer. */
-"Received" = "mottagna";
+"Received" = "Received";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "tog emot %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "återställningsfras";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "återställningsfrasen stämmer inte";
@@ -381,7 +381,7 @@
 "Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
-"Request" = "begäran";
+"Request" = "Request";
 
 /* No comment provided by engineer. */
 "request an amount" = "begär ett belopp";
@@ -393,7 +393,7 @@
 "request is for an instant payment but you have disabled instant payments" = "Begäran är för en direktbetalning men du har inaktiverat direktbetalning ";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "återläs blockkedjan";
+"Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "återläs blockkedjan om du misstänker att det saknas transaktioner, eller om du har problem att skicka dash (återläsning kan ta flera minuter)";
@@ -408,7 +408,7 @@
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Läs in någon annans dashadress eller bitcoinadress via QR-kod. Du kan göra överföringar till alla som har en adress.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Skärmbilder är synliga för andra appar och enheter. Skapa en ny återställningsfras och håll den hemlig.";
@@ -438,7 +438,7 @@
 "send request as message" = "skicka begäran som meddelande";
 
 /* No comment provided by engineer. */
-"Sent" = "skickat";
+"Sent" = "Sent";
 
 /* No comment provided by engineer. */
 "sent!" = "skickat!";
@@ -447,7 +447,7 @@
 "set a trusted node" = "lägg till som en pålitlig node";
 
 /* No comment provided by engineer. */
-"Settings" = "inställningar";
+"Settings" = "Inställningar";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -534,13 +534,13 @@
 "to: %@ (via Shapeshift)" = "till: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "gräns för touch id";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"Transaction history" = "transaktionshistorik";
+"Transaction history" = "Transaction history";
 
 /* No comment provided by engineer. */
 "trust" = "lita på";

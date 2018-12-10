@@ -15,7 +15,7 @@
 "D1b-HB-lKH.text" = "ウォレットの新規作成及び復元";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "為替データ提供：\nbitpay.com/rates and poloniex.com";
+"D4H-hd-LsX.text" = "取引所の価格データの提供\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "携帯電話を失くされた場合、このフレーズでウォレットが復元できます。";
@@ -60,13 +60,13 @@
 "fQN-xb-SYb.title" = "承認：";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "送金する:";
+"l5l-JR-LKA.text" = "Dashを送金する";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "復元フレーズ:";
 
 /* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "受け取る:";
+"qel-3J-2VC.text" = "Dashを受け取る";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
 "s4T-yd-VfX.title" = "取引詳細";
@@ -120,7 +120,7 @@
 "adc-g6-wnP.text" = "Shapeshiftで交換中";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "即時送金（インスタントセンド)";
+"lbm-03-nu4.text" = "即時送金［インスタントセンド］";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "ステータス:";
@@ -138,7 +138,7 @@
 "7h3-k2-QrR.text" = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを簡単に盗むことができます。";
+"AH2-hg-79I.text" = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのDashを簡単に盗むことができます。";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
 "FJd-qY-pGg.normalTitle" = "フレーズを表示";
@@ -153,4 +153,4 @@
 "Ng6-uV-YUC.normalTitle" = "シェアする";
 
 /* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
-"cyQ-rq-R9M.normalTitle" = "Contact Support";
+"cyQ-rq-R9M.normalTitle" = "サポートへ連絡する";

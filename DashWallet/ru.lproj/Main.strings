@@ -15,7 +15,7 @@
 "D1b-HB-lKH.text" = "Начать/восстановить другой кошелек";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "Курсы обмена предоставлены\nbitpay.com/rates и poloniex.com";
+"D4H-hd-LsX.text" = "Информация о курсе предоставлена\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "Вам понадобится эта фраза, чтобы восстановить Ваш кошелёк, если Вы потеряете свой телефон";
@@ -153,4 +153,4 @@
 "Ng6-uV-YUC.normalTitle" = "Поделиться";
 
 /* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
-"cyQ-rq-R9M.normalTitle" = "Contact Support";
+"cyQ-rq-R9M.normalTitle" = "Связаться с поддержкой";
