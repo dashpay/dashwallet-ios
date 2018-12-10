@@ -28,6 +28,7 @@
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
+		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
 		2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */; };
 		2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */; };
@@ -294,6 +295,7 @@
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
+		2A8F420821BED16300858B91 /* DashSyncCurrentCommit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DashSyncCurrentCommit; sourceTree = SOURCE_ROOT; };
 		2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewController.m; sourceTree = "<group>"; };
 		2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MigrationStoryboard.storyboard; sourceTree = "<group>"; };
@@ -860,6 +862,7 @@
 			isa = PBXGroup;
 			children = (
 				FBFC2E9E21137A4200D20C57 /* Montserrat */,
+				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
 				757E09971ADB8EEB006FD352 /* Localizable.strings */,
 				75D5F3CD191EC270004AB296 /* main.m */,
@@ -1102,6 +1105,7 @@
 			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "dashwallet" */;
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
+				2A8F420721BED08700858B91 /* Run Script - DashSync Version */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
@@ -1334,6 +1338,7 @@
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				FBFC2EBD21137A7A00D20C57 /* Montserrat-Bold.otf in Resources */,
+				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				FBFC2ECD21137A7A00D20C57 /* Montserrat-Light.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1431,6 +1436,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		2A8F420721BED08700858B91 /* Run Script - DashSync Version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - DashSync Version";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/dashsync_version.sh\"\n";
 		};
 		4F32946C767072BBC965A5C3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
