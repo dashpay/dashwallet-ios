@@ -105,6 +105,11 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+        [self updateTitleView];
+    }
+    
     if (self.usingShapeshift) {
         self.addressLabel.text = (self.to.length > 0) ?
         [NSString stringWithFormat:NSLocalizedString(@"to: %@ (via Shapeshift)", nil), self.to] : nil;
@@ -152,16 +157,13 @@
 - (void)updateLocalCurrencyLabel
 {
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    uint64_t amount = 0;
+    uint64_t amount = self.amount;
     if (self.usingShapeshift) {
 #if SHAPESHIFT_ENABLED
         amount = (self.swapped) ? [priceManager amountForBitcoinCurrencyString:self.amountLabel.text] * 1.02:
         [priceManager amountForDashString:self.amountLabel.text] * .98;
         if (amount) amount += (self.swapped) ?1.0/[[priceManager localCurrencyDashPrice] floatValue] * pow(10.0, priceManager.dashFormat.maximumFractionDigits):1.0/[[priceManager localCurrencyBitcoinPrice] floatValue] * pow(10.0, priceManager.bitcoinFormat.maximumFractionDigits);
 #endif
-    } else {
-        amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
-        [priceManager amountForDashString:self.amountLabel.text];
     }
     
     self.swapLeftLabel.hidden = YES;
@@ -313,9 +315,6 @@
             [self.delegate amountViewController:self shapeshiftDashAmount:self.amount];
 #endif
     }else {
-        self.amount = (self.swapped) ? [priceManager amountForLocalCurrencyString:self.amountLabel.text] :
-        [priceManager amountForDashString:self.amountLabel.text];
-        
         if (self.amount == 0){
             [DSEventManager saveEvent:@"amount:pay_zero"];
             return;
@@ -361,8 +360,7 @@
     CGFloat scale = self.swapRightLabel.font.pointSize/self.swapLeftLabel.font.pointSize;
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     NSString *s = (self.swapped) ? self.localCurrencyLabel.text : self.amountLabel.text;
-    uint64_t amount =
-    [priceManager amountForLocalCurrencyString:(self.swapped) ? [s substringWithRange:NSMakeRange(1, s.length - 2)] : s];
+    uint64_t amount = self.amount;
     if (self.usingShapeshift) {
 #if SHAPESHIFT_ENABLED
         NSMutableAttributedString * attributedString = [[NSMutableAttributedString alloc] initWithString:@"(~"];
@@ -589,6 +587,14 @@
             amountLabel.text = formattedAmount;
         }
     }
+    
+    if (self.swapped) {
+        self.amount = [priceManager amountForLocalCurrencyString:formattedAmount];
+    }
+    else {
+        self.amount = number.floatValue * DUFFS;
+    }
+    
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     if (!self.requestingAmount) {
         if (! authenticationManager.didAuthenticate && (formattedAmount.length == 0 || self.amountLabelIsEmpty || ![number floatValue]) && self.navigationItem.rightBarButtonItem != self.lock) {
