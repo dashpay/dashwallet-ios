@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutModel : NSObject
 
-- (NSAttributedString *)attributedTitleForTemplate:(NSAttributedString *)templateString;
+- (NSString *)mainTitle;
 - (NSString *)status;
 
 - (void)performCopyLogs;

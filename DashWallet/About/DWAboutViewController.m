@@ -58,8 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.logsCopyButton.hidden = NO;
 #endif
 
-    NSAttributedString *templateString = self.mainTitleLabel.attributedText;
-    self.mainTitleLabel.attributedText = [self.model attributedTitleForTemplate:templateString];
+    self.mainTitleLabel.text = [self.model mainTitle];
 
     [self.mainContentView.gestureRecognizers.firstObject addTarget:self action:@selector(aboutAction:)];
 

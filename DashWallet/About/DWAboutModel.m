@@ -26,20 +26,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutModel
 
-- (NSAttributedString *)attributedTitleForTemplate:(NSAttributedString *)templateString {
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithAttributedString:templateString];
-    if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-        [title replaceCharactersInRange:[title.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch]
-                             withString:[NSString stringWithFormat:@"%%net%% (%@)",
-                                         [[DWEnvironment sharedInstance].currentChain name]]];
+- (NSString *)mainTitle {
+    DWEnvironment *environment = [DWEnvironment sharedInstance];
+    NSString *networkString = @"";
+    if (![environment.currentChain isMainnet]) {
+        networkString = [NSString stringWithFormat:@" (%@)", environment.currentChain.name];
     }
-    [title replaceCharactersInRange:[title.string rangeOfString:@"%ver%" options:NSCaseInsensitiveSearch]
-                         withString:[NSString stringWithFormat:@"%@ - %@",
-                                     NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
-                                     NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"]]];
-    [title replaceCharactersInRange:[title.string rangeOfString:@"%net%" options:NSCaseInsensitiveSearch] withString:@""];
     
-    return [title copy];
+    static NSString *dashSyncCommit = nil;
+    if (!dashSyncCommit) {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"DashSyncCurrentCommit" ofType:nil];
+        dashSyncCommit = [[NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+        NSParameterAssert(dashSyncCommit);
+        if (!dashSyncCommit) {
+            dashSyncCommit = @"?";
+        }
+        // use first 7 characters of commit sha (same as GitHub)
+        dashSyncCommit = dashSyncCommit.length > 7 ? [dashSyncCommit substringToIndex:7] : dashSyncCommit;
+    }
+    
+    NSBundle *bundle = [NSBundle mainBundle];
+    // non-localizable
+    return [NSString stringWithFormat:@"DashWallet v%@ - %@%@\nDashSync %@",
+            bundle.infoDictionary[@"CFBundleShortVersionString"],
+            bundle.infoDictionary[@"CFBundleVersion"],
+            networkString,
+            dashSyncCommit];
 }
 
 - (NSString *)status {
