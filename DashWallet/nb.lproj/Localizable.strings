@@ -42,7 +42,7 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"About" = "om";
+"About" = "About";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
@@ -99,7 +99,7 @@
 "change" = "juster";
 
 /* No comment provided by engineer. */
-"Change passcode" = "endre pinkode";
+"Change passcode" = "Change passcode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "justere beløp?";
@@ -186,7 +186,7 @@
 "do it later" = "gjør det senere";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "IKKE la noen se din gjennopprettingsfrase; de kan sende dine dash.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
@@ -252,7 +252,7 @@
 "ignore" = "ignorer";
 
 /* No comment provided by engineer. */
-"Import private key" = "importer privat nøkkel";
+"Import private key" = "Import private key";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "VIKTIG";
@@ -282,7 +282,7 @@
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
-"Moved" = "flyttet";
+"Moved" = "Moved";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -306,7 +306,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "ikke en Dash eller Bitcoin QR-kode";
 
 /* No comment provided by engineer. */
 "not a dash QR code" = "not a dash QR code";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "ikke en gyldig Dash-adresse";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "ikke en gyldig Dash eller Bitcoin adresse";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -360,13 +360,13 @@
 "Receive dash at this address: %@" = "Motta dash på denne adressen: %@";
 
 /* No comment provided by engineer. */
-"Received" = "mottatt";
+"Received" = "Received";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "mottok %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "gjenopprettingsfrase";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "gjenopprettingsfrasen stemmer ikke";
@@ -381,7 +381,7 @@
 "Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
-"Request" = "forespør";
+"Request" = "Request";
 
 /* No comment provided by engineer. */
 "request an amount" = "forespør et beløp";
@@ -393,7 +393,7 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "skann blokkjeden om igjen";
+"Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "skann blokkjeden om igjen om du tror du mangler transaksjoner eller har problemer med å utføre transaksjoner (reskanning kan ta flere minutter)";
@@ -438,7 +438,7 @@
 "send request as message" = "send forespørsel på melding";
 
 /* No comment provided by engineer. */
-"Sent" = "sendt";
+"Sent" = "Sent";
 
 /* No comment provided by engineer. */
 "sent!" = "sendt!";
@@ -447,7 +447,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"Settings" = "innstillinger";
+"Settings" = "Innstillinger";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -534,13 +534,13 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "grense for Touch ID";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"Transaction history" = "transaksjonshistorie";
+"Transaction history" = "Transaction history";
 
 /* No comment provided by engineer. */
 "trust" = "trust";

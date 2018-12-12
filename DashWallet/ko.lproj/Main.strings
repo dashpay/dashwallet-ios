@@ -15,7 +15,7 @@
 "D1b-HB-lKH.text" = "새 지갑 / 지갑 복원";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "bitpay.com/rates 그리고 poloniex.com로 부터\n환율 데이터를 제공받습니다.";
+"D4H-hd-LsX.text" = "Exchange rate data provided by\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "휴대전화를 분실한 경우, 이 문구는 귀하의 지갑을 복원하는데 필요할 것입니다.";

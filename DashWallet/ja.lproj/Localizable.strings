@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ の単位は 'mDASH' %@ = 1 DASH.";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ の単位は「mDASH」です。%@ ＝ 1 DASHです。";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ はカメラへのアクセスを拒否されています。";
@@ -15,7 +15,7 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"0 confirmations" = "0承認済み";
+"0 confirmations" = "0承認";
 
 /* No comment provided by engineer. */
 "1 confirmation" = "1承認済み";
@@ -33,7 +33,7 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n端末のパスコードを設定しないとウォレットを守ることができません。端末設定にてパスコードを有効にしてから進んでください。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n使用済みアドレス\nダッシュのアドレスの使用回数は１回だけにしてください。\n\nアドレスの再利用はあなたと送金先のプライバシーを低下させます。もし受け手がそのアドレスを直接管理していない場合は、資金が失われる可能性もあります。";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n使用済みアドレス\nDashアドレスの使用回数は1回だけにしてください。\n\nアドレスの再利用はあなたと送金先のプライバシーを低下させます。もし受け手がそのアドレスを直接管理していない場合は、資金が失われる可能性もあります";
 
 /* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nカメラへのアクセスを有効化するには\n設定⇒プライバシー⇒カメラ⇒%@";
@@ -63,7 +63,7 @@
 "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = " %@というアプリがあなたに支払いをするためにアドレスを請求していますが、認可しますか？ ";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = " %@ というアプリがあなたのマスターパブリックキーを要求しています。これはあなたのウォレットの記録を取るために使用されます。あなたのダッシュが他へ送金されることはありません。";
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = " %@ というアプリがあなたのマスターパブリックキーを要求しています。これはあなたのウォレットの記録を取るために使用されます。あなたのDashが他へ送金されることはありません。";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "本当に大丈夫ですか？";
@@ -75,19 +75,19 @@
 "bad recovery phrase" = "不正な復元フレーズ";
 
 /* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "ビットコインのアドレス (shapeshift)";
+"Bitcoin address (shapeshift)" = "ビットコインのアドレス（shapeshift）";
 
 /* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "ビットコインの支払いは %@以上必要です。";
+"bitcoin payments can't be less than %@" = "ビットコインの支払いは %@以上必要です";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "ブロック #%1$d / %2$d";
 
 /* No comment provided by engineer. */
-"Buy Dash" = "ダッシュを買う";
+"Buy Dash" = "Dashを買う";
 
 /* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "ダッシュウォレットでダッシュを買う";
+"Buy dash in dashwallet!" = "DashウォレットでDashを買う";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "この端末を初期化すると、この端末の資金にアクセスできなくなります。 端末の初期化は復元パスフレーズへのアクセス権がなくなり、PINコードも忘れてしまった場合にのみ実施して下さい。";
@@ -117,10 +117,10 @@
 "clear trusted node?" = "信頼されているノードを消去しますか？";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "クリップボードに有効なDashアドレスが含まれていません";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "クリップボードには有効なDashアドレスもビットコインアドレスもありません";
 
 /* No comment provided by engineer. */
 "close app" = "アプリを閉じる";
@@ -156,37 +156,37 @@
 "couldn't sweep balance" = "全残高送金ができませんでした";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "取引をダッシュネットワークへ送信できませんでした";
+"couldn't transmit payment to dash network" = "取引をDashネットワークへ送信できませんでした";
 
 /* No comment provided by engineer. */
 "CRITICAL" = "重要";
 
 /* No comment provided by engineer. */
-"Dash address" = "ダッシュアドレス";
+"Dash address" = "Dashアドレス";
 
 /* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "ダッシュアドレスをクリップボードにコピーすることもできます。\nダッシュアドレスは\n常に 'X' または '7' で始まります。";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dashアドレスをクリップボードにコピーすることもできます。Dashアドレスは常に「X」または「7」で始まります。";
 
 /* No comment provided by engineer. */
-"dash network fee" = "ダッシュネットワーク手数料";
+"dash network fee" = "Dashネットワーク手数料";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "ダッシュの送金は %@ 以上でないと送れません。";
+"dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "ダッシュの取引出力は %@ 以上でないといけません。";
+"dash transaction outputs can't be less than %@" = "Dashの取引出力は %@ 以上でないといけません";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでも他の全てのアプリのキーチェーンのデータへアクセスできます。(つまり、あなたのダッシュを簡単に盗めます。)";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでも他の全てのアプリのキーチェーンのデータへアクセスできます（つまり、あなたのDashを簡単に盗めます）。";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセス権限が持てますので、あなたのダッシュウォレットを簡単に盗めます。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでもキーチェーンへのアクセス権限が持てます（あなたのDashュウォレットも簡単に盗まれてしまいます）。直ちにこのウォレットを完全削除して、安全な端末にて復元して下さい。";
 
 /* No comment provided by engineer. */
 "do it later" = "後でやります";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを簡単に盗むことができます。";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのDashを簡単に盗むことができます。";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "スクリーンショットをご遠慮下さい。他のアプリや端末に復元フレーズが見えてしまう危険性があります。";
@@ -216,7 +216,7 @@
 "enter" = "入力する";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "ダッシュ取引署名時エラー";
+"error signing dash transaction" = "Dash取引署名時エラー";
 
 /* No comment provided by engineer. */
 "exit" = "終了する";
@@ -258,25 +258,25 @@
 "IMPORTANT" = "重要！！！";
 
 /* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "前のバージョンのDashウォレットでは、このデバイスで復元フレーズを表示した際に、アプリが12個のすべての単語を正しく表示していないことが判明しました。 完全な復元フレーズをもう一度書き留めてください！";
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "前のバージョンのDashウォレットでは、このデバイスで復元フレーズを表示した際に、アプリが12個のすべての単語を正しく表示していなかったことが判明しました。 完全な復元フレーズをもう一度書き留めてください！";
 
 /* No comment provided by engineer. */
 "instant payment" = "即時支払い";
 
 /* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時送金（インスタントセンド）には十分な入金と6回の承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時送金［インスタントセンド］には十分な入金と6回の承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "残高不足";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "ダッシュの\nネットワーク手数料を含めると\n残高が足りません";
+"insufficient funds for dash network fee" = "Dashネットワーク手数料を含めると残高が足りません";
 
 /* No comment provided by engineer. */
 "INVALID" = "無効";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "このQRコードを人に見せる、または\nダッシュアドレスをコピーして人に\n送るとすぐに送金を受け取れます。";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "このQRコードを見せる、またはDashアドレスをコピーして取引相手に送るとすぐに送金を受け取れます。";
 
 /* No comment provided by engineer. */
 "more..." = "さらに…";
@@ -294,10 +294,10 @@
 "next, write down your recovery phrase" = "復元フレーズを紙に書き留めて下さい！";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+"NFC device didn't transmit a valid dash address" = "NFCデバイスは有効なDashアドレスを送信しませんでした";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFCデバイスは有効なDashアドレスやビットコインアドレスを送信しませんでした";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "為替レートのデータがありません";
@@ -306,19 +306,19 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "DashまたはビットコインのQRコードではありません";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
+"not a dash QR code" = "DashのQRコードではありません";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "有効なビットコインアドレスではありません";
 
 /* No comment provided by engineer. */
-"not a valid dash address" = "有効なダッシュアドレスではありません";
+"not a valid dash address" = "有効なDashアドレスではありません";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "Dashまたはビットコインのアドレスとして有効ではありません";
 
 /* No comment provided by engineer. */
 "ok" = "OK";
@@ -345,7 +345,7 @@
 "pending" = "保留中";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "ウォレットをアップグレードするためにPINコード入力してください。";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "ウォレットをアップグレードするためPINを入力してください";
@@ -357,7 +357,7 @@
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "レート: %@ = %@\nアップデート後: %@\nブロック #%d of %d\n接続先: %d\nDL 接続先: %@";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "このアドレスでダッシュを受取る： %@";
+"Receive dash at this address: %@" = "このアドレスでDashを受取る： %@";
 
 /* No comment provided by engineer. */
 "Received" = "受取済み";
@@ -405,10 +405,10 @@
 "retry" = "もう１回試す";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "他の人が保有するQRコードをスキャンして、Dashアドレスを取得します。あなたはアドレスを持つ人に対して支払いを送れます。";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Dashまたはビットコインアドレスを取得するためにQRコードを見せてもらって下さい。Dashアドレスを持っている人であれば誰にでも送金が可能です。";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "スクリーンショットは、他のアプリやデバイスで閲覧することができます。新しい復元フレーズを作り大事に守って下さい。";
@@ -423,7 +423,7 @@
 "send" = "送金する";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高%1$@ (%2$@) をあなたのウォレット宛に送金しても宜しいですか？ダッシュネットワークへの手数料が %3$@ (%4$@) です。";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "スキャンした秘密鍵の全残高%1$@ （%2$@） をあなたのウォレット宛に送金してもよろしいですか？Dashネットワークへの手数料が %3$@ （%4$@） です。";
 
 /* No comment provided by engineer. */
 "send address as email" = "ダッシュアドレスをメールにて共有";
@@ -450,7 +450,7 @@
 "Settings" = "設定";
 
 /* No comment provided by engineer. */
-"shapeshift bitcoin id:" = "ShapeshiftのビットコインID:";
+"shapeshift bitcoin id:" = "ShapeshiftのビットコインID：";
 
 /* No comment provided by engineer. */
 "shapeshift failed" = "shapeshiftのご利用は失敗しました";
@@ -504,19 +504,19 @@
 "the app will now close" = "アプリを閉じます";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これがあなたのダッシュアドレスの一つ。タップすればコピーしたりメールやSMSで共有したりできます。\n取引を行うごとにアドレスは入れ\n替わりますが、一度表示したアドレスに\n対して送られたダッシュインは\nいつまでも自動的に受け取られます。";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これはあなたのDashアドレスです。タップするとコピーされメールやSMSで共有できます。取引を行うごとにアドレスは入れ替わりますが、一度表示したアドレスに対して送られたDashはいつまでも自動的に受け取られます。";
 
 /* No comment provided by engineer. */
-"This is your dash balance." = "これがあなたのダッシュ残高です";
+"This is your dash balance." = "これがあなたのDash残高です";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "これがあなたのダッシュ残高です。ダッシュは通貨であり、為替レートが市場の動きにより変動します。";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "これはあなたのDash残高です。Dashは通貨であり、為替レートは市場の動きにより変動します。";
 
 /* No comment provided by engineer. */
 "this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金（インスタントセンド）に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金［インスタントセンド］に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
 "this request requires an instant payment but you have disabled instant payments" = "このリクエストには即時支払いが必要ですが、あなたは即時支払いを無効にしています。";
@@ -591,10 +591,10 @@
 "yes" = "yes";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってダッシュウォレット内でダッシュが購入できます。";
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってDashウォレット内でDashが購入できます。";
 
 /* No comment provided by engineer. */
 "You must enter your pin in order to enter dashwallet" = "Dashウォレットに入るにはPINの入力が必要です";
 
 /* No comment provided by engineer. */
-"you received dash!" = "ダッシュの着金確認！";
+"you received dash!" = "Dashを受け取りました！";

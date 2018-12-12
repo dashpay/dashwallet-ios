@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ 는 'mDASH' 라고 합니다. %@ = 1 DASH";
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ is for 'mDASH'. %2$@ = 1 DASH.";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@에게 카메라 접근 권한이 없습니다";
@@ -117,10 +117,10 @@
 "clear trusted node?" = "신뢰할 수 있는 노드를 삭제하시겠습니까?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "클립보드의 지갑주소가 유효하지 않음";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "클립 보드에 유효한 Dash 또는 비트 코인 주소가 없습니다";
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
@@ -294,10 +294,10 @@
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+"NFC device didn't transmit a valid dash address" = "NFC 장치가 유효한 Dash 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC 장치가 유효한 Dash 또는 비트 코인 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "환율 정보가 없습니다.";
@@ -306,10 +306,10 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "대쉬 이나 비트코인 QR 코드가 아닙니다";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
+"not a dash QR code" = "Dash QR 코드가 아닙니다";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "유효한 비트코인 주소가 아님";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "유효한 대쉬 주소가 아님";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "유효한 대쉬 이나 비트코인 주소가 아님";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -345,7 +345,7 @@
 "pending" = "대기중";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "지갑 업데이트를 위해 PIN 을 입력해주세요";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
@@ -405,10 +405,10 @@
 "retry" = "재시도";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "다른 사람의 Dash 주소를 얻으려면 QR코드를 스캔하세요. 주소가 있으면 누구에게든 돈을 보낼 수 있습니다";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "다른 사람의 대쉬 이나 비트코인 주소를 얻으려면 QR코드를 스캔하세요. 주소가 있으면 누구에게든 돈을 보낼 수 있습니다";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 복원 문구를 새로 만들고 비밀로 간직하세요.";
@@ -543,7 +543,7 @@
 "Transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
-"trust" = "맡기다";
+"trust" = "trust";
 
 /* No comment provided by engineer. */
 "Try It!" = "시도하기!";

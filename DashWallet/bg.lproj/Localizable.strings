@@ -117,10 +117,10 @@
 "clear trusted node?" = "изчистване на познатите нодове?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "клипборда на съдържа валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "клипборда не съдържа валиден dash или bitcoin адрес";
 
 /* No comment provided by engineer. */
 "close app" = "затвори приложението";
@@ -294,10 +294,10 @@
 "next, write down your recovery phrase" = "следва, напиши отдолу своята фраза за възстановяване";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+"NFC device didn't transmit a valid dash address" = "NFC не предава валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC не предава валиден Dash или Bitcoin адрес";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "няма данни за обменния курс";
@@ -306,10 +306,10 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "не е Dash или Bitcoin QR код";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
+"not a dash QR code" = "не е Dash QR код";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "не е валиден Bitcoin адрес";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "не е валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "не е валиден Dash или Bitcoin адрес";
 
 /* No comment provided by engineer. */
 "ok" = "ок";
@@ -345,7 +345,7 @@
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
@@ -405,10 +405,10 @@
 "retry" = "повторен опит";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash адрес. Можете да изпратите плащане към всеки с наличен адрес.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash или bitcoin адрес. Можете да изпратите плащане към всеки с наличен адрес.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Снимките на екрана са видими от други приложения и устройства. Генерирайте нова фраза за възстановяване и го запазете в тайна.";

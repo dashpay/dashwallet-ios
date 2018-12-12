@@ -42,7 +42,7 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"About" = "rreth";
+"About" = "About";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
@@ -99,7 +99,7 @@
 "change" = "ndrysho";
 
 /* No comment provided by engineer. */
-"Change passcode" = "ndrysho kodkalimin";
+"Change passcode" = "Change passcode";
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ndrysho shumën e pagesës?";
@@ -120,7 +120,7 @@
 "clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "memorja nuk përmban një dash ose bitcoin adresë valide";
 
 /* No comment provided by engineer. */
 "close app" = "mbyll aplikacionin";
@@ -186,7 +186,7 @@
 "do it later" = "bëje më vonë";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "MOS lejoni që askush të shoh frazën rikthyese ose ata mund të shpenzojnë dash-at e juaj.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "DO NOT let anyone see your recovery phrase or they can spend your dash.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
@@ -252,7 +252,7 @@
 "ignore" = "injoro";
 
 /* No comment provided by engineer. */
-"Import private key" = "importo çelës privat";
+"Import private key" = "Import private key";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "E RËNDËSISHME";
@@ -282,7 +282,7 @@
 "more..." = "më shumë...";
 
 /* No comment provided by engineer. */
-"Moved" = "janë zhvendosur";
+"Moved" = "Moved";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -306,7 +306,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "nuk është dash ose bitcoin QR kod";
 
 /* No comment provided by engineer. */
 "not a dash QR code" = "not a dash QR code";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "nuk është dash adresë valide";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "nuk është dash ose bitcoin adresë valide";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -360,13 +360,13 @@
 "Receive dash at this address: %@" = "Prano dash në këtë adresë: %@";
 
 /* No comment provided by engineer. */
-"Received" = "të pranuara";
+"Received" = "Received";
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "pranuat %1$@ (%2$@)";
 
 /* Recovery phrase */
-"Recovery phrase" = "fraza rikthyese";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "fraza rikthyese nuk përputhet";
@@ -381,7 +381,7 @@
 "Remind me later" = "Remind me later";
 
 /* No comment provided by engineer. */
-"Request" = "kërkes";
+"Request" = "Request";
 
 /* No comment provided by engineer. */
 "request an amount" = "kërko një shumë";
@@ -393,7 +393,7 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "riskano blockchain";
+"Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
 "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "riskano blockchain nëse mendon që po ju mungon ndonjë transaksion, ose keni probleme me dërgim të pagesës (riskanimi mund të merr kohë disa minuta)";
@@ -408,7 +408,7 @@
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Skano QR kodin e dikujt tjetër për të marrë dash ose bitcoin adresën e tyre. Mund të dergoni pages gjithkujt me një adresë.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshot mund të shihen nga aplikacionet dhe pajisjet tjera. Gjenero një frazë tjetër rikthyese dhe mbaje sekret.";
@@ -438,7 +438,7 @@
 "send request as message" = "dërgo kërkesën si mesazh";
 
 /* No comment provided by engineer. */
-"Sent" = "dërguar";
+"Sent" = "Sent";
 
 /* No comment provided by engineer. */
 "sent!" = "dërguar!";
@@ -447,7 +447,7 @@
 "set a trusted node" = "set a trusted node";
 
 /* No comment provided by engineer. */
-"Settings" = "konfigurimet";
+"Settings" = "Konfigurimi";
 
 /* No comment provided by engineer. */
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
@@ -534,13 +534,13 @@
 "to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
-"Touch ID limit" = "touch id limiti";
+"Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"Transaction history" = "historia e transaksioneve";
+"Transaction history" = "Transaction history";
 
 /* No comment provided by engineer. */
 "trust" = "trust";

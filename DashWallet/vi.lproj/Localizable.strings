@@ -117,10 +117,10 @@
 "clear trusted node?" = "xoá các nút đã tin cậy?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "bộ đệm không chứa địa chỉ hợp lệ của dash";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+"clipboard doesn't contain a valid dash or bitcoin address" = "bộ đệm không chứa địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
@@ -294,10 +294,10 @@
 "next, write down your recovery phrase" = "tiếp theo, ghi xuống cụm từ phục hồi";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+"NFC device didn't transmit a valid dash address" = "Thiết bị NFC không truyền đi một địa chỉ Dash hợp lệ";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid dash or bitcoin address" = "Thiết bị NFC không truyền đi một địa chỉ Dash hoặc Bitcoin hợp lệ";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "không có thông tin về tỷ giá";
@@ -306,10 +306,10 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+"not a dash or bitcoin QR code" = "đây phải là mã QR của địa chỉ dash hay bitcoin";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
+"not a dash QR code" = "không phải dash mã QR";
 
 /* No comment provided by engineer. */
 "not a valid bitcoin address" = "không phải địa chỉ bitcoin hợp lệ";
@@ -318,7 +318,7 @@
 "not a valid dash address" = "không phải một địa chỉ dash hợp lệ";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+"not a valid dash or bitcoin address" = "không phải địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -345,7 +345,7 @@
 "pending" = "đang chờ";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"please enter pin to upgrade wallet" = "hãy nhập mã pin để nâng cấp ví";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Hãy nhập mã để nâng cấp ví";
@@ -405,10 +405,10 @@
 "retry" = "thử lại";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Quét mã QR của một người khác để lấy địa chỉ dash của họ. Bạn có thể gửi một khoản thanh toán cho bất kỳ ai với một địa chỉ.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Hãy quét mã QR của người kia để lấy địa chỉ dash hay bitcoin của họ. Bạn có thể gửi tiền cho bất cứ ai khi có địa chỉ của họ.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Hãy sinh ra một cụm từ phục hồi mới và giữ nó bí mật.";
