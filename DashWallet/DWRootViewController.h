@@ -30,8 +30,7 @@
 
 @class DWReceiveViewController, DWSendViewController;
 
-@interface DWRootViewController : DWBaseRootViewController <UIAlertViewDelegate, UIPageViewControllerDataSource,
-UIScrollViewDelegate, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
+@interface DWRootViewController : DWBaseRootViewController <UIAlertViewDelegate, UIPageViewControllerDataSource, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
 UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) IBOutlet DWReceiveViewController *receiveViewController;
