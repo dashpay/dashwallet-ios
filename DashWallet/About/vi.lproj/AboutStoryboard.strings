@@ -1,0 +1,12 @@
+
+/* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "HmO-ts-UI5"; */
+"HmO-ts-UI5.normalTitle" = "Contact Support";
+
+/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "IgV-bh-Mh7"; */
+"IgV-bh-Mh7.normalTitle" = "sao chép logs";
+
+/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "JbA-bI-SeK"; */
+"JbA-bI-SeK.text" = "Exchange rate data provided by\nget-spark.com";
+
+/* Class = "UILabel"; text = "Copyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
+"wFp-Ai-6c0.text" = "Copyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:";

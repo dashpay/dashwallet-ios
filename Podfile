@@ -42,4 +42,7 @@ post_install do |installer|
             end
         end
     end
+    
+    # update info about current DashSync version
+    system("bash scripts/dashsync_version.sh")
 end
