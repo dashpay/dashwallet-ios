@@ -981,13 +981,13 @@ static NSString *sanitizeString(NSString *s)
         } else {
             DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
             [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:wallet
-                                                           forAmount:amount forceAuthentication:YES completion:^(NSData * _Nullable seed) {
+                                                           forAmount:amount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
                                                                if (seed) {
                                                                    [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                                } else {
                                                                    [self cancelOrChangeAmount];
                                                                }
-                                                               if (!previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
+                                                               if (!previouslyWasAuthenticated) [[DSAuthenticationManager sharedInstance] deauthenticate];
                                                            }];
         }
     } else {
@@ -1009,7 +1009,7 @@ static NSString *sanitizeString(NSString *s)
                 [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
             } else {
                 
-                if (! previouslyWasAuthenticated) [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
+                if (! previouslyWasAuthenticated) [[DSAuthenticationManager sharedInstance] deauthenticate];
                 
                 if (! tx.isSigned) { // double check
                     [self cancelOrChangeAmount];

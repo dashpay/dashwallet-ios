@@ -568,8 +568,6 @@
                  [self.pageViewController setViewControllers:@[self.receiveViewController]
                                                    direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
              }];
-
-            [DSAuthenticationManager sharedInstance].didAuthenticate = YES;
             self.showTips = YES;
             [self unlock:nil];
         }
