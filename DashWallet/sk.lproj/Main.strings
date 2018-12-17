@@ -1,0 +1,132 @@
+
+/* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
+"4w7-k8-9wY.normalTitle" = "Obnoviť peňaženku";
+
+/* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
+"A4M-yq-26d.normalTitle" = "Vygenerovať frázu pre obnovenie";
+
+/* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
+"EQG-Km-ZKY.text" = "Ak niekedy stratíte telefón, budete potrebovať túto frázu pre obnovenie peňaženky";
+
+/* Class = "UILabel"; text = "sent"; ObjectID = "FjB-H2-BnK"; */
+"FjB-H2-BnK.text" = "poslané";
+
+/* Class = "UILabel"; text = "Please write it down"; ObjectID = "Td7-xP-kmB"; */
+"Td7-xP-kmB.text" = "Prosím, zapíšte si ju";
+
+/* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
+"UyF-OV-QVY.text" = "nepripojené";
+
+/* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
+"XJu-9x-HqQ.text" = "suma:";
+
+/* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
+"YC6-rN-4P5.text" = "Zadajte frázu obnovenia peňaženky, aby ste ju vymazali a spustili/obnovili inú. Váš súčasný zostatok zostáva v tejto fráze.";
+
+/* Class = "UIButton"; normalTitle = "Pay Address From Clipboard"; ObjectID = "bfj-xS-5rN"; */
+"bfj-xS-5rN.normalTitle" = "Platba na adresu zo schránky";
+
+/* Class = "UIButton"; normalTitle = "Scan QR Code"; ObjectID = "ce6-Wi-wk4"; */
+"ce6-Wi-wk4.normalTitle" = "Skenovať QR kód";
+
+/* Class = "UILabel"; text = "I wrote it down:"; ObjectID = "cyp-mV-Bhd"; */
+"cyp-mV-Bhd.text" = "Zapísal som si to:";
+
+/* Class = "UIButton"; normalTitle = "New Wallet"; ObjectID = "dOa-zm-TDG"; */
+"dOa-zm-TDG.normalTitle" = "Nová peňaženka";
+
+/* Class = "UILabel"; text = "If you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "dX6-jg-5IA"; */
+"dX6-jg-5IA.text" = "Ak niekedy stratíte telefón, budete potrebovať túto frázu na obnovenie peňaženky";
+
+/* Class = "UILabel"; text = "unconfirmed"; ObjectID = "eJ2-5h-DO2"; */
+"eJ2-5h-DO2.text" = "nepotvrdená";
+
+/* Class = "UINavigationItem"; title = "Confirm:"; ObjectID = "fQN-xb-SYb"; */
+"fQN-xb-SYb.title" = "Potvrdiť:";
+
+/* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
+"l5l-JR-LKA.text" = "Poslať DASH";
+
+/* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
+"ooJ-EA-DFl.title" = "fráza obnovenia:";
+
+/* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
+"qel-3J-2VC.text" = "Obdržať DASH";
+
+/* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
+"s4T-yd-VfX.title" = "detaily transakcie";
+
+/* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
+"t1j-JZ-FW0.text" = "žiadne transakcie";
+
+/* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
+"wDZ-DN-szv.text" = "Začať novú peňaženku tým, že vytvoríte frázu pre obnovenie peňaženky";
+
+/* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
+"83W-1O-V9b.normalTitle" = "↔︎";
+
+/* Class = "UIButton"; normalTitle = "."; ObjectID = "Cz1-M6-v6N"; */
+"Cz1-M6-v6N.normalTitle" = ".";
+
+/* Class = "UIButton"; normalTitle = "0"; ObjectID = "OKR-t9-9Lk"; */
+"OKR-t9-9Lk.normalTitle" = "0";
+
+/* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
+"bUC-MN-PXO.normalTitle" = "1";
+
+/* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
+"xaD-eI-0iC.normalTitle" = "2";
+
+/* Class = "UIButton"; normalTitle = "3"; ObjectID = "EnY-9p-vg6"; */
+"EnY-9p-vg6.normalTitle" = "3";
+
+/* Class = "UIButton"; normalTitle = "4"; ObjectID = "VQH-pt-DQg"; */
+"VQH-pt-DQg.normalTitle" = "4";
+
+/* Class = "UIButton"; normalTitle = "5"; ObjectID = "2Af-Xt-dHE"; */
+"2Af-Xt-dHE.normalTitle" = "5";
+
+/* Class = "UIButton"; normalTitle = "6"; ObjectID = "43w-iO-MOK"; */
+"43w-iO-MOK.normalTitle" = "6";
+
+/* Class = "UIButton"; normalTitle = "7"; ObjectID = "jcY-uc-kOc"; */
+"jcY-uc-kOc.normalTitle" = "7";
+
+/* Class = "UIButton"; normalTitle = "8"; ObjectID = "24A-83-L7p"; */
+"24A-83-L7p.normalTitle" = "8";
+
+/* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
+"Ika-qg-5Cf.normalTitle" = "9";
+
+/* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
+"adc-g6-wnP.text" = "Shapeshift vo vývoji";
+
+/* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
+"lbm-03-nu4.text" = "Popužiť InstantSend";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
+"x2u-C3-wz6.text" = "stav:";
+
+/* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
+"F30-En-QkL.normalTitle" = "NFC";
+
+/* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
+"7gb-Nc-x8C.text" = "Nová peňaženka";
+
+/* Class = "UILabel"; text = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected."; ObjectID = "7h3-k2-QrR"; */
+"7h3-k2-QrR.text" = "NIKDY nezadávajte frázu pre obnovenie do správcov hesiel alebo inde. Iné zariadenia môžu byť infikované.";
+
+/* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
+"AH2-hg-79I.text" = "NEDOVOĽTE, aby niekto videl Vašu frázu pre obnovenie, lebo by mohol minúť Vaše Dashe.";
+
+/* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
+"FJd-qY-pGg.normalTitle" = "Ukázať prístupové heslo";
+
+/* Class = "UILabel"; text = "WARNING"; ObjectID = "Wym-3X-CXY"; */
+"Wym-3X-CXY.text" = "UPOZORNENIE";
+
+/* Class = "UIButton"; normalTitle = "Remind me later"; ObjectID = "UQm-Kc-aR1"; */
+"UQm-Kc-aR1.normalTitle" = "Pripomenúť neskôr";
+
+/* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
+"Ng6-uV-YUC.normalTitle" = "Zdieľať";

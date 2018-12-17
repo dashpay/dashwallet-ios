@@ -27,7 +27,6 @@
 #import "DWRootViewController.h"
 #import "DWReceiveViewController.h"
 #import "DWSendViewController.h"
-#import "DWSettingsViewController.h"
 #import "DWTxHistoryViewController.h"
 #import "DWRestoreViewController.h"
 #import "DWSeedViewController.h"
