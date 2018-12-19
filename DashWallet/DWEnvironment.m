@@ -69,32 +69,59 @@
     [self.currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
 }
 
-- (void)switchToMainnet {
+- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain mainnet]) {
         [DSEventManager saveEvent:@"settings:change_network_mainnet"];
-        [self switchToNetwork:DSChainType_MainNet];
+        [self switchToNetwork:DSChainType_MainNet withCompletion:completion];
     }
 }
 
-- (void)switchToTestnet {
+- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion  {
     if (self.currentChain != [DSChain testnet]) {
         [DSEventManager saveEvent:@"settings:change_network_testnet"];
-        [self switchToNetwork:DSChainType_TestNet];
+        [self switchToNetwork:DSChainType_TestNet withCompletion:completion];
     }
 }
 
-- (void)switchToNetwork:(DSChainType)chainType {
-    DSWallet * wallet = [self currentWallet];
-    [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+- (void)switchToNetwork:(DSChainType)chainType withCompletion:(void (^)(BOOL success))completion {
     NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
-    [self reset];
-    if (![self.currentChain hasAWallet]) {
-        [wallet copyForChain:self.currentChain completion:^(DSWallet * _Nullable copiedWallet) {
-            
-        }];
+    DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
+    if (originalChainType == chainType) {
+        completion(YES); //didn't really switch but good enough
+        return;
     }
-    [self.currentChainManager.peerManager connect];
+    DSWallet * wallet = [self currentWallet];
+    DSChain * destinationChain = nil;
+    switch (chainType) {
+        case DSChainType_MainNet:
+            destinationChain = [DSChain mainnet];
+            break;
+        case DSChainType_TestNet:
+            destinationChain = [DSChain testnet];
+            break;
+        default:
+            break;
+    }
+    if (![destinationChain hasAWallet]) {
+        [wallet copyForChain:destinationChain completion:^(DSWallet * _Nullable copiedWallet) {
+            if (copiedWallet) {
+                [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+                [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
+                [self reset];
+                [self.currentChainManager.peerManager connect];
+                completion(YES);
+            } else {
+                completion(NO);
+            }
+        }];
+    } else {
+        [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+        [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
+        [self reset];
+        [self.currentChainManager.peerManager connect];
+        completion(YES);
+    }
+    
 }
 
 @end

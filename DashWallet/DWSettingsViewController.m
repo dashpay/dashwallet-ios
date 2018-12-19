@@ -487,15 +487,22 @@
                               actionWithTitle:DSLocalizedString(@"Mainnet", nil)
                               style:UIAlertActionStyleDefault
                               handler:^(UIAlertAction * action) {
-                                  [[DWEnvironment sharedInstance] switchToMainnet];
-                                  [self.tableView reloadData];
+                                  [[DWEnvironment sharedInstance] switchToMainnetWithCompletion:^(BOOL success) {
+                                      if (success) {
+                                          [self.tableView reloadData];
+                                      }
+                                  }];
+                                  
                               }];
     UIAlertAction* testnet = [UIAlertAction
                               actionWithTitle:DSLocalizedString(@"Testnet", nil)
                               style:UIAlertActionStyleDefault
                               handler:^(UIAlertAction * action) {
-                                  [[DWEnvironment sharedInstance] switchToTestnet];
-                                  [self.tableView reloadData];
+                                  [[DWEnvironment sharedInstance] switchToTestnetWithCompletion:^(BOOL success) {
+                                      if (success) {
+                                          [self.tableView reloadData];
+                                      }
+                                  }];
                               }];
     
     UIAlertAction* cancel = [UIAlertAction
