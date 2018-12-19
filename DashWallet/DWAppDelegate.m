@@ -71,6 +71,8 @@
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
     
+    [[DSAuthenticationManager sharedInstance] setOneTimeUsesAuthentication:TRUE];
+    
     if ([DWDataMigrationManager sharedInstance].shouldMigrate) {
         [self performMigratingStartWithLaunchOptions:launchOptions];
     }

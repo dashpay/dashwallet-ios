@@ -37,6 +37,7 @@
 #import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
 #import "DWVersionManager.h"
+#import "DWStoryboardSegueWithCompletion.h"
 
 #import <WebKit/WebKit.h>
 #import <LocalAuthentication/LocalAuthentication.h>
@@ -567,7 +568,6 @@
                                                    direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
              }];
             self.showTips = YES;
-            [self unlock:nil];
         }
     }
     else {
@@ -1055,6 +1055,13 @@
     return YES;
 }
 
+// MARK: - Segues
+-(void)setInitialPin {
+    [[DSAuthenticationManager sharedInstance] setPinIfNeededWithCompletion:^(BOOL needed, BOOL success) {
+        if (needed) [self setInitialPin]; //try again
+    }];
+}
+
 // MARK: - IBAction
 
 - (IBAction)tip:(id)sender
@@ -1418,10 +1425,14 @@
     return self;
 }
 
-// MARK: - Segues
-
 - (IBAction)unwindToRootViewController:(UIStoryboardSegue *)segue {
     //nothing goes here
+    if([segue isKindOfClass:[DWStoryboardSegueWithCompletion class]]){
+        DWStoryboardSegueWithCompletion *segtemp = (DWStoryboardSegueWithCompletion*)segue;// local prevents warning
+        segtemp.completion = ^{
+            [self setInitialPin];
+        };
+    }
 }
 
 // MARK: - UIGestureRecognizerDelegate

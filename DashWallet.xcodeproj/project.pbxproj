@@ -106,6 +106,7 @@
 		FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */; };
 		FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
+		FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */; };
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
@@ -545,6 +546,8 @@
 		FB43BC8B21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Main.strings"; sourceTree = "<group>"; };
 		FB43BC8C21217BB800BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/MainInterface.strings"; sourceTree = "<group>"; };
 		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		FB4AB41721CA760E001CC324 /* DWStoryboardSegueWithCompletion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStoryboardSegueWithCompletion.h; sourceTree = "<group>"; };
+		FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStoryboardSegueWithCompletion.m; sourceTree = "<group>"; };
 		FB586CB4213D5EF600836ACC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB6213D5F8200836ACC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB8213D606A00836ACC /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -877,6 +880,7 @@
 		75D5F3C7191EC270004AB296 /* DashWallet */ = {
 			isa = PBXGroup;
 			children = (
+				FB4AB41621CA75D0001CC324 /* Utils */,
 				BAC7B6BF1BD9C2B500165B84 /* AppleWatch */,
 				752E289C19234A4700DB5A3C /* Models */,
 				752E289B19234A3F00DB5A3C /* Views */,
@@ -1046,6 +1050,15 @@
 				FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */,
 			);
 			name = Cells;
+			sourceTree = "<group>";
+		};
+		FB4AB41621CA75D0001CC324 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				FB4AB41721CA760E001CC324 /* DWStoryboardSegueWithCompletion.h */,
+				FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */,
+			);
+			name = Utils;
 			sourceTree = "<group>";
 		};
 		FB6B7BC42180980C00147CEB /* Components */ = {
@@ -1688,6 +1701,7 @@
 				2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
+				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
