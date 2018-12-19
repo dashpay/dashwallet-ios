@@ -242,6 +242,11 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     self.urlObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
                                                   usingBlock:^(NSNotification *note) {
+                                                      NSURL *url = note.userInfo[@"url"];
+                                                      if ([url.absoluteString containsString:@"uphold"]) {
+                                                          return;
+                                                      }
+                                                      
                                                       if ([DWEnvironment sharedInstance].currentChain.hasAWallet) {
                                                           if (self.navigationController.topViewController != self) {
                                                               [self.navigationController popToRootViewControllerAnimated:YES];
@@ -255,11 +260,11 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])
                                                                                             direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:^(BOOL finished) {
-                                                                                                self->_url = note.userInfo[@"url"];
+                                                                                                self->_url = url;
                                                                                                 
                                                                                                 if (self.didAppear && [UIApplication sharedApplication].protectedDataAvailable) {
                                                                                                     self->_url = nil;
-                                                                                                    [c performSelector:@selector(handleURL:) withObject:note.userInfo[@"url"] afterDelay:0.0];
+                                                                                                    [c performSelector:@selector(handleURL:) withObject:url afterDelay:0.0];
                                                                                                 }
                                                                                             }];
                                                           

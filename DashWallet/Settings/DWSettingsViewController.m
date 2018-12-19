@@ -24,6 +24,7 @@
 #import "DWSeedViewController.h"
 #import "DWSelectorViewController.h"
 #import "DWSettingsControllerModel.h"
+#import "DWUpholdViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -50,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<DWBaseFormCellModel *> *)generalItems {
-    __weak __typeof(self) weakSelf = self;
+    __weak typeof(self) weakSelf = self;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -58,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"About", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -72,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Recovery phrase", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -88,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self updateLocalCurrencyCellModel];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -104,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.biometricAuthCellModel = cellModel;
         [self updateBiometricAuthCellModel];
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -118,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Enable receive notifications", nil)];
         cellModel.on = self.model.enableNotifications;
         cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -127,16 +128,16 @@ NS_ASSUME_NONNULL_BEGIN
         };
         [items addObject:cellModel];
     }
-    
+
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Uphold account", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
-            
+
             [strongSelf showUpholdAccountController];
         };
         [items addObject:cellModel];
@@ -146,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<DWBaseFormCellModel *> *)criticalItems {
-    __weak __typeof(self) weakSelf = self;
+    __weak typeof(self) weakSelf = self;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -154,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Change passcode", nil)];
         cellModel.style = DWSelectorFormCellModelStyleBlue;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -168,7 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Start / Recover another wallet", nil)];
         cellModel.style = DWSelectorFormCellModelStyleRed;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -182,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Rescan blockchain", nil)];
         cellModel.style = DWSelectorFormCellModelStyleBlue;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -196,7 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<DWBaseFormCellModel *> *)advancedItems {
-    __weak __typeof(self) weakSelf = self;
+    __weak typeof(self) weakSelf = self;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -204,7 +205,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.switchNetworkCellModel = cellModel;
     [self updateSwitchNetworkCellModel];
     cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
@@ -317,9 +318,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBiometricAuthSpendingLimit {
     [DSEventManager saveEvent:@"settings:touch_id_limit"];
-    __weak __typeof(self) weakSelf = self;
+    __weak typeof(self) weakSelf = self;
     [self.model requestBiometricAuthSpendingLimitOptions:^(BOOL authenticated, NSArray<NSString *> *_Nullable options, NSUInteger selectedIndex) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
@@ -332,7 +333,7 @@ NS_ASSUME_NONNULL_BEGIN
         controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID spending limit", nil) : NSLocalizedString(@"Face ID spending limit", nil);
         [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
         controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -346,9 +347,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setLocalCurrency {
     [DSEventManager saveEvent:@"settings:show_currency_selector"];
-    __weak __typeof(self) weakSelf = self;
+    __weak typeof(self) weakSelf = self;
     [self.model requestLocalCurrencyOptions:^(NSArray<NSString *> *_Nullable options, NSUInteger selectedIndex) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
@@ -358,7 +359,7 @@ NS_ASSUME_NONNULL_BEGIN
                selectedIndex:selectedIndex
              placeholderText:NSLocalizedString(@"no exchange rate data", nil)];
         controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
@@ -371,7 +372,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showUpholdAccountController {
-    // TODO
+    DWUpholdViewController *controller = [DWUpholdViewController controller];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)changePasscodeAction {
