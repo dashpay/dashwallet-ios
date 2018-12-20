@@ -346,6 +346,7 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSUInteger count = 0;
     for (BRPeerEntity *peer in objects) {
+        if (peer.port != 9999) continue; //don't migrate testnet
         DSPeerEntity *entity = [[DSPeerEntity alloc] initWithContext:writeContext];
         entity.address = peer.address;
         entity.misbehavin = peer.misbehavin;
