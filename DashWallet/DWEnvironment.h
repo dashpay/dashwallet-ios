@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong) DSChainManager * currentChainManager;
 
 + (instancetype _Nullable)sharedInstance;
-- (void)clearWallet;
+- (void)clearAllWallets;
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
 -(void)reset;

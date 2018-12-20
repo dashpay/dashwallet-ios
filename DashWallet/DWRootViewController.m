@@ -507,7 +507,7 @@
                                   actionWithTitle:NSLocalizedString(@"wipe", nil)
                                   style:UIAlertActionStyleDestructive
                                   handler:^(UIAlertAction * action) {
-                                      [[DWEnvironment sharedInstance] clearWallet];
+                                      [[DWEnvironment sharedInstance] clearAllWallets];
                                       [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
                                       [[NSUserDefaults standardUserDefaults] synchronize];
                                       
