@@ -216,7 +216,7 @@
                                                                   [self presentViewController:alert animated:YES completion:nil];
                                                               }
                                                               else {
-                                                                  [[DWEnvironment sharedInstance] clearWallet];
+                                                                  [[DWEnvironment sharedInstance] clearAllWallets];
                                                                   UINavigationController * navigationController = (UINavigationController*)self.presentingViewController;
                                                                   [self dismissViewControllerAnimated:TRUE completion:nil];
                                                                   

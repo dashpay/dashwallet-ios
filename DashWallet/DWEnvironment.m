@@ -31,6 +31,8 @@
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
     [self reset];
     
     return self;
@@ -61,12 +63,15 @@
 }
 
 
-- (void)clearWallet {
+- (void)clearAllWallets {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
-    [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.currentChain];
-    [[DashSync sharedSyncController] wipeSporkDataForChain:self.currentChain];
-    [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.currentChain];
-    [self.currentChain unregisterWallet:[DWEnvironment sharedInstance].currentWallet];
+    for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+        [chain unregisterAllWallets];
+    }
+    [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets
 }
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {

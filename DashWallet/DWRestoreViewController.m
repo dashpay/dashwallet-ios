@@ -224,7 +224,7 @@
 
 - (void)wipeWallet
 {
-    [[DWEnvironment sharedInstance] clearWallet];
+    [[DWEnvironment sharedInstance] clearAllWallets];
     self.textView.text = nil;
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
     [[NSUserDefaults standardUserDefaults] synchronize];
