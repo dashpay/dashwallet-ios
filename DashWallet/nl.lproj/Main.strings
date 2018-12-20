@@ -2,9 +2,6 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = " herstel portemonnee";
 
-/* Class = "UILabel"; text = "https://github.com/dashevo/dashwallet-ios"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "https://github.com/dashevo/dashwallet-ios";
-
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "lokale valuta";
 
@@ -13,9 +10,6 @@
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "Start / Herstel een andere portemonnee";
-
-/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "Wisselkoersen aangeboden door\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "als je ooit je telefoon kwijtraakt, moet je deze zin hebben om je portemonnee te herstellen";
@@ -74,9 +68,6 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "geen transacties";
 
-/* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\n\nGebaseerd op breadwallet\n\nDeze app is open source";
-
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Creëer een nieuwe portemonnee door een nieuwe herstel zin te genereren";
 
@@ -128,9 +119,6 @@
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
-/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "kopieer logs";
-
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
 "7gb-Nc-x8C.text" = "Nieuwe portemonnee";
 
@@ -151,6 +139,3 @@
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
 "Ng6-uV-YUC.normalTitle" = "Delen";
-
-/* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
-"cyQ-rq-R9M.normalTitle" = "Neem contact op";

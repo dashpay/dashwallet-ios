@@ -2596,7 +2596,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <segue destination="7Vu-ZS-0z1" kind="unwind" unwindAction="unwindToRootViewController:" id="aTk-xG-tVT"/>
+                                    <segue destination="7Vu-ZS-0z1" kind="unwind" customClass="DWStoryboardSegueWithCompletion" unwindAction="unwindToRootViewController:" id="aTk-xG-tVT"/>
                                 </connections>
                             </button>
                         </subviews>

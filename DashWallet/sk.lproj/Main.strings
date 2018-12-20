@@ -2,9 +2,6 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "Obnoviť peňaženku";
 
-/* Class = "UILabel"; text = "https://github.com/dashevo/dashwallet-ios"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "https://github.com/dashevo/dashwallet-ios";
-
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "Miestna mena";
 
@@ -13,9 +10,6 @@
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "Spustiť/obnoviť ďalšiu peňaženku";
-
-/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "Exchange rate data provided by\nget-spark.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "Ak niekedy stratíte telefón, budete potrebovať túto frázu pre obnovenie peňaženky";
@@ -74,9 +68,6 @@
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "žiadne transakcie";
 
-/* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\nAutorské práva © 2018 Dash Core\n\nZaložené na Breadwallet\n\nTáto aplikácia má otvorený zdrojový kód";
-
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "Začať novú peňaženku tým, že vytvoríte frázu pre obnovenie peňaženky";
 
@@ -128,9 +119,6 @@
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
-/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "skopírovať záznamy";
-
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
 "7gb-Nc-x8C.text" = "Nová peňaženka";
 
@@ -151,6 +139,3 @@
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
 "Ng6-uV-YUC.normalTitle" = "Zdieľať";
-
-/* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "cyQ-rq-R9M"; */
-"cyQ-rq-R9M.normalTitle" = "Contact Support";
