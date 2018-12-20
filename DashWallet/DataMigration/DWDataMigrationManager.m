@@ -346,6 +346,7 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSUInteger count = 0;
     for (BRPeerEntity *peer in objects) {
+        if (peer.port != 9999) continue; //don't migrate testnet
         DSPeerEntity *entity = [[DSPeerEntity alloc] initWithContext:writeContext];
         entity.address = peer.address;
         entity.misbehavin = peer.misbehavin;
@@ -379,19 +380,33 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
-    DSDerivationPath *derivationPath = currentAccount.defaultDerivationPath;
-    DSDerivationPathEntity *derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
+    DSDerivationPath *bip32DerivationPath = currentAccount.bip32DerivationPath;
+    DSDerivationPathEntity *bip32DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip32DerivationPath];
+    
+    
+    DSDerivationPath *bip44DerivationPath = currentAccount.bip44DerivationPath;
+    DSDerivationPathEntity *bip44DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip44DerivationPath];
 
     NSMutableDictionary<NSString *, DSAddressEntity *> *addresses = [NSMutableDictionary dictionary];
 
     NSUInteger count = 0;
     for (BRAddressEntity *address in objects) {
+        if (![address.address isValidDashAddressOnChain:[DSChain mainnet]]) continue; //only migrate mainnet addresses
+        DSDerivationPathEntity * usedDerivationPathEntity = nil;
+        if ([[bip44DerivationPath addressAtIndex:address.index internal:address.internal] isEqualToString:address.address]) {
+            usedDerivationPathEntity = bip44DerivationPathEntity;
+        } else if ([[bip32DerivationPath addressAtIndex:address.index internal:address.internal] isEqualToString:address.address]) {
+            usedDerivationPathEntity = bip32DerivationPathEntity;
+        } else {
+            continue;
+        }
         DSAddressEntity *entity = [[DSAddressEntity alloc] initWithContext:writeContext];
         entity.address = address.address;
         entity.index = address.index;
         entity.internal = address.internal;
         entity.standalone = YES;
-        entity.derivationPath = derivationPathEntity;
+        entity.derivationPath = usedDerivationPathEntity;
+
         // `entity.usedInInputs` and `entity.usedInOutputs` relations will be established in transaction migration
 
         if (entity.address) {
