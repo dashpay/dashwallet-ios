@@ -27,7 +27,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
-                                <rect key="frame" x="20" y="152" width="335" height="21"/>
+                                <rect key="frame" x="22" y="152" width="331" height="21"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -41,29 +41,70 @@
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPd-EX-JdY">
                                 <rect key="frame" x="20" y="195" width="335" height="23.5"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="19"/>
-                                <color key="textColor" red="0.0" green="0.47843137254901957" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="textColor" red="0.0" green="0.55294117647058827" blue="0.89411764705882346" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </label>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w0x-R5-6yg" customClass="DWBlueActionButton">
+                                <rect key="frame" x="22" y="479" width="331" height="50"/>
+                                <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="eNk-Yu-nlA"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
+                                <state key="normal" title="Transfer from Uphold">
+                                    <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" red="0.0" green="0.70893455179999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" red="1" green="1" blue="1" alpha="0.14999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="DWBlueActionButton">
+                                <rect key="frame" x="22" y="551" width="331" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="JBR-UR-H2k"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                <state key="normal" title="Buy Dash"/>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="2iV-z1-O47"/>
+                            <constraint firstItem="w0x-R5-6yg" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="9Gk-CS-hoZ"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bkb-VD-Oq6" secondAttribute="trailing" constant="22" id="Ms2-HH-wJa"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="OFN-Ry-F4g"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="bottom" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="66" id="Plj-11-pui"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="Saf-hc-Ugz"/>
-                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="20" id="YXd-Xk-mwr"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="22" id="YXd-Xk-mwr"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bPd-EX-JdY" secondAttribute="trailing" constant="20" id="dbd-6R-OUE"/>
+                            <constraint firstItem="bkb-VD-Oq6" firstAttribute="top" secondItem="w0x-R5-6yg" secondAttribute="bottom" constant="22" id="jFL-hB-JFh"/>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="pfP-sh-nmK"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="w0x-R5-6yg" secondAttribute="trailing" constant="22" id="tMW-l3-rcQ"/>
+                            <constraint firstItem="bkb-VD-Oq6" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="uvP-U5-uot"/>
                             <constraint firstItem="JZt-mf-cRK" firstAttribute="top" secondItem="Goh-EE-eVN" secondAttribute="top" constant="132" id="vBD-J4-gUY"/>
-                            <constraint firstItem="JZt-mf-cRK" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="xFo-hS-RLn"/>
+                            <constraint firstItem="JZt-mf-cRK" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="xFo-hS-RLn"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Goh-EE-eVN"/>
                     </view>
                     <connections>
                         <outlet property="balanceActivityIndicator" destination="rdD-oF-hUw" id="afl-wq-FOv"/>
                         <outlet property="balanceLabel" destination="bPd-EX-JdY" id="buq-YL-Ojp"/>
+                        <outlet property="buyButton" destination="bkb-VD-Oq6" id="f5h-R1-JTI"/>
+                        <outlet property="transferButton" destination="w0x-R5-6yg" id="NbT-t1-ccu"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z0t-Hn-OKI" userLabel="First Responder" sceneMemberID="firstResponder"/>

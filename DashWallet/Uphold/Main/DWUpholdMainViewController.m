@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *balanceActivityIndicator;
+@property (strong, nonatomic) IBOutlet UIButton *transferButton;
+@property (strong, nonatomic) IBOutlet UIButton *buyButton;
 
 @property (strong, nonatomic) DWUpholdMainModel *model;
 
@@ -52,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
             case DWUpholdMainModelStateLoading: {
                 [self.balanceActivityIndicator startAnimating];
                 self.balanceLabel.hidden = YES;
+                self.transferButton.enabled = NO;
+                self.buyButton.enabled = NO;
 
                 break;
             }
@@ -59,6 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
                 [self.balanceActivityIndicator stopAnimating];
                 self.balanceLabel.hidden = NO;
                 self.balanceLabel.text = self.model.card.available.description; // TODO: formats
+                self.transferButton.enabled = YES;
+                self.buyButton.enabled = YES;
 
                 break;
             }
@@ -66,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
                 [self.balanceActivityIndicator stopAnimating];
                 self.balanceLabel.hidden = NO;
                 self.balanceLabel.text = @"Error"; // TODO: localize
+                self.transferButton.enabled = NO;
+                self.buyButton.enabled = NO;
 
                 break;
             }
