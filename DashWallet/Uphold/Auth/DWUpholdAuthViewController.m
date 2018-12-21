@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdAuthViewController ()
 
+@property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
+@property (strong, nonatomic) IBOutlet UIButton *linkButton;
+
 @end
 
 @implementation DWUpholdAuthViewController
@@ -65,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
     if (![url.absoluteString containsString:@"uphold"]) {
         return;
     }
+    
+    self.linkButton.hidden = YES;
+    [self.activityIndicatorView startAnimating];
 
     [self dismissViewControllerAnimated:YES completion:nil];
 
@@ -77,6 +83,10 @@ NS_ASSUME_NONNULL_BEGIN
 
         if (success) {
             [strongSelf.delegate upholdAuthViewControllerDidAuthorize:strongSelf];
+        }
+        else {
+            strongSelf.linkButton.hidden = NO;
+            [strongSelf.activityIndicatorView stopAnimating];
         }
     }];
 }

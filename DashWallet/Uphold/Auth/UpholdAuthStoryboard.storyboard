@@ -18,8 +18,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx">
-                                <rect key="frame" x="116" y="505" width="143" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx" customClass="DWBlueActionButton">
+                                <rect key="frame" x="22" y="485" width="331" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="Ifs-Hw-QAz"/>
+                                </constraints>
                                 <state key="normal" title="Link Uphold Account"/>
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
@@ -28,14 +31,24 @@
                                     <action selector="linkUpholdAccountButtonAction:" destination="YEX-OT-hZk" eventType="touchUpInside" id="exo-Gk-zsL"/>
                                 </connections>
                             </button>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Pcb-V0-Dcc">
+                                <rect key="frame" x="177.5" y="323.5" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="fmf-gf-ZKx" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="22" id="88x-YD-aUj"/>
+                            <constraint firstItem="ZjM-hb-2dB" firstAttribute="trailing" secondItem="fmf-gf-ZKx" secondAttribute="trailing" constant="22" id="CaH-cz-TwG"/>
+                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerY" secondItem="lkZ-Ax-1R4" secondAttribute="centerY" id="Uww-Df-R0K"/>
                             <constraint firstItem="ZjM-hb-2dB" firstAttribute="bottom" secondItem="fmf-gf-ZKx" secondAttribute="bottom" constant="132" id="YLZ-nB-Sc8"/>
-                            <constraint firstItem="fmf-gf-ZKx" firstAttribute="centerX" secondItem="lkZ-Ax-1R4" secondAttribute="centerX" id="pfV-FG-uA1"/>
+                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerX" secondItem="lkZ-Ax-1R4" secondAttribute="centerX" id="jKu-mF-yL9"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ZjM-hb-2dB"/>
                     </view>
+                    <connections>
+                        <outlet property="activityIndicatorView" destination="Pcb-V0-Dcc" id="JVR-zM-ufh"/>
+                        <outlet property="linkButton" destination="fmf-gf-ZKx" id="43d-mp-Uxm"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nOJ-df-BRB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
