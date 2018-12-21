@@ -17,8 +17,9 @@
 
 #import "DWUpholdClient.h"
 
-#import "DWUpholdAPIProvider.h"
 #import "DSOperationQueue.h"
+#import "DWUpholdAPIProvider.h"
+#import "DWUpholdCardObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,7 +53,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
         _operationQueue = [[DSOperationQueue alloc] init];
         _operationQueue.maxConcurrentOperationCount = 1;
         _operationQueue.name = @"org.dash.upholdclient";
-        
+
         _accessToken = getKeychainString(UPHOLD_ACCESS_TOKEN, nil);
     }
     return self;
@@ -98,7 +99,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     }
 
     __weak typeof(self) weakSelf = self;
-    NSOperation *operation = [DWUpholdAPIProvider authOperationWithCode:code completion:^(NSString * _Nullable accessToken) {
+    NSOperation *operation = [DWUpholdAPIProvider authOperationWithCode:code completion:^(NSString *_Nullable accessToken) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -108,10 +109,91 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
         if (accessToken) {
             setKeychainString(accessToken, UPHOLD_ACCESS_TOKEN, YES);
         }
-        
-        if (completion) {
-            completion(!!accessToken);
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(!!accessToken);
+            }
+        });
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
+    NSParameterAssert(self.accessToken);
+
+    __weak typeof(self) weakSelf = self;
+    NSOperation *operation = [DWUpholdAPIProvider getDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
         }
+        
+        if (success) {
+            if (card) {
+                if (!card.address) {
+                    [strongSelf createDashCardAddress:card completion:completion];
+                }
+                else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (completion) {
+                            completion(card);
+                        }
+                    });
+                }
+            }
+            else {
+                [strongSelf createDashCard:completion];
+            }
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion(nil);
+                }
+            });
+        }
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+#pragma mark - Private
+
+- (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
+    NSParameterAssert(self.accessToken);
+    
+    __weak typeof(self) weakSelf = self;
+    NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        if (success && card) {
+            [strongSelf createDashCardAddress:card completion:completion];
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion(nil);
+                }
+            });
+        }
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+- (void)createDashCardAddress:(DWUpholdCardObject *)card completion:(void (^)(DWUpholdCardObject *_Nullable card))completion {
+    NSParameterAssert(self.accessToken);
+    NSParameterAssert(card);
+    NSAssert(!card.address, @"Card has address already");
+
+    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject * _Nullable card) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(success ? card : nil);
+            }
+        });
     }];
     [self.operationQueue addOperation:operation];
 }

@@ -15,22 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@class DWUpholdAuthViewController;
 
-@interface DWUpholdClient : NSObject
+@protocol DWUpholdAuthViewControllerDelegate <NSObject>
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
+- (void)upholdAuthViewControllerDidAuthorize:(DWUpholdAuthViewController *)controller;
 
-+ (instancetype)sharedInstance;
+@end
 
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
 
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+@interface DWUpholdAuthViewController : UIViewController
+
+@property (nullable, weak, nonatomic) id<DWUpholdAuthViewControllerDelegate> delegate;
+
++ (instancetype)controller;
 
 @end
 

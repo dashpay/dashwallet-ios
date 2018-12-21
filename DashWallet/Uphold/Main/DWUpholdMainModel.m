@@ -15,22 +15,34 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWUpholdMainModel.h"
+
+#import "DWUpholdClient.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@interface DWUpholdMainModel ()
 
-@interface DWUpholdClient : NSObject
+@property (assign, nonatomic) DWUpholdMainModelState state;
+@property (nullable, strong, nonatomic) DWUpholdCardObject *card;
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
+@end
 
-+ (instancetype)sharedInstance;
+@implementation DWUpholdMainModel
 
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
+- (void)fetch {
+    self.state = DWUpholdMainModelStateLoading;
+    __weak typeof(self) weakSelf = self;
+    [[DWUpholdClient sharedInstance] getDashCard:^(DWUpholdCardObject *_Nullable card) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
 
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+        strongSelf.card = card;
+        strongSelf.state = card ? DWUpholdMainModelStateDone : DWUpholdMainModelStateFailed;
+    }];
+}
 
 @end
 

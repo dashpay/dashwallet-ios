@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SNl-Ez-Rsa">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Montserrat-Medium.otf">
+            <string>Montserrat-Medium</string>
+        </array>
+        <array key="Montserrat-Regular.otf">
+            <string>Montserrat-Regular</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Uphold Main View Controller-->
+        <scene sceneID="ogp-1V-8Dw">
+            <objects>
+                <viewController id="SNl-Ez-Rsa" customClass="DWUpholdMainViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="3TV-oO-cBv">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
+                                <rect key="frame" x="20" y="152" width="335" height="21"/>
+                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                            </label>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="rdD-oF-hUw">
+                                <rect key="frame" x="177.5" y="195" width="20" height="20"/>
+                            </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPd-EX-JdY">
+                                <rect key="frame" x="20" y="195" width="335" height="23.5"/>
+                                <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="19"/>
+                                <color key="textColor" red="0.0" green="0.47843137254901957" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="rdD-oF-hUw" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="2iV-z1-O47"/>
+                            <constraint firstItem="bPd-EX-JdY" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="OFN-Ry-F4g"/>
+                            <constraint firstItem="bPd-EX-JdY" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="Saf-hc-Ugz"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="20" id="YXd-Xk-mwr"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bPd-EX-JdY" secondAttribute="trailing" constant="20" id="dbd-6R-OUE"/>
+                            <constraint firstItem="rdD-oF-hUw" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="pfP-sh-nmK"/>
+                            <constraint firstItem="JZt-mf-cRK" firstAttribute="top" secondItem="Goh-EE-eVN" secondAttribute="top" constant="132" id="vBD-J4-gUY"/>
+                            <constraint firstItem="JZt-mf-cRK" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="xFo-hS-RLn"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Goh-EE-eVN"/>
+                    </view>
+                    <connections>
+                        <outlet property="balanceActivityIndicator" destination="rdD-oF-hUw" id="afl-wq-FOv"/>
+                        <outlet property="balanceLabel" destination="bPd-EX-JdY" id="buq-YL-Ojp"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="z0t-Hn-OKI" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+</document>

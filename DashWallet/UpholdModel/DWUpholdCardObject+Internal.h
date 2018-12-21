@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,22 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWUpholdCardObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@interface DWUpholdCardObject (Internal)
 
-@interface DWUpholdClient : NSObject
-
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
-
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+- (void)updateAddress:(NSString *)address;
 
 @end
 

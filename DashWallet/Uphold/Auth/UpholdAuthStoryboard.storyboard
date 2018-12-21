@@ -10,10 +10,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Uphold View Controller-->
+        <!--Uphold Auth View Controller-->
         <scene sceneID="Sgi-4q-Mtc">
             <objects>
-                <viewController id="YEX-OT-hZk" customClass="DWUpholdViewController" sceneMemberID="viewController">
+                <viewController id="YEX-OT-hZk" customClass="DWUpholdAuthViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lkZ-Ax-1R4">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -25,7 +25,7 @@
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                                 <connections>
-                                    <action selector="linkUpholdAccountButtonAction:" destination="YEX-OT-hZk" eventType="touchUpInside" id="uFl-Z9-MH9"/>
+                                    <action selector="linkUpholdAccountButtonAction:" destination="YEX-OT-hZk" eventType="touchUpInside" id="exo-Gk-zsL"/>
                                 </connections>
                             </button>
                         </subviews>

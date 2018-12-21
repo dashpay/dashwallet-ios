@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,13 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSParseResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController : UIViewController
+@class DWUpholdCardObject;
 
-+ (instancetype)controller;
+@interface DWUpholdCreateCardAddressParseResponseOperation : DSParseResponseOperation
+
+@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
+
+- (instancetype)initWithCard:(DWUpholdCardObject *)card;
 
 @end
 

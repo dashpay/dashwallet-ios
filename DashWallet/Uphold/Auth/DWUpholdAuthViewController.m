@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdViewController.h"
+#import "DWUpholdAuthViewController.h"
 
 #import <SafariServices/SafariServices.h>
 
@@ -24,20 +24,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController ()
+@interface DWUpholdAuthViewController ()
 
 @end
 
-@implementation DWUpholdViewController
+@implementation DWUpholdAuthViewController
 
 + (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdStoryboard" bundle:nil];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdAuthStoryboard" bundle:nil];
     return [storyboard instantiateInitialViewController];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveURLNotification:)
                                                  name:BRURLNotification
@@ -53,7 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
         SFSafariViewControllerConfiguration *configuration = [[SFSafariViewControllerConfiguration alloc] init];
         configuration.entersReaderIfAvailable = NO;
         controller = [[SFSafariViewController alloc] initWithURL:url configuration:configuration];
-    } else {
+    }
+    else {
         controller = [[SFSafariViewController alloc] initWithURL:url entersReaderIfAvailable:NO];
     }
     [self presentViewController:controller animated:YES completion:nil];
@@ -64,9 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
     if (![url.absoluteString containsString:@"uphold"]) {
         return;
     }
-    
+
     [self dismissViewControllerAnimated:YES completion:nil];
-    
+
     __weak typeof(self) weakSelf = self;
     [[DWUpholdClient sharedInstance] completeAuthRoutineWithURL:url completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -74,7 +75,9 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        
+        if (success) {
+            [strongSelf.delegate upholdAuthViewControllerDidAuthorize:strongSelf];
+        }
     }];
 }
 

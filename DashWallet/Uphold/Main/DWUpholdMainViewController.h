@@ -15,22 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <KVO-MVVM/KVOUIViewController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@interface DWUpholdMainViewController : KVOUIViewController
 
-@interface DWUpholdClient : NSObject
-
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
-
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
++ (instancetype)controller;
 
 @end
 

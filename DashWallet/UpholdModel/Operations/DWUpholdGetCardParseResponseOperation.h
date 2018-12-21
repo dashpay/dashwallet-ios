@@ -15,22 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSParseResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 
-@interface DWUpholdClient : NSObject
+@interface DWUpholdGetCardParseResponseOperation : DSParseResponseOperation
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
-
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
 
 @end
 

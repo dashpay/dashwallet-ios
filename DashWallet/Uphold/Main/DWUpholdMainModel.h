@@ -17,20 +17,22 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWUpholdCardObject.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
+    DWUpholdMainModelStateLoading,
+    DWUpholdMainModelStateDone,
+    DWUpholdMainModelStateFailed,
+};
 
-@interface DWUpholdClient : NSObject
+@interface DWUpholdMainModel : NSObject
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
+@property (readonly, assign, nonatomic) DWUpholdMainModelState state;
+@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
 
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+- (void)fetch;
 
 @end
 

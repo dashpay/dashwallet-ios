@@ -19,18 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@interface DWUpholdCardObject : NSObject
 
-@interface DWUpholdClient : NSObject
+@property (readonly, copy, nonatomic) NSString *identifier;
+@property (readonly, strong, nonatomic) NSNumber *available;
+@property (readonly, nullable, copy, nonatomic) NSString *address;
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
-
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
 
 @end
 

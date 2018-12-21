@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -19,9 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWUpholdCardObject;
+
 @interface DWUpholdAPIProvider : NSObject
 
-+ (NSOperation *)authOperationWithCode:(NSString *)code completion:(void (^)(NSString *_Nullable accessToken))completion;
++ (NSOperation *)authOperationWithCode:(NSString *)code
+                            completion:(void (^)(NSString *_Nullable accessToken))completion;
++ (NSOperation *)getDashCardAccessToken:(NSString *)accessToken
+                             completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion;
++ (NSOperation *)createDashCardAccessToken:(NSString *)accessToken
+                                completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion;
++ (NSOperation *)createAddressForDashCard:(DWUpholdCardObject *)inputCard
+                              accessToken:(NSString *)accessToken
+                               completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion;
 
 @end
 

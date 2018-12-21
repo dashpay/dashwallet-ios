@@ -20,6 +20,10 @@
 #import "DSChainedOperation.h"
 #import "DSHTTPGETOperation.h"
 #import "DWUpholdAuthParseResponseOperation.h"
+#import "DWUpholdCardObject.h"
+#import "DWUpholdCreateCardAddressParseResponseOperation.h"
+#import "DWUpholdCreateCardParseResponseOperation.h"
+#import "DWUpholdGetCardParseResponseOperation.h"
 #import "HTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,7 +33,8 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 
 @implementation DWUpholdAPIProvider
 
-+ (NSOperation *)authOperationWithCode:(NSString *)code completion:(void (^)(NSString *_Nullable accessToken))completion {
++ (NSOperation *)authOperationWithCode:(NSString *)code
+                            completion:(void (^)(NSString *_Nullable accessToken))completion {
     NSParameterAssert(code);
 
     NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:@"oauth2/token"];
@@ -56,8 +61,100 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
     return chainOperation;
 }
 
++ (NSOperation *)getDashCardAccessToken:(NSString *)accessToken
+                             completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+    NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:@"v0/me/cards"];
+    NSURL *url = [NSURL URLWithString:urlString];
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_GET
+                                                parameters:nil];
+    [self authorizeHTTPRequest:httpRequest accessToken:accessToken];
+
+    NSURLRequest *request = [httpRequest urlRequest];
+
+    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DWUpholdGetCardParseResponseOperation *parseOperation = [[DWUpholdGetCardParseResponseOperation alloc] init];
+    DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
+    chainOperation.completionBlock = ^{
+        if (completion) {
+            BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
+            completion(success, parseOperation.card);
+        }
+    };
+
+    return chainOperation;
+}
+
+
++ (NSOperation *)createDashCardAccessToken:(NSString *)accessToken
+                                completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+    NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:@"v0/me/cards"];
+    NSURL *url = [NSURL URLWithString:urlString];
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                               contentType:HTTPContentType_JSON
+                                                parameters:@{
+                                                    @"label" : @"Dash Card",
+                                                    @"currency" : @"DASH",
+                                                }];
+    [self authorizeHTTPRequest:httpRequest accessToken:accessToken];
+
+    NSURLRequest *request = [httpRequest urlRequest];
+
+    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DWUpholdCreateCardParseResponseOperation *parseOperation = [[DWUpholdCreateCardParseResponseOperation alloc] init];
+    DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
+    chainOperation.completionBlock = ^{
+        if (completion) {
+            BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
+            completion(success, parseOperation.card);
+        }
+    };
+
+    return chainOperation;
+}
+
++ (NSOperation *)createAddressForDashCard:(DWUpholdCardObject *)inputCard
+                              accessToken:(NSString *)accessToken
+                               completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/addresses", inputCard.identifier];
+    NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:urlPath];
+    NSURL *url = [NSURL URLWithString:urlString];
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                               contentType:HTTPContentType_JSON
+                                                parameters:@{
+                                                    @"network" : @"dash",
+                                                }];
+    [self authorizeHTTPRequest:httpRequest accessToken:accessToken];
+
+    NSURLRequest *request = [httpRequest urlRequest];
+
+    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DWUpholdCreateCardAddressParseResponseOperation *parseOperation =
+        [[DWUpholdCreateCardAddressParseResponseOperation alloc] initWithCard:inputCard];
+    DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
+    chainOperation.completionBlock = ^{
+        if (completion) {
+            BOOL success = !httpOperation.internalErrors.firstObject &&
+                           !parseOperation.internalErrors.firstObject &&
+                           parseOperation.card.address;
+            completion(success, parseOperation.card);
+        }
+    };
+
+    return chainOperation;
+}
+
+#pragma mark - Private
+
 + (NSString *)baseURLString {
     return @"https://api-sandbox.uphold.com/";
+}
+
++ (void)authorizeHTTPRequest:(HTTPRequest *)request accessToken:(NSString *)accessToken {
+    NSString *authorizationHeader = [NSString stringWithFormat:@"Bearer %@", accessToken];
+    [request addValue:authorizationHeader forHeader:@"Authorization"];
 }
 
 @end

@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,22 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSParseResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 
-@interface DWUpholdClient : NSObject
+@interface DWUpholdCreateCardParseResponseOperation : DSParseResponseOperation
 
-@property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
-
-+ (instancetype)sharedInstance;
-
-- (NSURL *)startAuthRoutineByURL;
-- (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
-
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
 
 @end
 
