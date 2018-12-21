@@ -83,7 +83,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)requestBiometricAuthSpendingLimitOptions:(void (^)(BOOL authenticated, NSArray<NSString *> *_Nullable options, NSUInteger selectedIndex))completion {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
 
     [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {

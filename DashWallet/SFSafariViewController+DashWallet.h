@@ -1,6 +1,6 @@
 //
-//  Created by Sam Westrich
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by Andrew Podkovyrin
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <SafariServices/SafariServices.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBlueActionButton : UIButton
+@interface SFSafariViewController (DashWallet)
 
-@property (assign, nonatomic) IBInspectable BOOL inverted;
++ (instancetype)dw_controllerWithURL:(NSURL *)url;
 
 @end
 

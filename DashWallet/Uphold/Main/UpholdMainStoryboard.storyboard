@@ -65,6 +65,9 @@
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
+                                <connections>
+                                    <action selector="transferButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="Fj4-N0-tMd"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="DWBlueActionButton">
                                 <rect key="frame" x="22" y="551" width="331" height="50"/>
@@ -72,13 +75,18 @@
                                     <constraint firstAttribute="height" constant="50" id="JBR-UR-H2k"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
-                                <state key="normal" title="Buy Dash"/>
+                                <state key="normal" title="Buy Dash">
+                                    <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
                                 <attributedString key="userComments">
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
                                 </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="buyButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="czB-9z-0Th"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

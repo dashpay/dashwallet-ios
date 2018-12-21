@@ -44,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (nullable NSURL *)buyDashURL {
+    NSParameterAssert(self.card);
+    return [[DWUpholdClient sharedInstance] buyDashURLForCard:self.card];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

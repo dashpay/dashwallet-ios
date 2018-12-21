@@ -18,6 +18,7 @@
 #import "DWUpholdMainViewController.h"
 
 #import "DWUpholdMainModel.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -81,6 +82,21 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 
     [self.model fetch];
+}
+
+#pragma mark - Actions
+
+- (IBAction)transferButtonAction:(id)sender {
+}
+
+- (IBAction)buyButtonAction:(id)sender {
+    NSURL *url = [self.model buyDashURL];
+    if (!url) {
+        return;
+    }
+
+    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 @end

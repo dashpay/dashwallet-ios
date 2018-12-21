@@ -24,6 +24,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const INITIAL_URL_FORMAT = @"https://sandbox.uphold.com/authorize/7aadd33b84e942632ed7ffd9b09578bd64be2099?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@";
+static NSString *const BUY_CARD_URL_FORMAT = @"https://sandbox.uphold.com/dashboard/cards/%@/add";
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 
@@ -128,7 +129,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
         if (!strongSelf) {
             return;
         }
-        
+
         if (success) {
             if (card) {
                 if (!card.address) {
@@ -157,18 +158,30 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     [self.operationQueue addOperation:operation];
 }
 
+- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card {
+    if (!card.identifier) {
+        return nil;
+    }
+
+    NSString *urlString = [NSString stringWithFormat:BUY_CARD_URL_FORMAT, card.identifier];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSParameterAssert(url);
+
+    return url;
+}
+
 #pragma mark - Private
 
 - (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
     NSParameterAssert(self.accessToken);
-    
+
     __weak typeof(self) weakSelf = self;
     NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        
+
         if (success && card) {
             [strongSelf createDashCardAddress:card completion:completion];
         }
@@ -188,7 +201,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     NSParameterAssert(card);
     NSAssert(!card.address, @"Card has address already");
 
-    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject * _Nullable card) {
+    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completion) {
                 completion(success ? card : nil);

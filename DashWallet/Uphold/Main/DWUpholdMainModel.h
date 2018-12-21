@@ -34,6 +34,8 @@ typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
 
 - (void)fetch;
 
+- (nullable NSURL *)buyDashURL;
+
 @end
 
 NS_ASSUME_NONNULL_END

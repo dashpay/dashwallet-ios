@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
 
+- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
+
 @end
 
 NS_ASSUME_NONNULL_END

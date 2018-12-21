@@ -17,10 +17,9 @@
 
 #import "DWUpholdAuthViewController.h"
 
-#import <SafariServices/SafariServices.h>
-
 #import "DWAppDelegate.h"
 #import "DWUpholdClient.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,15 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)linkUpholdAccountButtonAction:(id)sender {
     NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
-    SFSafariViewController *controller = nil;
-    if (@available(iOS 11.0, *)) {
-        SFSafariViewControllerConfiguration *configuration = [[SFSafariViewControllerConfiguration alloc] init];
-        configuration.entersReaderIfAvailable = NO;
-        controller = [[SFSafariViewController alloc] initWithURL:url configuration:configuration];
-    }
-    else {
-        controller = [[SFSafariViewController alloc] initWithURL:url entersReaderIfAvailable:NO];
-    }
+    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:controller animated:YES completion:nil];
 }
 
@@ -68,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (![url.absoluteString containsString:@"uphold"]) {
         return;
     }
-    
+
     self.linkButton.hidden = YES;
     [self.activityIndicatorView startAnimating];
 
