@@ -2543,10 +2543,10 @@
                                 <constraints>
                                     <constraint firstAttribute="centerX" secondItem="dz8-9E-hrc" secondAttribute="centerX" id="8Le-xq-Vck"/>
                                     <constraint firstAttribute="bottom" secondItem="dz8-9E-hrc" secondAttribute="bottom" constant="15" id="9zj-mu-Ppk"/>
-                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="dz8-9E-hrc" secondAttribute="trailing" constant="14" id="Ksv-pc-3WK"/>
+                                    <constraint firstAttribute="trailing" secondItem="dz8-9E-hrc" secondAttribute="trailing" constant="14" id="Ksv-pc-3WK"/>
                                     <constraint firstItem="dz8-9E-hrc" firstAttribute="top" secondItem="ZPH-1d-tW9" secondAttribute="top" constant="15" id="W3O-eb-rQb"/>
                                     <constraint firstAttribute="centerY" secondItem="dz8-9E-hrc" secondAttribute="centerY" id="tjh-cL-7bM"/>
-                                    <constraint firstItem="dz8-9E-hrc" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ZPH-1d-tW9" secondAttribute="leading" constant="14" id="uiv-dF-zNv"/>
+                                    <constraint firstItem="dz8-9E-hrc" firstAttribute="leading" secondItem="ZPH-1d-tW9" secondAttribute="leading" constant="14" id="uiv-dF-zNv"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
