@@ -842,6 +842,14 @@
     
     self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
+    
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
+    if (!self.shouldShowTips) {
+        [self hideTips];
+    }
+    self.shouldShowTips = YES;
+
+    
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     if (self.progress.alpha < 0.5) return;
@@ -924,12 +932,15 @@
     
     counter++;
     self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
-    if (progress + DBL_EPSILON >= 1.0) {
-        if (!self.shouldShowTips) [self hideTips];
-        self.shouldShowTips = YES;
-        if (![DSAuthenticationManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
+    
+    if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
+        self.navigationItem.titleView = self.logo;
     }
-    else [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+    else {
+        self.navigationItem.titleView = nil;
+    }
+
+    [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
 - (void)ping
