@@ -48,7 +48,7 @@
 "Action Needed" = "必ず実施して下さい";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "高度な設定";
 
 /* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
@@ -204,10 +204,10 @@
 "enable" = "有効にする";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "高度な機能を有効にする";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "高度な機能を有効にしますか？";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "通知の受け取りを有効にする";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "ウォレットの更新に失敗しました";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "全ての金額を吐き出す";
 
 /* No comment provided by engineer. */
 "from:" = "送金元:";
@@ -285,7 +285,7 @@
 "Moved" = "移動されました";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "ネットワーク";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "為替レートのデータがありません";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "ノードのIP";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "DashまたはビットコインのQRコードではありません";
@@ -327,7 +327,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "ブロックチェーン技術に精通している場合にのみ、高度な機能を有効にしてください。\n有効にした場合は、あなたが理解している高度な機能のみを使って下さい。";
 
 /* No comment provided by engineer. */
 "Pay" = "送金";
@@ -462,7 +462,7 @@
 "shapeshift succeeded" = "shapeshiftのご利用が成功しました";
 
 /* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
+"Shapeshift!" = "Shapeshift！";
 
 /* No comment provided by engineer. */
 "show" = "表示";
@@ -471,7 +471,7 @@
 "show phrase" = "フレーズを表示";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "サイズ：";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "SMSは現在利用できません．";
@@ -579,7 +579,7 @@
 "WARNING" = "警告";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "閲覧のみ";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "復元フレーズを書き留めて下さい！";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "はい";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "現金や銀行送金を使ってDashウォレット内でDashが購入できます。";

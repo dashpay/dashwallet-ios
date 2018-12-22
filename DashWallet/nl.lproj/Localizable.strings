@@ -48,7 +48,7 @@
 "Action Needed" = "Actie Benodigd";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "GEAVANCEERD";
 
 /* No comment provided by engineer. */
 "always require passcode" = "altijd toegangscode vereisen";
@@ -204,10 +204,10 @@
 "enable" = "Inschakele";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "Geavanceerde functies activeren";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "Geavanceerde functies activeren?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Schakel het ontvangen van meldingen in";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "Mislukte update van de portemonnee";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "ophalen van bedrag";
 
 /* No comment provided by engineer. */
 "from:" = "van:";
@@ -285,7 +285,7 @@
 "Moved" = "Verplaatst";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Netwerk";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Voer je herstelzin NOOIT in in wachtwoordbeheerders of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "geen beursratio-gegevens";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "node IP adres";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "geen dash of bitcoin QR-code";
@@ -327,7 +327,7 @@
 "OK" = "Oké";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
 
 /* No comment provided by engineer. */
 "Pay" = "Betaal";
@@ -471,7 +471,7 @@
 "show phrase" = "toon zin";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "grootte:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms is momenteel niet beschikbaar";
@@ -522,7 +522,7 @@
 "this request requires an instant payment but you have disabled instant payments" = "dit verzoek heeft een onmiddellijke betaling nodig maar onmiddellijke betalingen heb je uitgeschakeld";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Deze portemonnee is niet leeg of sync is nog niet klaar, je mag het niet wissen zonder een herstelzin.";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Deze portemonnee is niet leeg of sync is nog niet klaar, je mag het niet wissen zonder de herstelzin.";
 
 /* No comment provided by engineer. */
 "to:" = "naar:";
@@ -579,7 +579,7 @@
 "WARNING" = "WAARSCHUWING";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "alleen bekijken";
 
 /* No comment provided by engineer. */
 "wipe" = "wis";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SCHRIJF JE HERSTELZIN OP";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "ja";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Je kunt nu dash kopen in\ndashwallet d.m.v. geld of\neen bankoverschrijving.";

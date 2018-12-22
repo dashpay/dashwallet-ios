@@ -12,7 +12,7 @@
 "%d confirmations" = "%d confirmations";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d duffs/octet";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 confirmation";
@@ -21,7 +21,7 @@
 "1 confirmation" = "1 confirmation";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
+"1 duff/byte" = "1 duff/octet";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" n'est pas un mot de phrase de récupération";
@@ -48,7 +48,7 @@
 "Action Needed" = "Action requise";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "AVANCÉ";
 
 /* No comment provided by engineer. */
 "always require passcode" = "toujours exiger le code d'accès";
@@ -204,10 +204,10 @@
 "enable" = "activer";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "Activer les fonctions avancées";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "Activer les fonctions avancées ?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Recevoir des notifications";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "Échec de la mise à jour du portefeuille";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "récupération du montant";
 
 /* No comment provided by engineer. */
 "from:" = "de :";
@@ -285,7 +285,7 @@
 "Moved" = "Déplacé";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Réseau";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Ne tapez JAMAIS votre phrase de récupération dans un gestionnaire de mots de passe, ni ailleurs. D'autres appareils peuvent être compromis.";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "aucune donnée de taux de change";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "IP du nœud";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "ce code QR n'est pas valide pour dash ou bitcoin";
@@ -327,7 +327,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "N'activez les fonctions avancées que si vous connaissez bien la technologie blockchain.\nSi vous les activez, n'utilisez que celles que vous comprenez.";
 
 /* No comment provided by engineer. */
 "Pay" = "Payer";
@@ -462,7 +462,7 @@
 "shapeshift succeeded" = "shapeshift réussi";
 
 /* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
+"Shapeshift!" = "Shapeshift !";
 
 /* No comment provided by engineer. */
 "show" = "montrer";
@@ -471,7 +471,7 @@
 "show phrase" = "montrer la phrase";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "taille :";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms actuellement indisponible";
@@ -579,7 +579,7 @@
 "WARNING" = "AVERTISSEMENT";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "lecture seule";
 
 /* No comment provided by engineer. */
 "wipe" = "effacer";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ÉCRIVEZ SUR PAPIER VOTRE PHRASE DE RÉCUPÉRATION";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "oui";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Vous pouvez maintenant acheter du dash \ndans dashwallet avec du cash ou\npar transfert banquaire.";

@@ -12,7 +12,7 @@
 "%d confirmations" = "%d onaylama";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d duff/bayt";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 onaylama";
@@ -21,7 +21,7 @@
 "1 confirmation" = "1 onaylama";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
+"1 duff/byte" = "1 duff/bayt";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" kurtarma cümlesi kelimesi değil";
@@ -48,7 +48,7 @@
 "Action Needed" = "Eylem Gerekiyor";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "İLERİ SEVİYE";
 
 /* No comment provided by engineer. */
 "always require passcode" = "her zaman parola gerektir";
@@ -204,10 +204,10 @@
 "enable" = "etkinleştir";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "İleri seviye özellikleri etkinleştir";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "İleri seviye özellikler etkinleştirilsin mi?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Bildirim almayı etkinleştir";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "Cüzdan güncellemesi başarısız";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "çekilen tutar";
 
 /* No comment provided by engineer. */
 "from:" = "kaynak:";
@@ -285,7 +285,7 @@
 "Moved" = "Taşındı";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Ağ";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Kurtarma cümlenizi ASLA parola yöneticilerine veya başka bir yere yazmayın. Diğer cihazlarda açık olabilir.";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "döviz kuru verisi yok";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "düğüm ip'si";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "bir dash veya bitcoin QR kodu değildir";
@@ -327,7 +327,7 @@
 "OK" = "Tamam";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "İleri seviye özellikleri sadece blok zinciri teknolojisinden anlıyorsanız etkinleştirin\nEtkinleştirirseniz sadece bildiğiniz ileri seviye özellikleri kullanın.";
 
 /* No comment provided by engineer. */
 "Pay" = "Ödeme";
@@ -471,7 +471,7 @@
 "show phrase" = "metni göster";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "boyut:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "kısa mesaj şu anda kullanılabilir değil";
@@ -579,7 +579,7 @@
 "WARNING" = "UYARI";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "sadece saat için";
 
 /* No comment provided by engineer. */
 "wipe" = "sil";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "KURTARMA METNİNİZİ NOT EDİNİZ";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "evet";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Şimdi dashwallet üzerinden\nnakit veya banka havalesi ile\ndash satın alabilirsiniz.";
