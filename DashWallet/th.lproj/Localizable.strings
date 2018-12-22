@@ -12,7 +12,7 @@
 "%d confirmations" = "%d การยืนยัน";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d ดัฟฟ์/ไบต์";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
@@ -21,7 +21,7 @@
 "1 confirmation" = "1 การยืนยัน";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
+"1 duff/byte" = "1 ดัฟฟ์/ไบต์";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
@@ -48,7 +48,7 @@
 "Action Needed" = "การกระทำที่จำเป็น";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "ขั้นสูง";
 
 /* No comment provided by engineer. */
 "always require passcode" = "จำเป็นต้องใช้รหัสตลอด";
@@ -204,10 +204,10 @@
 "enable" = "ทำให้สามารถ";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "เปิดใช้งานคุณลักษณะขั้นสูง";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "เปิดใช้งานคุณลักษณะขั้นสูงใช่หรือไม่?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "เปิดรับการแจ้งเตือน";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "กำลังเรียกจำนวน";
 
 /* No comment provided by engineer. */
 "from:" = "จาก:";
@@ -285,7 +285,7 @@
 "Moved" = "เคลื่อนย้าย";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "เครือข่าย";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
@@ -327,7 +327,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -471,7 +471,7 @@
 "show phrase" = "แสดงวลี";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "ขนาด:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms ไม่พร้อมใช้งาน";
@@ -579,7 +579,7 @@
 "WARNING" = "คำเตือน";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "ดูเท่านั้น";
 
 /* No comment provided by engineer. */
 "wipe" = "ลบล้าง";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "เขียนวลีการกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "ใช่";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "ขณะนี้คุณสามารถซื้อ dash \nผ่านเงินใน dash wallet หรือ \nโอนผ่านธนาคารได้";

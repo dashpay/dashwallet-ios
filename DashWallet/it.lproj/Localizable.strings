@@ -12,7 +12,7 @@
 "%d confirmations" = "%d conferme";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d duffs/byte ";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 conferme";
@@ -48,7 +48,7 @@
 "Action Needed" = "Azione Necessaria";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "AVANZATE";
 
 /* No comment provided by engineer. */
 "always require passcode" = "è sempre richiesto il codice di accesso";
@@ -204,10 +204,10 @@
 "enable" = "abilita";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "Abilita funzioni avanzate";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "Abilitare funzioni avanzate?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Abilita la ricezzione delle notifiche";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "\nAggiornamento del portafoglio fallito";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "quantità di recupero";
 
 /* No comment provided by engineer. */
 "from:" = "da:";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "nessun dato del tasso di cambio";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "\"ip\" del nodo";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "non è un codice QR dash o bitcoin";
@@ -327,7 +327,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Abilita le funzionalità avanzate solo se sei esperto in tecnologia \"blockchain\".\nNel caso decida di abilitarlo, usa solo le funzioni avanzate che conosci.";
 
 /* No comment provided by engineer. */
 "Pay" = "Paga";
@@ -471,7 +471,7 @@
 "show phrase" = "mostra frase";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "taglia:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms non disponibili al momento";
@@ -579,7 +579,7 @@
 "WARNING" = "ATTENZIONE";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "guarda solamente";
 
 /* No comment provided by engineer. */
 "wipe" = "eliminare";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SCRIVI LA TUA FRASE DI RECUPERO";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "si";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Ora puoi comprare Dash nel\nportafoglio dash con contanti o con\nbonifico bancario.";

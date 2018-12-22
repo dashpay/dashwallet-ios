@@ -12,7 +12,7 @@
 "%d confirmations" = "Подтверждений: %d";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d duffs/байт";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 подтверждений";
@@ -21,7 +21,7 @@
 "1 confirmation" = "1 подтверждение";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
+"1 duff/byte" = "1 duff/байт";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "«%@» не является словом из фразы восстановления";
@@ -48,7 +48,7 @@
 "Action Needed" = "Требуется действие";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "РАСШИРЕННЫЕ";
 
 /* No comment provided by engineer. */
 "always require passcode" = "Всегда требовать код доступа";
@@ -204,10 +204,10 @@
 "enable" = "Включить";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "Включить расширенные настройки";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "Включить расширенные настройки?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Уведомлять о получении";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "Не удалось обновить кошелёк";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "получение суммы";
 
 /* No comment provided by engineer. */
 "from:" = "От:";
@@ -285,7 +285,7 @@
 "Moved" = "Перемещено";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Сеть";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "НИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "Не удалось получить курсы обмена";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "ip узла";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "Не является QR-кодом для Dash или Bitcoin";
@@ -327,7 +327,7 @@
 "OK" = "ОК";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Включайте расширенные функции, только если вы хорошо знакомы с блокчейн-технологией. \nПри включении, используйте только те расширенные функции, которые вы понимаете.";
 
 /* No comment provided by engineer. */
 "Pay" = "Оплатить";
@@ -471,7 +471,7 @@
 "show phrase" = "Показать фразу";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "размер:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "Сообщения сейчас недоступны";
@@ -579,7 +579,7 @@
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "только для просмотра";
 
 /* No comment provided by engineer. */
 "wipe" = "Стереть";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ЗАПИШИТЕ ВАШУ ФРАЗУ ВОССТАНОВЛЕНИЯ";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "да";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Теперь Вы можете купить DASH\nв dashwallet с помощью наличных\nили банковского перевода.";

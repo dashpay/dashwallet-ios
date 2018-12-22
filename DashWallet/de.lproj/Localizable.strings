@@ -12,7 +12,7 @@
 "%d confirmations" = "%d Bestätigungen";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
+"%d duffs/byte" = "%d Duffs/Byte";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 Bestätigungen";
@@ -21,7 +21,7 @@
 "1 confirmation" = "1 Bestätigung";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
+"1 duff/byte" = "1 Duff/Byte";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" ist kein Wort aus der Wiederherstellungs-Wortfolge";
@@ -48,7 +48,7 @@
 "Action Needed" = "Eingreifen erforderlich";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
+"ADVANCED" = "ERWEITERT";
 
 /* No comment provided by engineer. */
 "always require passcode" = "Zugangscode immer abfragen";
@@ -204,10 +204,10 @@
 "enable" = "Erlauben";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Enable advanced features";
+"Enable advanced features" = "Erweiterte Funktionen aktivieren";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Enable advanced features?";
+"Enable advanced features?" = "Erweiterte Funktionen aktivieren?";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Empfang von Hinweisen ermöglichen";
@@ -231,7 +231,7 @@
 "Failed wallet update" = "Wallet Update gescheitert";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
+"fetching amount" = "Betrag abrufen";
 
 /* No comment provided by engineer. */
 "from:" = "von:";
@@ -285,7 +285,7 @@
 "Moved" = "Verschoben";
 
 /* No comment provided by engineer. */
-"Network" = "Network";
+"Network" = "Netzwerk";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Geben Sie NIEMALS Ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.";
@@ -303,7 +303,7 @@
 "no exchange rate data" = "Keine Wechselkursdaten";
 
 /* No comment provided by engineer. */
-"node ip" = "node ip";
+"node ip" = "Node IP";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "Kein Dash oder Bitcoin QR-Code";
@@ -327,7 +327,7 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Aktiviere erweiterte Funktionen nur dann, wenn du mit Blockchain-Technologie vertraut bist.\nVerwende nur erweiterte Funktionen, deren Effekte für dich verständlich sind.";
 
 /* No comment provided by engineer. */
 "Pay" = "Zahlen";
@@ -471,7 +471,7 @@
 "show phrase" = "Wiederherstellungs-Wortfolge anzeigen";
 
 /* No comment provided by engineer. */
-"size:" = "size:";
+"size:" = "Größe:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "SMS aktuell nicht verfügbar";
@@ -579,7 +579,7 @@
 "WARNING" = "WARNUNG";
 
 /* No comment provided by engineer. */
-"watch only" = "watch only";
+"watch only" = "Nur Betrachten";
 
 /* No comment provided by engineer. */
 "wipe" = "leeren";
@@ -588,7 +588,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "NOTIEREN SIE IHRE WIEDERHERSTELLUNGS-WORTFOLGE";
 
 /* No comment provided by engineer. */
-"yes" = "yes";
+"yes" = "Ja";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Sie können Dash nun in\nDashWallet via Bargeld\nod. Überweisung kaufen.";
