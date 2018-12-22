@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,19 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSParseResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdCardObject : NSObject
+typedef NS_ENUM(NSUInteger, DWUpholdProcessTransactionParseResponseOperationResult) {
+    DWUpholdProcessTransactionParseResponseOperationResultNone,
+    DWUpholdProcessTransactionParseResponseOperationResultSuccess,
+    DWUpholdProcessTransactionParseResponseOperationResultOTPError,
+};
 
-@property (readonly, copy, nonatomic) NSString *identifier;
-@property (readonly, strong, nonatomic) NSDecimalNumber *available;
-@property (readonly, nullable, copy, nonatomic) NSString *address;
+@interface DWUpholdProcessTransactionParseResponseOperation : DSParseResponseOperation
 
-- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
+@property (readonly, assign, nonatomic) DWUpholdProcessTransactionParseResponseOperationResult result;
 
 @end
 

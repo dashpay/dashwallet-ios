@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
             case DWUpholdMainModelStateDone: {
                 [self.balanceActivityIndicator stopAnimating];
                 self.balanceLabel.hidden = NO;
-                self.balanceLabel.text = self.model.card.available.description; // TODO: formats
+                self.balanceLabel.text = [self.model.card.available descriptionWithLocale:[NSLocale currentLocale]];
                 self.transferButton.enabled = YES;
                 self.buyButton.enabled = YES;
 

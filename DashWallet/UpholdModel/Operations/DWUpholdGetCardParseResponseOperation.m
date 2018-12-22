@@ -30,9 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWUpholdGetCardParseResponseOperation
 
 - (void)execute {
-    NSParameterAssert(self.responseToParse);
+    NSParameterAssert(self.httpOperationResult.parsedResponse);
 
-    NSArray *response = (NSArray *)self.responseToParse;
+    NSArray *response = (NSArray *)self.httpOperationResult.parsedResponse;
     if (![response isKindOfClass:NSArray.class]) {
         [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
 

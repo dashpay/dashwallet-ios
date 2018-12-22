@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,41 +15,32 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdCreateCardAddressParseResponseOperation.h"
+#import "DWUpholdCreateTransactionParseResponseOperation.h"
 
-#import "DWUpholdCardObject+Internal.h"
+#import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWUpholdCreateCardAddressParseResponseOperation
+@interface DWUpholdCreateTransactionParseResponseOperation ()
 
-- (instancetype)initWithCard:(DWUpholdCardObject *)card {
-    self = [super init];
-    if (self) {
-        _card = card;
-    }
-    return self;
-}
+@property (nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
+
+@end
+
+@implementation DWUpholdCreateTransactionParseResponseOperation
 
 - (void)execute {
     NSParameterAssert(self.httpOperationResult.parsedResponse);
-
+    
     NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
     if (![response isKindOfClass:NSDictionary.class]) {
         [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
-
+        
         return;
     }
-
-    NSString *address = response[@"id"];
-    if (![address isKindOfClass:NSString.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
-
-        return;
-    }
-
-    [self.card updateAddress:address];
-
+    
+    self.transaction = [[DWUpholdTransactionObject alloc] initWithDictionary:response];
+    
     [self finish];
 }
 

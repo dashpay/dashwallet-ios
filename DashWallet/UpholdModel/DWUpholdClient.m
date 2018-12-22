@@ -211,6 +211,58 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     [self.operationQueue addOperation:operation];
 }
 
+- (void)createTransactionForDashCard:(DWUpholdCardObject *)card
+                              amount:(NSString *)amount
+                             address:(NSString *)address
+                            otpToken:(nullable NSString *)otpToken
+                          completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
+    NSParameterAssert(self.accessToken);
+    NSParameterAssert(card);
+    NSParameterAssert(amount);
+    NSParameterAssert(address);
+
+    NSOperation *operation = [DWUpholdAPIProvider createTransactionForDashCard:card amount:amount address:address accessToken:self.accessToken otpToken:otpToken completion:^(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
+        if (completion) {
+            completion(success ? transaction : nil, otpRequired);
+        }
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+- (void)commitTransaction:(DWUpholdTransactionObject *)transaction
+                     card:(DWUpholdCardObject *)card
+              accessToken:(NSString *)accessToken
+                 otpToken:(nullable NSString *)otpToken
+               completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+    NSParameterAssert(self.accessToken);
+    NSParameterAssert(transaction);
+    NSParameterAssert(card);
+
+    NSOperation *operation = [DWUpholdAPIProvider commitTransaction:transaction
+                                                               card:card
+                                                        accessToken:self.accessToken
+                                                           otpToken:otpToken
+                                                         completion:completion];
+    [self.operationQueue addOperation:operation];
+}
+
+- (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
+                     card:(DWUpholdCardObject *)card
+              accessToken:(NSString *)accessToken
+                 otpToken:(nullable NSString *)otpToken
+               completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+    NSParameterAssert(self.accessToken);
+    NSParameterAssert(transaction);
+    NSParameterAssert(card);
+
+    NSOperation *operation = [DWUpholdAPIProvider cancelTransaction:transaction
+                                                               card:card
+                                                        accessToken:self.accessToken
+                                                           otpToken:otpToken
+                                                         completion:completion];
+    [self.operationQueue addOperation:operation];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _identifier = identifier;
-        _available = @(available.doubleValue);
+        _available = [NSDecimalNumber decimalNumberWithString:available];
         _address = address;
     }
     return self;

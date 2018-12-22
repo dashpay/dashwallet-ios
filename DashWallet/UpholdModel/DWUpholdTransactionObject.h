@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -19,11 +19,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdCardObject : NSObject
+@interface DWUpholdTransactionObject : NSObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
-@property (readonly, strong, nonatomic) NSDecimalNumber *available;
-@property (readonly, nullable, copy, nonatomic) NSString *address;
+@property (readonly, strong, nonatomic) NSDecimalNumber *base;
+@property (readonly, strong, nonatomic) NSDecimalNumber *amount;
+@property (readonly, strong, nonatomic) NSDecimalNumber *fee;
 
 - (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
 

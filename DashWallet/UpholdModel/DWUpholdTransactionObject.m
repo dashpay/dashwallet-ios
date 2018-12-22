@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,28 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdCardObject : NSObject
+@implementation DWUpholdTransactionObject
 
-@property (readonly, copy, nonatomic) NSString *identifier;
-@property (readonly, strong, nonatomic) NSDecimalNumber *available;
-@property (readonly, nullable, copy, nonatomic) NSString *address;
-
-- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
+- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary {
+    NSString *identifier = dictionary[@"id"];
+    NSDictionary *origin = dictionary[@"origin"];
+    if (!identifier || !origin) {
+        return nil;
+    }
+    
+    self = [super init];
+    if (self) {
+        _identifier = identifier;
+        _base = [NSDecimalNumber decimalNumberWithString:origin[@"base"]];
+        _amount = [NSDecimalNumber decimalNumberWithString:origin[@"amount"]];
+        _fee = [NSDecimalNumber decimalNumberWithString:origin[@"fee"]];
+    }
+    return self;
+}
 
 @end
 

@@ -20,6 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
+@class DWUpholdTransactionObject;
 
 @interface DWUpholdAPIProvider : NSObject
 
@@ -32,6 +33,22 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSOperation *)createAddressForDashCard:(DWUpholdCardObject *)inputCard
                               accessToken:(NSString *)accessToken
                                completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion;
++ (NSOperation *)createTransactionForDashCard:(DWUpholdCardObject *)card
+                                       amount:(NSString *)amount
+                                      address:(NSString *)address
+                                  accessToken:(NSString *)accessToken
+                                     otpToken:(nullable NSString *)otpToken
+                                   completion:(void (^)(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
++ (NSOperation *)commitTransaction:(DWUpholdTransactionObject *)transaction
+                              card:(DWUpholdCardObject *)card
+                       accessToken:(NSString *)accessToken
+                          otpToken:(nullable NSString *)otpToken
+                        completion:(void (^)(BOOL success, BOOL otpRequired))completion;
++ (NSOperation *)cancelTransaction:(DWUpholdTransactionObject *)transaction
+                              card:(DWUpholdCardObject *)card
+                       accessToken:(NSString *)accessToken
+                          otpToken:(nullable NSString *)otpToken
+                        completion:(void (^)(BOOL success, BOOL otpRequired))completion;
 
 @end
 

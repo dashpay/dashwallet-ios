@@ -18,12 +18,15 @@
 #import "DWUpholdAPIProvider.h"
 
 #import "DSChainedOperation.h"
-#import "DSHTTPGETOperation.h"
+#import "DSHTTPOperation.h"
 #import "DWUpholdAuthParseResponseOperation.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdCreateCardAddressParseResponseOperation.h"
 #import "DWUpholdCreateCardParseResponseOperation.h"
+#import "DWUpholdCreateTransactionParseResponseOperation.h"
 #import "DWUpholdGetCardParseResponseOperation.h"
+#import "DWUpholdProcessTransactionParseResponseOperation.h"
+#import "DWUpholdTransactionObject.h"
 #import "HTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -49,7 +52,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 
     NSURLRequest *request = [httpRequest urlRequest];
 
-    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
     DWUpholdAuthParseResponseOperation *parseOperation = [[DWUpholdAuthParseResponseOperation alloc] init];
     DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
     chainOperation.completionBlock = ^{
@@ -72,7 +75,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 
     NSURLRequest *request = [httpRequest urlRequest];
 
-    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
     DWUpholdGetCardParseResponseOperation *parseOperation = [[DWUpholdGetCardParseResponseOperation alloc] init];
     DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
     chainOperation.completionBlock = ^{
@@ -101,7 +104,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 
     NSURLRequest *request = [httpRequest urlRequest];
 
-    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
     DWUpholdCreateCardParseResponseOperation *parseOperation = [[DWUpholdCreateCardParseResponseOperation alloc] init];
     DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
     chainOperation.completionBlock = ^{
@@ -130,7 +133,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 
     NSURLRequest *request = [httpRequest urlRequest];
 
-    DSHTTPGETOperation *httpOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
     DWUpholdCreateCardAddressParseResponseOperation *parseOperation =
         [[DWUpholdCreateCardAddressParseResponseOperation alloc] initWithCard:inputCard];
     DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
@@ -146,6 +149,80 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
     return chainOperation;
 }
 
++ (NSOperation *)createTransactionForDashCard:(DWUpholdCardObject *)card
+                                       amount:(NSString *)amount
+                                      address:(NSString *)address
+                                  accessToken:(NSString *)accessToken
+                                     otpToken:(nullable NSString *)otpToken
+                                   completion:(void (^)(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
+    NSParameterAssert(amount);
+    NSParameterAssert(address);
+    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", card.identifier];
+    NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:urlPath];
+    NSURL *url = [NSURL URLWithString:urlString];
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                               contentType:HTTPContentType_JSON
+                                                parameters:@{
+                                                    @"denomination" : @{
+                                                        @"amount" : amount,
+                                                        @"currency" : @"DASH",
+                                                    },
+                                                    @"destination" : address,
+                                                }];
+    [self authorizeHTTPRequest:httpRequest accessToken:accessToken];
+    if (otpToken) {
+        [self authorizeHTTPRequest:httpRequest otpToken:otpToken];
+    }
+
+    NSURLRequest *request = [httpRequest urlRequest];
+
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
+    DWUpholdCreateTransactionParseResponseOperation *parseOperation =
+        [[DWUpholdCreateTransactionParseResponseOperation alloc] init];
+    DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
+    chainOperation.completionBlock = ^{
+        if (completion) {
+            BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
+            DSHTTPOperationResult *httpOperationResult = httpOperation.result;
+            BOOL otpRequired = [httpOperationResult.responseHeaders[@"OTP-Token"] isEqual:@"Required"];
+            completion(success, parseOperation.transaction, otpRequired);
+        }
+    };
+
+    return chainOperation;
+}
+
++ (NSOperation *)commitTransaction:(DWUpholdTransactionObject *)transaction
+                              card:(DWUpholdCardObject *)card
+                       accessToken:(NSString *)accessToken
+                          otpToken:(nullable NSString *)otpToken
+                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+    NSOperation *operation = [self transactionAction:@"commit"
+                                         transaction:transaction
+                                                card:card
+                                         accessToken:accessToken
+                                            otpToken:otpToken
+                                          completion:completion];
+
+    return operation;
+}
+
++ (NSOperation *)cancelTransaction:(DWUpholdTransactionObject *)transaction
+                              card:(DWUpholdCardObject *)card
+                       accessToken:(NSString *)accessToken
+                          otpToken:(nullable NSString *)otpToken
+                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+    NSOperation *operation = [self transactionAction:@"cancel"
+                                         transaction:transaction
+                                                card:card
+                                         accessToken:accessToken
+                                            otpToken:otpToken
+                                          completion:completion];
+
+    return operation;
+}
+
 #pragma mark - Private
 
 + (NSString *)baseURLString {
@@ -155,6 +232,54 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 + (void)authorizeHTTPRequest:(HTTPRequest *)request accessToken:(NSString *)accessToken {
     NSString *authorizationHeader = [NSString stringWithFormat:@"Bearer %@", accessToken];
     [request addValue:authorizationHeader forHeader:@"Authorization"];
+}
+
++ (void)authorizeHTTPRequest:(HTTPRequest *)request otpToken:(NSString *)otpToken {
+    [request addValue:otpToken forHeader:@"OTP-Token"];
+}
+
++ (NSOperation *)transactionAction:(NSString *)action
+                       transaction:(DWUpholdTransactionObject *)transaction
+                              card:(DWUpholdCardObject *)card
+                       accessToken:(NSString *)accessToken
+                          otpToken:(nullable NSString *)otpToken
+                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+    NSAssert([action isEqualToString:@"commit"] || [action isEqualToString:@"cancel"], @"Invalid action on transaction");
+
+    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions/%@/%@",
+                                                   card.identifier,
+                                                   transaction.identifier,
+                                                   action];
+    NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:urlPath];
+    NSURL *url = [NSURL URLWithString:urlString];
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                                parameters:nil];
+    [self authorizeHTTPRequest:httpRequest accessToken:accessToken];
+    if (otpToken) {
+        [self authorizeHTTPRequest:httpRequest otpToken:otpToken];
+    }
+
+    NSURLRequest *request = [httpRequest urlRequest];
+
+    DSHTTPOperation *httpOperation = [[DSHTTPOperation alloc] initWithRequest:request];
+    DWUpholdProcessTransactionParseResponseOperation *parseOperation =
+        [[DWUpholdProcessTransactionParseResponseOperation alloc] init];
+    DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ httpOperation, parseOperation ]];
+    chainOperation.completionBlock = ^{
+        if (completion) {
+            BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
+            DSHTTPOperationResult *httpOperationResult = httpOperation.result;
+            BOOL otpRequired = [httpOperationResult.responseHeaders[@"OTP-Token"] isEqual:@"Required"] ||
+                               parseOperation.result == DWUpholdProcessTransactionParseResponseOperationResultOTPError;
+            if (otpRequired) {
+                success = NO;
+            }
+            completion(success, otpRequired);
+        }
+    };
+
+    return chainOperation;
 }
 
 @end
