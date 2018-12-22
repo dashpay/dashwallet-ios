@@ -605,6 +605,8 @@
                     [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
                     [alert setPreferredAction:showButton];
                     [self presentViewController:alert animated:YES completion:nil];
+                } else {
+                    [self setInitialPin];
                 }
 
                 if (self->_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
