@@ -460,6 +460,8 @@ static NSString *dateFormat(NSString *template)
                 shapeshiftImageView = transactionCell.shapeshiftImageView;
                 
                 DSTransaction *tx = self.transactions[indexPath.row];
+                BOOL instantSendReceived = tx.instantSendReceived;
+                uint32_t transactionLocksCount = [tx.transactionLockVotes count];
                 uint64_t received = [account amountReceivedFromTransaction:tx],
                 sent = [account amountSentByTransaction:tx],
                 balance = [account balanceAfterTransaction:tx];
@@ -475,21 +477,21 @@ static NSString *dateFormat(NSString *template)
                 localBalanceLabel.text = (authenticationManager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [priceManager localCurrencyStringForDashAmount:balance]] : nil;
                 shapeshiftImageView.hidden = !tx.associatedShapeshift;
                 
-                if (confirms == 0 && ! [account transactionIsValid:tx]) {
+                if (confirms == 0 && ![account transactionIsValid:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
                     unconfirmedLabel.backgroundColor = [UIColor redColor];
                     balanceLabel.text = localBalanceLabel.text = nil;
                 }
-                else if (confirms == 0 && [account transactionIsPending:tx]) {
+                else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
                     unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
                     textLabel.textColor = [UIColor grayColor];
                     balanceLabel.text = localBalanceLabel.text = nil;
                 }
-                else if (confirms == 0 && ! [account transactionIsVerified:tx]) {
+                else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
-                else if (confirms < 6) {
+                else if (!instantSendReceived && confirms < 6) {
                     if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
                     else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
                     else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
@@ -519,7 +521,11 @@ static NSString *dateFormat(NSString *template)
                     textLabel.attributedText = [priceManager attributedStringForDashAmount:received withTintColor:textLabel.textColor];
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [priceManager localCurrencyStringForDashAmount:received]];
-                    sentLabel.text = NSLocalizedString(@"Received", nil);
+                    if (instantSendReceived) {
+                        sentLabel.text = NSLocalizedString(@"IS Received", nil);
+                    } else {
+                        sentLabel.text = NSLocalizedString(@"Received", nil);
+                    }
                     sentLabel.backgroundColor = UIColorFromRGB(0x7ED321);
                 }
                 
