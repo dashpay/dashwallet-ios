@@ -19,6 +19,7 @@
 
 #import "DWUpholdMainModel.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "DWUpholdTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    self.title = NSLocalizedString(@"Uphold", nil);
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         switch (self.model.state) {
@@ -87,6 +90,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)transferButtonAction:(id)sender {
+    DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.card];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (IBAction)buyButtonAction:(id)sender {
@@ -97,6 +102,49 @@ NS_ASSUME_NONNULL_BEGIN
 
     SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - Private
+
+- (void)requestOneTimeTokenCompletion:(void (^)(NSString *_Nullable otpToken))completion {
+    UIAlertController *alertController = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
+                         message:NSLocalizedString(@"Uphold one time token is required", nil)
+                  preferredStyle:UIAlertControllerStyleAlert];
+
+    [alertController addTextFieldWithConfigurationHandler:^(UITextField *_Nonnull textField) {
+        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        textField.keyboardType = UIKeyboardTypeNumberPad;
+        if (@available(iOS 12.0, *)) {
+            textField.textContentType = UITextContentTypeOneTimeCode;
+        }
+    }];
+
+    __weak typeof(alertController) weakAlertController = alertController;
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"ok", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *_Nonnull action) {
+        __strong typeof(weakAlertController) strongAlertController = weakAlertController;
+        if (!strongAlertController) {
+            return;
+        }
+
+        if (completion) {
+            NSString *otpToken = strongAlertController.textFields.firstObject.text;
+            completion(otpToken);
+        }
+    }];
+    [alertController addAction:okAction];
+
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:^(UIAlertAction *_Nonnull action) {
+                                                             if (completion) {
+                                                                 completion(nil);
+                                                             }
+                                                         }];
+    [alertController addAction:cancelAction];
+
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 @end

@@ -22,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
 
+@protocol DWUpholdClientCancellationToken <NSObject>
+
+- (void)cancel;
+
+@end
+
 @interface DWUpholdClient : NSObject
 
 @property (readonly, assign, nonatomic, getter=isAuthorized) BOOL authorized;
@@ -33,11 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
 
-- (void)createTransactionForDashCard:(DWUpholdCardObject *)card
-                              amount:(NSString *)amount
-                             address:(NSString *)address
-                            otpToken:(nullable NSString *)otpToken
-                          completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
+- (id<DWUpholdClientCancellationToken>)createTransactionForDashCard:(DWUpholdCardObject *)card
+                                                             amount:(NSString *)amount
+                                                            address:(NSString *)address
+                                                           otpToken:(nullable NSString *)otpToken
+                                                         completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
               accessToken:(NSString *)accessToken
@@ -46,8 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
               accessToken:(NSString *)accessToken
-                 otpToken:(nullable NSString *)otpToken
-               completion:(void (^)(BOOL success, BOOL otpRequired))completion;
+                 otpToken:(nullable NSString *)otpToken;
 
 - (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
 

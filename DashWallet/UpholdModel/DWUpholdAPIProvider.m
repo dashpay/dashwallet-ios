@@ -211,14 +211,13 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 + (NSOperation *)cancelTransaction:(DWUpholdTransactionObject *)transaction
                               card:(DWUpholdCardObject *)card
                        accessToken:(NSString *)accessToken
-                          otpToken:(nullable NSString *)otpToken
-                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+                          otpToken:(nullable NSString *)otpToken {
     NSOperation *operation = [self transactionAction:@"cancel"
                                          transaction:transaction
                                                 card:card
                                          accessToken:accessToken
                                             otpToken:otpToken
-                                          completion:completion];
+                                          completion:nil];
 
     return operation;
 }
@@ -243,7 +242,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
                               card:(DWUpholdCardObject *)card
                        accessToken:(NSString *)accessToken
                           otpToken:(nullable NSString *)otpToken
-                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+                        completion:(void (^_Nullable)(BOOL success, BOOL otpRequired))completion {
     NSAssert([action isEqualToString:@"commit"] || [action isEqualToString:@"cancel"], @"Invalid action on transaction");
 
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions/%@/%@",

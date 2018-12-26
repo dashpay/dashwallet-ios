@@ -47,8 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSOperation *)cancelTransaction:(DWUpholdTransactionObject *)transaction
                               card:(DWUpholdCardObject *)card
                        accessToken:(NSString *)accessToken
-                          otpToken:(nullable NSString *)otpToken
-                        completion:(void (^)(BOOL success, BOOL otpRequired))completion;
+                          otpToken:(nullable NSString *)otpToken;
 
 @end
 

@@ -20,14 +20,11 @@
 #import "DWUpholdAuthViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainViewController.h"
+#import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const ANIMATION_DURATION = 0.3;
-
 @interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate>
-
-@property (strong, nonatomic) UIViewController *currentViewController;
 
 @end
 
@@ -51,60 +48,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
         authController.delegate = self;
         controller = authController;
     }
-    [self displayViewController:controller];
+    [self dw_displayViewController:controller];
 }
 
 #pragma mark - DWUpholdAuthViewControllerDelegate
 
 - (void)upholdAuthViewControllerDidAuthorize:(DWUpholdAuthViewController *)controller {
     DWUpholdMainViewController *mainController = [DWUpholdMainViewController controller];
-    [self performTransitionToViewController:mainController completion:nil];
-}
-
-#pragma mark - Private
-
-- (void)displayViewController:(UIViewController *)controller {
-    NSParameterAssert(controller);
-
-    [self addChildViewController:controller];
-    controller.view.frame = self.view.bounds;
-    controller.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:controller.view];
-    [controller didMoveToParentViewController:self];
-
-    self.currentViewController = controller;
-}
-
-- (void)performTransitionToViewController:(UIViewController *)toViewController
-                               completion:(void (^_Nullable)(BOOL finished))completion {
-    UIViewController *fromViewController = self.currentViewController;
-    self.currentViewController = toViewController;
-
-    [fromViewController willMoveToParentViewController:nil];
-    [self addChildViewController:toViewController];
-
-    toViewController.view.frame = self.view.bounds;
-    toViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-    toViewController.view.alpha = 0.0;
-    [self transitionFromViewController:fromViewController
-        toViewController:toViewController
-        duration:ANIMATION_DURATION
-        options:0
-        animations:^{
-            toViewController.view.alpha = 1.0;
-            fromViewController.view.alpha = 0.0;
-
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-        completion:^(BOOL finished) {
-            [fromViewController removeFromParentViewController];
-            [toViewController didMoveToParentViewController:self];
-
-            if (completion) {
-                completion(finished);
-            }
-        }];
+    [self dw_performTransitionToViewController:mainController completion:nil];
 }
 
 @end

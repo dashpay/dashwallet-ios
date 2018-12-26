@@ -4,6 +4,8 @@ target 'dashwallet' do
   pod 'DashSync', :path => '../DashSync/'
   
   pod 'KVO-MVVM', '0.5.1'
+  
+  pod 'UIViewController-KeyboardAdditions', '1.2.1'
 
   # Pods for dashwallet
   

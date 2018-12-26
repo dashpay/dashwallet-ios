@@ -28,6 +28,19 @@ static NSString *const BUY_CARD_URL_FORMAT = @"https://sandbox.uphold.com/dashbo
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 
+
+#pragma mark - NSOperation Extension
+
+@interface NSOperation (DWUpholdClient) <DWUpholdClientCancellationToken>
+
+@end
+
+@implementation NSOperation (DWUpholdClient)
+
+@end
+
+#pragma mark - Client
+
 @interface DWUpholdClient ()
 
 @property (strong, nonatomic) DSOperationQueue *operationQueue;
@@ -211,22 +224,26 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     [self.operationQueue addOperation:operation];
 }
 
-- (void)createTransactionForDashCard:(DWUpholdCardObject *)card
-                              amount:(NSString *)amount
-                             address:(NSString *)address
-                            otpToken:(nullable NSString *)otpToken
-                          completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
+- (id<DWUpholdClientCancellationToken>)createTransactionForDashCard:(DWUpholdCardObject *)card
+                                                             amount:(NSString *)amount
+                                                            address:(NSString *)address
+                                                           otpToken:(nullable NSString *)otpToken
+                                                         completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
     NSParameterAssert(self.accessToken);
     NSParameterAssert(card);
     NSParameterAssert(amount);
     NSParameterAssert(address);
 
     NSOperation *operation = [DWUpholdAPIProvider createTransactionForDashCard:card amount:amount address:address accessToken:self.accessToken otpToken:otpToken completion:^(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
-        if (completion) {
-            completion(success ? transaction : nil, otpRequired);
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(success ? transaction : nil, otpRequired);
+            }
+        });
     }];
     [self.operationQueue addOperation:operation];
+
+    return operation;
 }
 
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
@@ -242,15 +259,20 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
                                                                card:card
                                                         accessToken:self.accessToken
                                                            otpToken:otpToken
-                                                         completion:completion];
+                                                         completion:^(BOOL success, BOOL otpRequired) {
+                                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                                 if (completion) {
+                                                                     completion(success, otpRequired);
+                                                                 }
+                                                             });
+                                                         }];
     [self.operationQueue addOperation:operation];
 }
 
 - (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
               accessToken:(NSString *)accessToken
-                 otpToken:(nullable NSString *)otpToken
-               completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+                 otpToken:(nullable NSString *)otpToken {
     NSParameterAssert(self.accessToken);
     NSParameterAssert(transaction);
     NSParameterAssert(card);
@@ -258,8 +280,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     NSOperation *operation = [DWUpholdAPIProvider cancelTransaction:transaction
                                                                card:card
                                                         accessToken:self.accessToken
-                                                           otpToken:otpToken
-                                                         completion:completion];
+                                                           otpToken:otpToken];
     [self.operationQueue addOperation:operation];
 }
 

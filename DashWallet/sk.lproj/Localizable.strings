@@ -72,6 +72,9 @@
 "Are you sure?" = "Ste si istý?";
 
 /* No comment provided by engineer. */
+"available" = "available";
+
+/* No comment provided by engineer. */
 "bad payment request" = "zlý platobný príkaz";
 
 /* No comment provided by engineer. */
@@ -97,6 +100,9 @@
 
 /* No comment provided by engineer. */
 "cancel" = "zrušiť";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "zmeniť";
@@ -217,6 +223,12 @@
 
 /* No comment provided by engineer. */
 "enter" = "zadať";
+
+/* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "error signing dash transaction";
@@ -486,6 +498,9 @@
 "sms not currently available" = "sms nie je momentálne dostupná";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Something went wrong";
+
+/* No comment provided by engineer. */
 "spent address" = "spent address";
 
 /* No comment provided by engineer. */
@@ -552,6 +567,9 @@
 "Transaction history" = "História transakcií";
 
 /* No comment provided by engineer. */
+"Transfer" = "Transfer";
+
+/* No comment provided by engineer. */
 "trust" = "trust";
 
 /* No comment provided by engineer. */
@@ -582,7 +600,13 @@
 "unverified" = "unverified";
 
 /* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
 "Uphold account" = "Uphold account";
+
+/* No comment provided by engineer. */
+"Uphold one time token is required" = "Uphold one time token is required";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verified, waiting for confirmation";
