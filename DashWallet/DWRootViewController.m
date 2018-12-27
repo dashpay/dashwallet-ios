@@ -902,6 +902,8 @@
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
+    NSParameterAssert(progress >= 0.0 && progress <= 1.0);
+    progress = MAX(0.0, MIN(1.0, progress));
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
