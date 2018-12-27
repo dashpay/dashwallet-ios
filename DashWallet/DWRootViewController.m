@@ -1073,7 +1073,7 @@
 // MARK: - Segues
 -(void)setInitialPin {
     [[DSAuthenticationManager sharedInstance] setPinIfNeededWithCompletion:^(BOOL needed, BOOL success) {
-        if (needed) [self setInitialPin]; //try again
+        if (needed && !success) [self setInitialPin]; //try again
     }];
 }
 
