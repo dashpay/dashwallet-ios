@@ -50,30 +50,31 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     UIViewController *fromViewController = self.dw_currentChildController;
     self.dw_currentChildController = toViewController;
 
+    UIView *toView = toViewController.view;
+    UIView *fromView = fromViewController.view;
+
     [fromViewController willMoveToParentViewController:nil];
     [self addChildViewController:toViewController];
 
-    toViewController.view.frame = self.view.bounds;
-    toViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    toView.frame = self.view.bounds;
+    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:toView];
 
-    toViewController.view.alpha = 0.0;
-    [self transitionFromViewController:fromViewController
-        toViewController:toViewController
-        duration:ANIMATION_DURATION
-        options:0
+    toView.alpha = 0.0;
+
+    [UIView animateWithDuration:ANIMATION_DURATION
+        delay:0.0
+        usingSpringWithDamping:1.0
+        initialSpringVelocity:0.0
+        options:UIViewAnimationOptionCurveEaseInOut
         animations:^{
-            toViewController.view.alpha = 1.0;
-            fromViewController.view.alpha = 0.0;
-
-            [self setNeedsStatusBarAppearanceUpdate];
+            toView.alpha = 1.0;
+            fromView.alpha = 0.0;
         }
         completion:^(BOOL finished) {
+            [fromView removeFromSuperview];
             [fromViewController removeFromParentViewController];
             [toViewController didMoveToParentViewController:self];
-
-            if (completion) {
-                completion(finished);
-            }
         }];
 }
 

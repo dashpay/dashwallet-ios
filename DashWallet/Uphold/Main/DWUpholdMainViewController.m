@@ -18,12 +18,12 @@
 #import "DWUpholdMainViewController.h"
 
 #import "DWUpholdMainModel.h"
-#import "SFSafariViewController+DashWallet.h"
 #import "DWUpholdTransferViewController.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdMainViewController ()
+@interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *balanceActivityIndicator;
@@ -91,6 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)transferButtonAction:(id)sender {
     DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.card];
+    controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
@@ -102,6 +103,17 @@ NS_ASSUME_NONNULL_BEGIN
 
     SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+#pragma mark - DWUpholdTransferViewControllerDelegate
+
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller {
+    [self.model fetch];
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private

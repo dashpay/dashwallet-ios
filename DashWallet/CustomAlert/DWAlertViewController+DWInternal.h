@@ -15,18 +15,19 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWAlertViewControllerKeyboardSupport.h"
+#import "DWAlertViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAlertViewController : UIViewController <UIViewControllerTransitioningDelegate, DWAlertViewControllerKeyboardSupport>
+@interface DWAlertViewController (DWInternal)
 
-/**
- Default `YES`
- */
-@property (assign, nonatomic) BOOL shouldDimBackground;
+- (void)keyboardWillShowOrHideWithHeight:(CGFloat)height NS_REQUIRES_SUPER;
+- (void)keyboardShowOrHideAnimation NS_REQUIRES_SUPER;
+
++ (void)updateContraintForKeyboardHeight:(CGFloat)height
+                              parentView:(UIView *)parentView
+                        alertContentView:(UIView *)alertContentView
+       alertContentViewCenterYConstraint:(NSLayoutConstraint *)alertContentViewCenterYConstraint;
 
 @end
 

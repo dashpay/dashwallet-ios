@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (assign, nonatomic) DWUpholdRequestTransferModelState state;
 @property (nullable, weak, nonatomic) id<DWUpholdClientCancellationToken> createTransactionRequest;
+@property (nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
 @end
 
@@ -54,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
     [result appendAttributedString:dashSymbol];
     [result appendAttributedString:[[NSAttributedString alloc] initWithString:availableFormatted]];
     [result endEditing];
-    return result;
+    return [result copy];
 }
 
 - (DWUpholdTransferModelValidationResult)validateInput:(NSString *)input {
@@ -102,6 +103,8 @@ NS_ASSUME_NONNULL_BEGIN
 
                               strongSelf.createTransactionRequest = nil;
 
+                              strongSelf.transaction = transaction;
+
                               if (otpRequired) {
                                   strongSelf.state = DWUpholdRequestTransferModelStateOTP;
                               }
@@ -112,6 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetState {
+    self.transaction = nil;
     self.state = DWUpholdRequestTransferModelStateNone;
 }
 

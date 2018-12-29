@@ -24,22 +24,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
-@class DWUpholdRequestTransferViewController;
+@class DWUpholdConfirmTransferViewController;
 
-@protocol DWUpholdRequestTransferViewControllerDelegate <NSObject>
+@protocol DWUpholdConfirmTransferViewControllerDelegate <NSObject>
 
-- (void)upholdRequestTransferViewController:(DWUpholdRequestTransferViewController *)controller
-                      didProduceTransaction:(DWUpholdTransactionObject *)transaction;
-- (void)upholdRequestTransferViewControllerDidCancel:(DWUpholdRequestTransferViewController *)controller;
+- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller;
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller;
 
 @end
 
-@interface DWUpholdRequestTransferViewController : KVOUIViewController <DWAlertViewControllerKeyboardSupport>
+@interface DWUpholdConfirmTransferViewController : KVOUIViewController <DWAlertViewControllerKeyboardSupport>
 
-@property (nullable, weak, nonatomic) id<DWUpholdRequestTransferViewControllerDelegate> delegate;
+@property (nullable, weak, nonatomic) id<DWUpholdConfirmTransferViewControllerDelegate> delegate;
 @property (nullable, weak, nonatomic) id<DWUpholdOTPProvider> otpProvider;
 
-+ (instancetype)controllerWithCard:(DWUpholdCardObject *)card;
++ (instancetype)controllerWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 

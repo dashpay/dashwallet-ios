@@ -18,7 +18,6 @@
 #import "DWUpholdOTPViewController.h"
 
 #import "UIView+DWAnimations.h"
-#import <UIViewController+KeyboardAdditions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,14 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) NSInteger pasteboardChangeCount;
 
+@property (nullable, copy, nonatomic) void (^completionBlock)(DWUpholdOTPViewController *controller, NSString *_Nullable otpToken);
+
 @end
 
 @implementation DWUpholdOTPViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithCompletion:(void (^)(DWUpholdOTPViewController *controller, NSString *_Nullable otpToken))completion {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdOTPStoryboard" bundle:nil];
     DWUpholdOTPViewController *controller = [storyboard instantiateInitialViewController];
     controller.shouldDimBackground = NO;
+    controller.completionBlock = completion;
 
     return controller;
 }
@@ -66,17 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
                              object:nil];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    [self ka_startObservingKeyboardNotifications];
-}
-
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
     [self.textField resignFirstResponder];
-    [self ka_stopObservingKeyboardNotifications];
 }
 
 #pragma mark - Actions
@@ -86,7 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)cancelButtonAction:(id)sender {
-    [self.delegate upholdOTPViewControllerDidCancel:self];
+    if (self.completionBlock) {
+        self.completionBlock(self, nil);
+        self.completionBlock = nil;
+    }
 }
 
 #pragma mark - UITextFieldDelegate
@@ -107,33 +105,14 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-#pragma mark - Keyboard
+#pragma mark - DWAlertKeyboardSupport
 
-- (void)ka_keyboardWillShowOrHideWithHeight:(CGFloat)height
-                          animationDuration:(NSTimeInterval)animationDuration
-                             animationCurve:(UIViewAnimationCurve)animationCurve {
-    if (height > 0.0) {
-        CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
-        CGFloat contentBottom = CGRectGetMinY(self.contentView.frame) + CGRectGetHeight(self.contentView.bounds);
-        CGFloat keyboardTop = viewHeight - height;
-        CGFloat space = keyboardTop - contentBottom;
-        CGFloat const padding = 16.0;
-        if (space >= padding) {
-            self.contentViewCenterYConstraint.constant = 0.0;
-        }
-        else {
-            self.contentViewCenterYConstraint.constant = -(padding - space);
-        }
-    }
-    else {
-        self.contentViewCenterYConstraint.constant = 0.0;
-    }
+- (nullable UIView *)alertContentView {
+    return self.contentView;
 }
 
-- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
-                               animationDuration:(NSTimeInterval)animationDuration
-                                  animationCurve:(UIViewAnimationCurve)animationCurve {
-    [self.view layoutIfNeeded];
+- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
+    return self.contentViewCenterYConstraint;
 }
 
 #pragma mark - Notifications
@@ -160,7 +139,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.textField resignFirstResponder];
 
-    [self.delegate upholdOTPViewController:self didFinishWithOTPToken:self.textField.text];
+    if (self.completionBlock) {
+        self.completionBlock(self, self.textField.text);
+        self.completionBlock = nil;
+    }
 }
 
 - (BOOL)isLooksLikeOTPToken:(NSString *)inputString {

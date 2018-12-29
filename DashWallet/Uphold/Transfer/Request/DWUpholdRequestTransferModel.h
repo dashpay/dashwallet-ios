@@ -34,11 +34,13 @@ typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
 };
 
 @class DWUpholdCardObject;
+@class DWUpholdTransactionObject;
 
 @interface DWUpholdRequestTransferModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *availableString;
 @property (readonly, assign, nonatomic) DWUpholdRequestTransferModelState state;
+@property (readonly, nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card;
 

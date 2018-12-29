@@ -19,20 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdOTPViewController;
-
-@protocol DWUpholdOTPViewControllerDelegate <NSObject>
-
-- (void)upholdOTPViewController:(DWUpholdOTPViewController *)controller didFinishWithOTPToken:(NSString *)otpToken;
-- (void)upholdOTPViewControllerDidCancel:(DWUpholdOTPViewController *)controller;
-
-@end
-
 @interface DWUpholdOTPViewController : DWAlertViewController
 
-@property (nullable, weak, nonatomic) id<DWUpholdOTPViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
++ (instancetype)controllerWithCompletion:(void (^)(DWUpholdOTPViewController *controller, NSString *_Nullable otpToken))completion;
 
 @end
 

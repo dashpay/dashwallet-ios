@@ -248,7 +248,6 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
-              accessToken:(NSString *)accessToken
                  otpToken:(nullable NSString *)otpToken
                completion:(void (^)(BOOL success, BOOL otpRequired))completion {
     NSParameterAssert(self.accessToken);
@@ -270,9 +269,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 }
 
 - (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
-                     card:(DWUpholdCardObject *)card
-              accessToken:(NSString *)accessToken
-                 otpToken:(nullable NSString *)otpToken {
+                     card:(DWUpholdCardObject *)card {
     NSParameterAssert(self.accessToken);
     NSParameterAssert(transaction);
     NSParameterAssert(card);
@@ -280,7 +277,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
     NSOperation *operation = [DWUpholdAPIProvider cancelTransaction:transaction
                                                                card:card
                                                         accessToken:self.accessToken
-                                                           otpToken:otpToken];
+                                                           otpToken:nil];
     [self.operationQueue addOperation:operation];
 }
 

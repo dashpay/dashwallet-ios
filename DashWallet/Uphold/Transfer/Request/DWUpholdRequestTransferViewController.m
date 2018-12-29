@@ -17,15 +17,13 @@
 
 #import "DWUpholdRequestTransferViewController.h"
 
-#import "DWUpholdOTPViewController.h"
 #import "DWUpholdRequestTransferModel.h"
 #import "UIView+DWAnimations.h"
 #import <DashSync/UIImage+DSUtils.h>
-#import <UIViewController+KeyboardAdditions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdRequestTransferViewController () <UITextFieldDelegate, DWUpholdOTPViewControllerDelegate>
+@interface DWUpholdRequestTransferViewController () <UITextFieldDelegate>
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
@@ -75,17 +73,10 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    [self ka_startObservingKeyboardNotifications];
-}
-
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
     [self.textField resignFirstResponder];
-    [self ka_stopObservingKeyboardNotifications];
 }
 
 #pragma mark - Actions
@@ -95,21 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)cancelButtonAction:(id)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - DWUpholdOTPViewControllerDelegate
-
-- (void)upholdOTPViewController:(DWUpholdOTPViewController *)controller didFinishWithOTPToken:(NSString *)otpToken {
-    [controller dismissViewControllerAnimated:YES completion:nil];
-
-    [self performTransferWithOTPToken:otpToken];
-}
-
-- (void)upholdOTPViewControllerDidCancel:(DWUpholdOTPViewController *)controller {
-    [controller dismissViewControllerAnimated:YES completion:nil];
-
-    [self.model resetState];
+    [self.delegate upholdRequestTransferViewControllerDidCancel:self];
 }
 
 #pragma mark - UITextFieldDelegate
@@ -162,33 +139,14 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-#pragma mark - Keyboard
+#pragma mark - DWAlertKeyboardSupport
 
-- (void)ka_keyboardWillShowOrHideWithHeight:(CGFloat)height
-                          animationDuration:(NSTimeInterval)animationDuration
-                             animationCurve:(UIViewAnimationCurve)animationCurve {
-    if (height > 0.0) {
-        CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
-        CGFloat contentBottom = CGRectGetMinY(self.contentView.frame) + CGRectGetHeight(self.contentView.bounds);
-        CGFloat keyboardTop = viewHeight - height;
-        CGFloat space = keyboardTop - contentBottom;
-        CGFloat const padding = 16.0;
-        if (space >= padding) {
-            self.contentViewCenterYConstraint.constant = 0.0;
-        }
-        else {
-            self.contentViewCenterYConstraint.constant = -(padding - space);
-        }
-    }
-    else {
-        self.contentViewCenterYConstraint.constant = 0.0;
-    }
+- (nullable UIView *)alertContentView {
+    return self.contentView;
 }
 
-- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
-                               animationDuration:(NSTimeInterval)animationDuration
-                                  animationCurve:(UIViewAnimationCurve)animationCurve {
-    [self.view layoutIfNeeded];
+- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
+    return self.contentViewCenterYConstraint;
 }
 
 #pragma mark - Private
@@ -232,6 +190,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdRequestTransferModelStateSuccess: {
+            [self.delegate upholdRequestTransferViewController:self didProduceTransaction:self.model.transaction];
+
             self.textField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
             self.transferButton.hidden = NO;
@@ -248,9 +208,20 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdRequestTransferModelStateOTP: {
-            DWUpholdOTPViewController *controller = [DWUpholdOTPViewController controller];
-            controller.delegate = self;
-            [self presentViewController:controller animated:YES completion:nil];
+            __weak typeof(self) weakSelf = self;
+            [self.otpProvider requestOTPWithCompletion:^(NSString *_Nullable otpToken) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                if (otpToken) {
+                    [strongSelf performTransferWithOTPToken:otpToken];
+                }
+                else {
+                    [strongSelf.model resetState];
+                }
+            }];
 
             break;
         }

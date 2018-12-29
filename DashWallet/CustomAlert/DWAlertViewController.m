@@ -20,6 +20,7 @@
 #import "DWAlertDismissalAnimationController.h"
 #import "DWAlertPresentationAnimationController.h"
 #import "DWAlertPresentationController.h"
+#import <UIViewController+KeyboardAdditions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,6 +48,18 @@ NS_ASSUME_NONNULL_BEGIN
     self.shouldDimBackground = YES;
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self ka_startObservingKeyboardNotifications];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self ka_stopObservingKeyboardNotifications];
+}
+
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (nullable id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
@@ -67,6 +80,77 @@ NS_ASSUME_NONNULL_BEGIN
     DWAlertPresentationController *presentationController = [[DWAlertPresentationController alloc] initWithPresentedViewController:presented presentingViewController:presenting];
     presentationController.shouldDimBackground = self.shouldDimBackground;
     return presentationController;
+}
+
+#pragma mark - DWAlertKeyboardSupport
+
+- (nullable UIView *)alertContentView {
+    return nil;
+}
+
+- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
+    return nil;
+}
+
+#pragma mark - Keyboard
+
+- (void)ka_keyboardWillShowOrHideWithHeight:(CGFloat)height
+                          animationDuration:(NSTimeInterval)animationDuration
+                             animationCurve:(UIViewAnimationCurve)animationCurve {
+    [self keyboardWillShowOrHideWithHeight:height];
+}
+
+- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+                               animationDuration:(NSTimeInterval)animationDuration
+                                  animationCurve:(UIViewAnimationCurve)animationCurve {
+    [self keyboardShowOrHideAnimation];
+}
+
+#pragma mark - Internal
+
+- (void)keyboardWillShowOrHideWithHeight:(CGFloat)height {
+    UIView *alertContentView = self.alertContentView;
+    NSLayoutConstraint *alertContentViewCenterYConstraint = self.alertContentViewCenterYConstraint;
+    if (!alertContentView || !alertContentViewCenterYConstraint) {
+        return;
+    }
+
+    [self.class updateContraintForKeyboardHeight:height
+                                      parentView:self.view
+                                alertContentView:alertContentView
+               alertContentViewCenterYConstraint:alertContentViewCenterYConstraint];
+}
+
+- (void)keyboardShowOrHideAnimation {
+    UIView *alertContentView = self.alertContentView;
+    NSLayoutConstraint *alertContentViewCenterYConstraint = self.alertContentViewCenterYConstraint;
+    if (!alertContentView || !alertContentViewCenterYConstraint) {
+        return;
+    }
+
+    [self.view layoutIfNeeded];
+}
+
++ (void)updateContraintForKeyboardHeight:(CGFloat)height
+                              parentView:(UIView *)parentView
+                        alertContentView:(UIView *)alertContentView
+       alertContentViewCenterYConstraint:(NSLayoutConstraint *)alertContentViewCenterYConstraint {
+    if (height > 0.0) {
+        CGFloat viewHeight = CGRectGetHeight(parentView.bounds);
+        CGFloat contentBottom = CGRectGetMinY(alertContentView.frame) + CGRectGetHeight(alertContentView.bounds);
+        CGFloat keyboardTop = viewHeight - height;
+        CGFloat space = keyboardTop - contentBottom;
+        CGFloat const padding = 16.0;
+        if (space >= padding) {
+            alertContentViewCenterYConstraint.constant = 0.0;
+        }
+        else {
+            alertContentViewCenterYConstraint.constant = -(padding - space);
+        }
+    }
+    else {
+        alertContentViewCenterYConstraint.constant = 0.0;
+    }
 }
 
 @end

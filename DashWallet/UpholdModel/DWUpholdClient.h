@@ -46,13 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                          completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
-              accessToken:(NSString *)accessToken
                  otpToken:(nullable NSString *)otpToken
                completion:(void (^)(BOOL success, BOOL otpRequired))completion;
 - (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
-                     card:(DWUpholdCardObject *)card
-              accessToken:(NSString *)accessToken
-                 otpToken:(nullable NSString *)otpToken;
+                     card:(DWUpholdCardObject *)card;
 
 - (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
 

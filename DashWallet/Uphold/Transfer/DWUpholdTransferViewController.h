@@ -20,8 +20,18 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
+@class DWUpholdTransferViewController;
+
+@protocol DWUpholdTransferViewControllerDelegate <NSObject>
+
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller;
+- (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller;
+
+@end
 
 @interface DWUpholdTransferViewController : DWAlertViewController
+
+@property (nullable, weak, nonatomic) id<DWUpholdTransferViewControllerDelegate> delegate;
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card;
 

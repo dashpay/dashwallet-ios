@@ -15,18 +15,14 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWAlertViewControllerKeyboardSupport.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAlertViewController : UIViewController <UIViewControllerTransitioningDelegate, DWAlertViewControllerKeyboardSupport>
+@protocol DWAlertViewControllerKeyboardSupport <NSObject>
 
-/**
- Default `YES`
- */
-@property (assign, nonatomic) BOOL shouldDimBackground;
+@property (readonly, nullable, strong, nonatomic) UIView *alertContentView;
+@property (readonly, nullable, strong, nonatomic) NSLayoutConstraint *alertContentViewCenterYConstraint;
 
 @end
 
