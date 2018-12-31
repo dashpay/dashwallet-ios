@@ -52,7 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSAttributedString *)totalDashString {
-    return [self attributedDashStringForDash:self.transaction.base];
+    return [self attributedDashStringForDash:self.transaction.total];
+}
+
+- (BOOL)feeWasDeductedFromAmount {
+    return self.transaction.feeWasDeductedFromAmount;
 }
 
 - (void)confirmWithOTPToken:(nullable NSString *)otpToken {

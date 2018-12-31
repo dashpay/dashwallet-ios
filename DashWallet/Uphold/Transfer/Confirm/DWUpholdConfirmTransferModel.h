@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdConfirmTransferModelState) {
 - (NSAttributedString *)amountDashString;
 - (NSAttributedString *)feeDashString;
 - (NSAttributedString *)totalDashString;
+- (BOOL)feeWasDeductedFromAmount;
 
 - (void)confirmWithOTPToken:(nullable NSString *)otpToken;
 - (void)cancel;

@@ -19,6 +19,7 @@
 
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
+#import "DWUpholdTransactionObject.h"
 #import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -49,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
     dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:[UIColor darkGrayColor]];
     NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
     NSString *available = self.availableString;
-    NSString *availableFormatted = [NSString stringWithFormat:@" %@ %@", available, NSLocalizedString(@"available", nil)];
+    NSString *availableFormatted = [NSString stringWithFormat:@"  %@ %@", available, NSLocalizedString(@"available", nil)];
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
     [result appendAttributedString:dashSymbol];
@@ -76,6 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)createTransactionForAmount:(NSString *)amount otpToken:(nullable NSString *)otpToken {
+    [self createTransactionForAmount:amount
+            feeWasDeductedFromAmount:NO
+                            otpToken:otpToken];
+}
+
+- (void)createTransactionForAmount:(NSString *)amount feeWasDeductedFromAmount:(BOOL)feeWasDeductedFromAmount otpToken:(nullable NSString *)otpToken {
     if (amount.length == 0) {
         amount = self.availableString;
     }
@@ -109,7 +116,28 @@ NS_ASSUME_NONNULL_BEGIN
                                   strongSelf.state = DWUpholdRequestTransferModelStateOTP;
                               }
                               else {
-                                  strongSelf.state = transaction ? DWUpholdRequestTransferModelStateSuccess : DWUpholdRequestTransferModelStateFail;
+                                  if (transaction) {
+                                      DWUpholdCardObject *card = strongSelf.card;
+                                      BOOL notSufficientFunds = ([transaction.total compare:card.available] == NSOrderedDescending);
+                                      if (notSufficientFunds) {
+                                          NSDecimalNumber *amountNumber = [NSDecimalNumber decimalNumberWithString:amount];
+                                          NSDecimalNumber *correctedAmountNumber = [amountNumber decimalNumberBySubtracting:transaction.fee];
+                                          NSString *correctedAmount = [correctedAmountNumber descriptionWithLocale:[NSLocale currentLocale]];
+
+                                          [strongSelf createTransactionForAmount:correctedAmount
+                                                        feeWasDeductedFromAmount:YES
+                                                                        otpToken:nil];
+
+                                          return;
+                                      }
+
+                                      transaction.feeWasDeductedFromAmount = feeWasDeductedFromAmount;
+
+                                      strongSelf.state = DWUpholdRequestTransferModelStateSuccess;
+                                  }
+                                  else {
+                                      strongSelf.state = DWUpholdRequestTransferModelStateFail;
+                                  }
                               }
                           }];
 }

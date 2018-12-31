@@ -39,7 +39,7 @@
                                         </attributedString>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 DASH available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="TfB-xN-7DX">
-                                        <rect key="frame" x="16" y="81.5" width="256" height="18.5"/>
+                                        <rect key="frame" x="21" y="81.5" width="251" height="18.5"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
                                         <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -114,7 +114,7 @@
                                     <constraint firstAttribute="trailing" secondItem="COf-2r-4jw" secondAttribute="trailing" constant="16" id="7mO-Ll-Cfw"/>
                                     <constraint firstAttribute="trailing" secondItem="4m2-pX-ZaX" secondAttribute="trailing" constant="16" id="9ov-Kc-o8a"/>
                                     <constraint firstItem="4m2-pX-ZaX" firstAttribute="leading" secondItem="9UB-MO-0yN" secondAttribute="trailing" constant="16" id="CfS-cx-l1c"/>
-                                    <constraint firstItem="TfB-xN-7DX" firstAttribute="leading" secondItem="O0g-QR-wrm" secondAttribute="leading" constant="16" id="CjA-LO-kmu"/>
+                                    <constraint firstItem="TfB-xN-7DX" firstAttribute="leading" secondItem="O0g-QR-wrm" secondAttribute="leading" constant="21" id="CjA-LO-kmu"/>
                                     <constraint firstItem="CN9-80-DrP" firstAttribute="top" secondItem="O0g-QR-wrm" secondAttribute="top" constant="16" id="JjD-fr-K3M"/>
                                     <constraint firstAttribute="trailing" secondItem="CN9-80-DrP" secondAttribute="trailing" constant="16" id="QHY-pb-rme"/>
                                     <constraint firstAttribute="bottom" secondItem="4m2-pX-ZaX" secondAttribute="bottom" constant="16" id="WII-P3-AKa"/>

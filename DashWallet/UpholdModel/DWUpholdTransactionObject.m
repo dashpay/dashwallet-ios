@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -27,13 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
     if (!identifier || !origin) {
         return nil;
     }
-    
+
     self = [super init];
     if (self) {
         _identifier = identifier;
-        _base = [NSDecimalNumber decimalNumberWithString:origin[@"base"]];
-        _amount = [NSDecimalNumber decimalNumberWithString:origin[@"amount"]];
+        _amount = [NSDecimalNumber decimalNumberWithString:origin[@"base"]];
         _fee = [NSDecimalNumber decimalNumberWithString:origin[@"fee"]];
+        _total = [NSDecimalNumber decimalNumberWithString:origin[@"amount"]];
     }
     return self;
 }

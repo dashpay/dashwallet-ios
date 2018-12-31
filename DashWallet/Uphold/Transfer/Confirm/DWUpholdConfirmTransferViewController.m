@@ -141,10 +141,17 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.model.state == DWUpholdConfirmTransferModelStateFail) {
         self.descriptionLabel.textColor = [UIColor redColor];
         self.descriptionLabel.text = NSLocalizedString(@"Something went wrong", nil);
+        self.descriptionLabel.hidden = NO;
     }
     else {
-        self.descriptionLabel.textColor = [UIColor darkGrayColor];
-        self.descriptionLabel.text = NSLocalizedString(@"Fee will be deducted from requested amount", nil);
+        if ([self.model feeWasDeductedFromAmount]) {
+            self.descriptionLabel.textColor = [UIColor darkGrayColor];
+            self.descriptionLabel.text = NSLocalizedString(@"Fee will be deducted from requested amount", nil);
+            self.descriptionLabel.hidden = NO;
+        }
+        else {
+            self.descriptionLabel.hidden = YES;
+        }
     }
 }
 
