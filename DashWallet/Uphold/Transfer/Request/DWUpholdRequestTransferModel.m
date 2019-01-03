@@ -44,6 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+    [self.createTransactionRequest cancel];
+}
+
 - (NSAttributedString *)availableDashString {
     NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
     dashAttachmentSymbol.bounds = CGRectMake(0.0, -2.0, 19.0, 15.0);
@@ -61,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWUpholdTransferModelValidationResult)validateInput:(NSString *)input {
     if (input.length == 0) {
-        return DWUpholdTransferModelValidationResultValid;
+        input = self.availableString;
     }
 
     NSDecimalNumber *number = [NSDecimalNumber decimalNumberWithString:input];
