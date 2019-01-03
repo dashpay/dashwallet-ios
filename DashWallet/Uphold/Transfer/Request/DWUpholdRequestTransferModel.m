@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
         input = self.availableString;
     }
 
-    NSDecimalNumber *number = [NSDecimalNumber decimalNumberWithString:input];
+    NSDecimalNumber *number = [NSDecimalNumber decimalNumberWithString:input locale:[NSLocale currentLocale]];
     if ([number compare:NSDecimalNumber.zero] == NSOrderedSame) {
         return DWUpholdTransferModelValidationResultInvalid;
     }

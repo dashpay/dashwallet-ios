@@ -185,7 +185,8 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
         if (completion) {
             BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
             DSHTTPOperationResult *httpOperationResult = httpOperation.result;
-            BOOL otpRequired = [httpOperationResult.responseHeaders[@"OTP-Token"] isEqual:@"Required"];
+            NSString *otpTokenHeader = httpOperationResult.responseHeaders[@"OTP-Token"];
+            BOOL otpRequired = (otpTokenHeader && [otpTokenHeader caseInsensitiveCompare:@"required"] == NSOrderedSame);
             completion(success, parseOperation.transaction, otpRequired);
         }
     };
@@ -269,7 +270,8 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
         if (completion) {
             BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
             DSHTTPOperationResult *httpOperationResult = httpOperation.result;
-            BOOL otpRequired = [httpOperationResult.responseHeaders[@"OTP-Token"] isEqual:@"Required"] ||
+            NSString *otpTokenHeader = httpOperationResult.responseHeaders[@"OTP-Token"];
+            BOOL otpRequired = (otpTokenHeader && [otpTokenHeader caseInsensitiveCompare:@"required"] == NSOrderedSame) ||
                                parseOperation.result == DWUpholdProcessTransactionParseResponseOperationResultOTPError;
             if (otpRequired) {
                 success = NO;
