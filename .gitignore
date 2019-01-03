@@ -39,3 +39,5 @@ fastlane/test_output
 # CocoaPods
 Pods/
 
+# Production Constants
+DWUpholdConstants__Release.m

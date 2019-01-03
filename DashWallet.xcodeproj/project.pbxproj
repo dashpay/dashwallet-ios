@@ -1273,6 +1273,7 @@
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
 				2A8F420721BED08700858B91 /* Run Script - DashSync Version */,
+				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
@@ -1624,6 +1625,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/scripts/dashsync_version.sh\"\n";
+		};
+		2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - Uphold Constants";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\n    if [ ! -f \"DWUpholdConstants__Release.m\" ]; then\n        echo \"error: DWUpholdConstants__Release.m file not found!\"\n        exit 1\n    fi\n\n    cp \"DWUpholdConstants__Release.m\" \"DashWallet/UpholdModel/DWUpholdConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/UpholdModel/DWUpholdConstants.m\" ]; then\n        echo \"error: DWUpholdConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
 		};
 		4F32946C767072BBC965A5C3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
