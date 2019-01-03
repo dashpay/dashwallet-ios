@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
                      card:(DWUpholdCardObject *)card;
 
 - (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 

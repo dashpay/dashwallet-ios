@@ -21,6 +21,7 @@
 #import "DSHTTPOperation.h"
 #import "DWUpholdAuthParseResponseOperation.h"
 #import "DWUpholdCardObject.h"
+#import "DWUpholdConstants.h"
 #import "DWUpholdCreateCardAddressParseResponseOperation.h"
 #import "DWUpholdCreateCardParseResponseOperation.h"
 #import "DWUpholdCreateTransactionParseResponseOperation.h"
@@ -30,9 +31,6 @@
 #import "HTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *const CLIENT_ID = @"7aadd33b84e942632ed7ffd9b09578bd64be2099";
-static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899e";
 
 @implementation DWUpholdAPIProvider
 
@@ -48,7 +46,8 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
                                                     @"code" : code,
                                                     @"grant_type" : @"authorization_code",
                                                 }];
-    [httpRequest setBasicAuthWithUsername:CLIENT_ID password:CLIENT_SECRET];
+    [httpRequest setBasicAuthWithUsername:[DWUpholdConstants clientID]
+                                 password:[DWUpholdConstants clientSecret]];
 
     NSURLRequest *request = [httpRequest urlRequest];
 
@@ -226,7 +225,7 @@ static NSString *const CLIENT_SECRET = @"7db0b6bbf766233c0eafcad6b9d8667d526c899
 #pragma mark - Private
 
 + (NSString *)baseURLString {
-    return @"https://api-sandbox.uphold.com/";
+    return [DWUpholdConstants baseURLString];
 }
 
 + (void)authorizeHTTPRequest:(HTTPRequest *)request accessToken:(NSString *)accessToken {

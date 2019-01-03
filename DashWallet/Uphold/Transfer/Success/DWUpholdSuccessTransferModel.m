@@ -17,11 +17,11 @@
 
 #import "DWUpholdSuccessTransferModel.h"
 
+#import "DWUpholdClient.h"
+#import "DWUpholdConstants.h"
 #import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *const UPHOLD_TRANSACTION_URL_FORMAT = @"https://sandbox.uphold.com/reserve/transactions/%@";
 
 @interface DWUpholdSuccessTransferModel ()
 
@@ -46,11 +46,7 @@ static NSString *const UPHOLD_TRANSACTION_URL_FORMAT = @"https://sandbox.uphold.
 }
 
 - (NSURL *)transactionURL {
-    NSString *urlString = [NSString stringWithFormat:UPHOLD_TRANSACTION_URL_FORMAT, self.transaction.identifier];
-    NSURL *url = [NSURL URLWithString:urlString];
-    NSParameterAssert(url);
-
-    return url;
+    return [[DWUpholdClient sharedInstance] transactionURLForTransaction:self.transaction];
 }
 
 @end

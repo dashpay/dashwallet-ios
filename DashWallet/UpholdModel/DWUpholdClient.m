@@ -20,11 +20,10 @@
 #import "DSOperationQueue.h"
 #import "DWUpholdAPIProvider.h"
 #import "DWUpholdCardObject.h"
+#import "DWUpholdConstants.h"
+#import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *const INITIAL_URL_FORMAT = @"https://sandbox.uphold.com/authorize/7aadd33b84e942632ed7ffd9b09578bd64be2099?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@";
-static NSString *const BUY_CARD_URL_FORMAT = @"https://sandbox.uphold.com/dashboard/cards/%@/add";
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 
@@ -80,7 +79,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 - (NSURL *)startAuthRoutineByURL {
     NSUUID *uuid = [NSUUID UUID];
     self.upholdState = [NSString stringWithFormat:@"oauth2:%@", uuid.UUIDString];
-    NSString *urlString = [NSString stringWithFormat:INITIAL_URL_FORMAT, self.upholdState];
+    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants authorizeURLFormat], self.upholdState];
     NSURL *url = [NSURL URLWithString:urlString];
     NSParameterAssert(url);
     return url;
@@ -176,7 +175,19 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
         return nil;
     }
 
-    NSString *urlString = [NSString stringWithFormat:BUY_CARD_URL_FORMAT, card.identifier];
+    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants buyCardURLFormat], card.identifier];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSParameterAssert(url);
+
+    return url;
+}
+
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
+    if (!transaction.identifier) {
+        return nil;
+    }
+
+    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants transactionURLFormat], transaction.identifier];
     NSURL *url = [NSURL URLWithString:urlString];
     NSParameterAssert(url);
 
