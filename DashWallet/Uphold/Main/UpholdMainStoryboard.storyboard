@@ -47,6 +47,18 @@
                                     <fragment content="#bc-ignore!"/>
                                 </attributedString>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW">
+                                <rect key="frame" x="167" y="195" width="41" height="31"/>
+                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                <color key="tintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Retry"/>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                                <connections>
+                                    <action selector="retryButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="Paj-iI-dJi"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w0x-R5-6yg" customClass="DWBlueActionButton">
                                 <rect key="frame" x="22" y="479" width="331" height="50"/>
                                 <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
@@ -91,6 +103,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="BzX-au-frW" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="0Et-fX-is8"/>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="2iV-z1-O47"/>
                             <constraint firstItem="w0x-R5-6yg" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="9Gk-CS-hoZ"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bkb-VD-Oq6" secondAttribute="trailing" constant="22" id="Ms2-HH-wJa"/>
@@ -98,6 +111,7 @@
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="bottom" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="66" id="Plj-11-pui"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="Saf-hc-Ugz"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="22" id="YXd-Xk-mwr"/>
+                            <constraint firstItem="BzX-au-frW" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="aot-UB-gBc"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bPd-EX-JdY" secondAttribute="trailing" constant="20" id="dbd-6R-OUE"/>
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="top" secondItem="w0x-R5-6yg" secondAttribute="bottom" constant="22" id="jFL-hB-JFh"/>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="pfP-sh-nmK"/>
@@ -112,6 +126,8 @@
                         <outlet property="balanceActivityIndicator" destination="rdD-oF-hUw" id="afl-wq-FOv"/>
                         <outlet property="balanceLabel" destination="bPd-EX-JdY" id="buq-YL-Ojp"/>
                         <outlet property="buyButton" destination="bkb-VD-Oq6" id="f5h-R1-JTI"/>
+                        <outlet property="retryButton" destination="BzX-au-frW" id="NwT-Ki-b6k"/>
+                        <outlet property="titleLabel" destination="JZt-mf-cRK" id="4ah-H8-HQM"/>
                         <outlet property="transferButton" destination="w0x-R5-6yg" id="NbT-t1-ccu"/>
                     </connections>
                 </viewController>

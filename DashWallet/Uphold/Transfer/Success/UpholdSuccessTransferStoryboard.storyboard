@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="iYu-g5-HSS">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Montserrat-Regular.otf">
+            <string>Montserrat-Regular</string>
+        </array>
+        <array key="Montserrat-SemiBold.otf">
+            <string>Montserrat-SemiBold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Uphold Success Transfer View Controller-->
+        <scene sceneID="5Py-gT-pPG">
+            <objects>
+                <viewController id="iYu-g5-HSS" customClass="DWUpholdSuccessTransferViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cRJ-Gs-nmK">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pi9-gs-sXq" userLabel="Content View">
+                                <rect key="frame" x="16" y="162" width="343" height="343"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Success" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="LYk-PB-jtl">
+                                        <rect key="frame" x="16" y="16" width="311" height="21"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-SemiBold" family="Montserrat" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your transaction was send and the amount should appear in your wallet in a few minutes." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="pwV-IX-kDL">
+                                        <rect key="frame" x="16" y="61" width="311" height="55"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction id: ..." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wDU-at-vS0">
+                                        <rect key="frame" x="16" y="132" width="311" height="18.5"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HIU-Sz-Zml" customClass="DWBlueActionButton">
+                                        <rect key="frame" x="121" y="287" width="136" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="eGQ-wA-jYu"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
+                                        <state key="normal" title="See on Uphold">
+                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                        </state>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="seeOnUpholdButtonAction:" destination="iYu-g5-HSS" eventType="touchUpInside" id="ntw-O2-nqH"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FKV-1G-dVB" customClass="DWBlueActionButton">
+                                        <rect key="frame" x="273" y="287" width="54" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="fqa-AJ-HsY"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
+                                        <state key="normal" title="OK">
+                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                        </state>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                        <connections>
+                                            <action selector="okButtonAction:" destination="iYu-g5-HSS" eventType="touchUpInside" id="Zgo-KX-Wy6"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="LYk-PB-jtl" secondAttribute="trailing" constant="16" id="0gf-kH-5e0"/>
+                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="top" secondItem="LYk-PB-jtl" secondAttribute="bottom" constant="24" id="27Y-Bn-xM8"/>
+                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="3EA-aD-Tdm"/>
+                                    <constraint firstAttribute="bottom" secondItem="FKV-1G-dVB" secondAttribute="bottom" constant="16" id="GMI-HY-XcK"/>
+                                    <constraint firstItem="FKV-1G-dVB" firstAttribute="leading" secondItem="HIU-Sz-Zml" secondAttribute="trailing" constant="16" id="GwI-3J-Vr1"/>
+                                    <constraint firstAttribute="bottom" secondItem="HIU-Sz-Zml" secondAttribute="bottom" constant="16" id="K5K-3c-QaD"/>
+                                    <constraint firstAttribute="trailing" secondItem="FKV-1G-dVB" secondAttribute="trailing" constant="16" id="KOv-fi-cKW"/>
+                                    <constraint firstAttribute="width" secondItem="Pi9-gs-sXq" secondAttribute="height" id="LVu-EN-fEY"/>
+                                    <constraint firstItem="HIU-Sz-Zml" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="TMS-jn-24a"/>
+                                    <constraint firstItem="wDU-at-vS0" firstAttribute="top" secondItem="pwV-IX-kDL" secondAttribute="bottom" constant="16" id="UkY-gS-eE5"/>
+                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="top" secondItem="Pi9-gs-sXq" secondAttribute="top" constant="16" id="VeO-JD-dFA"/>
+                                    <constraint firstItem="wDU-at-vS0" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="VoV-on-9fD"/>
+                                    <constraint firstAttribute="trailing" secondItem="wDU-at-vS0" secondAttribute="trailing" constant="16" id="cC0-mK-nVf"/>
+                                    <constraint firstItem="wDU-at-vS0" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="e9j-7S-soX"/>
+                                    <constraint firstAttribute="trailing" secondItem="pwV-IX-kDL" secondAttribute="trailing" constant="16" id="eps-TL-fIt"/>
+                                    <constraint firstAttribute="trailing" secondItem="wDU-at-vS0" secondAttribute="trailing" constant="16" id="mqe-rd-CLC"/>
+                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="tes-CX-PtJ"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="leading" secondItem="PPm-4a-I9L" secondAttribute="leading" constant="16" id="Sml-kJ-Pc9"/>
+                            <constraint firstItem="PPm-4a-I9L" firstAttribute="trailing" secondItem="Pi9-gs-sXq" secondAttribute="trailing" constant="16" id="UpQ-hG-dUQ"/>
+                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="centerY" secondItem="cRJ-Gs-nmK" secondAttribute="centerY" id="fX1-2A-I4l"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="PPm-4a-I9L"/>
+                    </view>
+                    <connections>
+                        <outlet property="descriptionLabel" destination="pwV-IX-kDL" id="J6D-eR-hrz"/>
+                        <outlet property="okButton" destination="FKV-1G-dVB" id="dxz-Cf-hbY"/>
+                        <outlet property="seeOnUpholdButton" destination="HIU-Sz-Zml" id="xmY-pe-pmT"/>
+                        <outlet property="titleLabel" destination="LYk-PB-jtl" id="vLZ-6Z-j7m"/>
+                        <outlet property="transactionLabel" destination="wDU-at-vS0" id="EGF-3B-1lq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4Ix-7W-PIr" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="133.59999999999999" y="128.18590704647679"/>
+        </scene>
+    </scenes>
+</document>

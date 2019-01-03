@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    [self.linkButton setTitle:NSLocalizedString(@"Link Uphold Account", nil) forState:UIControlStateNormal];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveURLNotification:)
                                                  name:BRURLNotification

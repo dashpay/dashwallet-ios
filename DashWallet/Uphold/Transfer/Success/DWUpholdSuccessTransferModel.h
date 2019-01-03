@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,25 +17,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWUpholdCardObject.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
-    DWUpholdMainModelStateLoading,
-    DWUpholdMainModelStateDone,
-    DWUpholdMainModelStateFailed,
-};
+@class DWUpholdTransactionObject;
 
-@interface DWUpholdMainModel : NSObject
+@interface DWUpholdSuccessTransferModel : NSObject
 
-@property (readonly, assign, nonatomic) DWUpholdMainModelState state;
-@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
+- (instancetype)initWithTransaction:(DWUpholdTransactionObject *)transaction;
 
-- (void)fetch;
-
-- (nullable NSURL *)buyDashURL;
-- (nullable NSString *)balanceText;
+- (NSString *)transactionText;
+- (NSURL *)transactionURL;
 
 @end
 

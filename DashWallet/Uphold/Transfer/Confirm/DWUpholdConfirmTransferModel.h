@@ -33,6 +33,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdConfirmTransferModelState) {
 @interface DWUpholdConfirmTransferModel : NSObject
 
 @property (readonly, assign, nonatomic) DWUpholdConfirmTransferModelState state;
+@property (readonly, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction;
 

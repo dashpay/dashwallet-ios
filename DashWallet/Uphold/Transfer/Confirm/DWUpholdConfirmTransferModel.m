@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdConfirmTransferModel ()
 
 @property (strong, nonatomic) DWUpholdCardObject *card;
-@property (strong, nonatomic) DWUpholdTransactionObject *transaction;
 @property (assign, nonatomic) DWUpholdConfirmTransferModelState state;
 
 @end

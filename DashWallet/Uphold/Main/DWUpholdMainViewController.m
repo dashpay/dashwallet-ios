@@ -25,8 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate>
 
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *balanceActivityIndicator;
+@property (strong, nonatomic) IBOutlet UIButton *retryButton;
 @property (strong, nonatomic) IBOutlet UIButton *transferButton;
 @property (strong, nonatomic) IBOutlet UIButton *buyButton;
 
@@ -51,31 +53,37 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Uphold", nil);
+    [self.transferButton setTitle:NSLocalizedString(@"Transfer from Uphold", nil) forState:UIControlStateNormal];
+    [self.buyButton setTitle:NSLocalizedString(@"Buy Dash", nil) forState:UIControlStateNormal];
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         switch (self.model.state) {
             case DWUpholdMainModelStateLoading: {
+                self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
                 [self.balanceActivityIndicator startAnimating];
                 self.balanceLabel.hidden = YES;
+                self.retryButton.hidden = YES;
                 self.transferButton.enabled = NO;
                 self.buyButton.enabled = NO;
 
                 break;
             }
             case DWUpholdMainModelStateDone: {
+                self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
                 [self.balanceActivityIndicator stopAnimating];
                 self.balanceLabel.hidden = NO;
-                self.balanceLabel.text = [self.model.card.available descriptionWithLocale:[NSLocale currentLocale]];
+                self.balanceLabel.text = [self.model balanceText];
+                self.retryButton.hidden = YES;
                 self.transferButton.enabled = YES;
                 self.buyButton.enabled = YES;
 
                 break;
             }
             case DWUpholdMainModelStateFailed: {
+                self.titleLabel.text = NSLocalizedString(@"Something went wrong", nil);
                 [self.balanceActivityIndicator stopAnimating];
-                self.balanceLabel.hidden = NO;
-                self.balanceLabel.text = @"Error"; // TODO: localize
+                self.balanceLabel.hidden = YES;
+                self.retryButton.hidden = NO;
                 self.transferButton.enabled = NO;
                 self.buyButton.enabled = NO;
 
@@ -89,6 +97,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
+- (IBAction)retryButtonAction:(id)sender {
+    [self.model fetch];
+}
+
 - (IBAction)transferButtonAction:(id)sender {
     DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.card];
     controller.delegate = self;
@@ -101,8 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-    [self presentViewController:controller animated:YES completion:nil];
+    [self openSafariControllerWithURL:url];
 }
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
@@ -112,51 +123,23 @@ NS_ASSUME_NONNULL_BEGIN
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
+                           openTransactionURL:(NSURL *)url {
+    [self.model fetch];
+    [controller dismissViewControllerAnimated:YES completion:^{
+        [self openSafariControllerWithURL:url];
+    }];
+}
+
 - (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private
 
-- (void)requestOneTimeTokenCompletion:(void (^)(NSString *_Nullable otpToken))completion {
-    UIAlertController *alertController = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
-                         message:NSLocalizedString(@"Uphold one time token is required", nil)
-                  preferredStyle:UIAlertControllerStyleAlert];
-
-    [alertController addTextFieldWithConfigurationHandler:^(UITextField *_Nonnull textField) {
-        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-        textField.keyboardType = UIKeyboardTypeNumberPad;
-        if (@available(iOS 12.0, *)) {
-            textField.textContentType = UITextContentTypeOneTimeCode;
-        }
-    }];
-
-    __weak typeof(alertController) weakAlertController = alertController;
-
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"ok", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *_Nonnull action) {
-        __strong typeof(weakAlertController) strongAlertController = weakAlertController;
-        if (!strongAlertController) {
-            return;
-        }
-
-        if (completion) {
-            NSString *otpToken = strongAlertController.textFields.firstObject.text;
-            completion(otpToken);
-        }
-    }];
-    [alertController addAction:okAction];
-
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                           style:UIAlertActionStyleCancel
-                                                         handler:^(UIAlertAction *_Nonnull action) {
-                                                             if (completion) {
-                                                                 completion(nil);
-                                                             }
-                                                         }];
-    [alertController addAction:cancelAction];
-
-    [self presentViewController:alertController animated:YES completion:nil];
+- (void)openSafariControllerWithURL:(NSURL *)url {
+    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 @end

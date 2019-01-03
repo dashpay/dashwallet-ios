@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.title = NSLocalizedString(@"Uphold", nil);
+
     UIViewController *controller = nil;
     BOOL authorized = [DWUpholdClient sharedInstance].authorized;
     if (authorized) {

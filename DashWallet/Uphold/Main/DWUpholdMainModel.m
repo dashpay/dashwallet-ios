@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWUpholdClient sharedInstance] buyDashURLForCard:self.card];
 }
 
+- (nullable NSString *)balanceText {
+    return [self.card.available descriptionWithLocale:[NSLocale currentLocale]];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

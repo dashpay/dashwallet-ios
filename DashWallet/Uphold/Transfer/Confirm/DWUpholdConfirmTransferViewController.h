@@ -29,7 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWUpholdConfirmTransferViewControllerDelegate <NSObject>
 
 - (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller;
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller;
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller
+                                         transaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 

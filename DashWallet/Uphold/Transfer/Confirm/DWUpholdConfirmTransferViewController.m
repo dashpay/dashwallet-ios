@@ -108,7 +108,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdConfirmTransferModelStateSuccess: {
-            [self.delegate upholdConfirmTransferViewControllerDidFinish:self];
+            [self.delegate upholdConfirmTransferViewControllerDidFinish:self
+                                                            transaction:self.model.transaction];
 
             break;
         }

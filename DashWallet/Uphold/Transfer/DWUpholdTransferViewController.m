@@ -22,13 +22,15 @@
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
 #import "DWUpholdRequestTransferViewController.h"
+#import "DWUpholdSuccessTransferViewController.h"
 #import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdTransferViewController () <DWUpholdOTPProvider,
                                               DWUpholdRequestTransferViewControllerDelegate,
-                                              DWUpholdConfirmTransferViewControllerDelegate>
+                                              DWUpholdConfirmTransferViewControllerDelegate,
+                                              DWUpholdSuccessTransferViewControllerDelegate>
 
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (strong, nonatomic) UIView *backgroundAlertView;
@@ -118,8 +120,22 @@ NS_ASSUME_NONNULL_BEGIN
     [self dw_performTransitionToViewController:self.requestController completion:nil];
 }
 
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller {
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
+    DWUpholdSuccessTransferViewController *successController =
+        [DWUpholdSuccessTransferViewController controllerWithTransaction:transaction];
+    successController.delegate = self;
+    [self dw_performTransitionToViewController:successController completion:nil];
+}
+
+#pragma mark - DWUpholdSuccessTransferViewControllerDelegate
+
+- (void)upholdSuccessTransferViewControllerDidFinish:(DWUpholdSuccessTransferViewController *)controller {
     [self.delegate upholdTransferViewControllerDidFinish:self];
+}
+
+- (void)upholdSuccessTransferViewControllerDidFinish:(DWUpholdSuccessTransferViewController *)controller
+                                  openTransactionURL:(NSURL *)url {
+    [self.delegate upholdTransferViewControllerDidFinish:self openTransactionURL:url];
 }
 
 #pragma mark - Internal

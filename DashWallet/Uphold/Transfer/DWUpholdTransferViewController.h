@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWUpholdTransferViewControllerDelegate <NSObject>
 
 - (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller;
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
+                           openTransactionURL:(NSURL *)url;
 - (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller;
 
 @end
