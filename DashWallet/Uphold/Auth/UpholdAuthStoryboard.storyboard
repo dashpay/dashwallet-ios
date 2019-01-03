@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
-    <device id="retina4_7" orientation="portrait">
+    <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -9,17 +9,26 @@
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
+    <customFonts key="customFonts">
+        <array key="Montserrat-Regular.otf">
+            <string>Montserrat-Regular</string>
+        </array>
+    </customFonts>
     <scenes>
         <!--Uphold Auth View Controller-->
         <scene sceneID="Sgi-4q-Mtc">
             <objects>
                 <viewController id="YEX-OT-hZk" customClass="DWUpholdAuthViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lkZ-Ax-1R4">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
+                                <rect key="frame" x="114.5" y="44" width="91" height="128"/>
+                            </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx" customClass="DWBlueActionButton">
-                                <rect key="frame" x="22" y="485" width="331" height="50"/>
+                                <rect key="frame" x="22" y="454" width="276" height="50"/>
+                                <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="Ifs-Hw-QAz"/>
                                 </constraints>
@@ -32,26 +41,60 @@
                                 </connections>
                             </button>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Pcb-V0-Dcc">
-                                <rect key="frame" x="177.5" y="323.5" width="20" height="20"/>
+                                <rect key="frame" x="150" y="469" width="20" height="20"/>
                             </activityIndicatorView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="3HE-BF-Om2">
+                                <rect key="frame" x="16" y="196" width="288" height="71.5"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
+                                        <rect key="frame" x="0.0" y="0.0" width="288" height="18.5"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
+                                        <rect key="frame" x="0.0" y="34.5" width="288" height="37"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerX" secondItem="fmf-gf-ZKx" secondAttribute="centerX" id="5uk-bt-t0w"/>
                             <constraint firstItem="fmf-gf-ZKx" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="22" id="88x-YD-aUj"/>
                             <constraint firstItem="ZjM-hb-2dB" firstAttribute="trailing" secondItem="fmf-gf-ZKx" secondAttribute="trailing" constant="22" id="CaH-cz-TwG"/>
-                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerY" secondItem="lkZ-Ax-1R4" secondAttribute="centerY" id="Uww-Df-R0K"/>
-                            <constraint firstItem="ZjM-hb-2dB" firstAttribute="bottom" secondItem="fmf-gf-ZKx" secondAttribute="bottom" constant="132" id="YLZ-nB-Sc8"/>
-                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerX" secondItem="lkZ-Ax-1R4" secondAttribute="centerX" id="jKu-mF-yL9"/>
+                            <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerY" secondItem="fmf-gf-ZKx" secondAttribute="centerY" id="EkO-sP-cDW"/>
+                            <constraint firstItem="3HE-BF-Om2" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="16" id="V6M-Nv-d5f"/>
+                            <constraint firstItem="ZjM-hb-2dB" firstAttribute="bottom" secondItem="fmf-gf-ZKx" secondAttribute="bottom" constant="64" id="YLZ-nB-Sc8"/>
+                            <constraint firstItem="3HE-BF-Om2" firstAttribute="top" secondItem="g2S-Xe-WLc" secondAttribute="bottom" constant="24" id="akH-qk-RE5"/>
+                            <constraint firstItem="g2S-Xe-WLc" firstAttribute="centerX" secondItem="lkZ-Ax-1R4" secondAttribute="centerX" id="lDn-Tq-Xp1"/>
+                            <constraint firstAttribute="trailing" secondItem="3HE-BF-Om2" secondAttribute="trailing" constant="16" id="mGf-NV-XMU"/>
+                            <constraint firstItem="g2S-Xe-WLc" firstAttribute="top" secondItem="ZjM-hb-2dB" secondAttribute="top" constant="24" id="nxu-Ye-tLq"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ZjM-hb-2dB"/>
                     </view>
                     <connections>
                         <outlet property="activityIndicatorView" destination="Pcb-V0-Dcc" id="JVR-zM-ufh"/>
+                        <outlet property="firstDescriptionLabel" destination="5q3-QS-3E4" id="f1J-tR-EBA"/>
                         <outlet property="linkButton" destination="fmf-gf-ZKx" id="43d-mp-Uxm"/>
+                        <outlet property="secondDescriptionLabel" destination="qxt-8C-MKW" id="4cv-Ko-On1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nOJ-df-BRB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="138.75" y="133.09859154929578"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="uphold_logo" width="91" height="128"/>
+    </resources>
 </document>

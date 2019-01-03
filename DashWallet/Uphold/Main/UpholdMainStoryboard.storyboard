@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="SNl-Ez-Rsa">
-    <device id="retina4_7" orientation="portrait">
+    <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -23,23 +23,17 @@
             <objects>
                 <viewController id="SNl-Ez-Rsa" customClass="DWUpholdMainViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3TV-oO-cBv">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
-                                <rect key="frame" x="22" y="152" width="331" height="21"/>
-                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                                <attributedString key="userComments">
-                                    <fragment content="#bc-ignore!"/>
-                                </attributedString>
-                            </label>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="f4S-Ig-Mp1">
+                                <rect key="frame" x="114.5" y="44" width="91" height="128"/>
+                            </imageView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="rdD-oF-hUw">
-                                <rect key="frame" x="177.5" y="195" width="20" height="20"/>
+                                <rect key="frame" x="150" y="259.5" width="20" height="20"/>
                             </activityIndicatorView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPd-EX-JdY">
-                                <rect key="frame" x="20" y="195" width="335" height="23.5"/>
+                                <rect key="frame" x="20" y="259.5" width="280" height="23.5"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="19"/>
                                 <color key="textColor" red="0.0" green="0.55294117647058827" blue="0.89411764705882346" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
@@ -48,7 +42,7 @@
                                 </attributedString>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW">
-                                <rect key="frame" x="167" y="195" width="41" height="31"/>
+                                <rect key="frame" x="139.5" y="259.5" width="41" height="31"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
                                 <color key="tintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="Retry"/>
@@ -60,7 +54,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w0x-R5-6yg" customClass="DWBlueActionButton">
-                                <rect key="frame" x="22" y="479" width="331" height="50"/>
+                                <rect key="frame" x="22" y="382" width="276" height="50"/>
                                 <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="eNk-Yu-nlA"/>
@@ -82,7 +76,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bkb-VD-Oq6" customClass="DWBlueActionButton">
-                                <rect key="frame" x="22" y="551" width="331" height="50"/>
+                                <rect key="frame" x="22" y="454" width="276" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="JBR-UR-H2k"/>
                                 </constraints>
@@ -100,6 +94,15 @@
                                     <action selector="buyButtonAction:" destination="SNl-Ez-Rsa" eventType="touchUpInside" id="czB-9z-0Th"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
+                                <rect key="frame" x="22" y="196" width="276" height="41.5"/>
+                                <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <attributedString key="userComments">
+                                    <fragment content="#bc-ignore!"/>
+                                </attributedString>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -108,16 +111,18 @@
                             <constraint firstItem="w0x-R5-6yg" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="9Gk-CS-hoZ"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bkb-VD-Oq6" secondAttribute="trailing" constant="22" id="Ms2-HH-wJa"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="top" secondItem="JZt-mf-cRK" secondAttribute="bottom" constant="22" id="OFN-Ry-F4g"/>
-                            <constraint firstItem="Goh-EE-eVN" firstAttribute="bottom" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="66" id="Plj-11-pui"/>
+                            <constraint firstItem="Goh-EE-eVN" firstAttribute="bottom" secondItem="bkb-VD-Oq6" secondAttribute="bottom" constant="64" id="Plj-11-pui"/>
                             <constraint firstItem="bPd-EX-JdY" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="20" id="Saf-hc-Ugz"/>
+                            <constraint firstItem="f4S-Ig-Mp1" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="Tc1-bM-clp"/>
+                            <constraint firstItem="f4S-Ig-Mp1" firstAttribute="top" secondItem="Goh-EE-eVN" secondAttribute="top" constant="24" id="Y09-ld-Fan"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="JZt-mf-cRK" secondAttribute="trailing" constant="22" id="YXd-Xk-mwr"/>
                             <constraint firstItem="BzX-au-frW" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="aot-UB-gBc"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="bPd-EX-JdY" secondAttribute="trailing" constant="20" id="dbd-6R-OUE"/>
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="top" secondItem="w0x-R5-6yg" secondAttribute="bottom" constant="22" id="jFL-hB-JFh"/>
                             <constraint firstItem="rdD-oF-hUw" firstAttribute="centerX" secondItem="3TV-oO-cBv" secondAttribute="centerX" id="pfP-sh-nmK"/>
+                            <constraint firstItem="JZt-mf-cRK" firstAttribute="top" secondItem="f4S-Ig-Mp1" secondAttribute="bottom" constant="24" id="q6e-7A-Ve9"/>
                             <constraint firstItem="Goh-EE-eVN" firstAttribute="trailing" secondItem="w0x-R5-6yg" secondAttribute="trailing" constant="22" id="tMW-l3-rcQ"/>
                             <constraint firstItem="bkb-VD-Oq6" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="uvP-U5-uot"/>
-                            <constraint firstItem="JZt-mf-cRK" firstAttribute="top" secondItem="Goh-EE-eVN" secondAttribute="top" constant="132" id="vBD-J4-gUY"/>
                             <constraint firstItem="JZt-mf-cRK" firstAttribute="leading" secondItem="Goh-EE-eVN" secondAttribute="leading" constant="22" id="xFo-hS-RLn"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Goh-EE-eVN"/>
@@ -135,4 +140,7 @@
             </objects>
         </scene>
     </scenes>
+    <resources>
+        <image name="uphold_logo" width="91" height="128"/>
+    </resources>
 </document>

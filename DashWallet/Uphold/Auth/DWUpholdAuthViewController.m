@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdAuthViewController ()
 
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
+@property (strong, nonatomic) IBOutlet UILabel *firstDescriptionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *secondDescriptionLabel;
 @property (strong, nonatomic) IBOutlet UIButton *linkButton;
 
 @end
@@ -40,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.firstDescriptionLabel.text = NSLocalizedString(@"Buy Dash with Uphold account", nil);
+    self.secondDescriptionLabel.text = NSLocalizedString(@"Transfer Dash from your Uphold account to this wallet", nil);
     [self.linkButton setTitle:NSLocalizedString(@"Link Uphold Account", nil) forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
