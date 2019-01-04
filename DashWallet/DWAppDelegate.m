@@ -276,7 +276,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
 #endif
     
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV | DSSyncType_Mempools];
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
     
     //TODO: bitcoin protocol/payment protocol over multipeer connectivity
     
