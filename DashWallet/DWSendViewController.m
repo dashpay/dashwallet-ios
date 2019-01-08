@@ -903,7 +903,7 @@ static NSString *sanitizeString(NSString *s)
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (self.amount <= account.balance + fuzz && self.amount > 0) {
-        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.isInstant];
+        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < self.amount) {
             UIAlertController * alert = [UIAlertController
