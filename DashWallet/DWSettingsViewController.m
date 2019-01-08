@@ -477,7 +477,7 @@
     }
 }
 
--(void)showChangeNetwork {
+-(void)showChangeNetworkFromCell:(UITableViewCell *)cell {
     [DSEventManager saveEvent:@"settings:show_change_network"];
     UIAlertController * actionSheet = [UIAlertController
                                        alertControllerWithTitle:NSLocalizedString(@"Network", nil)
@@ -513,6 +513,10 @@
     [actionSheet addAction:mainnet];
     [actionSheet addAction:testnet];
     [actionSheet addAction:cancel];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = self.tableView;
+        actionSheet.popoverPresentationController.sourceRect = cell.frame;
+    }
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
@@ -606,10 +610,12 @@
                 [self showEnableAdvancedFeatures];
             } else {
                 switch (indexPath.row) {
-                    case 0: // change passcode
-                        [self showChangeNetwork];
+                    case 0: { // change passcode
+                        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                        [self showChangeNetworkFromCell:cell];
                         [tableView deselectRowAtIndexPath:indexPath animated:YES];
                         break;
+                    }
                 }
                 break;
             }

@@ -17,22 +17,29 @@
 #import "BRTxOutputEntity.h"
 
 #import <DashSync/DSAccountEntity+CoreDataClass.h>
-#import <DashSync/DSChainEntity+CoreDataClass.h>
 #import <DashSync/DSChain.h>
+#import <DashSync/DSChainEntity+CoreDataClass.h>
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSUInteger const BatchSize = 100;
-static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
+
+static NSArray<NSString *> *OldDataBaseFileNames(void) {
+    return @[
+        @"DashWallet.sqlite",
+        @"BreadWallet.sqlite",
+    ];
+}
 
 @interface DWDataMigrationManager ()
 
+@property (copy, nonatomic) NSString *oldDataBaseFileName;
 @property (strong, nonatomic) NSURL *storeURL;
 @property (nullable, strong, nonatomic) NSPersistentContainer *persistentContainer;
 
 @property (nullable, copy, nonatomic) NSDictionary<NSString *, DSAddressEntity *> *addresses;
-@property (nullable, copy, nonatomic) NSDictionary<NSDictionary <NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs;
+@property (nullable, copy, nonatomic) NSDictionary<NSDictionary<NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs;
 
 @end
 
@@ -51,8 +58,16 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
     self = [super init];
     if (self) {
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-        _storeURL = [docURL URLByAppendingPathComponent:OldDataBaseFileName];
-        _shouldMigrate = [[NSFileManager defaultManager] fileExistsAtPath:_storeURL.path];
+        NSURL *storeURL = nil;
+        for (NSString *fileName in OldDataBaseFileNames()) {
+            NSURL *storeURL = [docURL URLByAppendingPathComponent:fileName];
+            if ([[NSFileManager defaultManager] fileExistsAtPath:storeURL.path]) {
+                _oldDataBaseFileName = fileName;
+                _storeURL = storeURL;
+                break;
+            }
+        }
+        _shouldMigrate = !!_storeURL;
     }
     return self;
 }
@@ -80,16 +95,16 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
 - (void)destroyOldPersistentStore {
     self.persistentContainer = nil;
-    
+
     NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-    NSURL *storeShmURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-shm"]];
-    NSURL *storeWalURL = [docURL URLByAppendingPathComponent:[OldDataBaseFileName stringByAppendingString:@"-wal"]];
-    
+    NSURL *storeShmURL = [docURL URLByAppendingPathComponent:[self.oldDataBaseFileName stringByAppendingString:@"-shm"]];
+    NSURL *storeWalURL = [docURL URLByAppendingPathComponent:[self.oldDataBaseFileName stringByAppendingString:@"-wal"]];
+
     NSFileManager *fileManager = [NSFileManager defaultManager];
     [fileManager removeItemAtURL:self.storeURL error:nil];
     [fileManager removeItemAtURL:storeShmURL error:nil];
     [fileManager removeItemAtURL:storeWalURL error:nil];
-    
+
     // cleanup
     self.addresses = nil;
     self.outputs = nil;
@@ -113,10 +128,10 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
         dispatch_async(dispatch_get_main_queue(), ^{
             [strongSelf destroyOldPersistentStore];
-            
+
             DWEnvironment *environment = [DWEnvironment sharedInstance];
             [environment reset];
-            
+
             DSAccount *currentAccount = environment.currentAccount;
             [currentAccount loadTransactions];
 
@@ -180,7 +195,7 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
             input.signature = inputEntity.signature;
             input.txHash = inputEntity.txHash;
             if (input.txHash) {
-                NSDictionary *key = @{ @(input.n): input.txHash };
+                NSDictionary *key = @{ @(input.n) : input.txHash };
                 DSTxOutputEntity *output = self.outputs[key];
                 if (output) {
                     input.prevOutput = output;
@@ -194,7 +209,7 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
         NSMutableOrderedSet<DSTxOutputEntity *> *outputs = [[NSMutableOrderedSet alloc] init];
         for (BRTxOutputEntity *outputEntity in entity.outputs) {
             if (outputEntity.txHash) {
-                NSDictionary *key = @{ @(outputEntity.n): outputEntity.txHash };
+                NSDictionary *key = @{ @(outputEntity.n) : outputEntity.txHash };
                 DSTxOutputEntity *output = self.outputs[key];
                 if (output) {
                     [outputs addObject:output];
@@ -255,8 +270,8 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 
-    NSMutableDictionary<NSDictionary <NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs = [NSMutableDictionary dictionary];
-    
+    NSMutableDictionary<NSDictionary<NSNumber *, NSData *> *, DSTxOutputEntity *> *outputs = [NSMutableDictionary dictionary];
+
     NSUInteger count = 0;
     for (BRTxOutputEntity *outputEntity in objects) {
         DSTxOutputEntity *output = [[DSTxOutputEntity alloc] initWithContext:writeContext];
@@ -271,18 +286,18 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
             DSAddressEntity *addressEntity = self.addresses[outputEntity.address];
             output.localAddress = addressEntity;
         }
-        
+
         if (output.txHash) {
-            NSDictionary *key = @{ @(output.n): output.txHash };
+            NSDictionary *key = @{ @(output.n) : output.txHash };
             outputs[key] = output;
         }
-        
+
         count++;
         if (count % BatchSize == 0) {
             [DSTransactionEntity saveContext];
         }
     }
-    
+
     self.outputs = outputs;
 
     [DSTransactionEntity saveContext];
@@ -346,7 +361,9 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSUInteger count = 0;
     for (BRPeerEntity *peer in objects) {
-        if (peer.port != 9999) continue; //don't migrate testnet
+        if (peer.port != 9999) {
+            continue; //don't migrate testnet
+        }
         DSPeerEntity *entity = [[DSPeerEntity alloc] initWithContext:writeContext];
         entity.address = peer.address;
         entity.misbehavin = peer.misbehavin;
@@ -382,8 +399,7 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSDerivationPath *bip32DerivationPath = currentAccount.bip32DerivationPath;
     DSDerivationPathEntity *bip32DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip32DerivationPath];
-    
-    
+
     DSDerivationPath *bip44DerivationPath = currentAccount.bip44DerivationPath;
     DSDerivationPathEntity *bip44DerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:bip44DerivationPath];
 
@@ -391,13 +407,16 @@ static NSString *const OldDataBaseFileName = @"DashWallet.sqlite";
 
     NSUInteger count = 0;
     for (BRAddressEntity *address in objects) {
-        if (![address.address isValidDashAddressOnChain:[DSChain mainnet]]) continue; //only migrate mainnet addresses
-        DSDerivationPathEntity * usedDerivationPathEntity = nil;
+        if (![address.address isValidDashAddressOnChain:[DSChain mainnet]])
+            continue; //only migrate mainnet addresses
+        DSDerivationPathEntity *usedDerivationPathEntity = nil;
         if ([[bip44DerivationPath addressAtIndex:address.index internal:address.internal] isEqualToString:address.address]) {
             usedDerivationPathEntity = bip44DerivationPathEntity;
-        } else if ([[bip32DerivationPath addressAtIndex:address.index internal:address.internal] isEqualToString:address.address]) {
+        }
+        else if ([[bip32DerivationPath addressAtIndex:address.index internal:address.internal] isEqualToString:address.address]) {
             usedDerivationPathEntity = bip32DerivationPathEntity;
-        } else {
+        }
+        else {
             continue;
         }
         DSAddressEntity *entity = [[DSAddressEntity alloc] initWithContext:writeContext];

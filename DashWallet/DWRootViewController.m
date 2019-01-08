@@ -871,7 +871,13 @@
         self.progress.hidden = self.pulse.hidden = YES;
         self.progress.progress = self.pulse.progress = 0.0;
     }
-    [self updateTitleView];
+    if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
+        self.navigationItem.titleView = self.logo;
+    }
+    else {
+        self.navigationItem.titleView = nil;
+        [self updateTitleView];
+    }
 }
 
 - (void)setProgressTo:(NSNumber *)n
@@ -935,13 +941,13 @@
     }
     
     counter++;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     
     if (![DSAuthenticationManager sharedInstance].didAuthenticate || progress > .99) {
         self.navigationItem.titleView = self.logo;
     }
     else {
         self.navigationItem.titleView = nil;
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     }
 
     [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
