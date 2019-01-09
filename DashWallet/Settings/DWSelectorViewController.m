@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
     for (NSString *item in items) {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:item];
         cellModel.accessoryType = (index == selectedIndex) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         index += 1;
     }
-    
+
     DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
     section.items = cellModels;
     [self.formController setSections:@[ section ] placeholderText:placeholderText];

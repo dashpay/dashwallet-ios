@@ -179,7 +179,7 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
     if ([cellModel isKindOfClass:DWSelectorFormCellModel.class]) {
         DWSelectorFormCellModel *selectorCellModel = (DWSelectorFormCellModel *)cellModel;
         if (selectorCellModel.didSelectBlock) {
-            selectorCellModel.didSelectBlock(selectorCellModel);
+            selectorCellModel.didSelectBlock(selectorCellModel, indexPath);
         }
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {

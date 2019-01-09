@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, DWSelectorFormCellModelStyle) {
 @property (nullable, copy, nonatomic) NSString *subTitle;
 @property (assign, nonatomic) UITableViewCellAccessoryType accessoryType;
 @property (assign, nonatomic) DWSelectorFormCellModelStyle style;
-@property (nullable, copy, nonatomic) void(^didSelectBlock)(DWSelectorFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void (^didSelectBlock)(DWSelectorFormCellModel *cellModel, NSIndexPath *indexPath);
 
 @end
 

@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DWSelectorFormCellModel *biometricAuthCellModel;
 @property (strong, nonatomic) DWSelectorFormCellModel *switchNetworkCellModel;
 
+@property (strong, nonatomic) DWFormTableViewController *formController;
+
 @end
 
 @implementation DWSettingsViewController
@@ -58,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"About", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -72,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Recovery phrase", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -88,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.localCurrencyCellModel = cellModel;
         [self updateLocalCurrencyCellModel];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -104,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:title];
         self.biometricAuthCellModel = cellModel;
         [self updateBiometricAuthCellModel];
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -132,7 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Uphold account", nil)];
         cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -154,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Change passcode", nil)];
         cellModel.style = DWSelectorFormCellModelStyleBlue;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -168,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Start / Recover another wallet", nil)];
         cellModel.style = DWSelectorFormCellModelStyleRed;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -182,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Rescan blockchain", nil)];
         cellModel.style = DWSelectorFormCellModelStyleBlue;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -204,14 +206,16 @@ NS_ASSUME_NONNULL_BEGIN
     DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:nil];
     self.switchNetworkCellModel = cellModel;
     [self updateSwitchNetworkCellModel];
-    cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel) {
+    cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
 
         if (strongSelf.model.advancedFeaturesEnabled) {
-            [strongSelf showChangeNetwork];
+            UITableView *tableView = self.formController.tableView;
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
         }
         else {
             [strongSelf showEnableAdvancedFeatures];
@@ -266,6 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
     formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:formController.view];
     [formController didMoveToParentViewController:self];
+    self.formController = formController;
 }
 
 #pragma mark - Actions
@@ -418,7 +423,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)showChangeNetwork {
+- (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
     [DSEventManager saveEvent:@"settings:show_change_network"];
     UIAlertController *actionSheet = [UIAlertController
         alertControllerWithTitle:NSLocalizedString(@"Network", nil)
@@ -452,6 +457,10 @@ NS_ASSUME_NONNULL_BEGIN
     [actionSheet addAction:mainnet];
     [actionSheet addAction:testnet];
     [actionSheet addAction:cancel];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
