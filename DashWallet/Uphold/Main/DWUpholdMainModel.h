@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
 - (void)fetch;
 
 - (nullable NSURL *)buyDashURL;
-- (nullable NSString *)balanceText;
+- (nullable NSAttributedString *)availableDashString;
 
 @end
 

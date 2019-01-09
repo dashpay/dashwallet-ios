@@ -18,6 +18,7 @@
 #import "DWUpholdMainModel.h"
 
 #import "DWUpholdClient.h"
+#import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,8 +50,23 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWUpholdClient sharedInstance] buyDashURLForCard:self.card];
 }
 
-- (nullable NSString *)balanceText {
-    return [self.card.available descriptionWithLocale:[NSLocale currentLocale]];
+- (nullable NSAttributedString *)availableDashString {
+    if (!self.card.available) {
+        return nil;
+    }
+    
+    NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
+    dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 19.0, 15.0);
+    dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
+    NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
+    NSString *available = [self.card.available descriptionWithLocale:[NSLocale currentLocale]];
+    NSString *availableFormatted = [NSString stringWithFormat:@" %@ %@", available, NSLocalizedString(@"available", nil)];
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
+    [result beginEditing];
+    [result appendAttributedString:dashSymbol];
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:availableFormatted]];
+    [result endEditing];
+    return [result copy];
 }
 
 @end

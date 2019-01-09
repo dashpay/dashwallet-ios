@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
                 self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
                 [self.balanceActivityIndicator stopAnimating];
                 self.balanceLabel.hidden = NO;
-                self.balanceLabel.text = [self.model balanceText];
+                self.balanceLabel.attributedText = [self.model availableDashString];
                 self.retryButton.hidden = YES;
                 self.transferButton.enabled = YES;
                 self.buyButton.enabled = YES;
