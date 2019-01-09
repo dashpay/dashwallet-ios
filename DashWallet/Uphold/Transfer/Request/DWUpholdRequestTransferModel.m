@@ -70,11 +70,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSDecimalNumber *number = [NSDecimalNumber decimalNumberWithString:input locale:[NSLocale currentLocale]];
     if ([number compare:NSDecimalNumber.zero] == NSOrderedSame) {
-        return DWUpholdTransferModelValidationResultInvalid;
+        return DWUpholdTransferModelValidationResultInvalidAmount;
     }
 
     if ([number compare:self.card.available] == NSOrderedDescending) {
-        return DWUpholdTransferModelValidationResultAvailableLimit;
+        return DWUpholdTransferModelValidationResultInsufficientFunds;
     }
 
     return DWUpholdTransferModelValidationResultValid;

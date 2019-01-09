@@ -53,7 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Enter the amount to transfer below", nil);
-    self.errorLabel.text = NSLocalizedString(@"Something went wrong", nil);
     [self.transferButton setTitle:NSLocalizedString(@"Transfer", nil) forState:UIControlStateNormal];
     [self.cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
 
@@ -155,12 +154,18 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *amountString = self.textField.text;
 
     DWUpholdTransferModelValidationResult validationResult = [self.model validateInput:amountString];
-    if (validationResult == DWUpholdTransferModelValidationResultInvalid) {
+    if (validationResult == DWUpholdTransferModelValidationResultInvalidAmount) {
+        self.errorLabel.text = NSLocalizedString(@"Invalid amount", nil);
+        self.errorLabel.hidden = NO;
+
         [self.textField dw_shakeView];
 
         return;
     }
-    else if (validationResult == DWUpholdTransferModelValidationResultAvailableLimit) {
+    else if (validationResult == DWUpholdTransferModelValidationResultInsufficientFunds) {
+        self.errorLabel.text = NSLocalizedString(@"Insufficient Funds", nil);
+        self.errorLabel.hidden = NO;
+
         [self.availableLabel dw_shakeView];
 
         return;
@@ -201,6 +206,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWUpholdRequestTransferModelStateFail: {
             self.textField.userInteractionEnabled = YES;
+            self.errorLabel.text = NSLocalizedString(@"Something went wrong", nil);
             self.errorLabel.hidden = NO;
             self.transferButton.hidden = NO;
             [self.activityIndicatorView stopAnimating];

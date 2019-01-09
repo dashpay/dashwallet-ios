@@ -285,6 +285,9 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vyžaduje dostatok vstupov s aspoň 6 potvrdeniami. Odoslať ako obyčajnú transakciu?";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Insufficient Funds";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "insufficient funds";
 
 /* No comment provided by engineer. */
@@ -292,6 +295,9 @@
 
 /* No comment provided by engineer. */
 "INVALID" = "NEPLATNÉ";
+
+/* No comment provided by engineer. */
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
 "IS Received" = "IS Received";

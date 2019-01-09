@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWUpholdTransferModelValidationResult) {
     DWUpholdTransferModelValidationResultValid,
-    DWUpholdTransferModelValidationResultInvalid,
-    DWUpholdTransferModelValidationResultAvailableLimit,
+    DWUpholdTransferModelValidationResultInvalidAmount,
+    DWUpholdTransferModelValidationResultInsufficientFunds,
 };
 
 typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
