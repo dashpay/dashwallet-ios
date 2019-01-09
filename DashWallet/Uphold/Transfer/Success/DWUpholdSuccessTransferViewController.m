@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Success", nil);
-    self.descriptionLabel.text = NSLocalizedString(@"Your transaction was send and the amount should appear in your wallet in a few minutes.", nil);
+    self.descriptionLabel.text = NSLocalizedString(@"Your transaction was sent and the amount should appear in your wallet in a few minutes.", nil);
     self.transactionLabel.text = [self.model transactionText];
     [self.okButton setTitle:NSLocalizedString(@"OK", nil) forState:UIControlStateNormal];
     [self.seeOnUpholdButton setTitle:NSLocalizedString(@"See on Uphold", nil) forState:UIControlStateNormal];

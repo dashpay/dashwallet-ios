@@ -666,7 +666,7 @@
 "you received dash!" = "you received dash!";
 
 /* No comment provided by engineer. */
-"Your transaction was send and the amount should appear in your wallet in a few minutes." = "Your transaction was send and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
 "Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
