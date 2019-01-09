@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!self.card.available) {
         return nil;
     }
-    
+
     NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
     dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 19.0, 15.0);
     dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
@@ -67,6 +67,10 @@ NS_ASSUME_NONNULL_BEGIN
     [result appendAttributedString:[[NSAttributedString alloc] initWithString:availableFormatted]];
     [result endEditing];
     return [result copy];
+}
+
+- (void)logOut {
+    [[DWUpholdClient sharedInstance] logOut];
 }
 
 @end

@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
 - (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction;
 
+- (void)updateLastAccessDate;
+- (void)logOut;
+
 @end
 
 NS_ASSUME_NONNULL_END

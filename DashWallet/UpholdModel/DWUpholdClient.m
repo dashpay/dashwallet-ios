@@ -26,7 +26,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
+static NSString *const UPHOLD_LAST_ACCESS = @"DW_UPHOLD_LAST_ACCESS";
 
+static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
 #pragma mark - NSOperation Extension
 
@@ -46,6 +48,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 
 @property (nullable, copy, nonatomic) NSString *upholdState;
 @property (nullable, copy, nonatomic) NSString *accessToken;
+@property (nullable, strong, nonatomic) NSDate *lastAccessDate;
 
 @end
 
@@ -73,7 +76,19 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 }
 
 - (BOOL)isAuthorized {
-    return !!self.accessToken;
+    if (!self.accessToken) {
+        return NO;
+    }
+
+    NSTimeInterval timeInterval = -[self.lastAccessDate timeIntervalSinceNow];
+    if (timeInterval > UPHOLD_KEEP_ALIVE_INTERVAL) {
+        [self logOut];
+        return NO;
+    }
+
+    [self updateLastAccessDate];
+
+    return YES;
 }
 
 - (NSURL *)startAuthRoutineByURL {
@@ -121,6 +136,7 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
         strongSelf.accessToken = accessToken;
         if (accessToken) {
             setKeychainString(accessToken, UPHOLD_ACCESS_TOKEN, YES);
+            strongSelf.lastAccessDate = [NSDate date];
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -166,71 +182,6 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
                 }
             });
         }
-    }];
-    [self.operationQueue addOperation:operation];
-}
-
-- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card {
-    if (!card.identifier) {
-        return nil;
-    }
-
-    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants buyCardURLFormat], card.identifier];
-    NSURL *url = [NSURL URLWithString:urlString];
-    NSParameterAssert(url);
-
-    return url;
-}
-
-- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
-    if (!transaction.identifier) {
-        return nil;
-    }
-
-    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants transactionURLFormat], transaction.identifier];
-    NSURL *url = [NSURL URLWithString:urlString];
-    NSParameterAssert(url);
-
-    return url;
-}
-
-#pragma mark - Private
-
-- (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
-
-    __weak typeof(self) weakSelf = self;
-    NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        if (success && card) {
-            [strongSelf createDashCardAddress:card completion:completion];
-        }
-        else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) {
-                    completion(nil);
-                }
-            });
-        }
-    }];
-    [self.operationQueue addOperation:operation];
-}
-
-- (void)createDashCardAddress:(DWUpholdCardObject *)card completion:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
-    NSParameterAssert(card);
-    NSAssert(!card.address, @"Card has address already");
-
-    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion) {
-                completion(success ? card : nil);
-            }
-        });
     }];
     [self.operationQueue addOperation:operation];
 }
@@ -290,6 +241,91 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
                                                         accessToken:self.accessToken
                                                            otpToken:nil];
     [self.operationQueue addOperation:operation];
+}
+
+- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card {
+    if (!card.identifier) {
+        return nil;
+    }
+
+    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants buyCardURLFormat], card.identifier];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSParameterAssert(url);
+
+    return url;
+}
+
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
+    if (!transaction.identifier) {
+        return nil;
+    }
+
+    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants transactionURLFormat], transaction.identifier];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSParameterAssert(url);
+
+    return url;
+}
+
+- (void)updateLastAccessDate {
+    if (self.accessToken) {
+        self.lastAccessDate = [NSDate date];
+    }
+}
+
+- (void)logOut {
+    self.accessToken = nil;
+    self.lastAccessDate = nil;
+    setKeychainData(nil, UPHOLD_ACCESS_TOKEN, YES);
+}
+
+#pragma mark - Private
+
+- (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
+    NSParameterAssert(self.accessToken);
+
+    __weak typeof(self) weakSelf = self;
+    NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success && card) {
+            [strongSelf createDashCardAddress:card completion:completion];
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion(nil);
+                }
+            });
+        }
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+- (void)createDashCardAddress:(DWUpholdCardObject *)card completion:(void (^)(DWUpholdCardObject *_Nullable card))completion {
+    NSParameterAssert(self.accessToken);
+    NSParameterAssert(card);
+    NSAssert(!card.address, @"Card has address already");
+
+    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(success ? card : nil);
+            }
+        });
+    }];
+    [self.operationQueue addOperation:operation];
+}
+
+- (nullable NSDate *)lastAccessDate {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:UPHOLD_LAST_ACCESS];
+}
+
+- (void)setLastAccessDate:(nullable NSDate *)lastAccessDate {
+    [[NSUserDefaults standardUserDefaults] setObject:lastAccessDate forKey:UPHOLD_LAST_ACCESS];
 }
 
 @end

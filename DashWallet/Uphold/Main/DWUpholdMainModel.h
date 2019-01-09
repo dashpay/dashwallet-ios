@@ -36,6 +36,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
 
 - (nullable NSURL *)buyDashURL;
 - (nullable NSAttributedString *)availableDashString;
+- (void)logOut;
 
 @end
 

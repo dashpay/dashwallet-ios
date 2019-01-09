@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate>
+@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate>
 
 @end
 
@@ -39,25 +39,46 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.title = NSLocalizedString(@"Uphold", nil);
 
-    UIViewController *controller = nil;
+
     BOOL authorized = [DWUpholdClient sharedInstance].authorized;
-    if (authorized) {
-        DWUpholdMainViewController *mainController = [DWUpholdMainViewController controller];
-        controller = mainController;
-    }
-    else {
-        DWUpholdAuthViewController *authController = [DWUpholdAuthViewController controller];
-        authController.delegate = self;
-        controller = authController;
-    }
+    UIViewController *controller = authorized ? [self mainController] : [self authController];
     [self dw_displayViewController:controller];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [[DWUpholdClient sharedInstance] updateLastAccessDate];
 }
 
 #pragma mark - DWUpholdAuthViewControllerDelegate
 
 - (void)upholdAuthViewControllerDidAuthorize:(DWUpholdAuthViewController *)controller {
+    UIViewController *toController = [self mainController];
+    [self dw_performTransitionToViewController:toController completion:nil];
+}
+
+#pragma mark - DWUpholdMainViewControllerDelegate
+
+- (void)upholdMainViewControllerDidLogOut:(DWUpholdMainViewController *)controller {
+    UIViewController *toController = [self authController];
+    [self dw_performTransitionToViewController:toController completion:nil];
+}
+
+#pragma mark - Private
+
+- (DWUpholdAuthViewController *)authController {
+    DWUpholdAuthViewController *authController = [DWUpholdAuthViewController controller];
+    authController.delegate = self;
+
+    return authController;
+}
+
+- (DWUpholdMainViewController *)mainController {
     DWUpholdMainViewController *mainController = [DWUpholdMainViewController controller];
-    [self dw_performTransitionToViewController:mainController completion:nil];
+    mainController.delegate = self;
+
+    return mainController;
 }
 
 @end

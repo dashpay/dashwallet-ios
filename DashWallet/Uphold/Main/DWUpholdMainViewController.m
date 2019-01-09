@@ -95,6 +95,24 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model fetch];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    UINavigationItem *navigationItem = self.parentViewController.navigationItem;
+    UIBarButtonItem *rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Log Out", nil)
+                                                                           style:UIBarButtonItemStylePlain
+                                                                          target:self
+                                                                          action:@selector(logOutButtonAction:)];
+    [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    UINavigationItem *navigationItem = self.parentViewController.navigationItem;
+    [navigationItem setRightBarButtonItem:nil animated:YES];
+}
+
 #pragma mark - Actions
 
 - (IBAction)retryButtonAction:(id)sender {
@@ -114,6 +132,11 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self openSafariControllerWithURL:url];
+}
+
+- (void)logOutButtonAction:(id)sender {
+    [self.model logOut];
+    [self.delegate upholdMainViewControllerDidLogOut:self];
 }
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
