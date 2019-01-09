@@ -24,7 +24,6 @@
 #import "DWSeedViewController.h"
 #import "DWSelectorViewController.h"
 #import "DWSettingsControllerModel.h"
-#import "DWUpholdViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -127,20 +126,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
 
             strongSelf.model.enableNotifications = cellModel.on;
-        };
-        [items addObject:cellModel];
-    }
-
-    {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Uphold account", nil)];
-        cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf showUpholdAccountController];
         };
         [items addObject:cellModel];
     }
@@ -374,11 +359,6 @@ NS_ASSUME_NONNULL_BEGIN
         };
         [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
-}
-
-- (void)showUpholdAccountController {
-    DWUpholdViewController *controller = [DWUpholdViewController controller];
-    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)changePasscodeAction {
