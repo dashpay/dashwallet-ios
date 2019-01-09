@@ -15,6 +15,9 @@
 "%d duffs/byte" = "%d Duffs/Byte";
 
 /* No comment provided by engineer. */
+"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 Bestätigungen";
 
 /* No comment provided by engineer. */
@@ -276,7 +279,13 @@
 "INVALID" = "UNGÜLTIG";
 
 /* No comment provided by engineer. */
+"IS Received" = "IS Received";
+
+/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Dash-Adresse zu erhalten. Dash werden so an dieses Wallet geschickt.";
+
+/* No comment provided by engineer. */
+"locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
 "more..." = "mehr...";

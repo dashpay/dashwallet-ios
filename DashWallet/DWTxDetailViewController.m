@@ -266,7 +266,24 @@
                     textLabel.text = NSLocalizedString(@"status:", nil);
                     subtitleLabel.text = nil;
                     
-                    if (self.transaction.blockHeight != TX_UNCONFIRMED) {
+                    uint64_t amount;
+                    if (self.sent > 0 && self.sent == self.received) {
+                        amount = self.sent;
+                    } else {
+                        amount = self.received - self.sent;
+                    }
+                    uint32_t lastBlockHeight = [DWEnvironment sharedInstance].currentChain.lastBlockHeight;
+                    
+                    if (self.transaction.instantSendReceived && ((self.transaction.blockHeight == TX_UNCONFIRMED) || (lastBlockHeight - self.transaction.blockHeight) < 6)) {
+                        detailLabel.text = NSLocalizedString(@"locked with instant send", nil);
+                        if (self.transaction.blockHeight != TX_UNCONFIRMED) {
+                            subtitleLabel.text = [NSString stringWithFormat:@"%@ - %@",[NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
+                                              self.transaction.blockHeight], self.txDateString];
+                        } else {
+                            subtitleLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d out of %d lock votes",nil),self.transaction.transactionLockVotes.count,self.transaction.inputHashes.count*10];
+                        }
+                    }
+                    else if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                             self.transaction.blockHeight, self.txDateString];
                         subtitleLabel.text = self.txDateString;
@@ -277,7 +294,7 @@
                     else if ([account transactionIsPending:self.transaction]) {
                         detailLabel.text = NSLocalizedString(@"pending", nil);
                     }
-                    else if (! [account transactionIsVerified:self.transaction]) {
+                    else if (![account transactionIsVerified:self.transaction]) {
                         detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }
