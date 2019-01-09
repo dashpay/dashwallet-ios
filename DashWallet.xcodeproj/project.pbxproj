@@ -319,7 +319,6 @@
 		2A8F423B21BF02D000858B91 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F423D21BF02D200858B91 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F423F21BF02D300858B91 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
-		2A8F424121BF02D400858B91 /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424321BF02D500858B91 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424521BF02D600858B91 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424721BF02D800858B91 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
@@ -499,8 +498,6 @@
 		FB021E551E47E17200D17638 /* FBShimmeringView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringView.m; sourceTree = "<group>"; };
 		FB021E591E4DEFE800D17638 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
-		FB0ACB9B1F9AB5FB00F4AB52 /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Main.strings; sourceTree = "<group>"; };
-		FB0ACB9C1F9AB5FC00F4AB52 /* sk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACB9D1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Main.strings; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACB9F1F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Main.strings; sourceTree = "<group>"; };
@@ -518,11 +515,9 @@
 		FB4310F71FA2951E00784EBC /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB4310F91FA2978800784EBC /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB43110C1FA2D3FD00784EBC /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/MainInterface.strings; sourceTree = "<group>"; };
-		FB43110E1FA2D41C00784EBC /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		FB4311101FA2D41D00784EBC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/MainInterface.strings; sourceTree = "<group>"; };
 		FB4311121FA2D44100784EBC /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB4311141FA2D44200784EBC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
-		FB4311161FA2D44600784EBC /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB4311181FA2D44700784EBC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB43111A1FA2D44D00784EBC /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB43111C1FA2D44E00784EBC /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
@@ -550,7 +545,6 @@
 		FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStoryboardSegueWithCompletion.m; sourceTree = "<group>"; };
 		FB586CB4213D5EF600836ACC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB6213D5F8200836ACC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Interface.strings; sourceTree = "<group>"; };
-		FB586CB8213D606A00836ACC /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CBA213D607500836ACC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Interface.strings"; sourceTree = "<group>"; };
 		FB586CBC213D607800836ACC /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CBE213D607B00836ACC /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -1337,7 +1331,6 @@
 				ru,
 				el,
 				pt,
-				sk,
 				bg,
 				vi,
 				th,
@@ -1814,7 +1807,6 @@
 				2A8F423B21BF02D000858B91 /* ru */,
 				2A8F423D21BF02D200858B91 /* el */,
 				2A8F423F21BF02D300858B91 /* pt */,
-				2A8F424121BF02D400858B91 /* sk */,
 				2A8F424321BF02D500858B91 /* bg */,
 				2A8F424521BF02D600858B91 /* vi */,
 				2A8F424721BF02D800858B91 /* th */,
@@ -1837,7 +1829,6 @@
 				FB4310F91FA2978800784EBC /* pl */,
 				FB4311121FA2D44100784EBC /* bg */,
 				FB4311141FA2D44200784EBC /* vi */,
-				FB4311161FA2D44600784EBC /* sk */,
 				FB4311181FA2D44700784EBC /* pt */,
 				FB43111A1FA2D44D00784EBC /* el */,
 				FB43111C1FA2D44E00784EBC /* tr */,
@@ -1867,7 +1858,6 @@
 				75DE02511B0EB8030027FF08 /* ru */,
 				750C6CC01B5C8EB60038AAE9 /* el */,
 				75CE194E1B9642EB000778E4 /* pt */,
-				FB0ACB9C1F9AB5FC00F4AB52 /* sk */,
 				FB0ACB9E1F9AB76800F4AB52 /* bg */,
 				FB0ACBA01F9ABB6200F4AB52 /* vi */,
 				FB4310F11FA027DB00784EBC /* th */,
@@ -1896,7 +1886,6 @@
 				75CE194D1B9642EB000778E4 /* pt */,
 				FB4310EF1FA027DB00784EBC /* th */,
 				FB43110C1FA2D3FD00784EBC /* bg */,
-				FB43110E1FA2D41C00784EBC /* sk */,
 				FB4311101FA2D41D00784EBC /* vi */,
 				FB43BC8C21217BB800BC9879 /* zh-Hant-TW */,
 			);
@@ -1921,7 +1910,6 @@
 				750C6CC11B5C8EB60038AAE9 /* el */,
 				75CE194C1B9642EB000778E4 /* pt */,
 				75BDCC381CE2FC7000AAFA22 /* en */,
-				FB0ACB9B1F9AB5FB00F4AB52 /* sk */,
 				FB0ACB9D1F9AB76800F4AB52 /* bg */,
 				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
 				FB4310EE1FA027DB00784EBC /* th */,
@@ -1938,7 +1926,6 @@
 				FB4310F01FA027DB00784EBC /* th */,
 				FB586CB4213D5EF600836ACC /* pt */,
 				FB586CB6213D5F8200836ACC /* vi */,
-				FB586CB8213D606A00836ACC /* sk */,
 				FB586CBA213D607500836ACC /* zh-Hans */,
 				FB586CBC213D607800836ACC /* fr */,
 				FB586CBE213D607B00836ACC /* de */,
