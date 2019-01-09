@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import "BRTodayViewController.h"
-#import "BRAppGroupConstants.h"
+#import "DWAppGroupConstants.h"
 #import "BRBubbleView.h"
 #import "UIImage+Utils.h"
 #import <NotificationCenter/NotificationCenter.h>
@@ -120,9 +120,11 @@
     if (self.qrCodeData && self.qrImage.bounds.size.width > 0) {
         NSData *imageData = [self.appGroupUserDefault objectForKey:APP_GROUP_QR_IMAGE_KEY];
         UIImage *image = [UIImage imageWithData:imageData];
-        UIImage *resizedImage = [image resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
-        UIImage *overlayLogo = [UIImage imageNamed:@"dashQROverlay"];
-        UIImage *result = [resizedImage imageByMergingWithImage:overlayLogo];
+        UIImage *resizedImage = [image dw_resize:CGSizeMake(240, 240) withInterpolationQuality:kCGInterpolationNone];
+        UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(60.0, 60.0) withInterpolationQuality:kCGInterpolationMedium];
+        CGSize holeSize = CGSizeMake(64.0, 64.0);
+        resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
+        UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
 
         self.qrOverlay.image = result;
         self.qrImage.image = result;
@@ -132,11 +134,6 @@
 }
 
 // MARK: - NCWidgetProviding
-
-- (UIEdgeInsets)widgetMarginInsetsForProposedMarginInsets:(UIEdgeInsets)defaultMarginInsets
-{
-    return UIEdgeInsetsZero;
-}
 
 // MARK: - UI Events
 

@@ -2,9 +2,6 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "ウォレットを復元";
 
-/* Class = "UILabel"; text = "https://github.com/dashpay/dashwallet"; ObjectID = "5OA-tB-Exg"; */
-"5OA-tB-Exg.text" = "https://github.com/dashpay/dashwallet";
-
 /* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
 "8e2-ar-Ehc.text" = "通貨表示";
 
@@ -13,9 +10,6 @@
 
 /* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
 "D1b-HB-lKH.text" = "ウォレットの新規作成及び復元";
-
-/* Class = "UILabel"; text = "exchange rate data provided by\nbitpay.com/rates and poloniex"; ObjectID = "D4H-hd-LsX"; */
-"D4H-hd-LsX.text" = "為替データ提供：\nbitpay.com/rates and poloniex.com";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "携帯電話を失くされた場合、このフレーズでウォレットが復元できます。";
@@ -60,22 +54,19 @@
 "fQN-xb-SYb.title" = "承認：";
 
 /* Class = "UILabel"; text = "Send DASH"; ObjectID = "l5l-JR-LKA"; */
-"l5l-JR-LKA.text" = "送金する:";
+"l5l-JR-LKA.text" = "Dashを送金する";
 
 /* Class = "UINavigationItem"; title = "recovery phrase:"; ObjectID = "ooJ-EA-DFl"; */
 "ooJ-EA-DFl.title" = "復元フレーズ:";
 
 /* Class = "UILabel"; text = "Receive DASH"; ObjectID = "qel-3J-2VC"; */
-"qel-3J-2VC.text" = "受け取る:";
+"qel-3J-2VC.text" = "Dashを受け取る";
 
 /* Class = "UITableViewController"; title = "transaction details"; ObjectID = "s4T-yd-VfX"; */
 "s4T-yd-VfX.title" = "取引詳細";
 
 /* Class = "UILabel"; text = "no transactions"; ObjectID = "t1j-JZ-FW0"; */
 "t1j-JZ-FW0.text" = "取引がありません";
-
-/* Class = "UILabel"; text = "DashWallet v%ver%%net%\nCopyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "uvz-hk-Nr4"; */
-"uvz-hk-Nr4.text" = "DashWallet v%ver%%net%\n著作権 © 2018 Dash Core\n\nBreadwalletをベースにしています。\n\nこのアプリはオープンソースです。";
 
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "新しい復元フレーズを生成し、新規ウォレットを作ります。";
@@ -120,16 +111,13 @@
 "adc-g6-wnP.text" = "Shapeshiftで交換中";
 
 /* Class = "UILabel"; text = "Use InstantSend"; ObjectID = "lbm-03-nu4"; */
-"lbm-03-nu4.text" = "即時送金（インスタントセンド)";
+"lbm-03-nu4.text" = "即時送金［インスタントセンド］";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
 "x2u-C3-wz6.text" = "ステータス:";
 
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
-
-/* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "Irz-6P-zvD"; */
-"Irz-6P-zvD.normalTitle" = "ログをコピーする";
 
 /* Class = "UILabel"; text = "New Wallet"; ObjectID = "7gb-Nc-x8C"; */
 "7gb-Nc-x8C.text" = "新規ウォレット";
@@ -138,7 +126,7 @@
 "7h3-k2-QrR.text" = "パスワード管理アプリや、信用できない端末に復元フレーズは絶対に打ち込んだり写真を撮ったりしないで下さい。ウィルスやマルウェアによって盗まれる可能性があります。";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのダッシュを簡単に盗むことができます。";
+"AH2-hg-79I.text" = "復元フレーズは絶対に誰にも見せないで下さい！復元フレーズを知っている人はあなたのDashを簡単に盗むことができます。";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
 "FJd-qY-pGg.normalTitle" = "フレーズを表示";

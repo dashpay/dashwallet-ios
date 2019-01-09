@@ -36,3 +36,10 @@ source_file = WatchApp/en.lproj/Interface.strings
 source_lang = en
 type = STRINGS
 
+[dash-ios-wallet.app-about-strings]
+file_filter = DashWallet/About/<lang>.lproj/AboutStoryboard.strings
+minimum_perc = 0
+source_file = DashWallet/About/en.lproj/AboutStoryboard.strings
+source_lang = en
+type = STRINGS
+

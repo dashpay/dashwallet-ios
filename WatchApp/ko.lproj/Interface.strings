@@ -6,19 +6,19 @@
 "4rD-ne-4oP.title" = "취소";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
-"Gat-bm-t3w.text" = "아이폰에서 대쉬지갑 설치하기";
+"Gat-bm-t3w.text" = "대시 지갑 아이폰 어플을 열어 지갑 설정하기";
 
 /* Class = "WKInterfaceButton"; title = "OK"; ObjectID = "R3B-Zx-omu"; */
 "R3B-Zx-omu.title" = "OK";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
-"VXj-KF-nqM.text" = "아이폰에서 대쉬지갑 설치하기";
+"VXj-KF-nqM.text" = "대시 지갑 아이폰 어플을 열어 지갑 설정하기";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
 "ZKF-gb-hhm.title" = "잔고 확인";
 
 /* Class = "WKInterfaceLabel"; text = "Transactions"; ObjectID = "r80-H8-ngA"; */
-"r80-H8-ngA.text" = "거래내역";
+"r80-H8-ngA.text" = "거래 내역";
 
 /* Class = "WKInterfaceButton"; title = "0"; ObjectID = "4mi-Wz-WHA"; */
 "4mi-Wz-WHA.title" = "0";

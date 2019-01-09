@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
@@ -15,7 +12,10 @@
 "%d confirmations" = "%d confirmations";
 
 /* No comment provided by engineer. */
-", " = ", ";
+"%d duffs/byte" = "%d duffs/byte";
+
+/* No comment provided by engineer. */
+"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 confirmations";
@@ -24,25 +24,13 @@
 "1 confirmation" = "1 confirmation";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" is not a recovery phrase word";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet";
-
-/* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 attempt remaining\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n     amount %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
@@ -54,19 +42,16 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nallow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\ntry again in %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\ntry again in %1$d %2$@";
 
 /* No comment provided by engineer. */
 "About" = "About";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
 "always require passcode" = "always require passcode";
@@ -87,16 +72,7 @@
 "Are you sure?" = "Are you sure?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "bad password, try again";
-
-/* No comment provided by engineer. */
 "bad payment request" = "bad payment request";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "bad payment request URL";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "bad payment URL";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "bad recovery phrase";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "checking private key balance...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "choose passcode for %@";
-
-/* No comment provided by engineer. */
 "clear" = "clear";
 
 /* No comment provided by engineer. */
@@ -160,9 +133,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmed in block #%d";
-
-/* No comment provided by engineer. */
-"connect timeout" = "connect timeout";
 
 /* No comment provided by engineer. */
 "copied" = "copied";
@@ -207,9 +177,6 @@
 "dash payments can't be less than %@" = "dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "dash transaction not signed";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
@@ -240,19 +207,19 @@
 "enable" = "enable";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Enable receive notifications";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "enter old passcode";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "error signing dash transaction";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "error signing transaction";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -267,16 +234,13 @@
 "Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
+"fetching amount" = "fetching amount";
+
+/* No comment provided by engineer. */
 "from:" = "from:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
-
-/* No comment provided by engineer. */
-"hour" = "hour";
-
-/* No comment provided by engineer. */
-"hours" = "hours";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
@@ -315,22 +279,22 @@
 "INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
+"IS Received" = "IS Received";
+
+/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
-"minute" = "minute";
-
-/* No comment provided by engineer. */
-"minutes" = "minutes";
-
-/* No comment provided by engineer. */
-"missing certificate" = "missing certificate";
+"locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
 "more..." = "more...";
 
 /* No comment provided by engineer. */
 "Moved" = "Moved";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
@@ -348,7 +312,7 @@
 "no exchange rate data" = "no exchange rate data";
 
 /* No comment provided by engineer. */
-"no peers found" = "no peers found";
+"node ip" = "node ip";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
@@ -366,28 +330,13 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "not a valid private key";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "not connected to the dash network";
-
-/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"passcode" = "passcode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "passcode for %@";
-
-/* No comment provided by engineer. */
-"password" = "password";
-
-/* No comment provided by engineer. */
-"password protected key" = "password protected key";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "Pay";
@@ -403,6 +352,9 @@
 
 /* No comment provided by engineer. */
 "pending" = "pending";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
@@ -450,12 +402,6 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "requested network \"%1$@\" instead of \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "rescan";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
@@ -478,12 +424,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
-
-/* No comment provided by engineer. */
-"second" = "second";
-
-/* No comment provided by engineer. */
-"seconds" = "seconds";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "seen by %1$d of %2$d peers";
@@ -531,10 +471,16 @@
 "shapeshift succeeded" = "shapeshift succeeded";
 
 /* No comment provided by engineer. */
+"Shapeshift!" = "Shapeshift!";
+
+/* No comment provided by engineer. */
 "show" = "show";
 
 /* No comment provided by engineer. */
 "show phrase" = "show phrase";
+
+/* No comment provided by engineer. */
+"size:" = "size:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms not currently available";
@@ -579,12 +525,6 @@
 "this payment address is already in your wallet" = "this payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "this private key is already in your wallet";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "this private key is empty";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
@@ -609,16 +549,7 @@
 "Touch ID spending limit" = "Touch ID spending limit";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transaction canceled, network timeout";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
-
-/* No comment provided by engineer. */
 "Transaction history" = "Transaction history";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "transaction rejected";
 
 /* No comment provided by engineer. */
 "trust" = "trust";
@@ -633,9 +564,6 @@
 "Unable to get new qr code" = "Unable to get new qr code";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "unexpected response from %@";
-
-/* No comment provided by engineer. */
 "unknown address" = "unknown address";
 
 /* No comment provided by engineer. */
@@ -645,40 +573,31 @@
 "unsupported or corrupted document" = "unsupported or corrupted document";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "unsupported signature type";
-
-/* No comment provided by engineer. */
 "unsupported url" = "unsupported url";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "untrusted certificate";
-
-/* No comment provided by engineer. */
 "unverified" = "unverified";
-
-/* Updating Price */
-"Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verified, waiting for confirmation";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verify passcode";
-
-/* No comment provided by engineer. */
 "wallet address" = "wallet address";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "wallet disabled";
+"WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
-"WARNING" = "WARNING";
+"watch only" = "watch only";
 
 /* No comment provided by engineer. */
 "wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
@@ -688,6 +607,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "you received dash!";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

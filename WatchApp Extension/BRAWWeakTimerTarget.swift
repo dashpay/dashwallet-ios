@@ -1,6 +1,6 @@
 //
 //  BRAWWeakTimerTarget.swift
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
@@ -35,7 +35,7 @@ class BRAWWeakTimerTarget: NSObject {
         selector = initSelector
     }
     
-    func timerDidFire() {
+    @objc func timerDidFire() {
         if target != nil && selector != nil && target!.responds(to: selector!) {
             _ = target!.perform(selector!)
         }

@@ -1,8 +1,8 @@
 //
 //  UIImage+Utils.h
-//  BreadWallet
+//  DashWallet
 //
-//  Created by Aaron Voisine on 11/8/14.
+//  Created by Aaron Voisine for BreadWallet on 11/8/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,13 +28,12 @@
 
 @interface UIImage (Utils)
 
-+ (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
++ (instancetype)dw_imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
 
-- (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
-- (UIImage *)blurWithRadius:(CGFloat)radius;
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor;
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage;
-- (UIImage *)imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect;
-- (UIImage *)imageByCuttingHoleInCenterWithSize:(CGSize)holeSize;
+- (UIImage *)dw_resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
+- (UIImage *)dw_blurWithRadius:(CGFloat)radius;
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage;
+- (UIImage *)dw_imageByMergingWithImage:(UIImage *)secondImage secondImageRect:(CGRect)secondImageRect;
+- (UIImage *)dw_imageByCuttingHoleInCenterWithSize:(CGSize)holeSize;
 
 @end

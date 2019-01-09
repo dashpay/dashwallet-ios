@@ -1,6 +1,6 @@
 //
 //  BRAWGlanceInterfaceController.swift
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
@@ -79,7 +79,7 @@ class BRAWGlanceInterfaceController: WKInterfaceController {
         // when local currency rate is no avaliable, use empty string
         updateContainerVisibility()
         
-        if (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.characters.count <= 2) {
+        if (BRAWWatchDataManager.sharedInstance.balanceInLocalCurrency?.count <= 2) {
             balanceInLocalCurrencyLabel.setHidden(true)
         } else {
             balanceInLocalCurrencyLabel.setHidden(false)

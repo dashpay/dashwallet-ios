@@ -1,12 +1,12 @@
 
 /* Class = "UILabel"; text = "Help us improve dashwallet!"; ObjectID = "Mgm-wb-UlM"; */
-"Mgm-wb-UlM.text" = "Help us improve dashwallet!";
+"Mgm-wb-UlM.text" = "대시 지갑 개선을 도와주세요!";
 
 /* Class = "UIButton"; normalTitle = "No Thanks"; ObjectID = "Tw0-s4-w0k"; */
-"Tw0-s4-w0k.normalTitle" = "No Thanks";
+"Tw0-s4-w0k.normalTitle" = "아니요 . 다음에 하겠습니다";
 
 /* Class = "UIButton"; normalTitle = "Ok Great!"; ObjectID = "fzO-vI-zum"; */
-"fzO-vI-zum.normalTitle" = "Ok Great!";
+"fzO-vI-zum.normalTitle" = "네, 물론입니다!";
 
 /* Class = "UILabel"; text = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!"; ObjectID = "kqc-0F-49V"; */
-"kqc-0F-49V.text" = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!";
+"kqc-0F-49V.text" = "사용자의 앱 사용 정보를 공유 하시겠습니까?\n\n이 정보는 철저히 익명으로 처리되며, 금융에 관한 정보는 포함되지 않습니다. 대시는 귀하의 프라이버시를 존중합니다!";

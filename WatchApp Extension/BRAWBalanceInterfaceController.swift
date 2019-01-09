@@ -1,6 +1,6 @@
 //
 //  BRAWBalanceInterfaceController.swift
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
@@ -107,10 +107,10 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
         self.transactionHeaderContainer.setHidden(newTransactionCount == 0)
         // insert or delete rows to match number of transactions
         if (numberRowsToInsertOrDelete > 0) {
-            let ixs = IndexSet(integersIn: NSMakeRange(currentTableRowCount, numberRowsToInsertOrDelete).toRange() ?? 0..<0)
+            let ixs = IndexSet(integersIn: Range.init(NSMakeRange(currentTableRowCount, numberRowsToInsertOrDelete)) ?? 0..<0)
             table.insertRows(at: ixs, withRowType: "BRAWTransactionRowControl")
         } else {
-            let ixs = IndexSet(integersIn: NSMakeRange(newTransactionCount, abs(numberRowsToInsertOrDelete)).toRange() ?? 0..<0)
+            let ixs = IndexSet(integersIn: Range.init(NSMakeRange(newTransactionCount, abs(numberRowsToInsertOrDelete))) ?? 0..<0)
             table.removeRows(at: ixs)
         }
         // update row content
@@ -123,7 +123,7 @@ class BRAWBalanceInterfaceController: WKInterfaceController {
     
     func updateRow(_ rowControl: BRAWTransactionRowControl, transaction: BRAppleWatchTransactionData) {
         let localCurrencyAmount
-            = (transaction.amountTextInLocalCurrency.characters.count > 2) ? transaction.amountTextInLocalCurrency : " "
+            = (transaction.amountTextInLocalCurrency.count > 2) ? transaction.amountTextInLocalCurrency : " "
         rowControl.amountLabel.setText(transaction.amountText)
         rowControl.localCurrencyAmount.setText(localCurrencyAmount)
         rowControl.dateLabel.setText(transaction.dateText)

@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "和";
-
-/* No comment provided by engineer. */
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ 是 'mDASH'。 %@ = 1 DASH。";
 
 /* No comment provided by engineer. */
@@ -15,7 +12,10 @@
 "%d confirmations" = "%d个确认";
 
 /* No comment provided by engineer. */
-", " = "，";
+"%d duffs/byte" = "%d duffs/byte";
+
+/* No comment provided by engineer. */
+"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0个确认";
@@ -24,25 +24,13 @@
 "1 confirmation" = "1个确认";
 
 /* No comment provided by engineer. */
+"1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"不是一个恢复密语中的单词";
 
 /* No comment provided by engineer. */
-"\n         total %@ (%@)" = "\n      总额%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\n如果你丢失了手机，你需要用它来找回你的钱包。";
-
-/* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
-
-/* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(本地请求金额: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
-
-/* No comment provided by engineer. */
-"\n\n     amount %@ (%@)" = "\n\n      金额%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n你需要一个密码来保护你的钱包。请转到设置并打开密码再继续。";
@@ -54,19 +42,16 @@
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n允许照相机访问\n设置->隐私->照相机->%@";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\n网络手续费+%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\n还可尝试 %@";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
 
 /* No comment provided by engineer. */
 "About" = "关于";
 
 /* No comment provided by engineer. */
 "Action Needed" = "需要用户执行";
+
+/* No comment provided by engineer. */
+"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
 "always require passcode" = "总是要求密码";
@@ -87,16 +72,7 @@
 "Are you sure?" = "你确定吗？";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "密码错误，请重试";
-
-/* No comment provided by engineer. */
 "bad payment request" = "付款请求错误";
-
-/* No comment provided by engineer. */
-"bad payment request URL" = "付款请求链接错误";
-
-/* No comment provided by engineer. */
-"bad payment URL" = "付款链接错误";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "恢复密语错误";
@@ -138,9 +114,6 @@
 "checking private key balance..." = "检查私钥余额...";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "选择%@的密码";
-
-/* No comment provided by engineer. */
 "clear" = "清除";
 
 /* No comment provided by engineer. */
@@ -160,9 +133,6 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "在区块#%d中已确认";
-
-/* No comment provided by engineer. */
-"connect timeout" = "连接超时";
 
 /* No comment provided by engineer. */
 "copied" = "已复制";
@@ -207,9 +177,6 @@
 "dash payments can't be less than %@" = "达世币付款不能低于%@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "达世币交易尚未签名";
-
-/* No comment provided by engineer. */
 "dash transaction outputs can't be less than %@" = "达世币交易的输出不能少于%@";
 
 /* No comment provided by engineer. */
@@ -240,19 +207,19 @@
 "enable" = "激活";
 
 /* No comment provided by engineer. */
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "打开接收提示";
 
 /* No comment provided by engineer. */
 "enter" = "进入";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "输入旧密码";
-
-/* No comment provided by engineer. */
 "error signing dash transaction" = "达世币交易签名错误";
-
-/* No comment provided by engineer. */
-"error signing transaction" = "交易签名错误";
 
 /* No comment provided by engineer. */
 "exit" = "退出";
@@ -267,16 +234,13 @@
 "Failed wallet update" = "钱包升级失败";
 
 /* No comment provided by engineer. */
+"fetching amount" = "fetching amount";
+
+/* No comment provided by engineer. */
 "from:" = "来自：";
 
 /* No comment provided by engineer. */
 "GENERAL" = "通用";
-
-/* No comment provided by engineer. */
-"hour" = "小时";
-
-/* No comment provided by engineer. */
-"hours" = "小时";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失恢复密语，我会丢失我的达世币";
@@ -315,22 +279,22 @@
 "INVALID" = "无效";
 
 /* No comment provided by engineer. */
+"IS Received" = "IS Received";
+
+/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "让别人扫描此二维码，以获得您的达世币地址。任何人都可以通过这个地址将达世币转移到您的钱包。";
 
 /* No comment provided by engineer. */
-"minute" = "分钟";
-
-/* No comment provided by engineer. */
-"minutes" = "几分钟";
-
-/* No comment provided by engineer. */
-"missing certificate" = "缺少认证";
+"locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
 "more..." = "更多...";
 
 /* No comment provided by engineer. */
 "Moved" = "已移动";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永远不要将恢复密语输入到密码管理器或其他地方。其它设备都可能存在病毒软件。";
@@ -348,7 +312,7 @@
 "no exchange rate data" = "没有汇率信息";
 
 /* No comment provided by engineer. */
-"no peers found" = "未找到节点";
+"node ip" = "node ip";
 
 /* No comment provided by engineer. */
 "not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
@@ -366,28 +330,13 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "不是一个有效的私钥";
-
-/* No comment provided by engineer. */
-"not connected to the dash network" = "未连接到达世币网络";
-
-/* No comment provided by engineer. */
 "ok" = "确定";
 
 /* No comment provided by engineer. */
 "OK" = "好";
 
 /* No comment provided by engineer. */
-"passcode" = "密码";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@的密码";
-
-/* No comment provided by engineer. */
-"password" = "密码";
-
-/* No comment provided by engineer. */
-"password protected key" = "密码保护的密钥";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
 "Pay" = "支付";
@@ -403,6 +352,9 @@
 
 /* No comment provided by engineer. */
 "pending" = "等待中";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
@@ -450,12 +402,6 @@
 "request is for an instant payment but you have disabled instant payments" = "交易请求需要即时支付交易，但你已关闭了即时支付功能";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" instead of \"%@\"" = "请求网络 \"%1$@\" 而非 \"%2$@\"";
-
-/* No comment provided by engineer. */
-"rescan" = "重新扫描";
-
-/* No comment provided by engineer. */
 "Rescan blockchain" = "重新扫描区块链";
 
 /* No comment provided by engineer. */
@@ -478,12 +424,6 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "屏幕截图可被其它程序或设备获得。您的资金处于危险之中。请将你的资金转移到另一个钱包。";
-
-/* No comment provided by engineer. */
-"second" = "秒";
-
-/* No comment provided by engineer. */
-"seconds" = "几秒";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "被%2$d中%1$d节点看到";
@@ -531,10 +471,16 @@
 "shapeshift succeeded" = "shapeshift成功";
 
 /* No comment provided by engineer. */
+"Shapeshift!" = "Shapeshift!";
+
+/* No comment provided by engineer. */
 "show" = "显示";
 
 /* No comment provided by engineer. */
 "show phrase" = "显示密语";
+
+/* No comment provided by engineer. */
+"size:" = "size:";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "短信尚不可用";
@@ -579,12 +525,6 @@
 "this payment address is already in your wallet" = "此付款地址已在你的钱包中";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "这个私钥已在你的钱包中";
-
-/* No comment provided by engineer. */
-"this private key is empty" = "这个私钥为空";
-
-/* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此请求需要即时付款, 但您没有足够6次确认的交易输入来进行即时发送. 您可以询问商家接受普通付款, 或等待几分钟.";
 
 /* No comment provided by engineer. */
@@ -609,16 +549,7 @@
 "Touch ID spending limit" = "触控 ID 支出限额";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "交易被取消，网络超时";
-
-/* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易手续费将比此私钥上可用资金多 (由于极小额存款) ";
-
-/* No comment provided by engineer. */
 "Transaction history" = "交易历史记录";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "交易被拒绝";
 
 /* No comment provided by engineer. */
 "trust" = "信任";
@@ -633,9 +564,6 @@
 "Unable to get new qr code" = "未能获得新的QR码";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "从 %@ 来的意外响应";
-
-/* No comment provided by engineer. */
 "unknown address" = "未知地址";
 
 /* No comment provided by engineer. */
@@ -645,40 +573,31 @@
 "unsupported or corrupted document" = "不支持或损坏的文件";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "不支持的签名类型";
-
-/* No comment provided by engineer. */
 "unsupported url" = "不支持的链接";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "不受信任的证书";
-
-/* No comment provided by engineer. */
 "unverified" = "未验证";
-
-/* Updating Price */
-"Updating Price" = "更新价格";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "已验证，等待确认";
 
 /* No comment provided by engineer. */
-"verify passcode" = "验证密码";
-
-/* No comment provided by engineer. */
 "wallet address" = "钱包地址";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "钱包被禁用";
+"WARNING" = "警告";
 
 /* No comment provided by engineer. */
-"WARNING" = "警告";
+"watch only" = "watch only";
 
 /* No comment provided by engineer. */
 "wipe" = "清空";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "写下你的恢复密语";
+
+/* No comment provided by engineer. */
+"yes" = "yes";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你现在可以购买达世币\n在钱包中使用现金\n或者银行转账。";
@@ -688,6 +607,3 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "你收到了达世币！";
-
-/* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能未同步。\n这通常可以通过重新扫描区块链来修复。";

@@ -1,6 +1,6 @@
 //
 //  BRAWTransactionRowControl.swift
-//  BreadWallet
+//  DashWallet
 //
 //  Created by Henry on 10/27/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
