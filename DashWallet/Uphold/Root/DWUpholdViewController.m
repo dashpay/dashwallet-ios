@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate>
+@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate>
 
 @end
 
@@ -39,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.title = NSLocalizedString(@"Uphold", nil);
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(upholdClientUserDidLogoutNotification:)
+                                                 name:DWUpholdClientUserDidLogoutNotification
+                                               object:nil];
 
     BOOL authorized = [DWUpholdClient sharedInstance].authorized;
     UIViewController *controller = authorized ? [self mainController] : [self authController];
@@ -58,13 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self dw_performTransitionToViewController:toController completion:nil];
 }
 
-#pragma mark - DWUpholdMainViewControllerDelegate
-
-- (void)upholdMainViewControllerDidLogOut:(DWUpholdMainViewController *)controller {
-    UIViewController *toController = [self authController];
-    [self dw_performTransitionToViewController:toController completion:nil];
-}
-
 #pragma mark - Private
 
 - (DWUpholdAuthViewController *)authController {
@@ -76,9 +73,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWUpholdMainViewController *)mainController {
     DWUpholdMainViewController *mainController = [DWUpholdMainViewController controller];
-    mainController.delegate = self;
 
     return mainController;
+}
+
+- (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
+    UIViewController *toController = [self authController];
+    [self dw_performTransitionToViewController:toController completion:nil];
 }
 
 @end

@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const DWUpholdClientUserDidLogoutNotification;
+
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
 

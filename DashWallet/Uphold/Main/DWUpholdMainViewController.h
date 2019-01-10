@@ -19,17 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdMainViewController;
-
-@protocol DWUpholdMainViewControllerDelegate <NSObject>
-
-- (void)upholdMainViewControllerDidLogOut:(DWUpholdMainViewController *)controller;
-
-@end
-
 @interface DWUpholdMainViewController : KVOUIViewController
-
-@property (nullable, weak, nonatomic) id<DWUpholdMainViewControllerDelegate> delegate;
 
 + (instancetype)controller;
 

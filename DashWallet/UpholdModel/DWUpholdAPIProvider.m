@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSOperation *)getDashCardAccessToken:(NSString *)accessToken
-                             completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+                             completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion {
     NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:@"v0/me/cards"];
     NSURL *url = [NSURL URLWithString:urlString];
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
@@ -80,7 +80,8 @@ NS_ASSUME_NONNULL_BEGIN
     chainOperation.completionBlock = ^{
         if (completion) {
             BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
-            completion(success, parseOperation.card);
+            DWUpholdAPIProviderResponseStatusCode statusCode = [self statusCodeForHTTPOperation:httpOperation];
+            completion(success, statusCode, parseOperation.card);
         }
     };
 
@@ -89,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 + (NSOperation *)createDashCardAccessToken:(NSString *)accessToken
-                                completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+                                completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion {
     NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:@"v0/me/cards"];
     NSURL *url = [NSURL URLWithString:urlString];
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
@@ -109,7 +110,8 @@ NS_ASSUME_NONNULL_BEGIN
     chainOperation.completionBlock = ^{
         if (completion) {
             BOOL success = !httpOperation.internalErrors.firstObject && !parseOperation.internalErrors.firstObject;
-            completion(success, parseOperation.card);
+            DWUpholdAPIProviderResponseStatusCode statusCode = [self statusCodeForHTTPOperation:httpOperation];
+            completion(success, statusCode, parseOperation.card);
         }
     };
 
@@ -118,7 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSOperation *)createAddressForDashCard:(DWUpholdCardObject *)inputCard
                               accessToken:(NSString *)accessToken
-                               completion:(void (^)(BOOL success, DWUpholdCardObject *_Nullable card))completion {
+                               completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion {
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/addresses", inputCard.identifier];
     NSString *urlString = [[self baseURLString] stringByAppendingPathComponent:urlPath];
     NSURL *url = [NSURL URLWithString:urlString];
@@ -141,7 +143,8 @@ NS_ASSUME_NONNULL_BEGIN
             BOOL success = !httpOperation.internalErrors.firstObject &&
                            !parseOperation.internalErrors.firstObject &&
                            parseOperation.card.address;
-            completion(success, parseOperation.card);
+            DWUpholdAPIProviderResponseStatusCode statusCode = [self statusCodeForHTTPOperation:httpOperation];
+            completion(success, statusCode, parseOperation.card);
         }
     };
 
@@ -153,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
                                       address:(NSString *)address
                                   accessToken:(NSString *)accessToken
                                      otpToken:(nullable NSString *)otpToken
-                                   completion:(void (^)(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
+                                   completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
     NSParameterAssert(amount);
     NSParameterAssert(address);
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", card.identifier];
@@ -186,7 +189,8 @@ NS_ASSUME_NONNULL_BEGIN
             DSHTTPOperationResult *httpOperationResult = httpOperation.result;
             NSString *otpTokenHeader = httpOperationResult.responseHeaders[@"OTP-Token"];
             BOOL otpRequired = (otpTokenHeader && [otpTokenHeader caseInsensitiveCompare:@"required"] == NSOrderedSame);
-            completion(success, parseOperation.transaction, otpRequired);
+            DWUpholdAPIProviderResponseStatusCode statusCode = [self statusCodeForHTTPOperation:httpOperation];
+            completion(success, statusCode, parseOperation.transaction, otpRequired);
         }
     };
 
@@ -197,7 +201,7 @@ NS_ASSUME_NONNULL_BEGIN
                               card:(DWUpholdCardObject *)card
                        accessToken:(NSString *)accessToken
                           otpToken:(nullable NSString *)otpToken
-                        completion:(void (^)(BOOL success, BOOL otpRequired))completion {
+                        completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, BOOL otpRequired))completion {
     NSOperation *operation = [self transactionAction:@"commit"
                                          transaction:transaction
                                                 card:card
@@ -242,7 +246,7 @@ NS_ASSUME_NONNULL_BEGIN
                               card:(DWUpholdCardObject *)card
                        accessToken:(NSString *)accessToken
                           otpToken:(nullable NSString *)otpToken
-                        completion:(void (^_Nullable)(BOOL success, BOOL otpRequired))completion {
+                        completion:(void (^_Nullable)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, BOOL otpRequired))completion {
     NSAssert([action isEqualToString:@"commit"] || [action isEqualToString:@"cancel"], @"Invalid action on transaction");
 
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions/%@/%@",
@@ -275,11 +279,21 @@ NS_ASSUME_NONNULL_BEGIN
             if (otpRequired) {
                 success = NO;
             }
-            completion(success, otpRequired);
+            DWUpholdAPIProviderResponseStatusCode statusCode = [self statusCodeForHTTPOperation:httpOperation];
+            completion(success, statusCode, otpRequired);
         }
     };
 
     return chainOperation;
+}
+
++ (DWUpholdAPIProviderResponseStatusCode)statusCodeForHTTPOperation:(DSHTTPOperation *)operation {
+    if (operation.result.statusCode == 401) {
+        return DWUpholdAPIProviderResponseStatusCodeUnauthorized;
+    }
+    else {
+        return DWUpholdAPIProviderResponseStatusCodeOK;
+    }
 }
 
 @end

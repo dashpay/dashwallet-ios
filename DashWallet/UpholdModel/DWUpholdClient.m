@@ -30,6 +30,8 @@ static NSString *const UPHOLD_LAST_ACCESS = @"DW_UPHOLD_LAST_ACCESS";
 
 static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
+NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDidLogoutNotification";
+
 #pragma mark - NSOperation Extension
 
 @interface NSOperation (DWUpholdClient) <DWUpholdClientCancellationToken>
@@ -82,7 +84,7 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
     NSTimeInterval timeInterval = -[self.lastAccessDate timeIntervalSinceNow];
     if (timeInterval > UPHOLD_KEEP_ALIVE_INTERVAL) {
-        [self logOut];
+        [self performLogOutShouldNotifyObservers:NO];
         return NO;
     }
 
@@ -152,7 +154,7 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
     NSParameterAssert(self.accessToken);
 
     __weak typeof(self) weakSelf = self;
-    NSOperation *operation = [DWUpholdAPIProvider getDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+    NSOperation *operation = [DWUpholdAPIProvider getDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -180,6 +182,10 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
                 if (completion) {
                     completion(nil);
                 }
+
+                if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
+                    [strongSelf performLogOutShouldNotifyObservers:YES];
+                }
             });
         }
     }];
@@ -196,10 +202,20 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
     NSParameterAssert(amount);
     NSParameterAssert(address);
 
-    NSOperation *operation = [DWUpholdAPIProvider createTransactionForDashCard:card amount:amount address:address accessToken:self.accessToken otpToken:otpToken completion:^(BOOL success, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
+    __weak typeof(self) weakSelf = self;
+    NSOperation *operation = [DWUpholdAPIProvider createTransactionForDashCard:card amount:amount address:address accessToken:self.accessToken otpToken:otpToken completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
             if (completion) {
                 completion(success ? transaction : nil, otpRequired);
+            }
+
+            if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
+                [strongSelf performLogOutShouldNotifyObservers:YES];
             }
         });
     }];
@@ -216,14 +232,24 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
     NSParameterAssert(transaction);
     NSParameterAssert(card);
 
+    __weak typeof(self) weakSelf = self;
     NSOperation *operation = [DWUpholdAPIProvider commitTransaction:transaction
                                                                card:card
                                                         accessToken:self.accessToken
                                                            otpToken:otpToken
-                                                         completion:^(BOOL success, BOOL otpRequired) {
+                                                         completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, BOOL otpRequired) {
                                                              dispatch_async(dispatch_get_main_queue(), ^{
+                                                                 __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                 if (!strongSelf) {
+                                                                     return;
+                                                                 }
+
                                                                  if (completion) {
                                                                      completion(success, otpRequired);
+                                                                 }
+
+                                                                 if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
+                                                                     [strongSelf performLogOutShouldNotifyObservers:YES];
                                                                  }
                                                              });
                                                          }];
@@ -274,9 +300,7 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 }
 
 - (void)logOut {
-    self.accessToken = nil;
-    self.lastAccessDate = nil;
-    setKeychainData(nil, UPHOLD_ACCESS_TOKEN, YES);
+    [self performLogOutShouldNotifyObservers:YES];
 }
 
 #pragma mark - Private
@@ -285,7 +309,7 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
     NSParameterAssert(self.accessToken);
 
     __weak typeof(self) weakSelf = self;
-    NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+    NSOperation *operation = [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -299,6 +323,10 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
                 if (completion) {
                     completion(nil);
                 }
+
+                if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
+                    [strongSelf performLogOutShouldNotifyObservers:YES];
+                }
             });
         }
     }];
@@ -310,10 +338,20 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
     NSParameterAssert(card);
     NSAssert(!card.address, @"Card has address already");
 
-    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdCardObject *_Nullable card) {
+    __weak typeof(self) weakSelf = self;
+    NSOperation *operation = [DWUpholdAPIProvider createAddressForDashCard:card accessToken:self.accessToken completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card) {
         dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
             if (completion) {
                 completion(success ? card : nil);
+            }
+
+            if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
+                [strongSelf performLogOutShouldNotifyObservers:YES];
             }
         });
     }];
@@ -326,6 +364,18 @@ static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
 - (void)setLastAccessDate:(nullable NSDate *)lastAccessDate {
     [[NSUserDefaults standardUserDefaults] setObject:lastAccessDate forKey:UPHOLD_LAST_ACCESS];
+}
+
+- (void)performLogOutShouldNotifyObservers:(BOOL)shouldNotify {
+    NSAssert([NSThread isMainThread], @"Not allowed to call on thread other than main");
+
+    self.accessToken = nil;
+    self.lastAccessDate = nil;
+    setKeychainData(nil, UPHOLD_ACCESS_TOKEN, YES);
+
+    if (shouldNotify) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWUpholdClientUserDidLogoutNotification object:nil];
+    }
 }
 
 @end

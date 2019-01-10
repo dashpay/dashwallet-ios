@@ -17,6 +17,7 @@
 
 #import "DWUpholdMainViewController.h"
 
+#import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
 #import "DWUpholdTransferViewController.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -55,6 +56,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.transferButton setTitle:NSLocalizedString(@"Transfer from Uphold", nil) forState:UIControlStateNormal];
     [self.buyButton setTitle:NSLocalizedString(@"Buy Dash", nil) forState:UIControlStateNormal];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(upholdClientUserDidLogoutNotification:)
+                                                 name:DWUpholdClientUserDidLogoutNotification
+                                               object:nil];
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         switch (self.model.state) {
@@ -136,7 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)logOutButtonAction:(id)sender {
     [self.model logOut];
-    [self.delegate upholdMainViewControllerDidLogOut:self];
 }
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
@@ -163,6 +168,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)openSafariControllerWithURL:(NSURL *)url {
     SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end
