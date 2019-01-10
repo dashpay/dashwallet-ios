@@ -27,13 +27,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="f4S-Ig-Mp1">
-                                <rect key="frame" x="114.5" y="44" width="91" height="128"/>
+                                <rect key="frame" x="110" y="44" width="100" height="141"/>
                             </imageView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="rdD-oF-hUw">
-                                <rect key="frame" x="150" y="259.5" width="20" height="20"/>
+                                <rect key="frame" x="150" y="272.5" width="20" height="20"/>
                             </activityIndicatorView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPd-EX-JdY">
-                                <rect key="frame" x="20" y="259.5" width="280" height="23.5"/>
+                                <rect key="frame" x="20" y="272.5" width="280" height="23.5"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="19"/>
                                 <color key="textColor" red="0.0" green="0.55294117647058827" blue="0.89411764705882346" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
@@ -42,7 +42,7 @@
                                 </attributedString>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BzX-au-frW">
-                                <rect key="frame" x="139.5" y="259.5" width="41" height="31"/>
+                                <rect key="frame" x="139.5" y="272.5" width="41" height="31"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
                                 <color key="tintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="Retry"/>
@@ -95,7 +95,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Uphold account Dash balance is" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JZt-mf-cRK">
-                                <rect key="frame" x="22" y="196" width="276" height="41.5"/>
+                                <rect key="frame" x="22" y="209" width="276" height="41.5"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -141,6 +141,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="uphold_logo" width="91" height="128"/>
+        <image name="uphold_logo" width="100" height="141"/>
     </resources>
 </document>

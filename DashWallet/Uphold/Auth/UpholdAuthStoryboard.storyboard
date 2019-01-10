@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
-    <device id="retina4_0" orientation="portrait">
+    <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -20,14 +20,98 @@
             <objects>
                 <viewController id="YEX-OT-hZk" customClass="DWUpholdAuthViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="lkZ-Ax-1R4">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
-                                <rect key="frame" x="114.5" y="44" width="91" height="128"/>
-                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bwv-Wn-hrH" userLabel="Info View">
+                                <rect key="frame" x="16" y="91.5" width="343" height="256"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
+                                        <rect key="frame" x="121.5" y="0.0" width="100" height="141"/>
+                                    </imageView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TJj-fr-ZH9" userLabel="Embed View">
+                                        <rect key="frame" x="0.0" y="173" width="343" height="83"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MdV-BP-3Kw" userLabel="Center View">
+                                                <rect key="frame" x="29.5" y="0.0" width="284" height="83"/>
+                                                <subviews>
+                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-buy-dash-icon" translatesAutoresizingMaskIntoConstraints="NO" id="fgh-bY-Bhr">
+                                                        <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="Q0c-mF-hc7"/>
+                                                            <constraint firstAttribute="width" constant="30" id="brv-rm-KH9"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
+                                                        <rect key="frame" x="38" y="0.0" width="246" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="SXM-ij-QIC"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
+                                                    </label>
+                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-transfer-icon" translatesAutoresizingMaskIntoConstraints="NO" id="TYQ-Nf-baj">
+                                                        <rect key="frame" x="0.0" y="46" width="30" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="bSK-J5-hYF"/>
+                                                            <constraint firstAttribute="width" constant="30" id="oL6-Zq-yxS"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
+                                                        <rect key="frame" x="38" y="46" width="246" height="37"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="pfN-YJ-oOo"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
+                                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="5q3-QS-3E4" firstAttribute="top" secondItem="MdV-BP-3Kw" secondAttribute="top" id="0Yi-ky-rmR"/>
+                                                    <constraint firstItem="qxt-8C-MKW" firstAttribute="top" secondItem="5q3-QS-3E4" secondAttribute="bottom" constant="16" id="Acm-oQ-aRr"/>
+                                                    <constraint firstAttribute="trailing" secondItem="5q3-QS-3E4" secondAttribute="trailing" id="Eny-aW-bnX"/>
+                                                    <constraint firstItem="5q3-QS-3E4" firstAttribute="leading" secondItem="fgh-bY-Bhr" secondAttribute="trailing" constant="8" id="Hei-DJ-1lf"/>
+                                                    <constraint firstItem="fgh-bY-Bhr" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="MKn-IC-6py"/>
+                                                    <constraint firstItem="fgh-bY-Bhr" firstAttribute="top" secondItem="MdV-BP-3Kw" secondAttribute="top" id="WCR-Ii-fyA"/>
+                                                    <constraint firstItem="TYQ-Nf-baj" firstAttribute="leading" secondItem="MdV-BP-3Kw" secondAttribute="leading" id="e4D-Gw-nE8"/>
+                                                    <constraint firstAttribute="bottom" secondItem="qxt-8C-MKW" secondAttribute="bottom" id="ivr-Ea-ITc"/>
+                                                    <constraint firstItem="qxt-8C-MKW" firstAttribute="leading" secondItem="TYQ-Nf-baj" secondAttribute="trailing" constant="8" id="maI-JM-ovj"/>
+                                                    <constraint firstAttribute="trailing" secondItem="qxt-8C-MKW" secondAttribute="trailing" id="oFp-bg-olL"/>
+                                                    <constraint firstItem="TYQ-Nf-baj" firstAttribute="top" secondItem="5q3-QS-3E4" secondAttribute="bottom" constant="16" id="wWB-S1-LLm"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="MdV-BP-3Kw" firstAttribute="centerX" secondItem="TJj-fr-ZH9" secondAttribute="centerX" id="0en-hf-JKY"/>
+                                            <constraint firstAttribute="bottom" secondItem="MdV-BP-3Kw" secondAttribute="bottom" id="Ec3-14-SlX"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="MdV-BP-3Kw" secondAttribute="trailing" id="HMx-N5-ufn"/>
+                                            <constraint firstItem="MdV-BP-3Kw" firstAttribute="top" secondItem="TJj-fr-ZH9" secondAttribute="top" id="Vhi-Cw-JtI"/>
+                                            <constraint firstItem="MdV-BP-3Kw" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="TJj-fr-ZH9" secondAttribute="leading" id="m4J-aP-fO7"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="g2S-Xe-WLc" firstAttribute="centerX" secondItem="Bwv-Wn-hrH" secondAttribute="centerX" id="6dh-Vs-OES"/>
+                                    <constraint firstAttribute="trailing" secondItem="TJj-fr-ZH9" secondAttribute="trailing" id="Hcq-Zp-S4d"/>
+                                    <constraint firstItem="TJj-fr-ZH9" firstAttribute="leading" secondItem="Bwv-Wn-hrH" secondAttribute="leading" id="KzA-Rj-UsO"/>
+                                    <constraint firstItem="g2S-Xe-WLc" firstAttribute="top" secondItem="Bwv-Wn-hrH" secondAttribute="top" id="bf3-Nl-kRp"/>
+                                    <constraint firstAttribute="bottom" secondItem="TJj-fr-ZH9" secondAttribute="bottom" id="eVH-CS-krs"/>
+                                    <constraint firstItem="TJj-fr-ZH9" firstAttribute="top" secondItem="g2S-Xe-WLc" secondAttribute="bottom" constant="32" id="sQS-9t-tTT"/>
+                                </constraints>
+                            </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fmf-gf-ZKx" customClass="DWBlueActionButton">
-                                <rect key="frame" x="22" y="454" width="276" height="50"/>
+                                <rect key="frame" x="22" y="553" width="331" height="50"/>
                                 <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="Ifs-Hw-QAz"/>
@@ -41,44 +125,19 @@
                                 </connections>
                             </button>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Pcb-V0-Dcc">
-                                <rect key="frame" x="150" y="469" width="20" height="20"/>
+                                <rect key="frame" x="177.5" y="568" width="20" height="20"/>
                             </activityIndicatorView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="3HE-BF-Om2">
-                                <rect key="frame" x="16" y="196" width="288" height="71.5"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
-                                        <rect key="frame" x="0.0" y="0.0" width="288" height="18.5"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
-                                        <rect key="frame" x="0.0" y="34.5" width="288" height="37"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                    </label>
-                                </subviews>
-                            </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="Bwv-Wn-hrH" firstAttribute="centerY" secondItem="lkZ-Ax-1R4" secondAttribute="centerY" constant="-114" id="3f9-eW-R5n"/>
                             <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerX" secondItem="fmf-gf-ZKx" secondAttribute="centerX" id="5uk-bt-t0w"/>
                             <constraint firstItem="fmf-gf-ZKx" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="22" id="88x-YD-aUj"/>
                             <constraint firstItem="ZjM-hb-2dB" firstAttribute="trailing" secondItem="fmf-gf-ZKx" secondAttribute="trailing" constant="22" id="CaH-cz-TwG"/>
                             <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerY" secondItem="fmf-gf-ZKx" secondAttribute="centerY" id="EkO-sP-cDW"/>
-                            <constraint firstItem="3HE-BF-Om2" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="16" id="V6M-Nv-d5f"/>
+                            <constraint firstItem="Bwv-Wn-hrH" firstAttribute="leading" secondItem="lkZ-Ax-1R4" secondAttribute="leading" constant="16" id="Q8Y-vn-dZo"/>
                             <constraint firstItem="ZjM-hb-2dB" firstAttribute="bottom" secondItem="fmf-gf-ZKx" secondAttribute="bottom" constant="64" id="YLZ-nB-Sc8"/>
-                            <constraint firstItem="3HE-BF-Om2" firstAttribute="top" secondItem="g2S-Xe-WLc" secondAttribute="bottom" constant="24" id="akH-qk-RE5"/>
-                            <constraint firstItem="g2S-Xe-WLc" firstAttribute="centerX" secondItem="lkZ-Ax-1R4" secondAttribute="centerX" id="lDn-Tq-Xp1"/>
-                            <constraint firstAttribute="trailing" secondItem="3HE-BF-Om2" secondAttribute="trailing" constant="16" id="mGf-NV-XMU"/>
-                            <constraint firstItem="g2S-Xe-WLc" firstAttribute="top" secondItem="ZjM-hb-2dB" secondAttribute="top" constant="24" id="nxu-Ye-tLq"/>
+                            <constraint firstAttribute="trailing" secondItem="Bwv-Wn-hrH" secondAttribute="trailing" constant="16" id="ovT-x2-OPd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ZjM-hb-2dB"/>
                     </view>
@@ -91,10 +150,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nOJ-df-BRB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="138.75" y="133.09859154929578"/>
+            <point key="canvasLocation" x="138.40000000000001" y="132.68365817091455"/>
         </scene>
     </scenes>
     <resources>
-        <image name="uphold_logo" width="91" height="128"/>
+        <image name="uphold-buy-dash-icon" width="25" height="30"/>
+        <image name="uphold-transfer-icon" width="23" height="24"/>
+        <image name="uphold_logo" width="100" height="141"/>
     </resources>
 </document>
