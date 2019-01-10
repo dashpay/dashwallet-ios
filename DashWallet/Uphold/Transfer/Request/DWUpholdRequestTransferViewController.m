@@ -138,6 +138,12 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
+- (BOOL)textFieldShouldClear:(UITextField *)textField {
+    self.errorLabel.hidden = YES;
+
+    return YES;
+}
+
 #pragma mark - DWAlertKeyboardSupport
 
 - (nullable UIView *)alertContentView {
