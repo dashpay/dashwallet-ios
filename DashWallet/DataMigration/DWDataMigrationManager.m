@@ -23,6 +23,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSString *const APP_ACTIVE_KEY = @"DW_APP_ACTIVE";
+
 static NSUInteger const BatchSize = 100;
 
 static NSArray<NSString *> *OldDataBaseFileNames(void) {
@@ -72,6 +74,14 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     return self;
 }
 
+- (BOOL)isAppActive {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:APP_ACTIVE_KEY];
+}
+
+- (void)setAppActive:(BOOL)appActive {
+    [[NSUserDefaults standardUserDefaults] setBool:appActive forKey:APP_ACTIVE_KEY];
+}
+
 - (void)migrate:(void (^)(BOOL completed))completion {
     __weak __typeof__(self) weakSelf = self;
     [self setupOldStore:^(BOOL readyToMigration) {
@@ -94,6 +104,10 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
 }
 
 - (void)destroyOldPersistentStore {
+    if (!self.oldDataBaseFileName) {
+        return;
+    }
+    
     self.persistentContainer = nil;
 
     NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;

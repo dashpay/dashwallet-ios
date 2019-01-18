@@ -24,7 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWMigrationViewControllerDelegate <NSObject>
 
-- (void)migrationViewController:(DWMigrationViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions;
+- (void)migrationViewController:(DWMigrationViewController *)controller
+    didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions
+                shouldRescanBlockchain:(BOOL)shouldRescanBlockchain;
 
 @end
 

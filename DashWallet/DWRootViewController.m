@@ -222,7 +222,7 @@
                                       actionWithTitle:NSLocalizedString(@"close app", nil)
                                       style:UIAlertActionStyleDefault
                                       handler:^(UIAlertAction * action) {
-                                          exit(0);
+                                          [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
                                       }];
         
         [alert addAction:ignoreButton];
@@ -354,7 +354,7 @@
                                                                                              actionWithTitle:NSLocalizedString(@"close app", nil)
                                                                                              style:UIAlertActionStyleDefault
                                                                                              handler:^(UIAlertAction * action) {
-                                                                                                 exit(0);
+                                                                                                 [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
                                                                                              }];
                                                                
                                                                [alert addAction:ignoreButton];
@@ -553,7 +553,7 @@
                                           actionWithTitle:NSLocalizedString(@"close app", nil)
                                           style:UIAlertActionStyleDefault
                                           handler:^(UIAlertAction * action) {
-                                              exit(0);
+                                              [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
                                           }];
             [alert addAction:closeButton];
             [self presentViewController:alert animated:YES completion:nil];

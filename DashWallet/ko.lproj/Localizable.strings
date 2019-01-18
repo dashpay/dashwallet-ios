@@ -180,6 +180,9 @@
 "dash transaction outputs can't be less than %@" = "대시 거래 금액은 %@보다 낮을 수 없습니다.";
 
 /* No comment provided by engineer. */
+"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "장치 보안이 손상된 상태입니다\n\n단말기가 탈옥 돼 있으면 어떤 '탈옥'앱이든 다른앱의 키체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
 
 /* No comment provided by engineer. */

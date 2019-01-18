@@ -180,6 +180,9 @@
 "dash transaction outputs can't be less than %@" = "wyjścia transakcji dash nie mogą być mniejsze niż %@";
 
 /* No comment provided by engineer. */
+"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "BEZPIECZEŃSTWO URZĄDZENIA ZŁAMANE\nKażda aplikacja \"jailbreak\" ma dostęp do danych twoich kluczy w innych aplikacjach (i może ukraść twoje dashe).";
 
 /* No comment provided by engineer. */

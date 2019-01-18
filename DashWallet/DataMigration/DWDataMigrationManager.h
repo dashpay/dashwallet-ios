@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDataMigrationManager : NSObject
 
+@property (assign, nonatomic, getter=isAppActive) BOOL appActive;
 @property (readonly, assign, nonatomic) BOOL shouldMigrate;
 
 + (instancetype)sharedInstance;

@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _deferredLaunchOptions = [launchOptions copy];
+        _appWasCrashed = [DWDataMigrationManager sharedInstance].isAppActive;
     }
     return self;
 }
@@ -57,6 +58,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cancelMigration {
     [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
     self.state = DWMigrationViewModelStateDone;
+}
+
+- (void)cancelMigrationAndRescanBlockchain {
+    [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
+    self.state = DWMigrationViewModelStateDoneAndRescan;
 }
 
 @end
