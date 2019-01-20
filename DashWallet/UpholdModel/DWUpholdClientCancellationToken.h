@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DSParseResponseOperation.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
+@protocol DWUpholdClientCancellationToken <NSObject>
 
-@interface DWUpholdCreateCardAddressParseResponseOperation : DSParseResponseOperation
-
-@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
-
-- (instancetype)initWithCard:(DWUpholdCardObject *)card;
+- (void)cancel;
 
 @end
+
+typedef id<DWUpholdClientCancellationToken> DWUpholdCancellationToken;
 
 NS_ASSUME_NONNULL_END

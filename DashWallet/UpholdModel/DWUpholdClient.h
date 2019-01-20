@@ -17,18 +17,14 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWUpholdClientCancellationToken.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DWUpholdClientUserDidLogoutNotification;
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
-
-@protocol DWUpholdClientCancellationToken <NSObject>
-
-- (void)cancel;
-
-@end
 
 @interface DWUpholdClient : NSObject
 
@@ -41,11 +37,11 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 
 - (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
 
-- (id<DWUpholdClientCancellationToken>)createTransactionForDashCard:(DWUpholdCardObject *)card
-                                                             amount:(NSString *)amount
-                                                            address:(NSString *)address
-                                                           otpToken:(nullable NSString *)otpToken
-                                                         completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
+- (DWUpholdCancellationToken)createTransactionForDashCard:(DWUpholdCardObject *)card
+                                                   amount:(NSString *)amount
+                                                  address:(NSString *)address
+                                                 otpToken:(nullable NSString *)otpToken
+                                               completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
                  otpToken:(nullable NSString *)otpToken

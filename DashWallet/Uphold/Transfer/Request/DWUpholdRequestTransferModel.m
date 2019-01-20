@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (assign, nonatomic) DWUpholdRequestTransferModelState state;
-@property (nullable, weak, nonatomic) id<DWUpholdClientCancellationToken> createTransactionRequest;
+@property (nullable, weak, nonatomic) DWUpholdCancellationToken createTransactionCancellationToken;
 @property (nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
 @end
@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    [self.createTransactionRequest cancel];
+    [self.createTransactionCancellationToken cancel];
 }
 
 - (NSAttributedString *)availableDashString {
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWUpholdClient *client = [DWUpholdClient sharedInstance];
     __weak typeof(self) weakSelf = self;
-    self.createTransactionRequest = [client
+    self.createTransactionCancellationToken = [client
         createTransactionForDashCard:self.card
                               amount:amount
                              address:receiveAddress
@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   return;
                               }
 
-                              strongSelf.createTransactionRequest = nil;
+                              strongSelf.createTransactionCancellationToken = nil;
 
                               strongSelf.transaction = transaction;
 
