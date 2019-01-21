@@ -348,6 +348,10 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
 - (void)performLogOutShouldNotifyObservers:(BOOL)shouldNotify {
     NSAssert([NSThread isMainThread], @"Not allowed to call on thread other than main");
 
+    if (self.accessToken) {
+        [DWUpholdAPIProvider revokeAccessToken:self.accessToken];
+    }
+
     self.accessToken = nil;
     self.lastAccessDate = nil;
     setKeychainData(nil, UPHOLD_ACCESS_TOKEN, YES);

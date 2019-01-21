@@ -57,6 +57,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdAPIProviderResponseStatusCode) {
                                    accessToken:(NSString *)accessToken
                                       otpToken:(nullable NSString *)otpToken
                                     completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode))completion;
++ (DWUpholdCancellationToken)revokeAccessToken:(NSString *)accessToken;
 
 @end
 

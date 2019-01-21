@@ -43,7 +43,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
 - (DWUpholdCancellationToken)upholdAuthorizedRequest:(HTTPRequest *)httpRequest
                                          accessToken:(NSString *)accessToken
-                                          completion:(UpholdHTTPLoaderCompletionBlock)completion {
+                                          completion:(nullable UpholdHTTPLoaderCompletionBlock)completion {
     NSString *authorizationHeader = [NSString stringWithFormat:@"Bearer %@", accessToken];
     [httpRequest addValue:authorizationHeader forHeader:@"Authorization"];
 
@@ -258,6 +258,19 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
                                                    completion:completion];
 
     return token;
+}
+
++ (DWUpholdCancellationToken)revokeAccessToken:(NSString *)accessToken {
+    NSURL *url = [[self baseURL] URLByAppendingPathComponent:@"oauth2/revoke"];
+    NSParameterAssert(url);
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                                parameters:@{
+                                                    @"token" : accessToken,
+                                                }];
+
+    HTTPLoaderManager *loaderManager = [self loaderManager];
+    return [loaderManager upholdAuthorizedRequest:httpRequest accessToken:accessToken completion:nil];
 }
 
 #pragma mark - Private
