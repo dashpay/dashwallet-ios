@@ -92,7 +92,7 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    [DWDataMigrationManager sharedInstance].appActive = YES;
+    [DWDataMigrationManager sharedInstance].migrationSuccessful = YES;
     
     // When adding any logic here mind the migration process
     
@@ -104,7 +104,7 @@
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-    [DWDataMigrationManager sharedInstance].appActive = NO;
+    [DWDataMigrationManager sharedInstance].migrationSuccessful = NO;
     
 //    BRAPIClient *client = [BRAPIClient sharedClient];
 //    [client.kv sync:^(NSError *err) {
@@ -241,7 +241,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)dsApplicationTerminationRequestNotification:(NSNotification *)sender {
-    [DWDataMigrationManager sharedInstance].appActive = NO;
+    [DWDataMigrationManager sharedInstance].migrationSuccessful = NO;
     CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication); // force NSUserDefaults to save
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

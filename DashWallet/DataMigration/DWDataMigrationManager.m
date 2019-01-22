@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *const APP_ACTIVE_KEY = @"DW_APP_ACTIVE";
+static NSString *const APP_SUCCESSFUL_MIGRATION_KEY = @"DW_APP_SUCCESSFUL_MIGRATION";
 
 static NSUInteger const BatchSize = 100;
 
@@ -74,12 +74,12 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     return self;
 }
 
-- (BOOL)isAppActive {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:APP_ACTIVE_KEY];
+- (BOOL)migrationSuccessful {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:APP_SUCCESSFUL_MIGRATION_KEY];
 }
 
 - (void)setMigrationSuccessful:(BOOL)appActive {
-    [[NSUserDefaults standardUserDefaults] setBool:appActive forKey:APP_ACTIVE_KEY];
+    [[NSUserDefaults standardUserDefaults] setBool:appActive forKey:APP_SUCCESSFUL_MIGRATION_KEY];
 }
 
 - (void)migrate:(void (^)(BOOL completed))completion {
@@ -89,7 +89,7 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
         if (!strongSelf) {
             return;
         }
-
+        exit(0);
         if (readyToMigration) {
             [strongSelf performMigration:completion];
         }
