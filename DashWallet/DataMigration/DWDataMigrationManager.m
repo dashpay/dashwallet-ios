@@ -78,7 +78,7 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:APP_ACTIVE_KEY];
 }
 
-- (void)setAppActive:(BOOL)appActive {
+- (void)setMigrationSuccessful:(BOOL)appActive {
     [[NSUserDefaults standardUserDefaults] setBool:appActive forKey:APP_ACTIVE_KEY];
 }
 

@@ -180,9 +180,6 @@
 "dash transaction outputs can't be less than %@" = "saídas de transação dash não podem ser inferiores a %@";
 
 /* No comment provided by engineer. */
-"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus dash).";
 
 /* No comment provided by engineer. */
@@ -405,6 +402,9 @@
 "request is for an instant payment but you have disabled instant payments" = "o pedido é para pagamento instantâneo mas você desabilitou pagamentos instantâneos";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "Reexaminar blockchain";
 
 /* No comment provided by engineer. */
@@ -558,6 +558,9 @@
 "trust" = "confiança";
 
 /* No comment provided by engineer. */
+"try again" = "try again";
+
+/* No comment provided by engineer. */
 "Try It!" = "Experimente!";
 
 /* No comment provided by engineer. */
@@ -592,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "watch only" = "assistir apenas";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
 "wipe" = "limpar";

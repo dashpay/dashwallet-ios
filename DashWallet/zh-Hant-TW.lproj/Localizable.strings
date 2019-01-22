@@ -180,9 +180,6 @@
 "dash transaction outputs can't be less than %@" = "達世幣交易的輸出不能少於 %@";
 
 /* No comment provided by engineer. */
-"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "設備的安全性已經受到損害\n任何'越獄'的應用程序可以訪問任何其他應用程序的數據鑰匙扣 (和竊取你的達世幣的)。";
 
 /* No comment provided by engineer. */
@@ -405,6 +402,9 @@
 "request is for an instant payment but you have disabled instant payments" = "請求是屬於即時付款，但您已禁用即時付款功能";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "重新掃瞄區塊鏈";
 
 /* No comment provided by engineer. */
@@ -558,6 +558,9 @@
 "trust" = "信任";
 
 /* No comment provided by engineer. */
+"try again" = "try again";
+
+/* No comment provided by engineer. */
 "Try It!" = "嘗試一下!";
 
 /* No comment provided by engineer. */
@@ -592,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "watch only" = "watch only";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
 "wipe" = "清空";

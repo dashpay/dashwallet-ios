@@ -180,9 +180,6 @@
 "dash transaction outputs can't be less than %@" = "Dash-Transaktions-Ausgänge können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
-"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Ihre Dash stehlen).";
 
 /* No comment provided by engineer. */
@@ -405,6 +402,9 @@
 "request is for an instant payment but you have disabled instant payments" = "Dies ist eine Zahlungsanforderung für InstantSend. Dieses ist jedoch deaktiviert.";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "Blockchain erneut scannen";
 
 /* No comment provided by engineer. */
@@ -558,6 +558,9 @@
 "trust" = "Vertrauen";
 
 /* No comment provided by engineer. */
+"try again" = "try again";
+
+/* No comment provided by engineer. */
 "Try It!" = "Ausprobieren!";
 
 /* No comment provided by engineer. */
@@ -592,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "watch only" = "Nur Betrachten";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
 "wipe" = "leeren";

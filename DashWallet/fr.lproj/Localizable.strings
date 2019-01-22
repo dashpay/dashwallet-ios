@@ -180,9 +180,6 @@
 "dash transaction outputs can't be less than %@" = "les sorties de transaction dash ne peuvent pas être inférieures à %@";
 
 /* No comment provided by engineer. */
-"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SÉCURITÉ DE L'APPAREIL COMPROMISE\nN'importe quelle application débridée peut accéder aux données du trousseau des autres applis (et voler vos dashs).";
 
 /* No comment provided by engineer. */
@@ -405,6 +402,9 @@
 "request is for an instant payment but you have disabled instant payments" = "la requête demande un paiement instantané, mais vous avez désactivé les paiements instantanés";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "Réanalyser la blockchain";
 
 /* No comment provided by engineer. */
@@ -558,6 +558,9 @@
 "trust" = "faire confiance";
 
 /* No comment provided by engineer. */
+"try again" = "try again";
+
+/* No comment provided by engineer. */
 "Try It!" = "J’ai envie d’essayer !";
 
 /* No comment provided by engineer. */
@@ -592,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "watch only" = "lecture seule";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
 "wipe" = "effacer";

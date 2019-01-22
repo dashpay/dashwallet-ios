@@ -21,7 +21,7 @@ typedef NS_ENUM(NSUInteger, DWMigrationViewModelState) {
 
 @property (readonly, assign, nonatomic) DWMigrationViewModelState state;
 @property (readonly, copy, nonatomic) NSDictionary *deferredLaunchOptions;
-@property (readonly, assign, nonatomic) BOOL appWasCrashed;
+@property (readonly, assign, nonatomic) BOOL applicationCrashedDuringLastMigration;
 
 - (instancetype)initWithLaunchOptions:(NSDictionary *)launchOptions;
 

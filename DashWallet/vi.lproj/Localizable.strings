@@ -180,9 +180,6 @@
 "dash transaction outputs can't be less than %@" = "đầu ra của giao dịch dash không thể ít hơn %@";
 
 /* No comment provided by engineer. */
-"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds." = "DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "AN NINH THIẾT BỊ BỊ  TỔN HẠI\nBất kỳ ứng dụng 'jailbreak' hay 'phá khoá' nào đều có thể truy cập vào dữ liệu chìa khoá của ứng dụng (và đánh cắp dash của bạn).";
 
 /* No comment provided by engineer. */
@@ -405,6 +402,9 @@
 "request is for an instant payment but you have disabled instant payments" = "yêu cầu này là dành cho giao dịch tức thời nhưng bạn đã tắt tính năng giao dịch tức thời";
 
 /* No comment provided by engineer. */
+"rescan" = "rescan";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "Quét lại blockchain";
 
 /* No comment provided by engineer. */
@@ -558,6 +558,9 @@
 "trust" = "tin cậy";
 
 /* No comment provided by engineer. */
+"try again" = "try again";
+
+/* No comment provided by engineer. */
 "Try It!" = "Hãy thử!";
 
 /* No comment provided by engineer. */
@@ -592,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "watch only" = "chỉ theo dõi";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
 "wipe" = "xoá sạch";

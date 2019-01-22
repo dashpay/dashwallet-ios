@@ -67,8 +67,8 @@
     NSLog(@"Dashwallet has launched");
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(dsAppTerminationRequestNotification:)
-                                                 name:DSAppTerminationRequestNotification
+                                             selector:@selector(dsApplicationTerminationRequestNotification:)
+                                                 name:DSApplicationTerminationRequestNotification
                                                object:nil];
     [self setupDashWalletAppearance];
     
@@ -240,7 +240,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [self setupDashWalletComponentsWithOptions:launchOptions];
 }
 
-- (void)dsAppTerminationRequestNotification:(NSNotification *)sender {
+- (void)dsApplicationTerminationRequestNotification:(NSNotification *)sender {
     [DWDataMigrationManager sharedInstance].appActive = NO;
     CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication); // force NSUserDefaults to save
     

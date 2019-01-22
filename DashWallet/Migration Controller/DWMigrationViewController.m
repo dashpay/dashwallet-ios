@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)protectedViewDidAppear {
     [super protectedViewDidAppear];
 
-    if (self.viewModel.appWasCrashed) {
+    if (self.viewModel.applicationCrashedDuringLastMigration) {
         [self performCrashRestoration];
     }
     else {
@@ -67,22 +67,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performCrashRestoration {
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:nil
-                         message:NSLocalizedString(@"DashWallet app was crashed since last migration. Rescanning blockchain may solve this issue. It will not affect your funds.", nil)
+                         message:NSLocalizedString(@"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *cancelButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
-                  style:UIAlertActionStyleCancel
+    UIAlertAction *migrateButton = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"try again", nil)
+                  style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *_Nonnull action) {
                     [self performMigration];
                 }];
-    UIAlertAction *trustButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Rescan blockchain", nil)
+    UIAlertAction *rescanButton = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"rescan", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self performRescanBlockchain];
                 }];
-    [alert addAction:trustButton];
-    [alert addAction:cancelButton];
+    [alert addAction:rescanButton];
+    [alert addAction:migrateButton];
     [self presentViewController:alert animated:YES completion:nil];
 }
 

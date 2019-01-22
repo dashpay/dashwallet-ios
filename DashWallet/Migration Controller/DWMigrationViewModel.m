@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _deferredLaunchOptions = [launchOptions copy];
-        _appWasCrashed = [DWDataMigrationManager sharedInstance].isAppActive;
+        _applicationCrashedDuringLastMigration = [DWDataMigrationManager sharedInstance].isAppActive;
     }
     return self;
 }

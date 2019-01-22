@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
             actionWithTitle:NSLocalizedString(@"exit", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
                     }];
         UIAlertAction *enterButton = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"enter", nil)
@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
             actionWithTitle:NSLocalizedString(@"exit", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
                     }];
         [alert addAction:resetButton];
         [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
