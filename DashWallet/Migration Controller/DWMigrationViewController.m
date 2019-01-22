@@ -89,10 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performMigration {
     DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
     if ([dashSyncVersionManager noOldWallet]) {
-        NSAssert(NO, @"keychain is empty but CoreData database exists (it might be inconsistent debug issue)");
-
-        [self.viewModel cancelMigration];
-
+        [self.viewModel startMigration];
         return;
     }
 
