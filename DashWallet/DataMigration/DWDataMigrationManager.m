@@ -78,19 +78,23 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     return [[NSUserDefaults standardUserDefaults] boolForKey:APP_SUCCESSFUL_MIGRATION_KEY];
 }
 
-- (void)setMigrationSuccessful:(BOOL)appActive {
-    [[NSUserDefaults standardUserDefaults] setBool:appActive forKey:APP_SUCCESSFUL_MIGRATION_KEY];
+- (void)setMigrationSuccessful:(BOOL)migrationSuccessful {
+    [[NSUserDefaults standardUserDefaults] setBool:migrationSuccessful forKey:APP_SUCCESSFUL_MIGRATION_KEY];
 }
 
 - (void)migrate:(void (^)(BOOL completed))completion {
+    self.migrationSuccessful = NO;
     __weak __typeof__(self) weakSelf = self;
-    [self setupOldStore:^(BOOL readyToMigration) {
+    [self setupOldStore:^(BOOL readyToMigrate) {
         __strong __typeof__(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        if (readyToMigration) {
-            [strongSelf performMigration:completion];
+        if (readyToMigrate) {
+            [strongSelf performMigration:^(BOOL completed) {
+                self.migrationSuccessful = completed;
+                completion(completed);
+            }];
         }
         else {
             [strongSelf destroyOldPersistentStore];
