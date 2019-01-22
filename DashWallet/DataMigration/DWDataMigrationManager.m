@@ -74,7 +74,7 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
     return self;
 }
 
-- (BOOL)migrationSuccessful {
+- (BOOL)isMigrationSuccessful {
     return [[NSUserDefaults standardUserDefaults] boolForKey:APP_SUCCESSFUL_MIGRATION_KEY];
 }
 
@@ -89,7 +89,6 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
         if (!strongSelf) {
             return;
         }
-        exit(0);
         if (readyToMigration) {
             [strongSelf performMigration:completion];
         }
