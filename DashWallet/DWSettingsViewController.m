@@ -448,7 +448,8 @@
     
     NSArray <NSString *> *options = [priceManager.prices valueForKeyPath:@"codeAndName"];
     DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
-    NSUInteger currencyCodeIndex = [priceManager.prices indexOfObject:price];
+    
+    NSUInteger currencyCodeIndex = price?[priceManager.prices indexOfObject:price]:0;
     
     self.selectorType = 0;
     
