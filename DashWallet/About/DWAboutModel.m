@@ -74,8 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
             [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString,
             chain.lastBlockHeight,
             chain.estimatedBlockHeight,
-            peerManager.peerCount,
-            peerManager.downloadPeerName];
+            peerManager.connectedPeerCount,
+            peerManager.downloadPeerName?peerManager.downloadPeerName:@"-"];
 }
 
 - (void)performCopyLogs {
@@ -141,9 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
             else {
                 host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
             }
-            
-            [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@:%d", host, port]
-                                                      forKey:SETTINGS_FIXED_PEER_KEY];
+            [[DWEnvironment sharedInstance].currentChainManager.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%@:%d", host, port]];
             [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
             [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
             break;
@@ -154,9 +152,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearFixedPeer {
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect];
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+    DSPeerManager * peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
+    [peerManager removeTrustedPeerHost];
+    [peerManager disconnect];
+    [peerManager connect];
 }
 
 @end
