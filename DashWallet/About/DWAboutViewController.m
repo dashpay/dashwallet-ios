@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWAboutModel *model;
 
+@property (strong, nonatomic) id chainTipBlockObserver,connectedPeersObserver,downloadPeerObserver;
+
 @end
 
 @implementation DWAboutViewController
@@ -66,7 +68,26 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(updateStatusNotification:)
                                                  name:DSTransactionManagerTransactionStatusDidChangeNotification
                                                object:nil];
+    
+    self.chainTipBlockObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [self updateStatusNotification:note];
+    }];
+    
+    self.downloadPeerObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerDownloadPeerDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [self updateStatusNotification:note];
+    }];
+    
+    self.connectedPeersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerConnectedPeersDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [self updateStatusNotification:note];
+    }];
+    
     [self updateStatusNotification:nil];
+}
+
+-(void)dealloc {
+    if (self.chainTipBlockObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.chainTipBlockObserver];
+    if (self.downloadPeerObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.downloadPeerObserver];
+    if (self.connectedPeersObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.connectedPeersObserver];
 }
 
 #pragma mark Actions
@@ -94,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)setFixedPeerButtonAction:(id)sender {
-    if (![[NSUserDefaults standardUserDefaults] stringForKey:SETTINGS_FIXED_PEER_KEY]) {
+    if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:nil
                              message:NSLocalizedString(@"set a trusted node", nil)
