@@ -3,7 +3,7 @@
 //  DashWallet
 //
 //  Created by Sam Westrich on 10/25/18.
-//  Copyright © 2018 Dash Core. All rights reserved.
+//  Copyright © 2019 Dash Core. All rights reserved.
 //
 
 #import "DWEnvironment.h"

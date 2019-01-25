@@ -3,7 +3,7 @@
 //  DashWallet
 //
 //  Created by Sam Westrich on 8/3/18.
-//  Copyright © 2018 Aaron Voisine. All rights reserved.
+//  Copyright © 2019 Aaron Voisine. All rights reserved.
 //
 
 #import "DWWarningViewController.h"

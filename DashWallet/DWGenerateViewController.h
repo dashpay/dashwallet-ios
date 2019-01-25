@@ -3,7 +3,7 @@
 //  dashwallet
 //
 //  Created by Quantum Explorer on 10/11/17.
-//  Copyright © 2018 Dash Core. All rights reserved.
+//  Copyright © 2019 Dash Core. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
