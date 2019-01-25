@@ -3,7 +3,7 @@
 //  dashwallet
 //
 //  Created by Sam Westrich on 11/2/18.
-//  Copyright © 2018 Dash Core. All rights reserved.
+//  Copyright © 2019 Dash Core. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

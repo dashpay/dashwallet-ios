@@ -3,7 +3,7 @@
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 08/11/2018.
-//  Copyright © 2018 Dash Core. All rights reserved.
+//  Copyright © 2019 Dash Core. All rights reserved.
 //
 
 #import "DWDataMigrationManager.h"

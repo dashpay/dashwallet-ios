@@ -8,5 +8,5 @@
 /* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "JbA-bI-SeK"; */
 "JbA-bI-SeK.text" = "ข้อมูลอัตราแลกเปลี่ยนเพิ่มเติม\nget-spark.com";
 
-/* Class = "UILabel"; text = "Copyright © 2018 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
-"wFp-Ai-6c0.text" = "ลิขสิทธิ์ © 2018 Dash Core\nขึ้นอยู่กับ breadwallet\nแอพลิเคชั่นนี้เป็นโอเพ่อซอร์ส";
+/* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
+"wFp-Ai-6c0.text" = "ลิขสิทธิ์ © 2019 Dash Core\nขึ้นอยู่กับ breadwallet\nแอพลิเคชั่นนี้เป็นโอเพ่อซอร์ส";
