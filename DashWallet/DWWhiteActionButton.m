@@ -9,6 +9,10 @@
 #import "DWWhiteActionButton.h"
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
+@interface DWWhiteActionButton()
+
+@end
+
 @implementation DWWhiteActionButton
 
 
@@ -27,7 +31,12 @@
         self.layer.borderColor = [UIColor whiteColor].CGColor;
         self.layer.borderWidth = 2;
     } else {
-        self.layer.borderWidth = 0;
+        if (self.displaysBorder) {
+            self.layer.borderWidth = 2;
+            self.layer.borderColor = UIColorFromRGB(0x008DE4).CGColor;
+        } else {
+            self.layer.borderWidth = 0;
+        }
         self.backgroundColor = [UIColor whiteColor];
     }
     

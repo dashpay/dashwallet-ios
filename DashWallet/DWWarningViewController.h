@@ -9,4 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface DWWarningViewController : UIViewController
+
+-(IBAction)showChangeLanguageSelector:(id)sender;
+
 @end

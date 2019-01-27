@@ -139,3 +139,6 @@
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
 "Ng6-uV-YUC.normalTitle" = "مشاركة";
+
+/* Class = "UIButton"; normalTitle = "Change Language"; ObjectID = "EdL-xQ-rKE"; */
+"EdL-xQ-rKE.normalTitle" = "Change Language";

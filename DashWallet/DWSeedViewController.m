@@ -52,14 +52,7 @@
 
 - (instancetype)customInit
 {
-    if (![DWEnvironment sharedInstance].currentWallet) {
-        [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
-        self.seedPhrase = [DWEnvironment sharedInstance].currentWallet.seedPhraseIfAuthenticated;
-        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-    
+    self.desiredLanguage = DSBIP39Language_Default;
     return self;
 }
 
@@ -84,6 +77,14 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    if (![DWEnvironment sharedInstance].currentWallet) {
+        [DSWallet standardWalletWithRandomSeedPhraseInLanguage:self.desiredLanguage forChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
+        self.seedPhrase = [DWEnvironment sharedInstance].currentWallet.seedPhraseIfAuthenticated;
+        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:WALLET_NEEDS_BACKUP_KEY];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
     
     
 #if DEBUG

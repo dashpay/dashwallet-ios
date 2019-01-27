@@ -10,4 +10,6 @@
 
 @interface DWWhiteActionButton : UIButton
 
+@property (nonatomic,assign) BOOL displaysBorder;
+
 @end

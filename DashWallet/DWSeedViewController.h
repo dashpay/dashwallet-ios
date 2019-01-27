@@ -31,5 +31,6 @@
 
 @property (nonatomic, strong) NSString *seedPhrase;
 @property (nonatomic, assign) BOOL inSetupMode;
+@property (nonatomic, assign) DSBIP39Language desiredLanguage;
 
 @end
