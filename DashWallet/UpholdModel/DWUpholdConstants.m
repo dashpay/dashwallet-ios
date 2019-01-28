@@ -45,6 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
     return @"https://sandbox.uphold.com/reserve/transactions/%@";
 }
 
++ (NSString *)logoutURLString {
+    return @"https://sandbox.uphold.com/";
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -17,6 +17,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWAlertAction.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdTransactionObject;
@@ -31,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface DWUpholdSuccessTransferViewController : UIViewController
+
+@property (readonly, copy, nonatomic) NSArray<DWAlertAction *> *providedActions;
+@property (readonly, strong, nonatomic) DWAlertAction *preferredAction;
 
 @property (nullable, weak, nonatomic) id<DWUpholdSuccessTransferViewControllerDelegate> delegate;
 

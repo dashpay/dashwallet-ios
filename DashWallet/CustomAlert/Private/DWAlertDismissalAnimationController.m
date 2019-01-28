@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const kDefaultDismissalAnimationDuration = 0.35;
+static CGFloat const DefaultDismissalAnimationDuration = 0.25;
 
 @implementation DWAlertDismissalAnimationController
 
@@ -38,7 +38,7 @@ static CGFloat const kDefaultDismissalAnimationDuration = 0.35;
 }
 
 - (NSTimeInterval)transitionDuration:(nullable id<UIViewControllerContextTransitioning>)transitionContext {
-    return kDefaultDismissalAnimationDuration;
+    return DefaultDismissalAnimationDuration;
 }
 
 @end

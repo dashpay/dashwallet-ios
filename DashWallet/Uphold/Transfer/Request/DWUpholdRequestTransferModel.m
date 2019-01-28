@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSAttributedString *)availableDashString {
     NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
-    dashAttachmentSymbol.bounds = CGRectMake(0.0, -2.0, 19.0, 15.0);
+    dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 14.0, 11.0);
     dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:[UIColor darkGrayColor]];
     NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
     NSString *available = self.availableString;

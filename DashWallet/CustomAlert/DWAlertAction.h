@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,24 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWAlertViewControllerKeyboardSupport.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAlertViewController : UIViewController <UIViewControllerTransitioningDelegate, DWAlertViewControllerKeyboardSupport>
+typedef NS_ENUM(NSInteger, DWAlertActionStyle) {
+    DWAlertActionStyleDefault = 0,
+    DWAlertActionStyleCancel,
+};
 
-/**
- Default `YES`
- */
-@property (assign, nonatomic) BOOL shouldDimBackground;
+@interface DWAlertAction : NSObject
+
+@property (nullable, readonly, copy, nonatomic) NSString *title;
+@property (readonly, assign, nonatomic) DWAlertActionStyle style;
+@property (assign, nonatomic, getter=isEnabled) BOOL enabled;
+
++ (instancetype)actionWithTitle:(nullable NSString *)title style:(DWAlertActionStyle)style handler:(void (^__nullable)(DWAlertAction *action))handler;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

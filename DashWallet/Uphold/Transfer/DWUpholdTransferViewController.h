@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWAlertViewController.h"
+#import "DWAlertController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWUpholdTransferViewController : DWAlertViewController
+@interface DWUpholdTransferViewController : DWAlertController
 
 @property (nullable, weak, nonatomic) id<DWUpholdTransferViewControllerDelegate> delegate;
 

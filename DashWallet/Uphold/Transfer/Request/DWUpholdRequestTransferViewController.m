@@ -25,21 +25,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdRequestTransferViewController () <UITextFieldDelegate>
 
-@property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *availableLabel;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet UILabel *errorLabel;
-@property (strong, nonatomic) IBOutlet UIButton *transferButton;
-@property (strong, nonatomic) IBOutlet UIButton *cancelButton;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentViewCenterYConstraint;
+@property (strong, nonatomic) DWAlertAction *transferAction;
 
 @property (strong, nonatomic) DWUpholdRequestTransferModel *model;
 
 @end
 
 @implementation DWUpholdRequestTransferViewController
+
+@synthesize providedActions = _providedActions;
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdRequestTransferStoryboard" bundle:nil];
@@ -49,12 +48,39 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
+- (NSArray<DWAlertAction *> *)providedActions {
+    if (!_providedActions) {
+        __weak typeof(self) weakSelf = self;
+        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf cancelButtonAction];
+        }];
+        DWAlertAction *transferAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Transfer", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf transferButtonAction];
+        }];
+        self.transferAction = transferAction;
+        _providedActions = @[ cancelAction, transferAction ];
+    }
+    return _providedActions;
+}
+
+- (DWAlertAction *)preferredAction {
+    return self.transferAction;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Enter the amount to transfer below", nil);
-    [self.transferButton setTitle:NSLocalizedString(@"Transfer", nil) forState:UIControlStateNormal];
-    [self.cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
 
     self.availableLabel.attributedText = [self.model availableDashString];
 
@@ -72,19 +98,13 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-
-    [self.textField resignFirstResponder];
-}
-
 #pragma mark - Actions
 
-- (IBAction)transferButtonAction:(id)sender {
+- (void)transferButtonAction {
     [self performTransferWithOTPToken:nil];
 }
 
-- (IBAction)cancelButtonAction:(id)sender {
+- (void)cancelButtonAction {
     [self.delegate upholdRequestTransferViewControllerDidCancel:self];
 }
 
@@ -144,16 +164,6 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-#pragma mark - DWAlertKeyboardSupport
-
-- (nullable UIView *)alertContentView {
-    return self.contentView;
-}
-
-- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
-    return self.contentViewCenterYConstraint;
-}
-
 #pragma mark - Private
 
 - (void)performTransferWithOTPToken:(nullable NSString *)otpToken {
@@ -187,7 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
         case DWUpholdRequestTransferModelStateNone: {
             self.textField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
-            self.transferButton.hidden = NO;
+            self.transferAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
@@ -195,7 +205,7 @@ NS_ASSUME_NONNULL_BEGIN
         case DWUpholdRequestTransferModelStateLoading: {
             self.textField.userInteractionEnabled = NO;
             self.errorLabel.hidden = YES;
-            self.transferButton.hidden = YES;
+            self.transferAction.enabled = NO;
             [self.activityIndicatorView startAnimating];
 
             break;
@@ -205,7 +215,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             self.textField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
-            self.transferButton.hidden = NO;
+            self.transferAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
@@ -214,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.textField.userInteractionEnabled = YES;
             self.errorLabel.text = NSLocalizedString(@"Something went wrong", nil);
             self.errorLabel.hidden = NO;
-            self.transferButton.hidden = NO;
+            self.transferAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;

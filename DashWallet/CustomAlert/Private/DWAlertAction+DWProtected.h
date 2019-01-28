@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,21 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWAlertAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConstants : NSObject
+@interface DWAlertAction ()
 
-+ (NSString *)authorizeURLFormat;
-+ (NSString *)baseURLString;
-+ (NSString *)clientID;
-+ (NSString *)clientSecret;
-+ (NSString *)buyCardURLFormat;
-+ (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
-
-- (instancetype)init NS_UNAVAILABLE;
+@property (nullable, copy, nonatomic) void (^handler)(DWAlertAction *action);
 
 @end
 

@@ -15,20 +15,30 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConstants : NSObject
+@class DWAlertAction;
+@class DWAlertView;
 
-+ (NSString *)authorizeURLFormat;
-+ (NSString *)baseURLString;
-+ (NSString *)clientID;
-+ (NSString *)clientSecret;
-+ (NSString *)buyCardURLFormat;
-+ (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
+@protocol DWAlertViewDelegate <NSObject>
 
+- (void)alertView:(DWAlertView *)alertView didAction:(DWAlertAction *)action;
+
+@end
+
+@interface DWAlertView : UIView
+
+@property (readonly, strong, nonatomic) UIView *contentView;
+@property (nullable, weak, nonatomic) id<DWAlertViewDelegate> delegate;
+@property (nullable, strong, nonatomic) DWAlertAction *preferredAction;
+
+- (void)addAction:(DWAlertAction *)action;
+- (void)resetActionsState;
+- (void)removeAllActions;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

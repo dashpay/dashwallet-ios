@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,36 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWAlertViewControllerKeyboardSupport <NSObject>
+@interface DWDimmingView : UIView
 
-@property (readonly, nullable, strong, nonatomic) UIView *alertContentView;
-@property (readonly, nullable, strong, nonatomic) NSLayoutConstraint *alertContentViewCenterYConstraint;
+/**
+ Visible part of the dimming view (a hole)
+ */
+@property (nullable, strong, nonatomic) UIBezierPath *visiblePath;
+
+/**
+ Dimmed part of the view (entire view by default)
+ */
+@property (null_resettable, strong, nonatomic) UIBezierPath *dimmedPath;
+
+/**
+ 0.4 by default
+ */
+@property (assign, nonatomic) float dimmingOpacity;
+
+/**
+ [UIColor blackColor] by default
+ */
+@property (strong, nonatomic) UIColor *dimmingColor;
+
+/**
+ Inverts visible and dimmed paths
+ */
+@property (assign, nonatomic) BOOL inverted;
 
 @end
 

@@ -10,11 +10,11 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
+        <array key="Montserrat-Medium.otf">
+            <string>Montserrat-Medium</string>
+        </array>
         <array key="Montserrat-Regular.otf">
             <string>Montserrat-Regular</string>
-        </array>
-        <array key="Montserrat-SemiBold.otf">
-            <string>Montserrat-SemiBold</string>
         </array>
     </customFonts>
     <scenes>
@@ -23,96 +23,80 @@
             <objects>
                 <viewController id="iYu-g5-HSS" customClass="DWUpholdSuccessTransferViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cRJ-Gs-nmK">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pi9-gs-sXq" userLabel="Content View">
-                                <rect key="frame" x="16" y="162" width="343" height="343"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pi9-gs-sXq" userLabel="Root View">
+                                <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Success" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="LYk-PB-jtl">
-                                        <rect key="frame" x="16" y="16" width="311" height="21"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-SemiBold" family="Montserrat" pointSize="17"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="900" text="Success" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="LYk-PB-jtl">
+                                        <rect key="frame" x="0.0" y="0.0" width="270" height="22"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                         <attributedString key="userComments">
                                             <fragment content="#bc-ignore!"/>
                                         </attributedString>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your transaction was send and the amount should appear in your wallet in a few minutes." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="pwV-IX-kDL">
-                                        <rect key="frame" x="16" y="61" width="311" height="55"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction id: ..." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wDU-at-vS0">
-                                        <rect key="frame" x="16" y="132" width="311" height="18.5"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                    </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HIU-Sz-Zml" customClass="DWBlueActionButton">
-                                        <rect key="frame" x="121" y="287" width="136" height="40"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yct-JK-iiz" userLabel="Center View">
+                                        <rect key="frame" x="0.0" y="22" width="270" height="238"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7ZQ-EZ-Nz3" userLabel="Content View">
+                                                <rect key="frame" x="0.0" y="68" width="270" height="102"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="Your transaction was send and the amount should appear in your wallet in a few minutes." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="pwV-IX-kDL">
+                                                        <rect key="frame" x="0.0" y="0.0" width="270" height="51.5"/>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="850" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wDU-at-vS0">
+                                                        <rect key="frame" x="0.0" y="67.5" width="270" height="34.5"/>
+                                                        <string key="text">Transaction id:
+...</string>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="bottom" secondItem="wDU-at-vS0" secondAttribute="bottom" id="0g1-yG-kbQ"/>
+                                                    <constraint firstAttribute="trailing" secondItem="pwV-IX-kDL" secondAttribute="trailing" id="NNn-lQ-jxe"/>
+                                                    <constraint firstAttribute="trailing" secondItem="wDU-at-vS0" secondAttribute="trailing" id="Qi6-Q5-gBr"/>
+                                                    <constraint firstItem="wDU-at-vS0" firstAttribute="top" secondItem="pwV-IX-kDL" secondAttribute="bottom" constant="16" id="dQo-AP-Oug"/>
+                                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="top" secondItem="7ZQ-EZ-Nz3" secondAttribute="top" id="inw-wp-Uqq"/>
+                                                    <constraint firstItem="wDU-at-vS0" firstAttribute="leading" secondItem="7ZQ-EZ-Nz3" secondAttribute="leading" id="wfc-v5-OMx"/>
+                                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="leading" secondItem="7ZQ-EZ-Nz3" secondAttribute="leading" id="x6U-nP-khA"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="eGQ-wA-jYu"/>
+                                            <constraint firstItem="7ZQ-EZ-Nz3" firstAttribute="centerY" secondItem="yct-JK-iiz" secondAttribute="centerY" id="Jd6-mP-TyE"/>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="7ZQ-EZ-Nz3" secondAttribute="bottom" id="OvR-yq-4pa"/>
+                                            <constraint firstAttribute="trailing" secondItem="7ZQ-EZ-Nz3" secondAttribute="trailing" id="VyZ-dO-Itl"/>
+                                            <constraint firstItem="7ZQ-EZ-Nz3" firstAttribute="leading" secondItem="yct-JK-iiz" secondAttribute="leading" id="w7j-Gd-k6R"/>
+                                            <constraint firstItem="7ZQ-EZ-Nz3" firstAttribute="top" relation="greaterThanOrEqual" secondItem="yct-JK-iiz" secondAttribute="top" id="xBC-lI-LbO"/>
                                         </constraints>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
-                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
-                                        <state key="normal" title="See on Uphold">
-                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                        </userDefinedRuntimeAttributes>
-                                        <connections>
-                                            <action selector="seeOnUpholdButtonAction:" destination="iYu-g5-HSS" eventType="touchUpInside" id="ntw-O2-nqH"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FKV-1G-dVB" customClass="DWBlueActionButton">
-                                        <rect key="frame" x="273" y="287" width="54" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="fqa-AJ-HsY"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
-                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
-                                        <state key="normal" title="OK">
-                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                        <connections>
-                                            <action selector="okButtonAction:" destination="iYu-g5-HSS" eventType="touchUpInside" id="Zgo-KX-Wy6"/>
-                                        </connections>
-                                    </button>
+                                    </view>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="LYk-PB-jtl" secondAttribute="trailing" constant="16" id="0gf-kH-5e0"/>
-                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="top" secondItem="LYk-PB-jtl" secondAttribute="bottom" constant="24" id="27Y-Bn-xM8"/>
-                                    <constraint firstItem="pwV-IX-kDL" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="3EA-aD-Tdm"/>
-                                    <constraint firstAttribute="bottom" secondItem="FKV-1G-dVB" secondAttribute="bottom" constant="16" id="GMI-HY-XcK"/>
-                                    <constraint firstItem="FKV-1G-dVB" firstAttribute="leading" secondItem="HIU-Sz-Zml" secondAttribute="trailing" constant="16" id="GwI-3J-Vr1"/>
-                                    <constraint firstAttribute="bottom" secondItem="HIU-Sz-Zml" secondAttribute="bottom" constant="16" id="K5K-3c-QaD"/>
-                                    <constraint firstAttribute="trailing" secondItem="FKV-1G-dVB" secondAttribute="trailing" constant="16" id="KOv-fi-cKW"/>
-                                    <constraint firstAttribute="width" secondItem="Pi9-gs-sXq" secondAttribute="height" id="LVu-EN-fEY"/>
-                                    <constraint firstItem="HIU-Sz-Zml" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="TMS-jn-24a"/>
-                                    <constraint firstItem="wDU-at-vS0" firstAttribute="top" secondItem="pwV-IX-kDL" secondAttribute="bottom" constant="16" id="UkY-gS-eE5"/>
-                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="top" secondItem="Pi9-gs-sXq" secondAttribute="top" constant="16" id="VeO-JD-dFA"/>
-                                    <constraint firstItem="wDU-at-vS0" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="VoV-on-9fD"/>
-                                    <constraint firstAttribute="trailing" secondItem="wDU-at-vS0" secondAttribute="trailing" constant="16" id="cC0-mK-nVf"/>
-                                    <constraint firstItem="wDU-at-vS0" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="e9j-7S-soX"/>
-                                    <constraint firstAttribute="trailing" secondItem="pwV-IX-kDL" secondAttribute="trailing" constant="16" id="eps-TL-fIt"/>
-                                    <constraint firstAttribute="trailing" secondItem="wDU-at-vS0" secondAttribute="trailing" constant="16" id="mqe-rd-CLC"/>
-                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" constant="16" id="tes-CX-PtJ"/>
+                                    <constraint firstAttribute="trailing" secondItem="LYk-PB-jtl" secondAttribute="trailing" id="0gf-kH-5e0"/>
+                                    <constraint firstAttribute="height" constant="260" id="IyA-lz-HYD"/>
+                                    <constraint firstAttribute="bottom" secondItem="yct-JK-iiz" secondAttribute="bottom" id="TPT-Xf-2rC"/>
+                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="top" secondItem="Pi9-gs-sXq" secondAttribute="top" id="VeO-JD-dFA"/>
+                                    <constraint firstAttribute="trailing" secondItem="yct-JK-iiz" secondAttribute="trailing" id="kbe-2j-65Q"/>
+                                    <constraint firstItem="yct-JK-iiz" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" id="mAJ-7c-GOF"/>
+                                    <constraint firstItem="yct-JK-iiz" firstAttribute="top" secondItem="LYk-PB-jtl" secondAttribute="bottom" id="sK7-OZ-Y65"/>
+                                    <constraint firstItem="LYk-PB-jtl" firstAttribute="leading" secondItem="Pi9-gs-sXq" secondAttribute="leading" id="tes-CX-PtJ"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -124,16 +108,16 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="leading" secondItem="PPm-4a-I9L" secondAttribute="leading" constant="16" id="Sml-kJ-Pc9"/>
-                            <constraint firstItem="PPm-4a-I9L" firstAttribute="trailing" secondItem="Pi9-gs-sXq" secondAttribute="trailing" constant="16" id="UpQ-hG-dUQ"/>
-                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="centerY" secondItem="cRJ-Gs-nmK" secondAttribute="centerY" id="fX1-2A-I4l"/>
+                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="top" secondItem="PPm-4a-I9L" secondAttribute="top" id="FUQ-aS-ukM"/>
+                            <constraint firstItem="PPm-4a-I9L" firstAttribute="bottom" secondItem="Pi9-gs-sXq" secondAttribute="bottom" id="Jv5-JQ-1TT"/>
+                            <constraint firstItem="Pi9-gs-sXq" firstAttribute="leading" secondItem="PPm-4a-I9L" secondAttribute="leading" id="Sml-kJ-Pc9"/>
+                            <constraint firstItem="PPm-4a-I9L" firstAttribute="trailing" secondItem="Pi9-gs-sXq" secondAttribute="trailing" id="UpQ-hG-dUQ"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="PPm-4a-I9L"/>
                     </view>
+                    <size key="freeformSize" width="270" height="260"/>
                     <connections>
                         <outlet property="descriptionLabel" destination="pwV-IX-kDL" id="J6D-eR-hrz"/>
-                        <outlet property="okButton" destination="FKV-1G-dVB" id="dxz-Cf-hbY"/>
-                        <outlet property="seeOnUpholdButton" destination="HIU-Sz-Zml" id="xmY-pe-pmT"/>
                         <outlet property="titleLabel" destination="LYk-PB-jtl" id="vLZ-6Z-j7m"/>
                         <outlet property="transactionLabel" destination="wDU-at-vS0" id="EGF-3B-1lq"/>
                     </connections>

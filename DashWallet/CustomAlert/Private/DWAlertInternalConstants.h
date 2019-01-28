@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,20 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#ifndef DWAlertInternalConstants_h
+#define DWAlertInternalConstants_h
 
-NS_ASSUME_NONNULL_BEGIN
+// Default iOS UIAlertController's constants
 
-@interface DWAlertPresentationController : UIPresentationController
+static CGFloat const DWAlertViewWidth = 270.0;
+static CGFloat const DWAlertViewCornerRadius = 13.0;
+static CGFloat const DWAlertViewActionButtonHeight = 44.0;
 
-@property (assign, nonatomic) BOOL shouldDimBackground;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused"
+static CGFloat DWAlertViewSeparatorSize() {
+    return 1.0 / [UIScreen mainScreen].scale;
+}
+#pragma clang diagnostic pop
 
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWAlertInternalConstants_h */

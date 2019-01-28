@@ -17,14 +17,18 @@
 
 #import "DWUpholdViewController.h"
 
+#import "DWAlertController.h"
 #import "DWUpholdAuthViewController.h"
 #import "DWUpholdClient.h"
+#import "DWUpholdConstants.h"
+#import "DWUpholdLogoutTutorialViewController.h"
 #import "DWUpholdMainViewController.h"
+#import "SFSafariViewController+DashWallet.h"
 #import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate>
+@interface DWUpholdViewController () <DWUpholdAuthViewControllerDelegate, DWUpholdMainViewControllerDelegate, DWUpholdLogoutTutorialViewControllerDelegate>
 
 @end
 
@@ -62,6 +66,32 @@ NS_ASSUME_NONNULL_BEGIN
     [self dw_performTransitionToViewController:toController completion:nil];
 }
 
+#pragma mark - DWUpholdMainViewControllerDelegate
+
+- (void)upholdMainViewControllerUserDidLogout:(DWUpholdMainViewController *)controller {
+    DWUpholdLogoutTutorialViewController *logoutTutorialController = [DWUpholdLogoutTutorialViewController controller];
+    logoutTutorialController.delegate = self;
+    DWAlertController *alertController = [[DWAlertController alloc] init];
+    [alertController setupContentController:logoutTutorialController];
+    [alertController setupActions:logoutTutorialController.providedActions];
+    alertController.preferredAction = logoutTutorialController.preferredAction;
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+
+#pragma mark - DWUpholdLogoutTutorialViewControllerDelegate
+
+- (void)upholdLogoutTutorialViewControllerDidCancel:(DWUpholdLogoutTutorialViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)upholdLogoutTutorialViewControllerOpenUpholdWebsite:(DWUpholdLogoutTutorialViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:^{
+        NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
+        NSParameterAssert(url);
+        [self openSafariControllerWithURL:url];
+    }];
+}
+
 #pragma mark - Private
 
 - (DWUpholdAuthViewController *)authController {
@@ -73,6 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWUpholdMainViewController *)mainController {
     DWUpholdMainViewController *mainController = [DWUpholdMainViewController controller];
+    mainController.delegate = self;
 
     return mainController;
 }
@@ -80,6 +111,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
     UIViewController *toController = [self authController];
     [self dw_performTransitionToViewController:toController completion:nil];
+}
+
+- (void)openSafariControllerWithURL:(NSURL *)url {
+    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 @end

@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdConfirmTransferViewController ()
 
-@property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *amountTitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *amountLabel;
@@ -33,15 +32,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *totalLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
-@property (strong, nonatomic) IBOutlet UIButton *confirmButton;
-@property (strong, nonatomic) IBOutlet UIButton *cancelButton;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentViewCenterYConstraint;
+@property (strong, nonatomic) DWAlertAction *confirmAction;
 
 @property (strong, nonatomic) DWUpholdConfirmTransferModel *model;
 
 @end
 
 @implementation DWUpholdConfirmTransferViewController
+
+@synthesize providedActions = _providedActions;
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdConfirmTransferStoryboard" bundle:nil];
@@ -51,6 +50,35 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
+- (NSArray<DWAlertAction *> *)providedActions {
+    if (!_providedActions) {
+        __weak typeof(self) weakSelf = self;
+        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf cancelButtonAction];
+        }];
+        DWAlertAction *confirmAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Confirm", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf confirmButtonAction];
+        }];
+        self.confirmAction = confirmAction;
+        _providedActions = @[ cancelAction, confirmAction ];
+    }
+    return _providedActions;
+}
+
+- (DWAlertAction *)preferredAction {
+    return self.confirmAction;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -58,8 +86,6 @@ NS_ASSUME_NONNULL_BEGIN
     self.amountTitleLabel.text = NSLocalizedString(@"Amount", nil);
     self.feeTitleLabel.text = NSLocalizedString(@"Fee", nil);
     self.totalTitleLabel.text = NSLocalizedString(@"Total", nil);
-    [self.confirmButton setTitle:NSLocalizedString(@"Confirm", nil) forState:UIControlStateNormal];
-    [self.cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
 
     self.amountLabel.attributedText = [self.model amountDashString];
     self.feeLabel.attributedText = [self.model feeDashString];
@@ -70,23 +96,13 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
-#pragma mark - DWAlertKeyboardSupport
-
-- (nullable UIView *)alertContentView {
-    return self.contentView;
-}
-
-- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
-    return self.contentViewCenterYConstraint;
-}
-
 #pragma mark - Actions
 
-- (IBAction)confirmButtonAction:(id)sender {
+- (void)confirmButtonAction {
     [self.model confirmWithOTPToken:nil];
 }
 
-- (IBAction)cancelButtonAction:(id)sender {
+- (void)cancelButtonAction {
     [self.model cancel];
     [self.delegate upholdConfirmTransferViewControllerDidCancel:self];
 }
@@ -96,13 +112,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateState {
     switch (self.model.state) {
         case DWUpholdConfirmTransferModelStateNone: {
-            self.confirmButton.hidden = NO;
+            self.confirmAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
         }
         case DWUpholdConfirmTransferModelStateLoading: {
-            self.confirmButton.hidden = YES;
+            self.confirmAction.enabled = NO;
             [self.activityIndicatorView startAnimating];
 
             break;
@@ -114,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdConfirmTransferModelStateFail: {
-            self.confirmButton.hidden = NO;
+            self.confirmAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
 
             break;
@@ -140,17 +156,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.model.state == DWUpholdConfirmTransferModelStateFail) {
-        self.descriptionLabel.textColor = [UIColor redColor];
+        self.descriptionLabel.textColor = UIColorFromRGB(0xD0021B);
         self.descriptionLabel.text = NSLocalizedString(@"Something went wrong", nil);
         self.descriptionLabel.hidden = NO;
     }
     else {
         if ([self.model feeWasDeductedFromAmount]) {
-            self.descriptionLabel.textColor = [UIColor darkGrayColor];
+            self.descriptionLabel.textColor = UIColorFromRGB(0x787878);
             self.descriptionLabel.text = NSLocalizedString(@"Fee will be deducted from requested amount", nil);
             self.descriptionLabel.hidden = NO;
         }
         else {
+            self.descriptionLabel.text = nil;
             self.descriptionLabel.hidden = YES;
         }
     }

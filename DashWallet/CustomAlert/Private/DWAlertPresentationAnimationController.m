@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const kDefaultPresentationAnimationDuration = 0.35;
+static CGFloat const DefaultPresentationAnimationDuration = 0.3;
 
 @implementation DWAlertPresentationAnimationController
 
@@ -29,17 +29,17 @@ static CGFloat const kDefaultPresentationAnimationDuration = 0.35;
     toViewController.view.frame = [transitionContext finalFrameForViewController:toViewController];
     [[transitionContext containerView] addSubview:toViewController.view];
 
-    toViewController.view.layer.transform = CATransform3DMakeScale(1.2, 1.2, 1.2);
-    toViewController.view.layer.opacity = 0.0;
+    toViewController.view.transform = CGAffineTransformMakeScale(1.2, 1.2);
+    toViewController.view.alpha = 0.0;
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext]
         delay:0.0
-        usingSpringWithDamping:0.75
+        usingSpringWithDamping:0.9
         initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseIn
+        options:UIViewAnimationOptionCurveEaseInOut
         animations:^{
-            toViewController.view.layer.transform = CATransform3DIdentity;
-            toViewController.view.layer.opacity = 1.0;
+            toViewController.view.transform = CGAffineTransformIdentity;
+            toViewController.view.alpha = 1.0;
         }
         completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
@@ -47,7 +47,7 @@ static CGFloat const kDefaultPresentationAnimationDuration = 0.35;
 }
 
 - (NSTimeInterval)transitionDuration:(nullable id<UIViewControllerContextTransitioning>)transitionContext {
-    return kDefaultPresentationAnimationDuration;
+    return DefaultPresentationAnimationDuration;
 }
 
 @end

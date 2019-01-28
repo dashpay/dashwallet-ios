@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,23 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "DWAlertAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConstants : NSObject
+@interface DWAlertController : UIViewController
 
-+ (NSString *)authorizeURLFormat;
-+ (NSString *)baseURLString;
-+ (NSString *)clientID;
-+ (NSString *)clientSecret;
-+ (NSString *)buyCardURLFormat;
-+ (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
+@property (readonly, nullable, strong, nonatomic) UIViewController *contentController;
+- (void)setupContentController:(UIViewController *)controller;
+- (void)performTransitionToContentController:(UIViewController *)controller;
 
-- (instancetype)init NS_UNAVAILABLE;
+@property (readonly, copy, nonatomic) NSArray<DWAlertAction *> *actions;
+- (void)addAction:(DWAlertAction *)action;
+- (void)setupActions:(NSArray<DWAlertAction *> *)actions;
+
+@property (nullable, strong, nonatomic) DWAlertAction *preferredAction;
 
 @end
 

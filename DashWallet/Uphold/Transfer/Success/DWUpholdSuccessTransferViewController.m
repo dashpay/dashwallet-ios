@@ -26,14 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionLabel;
-@property (strong, nonatomic) IBOutlet UIButton *okButton;
-@property (strong, nonatomic) IBOutlet UIButton *seeOnUpholdButton;
 
 @property (strong, nonatomic) DWUpholdSuccessTransferModel *model;
 
 @end
 
 @implementation DWUpholdSuccessTransferViewController
+
+@synthesize providedActions = _providedActions;
 
 + (instancetype)controllerWithTransaction:(DWUpholdTransactionObject *)transaction {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdSuccessTransferStoryboard" bundle:nil];
@@ -43,23 +43,49 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
+- (NSArray<DWAlertAction *> *)providedActions {
+    if (!_providedActions) {
+        __weak typeof(self) weakSelf = self;
+        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf okButtonAction];
+        }];
+        DWAlertAction *seeOnUpholdAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"See on Uphold", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf seeOnUpholdButtonAction];
+        }];
+        _providedActions = @[ cancelAction, seeOnUpholdAction ];
+    }
+    return _providedActions;
+}
+
+- (DWAlertAction *)preferredAction {
+    return self.providedActions.lastObject;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Success", nil);
     self.descriptionLabel.text = NSLocalizedString(@"Your transaction was sent and the amount should appear in your wallet in a few minutes.", nil);
     self.transactionLabel.text = [self.model transactionText];
-    [self.okButton setTitle:NSLocalizedString(@"OK", nil) forState:UIControlStateNormal];
-    [self.seeOnUpholdButton setTitle:NSLocalizedString(@"See on Uphold", nil) forState:UIControlStateNormal];
 }
 
-- (IBAction)seeOnUpholdButtonAction:(id)sender {
+- (void)okButtonAction {
+    [self.delegate upholdSuccessTransferViewControllerDidFinish:self];
+}
+
+- (void)seeOnUpholdButtonAction {
     [self.delegate upholdSuccessTransferViewControllerDidFinish:self
                                              openTransactionURL:[self.model transactionURL]];
-}
-
-- (IBAction)okButtonAction:(id)sender {
-    [self.delegate upholdSuccessTransferViewControllerDidFinish:self];
 }
 
 @end

@@ -23,12 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdOTPViewController () <UITextFieldDelegate>
 
-@property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
-@property (strong, nonatomic) IBOutlet UIButton *cancelButton;
-@property (strong, nonatomic) IBOutlet UIButton *okButton;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentViewCenterYConstraint;
 
 @property (assign, nonatomic) NSInteger pasteboardChangeCount;
 
@@ -38,21 +34,48 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWUpholdOTPViewController
 
+@synthesize providedActions = _providedActions;
+
 + (instancetype)controllerWithCompletion:(void (^)(DWUpholdOTPViewController *controller, NSString *_Nullable otpToken))completion {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdOTPStoryboard" bundle:nil];
     DWUpholdOTPViewController *controller = [storyboard instantiateInitialViewController];
-    controller.shouldDimBackground = NO;
     controller.completionBlock = completion;
 
     return controller;
+}
+
+- (NSArray<DWAlertAction *> *)providedActions {
+    if (!_providedActions) {
+        __weak typeof(self) weakSelf = self;
+        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf cancelButtonAction];
+        }];
+        DWAlertAction *okAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf okButtonAction];
+        }];
+        _providedActions = @[ cancelAction, okAction ];
+    }
+    return _providedActions;
+}
+
+- (DWAlertAction *)preferredAction {
+    return self.providedActions.lastObject;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Enter your 2FA code below", nil);
-    [self.okButton setTitle:NSLocalizedString(@"OK", nil) forState:UIControlStateNormal];
-    [self.cancelButton setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
 
     self.textField.delegate = self;
 
@@ -68,19 +91,13 @@ NS_ASSUME_NONNULL_BEGIN
                              object:nil];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-
-    [self.textField resignFirstResponder];
-}
-
 #pragma mark - Actions
 
-- (IBAction)okButtonAction:(id)sender {
+- (void)okButtonAction {
     [self confirmOTPToken];
 }
 
-- (IBAction)cancelButtonAction:(id)sender {
+- (void)cancelButtonAction {
     if (self.completionBlock) {
         self.completionBlock(self, nil);
         self.completionBlock = nil;
@@ -103,16 +120,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self confirmOTPToken];
 
     return YES;
-}
-
-#pragma mark - DWAlertKeyboardSupport
-
-- (nullable UIView *)alertContentView {
-    return self.contentView;
-}
-
-- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
-    return self.contentViewCenterYConstraint;
 }
 
 #pragma mark - Notifications

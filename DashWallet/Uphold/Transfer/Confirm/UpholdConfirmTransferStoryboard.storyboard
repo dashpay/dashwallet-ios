@@ -16,9 +16,6 @@
         <array key="Montserrat-Regular.otf">
             <string>Montserrat-Regular</string>
         </array>
-        <array key="Montserrat-SemiBold.otf">
-            <string>Montserrat-SemiBold</string>
-        </array>
     </customFonts>
     <scenes>
         <!--Uphold Confirm Transfer View Controller-->
@@ -26,164 +23,148 @@
             <objects>
                 <viewController id="rhj-d5-cqP" customClass="DWUpholdConfirmTransferViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Q8s-TY-jbk">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uRZ-yv-6MR" userLabel="Content View">
-                                <rect key="frame" x="16" y="162" width="343" height="343"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uRZ-yv-6MR" userLabel="Root View">
+                                <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Confirm transaction" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="9AH-Eo-SmV">
-                                        <rect key="frame" x="16" y="16" width="311" height="21"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-SemiBold" family="Montserrat" pointSize="17"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="900" text="Confirm transaction" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="9AH-Eo-SmV">
+                                        <rect key="frame" x="0.0" y="0.0" width="270" height="22"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                         <attributedString key="userComments">
                                             <fragment content="#bc-ignore!"/>
                                         </attributedString>
                                     </label>
-                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ofB-mG-qeg">
-                                        <rect key="frame" x="16" y="55" width="311" height="96"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hlR-Qe-GFi" userLabel="Center View">
+                                        <rect key="frame" x="0.0" y="22" width="270" height="238"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="qyZ-4k-V99">
-                                                <rect key="frame" x="0.0" y="0.0" width="155.5" height="96"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5oh-C9-uVH" userLabel="Content View">
+                                                <rect key="frame" x="0.0" y="36" width="270" height="166.5"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Amount" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="yNj-cc-IuN">
-                                                        <rect key="frame" x="0.0" y="0.0" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ofB-mG-qeg">
+                                                        <rect key="frame" x="0.0" y="0.0" width="270" height="96"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="qyZ-4k-V99">
+                                                                <rect key="frame" x="0.0" y="0.0" width="135" height="96"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Amount" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="yNj-cc-IuN">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bu3-a6-UGa">
+                                                                        <rect key="frame" x="0.0" y="32" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="ZkY-MU-2ga">
+                                                                        <rect key="frame" x="0.0" y="64" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="qAT-Hi-Lee">
+                                                                <rect key="frame" x="135" y="0.0" width="135" height="96"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="cY3-aO-4ml">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wrO-Bx-Sw2">
+                                                                        <rect key="frame" x="0.0" y="32" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="gg6-CP-fZ6">
+                                                                        <rect key="frame" x="0.0" y="64" width="135" height="32"/>
+                                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="14"/>
+                                                                        <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <attributedString key="userComments">
+                                                                            <fragment content="#bc-ignore!"/>
+                                                                        </attributedString>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstItem="qAT-Hi-Lee" firstAttribute="width" secondItem="ofB-mG-qeg" secondAttribute="width" multiplier="0.5" id="9Oi-z5-Bv0"/>
+                                                            <constraint firstAttribute="height" constant="96" id="C1r-r0-LdY"/>
+                                                            <constraint firstItem="qyZ-4k-V99" firstAttribute="width" secondItem="ofB-mG-qeg" secondAttribute="width" multiplier="0.5" id="oPd-lO-TE5"/>
+                                                        </constraints>
+                                                    </stackView>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="Fee will be deducted from requested amount" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="XLe-6W-dow">
+                                                        <rect key="frame" x="0.0" y="104" width="270" height="34.5"/>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="calibratedRGB"/>
                                                         <nil key="highlightedColor"/>
                                                         <attributedString key="userComments">
                                                             <fragment content="#bc-ignore!"/>
                                                         </attributedString>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bu3-a6-UGa">
-                                                        <rect key="frame" x="0.0" y="32" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Total" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="ZkY-MU-2ga">
-                                                        <rect key="frame" x="0.0" y="64" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
+                                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="3QM-J3-4Ue">
+                                                        <rect key="frame" x="125" y="146.5" width="20" height="20"/>
+                                                    </activityIndicatorView>
                                                 </subviews>
-                                            </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="qAT-Hi-Lee">
-                                                <rect key="frame" x="155.5" y="0.0" width="155.5" height="96"/>
-                                                <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="cY3-aO-4ml">
-                                                        <rect key="frame" x="0.0" y="0.0" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="15"/>
-                                                        <nil key="textColor"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="wrO-Bx-Sw2">
-                                                        <rect key="frame" x="0.0" y="32" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="15"/>
-                                                        <nil key="textColor"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="gg6-CP-fZ6">
-                                                        <rect key="frame" x="0.0" y="64" width="155.5" height="32"/>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="15"/>
-                                                        <nil key="textColor"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                </subviews>
-                                            </stackView>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="trailing" secondItem="XLe-6W-dow" secondAttribute="trailing" id="3dI-Eh-1kh"/>
+                                                    <constraint firstAttribute="bottom" secondItem="3QM-J3-4Ue" secondAttribute="bottom" id="Gh0-Vd-sAN"/>
+                                                    <constraint firstItem="XLe-6W-dow" firstAttribute="leading" secondItem="5oh-C9-uVH" secondAttribute="leading" id="H6T-oB-Six"/>
+                                                    <constraint firstAttribute="trailing" secondItem="ofB-mG-qeg" secondAttribute="trailing" id="a9N-dq-deT"/>
+                                                    <constraint firstItem="3QM-J3-4Ue" firstAttribute="centerX" secondItem="5oh-C9-uVH" secondAttribute="centerX" id="aSv-sM-TeF"/>
+                                                    <constraint firstItem="ofB-mG-qeg" firstAttribute="leading" secondItem="5oh-C9-uVH" secondAttribute="leading" id="dYY-ca-nvV"/>
+                                                    <constraint firstItem="XLe-6W-dow" firstAttribute="top" secondItem="ofB-mG-qeg" secondAttribute="bottom" constant="8" id="j4f-dh-8gW"/>
+                                                    <constraint firstItem="3QM-J3-4Ue" firstAttribute="top" secondItem="XLe-6W-dow" secondAttribute="bottom" constant="8" id="nZf-eu-FhG"/>
+                                                    <constraint firstItem="ofB-mG-qeg" firstAttribute="top" secondItem="5oh-C9-uVH" secondAttribute="top" id="yp4-fs-qBi"/>
+                                                </constraints>
+                                            </view>
                                         </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstItem="qAT-Hi-Lee" firstAttribute="width" secondItem="ofB-mG-qeg" secondAttribute="width" multiplier="0.5" id="9Oi-z5-Bv0"/>
-                                            <constraint firstAttribute="height" constant="96" id="C1r-r0-LdY"/>
-                                            <constraint firstItem="qyZ-4k-V99" firstAttribute="width" secondItem="ofB-mG-qeg" secondAttribute="width" multiplier="0.5" id="oPd-lO-TE5"/>
+                                            <constraint firstAttribute="trailing" secondItem="5oh-C9-uVH" secondAttribute="trailing" id="3gp-Bo-76P"/>
+                                            <constraint firstItem="5oh-C9-uVH" firstAttribute="top" relation="greaterThanOrEqual" secondItem="hlR-Qe-GFi" secondAttribute="top" id="4Y5-kX-jWc"/>
+                                            <constraint firstItem="5oh-C9-uVH" firstAttribute="centerY" secondItem="hlR-Qe-GFi" secondAttribute="centerY" id="9dh-XX-zG8"/>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="5oh-C9-uVH" secondAttribute="bottom" id="Gzl-Kl-KLS"/>
+                                            <constraint firstItem="5oh-C9-uVH" firstAttribute="leading" secondItem="hlR-Qe-GFi" secondAttribute="leading" id="Mxk-VB-l9K"/>
                                         </constraints>
-                                    </stackView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Fee will be deducted from requested amount" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="XLe-6W-dow">
-                                        <rect key="frame" x="16" y="159" width="311" height="37"/>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="15"/>
-                                        <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                    </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tOh-zg-WXZ" customClass="DWBlueActionButton">
-                                        <rect key="frame" x="141" y="287" width="80" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="JTl-Rx-lBH"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
-                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
-                                        <state key="normal" title="Cancel">
-                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
-                                        </userDefinedRuntimeAttributes>
-                                        <connections>
-                                            <action selector="cancelButtonAction:" destination="rhj-d5-cqP" eventType="touchUpInside" id="uep-5z-j6e"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="plH-s8-4Jp" customClass="DWBlueActionButton">
-                                        <rect key="frame" x="237" y="287" width="90" height="40"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="40" id="VGb-Sf-jUG"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
-                                        <inset key="contentEdgeInsets" minX="16" minY="0.0" maxX="16" maxY="0.0"/>
-                                        <state key="normal" title="Confirm">
-                                            <color key="titleColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
-                                        </state>
-                                        <attributedString key="userComments">
-                                            <fragment content="#bc-ignore!"/>
-                                        </attributedString>
-                                        <connections>
-                                            <action selector="confirmButtonAction:" destination="rhj-d5-cqP" eventType="touchUpInside" id="fX5-vB-GNR"/>
-                                        </connections>
-                                    </button>
-                                    <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="3QM-J3-4Ue">
-                                        <rect key="frame" x="272" y="297" width="20" height="20"/>
-                                    </activityIndicatorView>
+                                    </view>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="9AH-Eo-SmV" firstAttribute="leading" secondItem="uRZ-yv-6MR" secondAttribute="leading" constant="16" id="1LB-IC-qIn"/>
-                                    <constraint firstItem="plH-s8-4Jp" firstAttribute="leading" secondItem="tOh-zg-WXZ" secondAttribute="trailing" constant="16" id="2Hf-5N-9fU"/>
-                                    <constraint firstItem="ofB-mG-qeg" firstAttribute="top" secondItem="9AH-Eo-SmV" secondAttribute="bottom" constant="18" id="2Uy-u4-WOB"/>
-                                    <constraint firstAttribute="bottom" secondItem="tOh-zg-WXZ" secondAttribute="bottom" constant="16" id="6Mf-zV-7ag"/>
-                                    <constraint firstItem="tOh-zg-WXZ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uRZ-yv-6MR" secondAttribute="leading" constant="16" id="8ra-bf-JCN"/>
-                                    <constraint firstAttribute="trailing" secondItem="plH-s8-4Jp" secondAttribute="trailing" constant="16" id="Eye-Q9-22A"/>
-                                    <constraint firstItem="3QM-J3-4Ue" firstAttribute="centerX" secondItem="plH-s8-4Jp" secondAttribute="centerX" id="Gj8-b4-pCo"/>
-                                    <constraint firstItem="9AH-Eo-SmV" firstAttribute="top" secondItem="uRZ-yv-6MR" secondAttribute="top" constant="16" id="Jlh-6r-fUk"/>
-                                    <constraint firstItem="ofB-mG-qeg" firstAttribute="leading" secondItem="uRZ-yv-6MR" secondAttribute="leading" constant="16" id="S9W-iM-G0Z"/>
-                                    <constraint firstAttribute="trailing" secondItem="XLe-6W-dow" secondAttribute="trailing" constant="16" id="Sfr-Ag-0SC"/>
-                                    <constraint firstItem="XLe-6W-dow" firstAttribute="top" secondItem="ofB-mG-qeg" secondAttribute="bottom" constant="8" id="bcn-iZ-TTi"/>
-                                    <constraint firstAttribute="width" secondItem="uRZ-yv-6MR" secondAttribute="height" id="gsS-UR-DCa"/>
-                                    <constraint firstItem="XLe-6W-dow" firstAttribute="leading" secondItem="uRZ-yv-6MR" secondAttribute="leading" constant="16" id="iZr-oC-ZBN"/>
-                                    <constraint firstItem="3QM-J3-4Ue" firstAttribute="centerY" secondItem="plH-s8-4Jp" secondAttribute="centerY" id="ii7-Ip-GHL"/>
-                                    <constraint firstAttribute="bottom" secondItem="plH-s8-4Jp" secondAttribute="bottom" constant="16" id="s9F-6p-7Kf"/>
-                                    <constraint firstAttribute="trailing" secondItem="ofB-mG-qeg" secondAttribute="trailing" constant="16" id="vn3-0A-vXi"/>
-                                    <constraint firstAttribute="trailing" secondItem="9AH-Eo-SmV" secondAttribute="trailing" constant="16" id="x2u-7U-7Bd"/>
+                                    <constraint firstItem="9AH-Eo-SmV" firstAttribute="leading" secondItem="uRZ-yv-6MR" secondAttribute="leading" id="1LB-IC-qIn"/>
+                                    <constraint firstAttribute="trailing" secondItem="hlR-Qe-GFi" secondAttribute="trailing" id="4HF-Yv-TPt"/>
+                                    <constraint firstItem="9AH-Eo-SmV" firstAttribute="top" secondItem="uRZ-yv-6MR" secondAttribute="top" id="Jlh-6r-fUk"/>
+                                    <constraint firstAttribute="height" constant="260" id="MRy-cg-tCL"/>
+                                    <constraint firstItem="hlR-Qe-GFi" firstAttribute="leading" secondItem="uRZ-yv-6MR" secondAttribute="leading" id="VqA-Kw-ozP"/>
+                                    <constraint firstAttribute="bottom" secondItem="hlR-Qe-GFi" secondAttribute="bottom" id="hxV-e6-7jz"/>
+                                    <constraint firstAttribute="trailing" secondItem="9AH-Eo-SmV" secondAttribute="trailing" id="x2u-7U-7Bd"/>
+                                    <constraint firstItem="hlR-Qe-GFi" firstAttribute="top" secondItem="9AH-Eo-SmV" secondAttribute="bottom" id="yQO-2z-LOX"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -195,20 +176,18 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="uRZ-yv-6MR" firstAttribute="leading" secondItem="dBq-3Z-8Uq" secondAttribute="leading" constant="16" id="Zmp-Aa-dg9"/>
-                            <constraint firstItem="uRZ-yv-6MR" firstAttribute="centerY" secondItem="Q8s-TY-jbk" secondAttribute="centerY" id="ubw-RR-Iv9"/>
-                            <constraint firstItem="dBq-3Z-8Uq" firstAttribute="trailing" secondItem="uRZ-yv-6MR" secondAttribute="trailing" constant="16" id="yRr-pI-BNR"/>
+                            <constraint firstItem="dBq-3Z-8Uq" firstAttribute="bottom" secondItem="uRZ-yv-6MR" secondAttribute="bottom" id="Ntl-xU-O6L"/>
+                            <constraint firstItem="uRZ-yv-6MR" firstAttribute="leading" secondItem="dBq-3Z-8Uq" secondAttribute="leading" id="Zmp-Aa-dg9"/>
+                            <constraint firstItem="uRZ-yv-6MR" firstAttribute="top" secondItem="dBq-3Z-8Uq" secondAttribute="top" id="pTe-rI-ISI"/>
+                            <constraint firstItem="dBq-3Z-8Uq" firstAttribute="trailing" secondItem="uRZ-yv-6MR" secondAttribute="trailing" id="yRr-pI-BNR"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="dBq-3Z-8Uq"/>
                     </view>
+                    <size key="freeformSize" width="270" height="260"/>
                     <connections>
                         <outlet property="activityIndicatorView" destination="3QM-J3-4Ue" id="oSh-6s-s96"/>
                         <outlet property="amountLabel" destination="cY3-aO-4ml" id="nV5-JX-VUN"/>
                         <outlet property="amountTitleLabel" destination="yNj-cc-IuN" id="9bT-oa-ZlE"/>
-                        <outlet property="cancelButton" destination="tOh-zg-WXZ" id="e8h-NI-EA9"/>
-                        <outlet property="confirmButton" destination="plH-s8-4Jp" id="HFa-hF-Bmj"/>
-                        <outlet property="contentView" destination="uRZ-yv-6MR" id="CWb-0a-1h1"/>
-                        <outlet property="contentViewCenterYConstraint" destination="ubw-RR-Iv9" id="d5V-fR-Yfe"/>
                         <outlet property="descriptionLabel" destination="XLe-6W-dow" id="kI7-v8-fmQ"/>
                         <outlet property="feeLabel" destination="wrO-Bx-Sw2" id="X9V-qM-KFQ"/>
                         <outlet property="feeTitleLabel" destination="bu3-a6-UGa" id="WH3-pb-0jy"/>

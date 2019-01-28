@@ -15,21 +15,26 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWAlertAction+DWProtected.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConstants : NSObject
+@implementation DWAlertAction
 
-+ (NSString *)authorizeURLFormat;
-+ (NSString *)baseURLString;
-+ (NSString *)clientID;
-+ (NSString *)clientSecret;
-+ (NSString *)buyCardURLFormat;
-+ (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
++ (instancetype)actionWithTitle:(nullable NSString *)title style:(DWAlertActionStyle)style handler:(void (^__nullable)(DWAlertAction *action))handler {
+    return [[self alloc] initWithTitle:title style:style handler:handler];
+}
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithTitle:(nullable NSString *)title style:(DWAlertActionStyle)style handler:(void (^__nullable)(DWAlertAction *action))handler {
+    self = [super init];
+    if (self) {
+        _title = [title copy];
+        _style = style;
+        _handler = [handler copy];
+        _enabled = YES;
+    }
+    return self;
+}
 
 @end
 

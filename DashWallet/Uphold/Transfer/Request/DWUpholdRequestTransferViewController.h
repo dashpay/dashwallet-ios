@@ -17,7 +17,7 @@
 
 #import <KVO-MVVM/KVOUIViewController.h>
 
-#import "DWAlertViewControllerKeyboardSupport.h"
+#import "DWAlertAction.h"
 #import "DWUpholdOTPProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -34,7 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWUpholdRequestTransferViewController : KVOUIViewController <DWAlertViewControllerKeyboardSupport>
+@interface DWUpholdRequestTransferViewController : KVOUIViewController
+
+@property (readonly, copy, nonatomic) NSArray<DWAlertAction *> *providedActions;
+@property (readonly, strong, nonatomic) DWAlertAction *preferredAction;
 
 @property (nullable, weak, nonatomic) id<DWUpholdRequestTransferViewControllerDelegate> delegate;
 @property (nullable, weak, nonatomic) id<DWUpholdOTPProvider> otpProvider;

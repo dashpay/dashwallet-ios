@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -21,12 +21,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdOTPViewController : UIViewController
+@class DWUpholdLogoutTutorialViewController;
+
+@protocol DWUpholdLogoutTutorialViewControllerDelegate <NSObject>
+
+- (void)upholdLogoutTutorialViewControllerDidCancel:(DWUpholdLogoutTutorialViewController *)controller;
+- (void)upholdLogoutTutorialViewControllerOpenUpholdWebsite:(DWUpholdLogoutTutorialViewController *)controller;
+
+@end
+
+@interface DWUpholdLogoutTutorialViewController : UIViewController
 
 @property (readonly, copy, nonatomic) NSArray<DWAlertAction *> *providedActions;
 @property (readonly, strong, nonatomic) DWAlertAction *preferredAction;
+@property (nullable, weak, nonatomic) id<DWUpholdLogoutTutorialViewControllerDelegate> delegate;
 
-+ (instancetype)controllerWithCompletion:(void (^)(DWUpholdOTPViewController *controller, NSString *_Nullable otpToken))completion;
++ (instancetype)controller;
 
 @end
 

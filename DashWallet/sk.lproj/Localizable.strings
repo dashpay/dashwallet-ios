@@ -258,6 +258,9 @@
 "GENERAL" = "VŠEOBECNÉ";
 
 /* No comment provided by engineer. */
+"Go to Website" = "Go to Website";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
 
 /* No comment provided by engineer. */
@@ -316,6 +319,9 @@
 
 /* No comment provided by engineer. */
 "Log Out" = "Log Out";
+
+/* No comment provided by engineer. */
+"Logout from Uphold" = "Logout from Uphold";
 
 /* No comment provided by engineer. */
 "more..." = "viac...";
@@ -658,6 +664,9 @@
 
 /* No comment provided by engineer. */
 "yes" = "yes";
+
+/* No comment provided by engineer. */
+"You also need to logout from Uphold website in your browser" = "You also need to logout from Uphold website in your browser";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";

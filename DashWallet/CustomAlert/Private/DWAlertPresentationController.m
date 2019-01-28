@@ -19,16 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static UIColor *DimmingViewBackgroundColor() {
-    return [UIColor colorWithWhite:0.0 alpha:0.5];
-}
-
-@interface DWAlertPresentationController ()
-
-@property (nullable, strong, nonatomic) UIView *backgroundDimmingView;
-
-@end
-
 @implementation DWAlertPresentationController
 
 - (BOOL)shouldPresentInFullscreen {
@@ -40,17 +30,14 @@ static UIColor *DimmingViewBackgroundColor() {
 }
 
 - (void)presentationTransitionWillBegin {
-    self.backgroundDimmingView = [[UIView alloc] initWithFrame:self.containerView.bounds];
-    self.backgroundDimmingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.backgroundDimmingView.backgroundColor = DimmingViewBackgroundColor();
-    self.backgroundDimmingView.alpha = 0.0;
-    [self.containerView addSubview:self.backgroundDimmingView];
+    self.dimmingView = [[DWDimmingView alloc] initWithFrame:self.containerView.bounds];
+    self.dimmingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.dimmingView.alpha = 0.0;
+    [self.containerView addSubview:self.dimmingView];
 
     id<UIViewControllerTransitionCoordinator> transitionCoordinator = [self.presentingViewController transitionCoordinator];
     [transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        if (self.shouldDimBackground) {
-            self.backgroundDimmingView.alpha = 1.0;
-        }
+        self.dimmingView.alpha = 1.0;
     }
                                            completion:nil];
 }
@@ -59,7 +46,7 @@ static UIColor *DimmingViewBackgroundColor() {
     [super presentationTransitionDidEnd:completed];
 
     if (!completed) {
-        [self.backgroundDimmingView removeFromSuperview];
+        [self.dimmingView removeFromSuperview];
     }
 }
 
@@ -68,7 +55,7 @@ static UIColor *DimmingViewBackgroundColor() {
 
     id<UIViewControllerTransitionCoordinator> transitionCoordinator = [self.presentingViewController transitionCoordinator];
     [transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        self.backgroundDimmingView.alpha = 0.0;
+        self.dimmingView.alpha = 0.0;
 
         self.presentingViewController.view.transform = CGAffineTransformIdentity;
     }
@@ -79,7 +66,7 @@ static UIColor *DimmingViewBackgroundColor() {
     [super dismissalTransitionDidEnd:completed];
 
     if (completed) {
-        [self.backgroundDimmingView removeFromSuperview];
+        [self.dimmingView removeFromSuperview];
     }
 }
 
@@ -88,7 +75,8 @@ static UIColor *DimmingViewBackgroundColor() {
 
     UIView *presentedView = [self presentedView];
     presentedView.frame = [self frameOfPresentedViewInContainerView];
-    self.backgroundDimmingView.frame = self.containerView.bounds;
+    self.dimmingView.frame = self.containerView.bounds;
+    self.dimmingView.dimmedPath = nil; // reset
 }
 
 @end

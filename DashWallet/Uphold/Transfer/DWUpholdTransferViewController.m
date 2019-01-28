@@ -17,13 +17,11 @@
 
 #import "DWUpholdTransferViewController.h"
 
-#import "DWAlertViewController+DWInternal.h"
 #import "DWUpholdConfirmTransferViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
 #import "DWUpholdRequestTransferViewController.h"
 #import "DWUpholdSuccessTransferViewController.h"
-#import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,31 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    UIView *backgroundAlertView = [[UIView alloc] initWithFrame:CGRectZero];
-    backgroundAlertView.translatesAutoresizingMaskIntoConstraints = NO;
-    backgroundAlertView.backgroundColor = [UIColor whiteColor];
-    backgroundAlertView.layer.cornerRadius = 8.0;
-    backgroundAlertView.layer.masksToBounds = YES;
-    [self.view addSubview:backgroundAlertView];
-    [NSLayoutConstraint activateConstraints:@[
-        [backgroundAlertView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:16.0],
-        [backgroundAlertView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-16.0],
-        (self.backgroundAlertViewCenterYConstraint = [backgroundAlertView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor]),
-        [backgroundAlertView.widthAnchor constraintEqualToAnchor:backgroundAlertView.heightAnchor],
-    ]];
-    self.backgroundAlertView = backgroundAlertView;
-
-    [self dw_displayViewController:self.requestController];
-}
-
-#pragma mark - DWAlertKeyboardSupport
-
-- (nullable UIView *)alertContentView {
-    return self.backgroundAlertView;
-}
-
-- (nullable NSLayoutConstraint *)alertContentViewCenterYConstraint {
-    return self.backgroundAlertViewCenterYConstraint;
+    [self showRequestController];
 }
 
 #pragma mark - DWUpholdOTPProvider
@@ -96,7 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
             completion(otpToken);
         }
     }];
-    [self presentViewController:otpController animated:YES completion:nil];
+
+    DWAlertController *alertOTPController = [[DWAlertController alloc] init];
+    [alertOTPController setupContentController:otpController];
+    [alertOTPController setupActions:otpController.providedActions];
+    alertOTPController.preferredAction = otpController.preferredAction;
+
+    [self presentViewController:alertOTPController animated:YES completion:nil];
 }
 
 #pragma mark - DWUpholdRequestTransferViewControllerDelegate
@@ -107,7 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
         [DWUpholdConfirmTransferViewController controllerWithCard:self.card transaction:transaction];
     confirmController.delegate = self;
     confirmController.otpProvider = self;
-    [self dw_performTransitionToViewController:confirmController completion:nil];
+
+    [self performTransitionToContentController:confirmController];
+    [self setupActions:confirmController.providedActions];
+    self.preferredAction = confirmController.preferredAction;
 }
 
 - (void)upholdRequestTransferViewControllerDidCancel:(DWUpholdRequestTransferViewController *)controller {
@@ -117,14 +100,17 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWUpholdConfirmTransferViewControllerDelegate
 
 - (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller {
-    [self dw_performTransitionToViewController:self.requestController completion:nil];
+    [self showRequestController];
 }
 
 - (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
     DWUpholdSuccessTransferViewController *successController =
         [DWUpholdSuccessTransferViewController controllerWithTransaction:transaction];
     successController.delegate = self;
-    [self dw_performTransitionToViewController:successController completion:nil];
+
+    [self performTransitionToContentController:successController];
+    [self setupActions:successController.providedActions];
+    self.preferredAction = successController.preferredAction;
 }
 
 #pragma mark - DWUpholdSuccessTransferViewControllerDelegate
@@ -138,45 +124,15 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate upholdTransferViewControllerDidFinish:self openTransactionURL:url];
 }
 
-#pragma mark - Internal
-
-- (void)keyboardWillShowOrHideWithHeight:(CGFloat)height {
-    [super keyboardWillShowOrHideWithHeight:height];
-
-    UIViewController<DWAlertViewControllerKeyboardSupport> *controller = (UIViewController<DWAlertViewControllerKeyboardSupport> *)self.dw_currentChildController;
-    UIView *alertContentView = nil;
-    NSLayoutConstraint *alertContentViewCenterYConstraint = nil;
-    if ([controller respondsToSelector:@selector(alertContentView)]) {
-        alertContentView = controller.alertContentView;
+- (void)showRequestController {
+    if (self.contentController) {
+        [self performTransitionToContentController:self.requestController];
     }
-    if ([controller respondsToSelector:@selector(alertContentViewCenterYConstraint)]) {
-        alertContentViewCenterYConstraint = controller.alertContentViewCenterYConstraint;
+    else {
+        [self setupContentController:self.requestController];
     }
-
-    if (alertContentView && alertContentViewCenterYConstraint) {
-        [self.class updateContraintForKeyboardHeight:height
-                                          parentView:controller.view
-                                    alertContentView:alertContentView
-                   alertContentViewCenterYConstraint:alertContentViewCenterYConstraint];
-    }
-}
-
-- (void)keyboardShowOrHideAnimation {
-    [super keyboardShowOrHideAnimation];
-
-    UIViewController<DWAlertViewControllerKeyboardSupport> *controller = (UIViewController<DWAlertViewControllerKeyboardSupport> *)self.dw_currentChildController;
-    UIView *alertContentView = nil;
-    NSLayoutConstraint *alertContentViewCenterYConstraint = nil;
-    if ([controller respondsToSelector:@selector(alertContentView)]) {
-        alertContentView = controller.alertContentView;
-    }
-    if ([controller respondsToSelector:@selector(alertContentViewCenterYConstraint)]) {
-        alertContentViewCenterYConstraint = controller.alertContentViewCenterYConstraint;
-    }
-
-    if (alertContentView && alertContentViewCenterYConstraint) {
-        [controller.view layoutIfNeeded];
-    }
+    [self setupActions:self.requestController.providedActions];
+    self.preferredAction = self.requestController.preferredAction;
 }
 
 @end

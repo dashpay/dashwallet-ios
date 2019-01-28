@@ -142,6 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)logOutButtonAction:(id)sender {
     [self.model logOut];
+    [self.delegate upholdMainViewControllerUserDidLogout:self];
 }
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
@@ -171,7 +172,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    if (self.presentedViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
 }
 
 @end

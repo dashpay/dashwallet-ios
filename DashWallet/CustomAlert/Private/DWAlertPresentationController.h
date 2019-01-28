@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import "DWDimmingView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConstants : NSObject
+@interface DWAlertPresentationController : UIPresentationController
 
-+ (NSString *)authorizeURLFormat;
-+ (NSString *)baseURLString;
-+ (NSString *)clientID;
-+ (NSString *)clientSecret;
-+ (NSString *)buyCardURLFormat;
-+ (NSString *)transactionURLFormat;
-+ (NSString *)logoutURLString;
-
-- (instancetype)init NS_UNAVAILABLE;
+@property (nullable, strong, nonatomic) DWDimmingView *dimmingView;
 
 @end
 
