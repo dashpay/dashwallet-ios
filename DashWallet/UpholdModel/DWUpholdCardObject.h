@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *identifier;
 @property (readonly, strong, nonatomic) NSDecimalNumber *available;
 @property (readonly, nullable, copy, nonatomic) NSString *address;
+@property (readonly, assign, nonatomic) BOOL starred;
+@property (readonly, assign, nonatomic) NSInteger position;
 
 - (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
 

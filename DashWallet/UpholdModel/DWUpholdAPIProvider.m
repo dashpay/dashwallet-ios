@@ -114,7 +114,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
     return [loaderManager upholdAuthorizedRequest:httpRequest accessToken:accessToken completion:^(id _Nullable parsedData, DWUpholdAPIProviderResponseStatusCode upholdStatusCode) {
         NSArray *response = [parsedData isKindOfClass:NSArray.class] ? (NSArray *)parsedData : nil;
 
-        NSDictionary *dashCardDictionary = nil;
+        NSMutableArray<DWUpholdCardObject *> *dashCards = [NSMutableArray array];
         for (NSDictionary *dictionary in response) {
             if (![dictionary isKindOfClass:NSDictionary.class]) {
                 break;
@@ -126,18 +126,25 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
             }
 
             if ([currency caseInsensitiveCompare:@"DASH"] == NSOrderedSame) {
-                dashCardDictionary = dictionary;
-                break;
+                DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:dictionary];
+                if (card) {
+                    [dashCards addObject:card];
+                }
             }
         }
 
-        DWUpholdCardObject *card = nil;
-        if (dashCardDictionary) {
-            card = [[DWUpholdCardObject alloc] initWithDictionary:dashCardDictionary];
-        }
+        NSArray<NSSortDescriptor *> *sortDescriptors = @[
+            [NSSortDescriptor sortDescriptorWithKey:@"starred" ascending:NO],
+            [NSSortDescriptor sortDescriptorWithKey:@"available" ascending:NO],
+            [NSSortDescriptor sortDescriptorWithKey:@"position" ascending:YES],
+        ];
+
+        [dashCards sortUsingDescriptors:sortDescriptors];
+
+        DWUpholdCardObject *card = dashCards.firstObject;
 
         if (completion) {
-            completion(!!card, upholdStatusCode, card);
+            completion(!!response, upholdStatusCode, card);
         }
     }];
 }
@@ -161,7 +168,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
         DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:response];
         if (completion) {
-            completion(!!card, upholdStatusCode, card);
+            completion(!!response, upholdStatusCode, card);
         }
     }];
 }
@@ -189,7 +196,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
         }
 
         if (completion) {
-            completion(!!inputCard.address, upholdStatusCode, inputCard);
+            completion(!!response, upholdStatusCode, inputCard);
         }
     }];
 }
@@ -225,7 +232,7 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
         DWUpholdTransactionObject *transaction = [[DWUpholdTransactionObject alloc] initWithDictionary:response];
         if (completion) {
-            completion(!!transaction, upholdStatusCode, transaction);
+            completion(!!response, upholdStatusCode, transaction);
         }
     }];
 }

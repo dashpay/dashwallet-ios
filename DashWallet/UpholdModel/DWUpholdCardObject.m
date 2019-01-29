@@ -41,6 +41,16 @@ NS_ASSUME_NONNULL_BEGIN
         _identifier = identifier;
         _available = [NSDecimalNumber decimalNumberWithString:available];
         _address = address;
+
+        NSDictionary *settings = dictionary[@"settings"];
+        if ([settings isKindOfClass:NSDictionary.class]) {
+            NSNumber *position = settings[@"position"];
+            _position = position ? position.integerValue : NSNotFound;
+            _starred = [settings[@"starred"] boolValue];
+        }
+        else {
+            _position = NSNotFound;
+        }
     }
     return self;
 }
