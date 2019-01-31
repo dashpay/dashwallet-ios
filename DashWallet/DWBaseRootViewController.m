@@ -65,8 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
                                      [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
                                      [[NSUserDefaults standardUserDefaults] synchronize];
                                      
-                                     [self presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-                                                      completion:nil];
+                                     [self showNewWalletController];
                                  }];
     [wipeAlert addAction:cancelButton];
     [wipeAlert addAction:wipeButton];
@@ -135,6 +134,12 @@ NS_ASSUME_NONNULL_BEGIN
         [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
     }
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)showNewWalletController {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    UIViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+    [self presentViewController:controller animated:NO completion:nil];
 }
 
 @end

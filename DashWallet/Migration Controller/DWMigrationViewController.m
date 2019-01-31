@@ -62,6 +62,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)showNewWalletController {
+    [self.viewModel cancelMigration];
+}
+
 #pragma mark - Private
 
 - (void)performCrashRestoration {
