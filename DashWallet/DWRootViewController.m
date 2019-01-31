@@ -916,12 +916,11 @@
     
     counter++;
     
-    if (![DSAuthenticationManager sharedInstance].didAuthenticate || progress > .99) {
-        self.navigationItem.titleView = self.logo;
-    }
-    else {
+    if (progress < .995) {
         self.navigationItem.titleView = nil;
         self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
+    } else if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
+        self.navigationItem.titleView = self.logo;
     }
 
     [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
