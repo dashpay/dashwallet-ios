@@ -493,32 +493,6 @@
     [super viewDidAppear:animated];
 }
 
--(void)wipeAlert {
-    UIAlertController * wipeAlert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Are you sure?", nil)
-                                     message:NSLocalizedString(@"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.",nil)                                             preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction* cancelButton = [UIAlertAction
-                                 actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                 style:UIAlertActionStyleDefault
-                                 handler:^(UIAlertAction * action) {
-                                     [self protectedViewDidAppear];
-                                 }];
-    UIAlertAction* wipeButton = [UIAlertAction
-                                  actionWithTitle:NSLocalizedString(@"wipe", nil)
-                                  style:UIAlertActionStyleDestructive
-                                  handler:^(UIAlertAction * action) {
-                                      [[DWEnvironment sharedInstance] clearAllWallets];
-                                      [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
-                                      [[NSUserDefaults standardUserDefaults] synchronize];
-                                      
-                                    [self presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"] animated:NO
-                                                        completion:nil];
-                                  }];
-    [wipeAlert addAction:cancelButton];
-    [wipeAlert addAction:wipeButton];
-    [self presentViewController:wipeAlert animated:YES completion:nil];
-}
-
 - (void)protectedViewDidAppear
 {
     [super protectedViewDidAppear];
