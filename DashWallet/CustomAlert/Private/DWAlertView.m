@@ -174,6 +174,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    self.separatorView.hidden = NO;
+
     CGFloat separatorSize = DWAlertViewSeparatorSize();
     CGFloat actionsHeight = self.actionsStackViewHeightConstraint.constant;
     CGSize size = self.bounds.size;

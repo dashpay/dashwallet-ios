@@ -91,6 +91,12 @@ NS_ASSUME_NONNULL_BEGIN
                              object:nil];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.textField becomeFirstResponder];
+}
+
 #pragma mark - Actions
 
 - (void)okButtonAction {

@@ -137,6 +137,9 @@ static CGFloat const VerticalPadding = 20.0;
     self.actions = mutableActions;
 
     [self.alertView addAction:action];
+
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
 }
 
 - (void)setupActions:(NSArray<DWAlertAction *> *)actions {
@@ -149,6 +152,9 @@ static CGFloat const VerticalPadding = 20.0;
     for (DWAlertAction *action in actions) {
         [self.alertView addAction:action];
     }
+
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
 }
 
 - (nullable DWAlertAction *)preferredAction {
@@ -289,6 +295,9 @@ static CGFloat const VerticalPadding = 20.0;
         [childView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-VerticalPadding],
         [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-HorizontalPadding],
     ]];
+
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
 
     [controller didMoveToParentViewController:self];
 }
