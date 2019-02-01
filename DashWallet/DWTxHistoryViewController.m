@@ -692,11 +692,22 @@ static NSString *dateFormat(NSString *template)
                     [self scanQR:nil];
                     break;
                     
-                case 2: // uphold
-                    destinationController = [DWUpholdViewController controller];
-                    [self.navigationController pushViewController:destinationController animated:YES];
+                case 2: { // uphold
+                    if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                        UIViewController *upholdController = [DWUpholdViewController controller];
+                        [self.navigationController pushViewController:upholdController animated:YES];
+                    }
+                    else {
+                        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                            if (authenticatedOrSuccess) {
+                                UIViewController *upholdController = [DWUpholdViewController controller];
+                                [self.navigationController pushViewController:upholdController animated:YES];
+                            }
+                        }];
+                    }
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
                     break;
-                    
+                }
                 case 3: // settings
                     [DSEventManager saveEvent:@"tx_history:settings"];
                     destinationController = [DWSettingsViewController controller];
