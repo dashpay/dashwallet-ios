@@ -61,6 +61,11 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(upholdClientUserDidLogoutNotification:)
                                                  name:DWUpholdClientUserDidLogoutNotification
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self.model
+                                             selector:@selector(fetch)
+                                                 name:UIApplicationDidBecomeActiveNotification
+                                               object:nil];
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         switch (self.model.state) {
@@ -97,8 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
     }];
-
-    [self.model fetch];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -110,6 +113,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                                           target:self
                                                                           action:@selector(logOutButtonAction:)];
     [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
+    
+    [self.model fetch];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
