@@ -432,8 +432,15 @@
     self.seedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           [self.receiveViewController updateAddress];
-                                                           self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
+                                                           NSDictionary * userInfo = note.userInfo;
+                                                           DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+                                                           if ([userInfo objectForKey:DSChainManagerNotificationChainKey] && [userInfo objectForKey:DSChainManagerNotificationChainKey] == chain) {
+                                                               [self.receiveViewController updateAddress];
+                                                               self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
+                                                               if (chain.wallets.count == 0) { //a wallet was deleted, we need to go back to wallet nav
+                                                                   [self showNewWalletController];
+                                                               }
+                                                           }
                                                        }];
     
     self.syncStartedObserver =

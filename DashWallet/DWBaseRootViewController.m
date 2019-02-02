@@ -137,9 +137,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showNewWalletController {
+    UIViewController *a = self.navigationController.presentedViewController;
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-    UIViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
-    [self presentViewController:controller animated:NO completion:nil];
+    UIViewController * walletCreationViewController = [storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
+    if (a) {
+        [a dismissViewControllerAnimated:NO completion:^{
+            [self presentViewController:walletCreationViewController animated:NO
+                             completion:nil];
+        }];
+    } else {
+        [self presentViewController:walletCreationViewController animated:NO
+                         completion:nil];
+    }
+    
 }
 
 @end
