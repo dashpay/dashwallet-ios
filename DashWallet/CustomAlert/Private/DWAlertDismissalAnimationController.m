@@ -17,9 +17,9 @@
 
 #import "DWAlertDismissalAnimationController.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#import "DWAlertInternalConstants.h"
 
-static CGFloat const DefaultDismissalAnimationDuration = 0.25;
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAlertDismissalAnimationController
 
@@ -28,9 +28,11 @@ static CGFloat const DefaultDismissalAnimationDuration = 0.25;
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext]
         delay:0.0
-        options:UIViewAnimationOptionCurveEaseOut
+        usingSpringWithDamping:DWAlertTransitionAnimationDampingRatio
+        initialSpringVelocity:DWAlertTransitionAnimationInitialVelocity
+        options:DWAlertTransitionAnimationOptions
         animations:^{
-            fromViewController.view.layer.opacity = 0.0;
+            fromViewController.view.alpha = 0.0;
         }
         completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
@@ -38,7 +40,7 @@ static CGFloat const DefaultDismissalAnimationDuration = 0.25;
 }
 
 - (NSTimeInterval)transitionDuration:(nullable id<UIViewControllerContextTransitioning>)transitionContext {
-    return DefaultDismissalAnimationDuration;
+    return DWAlertTransitionAnimationDuration;
 }
 
 @end

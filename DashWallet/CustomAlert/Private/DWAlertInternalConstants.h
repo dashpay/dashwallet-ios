@@ -24,6 +24,11 @@ static CGFloat const DWAlertViewWidth = 270.0;
 static CGFloat const DWAlertViewCornerRadius = 13.0;
 static CGFloat const DWAlertViewActionButtonHeight = 44.0;
 
+static CGFloat const DWAlertTransitionAnimationDuration = 0.4;
+static CGFloat const DWAlertTransitionAnimationDampingRatio = 1.0;
+static CGFloat const DWAlertTransitionAnimationInitialVelocity = 0.0;
+static UIViewAnimationOptions const DWAlertTransitionAnimationOptions = UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction;
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused"
 static CGFloat DWAlertViewSeparatorSize() {

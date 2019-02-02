@@ -17,9 +17,9 @@
 
 #import "DWAlertPresentationAnimationController.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#import "DWAlertInternalConstants.h"
 
-static CGFloat const DefaultPresentationAnimationDuration = 0.3;
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAlertPresentationAnimationController
 
@@ -34,9 +34,9 @@ static CGFloat const DefaultPresentationAnimationDuration = 0.3;
 
     [UIView animateWithDuration:[self transitionDuration:transitionContext]
         delay:0.0
-        usingSpringWithDamping:0.9
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
+        usingSpringWithDamping:DWAlertTransitionAnimationDampingRatio
+        initialSpringVelocity:DWAlertTransitionAnimationInitialVelocity
+        options:DWAlertTransitionAnimationOptions
         animations:^{
             toViewController.view.transform = CGAffineTransformIdentity;
             toViewController.view.alpha = 1.0;
@@ -47,7 +47,7 @@ static CGFloat const DefaultPresentationAnimationDuration = 0.3;
 }
 
 - (NSTimeInterval)transitionDuration:(nullable id<UIViewControllerContextTransitioning>)transitionContext {
-    return DefaultPresentationAnimationDuration;
+    return DWAlertTransitionAnimationDuration;
 }
 
 @end
