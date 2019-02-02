@@ -75,6 +75,9 @@
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
     
+    // start updating prices earlier than migration to update `secureTime`
+    [[DSPriceManager sharedInstance] startExchangeRateFetching];
+    
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
     
     if ([DWDataMigrationManager sharedInstance].shouldMigrate) {
