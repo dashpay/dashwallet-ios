@@ -1021,7 +1021,14 @@
                                        actionWithTitle:NSLocalizedString(@"show phrase", nil)
                                        style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction * action) {
-                                           [self performSegueWithIdentifier:@"SettingsSegue" sender:self];
+                                           DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
+                                           [wallet seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+                                               if (seedPhrase.length > 0) {
+                                                   DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                                   seedController.seedPhrase = seedPhrase;
+                                                   [self.navigationController pushViewController:seedController animated:YES];
+                                               }
+                                           }];
                                        }];
     
     [alert addAction:doItLaterButton];
