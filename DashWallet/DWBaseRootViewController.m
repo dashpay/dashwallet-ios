@@ -100,23 +100,28 @@ NS_ASSUME_NONNULL_BEGIN
         
         alert = [UIAlertController
                  alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
-                 message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil), waitTime]
+                 message:waitTime?[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil), waitTime]:nil
                  preferredStyle:UIAlertControllerStyleAlert];
-        NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer *_Nonnull timer) {
-            wait--;
-            alert.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil), [NSString waitTimeFromNow:wait]];
-            if (!wait) {
-                [timer invalidate];
-                [alert dismissViewControllerAnimated:YES completion:^{
-                    [self protectedViewDidAppear];
-                }];
-            }
-        }];
+        NSTimer *timer = nil;
+        if (waitTime) {
+            timer = [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer *_Nonnull timer) {
+                wait--;
+                alert.message = [NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil), [NSString waitTimeFromNow:wait]];
+                if (!wait) {
+                    [timer invalidate];
+                    [alert dismissViewControllerAnimated:YES completion:^{
+                        [self protectedViewDidAppear];
+                    }];
+                }
+            }];
+        }
         UIAlertAction *resetButton = [UIAlertAction
                                       actionWithTitle:NSLocalizedString(@"reset", nil)
                                       style:UIAlertActionStyleDefault
                                       handler:^(UIAlertAction *action) {
-                                          [timer invalidate];
+                                          if (timer) {
+                                              [timer invalidate];
+                                          }
                                           
                                           [[DSAuthenticationManager sharedInstance]  showResetWalletWithWipeHandler:^{
                                               [self wipeAlert];
