@@ -96,8 +96,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         __block NSUInteger wait = [[DSAuthenticationManager sharedInstance] lockoutWaitTime];
-        NSString *waitTime = [NSString waitTimeFromNow:wait];
-        
+        NSString *waitTime = (wait == NSUIntegerMax)?nil:[NSString waitTimeFromNow:wait];
+        if ([waitTime isEqualToString:@""]) waitTime = nil;
         alert = [UIAlertController
                  alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
                  message:waitTime?[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %@", nil), waitTime]:nil
@@ -129,14 +129,25 @@ NS_ASSUME_NONNULL_BEGIN
                                               [self protectedViewDidAppear];
                                           }];
                                       }];
-        UIAlertAction *exitButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"exit", nil)
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction *action) {
-                                         [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
-                                     }];
-        [alert addAction:resetButton];
-        [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+        if (waitTime) {
+            UIAlertAction *exitButton = [UIAlertAction
+                                         actionWithTitle:NSLocalizedString(@"exit", nil)
+                                         style:UIAlertActionStyleDefault
+                                         handler:^(UIAlertAction *action) {
+                                             [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
+                                         }];
+            [alert addAction:resetButton];
+            [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+        } else {
+            UIAlertAction *wipeButton = [UIAlertAction
+                                         actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                         style:UIAlertActionStyleDestructive
+                                         handler:^(UIAlertAction *action) {
+                                             [self wipeAlert];
+                                         }];
+            [alert addAction:wipeButton];
+            [alert addAction:resetButton];
+        }
     }
     [self presentViewController:alert animated:YES completion:nil];
 }
