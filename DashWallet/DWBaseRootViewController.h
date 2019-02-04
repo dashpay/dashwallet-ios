@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)forceUpdateWalletAuthentication:(BOOL)cancelled;
 
+- (void)showNewWalletController;
+
 @end
 
 NS_ASSUME_NONNULL_END
