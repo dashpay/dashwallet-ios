@@ -23,17 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDimmingView ()
 
-@property (readonly, strong, nonatomic) DWAnimatableShapeLayer *fillLayer;
+@property (strong, nonatomic) DWAnimatableShapeLayer *fillLayer;
 
 @end
 
 @implementation DWDimmingView
 
 @synthesize dimmedPath = _dimmedPath;
-
-+ (Class)layerClass {
-    return [DWAnimatableShapeLayer class];
-}
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -68,9 +64,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateWithVisiblePath:visiblePath];
 }
 
+- (void)setDimmingOpacity:(float)dimmingOpacity {
+    _dimmingOpacity = dimmingOpacity;
+    self.fillLayer.opacity = dimmingOpacity;
+}
+
 - (void)setDimmingColor:(UIColor *)dimmingColor {
     _dimmingColor = dimmingColor;
-    [self updateWithVisiblePath:self.visiblePath];
+    self.fillLayer.fillColor = dimmingColor.CGColor;
 }
 
 - (void)setInverted:(BOOL)inverted {
@@ -78,18 +79,24 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateWithVisiblePath:self.visiblePath];
 }
 
+- (void)setPathAnimationsDisabled {
+    [self.fillLayer setAnimationsDisabled];
+}
+
 #pragma mark - Private
 
 - (DWAnimatableShapeLayer *)fillLayer {
-    return (DWAnimatableShapeLayer *)self.layer;
+    if (!_fillLayer) {
+        _fillLayer = [DWAnimatableShapeLayer layer];
+        _fillLayer.fillRule = kCAFillRuleEvenOdd;
+        [self.layer addSublayer:_fillLayer];
+    }
+    return _fillLayer;
 }
 
 - (void)setupDimmingView {
-    _dimmingOpacity = 0.4;
-    _dimmingColor = [UIColor blackColor];
-    
-    DWAnimatableShapeLayer *fillLayer = (DWAnimatableShapeLayer *)self.layer;
-    fillLayer.fillRule = kCAFillRuleEvenOdd;
+    self.dimmingOpacity = 0.4;
+    self.dimmingColor = [UIColor blackColor];
 }
 
 - (void)updateWithVisiblePath:(nullable UIBezierPath *)visiblePath {
@@ -106,8 +113,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
     dimmedPath.usesEvenOddFillRule = YES;
 
-    self.fillLayer.fillColor = self.dimmingColor.CGColor;
-    self.fillLayer.opacity = self.dimmingOpacity;
     self.fillLayer.path = dimmedPath.CGPath;
 }
 

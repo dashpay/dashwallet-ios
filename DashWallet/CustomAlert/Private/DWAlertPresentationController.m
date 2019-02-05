@@ -56,8 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
     id<UIViewControllerTransitionCoordinator> transitionCoordinator = [self.presentingViewController transitionCoordinator];
     [transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         self.dimmingView.alpha = 0.0;
-
-        self.presentingViewController.view.transform = CGAffineTransformIdentity;
     }
                                            completion:nil];
 }

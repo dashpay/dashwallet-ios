@@ -5,8 +5,6 @@ target 'dashwallet' do
   
   pod 'KVO-MVVM', '0.5.1'
   
-  pod 'UIViewController-KeyboardAdditions', '1.2.1'
-
   # Pods for dashwallet
   
   target 'DashWalletTests' do

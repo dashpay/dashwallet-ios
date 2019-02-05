@@ -15,37 +15,13 @@
 //  limitations under the License.
 //
 
-#import "KVOUIView.h"
+#import "DWAlertViewActionBaseView.h"
 
 #import "DWAlertAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWAlertViewActionButton;
-
-@protocol DWAlertViewActionButtonDelegate <NSObject>
-
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchBegan:(UITouch *)touch;
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchMoved:(UITouch *)touch;
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchEnded:(UITouch *)touch;
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchCancelled:(UITouch *)touch;
-
-@end
-
-@interface DWAlertViewActionButton : KVOUIView
-
-@property (readonly, strong, nonatomic) DWAlertAction *alertAction;
-@property (assign, nonatomic, getter=isHighlighted) BOOL highlighted;
-@property (assign, nonatomic, getter=isPreferred) BOOL preferred;
-@property (nullable, weak, nonatomic) id<DWAlertViewActionButtonDelegate> delegate;
-
-- (instancetype)initWithAlertAction:(DWAlertAction *)alertAction;
-
-- (void)updateForCurrentContentSizeCategory;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@interface DWAlertViewActionButton : DWAlertViewActionBaseView
 
 @end
 

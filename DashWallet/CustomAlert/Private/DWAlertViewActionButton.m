@@ -67,6 +67,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Button
 
+static NSLineBreakMode const LineBreakMode = NSLineBreakByTruncatingMiddle;
+static NSTextAlignment const TextAlignment = NSTextAlignmentCenter;
+static CGFloat const MinimumScaleFactor = 0.58;
+static UIEdgeInsets const TextEdgeInsets = {0.0, 12.0, 0.0, 12.0};
+
+static UIColor *HighlightedTextColor(DWAlertActionStyle style) {
+    switch (style) {
+        case DWAlertActionStyleDefault:
+        case DWAlertActionStyleCancel:
+            return [UIColor colorWithRed:0.0 green:122.0 / 255.0 blue:1.0 alpha:1.0];
+        case DWAlertActionStyleDestructive:
+            return [UIColor colorWithRed:1.0 green:59.0 / 255.0 blue:48.0 / 255.0 alpha:1.0];
+    }
+}
+
+static UIColor *DisabledTextColor() {
+    return [UIColor colorWithWhite:104.0 / 255.0 alpha:0.8];
+}
+
+static UIColor *BackgroundColor() {
+    return [UIColor clearColor];
+}
+
+static UIColor *BackgroundHighlightedColor() {
+    return [UIColor colorWithWhite:1.0 alpha:0.7];
+}
+
 @interface DWAlertViewActionButton ()
 
 @property (readonly, strong, nonatomic) DWAlertActionButtonLabel *titleLabel;
@@ -75,31 +102,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAlertViewActionButton
 
-- (instancetype)initWithAlertAction:(DWAlertAction *)alertAction {
-    self = [super initWithFrame:CGRectZero];
-    if (self) {
-        _alertAction = alertAction;
+@synthesize titleLabel = _titleLabel;
 
-        self.exclusiveTouch = YES;
-
+- (DWAlertActionButtonLabel *)titleLabel {
+    if (!_titleLabel) {
         DWAlertActionButtonLabel *titleLabel = [[DWAlertActionButtonLabel alloc] initWithFrame:self.bounds];
         titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-        titleLabel.textAlignment = NSTextAlignmentCenter;
+        titleLabel.lineBreakMode = LineBreakMode;
+        titleLabel.textAlignment = TextAlignment;
         titleLabel.adjustsFontSizeToFitWidth = YES;
-        titleLabel.minimumScaleFactor = 0.58;
-        titleLabel.edgeInsets = UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0);
-        titleLabel.highlightedTextColor = [UIColor colorWithRed:0.0 green:122.0 / 255.0 blue:1.0 alpha:1.0];
-        titleLabel.textColor = [UIColor colorWithWhite:104.0 / 255.0 alpha:0.8];
-        titleLabel.text = alertAction.title;
+        titleLabel.minimumScaleFactor = MinimumScaleFactor;
+        titleLabel.edgeInsets = TextEdgeInsets;
+        titleLabel.highlightedTextColor = HighlightedTextColor(self.alertAction.style);
+        titleLabel.textColor = DisabledTextColor();
+        titleLabel.text = self.alertAction.title;
         [self addSubview:titleLabel];
         _titleLabel = titleLabel;
-
-        [self mvvm_observe:@"alertAction.enabled" with:^(typeof(self) self, NSNumber * value) {
-            self.titleLabel.highlighted = self.alertAction.enabled;
-        }];
     }
-    return self;
+    return _titleLabel;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -107,21 +127,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
+
     if (highlighted) {
-        if (!_highlighted) {
-            self.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.7];
-        }
+        self.backgroundColor = BackgroundHighlightedColor();
     }
     else {
-        if (!_highlighted) {
-            self.backgroundColor = [UIColor clearColor];
-        }
+        self.backgroundColor = BackgroundColor();
     }
-    _highlighted = highlighted;
 }
 
 - (void)setPreferred:(BOOL)preferred {
-    _preferred = preferred;
+    [super setPreferred:preferred];
 
     if (preferred) {
         self.titleLabel.font = [UIFont dw_preferredTitleFont];
@@ -132,41 +149,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateForCurrentContentSizeCategory {
-    self.preferred = _preferred;
+    self.preferred = self.preferred;
 }
 
-#pragma mark UIResponder
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    UITouch *touch = [touches anyObject];
-    if (touch) {
-        [self.delegate actionButton:self touchBegan:touch];
-    }
-    [super touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    UITouch *touch = [touches anyObject];
-    if (touch) {
-        [self.delegate actionButton:self touchMoved:touch];
-    }
-    [super touchesMoved:touches withEvent:event];
-}
-
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    UITouch *touch = [touches anyObject];
-    if (touch) {
-        [self.delegate actionButton:self touchEnded:touch];
-    }
-    [super touchesEnded:touches withEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    UITouch *touch = [touches anyObject];
-    if (touch) {
-        [self.delegate actionButton:self touchCancelled:touch];
-    }
-    [super touchesCancelled:touches withEvent:event];
+- (void)updateEnabledState {
+    self.titleLabel.highlighted = self.alertAction.enabled;
 }
 
 @end

@@ -18,22 +18,21 @@
 #import "DWAlertController.h"
 
 #import "DWAlertAction+DWProtected.h"
+#import "DWAlertController+DWKeyboard.h"
 #import "DWAlertDismissalAnimationController.h"
 #import "DWAlertInternalConstants.h"
 #import "DWAlertPresentationAnimationController.h"
 #import "DWAlertPresentationController.h"
 #import "DWAlertView.h"
-#import "UIViewController+KeyboardAdditions.h"
+#import "DWAlertViewActionBaseView.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGFloat const HorizontalPadding = 16.0;
-static CGFloat const VerticalPadding = 20.0;
 
 @interface DWAlertController () <UIViewControllerTransitioningDelegate, DWAlertViewDelegate>
 
 @property (null_resettable, strong, nonatomic) DWAlertView *alertView;
 @property (strong, nonatomic) NSLayoutConstraint *alertViewCenterYConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *alertViewHeightConstraint;
 
 @property (nullable, strong, nonatomic) UIViewController *contentController;
 @property (copy, nonatomic) NSArray<DWAlertAction *> *actions;
@@ -70,13 +69,13 @@ static CGFloat const VerticalPadding = 20.0;
         alertView.translatesAutoresizingMaskIntoConstraints = NO;
         alertView.delegate = self;
         [self.view addSubview:alertView];
-        CGFloat maxAlertViewHeight = CGRectGetHeight([UIScreen mainScreen].bounds);
-        maxAlertViewHeight -= VerticalPadding * 2.0; // padding from top and bottom of the screen
+
+        CGFloat maximumAllowedViewHeight = [self maximumAllowedAlertHeightWithKeyboard:0.0];
         [NSLayoutConstraint activateConstraints:@[
             [alertView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
             (self.alertViewCenterYConstraint = [alertView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor]),
             [alertView.widthAnchor constraintEqualToConstant:DWAlertViewWidth],
-            [alertView.heightAnchor constraintLessThanOrEqualToConstant:maxAlertViewHeight],
+            (self.alertViewHeightConstraint = [alertView.heightAnchor constraintLessThanOrEqualToConstant:maximumAllowedViewHeight]),
         ]];
         _alertView = alertView;
     }
@@ -88,14 +87,13 @@ static CGFloat const VerticalPadding = 20.0;
 
     NSAssert(self.contentController, @"Alert must be configured with a content controller");
 
-    [self ka_startObservingKeyboardNotifications];
+    [self dw_startObservingKeyboardNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
-    [self ka_stopObservingKeyboardNotifications];
-
+    [self dw_stopObservingKeyboardNotifications];
     [self.view endEditing:YES];
 }
 
@@ -108,10 +106,28 @@ static CGFloat const VerticalPadding = 20.0;
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 
-    [self.alertView resetActionsState];
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        CGFloat maximumAllowedViewHeight = [self maximumAllowedAlertHeightWithKeyboard:self.dw_keyboardHeight];
+
+        self.alertViewHeightConstraint.constant = maximumAllowedViewHeight;
+        [self.alertView setNeedsLayout];
+        [self.alertView layoutIfNeeded];
+        [self.alertView resetActionsState];
+    }
+                                 completion:nil];
 }
 
 #pragma mark - Public
+
+- (Class)actionViewClass {
+    return self.alertView.actionViewClass;
+}
+
+- (void)setActionViewClass:(nullable Class)actionViewClass {
+    NSAssert([actionViewClass isSubclassOfClass:DWAlertViewActionBaseView.class], @"actionViewClass must be a subclass of DWAlertViewActionBaseView");
+    NSAssert(self.actions.count == 0, @"actionViewClass should be set before adding any actions");
+    self.alertView.actionViewClass = actionViewClass;
+}
 
 - (void)setupContentController:(UIViewController *)controller {
     NSParameterAssert(controller);
@@ -132,6 +148,16 @@ static CGFloat const VerticalPadding = 20.0;
 - (void)addAction:(DWAlertAction *)action {
     NSParameterAssert(action);
 
+#ifdef DEBUG
+    if (action.style == DWAlertActionStyleCancel) {
+        for (DWAlertAction *a in self.actions) {
+            if (a.style == DWAlertActionStyleCancel) {
+                NSAssert(NO, @"DWAlertController can only have one action with a style of DWAlertActionStyleCancel");
+            }
+        }
+    }
+#endif
+
     NSMutableArray *mutableActions = [self.actions mutableCopy];
     [mutableActions addObject:action];
     self.actions = mutableActions;
@@ -144,6 +170,16 @@ static CGFloat const VerticalPadding = 20.0;
 
 - (void)setupActions:(NSArray<DWAlertAction *> *)actions {
     NSParameterAssert(actions);
+
+#ifdef DEBUG
+    BOOL hasCancelAction = NO;
+    for (DWAlertAction *a in actions) {
+        if (hasCancelAction && a.style == DWAlertActionStyleCancel) {
+            NSAssert(NO, @"DWAlertController can only have one action with a style of DWAlertActionStyleCancel");
+        }
+        hasCancelAction = a.style == DWAlertActionStyleCancel;
+    }
+#endif
 
     [self.alertView removeAllActions];
 
@@ -200,67 +236,23 @@ static CGFloat const VerticalPadding = 20.0;
 
 #pragma mark - Keyboard
 
-- (void)ka_keyboardWillShowOrHideWithHeight:(CGFloat)height
+- (void)dw_keyboardWillShowOrHideWithHeight:(CGFloat)height
                           animationDuration:(NSTimeInterval)animationDuration
                              animationCurve:(UIViewAnimationCurve)animationCurve {
-    [self keyboardWillShowOrHideWithHeight:height];
+    CGFloat maximumAllowedViewHeight = [self maximumAllowedAlertHeightWithKeyboard:height];
+    self.alertViewHeightConstraint.constant = maximumAllowedViewHeight;
+    self.alertViewCenterYConstraint.constant = -height / 2.0;
 }
 
-- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+- (void)dw_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
                                animationDuration:(NSTimeInterval)animationDuration
                                   animationCurve:(UIViewAnimationCurve)animationCurve {
-    [self keyboardShowOrHideAnimation];
-}
-
-#pragma mark - Private
-
-- (void)keyboardWillShowOrHideWithHeight:(CGFloat)height {
-    UIView *alertView = self.alertView;
-    NSLayoutConstraint *alertViewCenterYConstraint = self.alertViewCenterYConstraint;
-    if (!alertView || !alertViewCenterYConstraint) {
-        return;
-    }
-
-    [self.class updateContraintForKeyboardHeight:height
-                                      parentView:self.view
-                                alertContentView:alertView
-               alertContentViewCenterYConstraint:alertViewCenterYConstraint];
-}
-
-- (void)keyboardShowOrHideAnimation {
-    UIView *alertView = self.alertView;
-    NSLayoutConstraint *alertViewCenterYConstraint = self.alertViewCenterYConstraint;
-    if (!alertView || !alertViewCenterYConstraint) {
-        return;
-    }
-
-    [self updateDimmedViewVisiblePath];
-
+    [self.alertView setNeedsLayout];
+    [self.alertView layoutIfNeeded];
     [self.view layoutIfNeeded];
 }
 
-+ (void)updateContraintForKeyboardHeight:(CGFloat)height
-                              parentView:(UIView *)parentView
-                        alertContentView:(UIView *)alertContentView
-       alertContentViewCenterYConstraint:(NSLayoutConstraint *)alertContentViewCenterYConstraint {
-    if (height > 0.0) {
-        CGFloat viewHeight = CGRectGetHeight(parentView.bounds);
-        CGFloat alertHeight = CGRectGetHeight(alertContentView.frame);
-        CGFloat contentBottom = (viewHeight - alertHeight) / 2.0 + alertHeight;
-        CGFloat keyboardTop = viewHeight - height;
-        CGFloat space = keyboardTop - contentBottom;
-        if (space >= VerticalPadding) {
-            alertContentViewCenterYConstraint.constant = 0.0;
-        }
-        else {
-            CGFloat constant = VerticalPadding + ABS(space);
-            alertContentViewCenterYConstraint.constant = -constant;
-        }
-    }
-    else {
-        alertContentViewCenterYConstraint.constant = 0.0;
-    }
-}
+#pragma mark - Private
 
 - (void)updateDimmedViewVisiblePath {
     DWAlertPresentationController *presentationController = (DWAlertPresentationController *)self.presentationController;
@@ -289,11 +281,13 @@ static CGFloat const VerticalPadding = 20.0;
     [contentView addSubview:childView];
 
     childView.translatesAutoresizingMaskIntoConstraints = NO;
+    CGFloat verticalPadding = DWAlertViewContentVerticalPadding;
+    CGFloat horizontalPadding = DWAlertViewContentHorizontalPadding;
     [NSLayoutConstraint activateConstraints:@[
-        [childView.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:VerticalPadding],
-        [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:HorizontalPadding],
-        [childView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-VerticalPadding],
-        [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-HorizontalPadding],
+        [childView.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:verticalPadding],
+        [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:horizontalPadding],
+        [childView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-verticalPadding],
+        [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-horizontalPadding],
     ]];
 
     [self.view setNeedsLayout];
@@ -314,20 +308,22 @@ static CGFloat const VerticalPadding = 20.0;
     [contentView addSubview:toView];
 
     toView.translatesAutoresizingMaskIntoConstraints = NO;
+    CGFloat verticalPadding = DWAlertViewContentVerticalPadding;
+    CGFloat horizontalPadding = DWAlertViewContentHorizontalPadding;
     [NSLayoutConstraint activateConstraints:@[
-        [toView.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:VerticalPadding],
-        [toView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:HorizontalPadding],
-        [toView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-VerticalPadding],
-        [toView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-HorizontalPadding],
+        [toView.topAnchor constraintEqualToAnchor:contentView.topAnchor constant:verticalPadding],
+        [toView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor constant:horizontalPadding],
+        [toView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor constant:-verticalPadding],
+        [toView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor constant:-horizontalPadding],
     ]];
 
     toView.alpha = 0.0;
 
-    [UIView animateWithDuration:0.3
+    [UIView animateWithDuration:DWAlertInplaceTransitionAnimationDuration
         delay:0.0
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
+        usingSpringWithDamping:DWAlertInplaceTransitionAnimationDampingRatio
+        initialSpringVelocity:DWAlertInplaceTransitionAnimationInitialVelocity
+        options:DWAlertInplaceTransitionAnimationOptions
         animations:^{
             toView.alpha = 1.0;
             fromView.alpha = 0.0;
@@ -337,6 +333,22 @@ static CGFloat const VerticalPadding = 20.0;
             [fromViewController removeFromParentViewController];
             [toViewController didMoveToParentViewController:self];
         }];
+}
+
+- (CGFloat)maximumAllowedAlertHeightWithKeyboard:(CGFloat)keyboardHeight {
+    CGFloat minInset;
+    if (@available(iOS 11.0, *)) {
+        UIEdgeInsets insets = [UIApplication sharedApplication].delegate.window.safeAreaInsets;
+        minInset = MAX(insets.top, insets.bottom);
+    }
+    else {
+        minInset = MAX(self.topLayoutGuide.length, self.bottomLayoutGuide.length);
+    }
+
+    CGFloat padding = DWAlertViewVerticalPadding(minInset, keyboardHeight > 0.0);
+    CGFloat height = CGRectGetHeight([UIScreen mainScreen].bounds) - padding * 2.0 - keyboardHeight;
+
+    return height;
 }
 
 @end

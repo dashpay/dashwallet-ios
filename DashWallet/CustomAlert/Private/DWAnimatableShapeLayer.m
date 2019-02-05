@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAnimatableShapeLayer
 
+- (void)setAnimationsDisabled {
+    [self.animatableKeys removeObject:@"path"];
+}
+
+#pragma mark - Private
+
 - (NSMutableSet *)animatableKeys {
     if (!_animatableKeys) {
         _animatableKeys = [NSMutableSet setWithObject:@"path"];

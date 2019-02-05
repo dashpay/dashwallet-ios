@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAlertController : UIViewController
 
+@property (null_resettable, strong, nonatomic) Class actionViewClass;
+
 @property (readonly, nullable, strong, nonatomic) UIViewController *contentController;
 - (void)setupContentController:(UIViewController *)controller;
 - (void)performTransitionToContentController:(UIViewController *)controller;

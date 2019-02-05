@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWAlertViewActionButton.h"
+#import "DWAlertViewActionBaseView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,11 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWActionsStackView : UIStackView
 
-@property (readonly, copy, nonatomic) NSArray<DWAlertViewActionButton *> *arrangedSubviews;
+@property (readonly, copy, nonatomic) NSArray<DWAlertViewActionBaseView *> *arrangedSubviews;
 @property (nullable, weak, nonatomic) id<DWActionsStackViewDelegate> delegate;
 @property (nullable, strong, nonatomic) DWAlertAction *preferredAction;
 
-- (void)addActionButton:(DWAlertViewActionButton *)button;
+- (void)addActionButton:(DWAlertViewActionBaseView *)button;
 - (void)resetActionsState;
 - (void)removeAllActions;
 

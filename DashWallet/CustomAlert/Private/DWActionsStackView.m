@@ -21,11 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWActionsStackView () <DWAlertViewActionButtonDelegate>
+@interface DWActionsStackView () <DWAlertViewActionBaseViewDelegate>
 
-@property (nullable, strong, nonatomic) DWAlertViewActionButton *cancelButton;
+@property (nullable, strong, nonatomic) DWAlertViewActionBaseView *cancelButton;
 @property (null_resettable, strong, nonatomic) UISelectionFeedbackGenerator *feedbackGenerator;
-@property (nullable, strong, nonatomic) DWAlertViewActionButton *highlightedButton;
+@property (nullable, strong, nonatomic) DWAlertViewActionBaseView *highlightedButton;
 
 @end
 
@@ -49,8 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)addActionButton:(DWAlertViewActionButton *)button {
-    NSAssert([button isKindOfClass:DWAlertViewActionButton.class], @"Invalid button type");
+- (void)addActionButton:(DWAlertViewActionBaseView *)button {
+    NSAssert([button isKindOfClass:DWAlertViewActionBaseView.class], @"Invalid button type");
 
     button.delegate = self;
     if (button.alertAction.style == DWAlertActionStyleCancel) {
@@ -73,20 +73,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)removeAllActions {
     [self resetHighlightedButton];
-    
-    NSArray <DWAlertViewActionButton *> *actions = [self.arrangedSubviews copy];
-    for (DWAlertViewActionButton *button in actions) {
+
+    NSArray<DWAlertViewActionBaseView *> *actions = [self.arrangedSubviews copy];
+    for (DWAlertViewActionBaseView *button in actions) {
         button.delegate = nil;
         [self removeArrangedSubview:button];
     }
-    
+
     _preferredAction = nil;
     self.cancelButton = nil;
 }
 
 #pragma mark - DWAlertViewActionButtonDelegate
 
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchBegan:(UITouch *)touch {
+- (void)actionView:(DWAlertViewActionBaseView *)actionButton touchBegan:(UITouch *)touch {
     if (actionButton.alertAction.enabled) {
         actionButton.highlighted = YES;
         [self.delegate actionsStackView:self highlightActionAtRect:actionButton.frame];
@@ -96,10 +96,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.feedbackGenerator prepare];
 }
 
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchMoved:(UITouch *)touch {
+- (void)actionView:(DWAlertViewActionBaseView *)actionButton touchMoved:(UITouch *)touch {
     CGRect highlightedRect = CGRectZero;
-    DWAlertViewActionButton *highlightedButton = nil;
-    for (DWAlertViewActionButton *button in self.arrangedSubviews) {
+    DWAlertViewActionBaseView *highlightedButton = nil;
+    for (DWAlertViewActionBaseView *button in self.arrangedSubviews) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
         if (button.alertAction.enabled && CGRectContainsPoint(bounds, point)) {
@@ -119,8 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.highlightedButton = highlightedButton;
 }
 
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchEnded:(UITouch *)touch {
-    for (DWAlertViewActionButton *button in self.arrangedSubviews) {
+- (void)actionView:(DWAlertViewActionBaseView *)actionButton touchEnded:(UITouch *)touch {
+    for (DWAlertViewActionBaseView *button in self.arrangedSubviews) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
         if (button.alertAction.enabled && CGRectContainsPoint(bounds, point)) {
@@ -130,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self resetHighlightedButton];
 }
 
-- (void)actionButton:(DWAlertViewActionButton *)actionButton touchCancelled:(UITouch *)touch {
+- (void)actionView:(DWAlertViewActionBaseView *)actionButton touchCancelled:(UITouch *)touch {
     [self resetHighlightedButton];
 }
 
@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetHighlightedButton {
-    for (DWAlertViewActionButton *button in self.arrangedSubviews) {
+    for (DWAlertViewActionBaseView *button in self.arrangedSubviews) {
         button.highlighted = NO;
     }
     [self.delegate actionsStackView:self highlightActionAtRect:CGRectZero];
@@ -159,13 +159,13 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    for (DWAlertViewActionButton *button in self.arrangedSubviews) {
+    for (DWAlertViewActionBaseView *button in self.arrangedSubviews) {
         button.preferred = (button.alertAction == self.preferredAction);
     }
 }
 
 - (void)updateButtonsLayout {
-    NSArray<DWAlertViewActionButton *> *buttons = self.arrangedSubviews;
+    NSArray<DWAlertViewActionBaseView *> *buttons = self.arrangedSubviews;
     NSUInteger buttonsCount = buttons.count;
     if (buttonsCount < 2) {
         self.axis = UILayoutConstraintAxisHorizontal;
@@ -187,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.axis = UILayoutConstraintAxisVertical;
     }
 
-    DWAlertViewActionButton *cancelButton = self.cancelButton;
+    DWAlertViewActionBaseView *cancelButton = self.cancelButton;
     if (cancelButton && buttons.count > 1) {
         if (self.axis == UILayoutConstraintAxisHorizontal) {
             // Cancel always on the left
@@ -209,7 +209,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    for (DWAlertViewActionButton *button in self.arrangedSubviews) {
+    for (DWAlertViewActionBaseView *button in self.arrangedSubviews) {
         [button updateForCurrentContentSizeCategory];
     }
 

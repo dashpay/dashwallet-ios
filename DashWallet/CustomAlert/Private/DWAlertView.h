@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAlertView : UIView
 
+@property (null_resettable, strong, nonatomic) Class actionViewClass;
 @property (readonly, strong, nonatomic) UIView *contentView;
 @property (nullable, weak, nonatomic) id<DWAlertViewDelegate> delegate;
 @property (nullable, strong, nonatomic) DWAlertAction *preferredAction;

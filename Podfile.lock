@@ -5,19 +5,16 @@ PODS:
     - secp256k1_dash (= 0.1.2)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
-  - UIViewController-KeyboardAdditions (1.2.1)
 
 DEPENDENCIES:
   - DashSync (from `../DashSync/`)
   - KVO-MVVM (= 0.5.1)
-  - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
     - KVO-MVVM
     - secp256k1_dash
-    - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
   DashSync:
@@ -28,8 +25,7 @@ SPEC CHECKSUMS:
   DashSync: 16dbc86c1f1eeaf9822fc3f665db9d407f7f750d
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
-  UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 2b0711d6f03bcb1b345b3e6d0cc71399a35761b7
+PODFILE CHECKSUM: 94493ebc07da1fb4b2016dc1091667b828ed7346
 
 COCOAPODS: 1.5.3

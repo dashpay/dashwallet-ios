@@ -46,6 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (assign, nonatomic) BOOL inverted;
 
+/**
+ Disable `path` animations of underlying layer
+ */
+- (void)setPathAnimationsDisabled;
+
 @end
 
 NS_ASSUME_NONNULL_END
