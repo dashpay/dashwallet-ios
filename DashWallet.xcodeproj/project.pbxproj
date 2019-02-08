@@ -32,9 +32,15 @@
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F422321BF028500858B91 /* AboutStoryboard.storyboard */; };
+		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
+		2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */; };
 		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
 		2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */; };
 		2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */; };
+		2AB8CDDB220D879300A3D1DB /* DWAmountNewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDA220D879300A3D1DB /* DWAmountNewViewController.m */; };
+		2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */; };
+		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
+		2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
@@ -323,11 +329,22 @@
 		2A8F424521BF02D600858B91 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424721BF02D800858B91 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424921BF02D900858B91 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AboutStoryboard.strings"; sourceTree = "<group>"; };
+		2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountNavigationController.m; sourceTree = "<group>"; };
+		2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountNavigationController.h; sourceTree = "<group>"; };
+		2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
+		2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountKeyboardInputViewAudioFeedback.m; sourceTree = "<group>"; };
 		2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewController.m; sourceTree = "<group>"; };
 		2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MigrationStoryboard.storyboard; sourceTree = "<group>"; };
 		2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewModel.h; sourceTree = "<group>"; };
 		2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewModel.m; sourceTree = "<group>"; };
+		2AB8CDD9220D879300A3D1DB /* DWAmountNewViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountNewViewController.h; sourceTree = "<group>"; };
+		2AB8CDDA220D879300A3D1DB /* DWAmountNewViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountNewViewController.m; sourceTree = "<group>"; };
+		2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountButton.h; sourceTree = "<group>"; };
+		2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountButton.m; sourceTree = "<group>"; };
+		2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AmountStoryboard.storyboard; sourceTree = "<group>"; };
+		2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboard.h; sourceTree = "<group>"; };
+		2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountKeyboard.m; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
 		2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewController.m; sourceTree = "<group>"; };
 		2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanView.h; sourceTree = "<group>"; };
@@ -710,6 +727,32 @@
 			path = "Migration Controller";
 			sourceTree = "<group>";
 		};
+		2AB8CDD5220D80F100A3D1DB /* Amount */ = {
+			isa = PBXGroup;
+			children = (
+				2AB8CDDC220D87E300A3D1DB /* Views */,
+				2AB8CDD9220D879300A3D1DB /* DWAmountNewViewController.h */,
+				2AB8CDDA220D879300A3D1DB /* DWAmountNewViewController.m */,
+				2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */,
+				2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */,
+				2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */,
+			);
+			path = Amount;
+			sourceTree = "<group>";
+		};
+		2AB8CDDC220D87E300A3D1DB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */,
+				2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */,
+				2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */,
+				2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */,
+				2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */,
+				2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */ = {
 			isa = PBXGroup;
 			children = (
@@ -779,6 +822,7 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8F420A21BEE69E00858B91 /* About */,
 				2AB231CF2196E23200A6E7E6 /* Migration Controller */,
 				2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */,
@@ -1379,6 +1423,7 @@
 				FBFC2EB921137A7A00D20C57 /* Montserrat-ThinItalic.otf in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				FBFC2EC121137A7A00D20C57 /* Montserrat-ExtraLightItalic.otf in Resources */,
+				2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */,
 				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
@@ -1663,6 +1708,7 @@
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
+				2AB8CDDB220D879300A3D1DB /* DWAmountNewViewController.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
 				FBFC2E9C211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
@@ -1680,6 +1726,7 @@
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
+				2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */,
 				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
 				75878BBF192ACD46002505AB /* DWAmountViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
@@ -1687,6 +1734,7 @@
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
+				2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
@@ -1708,7 +1756,9 @@
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
+				2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
+				2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,

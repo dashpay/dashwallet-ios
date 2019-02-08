@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="JQC-42-iop">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Amount New View Controller-->
+        <scene sceneID="1Xf-aE-Hx6">
+            <objects>
+                <viewController id="JQC-42-iop" customClass="DWAmountNewViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="CMG-CH-NKz">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="NSm-vd-Ubz">
+                                <rect key="frame" x="0.0" y="-80" width="375" height="17"/>
+                                <color key="tintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="textColor" red="0.0" green="0.55294117647058827" blue="0.89411764705882346" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
+                            </textField>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jgl-rZ-xLK" userLabel="Bottom Container">
+                                <rect key="frame" x="0.0" y="398" width="375" height="269"/>
+                                <subviews>
+                                    <view alpha="0.34000000000000002" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pbU-Ef-YPe" userLabel="Separator View">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="1"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="1" id="dOZ-hI-6Fc"/>
+                                        </constraints>
+                                    </view>
+                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="300" placeholderIntrinsicHeight="183" translatesAutoresizingMaskIntoConstraints="NO" id="M0g-X7-Onr" customClass="DWAmountKeyboard">
+                                        <rect key="frame" x="0.0" y="17" width="375" height="183"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Et4-bd-3Eq">
+                                        <rect key="frame" x="0.0" y="216" width="375" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="Et4-bd-3Eq" firstAttribute="leading" secondItem="jgl-rZ-xLK" secondAttribute="leading" id="4ax-4T-W9x"/>
+                                    <constraint firstAttribute="trailing" secondItem="Et4-bd-3Eq" secondAttribute="trailing" id="D2r-ns-agy"/>
+                                    <constraint firstAttribute="trailing" secondItem="M0g-X7-Onr" secondAttribute="trailing" id="JEF-hz-DiE"/>
+                                    <constraint firstItem="M0g-X7-Onr" firstAttribute="top" secondItem="pbU-Ef-YPe" secondAttribute="bottom" constant="16" id="ZNo-9J-bX3"/>
+                                    <constraint firstAttribute="trailing" secondItem="pbU-Ef-YPe" secondAttribute="trailing" id="aup-2G-Ica"/>
+                                    <constraint firstItem="M0g-X7-Onr" firstAttribute="leading" secondItem="jgl-rZ-xLK" secondAttribute="leading" id="bCJ-UN-hSX"/>
+                                    <constraint firstAttribute="bottom" secondItem="Et4-bd-3Eq" secondAttribute="bottom" constant="32" id="btU-YO-86t"/>
+                                    <constraint firstItem="pbU-Ef-YPe" firstAttribute="top" secondItem="jgl-rZ-xLK" secondAttribute="top" id="hSU-vc-uLW"/>
+                                    <constraint firstItem="pbU-Ef-YPe" firstAttribute="leading" secondItem="jgl-rZ-xLK" secondAttribute="leading" id="oPb-rw-NXS"/>
+                                    <constraint firstItem="Et4-bd-3Eq" firstAttribute="top" secondItem="M0g-X7-Onr" secondAttribute="bottom" constant="16" id="to3-gT-Bdp"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="jgl-rZ-xLK" firstAttribute="leading" secondItem="KRS-Pi-Oaj" secondAttribute="leading" id="5Hg-rO-IQr"/>
+                            <constraint firstItem="NSm-vd-Ubz" firstAttribute="leading" secondItem="KRS-Pi-Oaj" secondAttribute="leading" id="DBA-OW-70t"/>
+                            <constraint firstItem="jgl-rZ-xLK" firstAttribute="bottom" secondItem="KRS-Pi-Oaj" secondAttribute="bottom" id="Dgg-w8-paa"/>
+                            <constraint firstItem="NSm-vd-Ubz" firstAttribute="top" secondItem="KRS-Pi-Oaj" secondAttribute="top" constant="-100" id="LrC-TS-827"/>
+                            <constraint firstItem="KRS-Pi-Oaj" firstAttribute="trailing" secondItem="NSm-vd-Ubz" secondAttribute="trailing" id="RA6-CG-IYN"/>
+                            <constraint firstItem="jgl-rZ-xLK" firstAttribute="trailing" secondItem="KRS-Pi-Oaj" secondAttribute="trailing" id="b3M-kW-Xdu"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="KRS-Pi-Oaj"/>
+                    </view>
+                    <connections>
+                        <outlet property="amountKeyboard" destination="M0g-X7-Onr" id="uCS-BN-2q5"/>
+                        <outlet property="bottomContainerLeadingConstraint" destination="5Hg-rO-IQr" id="cWh-eK-IO4"/>
+                        <outlet property="bottomContainerTrailingConstraint" destination="b3M-kW-Xdu" id="ER8-nB-EKV"/>
+                        <outlet property="textField" destination="NSm-vd-Ubz" id="ftv-Kl-chE"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EXM-sj-6cP" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="29.600000000000001" y="175.86206896551727"/>
+        </scene>
+    </scenes>
+</document>
