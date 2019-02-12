@@ -37,12 +37,25 @@ static CGFloat HorizontalPadding() {
     }
 }
 
+static CGFloat const MainAmountFontSize = 26.0;
+static CGFloat const SupplementaryAmountFontSize = 14.0;
+
 @interface DWAmountNewViewController ()
 
+@property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
+@property (strong, nonatomic) IBOutlet UIImageView *convertAmountImageView;
+@property (strong, nonatomic) IBOutlet UILabel *supplementaryAmountLabel;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *mainAmountLabelCenterYConstraint;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *supplementaryAmountLabelCenterYConstraint;
+@property (strong, nonatomic) IBOutlet UIStackView *infoStackView;
+@property (strong, nonatomic) IBOutlet UILabel *infoLabel;
+@property (strong, nonatomic) IBOutlet UISwitch *infoSwitch;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet DWAmountKeyboard *amountKeyboard;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *bottomContainerLeadingConstraint;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *bottomContainerTrailingConstraint;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
+
+@property (assign, nonatomic) BOOL swapped;
 
 @end
 
@@ -71,9 +84,11 @@ static CGFloat HorizontalPadding() {
                                                       action:@selector(cancelButtonAction:)];
     cancelButton.tintColor = [UIColor whiteColor];
     self.navigationItem.leftBarButtonItem = cancelButton;
+    
+    self.infoSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
 
-    self.bottomContainerLeadingConstraint.constant = HorizontalPadding();
-    self.bottomContainerTrailingConstraint.constant = -HorizontalPadding();
+    self.containerLeadingConstraint.constant = HorizontalPadding();
+    self.containerTrailingConstraint.constant = -HorizontalPadding();
 
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
@@ -82,7 +97,7 @@ static CGFloat HorizontalPadding() {
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
     [self.textField becomeFirstResponder];
 }
 
@@ -90,6 +105,48 @@ static CGFloat HorizontalPadding() {
 
 - (void)cancelButtonAction:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (IBAction)switchAmountCurrencyAction:(id)sender {
+    BOOL wasSwapped = self.swapped;
+    UILabel *bigLabel = nil;
+    UILabel *smallLabel = nil;
+    if (wasSwapped) {
+        bigLabel = self.supplementaryAmountLabel;
+        smallLabel = self.mainAmountLabel;
+    }
+    else {
+        bigLabel = self.mainAmountLabel;
+        smallLabel = self.supplementaryAmountLabel;
+    }
+    CGFloat scale = SupplementaryAmountFontSize / MainAmountFontSize;
+    bigLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize];
+    bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
+    smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize];
+    smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
+
+    self.swapped = !wasSwapped;
+
+    [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        bigLabel.transform = CGAffineTransformIdentity;
+        smallLabel.transform = CGAffineTransformIdentity;
+    }
+        completion:^(BOOL finished) {
+            CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
+            CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
+            CGFloat translation = maxY - labelHeight;
+            self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
+            self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
+            [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:1.0
+                                options:UIViewAnimationOptionCurveEaseOut
+                             animations:^{
+                                 [self.view layoutIfNeeded];
+                             }
+                             completion:nil];
+            [UIView animateWithDuration:0.4 animations:^{
+                self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
+            }];
+        }];
 }
 
 @end
