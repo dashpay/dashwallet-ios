@@ -84,10 +84,10 @@ static const NSUInteger SectionsCount = 3;
     [buttons addObject:clearButton];
 
     self.allButtons = buttons;
-    
-    UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc]
-                                                                initWithTarget:self
-                                                                action:@selector(clearButtonLongPressGestureRecognizerAction:)];
+
+    UILongPressGestureRecognizer *longPressGestureRecognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(clearButtonLongPressGestureRecognizerAction:)];
     longPressGestureRecognizer.cancelsTouchesInView = NO;
     [clearButton addGestureRecognizer:longPressGestureRecognizer];
 }
@@ -180,7 +180,7 @@ static const NSUInteger SectionsCount = 3;
         CGPoint point = [touch locationInView:button];
         button.highlighted = CGRectContainsPoint(bounds, point);
     }
-    
+
     // reset clear button long press action if touch moved outside of its bounds
     if (_isClearButtonLongPressGestureActive) {
         CGRect bounds = self.clearButton.bounds;
@@ -298,25 +298,27 @@ static const NSUInteger SectionsCount = 3;
 - (void)clearButtonLongPressGestureRecognizerAction:(UILongPressGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateBegan) {
         _isClearButtonLongPressGestureActive = YES;
-        [self performClearButtonLongPress];
+        [self performClearButtonLongPressIsFirstCall:@(YES)];
     }
     else if (sender.state == UIGestureRecognizerStateEnded) {
         _isClearButtonLongPressGestureActive = NO;
     }
 }
 
-- (void)performClearButtonLongPress {
+- (void)performClearButtonLongPressIsFirstCall:(NSNumber *)isFirstCall {
     UIResponder<UITextInput> *textInput = self.textInput;
     if (!textInput) {
         return;
     }
-    
+
     if (_isClearButtonLongPressGestureActive) {
         if (textInput.hasText) {
-            [[UIDevice currentDevice] playInputClick];
-            
+            if (!isFirstCall.boolValue) {
+                [[UIDevice currentDevice] playInputClick];
+            }
+
             [self performClearButtonAction:self.clearButton textInput:textInput];
-            [self performSelector:@selector(performClearButtonLongPress) withObject:nil afterDelay:0.1]; // delay like in iOS keyboard
+            [self performSelector:@selector(performClearButtonLongPressIsFirstCall:) withObject:@(NO) afterDelay:0.1]; // delay like in iOS keyboard
         }
         else {
             _isClearButtonLongPressGestureActive = NO;

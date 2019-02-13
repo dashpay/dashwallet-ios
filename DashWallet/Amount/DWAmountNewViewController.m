@@ -17,6 +17,7 @@
 
 #import "DWAmountNewViewController.h"
 
+#import "DWAmountBaseModel.h"
 #import "DWAmountKeyboard.h"
 #import "DWAmountKeyboardInputViewAudioFeedback.h"
 
@@ -37,10 +38,18 @@ static CGFloat HorizontalPadding() {
     }
 }
 
+static UIColor *BigAmountTextColor() {
+    return [UIColor whiteColor];
+}
+
+static UIColor *SmallAmountTextColor() {
+    return [UIColor colorWithWhite:1.0 alpha:0.43];
+}
+
 static CGFloat const MainAmountFontSize = 26.0;
 static CGFloat const SupplementaryAmountFontSize = 14.0;
 
-@interface DWAmountNewViewController ()
+@interface DWAmountNewViewController () <UITextFieldDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
 @property (strong, nonatomic) IBOutlet UIImageView *convertAmountImageView;
@@ -55,7 +64,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
 
-@property (assign, nonatomic) BOOL swapped;
+@property (strong, nonatomic) DWAmountBaseModel *model;
 
 @end
 
@@ -64,6 +73,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 + (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
     DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
+    controller.model = [[DWAmountBaseModel alloc] init];
     return controller;
 }
 
@@ -84,7 +94,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
                                                       action:@selector(cancelButtonAction:)];
     cancelButton.tintColor = [UIColor whiteColor];
     self.navigationItem.leftBarButtonItem = cancelButton;
-    
+
     self.infoSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
 
     self.containerLeadingConstraint.constant = HorizontalPadding();
@@ -93,6 +103,12 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     self.amountKeyboard.textInput = self.textField;
+    
+    [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject *value){
+        self.textField.text = value.amountInternalRepresentation;
+        self.mainAmountLabel.text = value.dashFormatted;
+        self.supplementaryAmountLabel.text = value.localCurrencyFormatted;
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -108,7 +124,11 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 - (IBAction)switchAmountCurrencyAction:(id)sender {
-    BOOL wasSwapped = self.swapped;
+    if (![self.model isSwapToLocalCurrencyAllowed]) {
+        return;
+    }
+    
+    BOOL wasSwapped = (self.model.activeType == DWAmountTypeSupplementary);
     UILabel *bigLabel = nil;
     UILabel *smallLabel = nil;
     if (wasSwapped) {
@@ -122,10 +142,12 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     CGFloat scale = SupplementaryAmountFontSize / MainAmountFontSize;
     bigLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize];
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
+    bigLabel.textColor = SmallAmountTextColor();
     smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
+    smallLabel.textColor = BigAmountTextColor();
 
-    self.swapped = !wasSwapped;
+    [self.model swapActiveAmountType];
 
     [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         bigLabel.transform = CGAffineTransformIdentity;
@@ -148,6 +170,16 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             }];
         }];
 }
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    [self.model updateAmountWithReplacementString:string range:range];
+
+    return NO;
+}
+
+#pragma mark - Private
 
 @end
 

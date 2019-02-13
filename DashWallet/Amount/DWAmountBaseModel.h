@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,13 +15,28 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIViewController.h>
+#import <Foundation/Foundation.h>
+
+#import "DWAmountObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountNewViewController : KVOUIViewController
+typedef NS_ENUM(NSUInteger, DWAmountType) {
+    // Amount in Dash
+    DWAmountTypeMain,
+    // Amount in local currency
+    DWAmountTypeSupplementary,
+};
 
-+ (instancetype)controller;
+@interface DWAmountBaseModel : NSObject
+
+@property (readonly, assign, nonatomic) DWAmountType activeType;
+@property (readonly, strong, nonatomic) DWAmountObject *amount;
+
+- (BOOL)isSwapToLocalCurrencyAllowed;
+- (void)swapActiveAmountType;
+
+- (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range;
 
 @end
 

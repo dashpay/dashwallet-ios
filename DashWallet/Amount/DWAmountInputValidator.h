@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,13 +15,26 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIViewController.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountNewViewController : KVOUIViewController
+typedef NS_ENUM(NSUInteger, DWAmountInputValidatorType) {
+    DWAmountInputValidatorTypeDash,
+    DWAmountInputValidatorTypeLocalCurrency,
+};
 
-+ (instancetype)controller;
+@interface DWAmountInputValidator : NSObject
+
+@property (readonly, assign, nonatomic) DWAmountInputValidatorType type;
+
+- (nullable NSString *)validatedAmountForLastInputString:(NSString *)lastInputString
+                                                   range:(NSRange)range
+                                       replacementString:(NSString *)string;
+
+- (instancetype)initWithType:(DWAmountInputValidatorType)type NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 
