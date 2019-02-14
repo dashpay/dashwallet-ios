@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAmountObject : NSObject
 
+@property (readonly, copy, nonatomic) NSAttributedString *dashAttributedString;
+@property (readonly, copy, nonatomic) NSAttributedString *localCurrencyAttributedString;
+
 @property (readonly, copy, nonatomic) NSString *dashFormatted;
 @property (readonly, copy, nonatomic) NSString *localCurrencyFormatted;
 
@@ -35,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  @return Object that internally represents local currency amount
  */
-- (instancetype)initWithLocalAmountString:(NSString *)localAmountString;
+- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString;
 
 /**
  @return Object that internally represents local currency amount

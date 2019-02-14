@@ -84,7 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
         self.amountEnteredInLocalCurrency = nil;
     }
     else {
-        self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initWithLocalAmountString:validatedResult];
+        DWAmountObject *amount = [[DWAmountObject alloc] initWithLocalAmountString:validatedResult];
+        if (!amount) { // entered amount is invalid (Dash amount exceeds limit)
+            return;
+        }
+        
+        self.amountEnteredInLocalCurrency = amount;
         self.amountEnteredInDash = nil;
     }
     [self updateCurrentAmount];

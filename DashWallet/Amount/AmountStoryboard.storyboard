@@ -63,13 +63,13 @@
                                                             <constraint firstAttribute="height" constant="32" id="1Vo-T5-x6c"/>
                                                         </constraints>
                                                     </view>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Supplementary Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPo-qH-xOA" userLabel="Supplementary Amount">
+                                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.42999999999999999" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Supplementary Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPo-qH-xOA" userLabel="Supplementary Amount">
                                                         <rect key="frame" x="0.0" y="74" width="375" height="32"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="32" id="SgB-6J-NZm"/>
                                                         </constraints>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                        <color key="textColor" white="1" alpha="0.42999999999999999" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                         <attributedString key="userComments">
                                                             <fragment content="#bc-ignore!"/>

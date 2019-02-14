@@ -38,14 +38,8 @@ static CGFloat HorizontalPadding() {
     }
 }
 
-static UIColor *BigAmountTextColor() {
-    return [UIColor whiteColor];
-}
-
-static UIColor *SmallAmountTextColor() {
-    return [UIColor colorWithWhite:1.0 alpha:0.43];
-}
-
+static CGFloat const BigAmountTextAlpha = 1.0;
+static CGFloat const SmallAmountTextAlpha = 0.43;
 static CGFloat const MainAmountFontSize = 26.0;
 static CGFloat const SupplementaryAmountFontSize = 14.0;
 
@@ -88,26 +82,12 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    UIBarButtonItem *cancelButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
-                                                      target:self
-                                                      action:@selector(cancelButtonAction:)];
-    cancelButton.tintColor = [UIColor whiteColor];
-    self.navigationItem.leftBarButtonItem = cancelButton;
+    [self setupView];
 
-    self.infoSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
-
-    self.containerLeadingConstraint.constant = HorizontalPadding();
-    self.containerTrailingConstraint.constant = -HorizontalPadding();
-
-    CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-    self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
-    self.amountKeyboard.textInput = self.textField;
-    
-    [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject *value){
+    [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject * value) {
         self.textField.text = value.amountInternalRepresentation;
-        self.mainAmountLabel.text = value.dashFormatted;
-        self.supplementaryAmountLabel.text = value.localCurrencyFormatted;
+        self.mainAmountLabel.attributedText = value.dashAttributedString;
+        self.supplementaryAmountLabel.attributedText = value.localCurrencyAttributedString;
     }];
 }
 
@@ -127,7 +107,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     if (![self.model isSwapToLocalCurrencyAllowed]) {
         return;
     }
-    
+
     BOOL wasSwapped = (self.model.activeType == DWAmountTypeSupplementary);
     UILabel *bigLabel = nil;
     UILabel *smallLabel = nil;
@@ -142,14 +122,14 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     CGFloat scale = SupplementaryAmountFontSize / MainAmountFontSize;
     bigLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize];
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
-    bigLabel.textColor = SmallAmountTextColor();
     smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
-    smallLabel.textColor = BigAmountTextColor();
 
     [self.model swapActiveAmountType];
 
     [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        bigLabel.alpha = SmallAmountTextAlpha;
+        smallLabel.alpha = BigAmountTextAlpha;
         bigLabel.transform = CGAffineTransformIdentity;
         smallLabel.transform = CGAffineTransformIdentity;
     }
@@ -180,6 +160,24 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 #pragma mark - Private
+
+- (void)setupView {
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop
+                                                      target:self
+                                                      action:@selector(cancelButtonAction:)];
+    cancelButton.tintColor = [UIColor whiteColor];
+    self.navigationItem.leftBarButtonItem = cancelButton;
+
+    self.infoSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
+
+    self.containerLeadingConstraint.constant = HorizontalPadding();
+    self.containerTrailingConstraint.constant = -HorizontalPadding();
+
+    CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
+    self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    self.amountKeyboard.textInput = self.textField;
+}
 
 @end
 

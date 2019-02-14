@@ -18,8 +18,12 @@
 #import "DWAmountObject.h"
 
 #import <DashSync/DSPriceManager.h>
+#import <DashSync/NSString+Dash.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+static CGSize const DashSymbolBigSize = {24.07, 19.0};
+static CGSize const DashSymbolSmallSize = {12.67, 10.0};
 
 @implementation DWAmountObject
 
@@ -45,11 +49,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                     formattedString:dashFormatted
                                                     numberFormatter:priceManager.dashFormat];
         _localCurrencyFormatted = [priceManager localCurrencyStringForDashAmount:plainAmount];
+
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolBigSize];
+        _localCurrencyAttributedString = [self.class attributedStringForLocalCurrencyFormatted:_localCurrencyFormatted];
     }
     return self;
 }
 
-- (instancetype)initWithLocalAmountString:(NSString *)localAmountString {
+- (nullable instancetype)initWithLocalAmountString:(NSString *)localAmountString {
     self = [super init];
     if (self) {
         _amountInternalRepresentation = [localAmountString copy];
@@ -65,12 +72,17 @@ NS_ASSUME_NONNULL_BEGIN
         NSAssert(priceManager.localCurrencyDashPrice, @"Prices should be loaded");
         NSString *localCurrencyFormatted = [priceManager.localFormat stringFromNumber:localNumber];
         uint64_t plainAmount = [priceManager amountForLocalCurrencyString:localCurrencyFormatted];
+        if (plainAmount == 0 && ![localNumber isEqual:NSDecimalNumber.zero]) {
+            return nil;
+        }
 
         _plainAmount = plainAmount;
         _dashFormatted = [priceManager stringForDashAmount:plainAmount];
         _localCurrencyFormatted = [self.class formattedAmountWithInputString:localAmountString
                                                              formattedString:localCurrencyFormatted
                                                              numberFormatter:priceManager.localFormat];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolSmallSize];
+        _localCurrencyAttributedString = [self.class attributedStringForLocalCurrencyFormatted:_localCurrencyFormatted];
     }
     return self;
 }
@@ -82,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
         _amountInternalRepresentation = [self.class rawAmountStringFromFormattedString:previousAmount.localCurrencyFormatted];
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolSmallSize];
+        _localCurrencyAttributedString = previousAmount.localCurrencyAttributedString;
     }
     return self;
 }
@@ -93,11 +107,43 @@ NS_ASSUME_NONNULL_BEGIN
         _amountInternalRepresentation = [self.class rawAmountStringFromFormattedString:previousAmount.dashFormatted];
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolBigSize];
+        _localCurrencyAttributedString = previousAmount.localCurrencyAttributedString;
     }
     return self;
 }
 
 #pragma mark - Private
+
++ (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted {
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:localCurrencyFormatted];
+    NSLocale *locale = [NSLocale currentLocale];
+    NSString *decimalSeparator = locale.decimalSeparator;
+    NSString *insufficientFractionDigits = [NSString stringWithFormat:@"%@00", decimalSeparator];
+    NSRange insufficientFractionDigitsRange = [localCurrencyFormatted rangeOfString:insufficientFractionDigits];
+    NSDictionary *defaultAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+    [attributedString beginEditing];
+    if (insufficientFractionDigitsRange.location != NSNotFound) {
+        if (insufficientFractionDigitsRange.location > 0) {
+            NSRange beforeFractionRange = NSMakeRange(0, insufficientFractionDigitsRange.location);
+            [attributedString setAttributes:defaultAttributes range:beforeFractionRange];
+        }
+        [attributedString setAttributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:1.0 alpha:0.5] }
+                                  range:insufficientFractionDigitsRange];
+        NSUInteger afterFractionIndex = insufficientFractionDigitsRange.location + insufficientFractionDigitsRange.length;
+        if (afterFractionIndex < localCurrencyFormatted.length) {
+            NSRange afterFractionRange = NSMakeRange(afterFractionIndex, localCurrencyFormatted.length - afterFractionIndex);
+            [attributedString setAttributes:defaultAttributes range:afterFractionRange];
+        }
+    }
+    else {
+        [attributedString setAttributes:defaultAttributes
+                                  range:NSMakeRange(0, localCurrencyFormatted.length)];
+    }
+    [attributedString endEditing];
+
+    return [attributedString copy];
+}
 
 + (NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString {
     NSLocale *locale = [NSLocale currentLocale];
@@ -107,6 +153,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSString *result = [[formattedString componentsSeparatedByCharactersInSet:[allowedCharacterSet invertedSet]]
         componentsJoinedByString:@""];
+
+    NSDecimalNumber *decimalNumber = [NSDecimalNumber decimalNumberWithString:result locale:locale];
+    if ([decimalNumber isEqual:NSDecimalNumber.zero]) { // edge case
+        result = @"0";
+    }
 
     return result;
 }
@@ -129,7 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(currencySymbolRange.location != NSNotFound, @"Invalid formatted string");
 
     BOOL isCurrencySymbolAtTheBeginning = currencySymbolRange.location == 0;
-    NSString *currencySymbolNumberSeparator = @"";
+    NSString *currencySymbolNumberSeparator = nil;
     if (isCurrencySymbolAtTheBeginning) {
         currencySymbolNumberSeparator = [formattedString substringWithRange:NSMakeRange(currencySymbolRange.length, 1)];
     }
