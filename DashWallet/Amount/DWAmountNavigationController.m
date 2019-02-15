@@ -17,23 +17,9 @@
 
 #import "DWAmountNavigationController.h"
 
-#import "DWAmountNewViewController.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountNavigationController ()
-
-@end
-
 @implementation DWAmountNavigationController
-
-+ (instancetype)controller {
-    DWAmountNewViewController *amountController = [DWAmountNewViewController controller];
-    DWAmountNavigationController *navigationController =
-        [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
-    
-    return navigationController;
-}
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return self.topViewController.preferredStatusBarStyle;

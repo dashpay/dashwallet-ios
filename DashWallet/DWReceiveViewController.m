@@ -31,6 +31,8 @@
 #import "UIImage+Utils.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <DashSync/DashSync.h>
+#import "DWAmountNavigationController.h"
+#import "DWAmountNewViewController.h"
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
                     "dash to your wallet by transferring them to your address.", nil)
@@ -40,7 +42,7 @@
 //#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
 //                       stringByAppendingPathComponent:@"qr.png"]
 
-@interface DWReceiveViewController ()
+@interface DWReceiveViewController () <DWAmountNewViewControllerDelegate>
 
 @property (nonatomic, strong) UIImage *qrImage;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -55,6 +57,10 @@
 @end
 
 @implementation DWReceiveViewController
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
 
 - (void)viewDidLoad
 {
@@ -387,14 +393,12 @@
 
     if (! req) {
         [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"request an amount", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            UINavigationController *amountNavController = [self.storyboard
-                                                           instantiateViewControllerWithIdentifier:@"AmountNav"];
-            
-            ((DWAmountViewController *)amountNavController.topViewController).delegate = self;
-            ((DWAmountViewController *)amountNavController.topViewController).requestingAmount = TRUE;
-            [self.navigationController presentViewController:amountNavController animated:YES completion:nil];
+            DWAmountNewViewController *amountController = [DWAmountNewViewController requestController];
+            amountController.delegate = self;
+            DWAmountNavigationController *amountNavigationController = [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
+            [self.navigationController presentViewController:amountNavigationController animated:YES completion:nil];
             [DSEventManager saveEvent:@"receive:request_amount"];
-                                }]];
+        }]];
     }
     [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         
@@ -427,29 +431,13 @@ error:(NSError *)error
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-// MARK: - DWAmountViewControllerDelegate
+// MARK: - DWAmountNewViewControllerDelegate
 
-- (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
-{
-    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-    DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    if (amount < chain.minOutputAmount) {
-        UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
-                                     message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
-                                              [priceManager stringForDashAmount:chain.minOutputAmount]]
-                                     preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"ok", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                   }];
-        [alert addAction:okButton];
-        [self presentViewController:alert animated:YES completion:nil];
-        [DSEventManager saveEvent:@"receive:amount_too_small"];
-        return;
-    }
+- (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
 
+- (void)amountViewController:(DWAmountNewViewController *)controller didInputAmount:(uint64_t)amount {
     [DSEventManager saveEvent:@"receive:show_request"];
     UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
     DWReceiveViewController *receiveController = [self.storyboard
@@ -457,6 +445,7 @@ error:(NSError *)error
     
     receiveController.paymentRequest = self.paymentRequest;
     receiveController.paymentRequest.amount = amount;
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSNumber *number = [priceManager localCurrencyNumberForDashAmount:amount];
     if (number) {
         receiveController.paymentRequest.currencyAmount = number.stringValue;

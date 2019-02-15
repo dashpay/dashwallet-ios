@@ -21,8 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAmountNavigationController : UINavigationController
 
-+ (instancetype)controller;
-
 @end
 
 NS_ASSUME_NONNULL_END

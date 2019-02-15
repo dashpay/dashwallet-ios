@@ -55,6 +55,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (strong, nonatomic) IBOutlet UISwitch *infoSwitch;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet DWAmountKeyboard *amountKeyboard;
+@property (strong, nonatomic) IBOutlet UILabel *addressLabel;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
 @property (null_resettable, strong, nonatomic) UIBarButtonItem *lockBarButton;
@@ -68,10 +69,10 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
 @implementation DWAmountNewViewController
 
-+ (instancetype)controller {
++ (instancetype)requestController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
     DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountBaseModel alloc] init];
+    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentRequest receiverAddress:nil];
     return controller;
 }
 
@@ -88,24 +89,20 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     [self setupView];
 
-    [self mvvm_observe:@"model.actionState" with:^(__typeof(self) self, NSNumber * value) {
-        BOOL hasBalance = self.model.balanceString != nil;
-        DWAmountModelActionState state = self.model.actionState;
-        switch (state) {
-            case DWAmountModelActionStateLocked: {
-                self.navigationItem.titleView = self.logoImageView;
-                self.navigationItem.rightBarButtonItem = self.lockBarButton;
-
-                break;
-            }
-            case DWAmountModelActionStateUnlockedInactive:
-            case DWAmountModelActionStateUnlockedActive: {
-                self.navigationItem.titleView = hasBalance ? self.balanceButton : self.logoImageView;
+    [self mvvm_observe:@"model.locked" with:^(__typeof(self) self, NSNumber * value) {
+        if (self.model.locked) {
+            self.navigationItem.titleView = self.logoImageView;
+            if (self.model.inputIntent == DWAmountInputIntentRequest) {
                 self.navigationItem.rightBarButtonItem = self.actionBarButton;
-                self.navigationItem.rightBarButtonItem.enabled = state == DWAmountModelActionStateUnlockedActive;
-
-                break;
             }
+            else {
+                self.navigationItem.rightBarButtonItem = self.lockBarButton;
+            }
+        }
+        else {
+            BOOL hasBalance = self.model.balanceString != nil;
+            self.navigationItem.titleView = hasBalance ? self.balanceButton : self.logoImageView;
+            self.navigationItem.rightBarButtonItem = self.actionBarButton;
         }
     }];
 
@@ -118,6 +115,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         self.textField.text = value.amountInternalRepresentation;
         self.mainAmountLabel.attributedText = value.dashAttributedString;
         self.supplementaryAmountLabel.attributedText = value.localCurrencyAttributedString;
+        self.actionBarButton.enabled = value.plainAmount > 0;
     }];
 }
 
@@ -136,7 +134,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 #pragma mark - Actions
 
 - (void)cancelButtonAction:(id)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.delegate amountViewControllerDidCancel:self];
 }
 
 - (IBAction)switchAmountCurrencyAction:(id)sender {
@@ -193,6 +191,25 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 - (void)actionButtonAction:(id)sender {
+    if ([self.model isEnteredAmountLessThenMinimumOutputAmount]) {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
+                             message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
+                                                                [self.model minimumOutputAmountFormattedString]]
+                      preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"ok", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:okAction];
+        [self presentViewController:alert animated:YES completion:nil];
+
+        [DSEventManager saveEvent:@"amount:amount_too_small"];
+
+        return;
+    }
+
+    [self.delegate amountViewController:self didInputAmount:self.model.amount.plainAmount];
 }
 
 - (void)balanceButtonAction:(id)sender {
@@ -225,6 +242,21 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     self.amountKeyboard.textInput = self.textField;
+
+    self.addressLabel.text = self.model.addressTitle;
+
+    switch (self.model.inputIntent) {
+        case DWAmountInputIntentRequest: {
+            self.infoStackView.hidden = YES;
+
+            break;
+        }
+        case DWAmountInputIntentSend: {
+            self.infoStackView.hidden = NO;
+
+            break;
+        }
+    }
 }
 
 - (UIBarButtonItem *)lockBarButton {

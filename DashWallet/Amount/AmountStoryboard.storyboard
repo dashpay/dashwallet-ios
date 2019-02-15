@@ -115,7 +115,7 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KS5-Xa-6HP">
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="31"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LYt-ov-Ilw">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LYt-ov-Ilw">
                                                         <rect key="frame" x="0.0" y="0.0" width="324" height="31"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -205,6 +205,7 @@
                         <viewLayoutGuide key="safeArea" id="KRS-Pi-Oaj"/>
                     </view>
                     <connections>
+                        <outlet property="addressLabel" destination="Et4-bd-3Eq" id="lvb-ji-gf5"/>
                         <outlet property="amountKeyboard" destination="M0g-X7-Onr" id="uCS-BN-2q5"/>
                         <outlet property="containerLeadingConstraint" destination="U75-9I-asr" id="891-g4-4gq"/>
                         <outlet property="containerTrailingConstraint" destination="z91-cA-4A1" id="irg-dX-IOY"/>

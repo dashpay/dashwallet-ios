@@ -19,9 +19,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWAmountNewViewController;
+
+@protocol DWAmountNewViewControllerDelegate <NSObject>
+
+- (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller;
+- (void)amountViewController:(DWAmountNewViewController *)controller didInputAmount:(uint64_t)amount;
+
+@end
+
 @interface DWAmountNewViewController : KVOUIViewController
 
-+ (instancetype)controller;
+@property (nullable, weak, nonatomic) id<DWAmountNewViewControllerDelegate> delegate;
+
++ (instancetype)requestController;
 
 @end
 

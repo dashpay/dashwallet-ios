@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) DWAmountType activeType;
 @property (strong, nonatomic) DWAmountObject *amount;
-@property (assign, nonatomic) DWAmountModelActionState actionState;
+@property (assign, nonatomic, getter=isLocked) BOOL locked;
 @property (nullable, copy, nonatomic) NSAttributedString *balanceString;
 
 @property (strong, nonatomic) DWAmountInputValidator *dashValidator;
@@ -38,9 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAmountBaseModel
 
-- (instancetype)init {
+- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent receiverAddress:(nullable NSString *)receiverAddress {
     self = [super init];
     if (self) {
+        _inputIntent = inputIntent;
+
         _dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
         _localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 
@@ -48,11 +50,23 @@ NS_ASSUME_NONNULL_BEGIN
         _amountEnteredInDash = amount;
         _amount = amount;
 
-        BOOL locked = ![DSAuthenticationManager sharedInstance].didAuthenticate;
-        _actionState = locked ? DWAmountModelActionStateLocked : DWAmountModelActionStateUnlockedInactive;
+        _locked = ![DSAuthenticationManager sharedInstance].didAuthenticate;
 
-        // TODO: from type
-        _actionButtonTitle = NSLocalizedString(@"Request", nil);
+        switch (inputIntent) {
+            case DWAmountInputIntentRequest: {
+                _actionButtonTitle = NSLocalizedString(@"Request", nil);
+                _addressTitle = nil;
+
+                break;
+            }
+            case DWAmountInputIntentSend: {
+                NSParameterAssert(receiverAddress);
+                _actionButtonTitle = NSLocalizedString(@"Pay", nil);
+                _addressTitle = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), receiverAddress];
+
+                break;
+            }
+        }
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(walletBalanceDidChangeNotification:)
@@ -123,10 +137,8 @@ NS_ASSUME_NONNULL_BEGIN
     [authenticationManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
             [DSEventManager saveEvent:@"amount:successful_unlock"];
-
-            BOOL hasAmount = self.amount.plainAmount > 0;
-            self.actionState = hasAmount ? DWAmountModelActionStateUnlockedActive : DWAmountModelActionStateUnlockedInactive;
         }
+        self.locked = !authenticated;
     }];
 }
 
@@ -136,6 +148,21 @@ NS_ASSUME_NONNULL_BEGIN
     uint64_t allFunds = wallet.balance;
 
     // TODO: implement
+}
+
+- (BOOL)isEnteredAmountLessThenMinimumOutputAmount {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    uint64_t amount = self.amount.plainAmount;
+
+    return amount < chain.minOutputAmount;
+}
+
+- (NSString *)minimumOutputAmountFormattedString {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+
+    return [priceManager stringForDashAmount:chain.minOutputAmount];
 }
 
 #pragma mark - Private
@@ -158,11 +185,6 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         NSParameterAssert(self.amountEnteredInLocalCurrency);
         self.amount = self.amountEnteredInLocalCurrency;
-    }
-
-    if (self.actionState != DWAmountModelActionStateLocked) {
-        BOOL hasAmount = self.amount.plainAmount > 0;
-        self.actionState = hasAmount ? DWAmountModelActionStateUnlockedActive : DWAmountModelActionStateUnlockedInactive;
     }
 }
 
@@ -187,17 +209,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletBalanceDidChangeNotification:(NSNotification *)n {
     [self updateBalanceString];
 
-    if ([[DSAuthenticationManager sharedInstance] didAuthenticate]) {
-        BOOL hasAmount = self.amount.plainAmount > 0;
-        self.actionState = hasAmount ? DWAmountModelActionStateUnlockedActive : DWAmountModelActionStateUnlockedInactive;
-    }
-    else {
-        self.actionState = DWAmountModelActionStateLocked;
-    }
+    self.locked = ![[DSAuthenticationManager sharedInstance] didAuthenticate];
 }
 
 - (void)applicationDidEnterBackgroundNotification:(NSNotification *)n {
-    self.actionState = DWAmountModelActionStateLocked;
+    self.locked = YES;
 }
 
 @end

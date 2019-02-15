@@ -21,6 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
+    DWAmountInputIntentRequest,
+    DWAmountInputIntentSend,
+};
+
 typedef NS_ENUM(NSUInteger, DWAmountType) {
     // Amount in Dash
     DWAmountTypeMain,
@@ -28,19 +33,17 @@ typedef NS_ENUM(NSUInteger, DWAmountType) {
     DWAmountTypeSupplementary,
 };
 
-typedef NS_ENUM(NSUInteger, DWAmountModelActionState) {
-    DWAmountModelActionStateLocked,
-    DWAmountModelActionStateUnlockedInactive,
-    DWAmountModelActionStateUnlockedActive,
-};
-
 @interface DWAmountBaseModel : NSObject
 
+@property (readonly, assign, nonatomic) DWAmountInputIntent inputIntent;
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
-@property (readonly, assign, nonatomic) DWAmountModelActionState actionState;
+@property (readonly, assign, nonatomic, getter=isLocked) BOOL locked;
 @property (nullable, readonly, copy, nonatomic) NSAttributedString *balanceString;
 @property (readonly, copy, nonatomic) NSString *actionButtonTitle;
+@property (nullable, readonly, copy, nonatomic) NSString *addressTitle;
+
+- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent receiverAddress:(nullable NSString *)receiverAddress;
 
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;
@@ -50,6 +53,11 @@ typedef NS_ENUM(NSUInteger, DWAmountModelActionState) {
 - (void)unlock;
 
 - (void)selectAllFunds;
+
+- (BOOL)isEnteredAmountLessThenMinimumOutputAmount;
+- (NSString *)minimumOutputAmountFormattedString;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

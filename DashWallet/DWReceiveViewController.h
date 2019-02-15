@@ -26,11 +26,10 @@
 
 #import <UIKit/UIKit.h>
 #import <MessageUI/MessageUI.h>
-#import "DWAmountViewController.h"
 
 @class DSPaymentRequest;
 
-@interface DWReceiveViewController : UIViewController<UIActionSheetDelegate, DWAmountViewControllerDelegate,
+@interface DWReceiveViewController : UIViewController<UIActionSheetDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 
