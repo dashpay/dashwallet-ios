@@ -28,15 +28,28 @@ typedef NS_ENUM(NSUInteger, DWAmountType) {
     DWAmountTypeSupplementary,
 };
 
+typedef NS_ENUM(NSUInteger, DWAmountModelActionState) {
+    DWAmountModelActionStateLocked,
+    DWAmountModelActionStateUnlockedInactive,
+    DWAmountModelActionStateUnlockedActive,
+};
+
 @interface DWAmountBaseModel : NSObject
 
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
+@property (readonly, assign, nonatomic) DWAmountModelActionState actionState;
+@property (nullable, readonly, copy, nonatomic) NSAttributedString *balanceString;
+@property (readonly, copy, nonatomic) NSString *actionButtonTitle;
 
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range;
+
+- (void)unlock;
+
+- (void)selectAllFunds;
 
 @end
 

@@ -57,6 +57,10 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (strong, nonatomic) IBOutlet DWAmountKeyboard *amountKeyboard;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
+@property (null_resettable, strong, nonatomic) UIBarButtonItem *lockBarButton;
+@property (null_resettable, strong, nonatomic) UIBarButtonItem *actionBarButton;
+@property (null_resettable, strong, nonatomic) UIImageView *logoImageView;
+@property (null_resettable, strong, nonatomic) UIButton *balanceButton;
 
 @property (strong, nonatomic) DWAmountBaseModel *model;
 
@@ -84,6 +88,32 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     [self setupView];
 
+    [self mvvm_observe:@"model.actionState" with:^(__typeof(self) self, NSNumber * value) {
+        BOOL hasBalance = self.model.balanceString != nil;
+        DWAmountModelActionState state = self.model.actionState;
+        switch (state) {
+            case DWAmountModelActionStateLocked: {
+                self.navigationItem.titleView = self.logoImageView;
+                self.navigationItem.rightBarButtonItem = self.lockBarButton;
+
+                break;
+            }
+            case DWAmountModelActionStateUnlockedInactive:
+            case DWAmountModelActionStateUnlockedActive: {
+                self.navigationItem.titleView = hasBalance ? self.balanceButton : self.logoImageView;
+                self.navigationItem.rightBarButtonItem = self.actionBarButton;
+                self.navigationItem.rightBarButtonItem.enabled = state == DWAmountModelActionStateUnlockedActive;
+
+                break;
+            }
+        }
+    }];
+
+    [self mvvm_observe:@"model.balanceString" with:^(__typeof(self) self, NSAttributedString * value) {
+        [self.balanceButton setAttributedTitle:value forState:UIControlStateNormal];
+        [self.balanceButton sizeToFit];
+    }];
+
     [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject * value) {
         self.textField.text = value.amountInternalRepresentation;
         self.mainAmountLabel.attributedText = value.dashAttributedString;
@@ -95,6 +125,12 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     [super viewWillAppear:animated];
 
     [self.textField becomeFirstResponder];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self.textField resignFirstResponder];
 }
 
 #pragma mark - Actions
@@ -151,6 +187,18 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         }];
 }
 
+- (void)lockBarButtonAction:(id)sender {
+    [self.view endEditing:YES];
+    [self.model unlock];
+}
+
+- (void)actionButtonAction:(id)sender {
+}
+
+- (void)balanceButtonAction:(id)sender {
+    [self.model selectAllFunds];
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
@@ -177,6 +225,52 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     self.amountKeyboard.textInput = self.textField;
+}
+
+- (UIBarButtonItem *)lockBarButton {
+    if (!_lockBarButton) {
+        UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"]
+                                                                      style:UIBarButtonItemStylePlain
+                                                                     target:self
+                                                                     action:@selector(lockBarButtonAction:)];
+        barButton.tintColor = [UIColor whiteColor];
+        _lockBarButton = barButton;
+    }
+    return _lockBarButton;
+}
+
+- (UIBarButtonItem *)actionBarButton {
+    if (!_actionBarButton) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+        button.tintColor = [UIColor whiteColor];
+        button.titleLabel.font = [UIFont systemFontOfSize:18.0];
+        [button setTitle:self.model.actionButtonTitle forState:UIControlStateNormal];
+        [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithCustomView:button];
+        _actionBarButton = barButton;
+    }
+    return _actionBarButton;
+}
+
+- (UIImageView *)logoImageView {
+    if (!_logoImageView) {
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"dashwallet-white"]];
+        [imageView sizeToFit];
+        _logoImageView = imageView;
+    }
+    return _logoImageView;
+}
+
+- (UIButton *)balanceButton {
+    if (!_balanceButton) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+        button.tintColor = [UIColor whiteColor];
+        [button addTarget:self action:@selector(balanceButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [button setAttributedTitle:self.model.balanceString forState:UIControlStateNormal];
+        [button sizeToFit];
+        _balanceButton = button;
+    }
+    return _balanceButton;
 }
 
 @end
