@@ -52,7 +52,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *supplementaryAmountLabelCenterYConstraint;
 @property (strong, nonatomic) IBOutlet UIStackView *infoStackView;
 @property (strong, nonatomic) IBOutlet UILabel *infoLabel;
-@property (strong, nonatomic) IBOutlet UISwitch *infoSwitch;
+@property (strong, nonatomic) IBOutlet UISwitch *instantSendSwitch;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet DWAmountKeyboard *amountKeyboard;
 @property (strong, nonatomic) IBOutlet UILabel *addressLabel;
@@ -72,7 +72,19 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 + (instancetype)requestController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
     DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentRequest receiverAddress:nil];
+    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentRequest
+                                                   sendingDestination:nil
+                                                       paymentDetails:nil];
+    return controller;
+}
+
++ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
+                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
+    DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
+    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentSend
+                                                   sendingDestination:sendingDestination
+                                                       paymentDetails:paymentDetails];
     return controller;
 }
 
@@ -117,18 +129,65 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         self.supplementaryAmountLabel.attributedText = value.localCurrencyAttributedString;
         self.actionBarButton.enabled = value.plainAmount > 0;
     }];
+
+    if (self.model.inputIntent == DWAmountInputIntentSend) {
+        [self mvvm_observe:@"model.sendingOptions.state" with:^(__typeof(self) self, NSNumber * value) {
+            DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
+            switch (state) {
+                case DWAmountSendOptionsModelStateNone: {
+                    break;
+                }
+                case DWAmountSendOptionsModelStateRegular: {
+                    self.instantSendSwitch.hidden = YES;
+                    self.infoLabel.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
+
+                    break;
+                }
+                case DWAmountSendOptionsModelStateInstantSend: {
+                    self.instantSendSwitch.hidden = NO;
+                    NSString *instantSendFee = self.model.sendingOptions.instantSendFee;
+                    NSParameterAssert(instantSendFee);
+                    self.infoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"This transaction may take several minutes to settle. Complete instantly for an extra %@?", nil), instantSendFee];
+
+                    break;
+                }
+                case DWAmountSendOptionsModelStateAutoLocks: {
+                    self.instantSendSwitch.hidden = YES;
+                    self.infoLabel.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
+
+                    break;
+                }
+            }
+
+            [UIView animateWithDuration:0.15 animations:^{
+                CGFloat alpha = state == DWAmountSendOptionsModelStateNone ? 0.0 : 1.0;
+                self.infoStackView.alpha = alpha;
+            }];
+        }];
+
+        [self mvvm_observe:@"model.sendingOptions.useInstantSend" with:^(__typeof(self) self, NSNumber * value) {
+            self.instantSendSwitch.on = self.model.sendingOptions.useInstantSend;
+        }];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
     [self.textField becomeFirstResponder];
+    UITextPosition *endOfDocumentPosition = self.textField.endOfDocument;
+    self.textField.selectedTextRange = [self.textField textRangeFromPosition:endOfDocumentPosition
+                                                                  toPosition:endOfDocumentPosition];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
     [self.textField resignFirstResponder];
+}
+
+- (void)setInstantSendEnabled {
+    self.model.sendingOptions.useInstantSend = YES;
 }
 
 #pragma mark - Actions
@@ -186,7 +245,6 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 - (void)lockBarButtonAction:(id)sender {
-    [self.view endEditing:YES];
     [self.model unlock];
 }
 
@@ -209,11 +267,34 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         return;
     }
 
-    [self.delegate amountViewController:self didInputAmount:self.model.amount.plainAmount];
+    switch (self.model.inputIntent) {
+        case DWAmountInputIntentRequest: {
+            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:)],
+                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:");
+
+            [self.delegate amountViewController:self didInputAmount:self.model.amount.plainAmount];
+
+            break;
+        }
+        case DWAmountInputIntentSend: {
+            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:shouldUseInstantSend:)],
+                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:shouldUseInstantSend:");
+
+            [self.delegate amountViewController:self
+                                 didInputAmount:self.model.amount.plainAmount
+                           shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
+
+            break;
+        }
+    }
 }
 
 - (void)balanceButtonAction:(id)sender {
     [self.model selectAllFunds];
+}
+
+- (IBAction)instantSendSwitchAction:(UISwitch *)sender {
+    self.model.sendingOptions.useInstantSend = sender.isOn;
 }
 
 #pragma mark - UITextFieldDelegate
@@ -234,7 +315,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     cancelButton.tintColor = [UIColor whiteColor];
     self.navigationItem.leftBarButtonItem = cancelButton;
 
-    self.infoSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
+    self.instantSendSwitch.transform = CGAffineTransformScale(CGAffineTransformMakeTranslation(3.0, 0.0), 0.7, 0.7);
 
     self.containerLeadingConstraint.constant = HorizontalPadding();
     self.containerTrailingConstraint.constant = -HorizontalPadding();
@@ -243,16 +324,19 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     self.amountKeyboard.textInput = self.textField;
 
-    self.addressLabel.text = self.model.addressTitle;
-
     switch (self.model.inputIntent) {
         case DWAmountInputIntentRequest: {
             self.infoStackView.hidden = YES;
+            self.addressLabel.text = nil;
 
             break;
         }
         case DWAmountInputIntentSend: {
             self.infoStackView.hidden = NO;
+            DWAmountSendingOptionsModel *sendingOptions = self.model.sendingOptions;
+            NSParameterAssert(sendingOptions);
+            self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil),
+                                                                sendingOptions.sendingDestination];
 
             break;
         }

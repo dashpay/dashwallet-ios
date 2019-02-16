@@ -33,8 +33,6 @@
 
 - (IBAction)tip:(id)sender;
 
-- (IBAction)enableInstantX:(id)sender;
-
 - (IBAction)startNFC:(id)sender;
 
 - (void)handleURL:(NSURL *)url;

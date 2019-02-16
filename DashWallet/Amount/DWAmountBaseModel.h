@@ -18,6 +18,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DWAmountObject.h"
+#import "DWAmountSendingOptionsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,9 +42,11 @@ typedef NS_ENUM(NSUInteger, DWAmountType) {
 @property (readonly, assign, nonatomic, getter=isLocked) BOOL locked;
 @property (nullable, readonly, copy, nonatomic) NSAttributedString *balanceString;
 @property (readonly, copy, nonatomic) NSString *actionButtonTitle;
-@property (nullable, readonly, copy, nonatomic) NSString *addressTitle;
+@property (nullable, readonly, strong, nonatomic) DWAmountSendingOptionsModel *sendingOptions;
 
-- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent receiverAddress:(nullable NSString *)receiverAddress;
+- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
+                 sendingDestination:(nullable NSString *)sendingDestination
+                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
 
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;

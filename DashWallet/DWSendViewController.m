@@ -33,6 +33,8 @@
 #import "MBProgressHUD.h"
 #import "DWQRScanViewController.h"
 #import "DWQRScanViewModel.h"
+#import "DWAmountNewViewController.h"
+#import "DWAmountNavigationController.h"
 
 #define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
@@ -46,8 +48,6 @@
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 #define NBSP @"\xC2\xA0"         // no-break space (utf-8)
 
-#define SEND_INSTANTLY_KEY @"SEND_INSTANTLY_KEY"
-
 static NSString *sanitizeString(NSString *s)
 {
     NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
@@ -56,7 +56,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface DWSendViewController () <DWQRScanViewModelDelegate>
+@interface DWSendViewController () <DWQRScanViewModelDelegate, DWAmountNewViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) DSTransaction *sweepTx;
@@ -69,7 +69,6 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
-@property (nonatomic, strong) IBOutlet UISwitch *instantSwitch;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
 @property (nonatomic, strong) IBOutlet UIView * shapeshiftView;
 @property (nonatomic, strong) IBOutlet UILabel * shapeshiftLabel;
@@ -133,8 +132,6 @@ static NSString *sanitizeString(NSString *s)
         }
     }
     
-    self.sendInstantly = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
-    [self.instantSwitch setOn:self.sendInstantly];
     BOOL hasNFC = NO;
     if (@available(iOS 11.0, *)) {
         if ([NFCNDEFReaderSession readingAvailable]) {
@@ -444,9 +441,13 @@ static NSString *sanitizeString(NSString *s)
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     UIViewController * viewControllerToShowAlert = self;
+    DWAmountNewViewController *amountController = nil;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
         viewControllerToShowAlert = presentedController.topViewController;
+        if ([viewControllerToShowAlert isKindOfClass:DWAmountNewViewController.class]) {
+            amountController = (DWAmountNewViewController *)viewControllerToShowAlert;
+        }
     }
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
         UIAlertController * alert = [UIAlertController
@@ -543,7 +544,8 @@ static NSString *sanitizeString(NSString *s)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
                                                    self.sendInstantly = TRUE;
-                                                   [self.instantSwitch setOn:TRUE animated:TRUE];
+                                                   [amountController setInstantSendEnabled];
+                                                   
                                                    [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:TRUE localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 
@@ -568,7 +570,8 @@ static NSString *sanitizeString(NSString *s)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
                                                    self.sendInstantly = TRUE;
-                                                   [self.instantSwitch setOn:TRUE animated:TRUE];
+                                                   [amountController setInstantSendEnabled];
+
                                                    [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift wantsInstant:TRUE requiresInstantValue:requiresInstantValue localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                                                }];
                 
@@ -678,7 +681,7 @@ static NSString *sanitizeString(NSString *s)
             self.scheme = currency;
             self.associatedShapeshift = shapeshift;
             [self updateTitleView];
-            [self performSegueWithIdentifier:@"SendAmountSegue" sender:self];
+            [self showAmountController];
             return;
         }
         else if (amount < TX_MIN_OUTPUT_AMOUNT) {
@@ -865,28 +868,31 @@ static NSString *sanitizeString(NSString *s)
     }
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"SendAmountSegue"]) {
-        DWAmountViewController *amountController = (DWAmountViewController *)((UINavigationController*)segue.destinationViewController).topViewController;
-        
-        amountController.delegate = self;
-        if ([self.scheme isEqualToString:@"bitcoin"]) {
-            amountController.usingShapeshift = TRUE;
-            amountController.to = sanitizeString(self.associatedShapeshift.withdrawalAddress);
-        } else {
-            NSString *address = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
-            if (self.request.commonName.length > 0) {
-                if (self.request.isValid && ! [self.request.pkiType isEqual:@"none"]) {
-                    amountController.to = [LOCK @" " stringByAppendingString:sanitizeString(self.request.commonName)];
-                }
-                else if (self.request.errorMessage.length > 0) {
-                    amountController.to = [REDX @" " stringByAppendingString:sanitizeString(self.request.commonName)];
-                }
-                else amountController.to = sanitizeString(self.request.commonName);
-            }
-            else amountController.to = address;
+- (void)showAmountController {
+    NSAssert(![self.scheme isEqualToString:@"bitcoin"], @"Shapeshift is disabled");
+    
+    NSString *sendingDestination = nil;
+    
+    if (self.request.commonName.length > 0) {
+        if (self.request.isValid && ! [self.request.pkiType isEqual:@"none"]) {
+            sendingDestination = [LOCK @" " stringByAppendingString:sanitizeString(self.request.commonName)];
+        }
+        else if (self.request.errorMessage.length > 0) {
+            sendingDestination = [REDX @" " stringByAppendingString:sanitizeString(self.request.commonName)];
+        }
+        else {
+            sendingDestination = sanitizeString(self.request.commonName);
         }
     }
+    else {
+        sendingDestination = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
+    }
+    
+    DWAmountNewViewController *amountController = [DWAmountNewViewController sendControllerWithDestination:sendingDestination
+                                                                                            paymentDetails:self.request.details];
+    amountController.delegate = self;
+    DWAmountNavigationController *amountNavigationController = [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
+    [self.navigationController presentViewController:amountNavigationController animated:YES completion:nil];
 }
 
 -(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
@@ -1544,11 +1550,6 @@ static NSString *sanitizeString(NSString *s)
     [self.view addSubview:[self.tipView popIn]];
 }
 
-- (IBAction)enableInstantX:(id)sender {
-    self.sendInstantly = ((UISwitch*)sender).isOn;
-    [[NSUserDefaults standardUserDefaults] setBool:self.sendInstantly forKey:SEND_INSTANTLY_KEY];
-}
-
 - (IBAction)scanQR:(id)sender
 {
     if ([self nextTip]) return;
@@ -1676,6 +1677,19 @@ static NSString *sanitizeString(NSString *s)
     
 }
 
+// MARK: - DWAmountNewViewControllerDelegate
+
+- (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)amountViewController:(DWAmountNewViewController *)controller
+              didInputAmount:(uint64_t)amount
+        shouldUseInstantSend:(BOOL)shouldUseInstantSend {
+    self.amount = amount;
+    self.sendInstantly = shouldUseInstantSend;
+    [self confirmProtocolRequest:self.request];
+}
 
 // MARK: - DWAmountViewControllerDelegate
 

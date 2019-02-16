@@ -534,6 +534,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "yêu cầu này cần một thanh toán tức thời nhưng bạn đã tắt chức năng thanh toán tức thời";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ví này không rỗng hoặc quá trình đồng bộ chưa xong, bạn không thể xoá nó mà không có dòng khôi phục";
 
 /* No comment provided by engineer. */

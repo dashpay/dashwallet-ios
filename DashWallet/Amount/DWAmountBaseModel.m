@@ -38,7 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAmountBaseModel
 
-- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent receiverAddress:(nullable NSString *)receiverAddress {
+- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
+                 sendingDestination:(nullable NSString *)sendingDestination
+                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
     self = [super init];
     if (self) {
         _inputIntent = inputIntent;
@@ -55,14 +57,14 @@ NS_ASSUME_NONNULL_BEGIN
         switch (inputIntent) {
             case DWAmountInputIntentRequest: {
                 _actionButtonTitle = NSLocalizedString(@"Request", nil);
-                _addressTitle = nil;
 
                 break;
             }
             case DWAmountInputIntentSend: {
-                NSParameterAssert(receiverAddress);
+                NSParameterAssert(sendingDestination);
                 _actionButtonTitle = NSLocalizedString(@"Pay", nil);
-                _addressTitle = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil), receiverAddress];
+                _sendingOptions = [[DWAmountSendingOptionsModel alloc] initWithSendingDestination:sendingDestination
+                                                                                   paymentDetails:paymentDetails];
 
                 break;
             }
@@ -185,6 +187,11 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         NSParameterAssert(self.amountEnteredInLocalCurrency);
         self.amount = self.amountEnteredInLocalCurrency;
+    }
+
+    if (self.inputIntent == DWAmountInputIntentSend) {
+        NSParameterAssert(self.sendingOptions);
+        [self.sendingOptions updateWithAmount:self.amount.plainAmount];
     }
 }
 

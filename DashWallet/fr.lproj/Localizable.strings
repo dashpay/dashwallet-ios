@@ -534,6 +534,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "cette requête demande un paiement instantané, mais vous avez désactivé les paiements instantanés";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ce portefeuille n'est pas vide, ou bien la synchronisation n'est pas terminée. Vous ne pouvez pas l'effacer sans la phrase de récupération.";
 
 /* No comment provided by engineer. */

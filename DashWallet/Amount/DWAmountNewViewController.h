@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -20,11 +20,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWAmountNewViewController;
+@class DSPaymentProtocolDetails;
 
 @protocol DWAmountNewViewControllerDelegate <NSObject>
 
 - (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller;
+
+@optional
 - (void)amountViewController:(DWAmountNewViewController *)controller didInputAmount:(uint64_t)amount;
+- (void)amountViewController:(DWAmountNewViewController *)controller
+              didInputAmount:(uint64_t)amount
+        shouldUseInstantSend:(BOOL)shouldUseInstantSend;
 
 @end
 
@@ -33,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, weak, nonatomic) id<DWAmountNewViewControllerDelegate> delegate;
 
 + (instancetype)requestController;
++ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
+                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
+
+- (void)setInstantSendEnabled;
 
 @end
 

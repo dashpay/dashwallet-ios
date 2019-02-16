@@ -37,6 +37,7 @@
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F422321BF028500858B91 /* AboutStoryboard.storyboard */; };
+		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
 		2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */; };
 		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
@@ -341,6 +342,8 @@
 		2A8F424521BF02D600858B91 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424721BF02D800858B91 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424921BF02D900858B91 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AboutStoryboard.strings"; sourceTree = "<group>"; };
+		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
+		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountNavigationController.m; sourceTree = "<group>"; };
 		2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountNavigationController.h; sourceTree = "<group>"; };
 		2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
@@ -743,17 +746,19 @@
 			isa = PBXGroup;
 			children = (
 				2AB8CDDC220D87E300A3D1DB /* Views */,
-				2AB8CDD9220D879300A3D1DB /* DWAmountNewViewController.h */,
-				2AB8CDDA220D879300A3D1DB /* DWAmountNewViewController.m */,
 				2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */,
-				2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */,
-				2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */,
 				2A2120E52213201E009906DC /* DWAmountBaseModel.h */,
 				2A2120E62213201E009906DC /* DWAmountBaseModel.m */,
 				2A2120E82214566A009906DC /* DWAmountInputValidator.h */,
 				2A2120E92214566A009906DC /* DWAmountInputValidator.m */,
+				2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */,
+				2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */,
+				2AB8CDD9220D879300A3D1DB /* DWAmountNewViewController.h */,
+				2AB8CDDA220D879300A3D1DB /* DWAmountNewViewController.m */,
 				2A2120EE22147A40009906DC /* DWAmountObject.h */,
 				2A2120EF22147A40009906DC /* DWAmountObject.m */,
+				2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */,
+				2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */,
 			);
 			path = Amount;
 			sourceTree = "<group>";
@@ -1723,6 +1728,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				22F04A001C9714EF00F137D8 /* BRUserDefaultsSwitchCell.m in Sources */,
+				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */,
 				75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,

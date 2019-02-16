@@ -32,10 +32,10 @@
                                 <rect key="frame" x="0.0" y="20" width="375" height="647"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ltG-IX-nvT" userLabel="Top Container View">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="331.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="298.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ziw-nO-VoZ" customClass="UIControl">
-                                                <rect key="frame" x="0.0" y="113" width="375" height="106"/>
+                                                <rect key="frame" x="0.0" y="96.5" width="375" height="106"/>
                                                 <subviews>
                                                     <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nLL-zN-xqA" userLabel="Main Alignment View">
                                                         <rect key="frame" x="0.0" y="0.0" width="375" height="32"/>
@@ -112,11 +112,11 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JDR-M8-nhI" userLabel="Middle Container View">
                                         <rect key="frame" x="0.0" y="331.5" width="375" height="47"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KS5-Xa-6HP">
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="KS5-Xa-6HP">
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="31"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LYt-ov-Ilw">
-                                                        <rect key="frame" x="0.0" y="0.0" width="324" height="31"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Info" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LYt-ov-Ilw">
+                                                        <rect key="frame" x="0.0" y="0.0" width="324" height="17"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
@@ -126,6 +126,9 @@
                                                         <constraints>
                                                             <constraint firstAttribute="width" constant="51" id="q8B-qq-oPE"/>
                                                         </constraints>
+                                                        <connections>
+                                                            <action selector="instantSendSwitchAction:" destination="JQC-42-iop" eventType="valueChanged" id="SrM-Ff-Try"/>
+                                                        </connections>
                                                     </switch>
                                                 </subviews>
                                             </stackView>
@@ -185,9 +188,10 @@
                                     <constraint firstAttribute="bottom" secondItem="jgl-rZ-xLK" secondAttribute="bottom" id="C5r-4M-GtL"/>
                                     <constraint firstAttribute="trailing" secondItem="JDR-M8-nhI" secondAttribute="trailing" id="Val-uP-gWW"/>
                                     <constraint firstAttribute="trailing" secondItem="jgl-rZ-xLK" secondAttribute="trailing" id="b7B-Zq-x1R"/>
-                                    <constraint firstItem="JDR-M8-nhI" firstAttribute="top" secondItem="ltG-IX-nvT" secondAttribute="bottom" id="bVM-yA-U76"/>
                                     <constraint firstItem="jgl-rZ-xLK" firstAttribute="top" secondItem="JDR-M8-nhI" secondAttribute="bottom" id="crH-3l-Bya"/>
+                                    <constraint firstItem="JDR-M8-nhI" firstAttribute="top" relation="greaterThanOrEqual" secondItem="ltG-IX-nvT" secondAttribute="bottom" id="eSN-j7-3AT"/>
                                     <constraint firstAttribute="trailing" secondItem="ltG-IX-nvT" secondAttribute="trailing" id="mN7-yr-K6L"/>
+                                    <constraint firstItem="jgl-rZ-xLK" firstAttribute="top" secondItem="ltG-IX-nvT" secondAttribute="bottom" constant="80" id="soY-b6-HNA"/>
                                     <constraint firstItem="JDR-M8-nhI" firstAttribute="leading" secondItem="Wsh-Sw-sax" secondAttribute="leading" id="v1p-md-7mX"/>
                                 </constraints>
                             </view>
@@ -212,7 +216,7 @@
                         <outlet property="convertAmountImageView" destination="5qr-w3-8k3" id="ote-hq-1PU"/>
                         <outlet property="infoLabel" destination="LYt-ov-Ilw" id="gWg-0Z-CJj"/>
                         <outlet property="infoStackView" destination="KS5-Xa-6HP" id="Dhx-Xe-1Q8"/>
-                        <outlet property="infoSwitch" destination="MVw-Yj-0dd" id="cfC-hx-0Ev"/>
+                        <outlet property="instantSendSwitch" destination="MVw-Yj-0dd" id="5tZ-H0-MKU"/>
                         <outlet property="mainAmountLabel" destination="X6B-fB-brO" id="1dF-aa-myl"/>
                         <outlet property="mainAmountLabelCenterYConstraint" destination="pNU-lE-sF2" id="TZb-QR-vH6"/>
                         <outlet property="supplementaryAmountLabel" destination="bPo-qH-xOA" id="Di5-Kd-W7s"/>

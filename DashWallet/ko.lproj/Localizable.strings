@@ -534,6 +534,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하지만 즉시 지불을 중지했습니다";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
 
 /* No comment provided by engineer. */
