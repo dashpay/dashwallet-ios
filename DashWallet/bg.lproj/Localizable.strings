@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift неуспешен";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift статус:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift успешен";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "покажи";
@@ -495,9 +489,6 @@
 "spent input" = "изразходен вход";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Стартиране на Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "статус:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Синхронизиране:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Желаното количество за обмяна с shapeshift е твърде голямо, моля въведете стойност под%@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Желаното количество за обмяна с  shapeshift е твърде малко,моля въведете стойност над %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "приложението ще се затвори сега";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "до: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "до: %@ (чрез Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID лимит";

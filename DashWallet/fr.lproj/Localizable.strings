@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id :";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift échoué";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "statut shapeshift :";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift réussi";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift !";
 
 /* No comment provided by engineer. */
 "show" = "montrer";
@@ -495,9 +489,6 @@
 "spent input" = "entrée dépensée";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Shapeshift en démarrage!";
-
-/* No comment provided by engineer. */
 "status:" = "état :";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "En synchronization:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Le montant que vous vouliez shapeshift est trop grand, veuillez saisir un montant en dessous de %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Le montant que vous vouliez shapeshift est trop bas, veuillez saisir un montant au dessus de %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "l'application va se fermer";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "à : %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "vers: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limite pour TouchID";

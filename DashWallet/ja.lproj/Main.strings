@@ -71,42 +71,6 @@
 /* Class = "UILabel"; text = "Start a new wallet by generating a wallet recovery phrase"; ObjectID = "wDZ-DN-szv"; */
 "wDZ-DN-szv.text" = "新しい復元フレーズを生成し、新規ウォレットを作ります。";
 
-/* Class = "UIButton"; normalTitle = "↔︎"; ObjectID = "83W-1O-V9b"; */
-"83W-1O-V9b.normalTitle" = "↔︎";
-
-/* Class = "UIButton"; normalTitle = "."; ObjectID = "Cz1-M6-v6N"; */
-"Cz1-M6-v6N.normalTitle" = ".";
-
-/* Class = "UIButton"; normalTitle = "0"; ObjectID = "OKR-t9-9Lk"; */
-"OKR-t9-9Lk.normalTitle" = "0";
-
-/* Class = "UIButton"; normalTitle = "1"; ObjectID = "bUC-MN-PXO"; */
-"bUC-MN-PXO.normalTitle" = "1";
-
-/* Class = "UIButton"; normalTitle = "2"; ObjectID = "xaD-eI-0iC"; */
-"xaD-eI-0iC.normalTitle" = "2";
-
-/* Class = "UIButton"; normalTitle = "3"; ObjectID = "EnY-9p-vg6"; */
-"EnY-9p-vg6.normalTitle" = "3";
-
-/* Class = "UIButton"; normalTitle = "4"; ObjectID = "VQH-pt-DQg"; */
-"VQH-pt-DQg.normalTitle" = "4";
-
-/* Class = "UIButton"; normalTitle = "5"; ObjectID = "2Af-Xt-dHE"; */
-"2Af-Xt-dHE.normalTitle" = "5";
-
-/* Class = "UIButton"; normalTitle = "6"; ObjectID = "43w-iO-MOK"; */
-"43w-iO-MOK.normalTitle" = "6";
-
-/* Class = "UIButton"; normalTitle = "7"; ObjectID = "jcY-uc-kOc"; */
-"jcY-uc-kOc.normalTitle" = "7";
-
-/* Class = "UIButton"; normalTitle = "8"; ObjectID = "24A-83-L7p"; */
-"24A-83-L7p.normalTitle" = "8";
-
-/* Class = "UIButton"; normalTitle = "9"; ObjectID = "Ika-qg-5Cf"; */
-"Ika-qg-5Cf.normalTitle" = "9";
-
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
 "adc-g6-wnP.text" = "Shapeshiftで交換中";
 

@@ -26,7 +26,6 @@
 
 #import "DWSendViewController.h"
 #import "DWRootViewController.h"
-#import "DWAmountViewController.h"
 #import "DWSettingsViewController.h"
 #import "BRBubbleView.h"
 #import "FBShimmeringView.h"
@@ -1021,7 +1020,7 @@ static NSString *sanitizeString(NSString *s)
                     [self cancelOrChangeAmount];
                     return;
                 }
-                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountViewController class]]) {
+                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountNewViewController class]]) {
                     [self.navigationController.presentedViewController dismissViewControllerAnimated:TRUE completion:^{
                         
                     }];
@@ -1689,184 +1688,6 @@ static NSString *sanitizeString(NSString *s)
     self.amount = amount;
     self.sendInstantly = shouldUseInstantSend;
     [self confirmProtocolRequest:self.request];
-}
-
-// MARK: - DWAmountViewControllerDelegate
-
-- (void)amountViewController:(DWAmountViewController *)amountViewController selectedAmount:(uint64_t)amount
-{
-    self.amount = amount;
-    [self confirmProtocolRequest:self.request];
-}
-
-
--(void)verifyShapeshiftAmountIsInBounds:(uint64_t)amount completionBlock:(void (^)(void))completionBlock failureBlock:(void (^)(void))failureBlock {
-    UIViewController * viewControllerToShowAlert = self;
-    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
-        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
-        viewControllerToShowAlert = presentedController.topViewController;
-    }
-    [[DSShapeshiftManager sharedInstance] GET_marketInfo:^(NSDictionary *marketInfo, NSError *error) {
-        if (error) {
-            failureBlock();
-            UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
-                                         message:error.localizedDescription
-                                         preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                       }];
-            [alert addAction:okButton];
-            [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-        } else {
-            DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-            if ([DSShapeshiftManager sharedInstance].min > (amount * .97)) {
-                failureBlock();
-                UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
-                                             message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too low, "
-                                                                                                  @"please input a value over %@", nil),[priceManager stringForDashAmount:[DSShapeshiftManager sharedInstance].min / .97]]
-                                             preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                           }];
-                [alert addAction:okButton];
-                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                return;
-            } else if ([DSShapeshiftManager sharedInstance].limit < (amount * 1.03)) {
-                failureBlock();
-                UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
-                                             message:[NSString stringWithFormat:NSLocalizedString(@"The amount you wanted to shapeshift is too high, "
-                                                                                                  @"please input a value under %@", nil),[priceManager stringForDashAmount:[DSShapeshiftManager sharedInstance].limit / 1.03]]
-                                             preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                           }];
-                [alert addAction:okButton];
-                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                return;
-            }
-            completionBlock();
-        }
-    }];
-    
-}
-
-- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftBitcoinAmount:(uint64_t)amount approximateDashAmount:(uint64_t)dashAmount
-{
-    UIViewController * viewControllerToShowAlert = self;
-    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
-        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
-        viewControllerToShowAlert = presentedController.topViewController;
-    }
-    MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
-    hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
-    
-    [self verifyShapeshiftAmountIsInBounds:dashAmount completionBlock:^{
-        //we know the exact amount of bitcoins we want to send
-        DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-        DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.shapeshiftRequest.details.outputScripts.firstObject forChain:[DWEnvironment sharedInstance].currentChain];
-        NSString * returnAddress = account.receiveAddress;
-        NSNumber * numberAmount = [priceManager numberForAmount:amount];
-        [[DSShapeshiftManager sharedInstance] POST_SendAmount:numberAmount withAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
-            [hud hideAnimated:TRUE];
-            if (error) {
-                NSLog(@"shapeshiftBitcoinAmount Error %@",error);
-                
-                UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
-                                             message:error.localizedDescription
-                                             preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                           }];
-                [alert addAction:okButton];
-                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                return;
-            }
-            NSString * depositAddress = shiftInfo[@"deposit"];
-            NSString * withdrawalAddress = shiftInfo[@"withdrawal"];
-            NSNumber * withdrawalAmount = shiftInfo[@"withdrawalAmount"];
-            NSNumber * depositAmountNumber = @([shiftInfo[@"depositAmount"] doubleValue]);
-            if (depositAmountNumber && [withdrawalAmount floatValue] && [depositAmountNumber floatValue]) {
-                uint64_t depositAmount = [[[NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%@",depositAmountNumber]] decimalNumberByMultiplyingByPowerOf10:8]
-                                          unsignedLongLongValue];
-                self.amount = depositAmount;
-                
-                DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused fixedAmountOut:depositAmountNumber amountIn:depositAmountNumber];
-                
-                DSPaymentRequest * request = [DSPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,depositAmount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress] onChain:[DWEnvironment sharedInstance].currentChain];
-                [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
-            }
-        }];
-    } failureBlock:^{
-        [hud hideAnimated:TRUE];
-    }];
-}
-
-- (void)amountViewController:(DWAmountViewController *)amountViewController shapeshiftDashAmount:(uint64_t)amount
-{
-    UIViewController * viewControllerToShowAlert = self;
-    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
-        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
-        viewControllerToShowAlert = presentedController.topViewController;
-    }
-    MBProgressHUD *hud  = [MBProgressHUD showHUDAddedTo:self.navigationController.topViewController.view animated:YES];
-    hud.label.text       = NSLocalizedString(@"Starting Shapeshift!", nil);
-    [self verifyShapeshiftAmountIsInBounds:amount completionBlock:^{
-        //we don't know the exact amount of bitcoins we want to send, we are just sending dash
-        DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-        
-        NSString * address = [NSString bitcoinAddressWithScriptPubKey:self.shapeshiftRequest.details.outputScripts.firstObject forChain:[DWEnvironment sharedInstance].currentChain];
-        NSString * returnAddress = account.receiveAddress;
-        self.amount = amount;
-        DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity unusedShapeshiftHavingWithdrawalAddress:address];
-        NSString * depositAddress = shapeshift.inputAddress;
-        
-        if (shapeshift) {
-            [hud hideAnimated:TRUE];
-            DSPaymentRequest * request = [DSPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.request.commonName),address] onChain:[DWEnvironment sharedInstance].currentChain];
-            [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
-        } else {
-            [[DSShapeshiftManager sharedInstance] POST_ShiftWithAddress:address returnAddress:returnAddress completionBlock:^(NSDictionary *shiftInfo, NSError *error) {
-                [hud hideAnimated:TRUE];
-                if (error) {
-                    NSLog(@"shapeshiftDashAmount Error %@",error);
-                    UIAlertController * alert = [UIAlertController
-                                                 alertControllerWithTitle:NSLocalizedString(@"shapeshift failed", nil)
-                                                 message:error.localizedDescription
-                                                 preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"ok", nil)
-                                               style:UIAlertActionStyleCancel
-                                               handler:^(UIAlertAction * action) {
-                                               }];
-                    [alert addAction:okButton];
-                    [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                    return;
-                }
-                NSString * depositAddress = shiftInfo[@"deposit"];
-                NSString * withdrawalAddress = shiftInfo[@"withdrawal"];
-                if (withdrawalAddress && depositAddress) {
-                    DSShapeshiftEntity * shapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:depositAddress andWithdrawalAddress:withdrawalAddress withStatus:eShapeshiftAddressStatus_Unused];
-                    DSPaymentRequest * request = [DSPaymentRequest requestWithString:[NSString stringWithFormat:@"dash:%@?amount=%llu&label=%@&message=Shapeshift to %@",depositAddress,self.amount,sanitizeString(self.shapeshiftRequest.commonName),withdrawalAddress] onChain:[DWEnvironment sharedInstance].currentChain];
-                    [self confirmProtocolRequest:request.protocolRequest currency:@"dash" associatedShapeshift:shapeshift localCurrency:nil localCurrencyAmount:nil];
-                }
-            }];
-        }
-    } failureBlock:^{
-        [hud hideAnimated:TRUE];
-    }];
 }
 
 // MARK: - DWQRScanViewModelDelegate

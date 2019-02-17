@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift failed";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift status:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift succeeded";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "εμφάνιση";
@@ -495,9 +489,6 @@
 "spent input" = "εξοφλημένες εισόδοι";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Starting Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "κατάσταση:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "The amount you wanted to shapeshift is too low, please input a value over %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "η εφαρμογή θα κλείσει τώρα";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "προς: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limit";

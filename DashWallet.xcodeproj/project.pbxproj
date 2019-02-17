@@ -66,7 +66,6 @@
 		757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* DWSeedViewController.m */; };
 		757C89521A2FCE420076B373 /* DWSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757C89511A2FCE420076B373 /* DWSettingsViewController.m */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
-		75878BBF192ACD46002505AB /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BBE192ACD46002505AB /* DWAmountViewController.m */; };
 		75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWReceiveViewController.m */; };
 		758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* DWTxDetailViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
@@ -410,8 +409,6 @@
 		757C89501A2FCE420076B373 /* DWSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSettingsViewController.h; sourceTree = "<group>"; };
 		757C89511A2FCE420076B373 /* DWSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWSettingsViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75878BBD192ACD46002505AB /* DWAmountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
-		75878BBE192ACD46002505AB /* DWAmountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWAmountViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		75878BC0192AEC3F002505AB /* DWReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxHistoryViewController.h; sourceTree = "<group>"; };
 		758DBD0C1980634900389E2A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
@@ -859,8 +856,6 @@
 				75878BC0192AEC3F002505AB /* DWReceiveViewController.m */,
 				84F68C881975E9E2002FC300 /* DWScanViewController.h */,
 				84F68C891975E9E2002FC300 /* DWScanViewController.m */,
-				75878BBD192ACD46002505AB /* DWAmountViewController.h */,
-				75878BBE192ACD46002505AB /* DWAmountViewController.m */,
 				75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */,
 				751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */,
 				757C89501A2FCE420076B373 /* DWSettingsViewController.h */,
@@ -1759,7 +1754,6 @@
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */,
 				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
-				75878BBF192ACD46002505AB /* DWAmountViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				757BE7E3192C0E9D0061CB20 /* DWRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,

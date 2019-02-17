@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift başarısız";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift durumu:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift başarılı";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "göster";
@@ -495,9 +489,6 @@
 "spent input" = "harcama girişi";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Shapeshift başlatılıyor!";
-
-/* No comment provided by engineer. */
 "status:" = "durum:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Eşleniyor:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Shapeshift etmek istediğiniz miktar çok yüksek, lütfen %@ altında bir tutar girin";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Shapeshift etmek istediğiniz miktar çok düşük, lütfen %@ üstünde bir tutar girin";
 
 /* No comment provided by engineer. */
 "the app will now close" = "uygulama şimdi kapatılacak";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "hedef: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "to: %@ (Shapeshift ile)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limiti";

@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift 比特币 id：";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift失败";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift状态：";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift成功";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "显示";
@@ -495,9 +489,6 @@
 "spent input" = "支付输入";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "开始进行Shapeshift！";
-
-/* No comment provided by engineer. */
 "status:" = "状态：";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "同步中：";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "你想要进行shapeshift的数量过高，请输入数量低于 %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "你想要进行shapeshift的数量过低，请输入数量高于 %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "该应用将立即关闭";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "到：%@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "至：%@ (通过 Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "触控ID限制";

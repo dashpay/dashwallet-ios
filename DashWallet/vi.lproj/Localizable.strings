@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift không thành công";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "tình trạng shapeshift:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift thành công";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "hiển thị";
@@ -495,9 +489,6 @@
 "spent input" = "đầu vào";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Bắt đầu Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "tình trạng:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Đang đồng bộ:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Số tiền mà bạn muốn shapeshift quá lớn, hãy sử dụng một lượng nhỏ hơn %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Số tiền mà bạn shapeshift quá ít, hãy sử dụng một lượng lớn hơn %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "ứng dụng sẽ được đóng bây giờ";
@@ -550,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "đến: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "đến: %@ (theo Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Giới hạn Touch ID";
