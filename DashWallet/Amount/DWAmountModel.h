@@ -34,7 +34,7 @@ typedef NS_ENUM(NSUInteger, DWAmountType) {
     DWAmountTypeSupplementary,
 };
 
-@interface DWAmountBaseModel : NSObject
+@interface DWAmountModel : NSObject
 
 @property (readonly, assign, nonatomic) DWAmountInputIntent inputIntent;
 @property (readonly, assign, nonatomic) DWAmountType activeType;

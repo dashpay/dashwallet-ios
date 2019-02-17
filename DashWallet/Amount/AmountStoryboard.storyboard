@@ -10,10 +10,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Amount New View Controller-->
+        <!--Amount View Controller-->
         <scene sceneID="1Xf-aE-Hx6">
             <objects>
-                <viewController id="JQC-42-iop" customClass="DWAmountNewViewController" sceneMemberID="viewController">
+                <viewController id="JQC-42-iop" customClass="DWAmountViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="CMG-CH-NKz">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWAmountBaseModel.h"
+#import "DWAmountModel.h"
 
 #import "DWAmountInputValidator.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountBaseModel ()
+@interface DWAmountModel ()
 
 @property (assign, nonatomic) DWAmountType activeType;
 @property (strong, nonatomic) DWAmountObject *amount;
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWAmountBaseModel
+@implementation DWAmountModel
 
 - (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
                  sendingDestination:(nullable NSString *)sendingDestination

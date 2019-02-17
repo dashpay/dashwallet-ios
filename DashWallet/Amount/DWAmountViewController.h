@@ -19,24 +19,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWAmountNewViewController;
+@class DWAmountViewController;
 @class DSPaymentProtocolDetails;
 
-@protocol DWAmountNewViewControllerDelegate <NSObject>
+@protocol DWAmountViewControllerDelegate <NSObject>
 
-- (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller;
+- (void)amountViewControllerDidCancel:(DWAmountViewController *)controller;
 
 @optional
-- (void)amountViewController:(DWAmountNewViewController *)controller didInputAmount:(uint64_t)amount;
-- (void)amountViewController:(DWAmountNewViewController *)controller
+- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount;
+- (void)amountViewController:(DWAmountViewController *)controller
               didInputAmount:(uint64_t)amount
         shouldUseInstantSend:(BOOL)shouldUseInstantSend;
 
 @end
 
-@interface DWAmountNewViewController : KVOUIViewController
+@interface DWAmountViewController : KVOUIViewController
 
-@property (nullable, weak, nonatomic) id<DWAmountNewViewControllerDelegate> delegate;
+@property (nullable, weak, nonatomic) id<DWAmountViewControllerDelegate> delegate;
 
 + (instancetype)requestController;
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination

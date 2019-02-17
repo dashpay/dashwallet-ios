@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWAmountNewViewController.h"
+#import "DWAmountViewController.h"
 
-#import "DWAmountBaseModel.h"
 #import "DWAmountKeyboard.h"
 #import "DWAmountKeyboardInputViewAudioFeedback.h"
+#import "DWAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,7 +43,7 @@ static CGFloat const SmallAmountTextAlpha = 0.43;
 static CGFloat const MainAmountFontSize = 26.0;
 static CGFloat const SupplementaryAmountFontSize = 14.0;
 
-@interface DWAmountNewViewController () <UITextFieldDelegate>
+@interface DWAmountViewController () <UITextFieldDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
 @property (strong, nonatomic) IBOutlet UIImageView *convertAmountImageView;
@@ -63,28 +63,28 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (null_resettable, strong, nonatomic) UIImageView *logoImageView;
 @property (null_resettable, strong, nonatomic) UIButton *balanceButton;
 
-@property (strong, nonatomic) DWAmountBaseModel *model;
+@property (strong, nonatomic) DWAmountModel *model;
 
 @end
 
-@implementation DWAmountNewViewController
+@implementation DWAmountViewController
 
 + (instancetype)requestController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
-    DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentRequest
-                                                   sendingDestination:nil
-                                                       paymentDetails:nil];
+    DWAmountViewController *controller = [storyboard instantiateInitialViewController];
+    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntentRequest
+                                               sendingDestination:nil
+                                                   paymentDetails:nil];
     return controller;
 }
 
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
-    DWAmountNewViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountBaseModel alloc] initWithInputIntent:DWAmountInputIntentSend
-                                                   sendingDestination:sendingDestination
-                                                       paymentDetails:paymentDetails];
+    DWAmountViewController *controller = [storyboard instantiateInitialViewController];
+    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntentSend
+                                               sendingDestination:sendingDestination
+                                                   paymentDetails:paymentDetails];
     return controller;
 }
 

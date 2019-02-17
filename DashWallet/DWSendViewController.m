@@ -32,7 +32,7 @@
 #import "MBProgressHUD.h"
 #import "DWQRScanViewController.h"
 #import "DWQRScanViewModel.h"
-#import "DWAmountNewViewController.h"
+#import "DWAmountViewController.h"
 #import "DWAmountNavigationController.h"
 
 #define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
@@ -55,7 +55,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface DWSendViewController () <DWQRScanViewModelDelegate, DWAmountNewViewControllerDelegate>
+@interface DWSendViewController () <DWQRScanViewModelDelegate, DWAmountViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) DSTransaction *sweepTx;
@@ -440,12 +440,12 @@ static NSString *sanitizeString(NSString *s)
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     UIViewController * viewControllerToShowAlert = self;
-    DWAmountNewViewController *amountController = nil;
+    DWAmountViewController *amountController = nil;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
         viewControllerToShowAlert = presentedController.topViewController;
-        if ([viewControllerToShowAlert isKindOfClass:DWAmountNewViewController.class]) {
-            amountController = (DWAmountNewViewController *)viewControllerToShowAlert;
+        if ([viewControllerToShowAlert isKindOfClass:DWAmountViewController.class]) {
+            amountController = (DWAmountViewController *)viewControllerToShowAlert;
         }
     }
     if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
@@ -887,7 +887,7 @@ static NSString *sanitizeString(NSString *s)
         sendingDestination = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
     }
     
-    DWAmountNewViewController *amountController = [DWAmountNewViewController sendControllerWithDestination:sendingDestination
+    DWAmountViewController *amountController = [DWAmountViewController sendControllerWithDestination:sendingDestination
                                                                                             paymentDetails:self.request.details];
     amountController.delegate = self;
     DWAmountNavigationController *amountNavigationController = [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
@@ -1020,7 +1020,7 @@ static NSString *sanitizeString(NSString *s)
                     [self cancelOrChangeAmount];
                     return;
                 }
-                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountNewViewController class]]) {
+                if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountViewController class]]) {
                     [self.navigationController.presentedViewController dismissViewControllerAnimated:TRUE completion:^{
                         
                     }];
@@ -1676,13 +1676,13 @@ static NSString *sanitizeString(NSString *s)
     
 }
 
-// MARK: - DWAmountNewViewControllerDelegate
+// MARK: - DWAmountViewControllerDelegate
 
-- (void)amountViewControllerDidCancel:(DWAmountNewViewController *)controller {
+- (void)amountViewControllerDidCancel:(DWAmountViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)amountViewController:(DWAmountNewViewController *)controller
+- (void)amountViewController:(DWAmountViewController *)controller
               didInputAmount:(uint64_t)amount
         shouldUseInstantSend:(BOOL)shouldUseInstantSend {
     self.amount = amount;
