@@ -290,6 +290,10 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 - (void)balanceButtonAction:(id)sender {
+    if (self.model.activeType == DWAmountTypeSupplementary) {
+        [self switchAmountCurrencyAction:sender];
+    }
+
     [self.model selectAllFunds];
 }
 

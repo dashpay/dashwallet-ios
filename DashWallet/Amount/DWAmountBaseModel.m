@@ -151,7 +151,11 @@ NS_ASSUME_NONNULL_BEGIN
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     uint64_t allFunds = wallet.balance;
 
-    // TODO: implement
+    if (allFunds > 0) {
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allFunds];
+        self.amountEnteredInLocalCurrency = nil;
+        [self updateCurrentAmount];
+    }
 }
 
 - (BOOL)isEnteredAmountLessThenMinimumOutputAmount {

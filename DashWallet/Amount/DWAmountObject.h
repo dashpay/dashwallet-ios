@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount
                                dashValidator:(DWAmountInputValidator *)dashValidator;
 
+/**
+ @return Object that internally represents Dash amount
+ */
+- (instancetype)initWithPlainAmount:(uint64_t)plainAmount;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

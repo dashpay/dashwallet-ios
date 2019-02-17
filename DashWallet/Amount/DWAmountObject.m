@@ -126,6 +126,15 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     return self;
 }
 
+- (instancetype)initWithPlainAmount:(uint64_t)plainAmount {
+    NSDecimalNumber *plainNumber = (NSDecimalNumber *)[NSDecimalNumber numberWithUnsignedLongLong:plainAmount];
+    NSDecimalNumber *duffsNumber = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
+    NSDecimalNumber *dashNumber = [plainNumber decimalNumberByDividingBy:duffsNumber];
+    NSString *dashAmountString = [dashNumber descriptionWithLocale:[NSLocale currentLocale]];
+
+    return [self initWithDashAmountString:dashAmountString];
+}
+
 #pragma mark - Private
 
 + (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted {
