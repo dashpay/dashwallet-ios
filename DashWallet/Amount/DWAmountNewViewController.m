@@ -245,7 +245,15 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 - (void)lockBarButtonAction:(id)sender {
-    [self.model unlock];
+    [self.textField resignFirstResponder];
+
+    // Workaround:
+    // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
+    // we show it after a slight delay to prevent UI bug with wrong alert position because of active first responder
+    // on previous screen
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.model unlock];
+    });
 }
 
 - (void)actionButtonAction:(id)sender {
