@@ -193,6 +193,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 #pragma mark - Actions
 
 - (void)cancelButtonAction:(id)sender {
+    [DSEventManager saveEvent:@"amount:dismiss"];
     [self.delegate amountViewControllerDidCancel:self];
 }
 
@@ -295,6 +296,8 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             break;
         }
     }
+
+    [DSEventManager saveEvent:@"amount:pay"];
 }
 
 - (void)balanceButtonAction:(id)sender {

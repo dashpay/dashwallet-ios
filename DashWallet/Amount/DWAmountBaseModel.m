@@ -109,6 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
         self.activeType = DWAmountTypeMain;
     }
     [self updateCurrentAmount];
+
+    [DSEventManager saveEvent:@"amount:swap_currency"];
 }
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
