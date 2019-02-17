@@ -32,12 +32,16 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWAmountInputValidator
 
 - (instancetype)initWithType:(DWAmountInputValidatorType)type {
+    return [self initWithType:type locale:nil];
+}
+
+- (instancetype)initWithType:(DWAmountInputValidatorType)type locale:(nullable NSLocale *)locale {
     self = [super init];
     if (self) {
         _type = type;
 
-        NSLocale *locale = [NSLocale currentLocale];
-        NSString *decimalSeparator = locale.decimalSeparator;
+        NSLocale *locale_ = locale ?: [NSLocale currentLocale];
+        NSString *decimalSeparator = locale_.decimalSeparator;
         _decimalSeparator = decimalSeparator;
 
         NSMutableCharacterSet *mutableCharacterSet = [NSMutableCharacterSet decimalDigitCharacterSet];
@@ -48,6 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
         numberFormatter.lenient = YES;
         numberFormatter.generatesDecimalNumbers = YES;
         numberFormatter.roundingMode = NSNumberFormatterRoundDown;
+        if (locale) {
+            numberFormatter.locale = locale;
+        }
         switch (type) {
             case DWAmountInputValidatorTypeDash: {
                 numberFormatter.maximumFractionDigits = 8;
@@ -64,6 +71,10 @@ NS_ASSUME_NONNULL_BEGIN
         _numberFormatter = numberFormatter;
     }
     return self;
+}
+
+- (nullable NSString *)stringFromNumberUsingInternalFormatter:(NSNumber *)number {
+    return [self.numberFormatter stringFromNumber:number];
 }
 
 - (nullable NSString *)validatedAmountForLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string {
@@ -88,8 +99,14 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(lastInputString);
     NSParameterAssert(string);
 
+    BOOL isRemoving = string.length == 0;
+
+    if (isRemoving && lastInputString.length < range.location + range.length) {
+        return nil;
+    }
+
     NSString *resultText = [lastInputString stringByReplacingCharactersInRange:range withString:string];
-    if (string.length == 0) {
+    if (isRemoving) {
         return resultText;
     }
 

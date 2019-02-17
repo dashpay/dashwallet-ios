@@ -19,133 +19,261 @@
 
 #import "DWAmountInputValidator.h"
 
+#define FS(fmt, sep) [NSString stringWithFormat:fmt, sep]
+
+@interface DWAmountInputTestCase : NSObject
+
+@property (copy, nonatomic) NSString *lastInput;
+@property (assign, nonatomic) NSRange range;
+@property (copy, nonatomic) NSString *string;
+
+@property (nullable, copy, nonatomic) NSString *expectedResult;
+
+@end
+
+@implementation DWAmountInputTestCase
+
++ (instancetype)withLastInput:(NSString *)lastInput string:(NSString *)string expectedResult:(nullable NSString *)expectedResult {
+    DWAmountInputTestCase *testCase = [DWAmountInputTestCase new];
+    testCase.lastInput = lastInput;
+    if (string.length > 0) { // append
+        testCase.range = NSMakeRange(lastInput.length, 0);
+    }
+    else { // backspace
+        if (lastInput.length > 1) {
+            testCase.range = NSMakeRange(MAX(lastInput.length - 1, 0), 1);
+        }
+        else {
+            testCase.range = NSMakeRange(0, 1);
+        }
+    }
+    testCase.string = string;
+    testCase.expectedResult = expectedResult;
+
+    return testCase;
+}
+
+@end
+
+#pragma mark - Test
+
 @interface DWAmountInputValidatorTests : XCTestCase
 
 @property (strong, nonatomic) DWAmountInputValidator *dashValidator;
 @property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
+@property (copy, nonatomic) NSArray<NSLocale *> *locales;
 
 @end
 
 @implementation DWAmountInputValidatorTests
 
 - (void)setUp {
+    NSMutableArray<NSLocale *> *filteredLocales = [NSMutableArray array];
+    NSArray<NSString *> *identifiers = NSLocale.availableLocaleIdentifiers;
+    for (NSString *identifier in identifiers) {
+        NSLocale *locale = [NSLocale localeWithLocaleIdentifier:identifier];
+        if ([self isNonArabicDigitsLocale:locale]) {
+            continue;
+        }
+
+        [filteredLocales addObject:locale];
+    }
+    self.locales = filteredLocales;
+
     self.dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
     self.localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 }
 
-- (void)testFirstInput {
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+- (void)testInitialInput {
+    NSArray<DWAmountInputTestCase *> *testCases = @[
+        [DWAmountInputTestCase withLastInput:@"" string:@"0" expectedResult:@"0"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"1" expectedResult:@"1"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"2" expectedResult:@"2"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"3" expectedResult:@"3"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"4" expectedResult:@"4"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"5" expectedResult:@"5"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"6" expectedResult:@"6"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"7" expectedResult:@"7"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"8" expectedResult:@"8"],
+        [DWAmountInputTestCase withLastInput:@"" string:@"9" expectedResult:@"9"],
+    ];
 
-    NSString *result = [self.dashValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"1"];
-    XCTAssertEqualObjects(result, @"1");
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"2"];
-    XCTAssertEqualObjects(result, @"2");
-
-    NSString *expectedResult = [NSString stringWithFormat:@"0%@", decimalSeparator];
-
-    result = [self.dashValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.dashValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"0"];
-    XCTAssertEqualObjects(result, @"0");
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"0"];
-    XCTAssertEqualObjects(result, @"0");
+    for (NSLocale *locale in self.locales) {
+        [self performTests:testCases locale:locale];
+    }
 }
 
-- (void)testCorrectInput {
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+- (void)testTwoNumbersInput {
+    NSArray<DWAmountInputTestCase *> *testCases = @[
+        [DWAmountInputTestCase withLastInput:@"0" string:@"0" expectedResult:@"0"],
+        [DWAmountInputTestCase withLastInput:@"0" string:@"1" expectedResult:@"1"],
+        [DWAmountInputTestCase withLastInput:@"0" string:@"4" expectedResult:@"4"],
 
-    NSString *result = [self.dashValidator validatedAmountForLastInputString:@"1" range:NSMakeRange(1, 0) replacementString:@"1"];
-    XCTAssertEqualObjects(result, @"11");
+        [DWAmountInputTestCase withLastInput:@"9" string:@"1" expectedResult:@"91"],
+        [DWAmountInputTestCase withLastInput:@"8" string:@"2" expectedResult:@"82"],
+        [DWAmountInputTestCase withLastInput:@"7" string:@"3" expectedResult:@"73"],
+        [DWAmountInputTestCase withLastInput:@"6" string:@"4" expectedResult:@"64"],
+        [DWAmountInputTestCase withLastInput:@"5" string:@"5" expectedResult:@"55"],
+        [DWAmountInputTestCase withLastInput:@"4" string:@"6" expectedResult:@"46"],
+        [DWAmountInputTestCase withLastInput:@"3" string:@"7" expectedResult:@"37"],
+        [DWAmountInputTestCase withLastInput:@"2" string:@"8" expectedResult:@"28"],
+        [DWAmountInputTestCase withLastInput:@"1" string:@"9" expectedResult:@"19"],
+    ];
 
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"2" range:NSMakeRange(1, 0) replacementString:@"2"];
-    XCTAssertEqualObjects(result, @"22");
-
-    NSString *expectedResult = [NSString stringWithFormat:@"1%@", decimalSeparator];
-
-    result = [self.dashValidator validatedAmountForLastInputString:@"1" range:NSMakeRange(1, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"1" range:NSMakeRange(1, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    expectedResult = [NSString stringWithFormat:@"0%@", decimalSeparator];
-    result = [self.dashValidator validatedAmountForLastInputString:@"0" range:NSMakeRange(1, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"0" range:NSMakeRange(1, 0) replacementString:decimalSeparator];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.dashValidator validatedAmountForLastInputString:@"0" range:NSMakeRange(1, 0) replacementString:@"1"];
-    XCTAssertEqualObjects(result, @"1");
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"0" range:NSMakeRange(1, 0) replacementString:@"2"];
-    XCTAssertEqualObjects(result, @"2");
+    for (NSLocale *locale in self.locales) {
+        [self performTests:testCases locale:locale];
+    }
 }
 
-- (void)testLimitations {
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+- (void)testFractionalInput {
+    for (NSLocale *locale in self.locales) {
+        NSString *sep = locale.decimalSeparator;
 
-    NSString *result = [self.dashValidator validatedAmountForLastInputString:@"21000000" range:NSMakeRange(8, 0) replacementString:@"1"];
-    XCTAssertNil(result);
+        NSArray<DWAmountInputTestCase *> *testCases = @[
+            [DWAmountInputTestCase withLastInput:@"" string:sep expectedResult:FS(@"0%@", sep)],
 
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"0%@0", decimalSeparator] range:NSMakeRange(3, 0) replacementString:@"0"];
-    XCTAssertNil(result);
+            [DWAmountInputTestCase withLastInput:@"0" string:sep expectedResult:FS(@"0%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"1" string:sep expectedResult:FS(@"1%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"2" string:sep expectedResult:FS(@"2%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"3" string:sep expectedResult:FS(@"3%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"4" string:sep expectedResult:FS(@"4%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"5" string:sep expectedResult:FS(@"5%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"6" string:sep expectedResult:FS(@"6%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"7" string:sep expectedResult:FS(@"7%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"8" string:sep expectedResult:FS(@"8%@", sep)],
+            [DWAmountInputTestCase withLastInput:@"9" string:sep expectedResult:FS(@"9%@", sep)],
 
-    result = [self.dashValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"0%@0000000", decimalSeparator] range:NSMakeRange(9, 0) replacementString:@"0"];
-    XCTAssertNil(result);
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"0" expectedResult:FS(@"0%@0", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"1" expectedResult:FS(@"0%@1", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"2" expectedResult:FS(@"0%@2", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"3" expectedResult:FS(@"0%@3", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"4" expectedResult:FS(@"0%@4", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"5" expectedResult:FS(@"0%@5", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"6" expectedResult:FS(@"0%@6", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"7" expectedResult:FS(@"0%@7", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"8" expectedResult:FS(@"0%@8", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@", sep) string:@"9" expectedResult:FS(@"0%@9", sep)],
 
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@00", decimalSeparator] range:NSMakeRange(4, 0) replacementString:@"1"];
-    XCTAssertNil(result);
+            [DWAmountInputTestCase withLastInput:FS(@"123%@", sep) string:@"4" expectedResult:FS(@"123%@4", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"10000%@", sep) string:@"5" expectedResult:FS(@"10000%@5", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@0", sep) string:@"1" expectedResult:FS(@"0%@01", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"4%@3", sep) string:@"2" expectedResult:FS(@"4%@32", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"2%@1", sep) string:@"0" expectedResult:FS(@"2%@10", sep)],
+        ];
 
-    result = [self.dashValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@00000000", decimalSeparator] range:NSMakeRange(10, 0) replacementString:@"1"];
-    XCTAssertNil(result);
+        [self performTests:testCases locale:locale];
+    }
+}
+
+- (void)testMaximumLimits {
+    for (NSLocale *locale in self.locales) {
+        NSString *sep = locale.decimalSeparator;
+
+        NSArray<DWAmountInputTestCase *> *testCases = @[
+            [DWAmountInputTestCase withLastInput:FS(@"0%@0", sep) string:@"0" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"1%@00", sep) string:@"1" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"2%@34", sep) string:@"5" expectedResult:nil],
+        ];
+        [self performLocalCurrencyValidatorTests:testCases locale:locale];
+
+        testCases = @[
+            [DWAmountInputTestCase withLastInput:FS(@"0%@00000000", sep) string:@"0" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"1%@00000000", sep) string:@"1" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"2%@34361738", sep) string:@"5" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"21000000" string:@"1" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"21000000" string:@"0" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"21000000" string:sep expectedResult:FS(@"21000000%@", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"21000000%@", sep) string:@"0" expectedResult:FS(@"21000000%@0", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"21000000%@", sep) string:@"1" expectedResult:nil],
+        ];
+        [self performDashValidatorTests:testCases locale:locale];
+    }
 }
 
 - (void)testRemoving {
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+    for (NSLocale *locale in self.locales) {
+        NSString *sep = locale.decimalSeparator;
 
-    NSString *result = [self.dashValidator validatedAmountForLastInputString:@"1" range:NSMakeRange(0, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, @"");
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"2" range:NSMakeRange(0, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, @"");
-
-    NSString *expectedResult = [NSString stringWithFormat:@"1%@0", decimalSeparator];
-
-    result = [self.dashValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@01", decimalSeparator] range:NSMakeRange(3, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@01", decimalSeparator] range:NSMakeRange(3, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    expectedResult = [NSString stringWithFormat:@"1%@", decimalSeparator];
-    result = [self.dashValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@0", decimalSeparator] range:NSMakeRange(2, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, expectedResult);
-
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"1%@0", decimalSeparator] range:NSMakeRange(2, 1) replacementString:@""];
-    XCTAssertEqualObjects(result, expectedResult);
+        NSArray<DWAmountInputTestCase *> *testCases = @[
+            [DWAmountInputTestCase withLastInput:FS(@"1%@01", sep) string:@"" expectedResult:FS(@"1%@0", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"1%@0", sep) string:@"" expectedResult:FS(@"1%@", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"1%@", sep) string:@"" expectedResult:@"1"],
+            [DWAmountInputTestCase withLastInput:@"1" string:@"" expectedResult:@""],
+            [DWAmountInputTestCase withLastInput:@"0" string:@"" expectedResult:@""],
+        ];
+        [self performTests:testCases locale:locale];
+    }
 }
 
 - (void)testInvalidInput {
-    NSString *result = [self.dashValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"a"];
-    XCTAssertNil(result);
+    for (NSLocale *locale in self.locales) {
+        NSString *sep = locale.decimalSeparator;
 
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:@"" range:NSMakeRange(0, 0) replacementString:@"b"];
-    XCTAssertNil(result);
+        NSArray<DWAmountInputTestCase *> *testCases = @[
+            [DWAmountInputTestCase withLastInput:@"" string:@"" expectedResult:nil],
 
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+            [DWAmountInputTestCase withLastInput:@"" string:@"a" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"1" string:@"-" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"2" string:@"+" expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:@"3" string:@"$" expectedResult:nil],
 
-    result = [self.dashValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"0%@", decimalSeparator] range:NSMakeRange(2, 0) replacementString:decimalSeparator];
-    XCTAssertNil(result);
+            [DWAmountInputTestCase withLastInput:FS(@"1%@", sep) string:sep expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"1%@2", sep) string:sep expectedResult:nil],
+            [DWAmountInputTestCase withLastInput:FS(@"23%@45", sep) string:sep expectedResult:nil],
+        ];
+        [self performTests:testCases locale:locale];
+    }
+}
 
-    result = [self.localCurrencyValidator validatedAmountForLastInputString:[NSString stringWithFormat:@"0%@", decimalSeparator] range:NSMakeRange(2, 0) replacementString:decimalSeparator];
-    XCTAssertNil(result);
+#pragma mark - Private
+
+- (void)performTests:(NSArray<DWAmountInputTestCase *> *)testCases locale:(NSLocale *)locale {
+    [self performDashValidatorTests:testCases locale:locale];
+    [self performLocalCurrencyValidatorTests:testCases locale:locale];
+}
+
+- (void)performDashValidatorTests:(NSArray<DWAmountInputTestCase *> *)testCases locale:(NSLocale *)locale {
+    for (DWAmountInputTestCase *test in testCases) {
+        DWAmountInputValidator *validator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash
+                                                                                  locale:locale];
+        XCTAssertNotNil(validator);
+        [self checkTestCase:test validator:validator locale:locale];
+    }
+}
+
+- (void)performLocalCurrencyValidatorTests:(NSArray<DWAmountInputTestCase *> *)testCases locale:(NSLocale *)locale {
+    for (DWAmountInputTestCase *test in testCases) {
+        DWAmountInputValidator *validator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency
+                                                                                  locale:locale];
+        XCTAssertNotNil(validator);
+        [self checkTestCase:test validator:validator locale:locale];
+    }
+}
+
+- (void)checkTestCase:(DWAmountInputTestCase *)testCase validator:(DWAmountInputValidator *)validator locale:(NSLocale *)locale {
+    NSString *result = [validator validatedAmountForLastInputString:testCase.lastInput
+                                                              range:testCase.range
+                                                  replacementString:testCase.string];
+
+    if (testCase.expectedResult) {
+        XCTAssertEqualObjects(result, testCase.expectedResult,
+                              @"Last input: %@ Replacement string: %@ Result: %@ Expected: %@ Locale: %@",
+                              testCase.lastInput, testCase.string, result, testCase.expectedResult, locale.localeIdentifier);
+    }
+    else {
+        XCTAssertNil(result,
+                     @"Last input: %@ Replacement string: %@ Result: %@ Expected: %@ Locale: %@",
+                     testCase.lastInput, testCase.string, result, testCase.expectedResult, locale.localeIdentifier);
+    }
+}
+
+- (BOOL)isNonArabicDigitsLocale:(NSLocale *)locale {
+    NSCharacterSet *arabicDigitsSet = [NSCharacterSet characterSetWithCharactersInString:@"1234567890"];
+    NSDecimalNumber *testNumber = [NSDecimalNumber decimalNumberWithString:@"1234567890"];
+    NSNumberFormatter *testNumberFormatter = [[NSNumberFormatter alloc] init];
+    testNumberFormatter.locale = locale;
+    NSCharacterSet *testResultSet = [NSCharacterSet characterSetWithCharactersInString:[testNumberFormatter stringFromNumber:testNumber]];
+    return ([testResultSet isSupersetOfSet:arabicDigitsSet] == NO);
 }
 
 @end

@@ -96,13 +96,15 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (self.activeType == DWAmountTypeMain) {
         if (!self.amountEnteredInLocalCurrency) {
-            self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initAsLocalWithPreviousAmount:self.amountEnteredInDash];
+            self.amountEnteredInLocalCurrency = [[DWAmountObject alloc] initAsLocalWithPreviousAmount:self.amountEnteredInDash
+                                                                               localCurrencyValidator:self.localCurrencyValidator];
         }
         self.activeType = DWAmountTypeSupplementary;
     }
     else {
         if (!self.amountEnteredInDash) {
-            self.amountEnteredInDash = [[DWAmountObject alloc] initAsDashWithPreviousAmount:self.amountEnteredInLocalCurrency];
+            self.amountEnteredInDash = [[DWAmountObject alloc] initAsDashWithPreviousAmount:self.amountEnteredInLocalCurrency
+                                                                              dashValidator:self.dashValidator];
         }
         self.activeType = DWAmountTypeMain;
     }

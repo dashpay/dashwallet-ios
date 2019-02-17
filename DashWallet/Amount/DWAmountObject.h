@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWAmountInputValidator;
+
 @interface DWAmountObject : NSObject
 
 @property (readonly, copy, nonatomic) NSAttributedString *dashAttributedString;
@@ -43,11 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  @return Object that internally represents local currency amount
  */
-- (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount;
+- (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount
+                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator;
 /**
  @return Object that internally represents Dash amount
  */
-- (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount;
+- (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount
+                               dashValidator:(DWAmountInputValidator *)dashValidator;
 
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -17,6 +17,7 @@
 
 #import "DWAmountObject.h"
 
+#import "DWAmountInputValidator.h"
 #import <DashSync/DSPriceManager.h>
 #import <DashSync/NSString+Dash.h>
 
@@ -87,11 +88,17 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     return self;
 }
 
-- (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount {
+- (instancetype)initAsLocalWithPreviousAmount:(DWAmountObject *)previousAmount
+                       localCurrencyValidator:(DWAmountInputValidator *)localCurrencyValidator {
     self = [super init];
     if (self) {
+        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         _plainAmount = previousAmount.plainAmount;
-        _amountInternalRepresentation = [self.class rawAmountStringFromFormattedString:previousAmount.localCurrencyFormatted];
+        NSString *rawAmount = [self.class rawAmountStringFromFormattedString:previousAmount.localCurrencyFormatted
+                                                             numberFormatter:priceManager.localFormat
+                                                                   validator:localCurrencyValidator];
+        NSParameterAssert(rawAmount);
+        _amountInternalRepresentation = rawAmount;
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
         _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolSmallSize];
@@ -100,11 +107,17 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     return self;
 }
 
-- (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount {
+- (instancetype)initAsDashWithPreviousAmount:(DWAmountObject *)previousAmount
+                               dashValidator:(DWAmountInputValidator *)dashValidator {
     self = [super init];
     if (self) {
+        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         _plainAmount = previousAmount.plainAmount;
-        _amountInternalRepresentation = [self.class rawAmountStringFromFormattedString:previousAmount.dashFormatted];
+        NSString *rawAmount = [self.class rawAmountStringFromFormattedString:previousAmount.dashFormatted
+                                                             numberFormatter:priceManager.dashFormat
+                                                                   validator:dashValidator];
+        NSParameterAssert(rawAmount);
+        _amountInternalRepresentation = rawAmount;
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
         _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolBigSize];
@@ -145,19 +158,26 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     return [attributedString copy];
 }
 
-+ (NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString {
++ (nullable NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString
+                                          numberFormatter:(NSNumberFormatter *)numberFormatter
+                                                validator:(DWAmountInputValidator *)validator {
     NSLocale *locale = [NSLocale currentLocale];
-    NSString *decimalSeparator = locale.decimalSeparator;
-    NSMutableCharacterSet *allowedCharacterSet = [NSMutableCharacterSet decimalDigitCharacterSet];
-    [allowedCharacterSet addCharactersInString:decimalSeparator];
+    return [self rawAmountStringFromFormattedString:formattedString
+                                    numberFormatter:numberFormatter
+                                          validator:validator
+                                             locale:locale];
+}
 
-    NSString *result = [[formattedString componentsSeparatedByCharactersInSet:[allowedCharacterSet invertedSet]]
-        componentsJoinedByString:@""];
-
-    NSDecimalNumber *decimalNumber = [NSDecimalNumber decimalNumberWithString:result locale:locale];
-    if ([decimalNumber isEqual:NSDecimalNumber.zero]) { // edge case
-        result = @"0";
++ (nullable NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString
+                                          numberFormatter:(NSNumberFormatter *)numberFormatter
+                                                validator:(DWAmountInputValidator *)validator
+                                                   locale:(NSLocale *)locale {
+    NSNumber *number = [numberFormatter numberFromString:formattedString];
+    if (!number) {
+        return nil;
     }
+
+    NSString *result = [validator stringFromNumberUsingInternalFormatter:number];
 
     return result;
 }
@@ -165,18 +185,41 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
 + (NSString *)formattedAmountWithInputString:(NSString *)inputString
                              formattedString:(NSString *)formattedString
                              numberFormatter:(NSNumberFormatter *)numberFormatter {
+    NSLocale *locale = [NSLocale currentLocale];
+    return [self formattedAmountWithInputString:inputString
+                                formattedString:formattedString
+                                numberFormatter:numberFormatter
+                                         locale:locale];
+}
+
++ (NSString *)formattedAmountWithInputString:(NSString *)inputString
+                             formattedString:(NSString *)formattedString
+                             numberFormatter:(NSNumberFormatter *)numberFormatter
+                                      locale:(NSLocale *)locale {
     NSAssert(numberFormatter.numberStyle == NSNumberFormatterCurrencyStyle, @"Invalid number formatter");
 
-    NSString *decimalSeparator = [NSLocale currentLocale].decimalSeparator;
+    NSString *decimalSeparator = locale.decimalSeparator;
     NSAssert([numberFormatter.decimalSeparator isEqualToString:decimalSeparator], @"Custom decimal separators are not supported");
     NSUInteger inputSeparatorIndex = [inputString rangeOfString:decimalSeparator].location;
     if (inputSeparatorIndex == NSNotFound) {
         return formattedString;
     }
 
-    NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceCharacterSet];
 
-    NSRange currencySymbolRange = [formattedString rangeOfString:numberFormatter.currencySymbol];
+    NSString *currencySymbol = [self currencySymbolFromFormattedString:formattedString numberFormatter:numberFormatter];
+    if (currencySymbol.length == 0) {
+        // handle Dash number formatter as it has "DASH NARROW_NBSP" as currency symbol
+        if ([numberFormatter.currencySymbol rangeOfString:DASH].location != NSNotFound) {
+            currencySymbol = numberFormatter.currencySymbol;
+        }
+        else {
+            // special case for countries with empty currency symbol (Cape Verde so far)
+            return formattedString;
+        }
+    }
+
+    NSRange currencySymbolRange = [formattedString rangeOfString:currencySymbol];
     NSAssert(currencySymbolRange.location != NSNotFound, @"Invalid formatted string");
 
     BOOL isCurrencySymbolAtTheBeginning = currencySymbolRange.location == 0;
@@ -208,7 +251,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     NSString *result = nil;
     if (isCurrencySymbolAtTheBeginning) {
         result = [NSString stringWithFormat:@"%@%@%@",
-                                            numberFormatter.currencySymbol,
+                                            currencySymbol,
                                             currencySymbolNumberSeparator,
                                             formattedStringWithFractionInput];
     }
@@ -216,10 +259,50 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
         result = [NSString stringWithFormat:@"%@%@%@",
                                             formattedStringWithFractionInput,
                                             currencySymbolNumberSeparator,
-                                            numberFormatter.currencySymbol];
+                                            currencySymbol];
     }
 
     return result;
+}
+
+/**
+ Extract currency symbol from string formatted by number formatter
+
+ @discussion By default, `NSNumberFormatter` uses `[NSLocale currentLocale]` to determine `currencySymbol`.
+ When we manually set `currencyCode`, `currencySymbol` is no longer valid.
+ For instance, if user has *_RU locale: `numberFormatter.currencySymbol` is RUB but formatted string is "1.23 US$",
+ because he selected US Dollars as local price. So we have to manually parse the correct currency symbol.
+ */
++ (nullable NSString *)currencySymbolFromFormattedString:(NSString *)formattedString numberFormatter:(NSNumberFormatter *)numberFormatter {
+    NSString *const CurrencySymbol = @"¤";
+
+    NSString *format = numberFormatter.positiveFormat; // since we work only with positive numbers
+    NSRange currencySymbolRange = [format rangeOfString:CurrencySymbol];
+    NSAssert(currencySymbolRange.location != NSNotFound, @"Invalid formatted string");
+    if (currencySymbolRange.location == NSNotFound) {
+        return nil;
+    }
+
+    BOOL isCurrencySymbolAtTheBeginning = currencySymbolRange.location == 0;
+    BOOL isCurrencySymbolAtTheEnd = (currencySymbolRange.location + currencySymbolRange.length) == format.length;
+
+    if (!isCurrencySymbolAtTheBeginning && !isCurrencySymbolAtTheEnd) {
+        // special case to deal with RTL languages
+        if ([format hasPrefix:@"\U0000200e"] || [format hasPrefix:@"\U0000200f"]) {
+            return numberFormatter.currencySymbol;
+        }
+    }
+
+    NSMutableCharacterSet *digitAndWhitespaceSet = [NSMutableCharacterSet decimalDigitCharacterSet];
+    [digitAndWhitespaceSet formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
+
+    NSArray<NSString *> *separatedString = [formattedString componentsSeparatedByCharactersInSet:digitAndWhitespaceSet];
+    if (isCurrencySymbolAtTheBeginning) {
+        return separatedString.firstObject;
+    }
+    else {
+        return separatedString.lastObject;
+    }
 }
 
 @end

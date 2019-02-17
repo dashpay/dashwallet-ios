@@ -28,11 +28,14 @@ typedef NS_ENUM(NSUInteger, DWAmountInputValidatorType) {
 
 @property (readonly, assign, nonatomic) DWAmountInputValidatorType type;
 
+- (nullable NSString *)stringFromNumberUsingInternalFormatter:(NSNumber *)number;
+
 - (nullable NSString *)validatedAmountForLastInputString:(NSString *)lastInputString
                                                    range:(NSRange)range
                                        replacementString:(NSString *)string;
 
-- (instancetype)initWithType:(DWAmountInputValidatorType)type NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithType:(DWAmountInputValidatorType)type;
+- (instancetype)initWithType:(DWAmountInputValidatorType)type locale:(nullable NSLocale *)locale NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
