@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
         numberFormatter.lenient = YES;
         numberFormatter.generatesDecimalNumbers = YES;
         numberFormatter.roundingMode = NSNumberFormatterRoundDown;
+        numberFormatter.minimumIntegerDigits = 1;
         if (locale) {
             numberFormatter.locale = locale;
         }

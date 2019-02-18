@@ -60,14 +60,18 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    uint64_t maxIXOutputAmount = [account maxOutputAmountWithConfirmationCount:IX_PREVIOUS_CONFIRMATIONS_NEEDED
-                                                              usingInstantSend:YES];
+    uint64_t maxIXOutputAmount =
+        [account maxOutputAmountWithConfirmationCount:account.wallet.chain.ixPreviousConfirmationsNeeded
+                                     usingInstantSend:YES];
     BOOL isInstantSendAvailable = maxIXOutputAmount >= amount;
     if (!isInstantSendAvailable) {
+        _useInstantSend = NO;
         self.state = DWAmountSendOptionsModelStateRegular;
 
         return;
     }
+
+    _useInstantSend = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
 
     BOOL canAutoLock = [account canUseAutoLocksForAmount:amount];
     if (!canAutoLock) {
@@ -80,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
         uint64_t instantSendFee = tx.standardInstantFee - tx.standardFee;
         NSAssert(instantSendFee > 0, @"Invalid instant send extra fee");
         if (instantSendFee <= 0) {
+            _useInstantSend = NO;
             self.state = DWAmountSendOptionsModelStateRegular;
 
             return;

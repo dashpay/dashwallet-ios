@@ -174,10 +174,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self.textField becomeFirstResponder];
-    UITextPosition *endOfDocumentPosition = self.textField.endOfDocument;
-    self.textField.selectedTextRange = [self.textField textRangeFromPosition:endOfDocumentPosition
-                                                                  toPosition:endOfDocumentPosition];
+    [self resetTextFieldPosition];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -241,7 +238,10 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
                              completion:nil];
             [UIView animateWithDuration:0.4 animations:^{
                 self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
-            }];
+            }
+                completion:^(BOOL finished) {
+                    [self resetTextFieldPosition];
+                }];
         }];
 }
 
@@ -303,7 +303,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
                 [self.delegate amountViewController:self
                                      didInputAmount:self.model.amount.plainAmount
                                shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
-                
+
                 self.view.userInteractionEnabled = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
             });
@@ -336,6 +336,13 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 }
 
 #pragma mark - Private
+
+- (void)resetTextFieldPosition {
+    [self.textField becomeFirstResponder];
+    UITextPosition *endOfDocumentPosition = self.textField.endOfDocument;
+    self.textField.selectedTextRange = [self.textField textRangeFromPosition:endOfDocumentPosition
+                                                                  toPosition:endOfDocumentPosition];
+}
 
 - (void)setupView {
     UIBarButtonItem *cancelButton =
