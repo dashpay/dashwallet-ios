@@ -252,8 +252,12 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
     // we show it after a slight delay to prevent UI bug with wrong alert position because of active first responder
     // on previous screen
+    self.view.userInteractionEnabled = NO;
+    self.navigationItem.rightBarButtonItem.enabled = NO;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.model unlock];
+        self.view.userInteractionEnabled = YES;
+        self.navigationItem.rightBarButtonItem.enabled = YES;
     });
 }
 
@@ -289,9 +293,20 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:shouldUseInstantSend:)],
                      @"Amount view controller's delegate should respond to amountViewController:didInputAmount:shouldUseInstantSend:");
 
-            [self.delegate amountViewController:self
-                                 didInputAmount:self.model.amount.plainAmount
-                           shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
+            // Workaround:
+            // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
+            // we show it after a slight delay to prevent UI bug with wrong alert position because of active first responder
+            // on previous screen
+            self.view.userInteractionEnabled = NO;
+            self.navigationItem.rightBarButtonItem.enabled = NO;
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self.delegate amountViewController:self
+                                     didInputAmount:self.model.amount.plainAmount
+                               shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
+                
+                self.view.userInteractionEnabled = YES;
+                self.navigationItem.rightBarButtonItem.enabled = YES;
+            });
 
             break;
         }
