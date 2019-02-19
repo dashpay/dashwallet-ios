@@ -20,7 +20,6 @@
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
 #import "DWUpholdTransferViewController.h"
-#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -61,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(upholdClientUserDidLogoutNotification:)
                                                  name:DWUpholdClientUserDidLogoutNotification
                                                object:nil];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self.model
                                              selector:@selector(fetch)
                                                  name:UIApplicationDidBecomeActiveNotification
@@ -113,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                           target:self
                                                                           action:@selector(logOutButtonAction:)];
     [navigationItem setRightBarButtonItem:rightBarButtonItem animated:YES];
-    
+
     [self.model fetch];
 }
 
@@ -142,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    [self openSafariControllerWithURL:url];
+    [self openSafariAppWithURL:url];
 }
 
 - (void)logOutButtonAction:(id)sender {
@@ -161,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
                            openTransactionURL:(NSURL *)url {
     [self.model fetch];
     [controller dismissViewControllerAnimated:YES completion:^{
-        [self openSafariControllerWithURL:url];
+        [self openSafariAppWithURL:url];
     }];
 }
 
@@ -171,9 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)openSafariControllerWithURL:(NSURL *)url {
-    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-    [self presentViewController:controller animated:YES completion:nil];
+- (void)openSafariAppWithURL:(NSURL *)url {
+    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 }
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {

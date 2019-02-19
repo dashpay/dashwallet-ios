@@ -17,6 +17,9 @@
 
 #import "DWUpholdAuthViewController.h"
 
+#import <AuthenticationServices/AuthenticationServices.h>
+#import <SafariServices/SafariServices.h>
+
 #import "DWAppDelegate.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -29,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *firstDescriptionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *secondDescriptionLabel;
 @property (strong, nonatomic) IBOutlet UIButton *linkButton;
+
+@property (nullable, strong, nonatomic) id authenticationSession;
 
 @end
 
@@ -56,12 +61,48 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)linkUpholdAccountButtonAction:(id)sender {
     NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
-    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-    [self presentViewController:controller animated:YES completion:nil];
+
+    NSString *callbackURLScheme = @"dashwallet://";
+    __weak typeof(self) weakSelf = self;
+    void (^completionHandler)(NSURL *_Nullable callbackURL, NSError *_Nullable error) = ^(NSURL *_Nullable callbackURL, NSError *_Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (callbackURL) {
+            [strongSelf handleCallbackURL:callbackURL];
+        }
+    };
+
+    if (@available(iOS 12.0, *)) {
+        ASWebAuthenticationSession *authenticationSession =
+            [[ASWebAuthenticationSession alloc] initWithURL:url
+                                          callbackURLScheme:callbackURLScheme
+                                          completionHandler:completionHandler];
+        [authenticationSession start];
+        self.authenticationSession = authenticationSession;
+    }
+    else if (@available(iOS 11.0, *)) {
+        SFAuthenticationSession *authenticationSession =
+            [[SFAuthenticationSession alloc] initWithURL:url
+                                       callbackURLScheme:callbackURLScheme
+                                       completionHandler:completionHandler];
+        [authenticationSession start];
+        self.authenticationSession = authenticationSession;
+    }
+    else {
+        SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
+        [self presentViewController:controller animated:YES completion:nil];
+    }
 }
 
 - (void)didReceiveURLNotification:(NSNotification *)n {
     NSURL *url = n.userInfo[@"url"];
+    [self handleCallbackURL:url];
+}
+
+- (void)handleCallbackURL:(NSURL *)url {
     if (![url.absoluteString containsString:@"uphold"]) {
         return;
     }
@@ -69,7 +110,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.linkButton.hidden = YES;
     [self.activityIndicatorView startAnimating];
 
-    [self dismissViewControllerAnimated:YES completion:nil];
+    if (@available(iOS 11.0, *)) {
+        self.authenticationSession = nil;
+    }
+    else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
 
     __weak typeof(self) weakSelf = self;
     [[DWUpholdClient sharedInstance] completeAuthRoutineWithURL:url completion:^(BOOL success) {
