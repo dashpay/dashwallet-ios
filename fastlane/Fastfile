@@ -9,17 +9,20 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
-fastlane_version "2.60.0"
+fastlane_version "2.80.0"
 
 default_platform(:ios)
 
 platform :ios do
   ENV["XCODE_SCHEME"]="dashwallet"
   ENV["XCODE_PROJECT"]="DashWallet.xcodeproj"
+  ENV["XCODE_WORKSPACE"]="DashWallet.xcworkspace"
 
   desc "Push a new beta build to TestFlight"
   lane :beta do
     ensure_git_status_clean
+
+    cocoapods_install
 
     increment_build_number
 
@@ -66,8 +69,20 @@ platform :ios do
 
   desc "Run tests"
   lane :test do
+    setup_travis
+    
     scan(
-      scheme: ENV["XCODE_SCHEME"]
+      workspace: ENV["XCODE_WORKSPACE"],
+      clean: true,
+      scheme: ENV["XCODE_SCHEME"],
+      devices: ["iPhone 8"],
     )
   end
+
+  private_lane :cocoapods_install do
+    cocoapods(
+      repo_update: true
+    )
+  end
+
 end

@@ -1,8 +1,16 @@
-osx_image: xcode9.2
+osx_image: xcode10.1
 language: objective-c
 
+cache: cocoapods
+
 before_install:
-- set -o pipefail
+  - brew install cmake # for compiling BLS
+  - gem install fastlane
+  - set -o pipefail
+  - pushd .. && git clone https://github.com/dashevo/dashsync-iOS.git DashSync && pushd DashSync && git checkout `cat ../dashwallet/DashSyncCurrentCommit` && popd && popd
+  - travis_wait 45 pod install --repo-update
+
+install: true # disable automatic `pod install`
 
 script:
-- fastlane test
+  - fastlane test

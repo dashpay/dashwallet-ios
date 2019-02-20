@@ -35,14 +35,6 @@ end
 
 # fixes warnings about unsupported Deployment Target in Xcode 10
 post_install do |installer|
-    installer.pods_project.targets.each do |target|
-        if target.name == 'AFNetworking'
-            target.build_configurations.each do |config|
-                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '8.0'
-            end
-        end
-    end
-    
     # update info about current DashSync version
-    system("bash scripts/dashsync_version.sh")
+    system("bash ./scripts/dashsync_version.sh")
 end
