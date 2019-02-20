@@ -53,6 +53,8 @@
 #define BACKUP_DIALOG_TIME_KEY @"BACKUP_DIALOG_TIME"
 #define BALANCE_KEY            @"BALANCE"
 
+static double const SYNCING_COMPLETED_PROGRESS = 0.995;
+
 @interface DWRootViewController ()
 
 @property (nonatomic, strong) IBOutlet UIProgressView *progress, *pulse;
@@ -71,7 +73,6 @@
 @property (nonatomic, strong) id urlObserver, fileObserver, balanceObserver, seedObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
-@property (nonatomic, assign) NSTimeInterval timeout, start;
 @property (nonatomic, assign) SystemSoundID pingsound;
 
 @end
@@ -448,13 +449,13 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
                                                            [self hideErrorBarWithCompletion:nil];
-                                                           [self startActivityWithTimeout:0];
+                                                           [self startSyncingActivity];
                                                        }];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
+                                                           [self stopSyncingActivity];
                                                            [self showBackupDialogIfNeeded];
                                                            if (! self.shouldShowTips) [self hideTips];
                                                            self.shouldShowTips = YES;
@@ -466,16 +467,11 @@
     self.syncFailedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
+                                                           [self stopSyncingActivity];
                                                            [self showBackupDialogIfNeeded];
                                                            [self.receiveViewController updateAddress];
                                                            [self showErrorBar];
                                                        }];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(chainNewBlockNotification)
-                                                 name:DSChainNewChainTipBlockNotification
-                                               object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -744,7 +740,7 @@
     [[NSUserDefaults standardUserDefaults] setDouble:balance forKey:BALANCE_KEY];
     
     if (self.shouldShowTips && self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        [self updateTitleView];
+        [self updateTitleViewBalance];
     }
 }
 
@@ -763,7 +759,7 @@
     return titleLabel;
 }
 
--(void)updateTitleView {
+-(void)updateTitleViewBalance {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
         DSPriceManager * priceManager = [DSPriceManager sharedInstance];
         DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
@@ -778,39 +774,17 @@
     }
 }
 
-- (void)showSyncing
-{
-    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
-    DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && wallet.walletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
-        self.shouldShowTips = NO;
-        self.navigationItem.titleView = nil;
-        self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
-    }
+- (void)startActivityWithTimeout:(NSTimeInterval)timeout {
+    // TODO: refactor displaying progress of sending tx
 }
 
-- (void)startActivityWithTimeout:(NSTimeInterval)timeout
+- (void)stopActivityWithSuccess:(BOOL)success {
+    // TODO: refactor displaying progress of sending tx
+}
+
+- (void)startSyncingActivity
 {
-    NSTimeInterval start = [NSDate timeIntervalSince1970];
-    
-    if (timeout > 1 && start + timeout > self.start + self.timeout) {
-        self.timeout = timeout;
-        self.start = start;
-    }
-    
-    if (timeout <= DBL_EPSILON) {
-        DSChain * chain = [DWEnvironment sharedInstance].currentChain;
-        DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-        if ([chain timestampForBlockHeight:chain.lastBlockHeight] +
-            WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
-            if (wallet.walletCreationTime + DAY_TIME_INTERVAL < start) {
-                self.shouldShowTips = NO;
-                self.navigationItem.titleView = nil;
-                self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
-            }
-        }
-        else [self performSelector:@selector(showSyncing) withObject:nil afterDelay:5.0];
-    }
+    self.shouldShowTips = NO;
     
     [UIApplication sharedApplication].idleTimerDisabled = YES;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
@@ -819,11 +793,10 @@
     [self updateProgress];
 }
 
-- (void)stopActivityWithSuccess:(BOOL)success
+- (void)stopSyncingActivity
 {
     double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     
-    self.start = self.timeout = 0.0;
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) return; // not done syncing
     
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
@@ -832,33 +805,20 @@
     }
     self.shouldShowTips = YES;
 
+    [self updateNavigationBarTitle];
     
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    if (self.progress.alpha < 0.5) return;
     
-    if (success) {
-        [self.progress setProgress:1.0 animated:YES];
-        [self.pulse setProgress:1.0 animated:YES];
-        
-        [UIView animateWithDuration:0.2 animations:^{
-            self.progress.alpha = self.pulse.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            self.progress.hidden = self.pulse.hidden = YES;
-            self.progress.progress = self.pulse.progress = 0.0;
-        }];
-    }
-    else {
+    [self.progress setProgress:1.0 animated:YES];
+    [self.pulse setProgress:1.0 animated:YES];
+    
+    [UIView animateWithDuration:0.2 animations:^{
+        self.progress.alpha = self.pulse.alpha = 0.0;
+    } completion:^(BOOL finished) {
         self.progress.hidden = self.pulse.hidden = YES;
         self.progress.progress = self.pulse.progress = 0.0;
-    }
-    if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
-        self.navigationItem.titleView = self.logo;
-    }
-    else {
-        self.navigationItem.titleView = nil;
-        [self updateTitleView];
-    }
+    }];
 }
 
 - (void)setProgressTo:(NSNumber *)n
@@ -866,71 +826,72 @@
     self.progress.progress = n.floatValue;
 }
 
-- (void)chainNewBlockNotification
-{
-    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0) { // not done syncing
-        if (self.progress.hidden) {
-            [self startActivityWithTimeout:0];
-        }
-        else {
-            [self updateProgress];
-        }
-    }
-    else {
-        [self stopActivityWithSuccess:YES];
-    }
-}
-
 - (void)updateProgress
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgress) object:nil];
     
-    static int counter = 0;
-    NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
-    NSParameterAssert(progress >= 0.0 && progress <= 1.0);
-    progress = MAX(0.0, MIN(1.0, progress));
-    DSChain * chain = [DWEnvironment sharedInstance].currentChain;
+    
     if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
+        DSChain *chain = [DWEnvironment sharedInstance].currentChainManager.chain;
         self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
                              chain.lastBlockHeight,
                              chain.estimatedBlockHeight];
     }
     
-    if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
-    
-    if ((counter % 13) == 0) {
-        self.pulse.alpha = 1.0;
-        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
-        [self.progress setProgress:progress animated:progress > self.progress.progress];
+    if (progress < SYNCING_COMPLETED_PROGRESS) {
+        static int counter = 0;
         
-        if (progress > self.progress.progress) {
-            [self performSelector:@selector(setProgressTo:) withObject:@(progress) afterDelay:1.0];
+        if ((counter % 13) == 0) {
+            self.pulse.alpha = 1.0;
+            [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+            [self.progress setProgress:progress animated:progress > self.progress.progress];
+            
+            if (progress > self.progress.progress) {
+                [self performSelector:@selector(setProgressTo:) withObject:@(progress) afterDelay:1.0];
+            }
+            else self.progress.progress = progress;
+            
+            [UIView animateWithDuration:1.59 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                self.pulse.alpha = 0.0;
+            } completion:nil];
+            
+            [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.59];
         }
-        else self.progress.progress = progress;
+        else if ((counter % 13) >= 5) {
+            [self.progress setProgress:progress animated:progress > self.progress.progress];
+            [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+        }
         
-        [UIView animateWithDuration:1.59 delay:1.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            self.pulse.alpha = 0.0;
-        } completion:nil];
-        
-        [self.pulse performSelector:@selector(setProgress:) withObject:nil afterDelay:2.59];
+        counter++;
     }
-    else if ((counter % 13) >= 5) {
-        [self.progress setProgress:progress animated:progress > self.progress.progress];
-        [self.pulse setProgress:progress animated:progress > self.pulse.progress];
+    else {
+        self.progress.alpha = 0.0;;
+        self.pulse.alpha = 0.0;
     }
     
-    counter++;
-    
-    if (progress < .995) {
-        self.navigationItem.titleView = nil;
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%",NSLocalizedString(@"Syncing:", nil), (progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
-    } else if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
-        self.navigationItem.titleView = self.logo;
-    }
+    [self updateNavigationBarTitle];
 
     [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
+}
+
+- (void)updateNavigationBarTitle
+{
+    double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
+    
+    if (progress < SYNCING_COMPLETED_PROGRESS) {
+        self.navigationItem.titleView = nil;
+        self.navigationItem.title = [NSString stringWithFormat:@"%@ %0.1f%%", NSLocalizedString(@"Syncing:", nil), progress * 100.0];
+    }
+    else {
+        if (![DSAuthenticationManager sharedInstance].didAuthenticate) {
+            self.navigationItem.titleView = self.logo;
+        }
+        else {
+            self.navigationItem.titleView = nil;
+            [self updateTitleViewBalance];
+        }
+    }
 }
 
 - (void)ping
@@ -1128,14 +1089,14 @@
 - (IBAction)unlock:(id)sender
 {
     if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
-        [self updateTitleView];
+        [self updateTitleViewBalance];
         [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     } else {
         [DSEventManager saveEvent:@"root:unlock"];
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 [DSEventManager saveEvent:@"root:unlock_success"];
-                [self updateTitleView];
+                [self updateTitleViewBalance];
                 [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
             }
         }];
@@ -1346,11 +1307,14 @@
                       item.rightBarButtonItem = rightButton;
                       if (self.shouldShowTips) item.titleView = titleView;
                   } else {
-                      if ([[(id)to topViewController] respondsToSelector:@selector(updateTitleView)]) {
-                          [[(id)to topViewController] performSelector:@selector(updateTitleView)];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+                      if ([(id)[(UINavigationController *)to topViewController] respondsToSelector:@selector(updateTitleView)]) {
+                          [(id)[(UINavigationController *)to topViewController] performSelector:@selector(updateTitleView)];
                       } else {
                           item.title = self.navigationItem.title;
                       }
+#pragma clang diagnostic pop
                   }
                   item.leftBarButtonItem.image = [UIImage imageNamed:@"x"];
                   [containerView addSubview:to.view];
