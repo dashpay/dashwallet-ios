@@ -99,10 +99,16 @@
 "block #%d of %d" = "Блок #%1$d из %2$d";
 
 /* No comment provided by engineer. */
+"Buy" = "Buy";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Купить DASH";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Купить DASH в dashwallet!";
+
+/* No comment provided by engineer. */
+"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Купить Dash с помощью учётной записи Uphold";
@@ -193,6 +199,9 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "РАСШИРЕННЫЕ";
+
+/* No comment provided by engineer. */
+"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "Адрес Dash";
@@ -562,6 +571,9 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "Видели %1$d из %2$d узлов";
+
+/* No comment provided by engineer. */
+"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "Отправить";

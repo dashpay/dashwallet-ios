@@ -25,6 +25,7 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
+@class DWUpholdAccountObject;
 
 @interface DWUpholdClient : NSObject
 
@@ -35,13 +36,20 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 - (NSURL *)startAuthRoutineByURL;
 - (void)completeAuthRoutineWithURL:(NSURL *)url completion:(void (^)(BOOL success))completion;
 
-- (void)getDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion;
+- (void)getAccounts:(void (^)(NSArray<DWUpholdAccountObject *> *_Nullable accounts))completion;
+- (void)getCards:(void (^)(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion;
 
 - (DWUpholdCancellationToken)createTransactionForDashCard:(DWUpholdCardObject *)card
                                                    amount:(NSString *)amount
                                                   address:(NSString *)address
                                                  otpToken:(nullable NSString *)otpToken
                                                completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
+- (DWUpholdCancellationToken)createBuyTransactionForDashCard:(DWUpholdCardObject *)card
+                                                     account:(DWUpholdAccountObject *)account
+                                                      amount:(NSString *)amount
+                                                securityCode:(NSString *)securityCode
+                                                    otpToken:(nullable NSString *)otpToken
+                                                  completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
                  otpToken:(nullable NSString *)otpToken

@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (assign, nonatomic) DWUpholdConfirmTransferModelState state;
+@property (nullable, strong, nonatomic) NSNumberFormatter *depositNumberFormatter;
 
 @end
 
@@ -38,20 +39,46 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _card = card;
         _transaction = transaction;
+        if (transaction.type == DWUpholdTransactionObjectTypeDeposit) {
+            NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+            numberFormatter.lenient = YES;
+            numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+            numberFormatter.generatesDecimalNumbers = YES;
+            numberFormatter.currencyCode = transaction.currency;
+            _depositNumberFormatter = numberFormatter;
+        }
     }
     return self;
 }
 
-- (NSAttributedString *)amountDashString {
-    return [self attributedDashStringForDash:self.transaction.amount];
+- (NSAttributedString *)amountString {
+    NSDecimalNumber *amount = self.transaction.amount;
+    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
+        return [self attributedDashStringForDash:amount];
+    }
+    else {
+        return [self attributedStringForLocalCurrency:amount];
+    }
 }
 
-- (NSAttributedString *)feeDashString {
-    return [self attributedDashStringForDash:self.transaction.fee];
+- (NSAttributedString *)feeString {
+    NSDecimalNumber *fee = self.transaction.fee;
+    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
+        return [self attributedDashStringForDash:fee];
+    }
+    else {
+        return [self attributedStringForLocalCurrency:fee];
+    }
 }
 
-- (NSAttributedString *)totalDashString {
-    return [self attributedDashStringForDash:self.transaction.total];
+- (NSAttributedString *)totalString {
+    NSDecimalNumber *total = self.transaction.total;
+    if (self.transaction.type == DWUpholdTransactionObjectTypeWithdrawal) {
+        return [self attributedDashStringForDash:total];
+    }
+    else{
+        return [self attributedStringForLocalCurrency:total];
+    }
 }
 
 - (BOOL)feeWasDeductedFromAmount {
@@ -101,6 +128,11 @@ NS_ASSUME_NONNULL_BEGIN
     [result appendAttributedString:[[NSAttributedString alloc] initWithString:numberStringFormatted]];
     [result endEditing];
     return [result copy];
+}
+
+- (NSAttributedString *)attributedStringForLocalCurrency:(NSDecimalNumber *)number {
+    NSString *formattedString = [self.depositNumberFormatter stringFromNumber:number];
+    return [[NSAttributedString alloc] initWithString:formattedString];
 }
 
 @end

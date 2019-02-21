@@ -21,6 +21,7 @@
 #import "DWUpholdClient.h"
 #import "DWUpholdTransactionObject.h"
 #import <DashSync/UIImage+DSUtils.h>
+#import "DWUpholdDecimalInputValidator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _card = card;
         _availableString = [card.available descriptionWithLocale:[NSLocale currentLocale]];
+        _amountValidator = [[DWUpholdDecimalInputValidator alloc] init];
     }
     return self;
 }

@@ -25,7 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdMainModel ()
 
 @property (assign, nonatomic) DWUpholdMainModelState state;
-@property (nullable, strong, nonatomic) DWUpholdCardObject *card;
+@property (nullable, strong, nonatomic) DWUpholdCardObject *dashCard;
+@property (nullable, copy, nonatomic) NSArray<DWUpholdCardObject *> *fiatCards;
 
 @end
 
@@ -33,25 +34,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fetch {
     self.state = DWUpholdMainModelStateLoading;
+
     __weak typeof(self) weakSelf = self;
-    [[DWUpholdClient sharedInstance] getDashCard:^(DWUpholdCardObject *_Nullable card) {
+
+    [[DWUpholdClient sharedInstance] getCards:^(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *_Nonnull fiatCards) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
 
-        strongSelf.card = card;
-        strongSelf.state = card ? DWUpholdMainModelStateDone : DWUpholdMainModelStateFailed;
+        strongSelf.dashCard = dashCard;
+        strongSelf.fiatCards = fiatCards;
+        BOOL success = !!strongSelf.dashCard;
+        strongSelf.state = success ? DWUpholdMainModelStateDone : DWUpholdMainModelStateFailed;
     }];
 }
 
 - (nullable NSURL *)buyDashURL {
-    NSParameterAssert(self.card);
-    return [[DWUpholdClient sharedInstance] buyDashURLForCard:self.card];
+    NSParameterAssert(self.dashCard);
+    return [[DWUpholdClient sharedInstance] buyDashURLForCard:self.dashCard];
 }
 
 - (nullable NSAttributedString *)availableDashString {
-    if (!self.card.available) {
+    if (!self.dashCard.available) {
         return nil;
     }
 
@@ -59,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
     dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 14.0, 11.0);
     dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
     NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
-    NSString *available = [self.card.available descriptionWithLocale:[NSLocale currentLocale]];
+    NSString *available = [self.dashCard.available descriptionWithLocale:[NSLocale currentLocale]];
     NSString *availableFormatted = [NSString stringWithFormat:@" %@ %@", available, NSLocalizedString(@"available", nil)];
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];

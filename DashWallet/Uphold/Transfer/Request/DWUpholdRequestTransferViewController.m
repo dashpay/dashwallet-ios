@@ -119,43 +119,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     self.errorLabel.hidden = YES;
 
-    if (string.length == 0) {
-        return YES;
+    NSString *validatedResult = [self.model.amountValidator validatedStringFromLastInputString:textField.text
+                                                                                         range:range
+                                                                             replacementString:string];
+    if (validatedResult) {
+        self.textField.text = validatedResult;
     }
-
-    NSString *resultText = [textField.text stringByAppendingString:string];
-    NSString *charactersSetString = @"0123456789";
-    NSLocale *locale = [NSLocale currentLocale];
-    NSString *decimalSeparator = locale.decimalSeparator;
-    charactersSetString = [charactersSetString stringByAppendingString:decimalSeparator];
-
-    NSCharacterSet *decimalNumbersSet = [NSCharacterSet characterSetWithCharactersInString:charactersSetString];
-    NSCharacterSet *textFieldStringSet = [NSCharacterSet characterSetWithCharactersInString:resultText];
-
-    BOOL stringIsValid = [decimalNumbersSet isSupersetOfSet:textFieldStringSet];
-    if (!stringIsValid) {
-        return NO;
-    }
-
-    if ([string isEqualToString:decimalSeparator] && [textField.text containsString:decimalSeparator]) {
-        return NO;
-    }
-
-    if ([resultText isEqualToString:decimalSeparator]) {
-        textField.text = [@"0" stringByAppendingString:decimalSeparator];
-        return NO;
-    }
-
-    if (resultText.length == 2) {
-        NSString *zeroAndDecimalSeparator = [@"0" stringByAppendingString:decimalSeparator];
-        if ([[resultText substringToIndex:1] isEqualToString:@"0"] &&
-            ![resultText isEqualToString:zeroAndDecimalSeparator]) {
-            textField.text = [resultText substringWithRange:NSMakeRange(1, 1)];
-            return NO;
-        }
-    }
-
-    return YES;
+    
+    return NO;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {

@@ -87,9 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.feeTitleLabel.text = NSLocalizedString(@"Fee", nil);
     self.totalTitleLabel.text = NSLocalizedString(@"Total", nil);
 
-    self.amountLabel.attributedText = [self.model amountDashString];
-    self.feeLabel.attributedText = [self.model feeDashString];
-    self.totalLabel.attributedText = [self.model totalDashString];
+    self.amountLabel.attributedText = [self.model amountString];
+    self.feeLabel.attributedText = [self.model feeString];
+    self.totalLabel.attributedText = [self.model totalString];
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         [self updateState];

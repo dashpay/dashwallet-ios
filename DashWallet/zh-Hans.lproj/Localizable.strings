@@ -99,10 +99,16 @@
 "block #%d of %d" = "%2$d中#%1$d的区块";
 
 /* No comment provided by engineer. */
+"Buy" = "Buy";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "购买达世币";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "在钱包中购买达世币！";
+
+/* No comment provided by engineer. */
+"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Buy Dash with Uphold account";
@@ -193,6 +199,9 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "重要";
+
+/* No comment provided by engineer. */
+"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "达世币地址";
@@ -562,6 +571,9 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "被%2$d中%1$d节点看到";
+
+/* No comment provided by engineer. */
+"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "发送";

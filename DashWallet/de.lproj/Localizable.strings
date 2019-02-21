@@ -99,10 +99,16 @@
 "block #%d of %d" = "Block #%1$d von %2$d";
 
 /* No comment provided by engineer. */
+"Buy" = "Buy";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Dash kaufen";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Dash in der Dashwallet kaufen!";
+
+/* No comment provided by engineer. */
+"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Dash über Uphold-Konto kaufen";
@@ -193,6 +199,9 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "WICHTIG";
+
+/* No comment provided by engineer. */
+"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-Adresse";
@@ -562,6 +571,9 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
+
+/* No comment provided by engineer. */
+"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "Senden";

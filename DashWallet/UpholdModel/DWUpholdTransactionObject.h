@@ -19,12 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWUpholdTransactionObjectType) {
+    /// Transferring Dash from Uphold to the Wallet
+    DWUpholdTransactionObjectTypeWithdrawal,
+    /// Buying Dash on the Uphold
+    DWUpholdTransactionObjectTypeDeposit,
+};
+
 @interface DWUpholdTransactionObject : NSObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
+@property (readonly, assign, nonatomic) DWUpholdTransactionObjectType type;
 @property (readonly, strong, nonatomic) NSDecimalNumber *amount;
 @property (readonly, strong, nonatomic) NSDecimalNumber *fee;
 @property (readonly, strong, nonatomic) NSDecimalNumber *total;
+@property (readonly, copy, nonatomic) NSString *currency;
 
 @property (assign, nonatomic) BOOL feeWasDeductedFromAmount;
 

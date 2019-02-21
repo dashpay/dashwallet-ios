@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWUpholdInputValidator.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWUpholdTransferModelValidationResult) {
@@ -39,6 +41,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
 @interface DWUpholdRequestTransferModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *availableString;
+@property (readonly, strong, nonatomic) id<DWUpholdInputValidator> amountValidator;
 @property (readonly, assign, nonatomic) DWUpholdRequestTransferModelState state;
 @property (readonly, nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 

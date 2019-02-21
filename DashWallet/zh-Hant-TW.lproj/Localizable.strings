@@ -99,10 +99,16 @@
 "block #%d of %d" = "%2$d 中 #%1$d 的區塊";
 
 /* No comment provided by engineer. */
+"Buy" = "Buy";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "購買達世幣";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "在達世幣錢包中購買達世幣!";
+
+/* No comment provided by engineer. */
+"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Buy Dash with Uphold account";
@@ -193,6 +199,9 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "緊要";
+
+/* No comment provided by engineer. */
+"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "達世幣位址";
@@ -562,6 +571,9 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "被%2$d中%1$d的節點看到";
+
+/* No comment provided by engineer. */
+"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "發送";

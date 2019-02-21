@@ -99,10 +99,16 @@
 "block #%d of %d" = "blloku #%1$d i %2$d";
 
 /* No comment provided by engineer. */
+"Buy" = "Buy";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Buy Dash";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+
+/* No comment provided by engineer. */
+"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Buy Dash with Uphold account";
@@ -193,6 +199,9 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
+"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash adresa";
@@ -562,6 +571,9 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "u pa nga %1$d e %2$d peers";
+
+/* No comment provided by engineer. */
+"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "send";

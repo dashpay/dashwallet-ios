@@ -17,13 +17,14 @@
 
 #import "DWUpholdMainViewController.h"
 
+#import "DWUpholdBuyViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
 #import "DWUpholdTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate>
+@interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate, DWUpholdBuyViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
@@ -130,18 +131,26 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)transferButtonAction:(id)sender {
-    DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.card];
+    DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.dashCard];
     controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (IBAction)buyButtonAction:(id)sender {
-    NSURL *url = [self.model buyDashURL];
-    if (!url) {
-        return;
+    if (self.model.fiatCards.count > 0) {
+        DWUpholdBuyViewController *controller = [DWUpholdBuyViewController controllerWithDashCard:self.model.dashCard
+                                                                                        fiatCards:self.model.fiatCards];
+        controller.delegate = self;
+        [self presentViewController:controller animated:YES completion:nil];
     }
+    else {
+        NSURL *url = [self.model buyDashURL];
+        if (!url) {
+            return;
+        }
 
-    [self openSafariAppWithURL:url];
+        [self openSafariAppWithURL:url];
+    }
 }
 
 - (void)logOutButtonAction:(id)sender {
@@ -165,6 +174,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWUpholdBuyViewControllerDelegate
+
+- (void)upholdBuyViewControllerDidCancel:(DWUpholdBuyViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)upholdBuyViewControllerDidFinish:(DWUpholdBuyViewController *)controller {
+    [self.model fetch];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 

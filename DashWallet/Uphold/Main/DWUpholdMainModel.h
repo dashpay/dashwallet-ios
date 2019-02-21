@@ -30,7 +30,8 @@ typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
 @interface DWUpholdMainModel : NSObject
 
 @property (readonly, assign, nonatomic) DWUpholdMainModelState state;
-@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *card;
+@property (readonly, nullable, strong, nonatomic) DWUpholdCardObject *dashCard;
+@property (readonly, nullable, copy, nonatomic) NSArray<DWUpholdCardObject *> *fiatCards;
 
 - (void)fetch;
 

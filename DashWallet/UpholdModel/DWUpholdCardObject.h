@@ -22,8 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdCardObject : NSObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
+@property (readonly, copy, nonatomic) NSString *label;
 @property (readonly, strong, nonatomic) NSDecimalNumber *available;
-@property (readonly, nullable, copy, nonatomic) NSString *address;
+@property (readonly, nullable, copy, nonatomic) NSString *address; // appliable to Dash card only
 @property (readonly, assign, nonatomic) BOOL starred;
 @property (readonly, assign, nonatomic) NSInteger position;
 

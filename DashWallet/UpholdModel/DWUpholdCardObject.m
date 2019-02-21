@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _identifier = identifier;
+        _label = dictionary[@"label"];
         _available = [NSDecimalNumber decimalNumberWithString:available];
         _address = address;
 

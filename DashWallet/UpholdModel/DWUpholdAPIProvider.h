@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
+@class DWUpholdAccountObject;
 
 typedef NS_ENUM(NSUInteger, DWUpholdAPIProviderResponseStatusCode) {
     DWUpholdAPIProviderResponseStatusCodeOK,
@@ -34,8 +35,9 @@ typedef NS_ENUM(NSUInteger, DWUpholdAPIProviderResponseStatusCode) {
 
 + (DWUpholdCancellationToken)authOperationWithCode:(NSString *)code
                                         completion:(void (^)(NSString *_Nullable accessToken))completion;
-+ (DWUpholdCancellationToken)getDashCardAccessToken:(NSString *)accessToken
-                                         completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion;
++ (DWUpholdCancellationToken)getUserAccountsAccessToken:(NSString *)accessToken completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, NSArray<DWUpholdAccountObject *> *_Nullable accounts))completion;
++ (DWUpholdCancellationToken)getCardsAccessToken:(NSString *)accessToken
+                                      completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion;
 + (DWUpholdCancellationToken)createDashCardAccessToken:(NSString *)accessToken
                                             completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion;
 + (DWUpholdCancellationToken)createAddressForDashCard:(DWUpholdCardObject *)inputCard
@@ -47,6 +49,13 @@ typedef NS_ENUM(NSUInteger, DWUpholdAPIProviderResponseStatusCode) {
                                               accessToken:(NSString *)accessToken
                                                  otpToken:(nullable NSString *)otpToken
                                                completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction))completion;
++ (DWUpholdCancellationToken)createBuyTransactionForDashCard:(DWUpholdCardObject *)card
+                                                     account:(DWUpholdAccountObject *)account
+                                                      amount:(NSString *)amount
+                                                securityCode:(NSString *)securityCode
+                                                 accessToken:(NSString *)accessToken
+                                                    otpToken:(nullable NSString *)otpToken
+                                                  completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction))completion;
 + (DWUpholdCancellationToken)commitTransaction:(DWUpholdTransactionObject *)transaction
                                           card:(DWUpholdCardObject *)card
                                    accessToken:(NSString *)accessToken

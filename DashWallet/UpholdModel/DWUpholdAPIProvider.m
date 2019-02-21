@@ -19,6 +19,7 @@
 
 #import <DashSync/DSNetworking.h>
 
+#import "DWUpholdAccountObject.h"
 #import "DWUpholdCardObject+Internal.h"
 #import "DWUpholdConstants.h"
 #import "DWUpholdTransactionObject.h"
@@ -74,6 +75,12 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
 #pragma mark - API Provider
 
+static NSSet<NSString *> *FiatCurrencyCodes() {
+    return [NSSet setWithObjects:
+                      @"ARS", @"AUD", @"BRL", @"CAD", @"DKK", @"AED", @"EUR", @"HKD", @"INR", @"ILS", @"KES",
+                      @"MXN", @"NZD", @"NOK", @"PHP", @"PLN", @"GBP", @"SGD", @"SEK", @"CHF", @"USD", @"JPY", @"CNY", nil];
+}
+
 @implementation DWUpholdAPIProvider
 
 + (DWUpholdCancellationToken)authOperationWithCode:(NSString *)code
@@ -96,14 +103,43 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
         NSDictionary *response = [parsedData isKindOfClass:NSDictionary.class] ? (NSDictionary *)parsedData : nil;
         NSString *accessToken = response[@"access_token"];
 
+
         if (completion) {
             completion(accessToken);
         }
     }];
 }
 
-+ (DWUpholdCancellationToken)getDashCardAccessToken:(NSString *)accessToken
-                                         completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card))completion {
++ (DWUpholdCancellationToken)getUserAccountsAccessToken:(NSString *)accessToken completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, NSArray<DWUpholdAccountObject *> *_Nullable accounts))completion {
+    NSURL *url = [[self baseURL] URLByAppendingPathComponent:@"v0/me/accounts"];
+    NSParameterAssert(url);
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_GET
+                                                parameters:nil];
+
+    HTTPLoaderManager *loaderManager = [self loaderManager];
+    return [loaderManager upholdAuthorizedRequest:httpRequest accessToken:accessToken completion:^(id _Nullable parsedData, DWUpholdAPIProviderResponseStatusCode upholdStatusCode) {
+        NSArray<NSDictionary *> *response = [parsedData isKindOfClass:NSArray.class] ? (NSArray *)parsedData : nil;
+
+        NSMutableArray<DWUpholdAccountObject *> *accounts = nil;
+        if (response) {
+            accounts = [NSMutableArray array];
+            for (NSDictionary *accountDictionary in response) {
+                DWUpholdAccountObject *account = [[DWUpholdAccountObject alloc] initWithDictionary:accountDictionary];
+                if (account) {
+                    [accounts addObject:account];
+                }
+            }
+        }
+
+        if (completion) {
+            completion(!!response, upholdStatusCode, [accounts copy]);
+        }
+    }];
+}
+
++ (DWUpholdCancellationToken)getCardsAccessToken:(NSString *)accessToken
+                                      completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion {
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:@"v0/me/cards"];
     NSParameterAssert(url);
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
@@ -114,7 +150,9 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
     return [loaderManager upholdAuthorizedRequest:httpRequest accessToken:accessToken completion:^(id _Nullable parsedData, DWUpholdAPIProviderResponseStatusCode upholdStatusCode) {
         NSArray *response = [parsedData isKindOfClass:NSArray.class] ? (NSArray *)parsedData : nil;
 
+        NSSet<NSString *> *fiatCurrencyCodes = FiatCurrencyCodes();
         NSMutableArray<DWUpholdCardObject *> *dashCards = [NSMutableArray array];
+        NSMutableArray<DWUpholdCardObject *> *fiatCards = [NSMutableArray array];
         for (NSDictionary *dictionary in response) {
             if (![dictionary isKindOfClass:NSDictionary.class]) {
                 break;
@@ -125,10 +163,18 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
                 break;
             }
 
-            if ([currency caseInsensitiveCompare:@"DASH"] == NSOrderedSame) {
+            currency = currency.uppercaseString;
+
+            if ([currency isEqualToString:@"DASH"]) {
                 DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:dictionary];
                 if (card) {
                     [dashCards addObject:card];
+                }
+            }
+            else if ([fiatCurrencyCodes containsObject:currency]) {
+                DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:dictionary];
+                if (card && (card.available.doubleValue > 0.0 || [currency isEqualToString:@"USD"] || [currency isEqualToString:@"EUR"])) {
+                    [fiatCards addObject:card];
                 }
             }
         }
@@ -141,10 +187,10 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
 
         [dashCards sortUsingDescriptors:sortDescriptors];
 
-        DWUpholdCardObject *card = dashCards.firstObject;
+        DWUpholdCardObject *dashCard = dashCards.firstObject;
 
         if (completion) {
-            completion(!!response, upholdStatusCode, card);
+            completion(!!response, upholdStatusCode, dashCard, fiatCards);
         }
     }];
 }
@@ -237,6 +283,44 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
     }];
 }
 
++ (DWUpholdCancellationToken)createBuyTransactionForDashCard:(DWUpholdCardObject *)card
+                                                     account:(DWUpholdAccountObject *)account
+                                                      amount:(NSString *)amount
+                                                securityCode:(NSString *)securityCode
+                                                 accessToken:(NSString *)accessToken
+                                                    otpToken:(nullable NSString *)otpToken
+                                                  completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction))completion {
+    NSParameterAssert(amount);
+    NSParameterAssert(securityCode);
+    NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", @"6c6d1fea-7ed1-4417-9108-a2ac0252288e"]; //card.identifier];
+    NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
+    NSParameterAssert(url);
+    HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
+                                                    method:HTTPRequestMethod_POST
+                                               contentType:HTTPContentType_JSON
+                                                parameters:@{
+                                                    @"denomination" : @{
+                                                        @"amount" : amount,
+                                                        @"currency" : account.currency,
+                                                    },
+                                                    @"origin" : account.identifier,
+                                                    @"securityCode" : securityCode,
+                                                }];
+    if (otpToken) {
+        [self authorizeHTTPRequest:httpRequest otpToken:otpToken];
+    }
+
+    HTTPLoaderManager *loaderManager = [self loaderManager];
+    return [loaderManager upholdAuthorizedRequest:httpRequest accessToken:accessToken completion:^(id _Nullable parsedData, DWUpholdAPIProviderResponseStatusCode upholdStatusCode) {
+        NSDictionary *response = [parsedData isKindOfClass:NSDictionary.class] ? (NSDictionary *)parsedData : nil;
+
+        DWUpholdTransactionObject *transaction = [[DWUpholdTransactionObject alloc] initWithDictionary:response];
+        if (completion) {
+            completion(!!response, upholdStatusCode, transaction);
+        }
+    }];
+}
+
 + (DWUpholdCancellationToken)commitTransaction:(DWUpholdTransactionObject *)transaction
                                           card:(DWUpholdCardObject *)card
                                    accessToken:(NSString *)accessToken
@@ -313,14 +397,15 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
     NSAssert([action isEqualToString:@"commit"] || [action isEqualToString:@"cancel"], @"Invalid action on transaction");
 
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions/%@/%@",
-                                                   card.identifier,
+                                                   @"6c6d1fea-7ed1-4417-9108-a2ac0252288e",
+                                                   //card.identifier,
                                                    transaction.identifier,
                                                    action];
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
     NSParameterAssert(url);
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
                                                     method:HTTPRequestMethod_POST
-                                                parameters:nil];
+                                                parameters:@{ @"securityCode" : @"123" }];
     if (otpToken) {
         [self authorizeHTTPRequest:httpRequest otpToken:otpToken];
     }
