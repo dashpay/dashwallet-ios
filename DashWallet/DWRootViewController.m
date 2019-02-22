@@ -840,6 +840,9 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
     
     if (progress < SYNCING_COMPLETED_PROGRESS) {
+        self.progress.hidden = self.pulse.hidden = NO;
+        self.progress.alpha = 1.0;
+        
         static int counter = 0;
         
         if ((counter % 13) == 0) {
@@ -866,7 +869,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         counter++;
     }
     else {
-        self.progress.alpha = 0.0;;
+        self.progress.alpha = 0.0;
         self.pulse.alpha = 0.0;
     }
     
