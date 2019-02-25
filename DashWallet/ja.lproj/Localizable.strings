@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "ShapeshiftのビットコインID：";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshiftのご利用は失敗しました";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshiftの状態";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshiftのご利用が成功しました";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift！";
 
 /* No comment provided by engineer. */
 "show" = "表示";
@@ -495,9 +489,6 @@
 "spent input" = "使用済み入力";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Shapeshiftの利用を開始する！";
-
-/* No comment provided by engineer. */
 "status:" = "ステータス:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "同期中：";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Shapeshiftで交換希望の金額が高すぎます。 %@より少ない金額をご入力ください。";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Shapeshiftで交換希望の金額が低すぎます。 %@より少ない金額をご入力ください。";
 
 /* No comment provided by engineer. */
 "the app will now close" = "アプリを閉じます";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "このリクエストには即時支払いが必要ですが、あなたは即時支払いを無効にしています。";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "このウォレットは何も入っていないか、もしくは同期が終わっていません。復元フレーズがない場合は削除しないでください。";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "送金先: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = " %@ へ(Shapeshift経由で)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch IDの送金可能額";

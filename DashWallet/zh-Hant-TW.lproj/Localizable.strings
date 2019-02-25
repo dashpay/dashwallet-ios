@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift 的比特幣 id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift 失敗";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift 狀態:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift 成功";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "顯示";
@@ -495,9 +489,6 @@
 "spent input" = "發送輸入";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "開始 Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "狀態:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "同步中:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "你希望透過shapeshift 來轉換的金額過高，請輸入一個比%@低的金額";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "你希望透過shapeshift 來轉換的金額過低，請輸入一個比%@高的金額";
 
 /* No comment provided by engineer. */
 "the app will now close" = "該應用程序現在將關閉";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "此請求需要使用即時付款，但您已禁用即時付款功能";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "此錢包不是空的或同步尚未完成，如果沒有恢復詞組請不要進行擦除";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "到: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "到: %@ (通過 Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "指紋辨識解鎖的限制";

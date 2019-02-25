@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift 비트코인 아이디:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift 실패";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift 상태:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift 성공!";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "보기";
@@ -495,9 +489,6 @@
 "spent input" = "사용된 입력";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Shapeshift가 시작되었습니다!";
-
-/* No comment provided by engineer. */
 "status:" = "상태:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "동기화중:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Shapeshift에 필요한 금액이 너무 큽니다. %@ 미만의 값을 입력하십시오.";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Shapeshift에 필요한 금액이 너무 적습니다. %@ 이상의 값을 입력하십시오.";
 
 /* No comment provided by engineer. */
 "the app will now close" = "앱을 종료합니다";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하지만 즉시 지불을 중지했습니다";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "받는 주소: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "터치 아이디 제한";

@@ -26,14 +26,11 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "DWAmountViewController.h"
 #import <CoreNFC/CoreNFC.h>
 
-@interface DWSendViewController : UIViewController <UIAlertViewDelegate, DWAmountViewControllerDelegate, NFCNDEFReaderSessionDelegate>
+@interface DWSendViewController : UIViewController <UIAlertViewDelegate, NFCNDEFReaderSessionDelegate>
 
 - (IBAction)tip:(id)sender;
-
-- (IBAction)enableInstantX:(id)sender;
 
 - (IBAction)startNFC:(id)sender;
 
