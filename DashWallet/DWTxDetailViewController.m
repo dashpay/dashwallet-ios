@@ -132,7 +132,7 @@
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
                 if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-                    DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
+                    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isBIP43Based] && [derivationPath purpose] == 44) {
                         [detail addObject:@"wallet address (BIP44)"];
                     } else if ([derivationPath isBIP32Only]) {
