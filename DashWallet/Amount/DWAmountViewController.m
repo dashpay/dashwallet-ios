@@ -399,6 +399,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         button.titleLabel.font = [UIFont systemFontOfSize:18.0];
         [button setTitle:self.model.actionButtonTitle forState:UIControlStateNormal];
         [button addTarget:self action:@selector(actionButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [button sizeToFit];
         UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithCustomView:button];
         _actionBarButton = barButton;
     }
