@@ -521,6 +521,13 @@
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
+- (void)showMasternodeKeys:(UITableViewCell *)cell {
+{
+    [DSEventManager saveEvent:@"settings:show_masternode_keys"];
+    DWAboutViewController *aboutViewController = [DWAboutViewController controller];
+    [self.navigationController pushViewController:aboutViewController animated:YES];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
@@ -614,6 +621,12 @@
                     case 0: { // change passcode
                         UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
                         [self showChangeNetworkFromCell:cell];
+                        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                        break;
+                    }
+                    case 1: { // masternode keys
+                        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                        [self showMasternodeKeys:cell];
                         [tableView deselectRowAtIndexPath:indexPath animated:YES];
                         break;
                     }
