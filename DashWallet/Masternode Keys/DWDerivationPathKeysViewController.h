@@ -19,9 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSAuthenticationKeysDerivationPath;
+
 @interface DWDerivationPathKeysViewController : UITableViewController
 
-@property (nonatomic,strong) DSSimpleIndexedDerivationPath
+@property (nonatomic,strong) DSAuthenticationKeysDerivationPath *derivationPath;
 
 @end
 

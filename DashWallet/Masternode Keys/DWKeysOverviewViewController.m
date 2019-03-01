@@ -17,30 +17,71 @@
 
 #import "DWKeysOverviewViewController.h"
 
+#import <DashSync/DashSync.h>
+#import <DashSync/DSDerivationPathFactory.h>
+#import <DashSync/DSAuthenticationKeysDerivationPath.h>
+#import "DWDerivationPathKeysViewController.h"
+
+static NSString * const OwnerKeysSegueId = @"OwnerKeysSegue";
+static NSString * const VotingKeysSegueId = @"VotingKeysSegue";
+
 @interface DWKeysOverviewViewController ()
-@property (strong, nonatomic) IBOutlet UILabel *operatorKeysDetailLabel;
+
+@property (strong, nonatomic) IBOutlet UILabel *ownerKeysTitleLabel;
+@property (strong, nonatomic) IBOutlet UILabel *votingKeysTitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *ownerKeysDetailLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingKeysDetailLabel;
+
+@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
+@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *votingDerivationPath;
 
 @end
 
 @implementation DWKeysOverviewViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-}
 
 + (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MasternodeKeys" bundle:nil];
     DWKeysOverviewViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"KeysOverviewViewControllerIdentifier"];
     
     return controller;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.title = NSLocalizedString(@"Wallet Keys", nil);
+    
+    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+    DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
+    self.ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:wallet];
+    self.votingDerivationPath = [factory providerVotingKeysDerivationPathForWallet:wallet];
+    
+    self.tableView.tableFooterView = [[UIView alloc] init];
+    
+    self.ownerKeysTitleLabel.text = NSLocalizedString(@"Owner Keys", nil);
+    self.votingKeysTitleLabel.text = NSLocalizedString(@"Voting Keys", nil);
+    self.ownerKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                      self.ownerDerivationPath.usedAddresses.count];
+    self.votingKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                       self.votingDerivationPath.usedAddresses.count];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    DSAuthenticationKeysDerivationPath *derivationPath = nil;
+    NSString *title = nil;
+    if ([segue.identifier isEqualToString:OwnerKeysSegueId]) {
+        derivationPath = self.ownerDerivationPath;
+        title = NSLocalizedString(@"Owner Keys", nil);
+    }
+    else if ([segue.identifier isEqualToString:VotingKeysSegueId]) {
+        derivationPath = self.votingDerivationPath;
+        title = NSLocalizedString(@"Voting Keys", nil);
+    }
+    NSParameterAssert(derivationPath);
+    DWDerivationPathKeysViewController *controller = (DWDerivationPathKeysViewController *)segue.destinationViewController;
+    controller.derivationPath = derivationPath;
+    controller.title = title;
 }
 
 @end
