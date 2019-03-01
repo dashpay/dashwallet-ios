@@ -24,16 +24,19 @@
 
 static NSString * const OwnerKeysSegueId = @"OwnerKeysSegue";
 static NSString * const VotingKeysSegueId = @"VotingKeysSegue";
+static NSString * const OperatorKeysSegueId = @"OperatorKeysSegue";
 
 @interface DWKeysOverviewViewController ()
 
 @property (strong, nonatomic) IBOutlet UILabel *ownerKeysTitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingKeysTitleLabel;
+@property (strong, nonatomic) IBOutlet UILabel *operatorKeysTitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *ownerKeysDetailLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingKeysDetailLabel;
 
 @property (strong, nonatomic) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
 @property (strong, nonatomic) DSAuthenticationKeysDerivationPath *votingDerivationPath;
+@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *operatorDerivationPath;
 
 @end
 
@@ -56,11 +59,13 @@ static NSString * const VotingKeysSegueId = @"VotingKeysSegue";
     DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
     self.ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:wallet];
     self.votingDerivationPath = [factory providerVotingKeysDerivationPathForWallet:wallet];
+    self.operatorDerivationPath = [factory providerOperatorKeysDerivationPathForWallet:wallet];
     
     self.tableView.tableFooterView = [[UIView alloc] init];
     
     self.ownerKeysTitleLabel.text = NSLocalizedString(@"Owner Keys", nil);
     self.votingKeysTitleLabel.text = NSLocalizedString(@"Voting Keys", nil);
+    self.operatorKeysTitleLabel.text = NSLocalizedString(@"Operator Keys", nil);
     self.ownerKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
                                       self.ownerDerivationPath.usedAddresses.count];
     self.votingKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
@@ -77,6 +82,10 @@ static NSString * const VotingKeysSegueId = @"VotingKeysSegue";
     else if ([segue.identifier isEqualToString:VotingKeysSegueId]) {
         derivationPath = self.votingDerivationPath;
         title = NSLocalizedString(@"Voting Keys", nil);
+    }
+    else if ([segue.identifier isEqualToString:OperatorKeysSegueId]) {
+        derivationPath = self.operatorDerivationPath;
+        title = NSLocalizedString(@"Operator Keys", nil);
     }
     NSParameterAssert(derivationPath);
     DWDerivationPathKeysViewController *controller = (DWDerivationPathKeysViewController *)segue.destinationViewController;

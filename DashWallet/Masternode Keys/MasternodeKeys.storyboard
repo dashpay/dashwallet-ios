@@ -82,6 +82,26 @@
                                             <segue destination="WED-Sq-CPu" kind="show" identifier="VotingKeysSegue" id="oa4-bn-Oml"/>
                                         </connections>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" textLabel="Yhm-Tt-8Om" style="IBUITableViewCellStyleDefault" id="5yl-Rc-JC4">
+                                        <rect key="frame" x="0.0" y="123" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="5yl-Rc-JC4" id="BWh-Vk-dgA">
+                                            <rect key="frame" x="0.0" y="0.0" width="341" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Operator Keys" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Yhm-Tt-8Om">
+                                                    <rect key="frame" x="16" y="0.0" width="324" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="WED-Sq-CPu" kind="show" identifier="OperatorKeysSegue" id="p99-zB-l0Q"/>
+                                        </connections>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -95,6 +115,7 @@
                     </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                     <connections>
+                        <outlet property="operatorKeysTitleLabel" destination="Yhm-Tt-8Om" id="HmR-2B-WmM"/>
                         <outlet property="ownerKeysDetailLabel" destination="wft-wT-O3h" id="SLh-sU-kVT"/>
                         <outlet property="ownerKeysTitleLabel" destination="nc7-dg-fSK" id="rJw-xY-TNa"/>
                         <outlet property="votingKeysDetailLabel" destination="Dkt-vb-r6O" id="ZPA-pM-7UN"/>
@@ -168,6 +189,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="NkW-mX-wsf"/>
+        <segue reference="p99-zB-l0Q"/>
     </inferredMetricsTieBreakers>
 </document>

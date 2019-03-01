@@ -25,6 +25,7 @@ static NSString * const LoadMoreCellId = @"LoadMoreCell";
 
 typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
     DWDerivationPathInfoAddress,
+    DWDerivationPathInfoPublicKey,
     DWDerivationPathInfoPrivateKey,
     _DWDerivationPathInfo_Count,
 };
@@ -85,6 +86,12 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
             case DWDerivationPathInfoAddress: {
                 cell.textLabel.text = NSLocalizedString(@"Address", nil);
                 cell.detailTextLabel.text = [self.derivationPath addressAtIndex:index];
+                
+                break;
+            }
+            case DWDerivationPathInfoPublicKey: {
+                cell.textLabel.text = NSLocalizedString(@"Public key", nil);
+                cell.detailTextLabel.text = [self.derivationPath publicKeyDataAtIndex:index].hexString;
                 
                 break;
             }
