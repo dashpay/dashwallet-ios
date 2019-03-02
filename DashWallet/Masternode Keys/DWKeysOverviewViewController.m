@@ -33,6 +33,7 @@ static NSString * const OperatorKeysSegueId = @"OperatorKeysSegue";
 @property (strong, nonatomic) IBOutlet UILabel *operatorKeysTitleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *ownerKeysDetailLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingKeysDetailLabel;
+@property (strong, nonatomic) IBOutlet UILabel *operatorKeysDetailLabel;
 
 @property (strong, nonatomic) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
 @property (strong, nonatomic) DSAuthenticationKeysDerivationPath *votingDerivationPath;
@@ -66,10 +67,11 @@ static NSString * const OperatorKeysSegueId = @"OperatorKeysSegue";
     self.ownerKeysTitleLabel.text = NSLocalizedString(@"Owner Keys", nil);
     self.votingKeysTitleLabel.text = NSLocalizedString(@"Voting Keys", nil);
     self.operatorKeysTitleLabel.text = NSLocalizedString(@"Operator Keys", nil);
-    self.ownerKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
-                                      self.ownerDerivationPath.usedAddresses.count];
+    self.ownerKeysDetailLabel.text = @"";
     self.votingKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
                                        self.votingDerivationPath.usedAddresses.count];
+    self.operatorKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                       self.operatorDerivationPath.usedAddresses.count];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
