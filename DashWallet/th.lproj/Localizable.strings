@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "การกระทำที่จำเป็น";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ขั้นสูง";
@@ -285,6 +291,9 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
@@ -339,6 +348,12 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
 
 /* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
 
 /* No comment provided by engineer. */
@@ -361,6 +376,12 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "เรท: %@ = %@\nอัพเดต: %@\nบล็อค #%d ของ %d\nคู่เชื่อมต่อ: %d\nคู่ dl: %@";
@@ -474,6 +495,9 @@
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "แสดงวลี";
 
 /* No comment provided by engineer. */
@@ -579,7 +603,13 @@
 "verified, waiting for confirmation" = "ตรวจสอบแล้ว รอการยืนยัน";
 
 /* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "ที่อยู่ wallet ";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";

@@ -704,7 +704,8 @@ static NSString *dateFormat(NSString *template)
     UIView *containerView = transitionContext.containerView;
     UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
     *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    BOOL pop = (to == self || (from != self && [to isKindOfClass:[DWSettingsViewController class]])) ? YES : NO;
+    
+    BOOL pop = to == self || ![self.navigationController.viewControllers containsObject:from];
     
     to.view.center = CGPointMake(containerView.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
     [containerView addSubview:to.view];

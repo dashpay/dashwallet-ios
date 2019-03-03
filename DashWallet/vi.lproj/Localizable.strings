@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 xác thực";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "Cần bạn hành động";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "NÂNG CAO";
@@ -285,6 +291,9 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
@@ -339,6 +348,12 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Chỉ bật những tính năng nâng cao nếu bạn hiểu biết về công nghệ blockchain.\nNếu có thể hãy chỉ bật những tính năng nâng cao nào mà bạn hiểu rõ.";
 
 /* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
 "Pay" = "thanh toán";
 
 /* No comment provided by engineer. */
@@ -361,6 +376,12 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Hãy đặt điện thoại của bạn cạnh thiết bị NFC.";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "tỷ giá: 1%@ = 1%@\ncập nhật: 1%@\nblock #%d of 2%d\ncác kết nối: 2%d\ndl peer: 1%@\n";
@@ -474,6 +495,9 @@
 "show" = "hiển thị";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "hiển thị cụm từ";
 
 /* No comment provided by engineer. */
@@ -579,7 +603,13 @@
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
 
 /* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "địa chỉ ví";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "CẢNH BÁO";

@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 konfirmime";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ADVANCED";
@@ -285,6 +291,9 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Lejo të tjerët të skanojn këtë QR kod për ta marrë dash adresën tuaj. Çdokush mund të ju dërgoj dash-a në kuletën tuaj duke i transferuar ato në adresën tuaj.";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
@@ -339,6 +348,12 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
 "Pay" = "Paguaj";
 
 /* No comment provided by engineer. */
@@ -361,6 +376,12 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -474,6 +495,9 @@
 "show" = "shfaq";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "shfaq frazën";
 
 /* No comment provided by engineer. */
@@ -579,7 +603,13 @@
 "verified, waiting for confirmation" = "e verifikuar, duke pritur për konfirmime";
 
 /* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "verifiko adresën";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "PARALAJMËRIM";

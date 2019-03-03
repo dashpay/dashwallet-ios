@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 bevestigingen";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "Actie Benodigd";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "GEAVANCEERD";
@@ -285,6 +291,9 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laat anderen deze QR-code scannen om jouw dash-adres te verkrijgen. Iedereen kan dash naar jouw portemonnee versturen door deze te sturen naar jouw adres.";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
@@ -339,6 +348,12 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
 
 /* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
 "Pay" = "Betaal";
 
 /* No comment provided by engineer. */
@@ -361,6 +376,12 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "ratio: %@=%@\nbijgewerkt: %@\nblok #%d van %d\nverbonden peers: %d\ndl-peer: %@";
@@ -474,6 +495,9 @@
 "show" = "toon";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "toon zin";
 
 /* No comment provided by engineer. */
@@ -579,7 +603,13 @@
 "verified, waiting for confirmation" = "geverifieerd, bezig met wachten op bevestiging";
 
 /* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "portemonnee-adres";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";

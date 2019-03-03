@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 потвърждения";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "Необходимо е действие";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "РАЗШИРЕНИ";
@@ -285,6 +291,9 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Нека другите да сканират този QR код, за да получат вашия dash адрес. Всеки може да изпрати dash до портфейла Ви, като ги прехвърли на Вашия адрес.";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
@@ -339,6 +348,12 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Използвайте разширените функции само ако сте добре запознат с блокчейн технологиите . \nАко са активирани използвайте само разширени функции, които разбирате.";
 
 /* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
 "Pay" = "Плати";
 
 /* No comment provided by engineer. */
@@ -361,6 +376,12 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "процент: %@ = %@\nактуалицирани: %@\nблок #%d of %d\nсвързани пиъри: %d\ndl пиъри: %@";
@@ -474,6 +495,9 @@
 "show" = "покажи";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "покажи фраза";
 
 /* No comment provided by engineer. */
@@ -579,7 +603,13 @@
 "verified, waiting for confirmation" = "проверен, в очакване на потвърждение";
 
 /* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "адрес на портфейла";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
