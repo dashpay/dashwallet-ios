@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift ล้มเหลว";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "สถานะ shapeshift";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift สำเร็จ";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "แสดง";
@@ -495,9 +489,6 @@
 "spent input" = "ข้อมูลที่ใช้แล้ว";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "เริ่ม Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "สถานะ:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "ซิงค์";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "จำนวนเงินที่คุณต้องการ Shapeshift นั้นอยู่เกินไป , กรุณาใส่จำนวนเงินไม่เกิน %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "จำนวนเงินที่คุณต้องการ Shapeshift นั้นตำ่เกินไป กรุณาใส่จำนวนเงินมากกว่า %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "แอพพลิเคชั่นจะปิดตอนนี้";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณได้ยกเลิกการชำระเงินทันที";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "ถึง: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "ถึง: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "ขีดจำกัด Touch ID";

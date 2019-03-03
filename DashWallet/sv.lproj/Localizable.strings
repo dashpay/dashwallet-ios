@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "shapeshift misslyckades ";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "shapeshift status:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "shapeshift lyckades";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "visa";
@@ -495,9 +489,6 @@
 "spent input" = "förbrukat inflöde";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Startar Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "status:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "synkroniserar:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Mängden du ville shapeshifta är för stor, ändra till ett värde som är under %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Mängden du ville shapeshifta är för lågt, ändra till ett värde som är över %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "appen kommer nu avslutas";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "denna begäran kräver en direktbetalning men du har inaktiverat direktbetalning";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Denna plånbok är inte tom eller så är den inte färdigsynkroniserad, du kan inte radera den utan att ha din återställningsfras";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "till: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "till: %@ (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limit";

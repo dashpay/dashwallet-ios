@@ -97,8 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+    DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
+    [dashSyncVersionManager upgradeVersion1ExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
         if (!success && neededUpgrade && !authenticated) {
             [self forceUpdateWalletAuthentication:cancelled];
         }

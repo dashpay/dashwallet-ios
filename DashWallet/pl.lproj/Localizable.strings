@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "transakcja shapeshift zakończona błędem";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "status shapeshift:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "transakcja shapeshift zakończona pomyślnie";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "pokaż";
@@ -495,9 +489,6 @@
 "spent input" = "zużyty wkład";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "Uruchamiam Shapeshift!";
-
-/* No comment provided by engineer. */
 "status:" = "stan:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Synchronizowanie:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "Kwota, którą chcesz wymienić przez shapeshift jest zbyt wysoka. Wprowadź kwotę poniżej %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "Kwota, którą chcesz wymienić przez shapeshift jest zbyt niska. Wprowadź kwotę powyżej %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "aplikacja zamknie się teraz";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "To żądanie wymaga natychmiastowej płatności ale InstantSend jest wyłączony w twoim portfelu.";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Portfel ten dalej ma fundusze lub synchronizacja nie jeszcze nie została ukończona. Nie możesz wymazać tego portfela bez listy słów wymaganych do odzysku portfela.";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "do: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "do: %@ (poprzez Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limit identyfikacji odcisku palca";

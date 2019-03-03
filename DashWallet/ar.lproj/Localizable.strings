@@ -465,16 +465,10 @@
 "shapeshift bitcoin id:" = "رقم سري لتحويل داش";
 
 /* No comment provided by engineer. */
-"shapeshift failed" = "فشل في التحويل";
-
-/* No comment provided by engineer. */
 "shapeshift status:" = "حالة التحويل:";
 
 /* No comment provided by engineer. */
 "shapeshift succeeded" = "التحويل نجح";
-
-/* No comment provided by engineer. */
-"Shapeshift!" = "Shapeshift!";
 
 /* No comment provided by engineer. */
 "show" = "عرض";
@@ -495,9 +489,6 @@
 "spent input" = "ينفق المدخلات";
 
 /* No comment provided by engineer. */
-"Starting Shapeshift!" = "بدأ التحويل";
-
-/* No comment provided by engineer. */
 "status:" = "الحالة:";
 
 /* No comment provided by engineer. */
@@ -505,12 +496,6 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "المزامنة:";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too high, please input a value under %@" = "المبلغ الذي تريد تغييره مرتفع للغاية ، يرجى إدخال قيمة تحته %@";
-
-/* No comment provided by engineer. */
-"The amount you wanted to shapeshift is too low, please input a value over %@" = "المبلغ الذي تريد تغييره قليل جدًا ، يرجى إدخال قيمة %@";
 
 /* No comment provided by engineer. */
 "the app will now close" = "سيتم إغلاق التطبيق الآن";
@@ -534,6 +519,15 @@
 "this request requires an instant payment but you have disabled instant payments" = "يتطلب هذا الطلب دفعة فورية ولكنك عطلت الدفعات الفورية";
 
 /* No comment provided by engineer. */
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+
+/* No comment provided by engineer. */
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "هذه المحفظة ليست فارغة أو لم تنتهِ المزامنة ، ولا يجوز مسحها بدون كلمة الإستراد";
 
 /* No comment provided by engineer. */
@@ -541,9 +535,6 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "إلى: %@";
-
-/* No comment provided by engineer. */
-"to: %@ (via Shapeshift)" = "إلى:%@  (via Shapeshift)";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "إلمس لمعرفة الحد";
