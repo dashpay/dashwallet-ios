@@ -58,7 +58,6 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 @property (strong, nonatomic) IBOutlet UILabel *addressLabel;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
-@property (null_resettable, strong, nonatomic) UIBarButtonItem *lockBarButton;
 @property (null_resettable, strong, nonatomic) UIBarButtonItem *actionBarButton;
 @property (null_resettable, strong, nonatomic) UIImageView *logoImageView;
 @property (null_resettable, strong, nonatomic) UIButton *balanceButton;
@@ -104,12 +103,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
     [self mvvm_observe:@"model.locked" with:^(__typeof(self) self, NSNumber * value) {
         if (self.model.locked) {
             self.navigationItem.titleView = self.logoImageView;
-            if (self.model.inputIntent == DWAmountInputIntentRequest) {
-                self.navigationItem.rightBarButtonItem = self.actionBarButton;
-            }
-            else {
-                self.navigationItem.rightBarButtonItem = self.lockBarButton;
-            }
+            self.navigationItem.rightBarButtonItem = self.actionBarButton;
         }
         else {
             BOOL hasBalance = self.model.balanceString != nil;
@@ -245,22 +239,6 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         }];
 }
 
-- (void)lockBarButtonAction:(id)sender {
-    [self.textField resignFirstResponder];
-
-    // Workaround:
-    // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
-    // we show it after a slight delay to prevent UI bug with wrong alert position because of active first responder
-    // on previous screen
-    self.view.userInteractionEnabled = NO;
-    self.navigationItem.rightBarButtonItem.enabled = NO;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.model unlock];
-        self.view.userInteractionEnabled = YES;
-        self.navigationItem.rightBarButtonItem.enabled = YES;
-    });
-}
-
 - (void)actionButtonAction:(id)sender {
     if ([self.model isEnteredAmountLessThenMinimumOutputAmount]) {
         UIAlertController *alert = [UIAlertController
@@ -378,18 +356,6 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             break;
         }
     }
-}
-
-- (UIBarButtonItem *)lockBarButton {
-    if (!_lockBarButton) {
-        UIBarButtonItem *barButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"]
-                                                                      style:UIBarButtonItemStylePlain
-                                                                     target:self
-                                                                     action:@selector(lockBarButtonAction:)];
-        barButton.tintColor = [UIColor whiteColor];
-        _lockBarButton = barButton;
-    }
-    return _lockBarButton;
 }
 
 - (UIBarButtonItem *)actionBarButton {
