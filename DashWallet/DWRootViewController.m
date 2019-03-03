@@ -548,12 +548,12 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         }
     }
     else {
-        DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
-        [dashSyncVersionManager upgradeExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        NSArray * wallets = [DWEnvironment sharedInstance].allWallets;
+        [dashSyncVersionManager upgradeExtendedKeysForWallets:wallets withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 [self forceUpdateWalletAuthentication:cancelled];
             }
-            [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:wallet withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
+            [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:[wallets firstObject] withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
                 if (needsCheck && !authenticated) {
                     [self forceUpdateWalletAuthentication:cancelled];
                 }
