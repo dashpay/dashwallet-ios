@@ -62,6 +62,9 @@
     return [[self.currentWallet accounts] firstObject];
 }
 
+-(NSArray*)allWallets {
+    return [[DSChainsManager sharedInstance] allWallets];
+}
 
 - (void)clearAllWallets {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];

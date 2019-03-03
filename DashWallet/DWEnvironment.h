@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,strong,nonnull) DSChain * currentChain;
 @property (nonatomic,readonly) DSWallet * currentWallet;
+@property (nonatomic,readonly) NSArray * allWallets;
 @property (nonatomic,readonly) DSAccount * currentAccount;
 @property (nonatomic,strong) DSChainManager * currentChainManager;
 
