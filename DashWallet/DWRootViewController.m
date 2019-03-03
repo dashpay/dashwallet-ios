@@ -131,17 +131,17 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     self.navigationController.delegate = self;
     
     if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
-    UILabel *label = [UILabel new];
-    
-    label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
-    label.textColor = [UIColor redColor];
-    label.textAlignment = NSTextAlignmentRight;
-    label.text = [[DWEnvironment sharedInstance].currentChain name];
-    label.tag = 0xbeef;
-    [label sizeToFit];
-    label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
-                               self.view.frame.size.height - (label.frame.size.height + 5));
-    [self.view addSubview:label];
+        UILabel *label = [UILabel new];
+        
+        label.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightLight];
+        label.textColor = [UIColor redColor];
+        label.textAlignment = NSTextAlignmentRight;
+        label.text = [[DWEnvironment sharedInstance].currentChain name];
+        label.tag = 0xbeef;
+        [label sizeToFit];
+        label.center = CGPointMake(self.view.frame.size.width - label.frame.size.width,
+                                   self.view.frame.size.height - (label.frame.size.height + 5));
+        [self.view addSubview:label];
     }
     
     if ([DSEnvironment sharedInstance].watchOnly) { // watch only wallet
@@ -230,7 +230,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         [alert addAction:closeButton];
         [self presentViewController:alert animated:YES completion:nil];
     }
-
+    
     
     [self setObserversWithDeviceIsJailbroken:jailbroken];
 }
@@ -248,7 +248,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                                           if (self.navigationController.presentedViewController) {
                                                               [self.navigationController dismissViewControllerAnimated:YES completion:nil];
                                                           }
-                                                                                                                    
+                                                          
                                                           DWSendViewController *c = self.sendViewController;
                                                           
                                                           [self.pageViewController setViewControllers:(c ? @[c] : @[])
@@ -548,87 +548,95 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         }
     }
     else {
-        NSArray * wallets = [DWEnvironment sharedInstance].allWallets;
-        [dashSyncVersionManager upgradeExtendedKeysForWallets:wallets withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+        DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
+        [dashSyncVersionManager upgradeVersion1ExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
             if (!success && neededUpgrade && !authenticated) {
                 [self forceUpdateWalletAuthentication:cancelled];
-            }
-            [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:[wallets firstObject] withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
-                if (needsCheck && !authenticated) {
-                    [self forceUpdateWalletAuthentication:cancelled];
-                }
-
-                if (needsCheck) {
-                    UIAlertController * alert = [UIAlertController
-                             alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
-                             message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
-                             preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* showButton = [UIAlertAction
-                                                 actionWithTitle:NSLocalizedString(@"show", nil)
-                                                 style:UIAlertActionStyleDefault
-                                                 handler:^(UIAlertAction * action) {
-                                                     DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
-                                                         seedController.seedPhrase = seedPhrase;
-                                                     [self.navigationController pushViewController:seedController animated:YES];
-                                                 }];
-                    UIAlertAction* ignoreButton = [UIAlertAction
-                                                  actionWithTitle:NSLocalizedString(@"ignore", nil)
-                                                  style:UIAlertActionStyleCancel
-                                                  handler:^(UIAlertAction * action) {
-
-                                                  }];
-
-                    [alert addAction:ignoreButton];
-                    [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-                    [alert setPreferredAction:showButton];
-                    [self presentViewController:alert animated:YES completion:nil];
-                } else {
-                    [self setInitialPin];
-                }
-
-                if (self->_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
-                self.splash.hidden = YES;
-
-                self.navigationController.navigationBar.hidden = NO;
-                self.pageViewController.view.alpha = 1.0;
-                [self.receiveViewController updateAddress];
-                if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
-
-                if (self.navigationController.visibleViewController == self) {
-                    [self setNeedsStatusBarAppearanceUpdate];
-                }
-
+            } else {
+                NSArray * wallets = [DWEnvironment sharedInstance].allWallets;
+                [dashSyncVersionManager upgradeExtendedKeysForWallets:wallets withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+                    if (!success && neededUpgrade && !authenticated) {
+                        [self forceUpdateWalletAuthentication:cancelled];
+                    } else {
+                        [dashwalletVersionManager checkPassphraseWasShownCorrectlyForWallet:[wallets firstObject] withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString * _Nullable seedPhrase) {
+                            if (needsCheck && !authenticated) {
+                                [self forceUpdateWalletAuthentication:cancelled];
+                            }
+                            
+                            if (needsCheck) {
+                                UIAlertController * alert = [UIAlertController
+                                                             alertControllerWithTitle:NSLocalizedString(@"Action Needed", nil)
+                                                             message:NSLocalizedString(@"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.", nil)
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+                                UIAlertAction* showButton = [UIAlertAction
+                                                             actionWithTitle:NSLocalizedString(@"show", nil)
+                                                             style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 DWSeedViewController *seedController = [self.storyboard instantiateViewControllerWithIdentifier:@"SeedViewController"];
+                                                                 seedController.seedPhrase = seedPhrase;
+                                                                 [self.navigationController pushViewController:seedController animated:YES];
+                                                             }];
+                                UIAlertAction* ignoreButton = [UIAlertAction
+                                                               actionWithTitle:NSLocalizedString(@"ignore", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                               handler:^(UIAlertAction * action) {
+                                                                   
+                                                               }];
+                                
+                                [alert addAction:ignoreButton];
+                                [alert addAction:showButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+                                [alert setPreferredAction:showButton];
+                                [self presentViewController:alert animated:YES completion:nil];
+                            } else {
+                                [self setInitialPin];
+                            }
+                            
+                            if (self->_balance == UINT64_MAX && [defs objectForKey:BALANCE_KEY]) self.balance = [defs doubleForKey:BALANCE_KEY];
+                            self.splash.hidden = YES;
+                            
+                            self.navigationController.navigationBar.hidden = NO;
+                            self.pageViewController.view.alpha = 1.0;
+                            [self.receiveViewController updateAddress];
+                            if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
+                            
+                            if (self.navigationController.visibleViewController == self) {
+                                [self setNeedsStatusBarAppearanceUpdate];
+                            }
+                            
 #if SNAPSHOT
-                return;
+                            return;
 #endif
-                if (!authenticated) {
-                    if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
-                        [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-                            if (authenticated) {
-                                [self unlock:nil];
+                            if (!authenticated) {
+                                if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
+                                    [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                                        if (authenticated) {
+                                            [self unlock:nil];
+                                        }
+                                    }];
+                                }
+                            }
+                            
+                            if (self.navigationController.visibleViewController == self) {
+                                if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
+                            }
+                            
+                            if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+                                [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+                                [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+                                
+                                if (self.url) {
+                                    [self.sendViewController handleURL:self.url];
+                                    self.url = nil;
+                                }
+                                else if (self.file) {
+                                    [self.sendViewController handleFile:self.file];
+                                    self.file = nil;
+                                }
                             }
                         }];
                     }
-                }
-
-                if (self.navigationController.visibleViewController == self) {
-                    if (self.showTips) [self performSelector:@selector(tip:) withObject:nil afterDelay:0.3];
-                }
-
-                if ([UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-                    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-                    [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
-
-                    if (self.url) {
-                        [self.sendViewController handleURL:self.url];
-                        self.url = nil;
-                    }
-                    else if (self.file) {
-                        [self.sendViewController handleFile:self.file];
-                        self.file = nil;
-                    }
-                }
-            }];
+                }];
+            }
         }];
     }
 }
@@ -804,7 +812,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         [self hideTips];
     }
     self.shouldShowTips = YES;
-
+    
     [self updateNavigationBarTitle];
     
     [UIApplication sharedApplication].idleTimerDisabled = NO;
@@ -874,7 +882,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
     
     [self updateNavigationBarTitle];
-
+    
     [self performSelector:@selector(updateProgress) withObject:nil afterDelay:0.2];
 }
 
