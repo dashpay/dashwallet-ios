@@ -93,6 +93,18 @@
 "block #%d of %d" = "%2$d中#%1$d的区块";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
+"BU version" = "BU version";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "购买达世币";
 
 /* No comment provided by engineer. */
@@ -120,6 +132,9 @@
 "checking private key balance..." = "检查私钥余额...";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "清除";
 
 /* No comment provided by engineer. */
@@ -133,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "关闭App";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "确认";
@@ -240,13 +258,13 @@
 "Failed wallet update" = "钱包升级失败";
 
 /* No comment provided by engineer. */
-"fetching amount" = "fetching amount";
-
-/* No comment provided by engineer. */
 "from:" = "来自：";
 
 /* No comment provided by engineer. */
 "GENERAL" = "通用";
+
+/* No comment provided by engineer. */
+"Holding funds wallet:" = "Holding funds wallet:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失恢复密语，我会丢失我的达世币";
@@ -285,6 +303,9 @@
 "INVALID" = "无效";
 
 /* No comment provided by engineer. */
+"IP Address/Port" = "IP Address/Port";
+
+/* No comment provided by engineer. */
 "IS Received" = "IS Received";
 
 /* No comment provided by engineer. */
@@ -297,6 +318,18 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* No comment provided by engineer. */
 "more..." = "更多...";
 
 /* No comment provided by engineer. */
@@ -307,6 +340,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永远不要将恢复密语输入到密码管理器或其他地方。其它设备都可能存在病毒软件。";
+
+/* No comment provided by engineer. */
+"new pubkeyhash:" = "new pubkeyhash:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "下面，请写下你的恢复密语";
@@ -339,16 +375,28 @@
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"ok" = "确定";
+"OK" = "好";
 
 /* No comment provided by engineer. */
-"OK" = "好";
+"ok" = "确定";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
+"operator key wallet:" = "operator key wallet:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key wallet:" = "owner key wallet:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -360,19 +408,25 @@
 "payee identity isn't certified" = "收款人身份未经过认证";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "支付地址";
 
 /* No comment provided by engineer. */
 "payment output" = "支付输出";
 
 /* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
+/* No comment provided by engineer. */
 "pending" = "等待中";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
@@ -381,7 +435,19 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
+"provider registration hash:" = "provider registration hash:";
+
+/* No comment provided by engineer. */
+"Provider registration version" = "Provider registration version";
+
+/* No comment provided by engineer. */
+"Provider update service version" = "Provider update service version";
+
+/* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key hash:" = "public key hash:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "比率：%@ = %@\n升级版本：%@\n区块 #%d of %d\n已链接节点：%d\ndl节点：%@";
@@ -394,6 +460,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "收到 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
 
 /* Recovery phrase */
 "Recovery phrase" = "恢复密语";
@@ -516,6 +585,9 @@
 "status:" = "状态：";
 
 /* No comment provided by engineer. */
+"subregtx:" = "subregtx:";
+
+/* No comment provided by engineer. */
 "swept!" = "已清除！";
 
 /* No comment provided by engineer. */
@@ -561,6 +633,9 @@
 "to: %@" = "到：%@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "触控ID限制";
 
 /* No comment provided by engineer. */
@@ -582,6 +657,9 @@
 "turn device passcode on" = "打开设备密码";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "未能获得新的QR码";
 
 /* No comment provided by engineer. */
@@ -600,7 +678,16 @@
 "unverified" = "未验证";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "已验证，等待确认";
+
+/* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key wallet:" = "voting key wallet:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
