@@ -522,7 +522,7 @@ static NSString *dateFormat(NSString *template)
                     localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [priceManager localCurrencyStringForDashAmount:received]];
                     if (instantSendReceived) {
-                        sentLabel.text = NSLocalizedString(@"IS Received", nil);
+                        sentLabel.text = NSLocalizedString(@"Received", nil);
                     } else {
                         sentLabel.text = NSLocalizedString(@"Received", nil);
                     }
