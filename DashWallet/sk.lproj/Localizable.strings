@@ -57,6 +57,9 @@
 "always require passcode" = "vždy vyžadovať číselné heslo";
 
 /* No comment provided by engineer. */
+"Amount" = "Amount";
+
+/* No comment provided by engineer. */
 "amount too small" = "príliš malá suma";
 
 /* No comment provided by engineer. */
@@ -139,6 +142,9 @@
 
 /* Confirm */
 "Confirm" = "Potvrdiť";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potvrdené v bloku #%d";
@@ -247,6 +253,12 @@
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Zlyhala aktualizácia peňaženky";
+
+/* No comment provided by engineer. */
+"Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
 
 /* No comment provided by engineer. */
 "fetching amount" = "fetching amount";
@@ -444,9 +456,6 @@
 "Rescan blockchain" = "Znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "vynulovať";
 
 /* No comment provided by engineer. */
@@ -583,6 +592,9 @@
 
 /* No comment provided by engineer. */
 "to: %@" = "to: %@";
+
+/* No comment provided by engineer. */
+"Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limit pre Touch ID";

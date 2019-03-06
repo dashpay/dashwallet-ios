@@ -109,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSArray<NSString *> *options = [priceManager.prices valueForKeyPath:@"codeAndName"];
     DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
-    NSUInteger selectedIndex = [priceManager.prices indexOfObject:price];
+    NSUInteger selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
     if (completion) {
         completion(options, selectedIndex);
     }
