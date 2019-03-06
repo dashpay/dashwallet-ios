@@ -686,7 +686,7 @@
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"payout Address", nil);
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@",[NSString addressWithScriptPubKey:providerRegistrationTransaction.scriptPayout onChain:providerRegistrationTransaction.chain]];
                         
                         return cell;
