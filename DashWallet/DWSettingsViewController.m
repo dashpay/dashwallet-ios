@@ -28,6 +28,7 @@
 #import "BRUserDefaultsSwitchCell.h"
 #import "DSCurrencyPriceObject.h"
 #import "DWAboutViewController.h"
+#import "DWKeysOverviewViewController.h"
 
 @interface DWSettingsViewController ()
 
@@ -210,7 +211,14 @@
     switch (section) {
         case 0: return 2 + ((self.touchId || self.faceId) ? 3 : 2);
         case 1: return 3;
-        case 2: return 1;
+        case 2: {
+            if (![self enabledAdvancedFeatures]) {
+                return 1;
+            }
+            else {
+                return 2;
+            }
+        }
     }
     
     return 0;
@@ -307,7 +315,11 @@
                         cell.textLabel.text = NSLocalizedString(@"Network", nil);
                         cell.detailTextLabel.text = [DWEnvironment sharedInstance].currentChain.name;
                         break;
-                        
+                    case 1:
+                        cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
+                        cell.textLabel.text = NSLocalizedString(@"Show masternode keys", nil);
+                        cell.detailTextLabel.text = nil;
+                        break;
                     default:
                         break;
                 }
@@ -521,6 +533,18 @@
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
+- (void)showMasternodeKeys:(UITableViewCell *)cell
+{
+    [DSEventManager saveEvent:@"settings:show_masternode_keys"];
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+        if (authenticated) {
+            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
+            [self.navigationController pushViewController:keysViewController animated:YES];
+        }
+    }];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
@@ -614,6 +638,12 @@
                     case 0: { // change passcode
                         UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
                         [self showChangeNetworkFromCell:cell];
+                        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                        break;
+                    }
+                    case 1: { // masternode keys
+                        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                        [self showMasternodeKeys:cell];
                         [tableView deselectRowAtIndexPath:indexPath animated:YES];
                         break;
                     }

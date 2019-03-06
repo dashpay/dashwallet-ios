@@ -36,6 +36,10 @@
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F422321BF028500858B91 /* AboutStoryboard.storyboard */; };
+		2A9FFCD4222EA87F00956D5F /* DSTransactionDetailTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFCCC222EA87E00956D5F /* DSTransactionDetailTableViewCell.m */; };
+		2A9FFCD5222EA87F00956D5F /* DSTransactionStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFCCD222EA87E00956D5F /* DSTransactionStatusTableViewCell.m */; };
+		2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFCD1222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.m */; };
+		2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFCD3222EA87E00956D5F /* DSTransactionAmountTableViewCell.m */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
@@ -111,6 +115,9 @@
 		FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
 		FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2E5536218BA161003A1B7C /* DWVersionManager.m */; };
 		FB3FA3D61F2364140071FCC5 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
+		FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB3FF0B12226416A0059A9A5 /* MasternodeKeys.storyboard */; };
+		FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */; };
+		FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */; };
 		FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC71211B8A5E00BC9879 /* DWActionTableViewCell.m */; };
 		FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC74211CC68E00BC9879 /* DWNumberButton.m */; };
 		FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */; };
@@ -341,6 +348,14 @@
 		2A8F424521BF02D600858B91 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424721BF02D800858B91 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
 		2A8F424921BF02D900858B91 /* zh-Hant-TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/AboutStoryboard.strings"; sourceTree = "<group>"; };
+		2A9FFCCC222EA87E00956D5F /* DSTransactionDetailTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionDetailTableViewCell.m; sourceTree = "<group>"; };
+		2A9FFCCD222EA87E00956D5F /* DSTransactionStatusTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionStatusTableViewCell.m; sourceTree = "<group>"; };
+		2A9FFCCE222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransactionIdentifierTableViewCell.h; sourceTree = "<group>"; };
+		2A9FFCCF222EA87E00956D5F /* DSTransactionAmountTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransactionAmountTableViewCell.h; sourceTree = "<group>"; };
+		2A9FFCD0222EA87E00956D5F /* DSTransactionDetailTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransactionDetailTableViewCell.h; sourceTree = "<group>"; };
+		2A9FFCD1222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionIdentifierTableViewCell.m; sourceTree = "<group>"; };
+		2A9FFCD2222EA87E00956D5F /* DSTransactionStatusTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransactionStatusTableViewCell.h; sourceTree = "<group>"; };
+		2A9FFCD3222EA87E00956D5F /* DSTransactionAmountTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionAmountTableViewCell.m; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -537,6 +552,11 @@
 		FB248B621F79BB7C00405AE0 /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
 		FB2E5535218BA161003A1B7C /* DWVersionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWVersionManager.h; sourceTree = "<group>"; };
 		FB2E5536218BA161003A1B7C /* DWVersionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWVersionManager.m; sourceTree = "<group>"; };
+		FB3FF0B12226416A0059A9A5 /* MasternodeKeys.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MasternodeKeys.storyboard; sourceTree = "<group>"; };
+		FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWKeysOverviewViewController.h; sourceTree = "<group>"; };
+		FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWKeysOverviewViewController.m; sourceTree = "<group>"; };
+		FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDerivationPathKeysViewController.h; sourceTree = "<group>"; };
+		FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDerivationPathKeysViewController.m; sourceTree = "<group>"; };
 		FB4310ED1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB4310EE1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Main.strings; sourceTree = "<group>"; };
 		FB4310EF1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/MainInterface.strings; sourceTree = "<group>"; };
@@ -728,6 +748,21 @@
 			path = About;
 			sourceTree = "<group>";
 		};
+		2A9FFCCB222EA87E00956D5F /* TxDetails */ = {
+			isa = PBXGroup;
+			children = (
+				2A9FFCCC222EA87E00956D5F /* DSTransactionDetailTableViewCell.m */,
+				2A9FFCCD222EA87E00956D5F /* DSTransactionStatusTableViewCell.m */,
+				2A9FFCCE222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.h */,
+				2A9FFCCF222EA87E00956D5F /* DSTransactionAmountTableViewCell.h */,
+				2A9FFCD0222EA87E00956D5F /* DSTransactionDetailTableViewCell.h */,
+				2A9FFCD1222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.m */,
+				2A9FFCD2222EA87E00956D5F /* DSTransactionStatusTableViewCell.h */,
+				2A9FFCD3222EA87E00956D5F /* DSTransactionAmountTableViewCell.m */,
+			);
+			path = TxDetails;
+			sourceTree = "<group>";
+		};
 		2AB231CF2196E23200A6E7E6 /* Migration Controller */ = {
 			isa = PBXGroup;
 			children = (
@@ -801,6 +836,7 @@
 		752E289B19234A3F00DB5A3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A9FFCCB222EA87E00956D5F /* TxDetails */,
 				FB6B7BC52180985000147CEB /* View Extensions */,
 				FB6B7BC42180980C00147CEB /* Components */,
 				FB43BC6F211B8A0E00BC9879 /* Cells */,
@@ -843,6 +879,7 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8F420A21BEE69E00858B91 /* About */,
 				2AB231CF2196E23200A6E7E6 /* Migration Controller */,
@@ -1096,6 +1133,18 @@
 				FB021E5A1E4DEFE800D17638 /* MBProgressHUD.m */,
 			);
 			name = MBProgressHUD;
+			sourceTree = "<group>";
+		};
+		FB3FF0B0222641210059A9A5 /* Masternode Keys */ = {
+			isa = PBXGroup;
+			children = (
+				FB3FF0B12226416A0059A9A5 /* MasternodeKeys.storyboard */,
+				FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */,
+				FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */,
+				FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */,
+				FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */,
+			);
+			path = "Masternode Keys";
 			sourceTree = "<group>";
 		};
 		FB43BC6F211B8A0E00BC9879 /* Cells */ = {
@@ -1438,6 +1487,7 @@
 				FBFC2EC921137A7A00D20C57 /* Montserrat-ExtraLight.otf in Resources */,
 				FBFC2EF121137A7A00D20C57 /* Montserrat-LightItalic.otf in Resources */,
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
+				FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */,
 				2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
 				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
@@ -1740,6 +1790,7 @@
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
+				2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
@@ -1748,6 +1799,7 @@
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
+				2A9FFCD5222EA87F00956D5F /* DSTransactionStatusTableViewCell.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */,
@@ -1761,10 +1813,13 @@
 				2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
+				2A9FFCD4222EA87F00956D5F /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
 				2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */,
+				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
+				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
@@ -1777,6 +1832,7 @@
 				75D5F3D2191EC270004AB296 /* DWAppDelegate.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
+				2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,

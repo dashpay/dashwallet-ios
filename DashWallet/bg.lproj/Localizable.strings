@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 потвърждения";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "Необходимо е действие";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "РАЗШИРЕНИ";
@@ -87,6 +93,15 @@
 "block #%d of %d" = "блок #%1$d от %2$d";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Купи Dash";
 
 /* No comment provided by engineer. */
@@ -114,6 +129,9 @@
 "checking private key balance..." = "проверка баланса на частния ключ...";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "изчистване";
 
 /* No comment provided by engineer. */
@@ -127,6 +145,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "затвори приложението";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "Потвърди";
@@ -234,13 +255,13 @@
 "Failed wallet update" = "Неуспешно актуализиране на портфейла";
 
 /* No comment provided by engineer. */
-"fetching amount" = "извличане на сума";
-
-/* No comment provided by engineer. */
 "from:" = "от:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "ОСНОВЕН";
+
+/* No comment provided by engineer. */
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване";
@@ -279,13 +300,28 @@
 "INVALID" = "НЕВАЛИДЕН";
 
 /* No comment provided by engineer. */
-"IS Received" = "IS Received";
+"IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Нека другите да сканират този QR код, за да получат вашия dash адрес. Всеки може да изпрати dash до портфейла Ви, като ги прехвърли на Вашия адрес.";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
+
+/* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
 /* No comment provided by engineer. */
 "more..." = "още...";
@@ -298,6 +334,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "НИКОГА не пишете вашата парола за възстановяване в мениджъра на пароли или на друго място. Другите устройства може да са заразени.";
+
+/* No comment provided by engineer. */
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "следва, напиши отдолу своята фраза за възстановяване";
@@ -330,13 +369,40 @@
 "not a valid dash or bitcoin address" = "не е валиден Dash или Bitcoin адрес";
 
 /* No comment provided by engineer. */
-"ok" = "ок";
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"ok" = "ок";
+
+/* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Използвайте разширените функции само ако сте добре запознат с блокчейн технологиите . \nАко са активирани използвайте само разширени функции, които разбирате.";
+
+/* No comment provided by engineer. */
+"operator key index:" = "operator key index:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key index:" = "owner key index:";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
 
 /* No comment provided by engineer. */
 "Pay" = "Плати";
@@ -345,22 +411,40 @@
 "payee identity isn't certified" = "идентичността на подателя не е сертифицирана";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "адрес за плащане";
 
 /* No comment provided by engineer. */
 "payment output" = "изходящо плащане";
 
 /* No comment provided by engineer. */
-"pending" = "изчакване";
+"payout Address" = "payout Address";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
+"pending" = "изчакване";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
+
+/* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "процент: %@ = %@\nактуалицирани: %@\nблок #%d of %d\nсвързани пиъри: %d\ndl пиъри: %@";
@@ -374,6 +458,9 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
 /* Recovery phrase */
 "Recovery phrase" = "Фраза за възстановяване";
 
@@ -385,6 +472,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "намаляване сумата на плащането от\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Напомни ми по-късно";
@@ -474,6 +564,9 @@
 "show" = "покажи";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "покажи фраза";
 
 /* No comment provided by engineer. */
@@ -537,6 +630,9 @@
 "to: %@" = "до: %@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID лимит";
 
 /* No comment provided by engineer. */
@@ -558,6 +654,9 @@
 "turn device passcode on" = "включи устройство за паролата";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "Не може да се получи нов qr код";
 
 /* No comment provided by engineer. */
@@ -576,10 +675,25 @@
 "unverified" = "непроверен";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "проверен, в очакване на потвърждение";
 
 /* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key index:" = "voting key index:";
+
+/* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "адрес на портфейла";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";

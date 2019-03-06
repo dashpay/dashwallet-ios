@@ -18,6 +18,9 @@
 "%d out of %d lock votes" = "%1$d out of %2$d lock votes";
 
 /* No comment provided by engineer. */
+"%ld used" = "%ld used";
+
+/* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
 
 /* No comment provided by engineer. */
@@ -49,6 +52,9 @@
 
 /* No comment provided by engineer. */
 "Action Needed" = "การกระทำที่จำเป็น";
+
+/* No comment provided by engineer. */
+"Address" = "Address";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ขั้นสูง";
@@ -87,6 +93,15 @@
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "ขาย Dash";
 
 /* No comment provided by engineer. */
@@ -114,6 +129,9 @@
 "checking private key balance..." = "ตรวจสอบความสมดุลของ key ส่วนตัว";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "ลบออก";
 
 /* No comment provided by engineer. */
@@ -127,6 +145,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "ปิดแอพพลิเคชั่น";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "ยืนยัน";
@@ -234,13 +255,13 @@
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
-"fetching amount" = "กำลังเรียกจำนวน";
-
-/* No comment provided by engineer. */
 "from:" = "จาก:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "ทั่วไป";
+
+/* No comment provided by engineer. */
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -279,13 +300,28 @@
 "INVALID" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"IS Received" = "IS Received";
+"IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
+"Load more" = "Load more";
+
+/* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
+
+/* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
 /* No comment provided by engineer. */
 "more..." = "เพิ่มเติม";
@@ -298,6 +334,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
+
+/* No comment provided by engineer. */
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ต่อไป , เขียนวลีกู้คืนของคุณ";
@@ -330,13 +369,40 @@
 "not a valid dash or bitcoin address" = "ไม่ใช่ที่อยู่ dash หรือ bitcoin ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"ok" = "โอเค";
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"ok" = "โอเค";
+
+/* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
+
+/* No comment provided by engineer. */
+"operator key index:" = "operator key index:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
+"Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key index:" = "owner key index:";
+
+/* No comment provided by engineer. */
+"Owner Keys" = "Owner Keys";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -345,22 +411,40 @@
 "payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "ที่อยู่การชำระเงิน";
 
 /* No comment provided by engineer. */
 "payment output" = "การชำระเงิน";
 
 /* No comment provided by engineer. */
-"pending" = "อยู่ระหว่างดำเนินการ";
+"payout Address" = "payout Address";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
+"pending" = "อยู่ระหว่างดำเนินการ";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
 
 /* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
+
+/* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
+
+/* No comment provided by engineer. */
+"Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "เรท: %@ = %@\nอัพเดต: %@\nบล็อค #%d ของ %d\nคู่เชื่อมต่อ: %d\nคู่ dl: %@";
@@ -374,6 +458,9 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ได้รับ %1$@(%2$@)";
 
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
 /* Recovery phrase */
 "Recovery phrase" = "วลีกู้คืน";
 
@@ -385,6 +472,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "เตือนฉันภายหลัง";
@@ -474,6 +564,9 @@
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "แสดงวลี";
 
 /* No comment provided by engineer. */
@@ -537,6 +630,9 @@
 "to: %@" = "ถึง: %@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "ขีดจำกัด Touch ID";
 
 /* No comment provided by engineer. */
@@ -558,6 +654,9 @@
 "turn device passcode on" = "เปิดการใช้งานรหัส";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "ไม่สามารถรับโค้ด QR ใหม่";
 
 /* No comment provided by engineer. */
@@ -576,10 +675,25 @@
 "unverified" = "พิสูจน์ไม่ได้";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "ตรวจสอบแล้ว รอการยืนยัน";
 
 /* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key index:" = "voting key index:";
+
+/* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
 "wallet address" = "ที่อยู่ wallet ";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
