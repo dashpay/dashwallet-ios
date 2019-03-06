@@ -93,6 +93,15 @@
 "block #%d of %d" = "khối #%1$d của %2$d";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Mua Dash";
 
 /* No comment provided by engineer. */
@@ -120,6 +129,9 @@
 "checking private key balance..." = "kiểm tra số dư của khoá riêng...";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "xoá";
 
 /* No comment provided by engineer. */
@@ -133,6 +145,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "Xác thực";
@@ -240,13 +255,13 @@
 "Failed wallet update" = "Không cập nhận được ví";
 
 /* No comment provided by engineer. */
-"fetching amount" = "lấy số lượng";
-
-/* No comment provided by engineer. */
 "from:" = "từ:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "TỔNG THỂ";
+
+/* No comment provided by engineer. */
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tôi chấp nhận rằng tôi sẽ mất các coin của mình nếu không còn sở hữu cụm từ phục hồi";
@@ -285,6 +300,9 @@
 "INVALID" = "KHÔNG HỢP LỆ";
 
 /* No comment provided by engineer. */
+"IP address/port:" = "IP address/port:";
+
+/* No comment provided by engineer. */
 "IS Received" = "IS Received";
 
 /* No comment provided by engineer. */
@@ -297,6 +315,18 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* No comment provided by engineer. */
 "more..." = "tiếp...";
 
 /* No comment provided by engineer. */
@@ -307,6 +337,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
+
+/* No comment provided by engineer. */
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "tiếp theo, ghi xuống cụm từ phục hồi";
@@ -339,16 +372,37 @@
 "not a valid dash or bitcoin address" = "không phải địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Chỉ bật những tính năng nâng cao nếu bạn hiểu biết về công nghệ blockchain.\nNếu có thể hãy chỉ bật những tính năng nâng cao nào mà bạn hiểu rõ.";
 
 /* No comment provided by engineer. */
+"operator key index:" = "operator key index:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key index:" = "owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -360,19 +414,28 @@
 "payee identity isn't certified" = "thông tin về người nhận chưa được xác nhận";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "địa chỉ thanh toán";
 
 /* No comment provided by engineer. */
 "payment output" = "đầu ra thanh toán";
 
 /* No comment provided by engineer. */
+"payout Address" = "payout Address";
+
+/* No comment provided by engineer. */
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
 "pending" = "đang chờ";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "hãy nhập mã pin để nâng cấp ví";
+"Please enter pin to upgrade wallet" = "Hãy nhập mã để nâng cấp ví";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Hãy nhập mã để nâng cấp ví";
+"please enter pin to upgrade wallet" = "hãy nhập mã pin để nâng cấp ví";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Hãy đặt điện thoại của bạn cạnh thiết bị NFC.";
@@ -382,6 +445,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "tỷ giá: 1%@ = 1%@\ncập nhật: 1%@\nblock #%d of 2%d\ncác kết nối: 2%d\ndl peer: 1%@\n";
@@ -395,6 +461,9 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "nhận %@ (%@)";
 
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
 /* Recovery phrase */
 "Recovery phrase" = "Cụm từ phục hồi";
 
@@ -406,6 +475,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "giảm số lượng thanh toán theo\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Hãy nhắc tôi sau";
@@ -561,6 +633,9 @@
 "to: %@" = "đến: %@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Giới hạn Touch ID";
 
 /* No comment provided by engineer. */
@@ -582,6 +657,9 @@
 "turn device passcode on" = "hãy bật mật khẩu cho thiết bị của bạn";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "Không thể lấy mã QR mới";
 
 /* No comment provided by engineer. */
@@ -600,7 +678,16 @@
 "unverified" = "chưa được kiểm tra";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
+
+/* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key index:" = "voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";

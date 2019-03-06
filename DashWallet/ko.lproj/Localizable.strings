@@ -93,6 +93,15 @@
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "대시 구입";
 
 /* No comment provided by engineer. */
@@ -120,6 +129,9 @@
 "checking private key balance..." = "비밀 키에 남아 있는 잔액 확인중...";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "삭제";
 
 /* No comment provided by engineer. */
@@ -133,6 +145,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "앱 닫기";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "승인";
@@ -240,13 +255,13 @@
 "Failed wallet update" = "지갑 업데이트 실패";
 
 /* No comment provided by engineer. */
-"fetching amount" = "판매 금액";
-
-/* No comment provided by engineer. */
 "from:" = "보낸 주소:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "일반";
+
+/* No comment provided by engineer. */
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
@@ -285,6 +300,9 @@
 "INVALID" = "유효하지 않음";
 
 /* No comment provided by engineer. */
+"IP address/port:" = "IP address/port:";
+
+/* No comment provided by engineer. */
 "IS Received" = "IS Received";
 
 /* No comment provided by engineer. */
@@ -297,6 +315,18 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* No comment provided by engineer. */
 "more..." = "더보기...";
 
 /* No comment provided by engineer. */
@@ -307,6 +337,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "복구 문구를 암호 관리자나 다른 곳에 절대로 입력하지 마십시오.\n다른 장치가 감염되었을 수 있습니다.";
+
+/* No comment provided by engineer. */
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
@@ -339,16 +372,37 @@
 "not a valid dash or bitcoin address" = "유효한 대시 혹은 비트코인 주소가 아닙니다";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "블록체인 기술에 관해 지식이 있는 경우에만 향상된 기능을 사용하십시오.\n이해하는 범위 내에서만 향상된 기능을 사용하실 것을 권장합니다.";
 
 /* No comment provided by engineer. */
+"operator key index:" = "operator key index:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key index:" = "owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -360,19 +414,28 @@
 "payee identity isn't certified" = "수취인의 신원이 인증 되지 않았습니다";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "결제 주소";
 
 /* No comment provided by engineer. */
 "payment output" = "거래 출력";
 
 /* No comment provided by engineer. */
+"payout Address" = "payout Address";
+
+/* No comment provided by engineer. */
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
 "pending" = "대기중";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "지갑 업데이트를 위해 PIN 을 입력해주세요";
+"Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
+"please enter pin to upgrade wallet" = "지갑 업데이트를 위해 PIN 을 입력해주세요";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "휴대 전화를 NFC 기기 가까이에 두십시오.";
@@ -382,6 +445,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -395,6 +461,9 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ (%2$@) 받음";
 
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
 /* Recovery phrase */
 "Recovery phrase" = "복원 문구";
 
@@ -406,6 +475,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "나중에 확인";
@@ -561,6 +633,9 @@
 "to: %@" = "받는 주소: %@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "터치 아이디 제한";
 
 /* No comment provided by engineer. */
@@ -582,6 +657,9 @@
 "turn device passcode on" = "비밀번호 켜기";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "새 QR코드를 불러올 수 없습니다";
 
 /* No comment provided by engineer. */
@@ -600,7 +678,16 @@
 "unverified" = "확인되지 않음";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
+
+/* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key index:" = "voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";

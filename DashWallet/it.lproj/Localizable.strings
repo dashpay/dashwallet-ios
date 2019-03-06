@@ -93,6 +93,15 @@
 "block #%d of %d" = "blocco #%1$d di %2$d";
 
 /* No comment provided by engineer. */
+"BU Registration Transaction" = "BU Registration Transaction";
+
+/* No comment provided by engineer. */
+"BU Reset Transaction" = "BU Reset Transaction";
+
+/* No comment provided by engineer. */
+"BU Topup Transaction" = "BU Topup Transaction";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Compra Dash";
 
 /* No comment provided by engineer. */
@@ -120,6 +129,9 @@
 "checking private key balance..." = "verificando il saldo della chiave privata...";
 
 /* No comment provided by engineer. */
+"Classical Transaction" = "Classical Transaction";
+
+/* No comment provided by engineer. */
 "clear" = "rimuovere";
 
 /* No comment provided by engineer. */
@@ -133,6 +145,9 @@
 
 /* No comment provided by engineer. */
 "close app" = "chiudi app";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "Conferma";
@@ -240,13 +255,13 @@
 "Failed wallet update" = "\nAggiornamento del portafoglio fallito";
 
 /* No comment provided by engineer. */
-"fetching amount" = "quantità di recupero";
-
-/* No comment provided by engineer. */
 "from:" = "da:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERALE";
+
+/* No comment provided by engineer. */
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "accetto di perdere le mie monete se non possiedo la frase di recupero";
@@ -285,6 +300,9 @@
 "INVALID" = "INVALIDO";
 
 /* No comment provided by engineer. */
+"IP address/port:" = "IP address/port:";
+
+/* No comment provided by engineer. */
 "IS Received" = "IS Received";
 
 /* No comment provided by engineer. */
@@ -297,6 +315,18 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"masternode holding address" = "masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* No comment provided by engineer. */
 "more..." = "di più...";
 
 /* No comment provided by engineer. */
@@ -307,6 +337,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "MAI scrivere la tua frase di recupero in qualunque altro programma. Altri dispositivi possono essere infetti.";
+
+/* No comment provided by engineer. */
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";
@@ -339,16 +372,37 @@
 "not a valid dash or bitcoin address" = "non un indirizzo dash o bitcoin valido";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Abilita le funzionalità avanzate solo se sei esperto in tecnologia \"blockchain\".\nNel caso decida di abilitarlo, usa solo le funzioni avanzate che conosci.";
 
 /* No comment provided by engineer. */
+"operator key index:" = "operator key index:";
+
+/* No comment provided by engineer. */
+"operator key:" = "operator key:";
+
+/* No comment provided by engineer. */
 "Operator Keys" = "Operator Keys";
+
+/* No comment provided by engineer. */
+"owner key hash:" = "owner key hash:";
+
+/* No comment provided by engineer. */
+"owner key index:" = "owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -360,19 +414,28 @@
 "payee identity isn't certified" = "l'identità del beneficiario non è certificato";
 
 /* No comment provided by engineer. */
+"payload:" = "payload:";
+
+/* No comment provided by engineer. */
 "payment address" = "indirizzo pagamento";
 
 /* No comment provided by engineer. */
 "payment output" = "uscita pagamento";
 
 /* No comment provided by engineer. */
+"payout Address" = "payout Address";
+
+/* No comment provided by engineer. */
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
 "pending" = "in attesa di";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
+"Please enter pin to upgrade wallet" = "\nInserisci il PIN per aggiornare il portafoglio";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "\nInserisci il PIN per aggiornare il portafoglio";
+"please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Perfavore posiziona il tuo telefono vicino al dispositivo NFC.";
@@ -382,6 +445,9 @@
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rateo%@=%@\naggiornato:%@\nblocco #%d of %d\npeer connessi:%d\ndl peer:%@";
@@ -395,6 +461,9 @@
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ricevuto %1$@ (%2$@)";
 
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
 /* Recovery phrase */
 "Recovery phrase" = "Frase di recupero";
 
@@ -406,6 +475,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "ridurre il pagamento di\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Ricordamelo in seguito";
@@ -561,6 +633,9 @@
 "to: %@" = "a: %@";
 
 /* No comment provided by engineer. */
+"topup amount:" = "topup amount:";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Limite  \"Touch ID\"";
 
 /* No comment provided by engineer. */
@@ -582,6 +657,9 @@
 "turn device passcode on" = "attiva codice d'accesso dispositivo";
 
 /* No comment provided by engineer. */
+"type:" = "type:";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "Impossibile ottenere un nuovo codice QR";
 
 /* No comment provided by engineer. */
@@ -600,7 +678,16 @@
 "unverified" = "non verificato";
 
 /* No comment provided by engineer. */
+"username:" = "username:";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verificato, in attesa di conferma";
+
+/* No comment provided by engineer. */
+"voting key hash:" = "voting key hash:";
+
+/* No comment provided by engineer. */
+"voting key index:" = "voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";

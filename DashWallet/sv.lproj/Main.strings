@@ -26,9 +26,6 @@
 /* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
 "W8m-Eh-Nf9.title" = "Inställningar";
 
-/* Class = "UILabel"; text = "amount:"; ObjectID = "XJu-9x-HqQ"; */
-"XJu-9x-HqQ.text" = "belopp:";
-
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "Ange denna plånboks återställningsfras för att ta bort den och påbörja/återställa en annan. Nuvarande medel står kvar med frasen.";
 
@@ -74,9 +71,6 @@
 /* Class = "UILabel"; text = "Shapeshift in progress"; ObjectID = "adc-g6-wnP"; */
 "adc-g6-wnP.text" = "Shapeshift pågår";
 
-/* Class = "UILabel"; text = "status:"; ObjectID = "x2u-C3-wz6"; */
-"x2u-C3-wz6.text" = "status:";
-
 /* Class = "UIButton"; normalTitle = "NFC"; ObjectID = "F30-En-QkL"; */
 "F30-En-QkL.normalTitle" = "NFC";
 
@@ -100,3 +94,9 @@
 
 /* Class = "UIButton"; normalTitle = "Share"; ObjectID = "Ng6-uV-YUC"; */
 "Ng6-uV-YUC.normalTitle" = "Share";
+
+/* Class = "UILabel"; text = "status:"; ObjectID = "COA-2z-ygM"; */
+"COA-2z-ygM.text" = "status:";
+
+/* Class = "UILabel"; text = "amount:"; ObjectID = "kjE-J2-MNN"; */
+"kjE-J2-MNN.text" = "amount:";
