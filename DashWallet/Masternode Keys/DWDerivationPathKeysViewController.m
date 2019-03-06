@@ -97,12 +97,15 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
             }
             case DWDerivationPathInfoPrivateKey: {
                 cell.textLabel.text = NSLocalizedString(@"Private key", nil);
-                NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated withPassphrase:nil];
-                DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                if ([key isKindOfClass:[DSECDSAKey class]]) {
-                    cell.detailTextLabel.text = [((DSECDSAKey*)key) privateKeyStringForChain:self.derivationPath.chain];
-                } else {
-                    cell.detailTextLabel.text = key.secretKeyString;
+                @autoreleasepool {
+                    
+                    NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated withPassphrase:nil];
+                    DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
+                    if ([key isKindOfClass:[DSECDSAKey class]]) {
+                        cell.detailTextLabel.text = [((DSECDSAKey*)key) privateKeyStringForChain:self.derivationPath.chain];
+                    } else {
+                        cell.detailTextLabel.text = key.secretKeyString;
+                    }
                 }
                 break;
             }
