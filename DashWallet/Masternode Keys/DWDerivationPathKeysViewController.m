@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
     
     self.tableView.tableFooterView = [[UIView alloc] init];
     
-    self.visibleIndexes = self.derivationPath.usedAddresses.count + 1;
+    self.visibleIndexes = [self.derivationPath firstUnusedIndex] + 1;
 }
 
 #pragma mark - Table view data source
