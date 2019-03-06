@@ -23,7 +23,6 @@
 #import "DWUpholdConstants.h"
 #import "DWUpholdLogoutTutorialViewController.h"
 #import "DWUpholdMainViewController.h"
-#import "SFSafariViewController+DashWallet.h"
 #import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
     [controller dismissViewControllerAnimated:YES completion:^{
         NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
         NSParameterAssert(url);
-        [self openSafariControllerWithURL:url];
+        [self openSafariAppWithURL:url];
     }];
 }
 
@@ -113,9 +112,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self dw_performTransitionToViewController:toController completion:nil];
 }
 
-- (void)openSafariControllerWithURL:(NSURL *)url {
-    SFSafariViewController *controller = [SFSafariViewController dw_controllerWithURL:url];
-    [self presentViewController:controller animated:YES completion:nil];
+- (void)openSafariAppWithURL:(NSURL *)url {
+    [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 }
 
 @end
