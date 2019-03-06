@@ -303,9 +303,6 @@
 "IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
-"IS Received" = "IS Received";
-
-/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Pozwól innym zeskanować ten kod QR by uzyskać twój adres dash. Każdy może przekazać dashe do twojego portfela poprzez wysłanie ich na twój adres.";
 
 /* No comment provided by engineer. */
