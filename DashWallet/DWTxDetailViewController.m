@@ -220,22 +220,26 @@
         case 3: {
             switch ([self.transaction type]) {
                 case DSTransactionType_SubscriptionRegistration:
-                    return 4;
+                    return 3;
                     break;
                 case DSTransactionType_SubscriptionResetKey:
-                    return 3;
+                    return 2;
                     break;
                 case DSTransactionType_SubscriptionTopUp:
-                    return 3;
+                    return 2;
                     break;
                 case DSTransactionType_ProviderRegistration:
-                    return 10;
+                {
+                    DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)self.transaction;
+                    DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
+                    return localMasternode.holdingKeysWallet?9:8;
                     break;
+                }
                 case DSTransactionType_ProviderUpdateService:
-                    return 3;
+                    return 2;
                     break;
                 case DSTransactionType_ProviderUpdateRegistrar:
-                    return 3;
+                    return 6;
                     break;
                 default:
                     return 0;
@@ -491,21 +495,10 @@
                 switch (indexPath.row) {
                     case 0:
                     {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainUserRegistrationTransaction.blockchainUserRegistrationTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"public key hash:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"public key:", nil); //will be BLS public key when released
                         s = [NSData dataWithUInt160:blockchainUserRegistrationTransaction.pubkeyHash].hexString;
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
@@ -513,7 +506,7 @@
                         return cell;
                         break;
                     }
-                    case 2:
+                    case 1:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
@@ -524,7 +517,7 @@
                         return cell;
                         break;
                     }
-                    case 3:
+                    case 2:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
@@ -542,21 +535,10 @@
                 switch (indexPath.row) {
                     case 0:
                     {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainUserTopupTransaction.blockchainUserTopupTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"registration tx:", nil);
                         s = [NSData dataWithUInt256:blockchainUserTopupTransaction.registrationTransactionHash].hexString;
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
@@ -564,7 +546,7 @@
                         return cell;
                         break;
                     }
-                    case 2:
+                    case 1:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
@@ -582,12 +564,14 @@
                 switch (indexPath.row) {
                     case 0:
                     {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainUserResetTransaction.blockchainUserResetTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
+                        cell.titleLabel.text = NSLocalizedString(@"registration tx:", nil);
+                        s = [NSData dataWithUInt256:blockchainUserResetTransaction.registrationTransactionHash].hexString;
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
                         return cell;
                         break;
                     }
@@ -596,20 +580,7 @@
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
-                        s = [NSData dataWithUInt256:blockchainUserResetTransaction.registrationTransactionHash].hexString;
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
-                                                     [s substringFromIndex:s.length/2]];
-                        cell.identifierLabel.copyableText = s;
-                        return cell;
-                        break;
-                    }
-                    case 2:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"new pubkeyhash:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"new public key:", nil); //this is a BLS public key once it hits mainnet
                         s = [NSData dataWithUInt160:blockchainUserResetTransaction.replacementPublicKeyHash].hexString;
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
@@ -627,18 +598,7 @@
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Provider registration version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerRegistrationTransaction.providerRegistrationTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"IP address/port:", nil);
                         char s[INET6_ADDRSTRLEN];
                         NSString * ipAddressString = @(inet_ntop(AF_INET, &providerRegistrationTransaction.ipAddress.u32[3], s, sizeof(s)));
                         cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d",ipAddressString,providerRegistrationTransaction.port];
@@ -646,7 +606,7 @@
                         return cell;
                         break;
                     }
-                    case 2:
+                    case 1:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -659,19 +619,19 @@
                         return cell;
                         break;
                     }
-                    case 3:
+                    case 2:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"owner key wallet:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"owner key index:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.ownerKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.ownerKeysWallet.uniqueID,localMasternode.ownerWalletIndex]:@"Not Owner";
+                        cell.statusLabel.text = localMasternode.ownerKeysWallet?[NSString stringWithFormat:@"%d",localMasternode.ownerWalletIndex]:NSLocalizedString(@"not owner",nil);
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
                     }
-                    case 4:
+                    case 3:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -684,19 +644,19 @@
                         return cell;
                         break;
                     }
-                    case 5:
+                    case 4:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"operator key wallet:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"operator key index:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.operatorKeysWallet.uniqueID,localMasternode.operatorWalletIndex]:@"Not Operator";
+                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%d",localMasternode.operatorWalletIndex]:NSLocalizedString(@"not operator",nil);
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
                     }
-                    case 6:
+                    case 5:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -709,19 +669,19 @@
                         return cell;
                         break;
                     }
-                    case 7:
+                    case 6:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"voting key wallet:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"voting key index:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.votingKeysWallet.uniqueID,localMasternode.votingWalletIndex]:@"Not Voter";
+                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%d",localMasternode.votingWalletIndex]:NSLocalizedString(@"not voter",nil);
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
                     }
-                    case 8:
+                    case 7:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
@@ -732,14 +692,14 @@
                         return cell;
                         break;
                     }
-                    case 9:
+                    case 8:
                     {
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Holding funds wallet:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"holding funds index:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.holdingKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.holdingKeysWallet.uniqueID,localMasternode.holdingWalletIndex]:@"Not Holding";
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",localMasternode.holdingWalletIndex];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
@@ -754,18 +714,7 @@
                         DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Provider update service version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerUpdateServiceTransaction.providerUpdateServiceTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"IP address/port:", nil);
                         char s[INET6_ADDRSTRLEN];
                         NSString * ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.ipAddress.u32[3], s, sizeof(s)));
                         cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d",ipAddressString,providerUpdateServiceTransaction.port];
@@ -773,12 +722,12 @@
                         return cell;
                         break;
                     }
-                    case 2:
+                    case 1:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"provider registration hash:", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"registration tx:", nil);
                         s = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash].hexString;
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
@@ -795,45 +744,80 @@
                 switch (indexPath.row) {
                     case 0:
                     {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Provider update service version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerUpdateRegistrarTransaction.providerUpdateRegistrarTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
+                        cell.titleLabel.text = NSLocalizedString(@"payout address:", nil);
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@",[NSString addressWithScriptPubKey:providerUpdateRegistrarTransaction.scriptPayout onChain:providerUpdateRegistrarTransaction.chain]];
+                        
                         return cell;
                         break;
                     }
                     case 1:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@",[NSString addressWithScriptPubKey:providerUpdateRegistrarTransaction.scriptPayout onChain:providerUpdateRegistrarTransaction.chain]];
-                        
-                        return cell;
-                        break;
-                    }
-                    case 2:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"provider registration hash:", nil);
-                        s = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash].hexString;
+                        cell.titleLabel.text = NSLocalizedString(@"operator key:", nil);
+                        s = uint384_hex(providerUpdateRegistrarTransaction.operatorKey);
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
                         cell.identifierLabel.copyableText = s;
                         return cell;
                         break;
                     }
-                        
-                        
+                    case 2:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"operator key index:", nil);
+                        DSLocalMasternode * localMasternode = providerUpdateRegistrarTransaction.providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%d",localMasternode.operatorWalletIndex]:NSLocalizedString(@"not operator",nil);
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 3:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"voting key hash:", nil);
+                        s = uint160_hex(providerUpdateRegistrarTransaction.votingKeyHash);
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
+                    case 4:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"voting key index:", nil);
+                        DSLocalMasternode * localMasternode = providerUpdateRegistrarTransaction.providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%d",localMasternode.votingWalletIndex]:NSLocalizedString(@"not voter",nil);
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 5:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"registration tx:", nil);
+                        s = uint256_hex(providerUpdateRegistrarTransaction.providerRegistrationTransactionHash);
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
                 }
-                
             }
-            
         }
             break;
     }

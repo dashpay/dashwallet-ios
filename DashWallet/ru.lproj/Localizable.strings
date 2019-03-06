@@ -102,9 +102,6 @@
 "BU Topup Transaction" = "BU Topup Transaction";
 
 /* No comment provided by engineer. */
-"BU version" = "BU version";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Купить DASH";
 
 /* No comment provided by engineer. */
@@ -264,7 +261,7 @@
 "GENERAL" = "ОБЩИЕ";
 
 /* No comment provided by engineer. */
-"Holding funds wallet:" = "Holding funds wallet:";
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Я понимаю, что потеряю свои монеты, если у меня не будет фразы восстановления";
@@ -303,7 +300,7 @@
 "INVALID" = "НЕКОРРЕКТНО";
 
 /* No comment provided by engineer. */
-"IP Address/Port" = "IP Address/Port";
+"IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
 "IS Received" = "IS Received";
@@ -342,7 +339,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "НИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.";
 
 /* No comment provided by engineer. */
-"new pubkeyhash:" = "new pubkeyhash:";
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "Теперь запишите Вашу фразу восстановления";
@@ -375,6 +372,15 @@
 "not a valid dash or bitcoin address" = "Некорректный адрес Dash или Bitcoin";
 
 /* No comment provided by engineer. */
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
+
+/* No comment provided by engineer. */
 "OK" = "ОК";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Включайте расширенные функции, только если вы хорошо знакомы с блокчейн-технологией. \nПри включении, используйте только те расширенные функции, которые вы понимаете.";
 
 /* No comment provided by engineer. */
-"operator key wallet:" = "operator key wallet:";
+"operator key index:" = "operator key index:";
 
 /* No comment provided by engineer. */
 "operator key:" = "operator key:";
@@ -396,7 +402,7 @@
 "owner key hash:" = "owner key hash:";
 
 /* No comment provided by engineer. */
-"owner key wallet:" = "owner key wallet:";
+"owner key index:" = "owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -420,6 +426,9 @@
 "Payout Address" = "Payout Address";
 
 /* No comment provided by engineer. */
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
 "pending" = "Ожидание";
 
 /* No comment provided by engineer. */
@@ -435,19 +444,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"provider registration hash:" = "provider registration hash:";
-
-/* No comment provided by engineer. */
-"Provider registration version" = "Provider registration version";
-
-/* No comment provided by engineer. */
-"Provider update service version" = "Provider update service version";
-
-/* No comment provided by engineer. */
 "Public key" = "Public key";
 
 /* No comment provided by engineer. */
-"public key hash:" = "public key hash:";
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "Курс: %@ = %@\nОбновлено: %@\nБлок #%d из %d\nПодключенных узлов: %d\nТекущий узел: %@";
@@ -475,6 +475,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Напомнить позже";
@@ -585,9 +588,6 @@
 "status:" = "Cтатус:";
 
 /* No comment provided by engineer. */
-"subregtx:" = "subregtx:";
-
-/* No comment provided by engineer. */
 "swept!" = "Переведено!";
 
 /* No comment provided by engineer. */
@@ -687,7 +687,7 @@
 "voting key hash:" = "voting key hash:";
 
 /* No comment provided by engineer. */
-"voting key wallet:" = "voting key wallet:";
+"voting key index:" = "voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";

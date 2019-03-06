@@ -102,9 +102,6 @@
 "BU Topup Transaction" = "BU Topup Transaction";
 
 /* No comment provided by engineer. */
-"BU version" = "BU version";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "대시 구입";
 
 /* No comment provided by engineer. */
@@ -264,7 +261,7 @@
 "GENERAL" = "일반";
 
 /* No comment provided by engineer. */
-"Holding funds wallet:" = "Holding funds wallet:";
+"holding funds index:" = "holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
@@ -303,7 +300,7 @@
 "INVALID" = "유효하지 않음";
 
 /* No comment provided by engineer. */
-"IP Address/Port" = "IP Address/Port";
+"IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
 "IS Received" = "IS Received";
@@ -342,7 +339,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "복구 문구를 암호 관리자나 다른 곳에 절대로 입력하지 마십시오.\n다른 장치가 감염되었을 수 있습니다.";
 
 /* No comment provided by engineer. */
-"new pubkeyhash:" = "new pubkeyhash:";
+"new public key:" = "new public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "그리고, 당신의 복원 문구를 옮겨 적으세요";
@@ -375,6 +372,15 @@
 "not a valid dash or bitcoin address" = "유효한 대시 혹은 비트코인 주소가 아닙니다";
 
 /* No comment provided by engineer. */
+"not operator" = "not operator";
+
+/* No comment provided by engineer. */
+"not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
+
+/* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
@@ -384,7 +390,7 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "블록체인 기술에 관해 지식이 있는 경우에만 향상된 기능을 사용하십시오.\n이해하는 범위 내에서만 향상된 기능을 사용하실 것을 권장합니다.";
 
 /* No comment provided by engineer. */
-"operator key wallet:" = "operator key wallet:";
+"operator key index:" = "operator key index:";
 
 /* No comment provided by engineer. */
 "operator key:" = "operator key:";
@@ -396,7 +402,7 @@
 "owner key hash:" = "owner key hash:";
 
 /* No comment provided by engineer. */
-"owner key wallet:" = "owner key wallet:";
+"owner key index:" = "owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Owner Keys";
@@ -420,6 +426,9 @@
 "Payout Address" = "Payout Address";
 
 /* No comment provided by engineer. */
+"payout address:" = "payout address:";
+
+/* No comment provided by engineer. */
 "pending" = "대기중";
 
 /* No comment provided by engineer. */
@@ -435,19 +444,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"provider registration hash:" = "provider registration hash:";
-
-/* No comment provided by engineer. */
-"Provider registration version" = "Provider registration version";
-
-/* No comment provided by engineer. */
-"Provider update service version" = "Provider update service version";
-
-/* No comment provided by engineer. */
 "Public key" = "Public key";
 
 /* No comment provided by engineer. */
-"public key hash:" = "public key hash:";
+"public key:" = "public key:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@";
@@ -475,6 +475,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
+
+/* No comment provided by engineer. */
+"registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "나중에 확인";
@@ -585,9 +588,6 @@
 "status:" = "상태:";
 
 /* No comment provided by engineer. */
-"subregtx:" = "subregtx:";
-
-/* No comment provided by engineer. */
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* No comment provided by engineer. */
@@ -687,7 +687,7 @@
 "voting key hash:" = "voting key hash:";
 
 /* No comment provided by engineer. */
-"voting key wallet:" = "voting key wallet:";
+"voting key index:" = "voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
