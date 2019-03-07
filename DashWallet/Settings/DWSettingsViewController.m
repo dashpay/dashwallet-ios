@@ -20,6 +20,7 @@
 #import "DSCurrencyPriceObject.h"
 #import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
+#import "DWKeysOverviewViewController.h"
 #import "DWLocalCurrecnySelectorViewController.h"
 #import "DWSeedViewController.h"
 #import "DWSelectorViewController.h"
@@ -188,25 +189,51 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
-    DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:nil];
-    self.switchNetworkCellModel = cellModel;
-    [self updateSwitchNetworkCellModel];
-    cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
+    if (self.model.advancedFeaturesEnabled) {
+        {
+            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Network", nil)];
+            cellModel.subTitle = self.model.networkName;
+            self.switchNetworkCellModel = cellModel;
+            cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                UITableView *tableView = self.formController.tableView;
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
+            };
+            [items addObject:cellModel];
         }
 
-        if (strongSelf.model.advancedFeaturesEnabled) {
-            UITableView *tableView = self.formController.tableView;
-            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
+        {
+            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show masternode keys", nil)];
+            cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                [strongSelf showMasternodeKeys];
+            };
+            [items addObject:cellModel];
         }
-        else {
+    }
+    else {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Enable advanced features", nil)];
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
             [strongSelf showEnableAdvancedFeatures];
-        }
-    };
-    [items addObject:cellModel];
+        };
+        [items addObject:cellModel];
+    }
+
 
     return items;
 }
@@ -396,7 +423,7 @@ NS_ASSUME_NONNULL_BEGIN
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self.model enableAdvancedFeatures];
-                    [self updateSwitchNetworkCellModel];
+                    [self.formController setSections:[self sections] placeholderText:nil];
                 }];
     [alert addAction:yesButton];
     [alert addAction:cancelButton];
@@ -444,6 +471,17 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
+- (void)showMasternodeKeys {
+    [DSEventManager saveEvent:@"settings:show_masternode_keys"];
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+        if (authenticated) {
+            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
+            [self.navigationController pushViewController:keysViewController animated:YES];
+        }
+    }];
+}
+
 #pragma mark - Private
 
 - (void)updateLocalCurrencyCellModel {
@@ -455,17 +493,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateSwitchNetworkCellModel {
-    NSString *title = nil;
-    NSString *subTitle = nil;
-    if (self.model.advancedFeaturesEnabled) {
-        title = NSLocalizedString(@"Network", nil);
-        subTitle = self.model.networkName;
-    }
-    else {
-        title = NSLocalizedString(@"Enable advanced features", nil);
-    }
-    self.switchNetworkCellModel.title = title;
-    self.switchNetworkCellModel.subTitle = subTitle;
+    self.switchNetworkCellModel.subTitle = self.model.networkName;
 }
 
 @end

@@ -64,15 +64,17 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
                 break;
             }
         }
-        if (!hasItems) {
+        if (hasItems) {
+            self.internalDataSource = self.sections;
+        }
+        else {
             DWPlaceholderFormCellModel *placeholderCellModel = [[DWPlaceholderFormCellModel alloc] initWithTitle:placeholderText];
             DWFormSectionModel *placeholderSection = [[DWFormSectionModel alloc] init];
             placeholderSection.items = @[ placeholderCellModel ];
             self.internalDataSource = @[ placeholderSection ];
         }
     }
-
-    if (!self.internalDataSource) {
+    else {
         self.internalDataSource = self.sections;
     }
 
