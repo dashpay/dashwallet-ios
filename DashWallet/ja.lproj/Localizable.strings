@@ -678,6 +678,15 @@
 "User Topup Transaction" = "User Topup Transaction";
 
 /* No comment provided by engineer. */
+"User Registration Transaction" = "User Registration Transaction";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "User Reset Transaction";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "User Topup Transaction";
+
+/* No comment provided by engineer. */
 "username:" = "username:";
 
 /* No comment provided by engineer. */
