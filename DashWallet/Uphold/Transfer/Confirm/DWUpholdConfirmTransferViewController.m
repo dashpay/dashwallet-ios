@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DWAlertAction *> *)providedActions {
     if (!_providedActions) {
         __weak typeof(self) weakSelf = self;
-        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
+        DWAlertAction *cancelAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:DWAlertActionStyleCancel handler:^(DWAlertAction *_Nonnull action) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             [strongSelf cancelButtonAction];
         }];
-        DWAlertAction *confirmAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Confirm", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+        DWAlertAction *confirmAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"confirm", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

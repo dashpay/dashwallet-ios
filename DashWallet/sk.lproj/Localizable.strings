@@ -165,6 +165,9 @@
 "Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
@@ -351,13 +354,13 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with InstantSend" = "locked with InstantSend";
 
 /* No comment provided by engineer. */
 "Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
-"Logout from Uphold" = "Logout from Uphold";
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
@@ -792,9 +795,6 @@
 "yes" = "yes";
 
 /* No comment provided by engineer. */
-"You also need to logout from Uphold website in your browser" = "You also need to logout from Uphold website in your browser";
-
-/* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
 
 /* No comment provided by engineer. */
@@ -802,6 +802,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "you received dash!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";

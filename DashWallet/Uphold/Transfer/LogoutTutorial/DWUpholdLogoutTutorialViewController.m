@@ -68,8 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.titleLabel.text = NSLocalizedString(@"Logout from Uphold", nil);
-    self.descriptionLabel.text = NSLocalizedString(@"You also need to logout from Uphold website in your browser", nil);
+    self.titleLabel.text = NSLocalizedString(@"Log out from Uphold", nil);
+    self.descriptionLabel.text = NSLocalizedString(@"You will also need to log out from the Uphold website using your browser", nil);
 }
 
 @end
