@@ -78,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
     for (DWAlertViewActionBaseView *button in actions) {
         button.delegate = nil;
         [self removeArrangedSubview:button];
+        [button removeFromSuperview];
     }
 
     _preferredAction = nil;
@@ -193,6 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
             // Cancel always on the left
             if (buttons.firstObject != cancelButton) {
                 [self removeArrangedSubview:cancelButton];
+                [cancelButton removeFromSuperview];
                 [self insertArrangedSubview:cancelButton atIndex:0];
             }
         }
@@ -200,6 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
             // Cancel always last
             if (buttons.lastObject != cancelButton) {
                 [self removeArrangedSubview:cancelButton];
+                [cancelButton removeFromSuperview];
                 [self addArrangedSubview:cancelButton];
             }
         }
