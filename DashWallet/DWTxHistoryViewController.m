@@ -251,6 +251,8 @@ static NSString *dateFormat(NSString *template)
 {
     static NSDateFormatter *monthDayHourFormatter = nil;
     static NSDateFormatter *yearMonthDayHourFormatter = nil;
+    static NSCalendar *calendar = nil;
+    static NSDateComponents *offsetDateComponents = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{ // BUG: need to watch for NSCurrentLocaleDidChangeNotification
@@ -258,14 +260,19 @@ static NSString *dateFormat(NSString *template)
         monthDayHourFormatter.dateFormat = dateFormat(@"Mdjmma");
         yearMonthDayHourFormatter = [NSDateFormatter new];
         yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
+        calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+        offsetDateComponents = [[NSDateComponents alloc] init];
+        offsetDateComponents.year = -1;
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval year = [NSDate timeIntervalSince1970] - 364*24*60*60;
     
     if (date) return date;
+    
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
+    NSDate *aYearAgo = [calendar dateByAddingComponents:offsetDateComponents toDate:[NSDate date] options:0];
+    NSTimeInterval year = [aYearAgo timeIntervalSince1970];
     
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
