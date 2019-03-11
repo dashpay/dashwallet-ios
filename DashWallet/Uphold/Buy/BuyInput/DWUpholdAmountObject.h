@@ -17,13 +17,18 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWUpholdInputValidator.h"
+#import "DWAmountInputControlSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdDecimalInputValidator : NSObject <DWUpholdInputValidator>
+@interface DWUpholdAmountObject : NSObject <DWAmountInputControlSource>
 
-- (instancetype)initWithLocale:(nullable NSLocale *)locale NS_DESIGNATED_INITIALIZER;
+@property (readonly, copy, nonatomic) NSString *dashInternalRepresentation;
+@property (readonly, copy, nonatomic) NSString *localInternalRepresentation;
+
+- (instancetype)initWithDashInternalRepresentation:(NSString *)dashInternalRepresentation
+                       localInternalRepresentation:(NSString *)localInternalRepresentation
+                            localCurrencyFormatted:(NSString *)localCurrencyFormatted;
 
 @end
 

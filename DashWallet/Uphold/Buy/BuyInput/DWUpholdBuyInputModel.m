@@ -18,16 +18,16 @@
 #import "DWUpholdBuyInputModel.h"
 
 #import "DWUpholdAccountObject.h"
-#import "DWUpholdCVCInputValidator.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
-#import "DWUpholdDecimalInputValidator.h"
+#import "DWDecimalInputValidator.h"
 #import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWUpholdBuyInputModel ()
 
+@property (strong, nonatomic) id<DWInputValidator> inputValidator;
 @property (strong, nonatomic) DWUpholdCardObject *card;
 @property (strong, nonatomic) DWUpholdAccountObject *account;
 @property (assign, nonatomic) DWUpholdBuyInputModelState state;
@@ -43,9 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _card = card;
-        _account = account;
-        _amountValidator = [[DWUpholdDecimalInputValidator alloc] init];
-        _cvcValidator = [[DWUpholdCVCInputValidator alloc] init];
+//        _account = account;
+        _inputValidator = [[DWDecimalInputValidator alloc] init];
     }
     return self;
 }
@@ -67,8 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-- (BOOL)isCVCInputValid:(NSString *)input {
-    return input.length >= 3;
+- (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
+#warning todo here
 }
 
 - (void)createTransactionForAmount:(NSString *)amount cvc:(NSString *)cvc otpToken:(nullable NSString *)otpToken {

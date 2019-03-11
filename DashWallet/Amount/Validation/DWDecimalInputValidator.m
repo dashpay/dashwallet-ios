@@ -15,22 +15,33 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdCVCInputValidator.h"
+#import "DWDecimalInputValidator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdCVCInputValidator ()
+@interface DWDecimalInputValidator ()
 
+@property (copy, nonatomic) NSString *decimalSeparator;
 @property (strong, nonatomic) NSCharacterSet *validCharacterSet;
 
 @end
 
-@implementation DWUpholdCVCInputValidator
+@implementation DWDecimalInputValidator
 
 - (instancetype)init {
+    return [self initWithLocale:nil];
+}
+
+- (instancetype)initWithLocale:(nullable NSLocale *)locale {
     self = [super init];
     if (self) {
-        _validCharacterSet = [NSCharacterSet decimalDigitCharacterSet];
+        NSLocale *locale_ = locale ?: [NSLocale currentLocale];
+        NSString *decimalSeparator = locale_.decimalSeparator;
+        _decimalSeparator = decimalSeparator;
+        
+        NSMutableCharacterSet *mutableCharacterSet = [NSMutableCharacterSet decimalDigitCharacterSet];
+        [mutableCharacterSet addCharactersInString:decimalSeparator];
+        _validCharacterSet = [mutableCharacterSet copy];
     }
     return self;
 }
@@ -52,15 +63,32 @@ NS_ASSUME_NONNULL_BEGIN
         return resultText;
     }
     
-    if (resultText.length > 4) { // same restriction on Uphold Website
-        return nil;
-    }
-    
+    NSString *decimalSeparator = self.decimalSeparator;
     NSCharacterSet *resultStringSet = [NSCharacterSet characterSetWithCharactersInString:resultText];
     
     BOOL stringIsValid = [self.validCharacterSet isSupersetOfSet:resultStringSet];
     if (!stringIsValid) {
         return nil;
+    }
+    
+    if ([string isEqualToString:decimalSeparator] && [lastInputString containsString:decimalSeparator]) {
+        return nil;
+    }
+    
+    if ([resultText isEqualToString:decimalSeparator]) {
+        resultText = [@"0" stringByAppendingString:decimalSeparator];
+        
+        return resultText;
+    }
+    
+    if (resultText.length == 2) {
+        NSString *zeroAndDecimalSeparator = [@"0" stringByAppendingString:decimalSeparator];
+        if ([[resultText substringToIndex:1] isEqualToString:@"0"] &&
+            ![resultText isEqualToString:zeroAndDecimalSeparator]) {
+            resultText = [resultText substringWithRange:NSMakeRange(1, 1)];
+            
+            return resultText;
+        }
     }
     
     return resultText;

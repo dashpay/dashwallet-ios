@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWUpholdInputValidator <NSObject>
+@protocol DWInputValidator <NSObject>
 
 - (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string;
 

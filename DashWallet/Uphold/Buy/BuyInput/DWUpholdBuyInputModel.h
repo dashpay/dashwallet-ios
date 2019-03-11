@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWUpholdInputValidator.h"
+#import "DWInputValidator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,9 +35,6 @@ typedef NS_ENUM(NSUInteger, DWUpholdBuyInputModelState) {
 
 @interface DWUpholdBuyInputModel : NSObject
 
-@property (readonly, strong, nonatomic) id<DWUpholdInputValidator> amountValidator;
-@property (readonly, strong, nonatomic) id<DWUpholdInputValidator> cvcValidator;
-
 @property (readonly, assign, nonatomic) DWUpholdBuyInputModelState state;
 
 @property (readonly, nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
@@ -45,8 +42,8 @@ typedef NS_ENUM(NSUInteger, DWUpholdBuyInputModelState) {
 - (instancetype)initWithCard:(DWUpholdCardObject *)card
                      account:(DWUpholdAccountObject *)account;
 
+- (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range;
 - (BOOL)isAmountInputValid:(NSString *)input;
-- (BOOL)isCVCInputValid:(NSString *)input;
 - (void)createTransactionForAmount:(NSString *)amount cvc:(NSString *)cvc otpToken:(nullable NSString *)otpToken;
 - (void)resetState;
 

@@ -17,11 +17,12 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWUpholdInputValidator.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdCVCInputValidator : NSObject <DWUpholdInputValidator>
+@protocol DWAmountInputControlSource <NSObject>
+
+@property (readonly, copy, nonatomic) NSAttributedString *dashAttributedString;
+@property (readonly, copy, nonatomic) NSAttributedString *localCurrencyAttributedString;
 
 @end
 

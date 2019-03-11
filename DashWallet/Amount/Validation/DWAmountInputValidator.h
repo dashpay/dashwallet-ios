@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWInputValidator.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWAmountInputValidatorType) {
@@ -24,15 +26,11 @@ typedef NS_ENUM(NSUInteger, DWAmountInputValidatorType) {
     DWAmountInputValidatorTypeLocalCurrency,
 };
 
-@interface DWAmountInputValidator : NSObject
+@interface DWAmountInputValidator : NSObject <DWInputValidator>
 
 @property (readonly, assign, nonatomic) DWAmountInputValidatorType type;
 
 - (nullable NSString *)stringFromNumberUsingInternalFormatter:(NSNumber *)number;
-
-- (nullable NSString *)validatedAmountForLastInputString:(NSString *)lastInputString
-                                                   range:(NSRange)range
-                                       replacementString:(NSString *)string;
 
 - (instancetype)initWithType:(DWAmountInputValidatorType)type;
 - (instancetype)initWithType:(DWAmountInputValidatorType)type locale:(nullable NSLocale *)locale NS_DESIGNATED_INITIALIZER;

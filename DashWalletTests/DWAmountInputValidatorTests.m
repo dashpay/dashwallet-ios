@@ -251,9 +251,9 @@
 }
 
 - (void)checkTestCase:(DWAmountInputTestCase *)testCase validator:(DWAmountInputValidator *)validator locale:(NSLocale *)locale {
-    NSString *result = [validator validatedAmountForLastInputString:testCase.lastInput
-                                                              range:testCase.range
-                                                  replacementString:testCase.string];
+    NSString *result = [validator validatedStringFromLastInputString:testCase.lastInput
+                                                               range:testCase.range
+                                                   replacementString:testCase.string];
 
     if (testCase.expectedResult) {
         XCTAssertEqualObjects(result, testCase.expectedResult,

@@ -184,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(string);
 
     DWAmountInputValidator *validator = self.activeType == DWAmountTypeMain ? self.dashValidator : self.localCurrencyValidator;
-    return [validator validatedAmountForLastInputString:lastInputString range:range replacementString:string];
+    return [validator validatedStringFromLastInputString:lastInputString range:range replacementString:string];
 }
 
 - (void)updateCurrentAmount {

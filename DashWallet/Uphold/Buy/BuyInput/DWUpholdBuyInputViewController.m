@@ -25,9 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdBuyInputViewController () <UITextFieldDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (strong, nonatomic) IBOutlet UITextField *amountTextField;
-@property (strong, nonatomic) IBOutlet UITextField *cvcTextField;
 @property (strong, nonatomic) IBOutlet UILabel *errorLabel;
+@property (strong, nonatomic) IBOutlet UITextField *textField;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
 @property (strong, nonatomic) DWAlertAction *buyAction;
 
@@ -81,10 +80,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.titleLabel.text = NSLocalizedString(@"Buy Dash with Debit/Credit card", nil);
 
-    self.amountTextField.placeholder = NSLocalizedString(@"Amount", nil);
-    self.amountTextField.delegate = self;
-    self.cvcTextField.placeholder = NSLocalizedString(@"CVC", nil);
-    self.cvcTextField.delegate = self;
+    self.textField.delegate = self;
+//    self.amountTextField.placeholder = NSLocalizedString(@"Amount", nil);
+//    self.amountTextField.delegate = self;
+//    self.cvcTextField.placeholder = NSLocalizedString(@"CVC", nil);
+//    self.cvcTextField.delegate = self;
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         [self updateState];
@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self.amountTextField becomeFirstResponder];
+    [self.textField becomeFirstResponder];
 }
 
 #pragma mark - Actions
@@ -109,24 +109,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UITextFieldDelegate
 
+#pragma mark - UITextFieldDelegate
+
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     self.errorLabel.hidden = YES;
 
-    id<DWUpholdInputValidator> validator = nil;
-    if (textField == self.amountTextField) {
-        validator = self.model.amountValidator;
-    }
-    else if (textField == self.cvcTextField) {
-        validator = self.model.cvcValidator;
-    }
-    NSParameterAssert(validator);
-    NSString *validatedResult = [validator validatedStringFromLastInputString:textField.text
-                                                                        range:range
-                                                            replacementString:string];
-    if (validatedResult) {
-        textField.text = validatedResult;
-    }
-
+    [self.model updateAmountWithReplacementString:string range:range];
+    
     return NO;
 }
 
@@ -136,38 +125,32 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-- (BOOL)textFieldShouldClear:(UITextField *)textField {
-    self.errorLabel.hidden = YES;
-
-    return YES;
-}
-
 #pragma mark - Private
 
 - (void)performBuyWithOTPToken:(nullable NSString *)otpToken {
-    NSString *amountString = self.amountTextField.text;
-    if (![self.model isAmountInputValid:amountString]) {
-        [self.amountTextField dw_shakeView];
-        return;
-    }
-    
-    NSString *cvcString = self.cvcTextField.text;
-    if (![self.model isCVCInputValid:cvcString]) {
-        [self.cvcTextField dw_shakeView];
-        return;
-    }
-    
-    [self.amountTextField resignFirstResponder];
-    [self.cvcTextField resignFirstResponder];
-    
-    [self.model createTransactionForAmount:amountString cvc:cvcString otpToken:otpToken];
+//    NSString *amountString = self.amountTextField.text;
+//    if (![self.model isAmountInputValid:amountString]) {
+//        [self.amountTextField dw_shakeView];
+//        return;
+//    }
+//
+//    NSString *cvcString = self.cvcTextField.text;
+//    if (![self.model isCVCInputValid:cvcString]) {
+//        [self.cvcTextField dw_shakeView];
+//        return;
+//    }
+//
+//    [self.amountTextField resignFirstResponder];
+//    [self.cvcTextField resignFirstResponder];
+//    
+//    [self.model createTransactionForAmount:amountString cvc:cvcString otpToken:otpToken];
 }
 
 - (void)updateState {
     switch (self.model.state) {
         case DWUpholdBuyInputModelStateNone: {
-            self.amountTextField.userInteractionEnabled = YES;
-            self.cvcTextField.userInteractionEnabled = YES;
+//            self.amountTextField.userInteractionEnabled = YES;
+//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
@@ -175,8 +158,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdBuyInputModelStateLoading: {
-            self.amountTextField.userInteractionEnabled = NO;
-            self.cvcTextField.userInteractionEnabled = NO;
+//            self.amountTextField.userInteractionEnabled = NO;
+//            self.cvcTextField.userInteractionEnabled = NO;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = NO;
             [self.activityIndicatorView startAnimating];
@@ -186,8 +169,8 @@ NS_ASSUME_NONNULL_BEGIN
         case DWUpholdBuyInputModelStateSuccess: {
             [self.delegate upholdBuyInputViewController:self didProduceTransaction:self.model.transaction];
 
-            self.amountTextField.userInteractionEnabled = YES;
-            self.cvcTextField.userInteractionEnabled = YES;
+//            self.amountTextField.userInteractionEnabled = YES;
+//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
@@ -195,8 +178,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdBuyInputModelStateFail: {
-            self.amountTextField.userInteractionEnabled = YES;
-            self.cvcTextField.userInteractionEnabled = YES;
+//            self.amountTextField.userInteractionEnabled = YES;
+//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.text = NSLocalizedString(@"Something went wrong", nil);
             self.errorLabel.hidden = NO;
             self.buyAction.enabled = YES;

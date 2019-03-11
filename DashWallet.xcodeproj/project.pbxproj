@@ -103,11 +103,14 @@
 		2A9FFF1E2233E56E00956D5F /* DWUpholdSelectCardModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF0E2233E56E00956D5F /* DWUpholdSelectCardModel.m */; };
 		2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */; };
 		2A9FFF202233E56E00956D5F /* DWUpholdBuyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */; };
-		2A9FFF212233E56E00956D5F /* DWUpholdCVCInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF142233E56E00956D5F /* DWUpholdCVCInputValidator.m */; };
 		2A9FFF222233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */; };
 		2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */; };
-		2A9FFF272233E5D000956D5F /* DWUpholdDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWUpholdDecimalInputValidator.m */; };
+		2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */; };
 		2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
+		2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */; };
+		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
+		2A9FFF34223540A300956D5F /* DWAmountInputControlModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */; };
+		2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
@@ -549,18 +552,24 @@
 		2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyViewController.m; sourceTree = "<group>"; };
 		2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyInputViewController.m; sourceTree = "<group>"; };
 		2A9FFF132233E56E00956D5F /* DWUpholdBuyInputModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyInputModel.h; sourceTree = "<group>"; };
-		2A9FFF142233E56E00956D5F /* DWUpholdCVCInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdCVCInputValidator.m; sourceTree = "<group>"; };
 		2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdBuyInputStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFF162233E56E00956D5F /* DWUpholdBuyInputViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyInputViewController.h; sourceTree = "<group>"; };
 		2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyInputModel.m; sourceTree = "<group>"; };
-		2A9FFF182233E56E00956D5F /* DWUpholdCVCInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCVCInputValidator.h; sourceTree = "<group>"; };
-		2A9FFF242233E5CF00956D5F /* DWUpholdDecimalInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdDecimalInputValidator.h; sourceTree = "<group>"; };
-		2A9FFF252233E5CF00956D5F /* DWUpholdDecimalInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdDecimalInputValidator.m; sourceTree = "<group>"; };
-		2A9FFF262233E5D000956D5F /* DWUpholdInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdInputValidator.h; sourceTree = "<group>"; };
+		2A9FFF242233E5CF00956D5F /* DWDecimalInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDecimalInputValidator.h; sourceTree = "<group>"; };
+		2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDecimalInputValidator.m; sourceTree = "<group>"; };
+		2A9FFF262233E5D000956D5F /* DWInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInputValidator.h; sourceTree = "<group>"; };
 		2A9FFF282233E60F00956D5F /* DWUpholdAccountObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdAccountObject.h; sourceTree = "<group>"; };
 		2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAccountObject.m; sourceTree = "<group>"; };
 		2A9FFF2B223419A900956D5F /* DWUpholdSelectCardModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSelectCardModel.h; sourceTree = "<group>"; };
 		2A9FFF2C223419F600956D5F /* DWUpholdCardTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCardTableViewCell.h; sourceTree = "<group>"; };
+		2A9FFF2D223427AC00956D5F /* DWAmountInputControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControl.h; sourceTree = "<group>"; };
+		2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputControl.m; sourceTree = "<group>"; };
+		2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWAmountInputControl.xib; sourceTree = "<group>"; };
+		2A9FFF32223540A300956D5F /* DWAmountInputControlModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControlModel.h; sourceTree = "<group>"; };
+		2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputControlModel.m; sourceTree = "<group>"; };
+		2A9FFF352235570500956D5F /* DWAmountInputControlSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControlSource.h; sourceTree = "<group>"; };
+		2A9FFF392235811400956D5F /* DWUpholdAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountObject.h; sourceTree = "<group>"; };
+		2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAmountObject.m; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -1170,9 +1179,6 @@
 		2A9FFE5E2230FF4600956D5F /* Request */ = {
 			isa = PBXGroup;
 			children = (
-				2A9FFF242233E5CF00956D5F /* DWUpholdDecimalInputValidator.h */,
-				2A9FFF252233E5CF00956D5F /* DWUpholdDecimalInputValidator.m */,
-				2A9FFF262233E5D000956D5F /* DWUpholdInputValidator.h */,
 				2A9FFE632230FF4600956D5F /* DWUpholdRequestTransferModel.h */,
 				2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */,
 				2A9FFE622230FF4600956D5F /* DWUpholdRequestTransferViewController.h */,
@@ -1217,14 +1223,14 @@
 			isa = PBXGroup;
 			children = (
 				2A9FFF112233E56E00956D5F /* BuyInput */,
-				2A9FFF042233E56E00956D5F /* SelectAccount */,
+				2A9FFF042233E56E00956D5F /* SelectCard */,
 				2A9FFF032233E56E00956D5F /* DWUpholdBuyViewController.h */,
 				2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */,
 			);
 			path = Buy;
 			sourceTree = "<group>";
 		};
-		2A9FFF042233E56E00956D5F /* SelectAccount */ = {
+		2A9FFF042233E56E00956D5F /* SelectCard */ = {
 			isa = PBXGroup;
 			children = (
 				2A9FFF0C2233E56E00956D5F /* DWIntrinsicTableView.h */,
@@ -1239,7 +1245,7 @@
 				2A9FFF0A2233E56E00956D5F /* DWUpholdSelectCardViewController.m */,
 				2A9FFF0D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard */,
 			);
-			path = SelectAccount;
+			path = SelectCard;
 			sourceTree = "<group>";
 		};
 		2A9FFF112233E56E00956D5F /* BuyInput */ = {
@@ -1249,11 +1255,49 @@
 				2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */,
 				2A9FFF162233E56E00956D5F /* DWUpholdBuyInputViewController.h */,
 				2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */,
-				2A9FFF182233E56E00956D5F /* DWUpholdCVCInputValidator.h */,
-				2A9FFF142233E56E00956D5F /* DWUpholdCVCInputValidator.m */,
 				2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */,
+				2A9FFF392235811400956D5F /* DWUpholdAmountObject.h */,
+				2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */,
 			);
 			path = BuyInput;
+			sourceTree = "<group>";
+		};
+		2A9FFF3622357F2900956D5F /* Validation */ = {
+			isa = PBXGroup;
+			children = (
+				2A2120E82214566A009906DC /* DWAmountInputValidator.h */,
+				2A2120E92214566A009906DC /* DWAmountInputValidator.m */,
+				2A9FFF242233E5CF00956D5F /* DWDecimalInputValidator.h */,
+				2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */,
+				2A9FFF262233E5D000956D5F /* DWInputValidator.h */,
+			);
+			path = Validation;
+			sourceTree = "<group>";
+		};
+		2A9FFF3722357F6800956D5F /* Keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */,
+				2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */,
+				2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */,
+				2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */,
+				2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */,
+				2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */,
+			);
+			path = Keyboard;
+			sourceTree = "<group>";
+		};
+		2A9FFF3822357F7800956D5F /* AmountInput */ = {
+			isa = PBXGroup;
+			children = (
+				2A9FFF2D223427AC00956D5F /* DWAmountInputControl.h */,
+				2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */,
+				2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */,
+				2A9FFF32223540A300956D5F /* DWAmountInputControlModel.h */,
+				2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */,
+				2A9FFF352235570500956D5F /* DWAmountInputControlSource.h */,
+			);
+			path = AmountInput;
 			sourceTree = "<group>";
 		};
 		2AB231CF2196E23200A6E7E6 /* Migration Controller */ = {
@@ -1271,12 +1315,11 @@
 		2AB8CDD5220D80F100A3D1DB /* Amount */ = {
 			isa = PBXGroup;
 			children = (
+				2A9FFF3622357F2900956D5F /* Validation */,
 				2AB8CDDC220D87E300A3D1DB /* Views */,
 				2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */,
 				2A2120E52213201E009906DC /* DWAmountModel.h */,
 				2A2120E62213201E009906DC /* DWAmountModel.m */,
-				2A2120E82214566A009906DC /* DWAmountInputValidator.h */,
-				2A2120E92214566A009906DC /* DWAmountInputValidator.m */,
 				2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */,
 				2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */,
 				2AB8CDD9220D879300A3D1DB /* DWAmountViewController.h */,
@@ -1292,12 +1335,8 @@
 		2AB8CDDC220D87E300A3D1DB /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */,
-				2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */,
-				2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */,
-				2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */,
-				2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */,
-				2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */,
+				2A9FFF3822357F7800956D5F /* AmountInput */,
+				2A9FFF3722357F6800956D5F /* Keyboard */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2010,6 +2049,7 @@
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
+				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
 				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
@@ -2331,9 +2371,10 @@
 				2A9FFE742230FF4600956D5F /* DWAlertDismissalAnimationController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
 				2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */,
+				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
 				2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
-				2A9FFF272233E5D000956D5F /* DWUpholdDecimalInputValidator.m in Sources */,
+				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
 				2A9FFE8C2230FF4700956D5F /* DWSettingsControllerModel.m in Sources */,
@@ -2375,6 +2416,7 @@
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				2A9FFE722230FF4600956D5F /* DWAlertController.m in Sources */,
+				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
@@ -2391,7 +2433,6 @@
 				2A9FFE7A2230FF4600956D5F /* DWAnimatableShapeLayer.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
-				2A9FFF212233E56E00956D5F /* DWUpholdCVCInputValidator.m in Sources */,
 				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
@@ -2411,6 +2452,7 @@
 				2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
+				2A9FFF34223540A300956D5F /* DWAmountInputControlModel.m in Sources */,
 				2A9FFDF32230FF1A00956D5F /* UIViewController+DWChildControllers.m in Sources */,
 				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A9FFE7D2230FF4600956D5F /* DWAlertPresentationController.m in Sources */,
