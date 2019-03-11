@@ -93,15 +93,6 @@
 "block #%d of %d" = "block #%1$d av %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Köp Dash";
 
 /* No comment provided by engineer. */
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "Begäran är för en direktbetalning men du har inaktiverat direktbetalning ";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "återläs";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "återläs blockkedjan om du misstänker att det saknas transaktioner, eller om du har problem att skicka dash (återläsning kan ta flera minuter)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "återställ";
@@ -673,6 +664,15 @@
 
 /* No comment provided by engineer. */
 "unverified" = "overifierad";
+
+/* No comment provided by engineer. */
+"User Registration Transaction" = "User Registration Transaction";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "User Reset Transaction";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "User Topup Transaction";
 
 /* No comment provided by engineer. */
 "username:" = "username:";

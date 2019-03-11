@@ -15,10 +15,10 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+"%d out of %d lock votes" = "%1$d trên tổng số %2$d biểu quyết khoá";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld used";
+"%ld used" = "%ld đã sử dụng";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 xác thực";
@@ -54,7 +54,7 @@
 "Action Needed" = "Cần bạn hành động";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Địa chỉ";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "NÂNG CAO";
@@ -93,15 +93,6 @@
 "block #%d of %d" = "khối #%1$d của %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Mua Dash";
 
 /* No comment provided by engineer. */
@@ -129,7 +120,7 @@
 "checking private key balance..." = "kiểm tra số dư của khoá riêng...";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Classical Transaction";
+"Classical Transaction" = "Giao dịch cổ điển";
 
 /* No comment provided by engineer. */
 "clear" = "xoá";
@@ -147,7 +138,7 @@
 "close app" = "đóng ứng dụng";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Coinbase Transaction";
+"Coinbase Transaction" = "Giao dịch sinh coin";
 
 /* Confirm */
 "Confirm" = "Xác thực";
@@ -261,7 +252,7 @@
 "GENERAL" = "TỔNG THỂ";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "holding funds index:";
+"holding funds index:" = "chỉ số giao dịch đặt cọc";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Tôi chấp nhận rằng tôi sẽ mất các coin của mình nếu không còn sở hữu cụm từ phục hồi";
@@ -300,28 +291,28 @@
 "INVALID" = "KHÔNG HỢP LỆ";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP address/port:";
+"IP address/port:" = "Địa chỉ IP/cổng:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
-"Load more" = "Load more";
+"Load more" = "Nạp thêm";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "masternode holding address";
+"masternode holding address" = "địa chỉ đặt cọc masternode";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Masternode Registration Transaction";
+"Masternode Registration Transaction" = "Giao dịch đăng ký Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+"Masternode Update Registrar Transaction" = "Giao dịch cập nhật đăng ký Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+"Masternode Update Service Transaction" = "Giao dịch cập nhật dịch vụ Masternode";
 
 /* No comment provided by engineer. */
 "more..." = "tiếp...";
@@ -336,7 +327,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
 
 /* No comment provided by engineer. */
-"new public key:" = "new public key:";
+"new public key:" = "khoá công khai mới:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "tiếp theo, ghi xuống cụm từ phục hồi";
@@ -369,13 +360,13 @@
 "not a valid dash or bitcoin address" = "không phải địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
-"not operator" = "not operator";
+"not operator" = "không phải người vận hành";
 
 /* No comment provided by engineer. */
-"not owner" = "not owner";
+"not owner" = "không phải chủ sở hữu";
 
 /* No comment provided by engineer. */
-"not voter" = "not voter";
+"not voter" = "không phải người bỏ phiếu";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -387,22 +378,22 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Chỉ bật những tính năng nâng cao nếu bạn hiểu biết về công nghệ blockchain.\nNếu có thể hãy chỉ bật những tính năng nâng cao nào mà bạn hiểu rõ.";
 
 /* No comment provided by engineer. */
-"operator key index:" = "operator key index:";
+"operator key index:" = "chỉ số khoá của người vận hành:";
 
 /* No comment provided by engineer. */
-"operator key:" = "operator key:";
+"operator key:" = "chìa khoá của người vận hành";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator Keys" = "Chìa khoá của người vận hành";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "owner key hash:";
+"owner key hash:" = "mã băm khoá của chủ sở hữu";
 
 /* No comment provided by engineer. */
-"owner key index:" = "owner key index:";
+"owner key index:" = "chỉ số khoá của chủ sở hữu:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Keys" = "Khoá của chủ sở hữu";
 
 /* No comment provided by engineer. */
 "Pay" = "thanh toán";
@@ -420,10 +411,10 @@
 "payment output" = "đầu ra thanh toán";
 
 /* No comment provided by engineer. */
-"payout Address" = "payout Address";
+"payout Address" = "Địa chỉ thanh toán";
 
 /* No comment provided by engineer. */
-"payout address:" = "payout address:";
+"payout address:" = "địa chỉ thanh toán";
 
 /* No comment provided by engineer. */
 "pending" = "đang chờ";
@@ -438,13 +429,13 @@
 "Please place your phone near NFC device." = "Hãy đặt điện thoại của bạn cạnh thiết bị NFC.";
 
 /* No comment provided by engineer. */
-"Private key" = "Private key";
+"Private key" = "Khoá riêng";
 
 /* No comment provided by engineer. */
-"Public key" = "Public key";
+"Public key" = "Khoá công khai";
 
 /* No comment provided by engineer. */
-"public key:" = "public key:";
+"public key:" = "khoá công khai:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "tỷ giá: 1%@ = 1%@\ncập nhật: 1%@\nblock #%d of 2%d\ncác kết nối: 2%d\ndl peer: 1%@\n";
@@ -459,7 +450,7 @@
 "received %@ (%@)" = "nhận %@ (%@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "recently mined (locked)";
+"recently mined (locked)" = "mới được khai thác (khoá)";
 
 /* Recovery phrase */
 "Recovery phrase" = "Cụm từ phục hồi";
@@ -474,7 +465,7 @@
 "reduce payment amount by\n%@ (%@)?" = "giảm số lượng thanh toán theo\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registration tx:";
+"registration tx:" = "mã giao dịch đăng ký:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Hãy nhắc tôi sau";
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "yêu cầu này là dành cho giao dịch tức thời nhưng bạn đã tắt tính năng giao dịch tức thời";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "quét lại";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Quét lại blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "quét lại blockchain nếu bạn nghĩ rằng mình đã thiếu các giao dịch, hoặc gặp vấn đề khi gửi (quét lại có thể mất vài phút)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "khởi tạo lại";
@@ -564,7 +555,7 @@
 "show" = "hiển thị";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
+"Show masternode keys" = "Hiển thị các khoá của masternode";
 
 /* No comment provided by engineer. */
 "show phrase" = "hiển thị cụm từ";
@@ -612,13 +603,13 @@
 "this request requires an instant payment but you have disabled instant payments" = "yêu cầu này cần một thanh toán tức thời nhưng bạn đã tắt chức năng thanh toán tức thời";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+"This transaction may take several minutes to settle." = "Giao dịch này cần mất vài phút để hoàn tất.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Giao dịch này cần mất vài phút để hoàn tất. Để hoàn tất tức thời mất thêm một khoản là %@?";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+"This transaction should settle instantly at no extra fee" = "Giao dịch này sẽ được hoàn tất mà không mất thêm phí bổ sung";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Ví này không rỗng hoặc quá trình đồng bộ chưa xong, bạn không thể xoá nó mà không có dòng khôi phục";
@@ -630,7 +621,7 @@
 "to: %@" = "đến: %@";
 
 /* No comment provided by engineer. */
-"topup amount:" = "topup amount:";
+"topup amount:" = "số lượng nạp thêm:";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Giới hạn Touch ID";
@@ -645,7 +636,7 @@
 "trust" = "tin cậy";
 
 /* No comment provided by engineer. */
-"try again" = "try again";
+"try again" = "thử lại";
 
 /* No comment provided by engineer. */
 "Try It!" = "Hãy thử!";
@@ -654,7 +645,7 @@
 "turn device passcode on" = "hãy bật mật khẩu cho thiết bị của bạn";
 
 /* No comment provided by engineer. */
-"type:" = "type:";
+"type:" = "kiểu:";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Không thể lấy mã QR mới";
@@ -675,25 +666,34 @@
 "unverified" = "chưa được kiểm tra";
 
 /* No comment provided by engineer. */
-"username:" = "username:";
+"User Registration Transaction" = "Giao dịch đăng ký người dùng";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "Giao dịch tái thiết lập người dùng";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "Giao dịch người dùng nạp thêm";
+
+/* No comment provided by engineer. */
+"username:" = "tên người dùng:";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "voting key hash:";
+"voting key hash:" = "mã băm của khoá bỏ phiếu";
 
 /* No comment provided by engineer. */
-"voting key index:" = "voting key index:";
+"voting key index:" = "chỉ số khoá của người bỏ phiếu:";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Voting Keys";
+"Voting Keys" = "Khoá bỏ phiếu";
 
 /* No comment provided by engineer. */
 "wallet address" = "địa chỉ ví";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Wallet Keys";
+"Wallet Keys" = "Khoá của ví";
 
 /* No comment provided by engineer. */
 "WARNING" = "CẢNH BÁO";
@@ -702,7 +702,7 @@
 "watch only" = "chỉ theo dõi";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi nhận thấy ví Dash bị lỗi trong lúc chuyển đổi dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề này hoặc bạn có thể thử lại lần nữa. Bạn nên cho quét lại khi dùng mạng wifi và nó sẽ mất chừng nửa giờ. Số tiền của bạn sẽ sẵn sàng một khi quá trình đồng bộ được hoàn tất.";
 
 /* No comment provided by engineer. */
 "wipe" = "xoá sạch";

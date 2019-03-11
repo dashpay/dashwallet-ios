@@ -15,10 +15,10 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+"%d out of %d lock votes" = "%1$d van de %2$d grendelstemmen";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld used";
+"%ld used" = "%ld gebruikt";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 bevestigingen";
@@ -54,7 +54,7 @@
 "Action Needed" = "Actie Benodigd";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Adres";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "GEAVANCEERD";
@@ -93,15 +93,6 @@
 "block #%d of %d" = "blok #%1$d van %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Koop Dash";
 
 /* No comment provided by engineer. */
@@ -129,7 +120,7 @@
 "checking private key balance..." = "bezig met controleren van balans van persoonlijke sleutel...";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Classical Transaction";
+"Classical Transaction" = "Klassieke Transactie";
 
 /* No comment provided by engineer. */
 "clear" = "wis";
@@ -261,7 +252,7 @@
 "GENERAL" = "ALGEMEEN";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "holding funds index:";
+"holding funds index:" = "index van saldo:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
@@ -300,28 +291,28 @@
 "INVALID" = "ONGELDIG";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP address/port:";
+"IP address/port:" = "IP adres/port:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laat anderen deze QR-code scannen om jouw dash-adres te verkrijgen. Iedereen kan dash naar jouw portemonnee versturen door deze te sturen naar jouw adres.";
 
 /* No comment provided by engineer. */
-"Load more" = "Load more";
+"Load more" = "Laad meer";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "masternode holding address";
+"masternode holding address" = "adres met saldo van masternode";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Masternode Registration Transaction";
+"Masternode Registration Transaction" = "Masternode registratie transactie";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+"Masternode Update Registrar Transaction" = "Masternode registratie update transactie";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+"Masternode Update Service Transaction" = "Masternode service update transactie";
 
 /* No comment provided by engineer. */
 "more..." = "meer...";
@@ -336,7 +327,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Voer je herstelzin NOOIT in in wachtwoordbeheerders of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.";
 
 /* No comment provided by engineer. */
-"new public key:" = "new public key:";
+"new public key:" = "nieuwe publieke sleutel:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "schrijf nu je herstelzin op";
@@ -369,13 +360,13 @@
 "not a valid dash or bitcoin address" = "ongeldig dash- of bitcoinadres";
 
 /* No comment provided by engineer. */
-"not operator" = "not operator";
+"not operator" = "geen operator";
 
 /* No comment provided by engineer. */
-"not owner" = "not owner";
+"not owner" = "geen eigenaar";
 
 /* No comment provided by engineer. */
-"not voter" = "not voter";
+"not voter" = "geen stemrecht";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -387,22 +378,22 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
 
 /* No comment provided by engineer. */
-"operator key index:" = "operator key index:";
+"operator key index:" = "index van operator sleutel:";
 
 /* No comment provided by engineer. */
-"operator key:" = "operator key:";
+"operator key:" = "operator sleutel:";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator Keys" = "Operator sleutels";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "owner key hash:";
+"owner key hash:" = "hash van eigenaar sleutel:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "owner key index:";
+"owner key index:" = "index van eigenaar sleutel:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Keys" = "Eigenaar sleutels";
 
 /* No comment provided by engineer. */
 "Pay" = "Betaal";
@@ -411,7 +402,7 @@
 "payee identity isn't certified" = "de betaler-identiteit is niet gecertificeerd";
 
 /* No comment provided by engineer. */
-"payload:" = "payload:";
+"payload:" = "lading:";
 
 /* No comment provided by engineer. */
 "payment address" = "betaaladres";
@@ -420,10 +411,10 @@
 "payment output" = "betaaluitgang";
 
 /* No comment provided by engineer. */
-"payout Address" = "payout Address";
+"payout Address" = "uitbetalingsadres";
 
 /* No comment provided by engineer. */
-"payout address:" = "payout address:";
+"payout address:" = "uitbetalingsadres:";
 
 /* No comment provided by engineer. */
 "pending" = "in wachtrij";
@@ -438,13 +429,13 @@
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
 
 /* No comment provided by engineer. */
-"Private key" = "Private key";
+"Private key" = "persoonlijke sleutel";
 
 /* No comment provided by engineer. */
-"Public key" = "Public key";
+"Public key" = "Publieke sleutel";
 
 /* No comment provided by engineer. */
-"public key:" = "public key:";
+"public key:" = "publieke sleutel:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "ratio: %@=%@\nbijgewerkt: %@\nblok #%d van %d\nverbonden peers: %d\ndl-peer: %@";
@@ -459,7 +450,7 @@
 "received %@ (%@)" = "ontvangen %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "recently mined (locked)";
+"recently mined (locked)" = "Recentelijk geminet (vergrendeld)";
 
 /* Recovery phrase */
 "Recovery phrase" = "Herstelzin";
@@ -474,7 +465,7 @@
 "reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registration tx:";
+"registration tx:" = "Registratie tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Herinner me later";
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "het verzoek is voor een directe betaling maar je hebt directe betalingen uitgeschakeld";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Blockchain opnieuw scannen";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan de blockchain opnieuw wanneer je het vermoeden hebt dat je transacties mist of problemen hebt met versturen (opnieuw scannen kan enkele minuten duren)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "herstel";
@@ -564,7 +555,7 @@
 "show" = "toon";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
+"Show masternode keys" = "Toon masternode sleutels";
 
 /* No comment provided by engineer. */
 "show phrase" = "toon zin";
@@ -612,13 +603,13 @@
 "this request requires an instant payment but you have disabled instant payments" = "dit verzoek heeft een onmiddellijke betaling nodig maar onmiddellijke betalingen heb je uitgeschakeld";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+"This transaction may take several minutes to settle." = "De afhandeling van deze transactie kan enkele minuten duren.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "De afhandeling van deze transactie kan enkele minuten duren. Direct afhandelen voor een extra %@?";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+"This transaction should settle instantly at no extra fee" = "Deze transactie wordt direct afgehandeld en zonder extra transactiekosten";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Deze portemonnee is niet leeg of sync is nog niet klaar, je mag het niet wissen zonder de herstelzin.";
@@ -630,7 +621,7 @@
 "to: %@" = "naar: %@";
 
 /* No comment provided by engineer. */
-"topup amount:" = "topup amount:";
+"topup amount:" = "top-up bedrag:";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "touch ID limiet";
@@ -645,7 +636,7 @@
 "trust" = "vertrouw";
 
 /* No comment provided by engineer. */
-"try again" = "try again";
+"try again" = "probeer opnieuw";
 
 /* No comment provided by engineer. */
 "Try It!" = "Probeer het!";
@@ -675,25 +666,34 @@
 "unverified" = "niet geverifieerd";
 
 /* No comment provided by engineer. */
-"username:" = "username:";
+"User Registration Transaction" = "Gebruiker registratie transactie";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "Gebruiker reset transactie";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "Gebruiker top-up transactie";
+
+/* No comment provided by engineer. */
+"username:" = "gebruikersnaam:";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "geverifieerd, bezig met wachten op bevestiging";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "voting key hash:";
+"voting key hash:" = "hash van stem-sleutel:";
 
 /* No comment provided by engineer. */
-"voting key index:" = "voting key index:";
+"voting key index:" = "index van stem sleutel:";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Voting Keys";
+"Voting Keys" = "Stem sleutels";
 
 /* No comment provided by engineer. */
 "wallet address" = "portemonnee-adres";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Wallet Keys";
+"Wallet Keys" = "Portemonnee sleutels";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";
@@ -702,7 +702,7 @@
 "watch only" = "alleen bekijken";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat Dashwallet tijdens de migratie is gecrashed. Opnieuw scannen van de blokketen zal het issue oplossen of je moet opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Je tegoeden worden beschikbaar zodra het synchronisatieproces is afgerond.";
 
 /* No comment provided by engineer. */
 "wipe" = "wis";
