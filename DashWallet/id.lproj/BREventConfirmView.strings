@@ -1,0 +1,12 @@
+
+/* Class = "UILabel"; text = "Help us improve dashwallet!"; ObjectID = "Mgm-wb-UlM"; */
+"Mgm-wb-UlM.text" = "Bantu kami meningkatkan dompet dash!";
+
+/* Class = "UIButton"; normalTitle = "No Thanks"; ObjectID = "Tw0-s4-w0k"; */
+"Tw0-s4-w0k.normalTitle" = "Tidak, Terima kasih";
+
+/* Class = "UIButton"; normalTitle = "Ok Great!"; ObjectID = "fzO-vI-zum"; */
+"fzO-vI-zum.normalTitle" = "Oke Bagus!";
+
+/* Class = "UILabel"; text = "Would you like to share anonymous app usage information with us?\n\nThis information is completely anonymous and includes no financial information. We respect your financial privacy!"; ObjectID = "kqc-0F-49V"; */
+"kqc-0F-49V.text" = "Apakah Anda ingin berbagi informasi penggunaan aplikasi anonim dengan kami?\n\nInformasi ini sepenuhnya anonim dan tidak mengandung informasi keuangan. Kami menghormati privasi finansial Anda!";
