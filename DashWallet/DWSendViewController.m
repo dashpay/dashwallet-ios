@@ -1270,6 +1270,7 @@ static NSString *sanitizeString(NSString *s)
     [self.view addSubview:[statusView popIn]];
     
     [insightManager utxosForAddresses:@[address]
+                              onChain:[DWEnvironment sharedInstance].currentChain
                            completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                                dispatch_async(dispatch_get_main_queue(), ^{
                                    [statusView popOut];
