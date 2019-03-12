@@ -356,6 +356,12 @@
 		2A9FFCD1222EA87E00956D5F /* DSTransactionIdentifierTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionIdentifierTableViewCell.m; sourceTree = "<group>"; };
 		2A9FFCD2222EA87E00956D5F /* DSTransactionStatusTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransactionStatusTableViewCell.h; sourceTree = "<group>"; };
 		2A9FFCD3222EA87E00956D5F /* DSTransactionAmountTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransactionAmountTableViewCell.m; sourceTree = "<group>"; };
+		2A9FFF3C223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		2A9FFF3D223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
+		2A9FFF3E223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Main.strings; sourceTree = "<group>"; };
+		2A9FFF3F223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
+		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -1449,6 +1455,7 @@
 				vi,
 				th,
 				"zh-Hant-TW",
+				id,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -1943,6 +1950,7 @@
 				2A8F424521BF02D600858B91 /* vi */,
 				2A8F424721BF02D800858B91 /* th */,
 				2A8F424921BF02D900858B91 /* zh-Hant-TW */,
+				2A9FFF3D223654D200956D5F /* id */,
 			);
 			name = AboutStoryboard.storyboard;
 			sourceTree = "<group>";
@@ -1969,6 +1977,7 @@
 				FB4311241FA2D45200784EBC /* zh-Hans */,
 				FB43112E1FA2D45900784EBC /* ko */,
 				FB43BC8A21217BB800BC9879 /* zh-Hant-TW */,
+				2A9FFF3C223654D200956D5F /* id */,
 			);
 			name = BREventConfirmView.xib;
 			sourceTree = "<group>";
@@ -1994,6 +2003,7 @@
 				FB0ACBA01F9ABB6200F4AB52 /* vi */,
 				FB4310F11FA027DB00784EBC /* th */,
 				FB43BC8D21217BB900BC9879 /* zh-Hant-TW */,
+				2A9FFF41223654D300956D5F /* id */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -2020,6 +2030,7 @@
 				FB43110C1FA2D3FD00784EBC /* bg */,
 				FB4311101FA2D41D00784EBC /* vi */,
 				FB43BC8C21217BB800BC9879 /* zh-Hant-TW */,
+				2A9FFF3F223654D300956D5F /* id */,
 			);
 			name = MainInterface.storyboard;
 			sourceTree = "<group>";
@@ -2046,6 +2057,7 @@
 				FB0ACB9F1F9ABB6200F4AB52 /* vi */,
 				FB4310EE1FA027DB00784EBC /* th */,
 				FB43BC8B21217BB800BC9879 /* zh-Hant-TW */,
+				2A9FFF3E223654D300956D5F /* id */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -2072,6 +2084,7 @@
 				FB586CD0213D652400836ACC /* nl */,
 				FB586CD2213D657000836ACC /* el */,
 				FB586CD4213D659F00836ACC /* tr */,
+				2A9FFF40223654D300956D5F /* id */,
 			);
 			name = Interface.storyboard;
 			sourceTree = "<group>";

@@ -96,7 +96,7 @@
 "Ng6-uV-YUC.normalTitle" = "Udostępnij";
 
 /* Class = "UILabel"; text = "status:"; ObjectID = "COA-2z-ygM"; */
-"COA-2z-ygM.text" = "status:";
+"COA-2z-ygM.text" = "stan:";
 
 /* Class = "UILabel"; text = "amount:"; ObjectID = "kjE-J2-MNN"; */
-"kjE-J2-MNN.text" = "amount:";
+"kjE-J2-MNN.text" = "kwota:";

@@ -15,10 +15,10 @@
 "%d duffs/byte" = "%d ดัฟฟ์/ไบต์";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+"%d out of %d lock votes" = "ล็อคโหวต %1$dจาก%2$d";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld used";
+"%ld used" = "%ld ใช้แล้ว";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 การยืนยัน";
@@ -54,7 +54,7 @@
 "Action Needed" = "การกระทำที่จำเป็น";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "ที่อยู่";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ขั้นสูง";
@@ -93,15 +93,6 @@
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "ขาย Dash";
 
 /* No comment provided by engineer. */
@@ -129,7 +120,7 @@
 "checking private key balance..." = "ตรวจสอบความสมดุลของ key ส่วนตัว";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Classical Transaction";
+"Classical Transaction" = "ธุรกรรมคลาสสิก";
 
 /* No comment provided by engineer. */
 "clear" = "ลบออก";
@@ -147,7 +138,7 @@
 "close app" = "ปิดแอพพลิเคชั่น";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Coinbase Transaction";
+"Coinbase Transaction" = "ธุรกรรม Coinbase";
 
 /* Confirm */
 "Confirm" = "ยืนยัน";
@@ -261,7 +252,7 @@
 "GENERAL" = "ทั่วไป";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "holding funds index:";
+"holding funds index:" = "ดัชนีกองทุนกำลังถือ:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -300,28 +291,28 @@
 "INVALID" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP address/port:";
+"IP address/port:" = "ที่อยู่ IP / พอร์ต";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
-"Load more" = "Load more";
+"Load more" = "โหลดเพิ่ม";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "masternode holding address";
+"masternode holding address" = "ที่อยู่สำหรับ  Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Masternode Registration Transaction";
+"Masternode Registration Transaction" = "Masternode การลงทะเบียนธุรกรรม";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+"Masternode Update Registrar Transaction" = "Masternode อัพเดตลงทะเบีนธุรกรรม";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+"Masternode Update Service Transaction" = "Masternode อัพเดตบริการธุรกรรม";
 
 /* No comment provided by engineer. */
 "more..." = "เพิ่มเติม";
@@ -336,7 +327,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
 
 /* No comment provided by engineer. */
-"new public key:" = "new public key:";
+"new public key:" = "public key ใหม่:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ต่อไป , เขียนวลีกู้คืนของคุณ";
@@ -369,13 +360,13 @@
 "not a valid dash or bitcoin address" = "ไม่ใช่ที่อยู่ dash หรือ bitcoin ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"not operator" = "not operator";
+"not operator" = "ไม่ใช่ตัวดำเนินการ";
 
 /* No comment provided by engineer. */
-"not owner" = "not owner";
+"not owner" = "ไม่ใช่เจ้าของ";
 
 /* No comment provided by engineer. */
-"not voter" = "not voter";
+"not voter" = "ไม่ใช่ผู้โหวต";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -387,22 +378,22 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
 
 /* No comment provided by engineer. */
-"operator key index:" = "operator key index:";
+"operator key index:" = "ดัชนีตัวดำเนินการ Keys:";
 
 /* No comment provided by engineer. */
-"operator key:" = "operator key:";
+"operator key:" = "ตัวดำเนินการ Keys:";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator Keys" = "ตัวดำเนินการ Keys";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "owner key hash:";
+"owner key hash:" = "Hash ของเจ้าของ Keys:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "owner key index:";
+"owner key index:" = "ดัชนีของเจ้าของ Keys:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Keys" = "เจ้าของ Keys";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -420,10 +411,10 @@
 "payment output" = "การชำระเงิน";
 
 /* No comment provided by engineer. */
-"payout Address" = "payout Address";
+"payout Address" = "ที่อยู่การจ่ายเงิน:";
 
 /* No comment provided by engineer. */
-"payout address:" = "payout address:";
+"payout address:" = "ที่อยู่การจ่ายเงิน:";
 
 /* No comment provided by engineer. */
 "pending" = "อยู่ระหว่างดำเนินการ";
@@ -459,7 +450,7 @@
 "received %@ (%@)" = "ได้รับ %1$@(%2$@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "recently mined (locked)";
+"recently mined (locked)" = "ขุดเมื่อไม่นานนี้ (ล็อค)";
 
 /* Recovery phrase */
 "Recovery phrase" = "วลีกู้คืน";
@@ -474,7 +465,7 @@
 "reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registration tx:";
+"registration tx:" = "ลงทะเบียน tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "เตือนฉันภายหลัง";
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "คำขอเพื่อการชำระเงินทันที แต่คุณได้ยกเลิกการชำระทันทีแล้ว";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "สแกน blockchain อีกครั้ง ถ้าคุณคิดว่าอาจธุรกรรมอาจกำลังจะหายหรือกำลังมีปัญหาในการส่ง (การสแกนใหม่อาจใช้เวลาหลายนาที)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "รีเซ็ต";
@@ -564,7 +555,7 @@
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
+"Show masternode keys" = "แสดง masternode keys";
 
 /* No comment provided by engineer. */
 "show phrase" = "แสดงวลี";
@@ -612,13 +603,13 @@
 "this request requires an instant payment but you have disabled instant payments" = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณได้ยกเลิกการชำระเงินทันที";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+"This transaction may take several minutes to settle." = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ  ต้องการชำระในทันทีสำหรับ %@ หรือไม่?";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+"This transaction should settle instantly at no extra fee" = "ธุรกรรมนี้ชำระทันทีโดยไม่มีค่าธรรมเนียมเพิ่มเติม";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Wallet นี้ยังมีข้อมูลหรือการซิงค์ที่ยังไม่เสร็จสิ้น คุณไม่สามารถลบข้อมูลได้โดยไม่ใช้วลีกู้คืน";
@@ -630,7 +621,7 @@
 "to: %@" = "ถึง: %@";
 
 /* No comment provided by engineer. */
-"topup amount:" = "topup amount:";
+"topup amount:" = "เติมเงิน:";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "ขีดจำกัด Touch ID";
@@ -645,7 +636,7 @@
 "trust" = "เชื่อถือ";
 
 /* No comment provided by engineer. */
-"try again" = "try again";
+"try again" = "ลองอีกครั้ง:";
 
 /* No comment provided by engineer. */
 "Try It!" = "ลอง!";
@@ -654,7 +645,7 @@
 "turn device passcode on" = "เปิดการใช้งานรหัส";
 
 /* No comment provided by engineer. */
-"type:" = "type:";
+"type:" = "ชนิด:";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "ไม่สามารถรับโค้ด QR ใหม่";
@@ -675,16 +666,25 @@
 "unverified" = "พิสูจน์ไม่ได้";
 
 /* No comment provided by engineer. */
-"username:" = "username:";
+"User Registration Transaction" = "ธุรกรรมการลงทะเบียนผู้ใช้";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "ธุรกรรมการรีเซ็ตผู้ใช้";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "ธุรกรรมการเติมเงินของผู้ใช้";
+
+/* No comment provided by engineer. */
+"username:" = "ชื่อผู้ใช้:";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "ตรวจสอบแล้ว รอการยืนยัน";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "voting key hash:";
+"voting key hash:" = "Hash ของ voting key: ";
 
 /* No comment provided by engineer. */
-"voting key index:" = "voting key index:";
+"voting key index:" = "ดัชนี voting key: ";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Voting Keys";
@@ -702,7 +702,7 @@
 "watch only" = "ดูเท่านั้น";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดระหว่างการย้ายข้อมูล การสแกน Blockchain ใหม่อีกครั้งจะช่วยแก้ปัญหานี้หรือคุณอาจจะต้องลองอีกครั้ง  ควรทำการสแกนซ้ำโดยใช้ wifi โดยจะใช้เวลาประมาณครึ่งชั่วโมง  เงินของคุณจะสามารถใช้ได้เมื่อกระบวนการซิงค์เสร็จสมบูรณ์";
 
 /* No comment provided by engineer. */
 "wipe" = "ลบล้าง";

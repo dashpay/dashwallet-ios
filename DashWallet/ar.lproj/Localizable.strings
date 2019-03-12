@@ -93,15 +93,6 @@
 "block #%d of %d" = "كتلة # %1$d من %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "شراء داش ";
 
 /* No comment provided by engineer. */
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "طلب الدفع الفوري ولكنك قمت بتعطيل المدفوعات الفورية";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "إعادة تفحص";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "إعادة فحص بلوكشين";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "إعادة فحص بلوكشين إذا كنت تعتقد أن لديك معاملات مفقودة ، أو تواجه مشكلة في الإرسال (يمكن أن تستغرق إعادة الفحص عدة دقائق)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "إعادة تعيين";
@@ -673,6 +664,15 @@
 
 /* No comment provided by engineer. */
 "unverified" = "غير مثبت عليه";
+
+/* No comment provided by engineer. */
+"User Registration Transaction" = "User Registration Transaction";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "User Reset Transaction";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "User Topup Transaction";
 
 /* No comment provided by engineer. */
 "username:" = "username:";
