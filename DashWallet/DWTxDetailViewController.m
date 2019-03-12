@@ -280,11 +280,11 @@
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     cell.titleLabel.text = NSLocalizedString(@"type:", nil);
                     if ([self.transaction isMemberOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-                        cell.statusLabel.text = NSLocalizedString(@"BU Registration Transaction", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"User Registration Transaction", nil);
                     } else if ([self.transaction isMemberOfClass:[DSBlockchainUserTopupTransaction class]]) {
-                        cell.statusLabel.text = NSLocalizedString(@"BU Topup Transaction", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"User Topup Transaction", nil);
                     } else if ([self.transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
-                        cell.statusLabel.text = NSLocalizedString(@"BU Reset Transaction", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"User Reset Transaction", nil);
                     } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                         cell.statusLabel.text = NSLocalizedString(@"Masternode Registration Transaction", nil);
                     } else if ([self.transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {

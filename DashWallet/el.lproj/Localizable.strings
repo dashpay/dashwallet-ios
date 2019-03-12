@@ -93,15 +93,6 @@
 "block #%d of %d" = "μπλόκ %1$d απο %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Buy Dash";
 
 /* No comment provided by engineer. */
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "επανάληψη της σάρωσης";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "κάντε επανάληψη της σάρωσης της αλυσίδας των μπλόκ αν νομίζετε ότι μπορεί να έχετε συναλλαγές που λείπουν ή άν έχετε προβλήματα αποστολής (η νέα σάρωση μπορεί να πάρει αρκετά λεπτά)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "επαναφορά";
@@ -673,6 +664,15 @@
 
 /* No comment provided by engineer. */
 "unverified" = "χωρίς επαλήθευση";
+
+/* No comment provided by engineer. */
+"User Registration Transaction" = "User Registration Transaction";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "User Reset Transaction";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "User Topup Transaction";
 
 /* No comment provided by engineer. */
 "username:" = "username:";
