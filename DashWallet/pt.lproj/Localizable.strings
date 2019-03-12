@@ -15,10 +15,10 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+"%d out of %d lock votes" = "%1$d de %2$d votos registrados";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld used";
+"%ld used" = "%Id utilizado";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 confirmações";
@@ -54,7 +54,7 @@
 "Action Needed" = "Ação necessária";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Endereço";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ADVANCED";
@@ -93,15 +93,6 @@
 "block #%d of %d" = "bloco #%1$d de %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Comprar Dash";
 
 /* No comment provided by engineer. */
@@ -129,7 +120,7 @@
 "checking private key balance..." = "verificando o saldo da chave privada...";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Classical Transaction";
+"Classical Transaction" = "Transação Comum";
 
 /* No comment provided by engineer. */
 "clear" = "limpar";
@@ -147,7 +138,7 @@
 "close app" = "fechar o aplicativo";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Coinbase Transaction";
+"Coinbase Transaction" = "Transação Minerada";
 
 /* Confirm */
 "Confirm" = "Confirme";
@@ -189,10 +180,10 @@
 "Dash address" = "Endereço Dash";
 
 /* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Endereços Bitcoin também podem ser copiados para a área de transferência. Um endereço dash sempre começa com 'X' ou '7'.";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Endereços Dash também podem ser copiados para a área de transferência. Um endereço dash sempre começa com 'X' ou '7'.";
 
 /* No comment provided by engineer. */
-"dash network fee" = "taxa da rede Bitcoin";
+"dash network fee" = "taxa da rede Dash";
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "pagamentos dash não podem ser menores que %@";
@@ -261,7 +252,7 @@
 "GENERAL" = "GERAL";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "holding funds index:";
+"holding funds index:" = "índice do endereço do masternode:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eu aceito que perderei minhas moedas se eu não mais possuir a frase de recuperação";
@@ -300,28 +291,28 @@
 "INVALID" = "INVÁLIDO";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP address/port:";
+"IP address/port:" = "IP endereço/porta:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Compartilhe este código QR para outros obterem seu endereço dash. Qualquer um pode enviar dash para sua carteira ao transferí-los para seu endereço.";
 
 /* No comment provided by engineer. */
-"Load more" = "Load more";
+"Load more" = "Carregar mais";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "masternode holding address";
+"masternode holding address" = "endereço principal do masternode";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Masternode Registration Transaction";
+"Masternode Registration Transaction" = "Transação para Registrar Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+"Masternode Update Registrar Transaction" = "Atualizar Transação para Registrar Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+"Masternode Update Service Transaction" = "Transação do Serviço de Atualização do Masternode";
 
 /* No comment provided by engineer. */
 "more..." = "mais...";
@@ -336,7 +327,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem estar infectados.";
 
 /* No comment provided by engineer. */
-"new public key:" = "new public key:";
+"new public key:" = "nova chave pública:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "em seguida, anote sua frase de recuperação";
@@ -369,13 +360,13 @@
 "not a valid dash or bitcoin address" = "não um endereço dash ou bitcoin válido";
 
 /* No comment provided by engineer. */
-"not operator" = "not operator";
+"not operator" = "não é operador";
 
 /* No comment provided by engineer. */
-"not owner" = "not owner";
+"not owner" = "não é proprietário";
 
 /* No comment provided by engineer. */
-"not voter" = "not voter";
+"not voter" = "não é eleitor";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -387,22 +378,22 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Ative somente recursos avançados se você tiver conhecimento da tecnologia blockchain.\nSe ativado, use somente recursos avançados que você entenda.";
 
 /* No comment provided by engineer. */
-"operator key index:" = "operator key index:";
+"operator key index:" = "índice da chave do operador:";
 
 /* No comment provided by engineer. */
-"operator key:" = "operator key:";
+"operator key:" = "chave do operador:";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator Keys" = "Chaves do Operador";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "owner key hash:";
+"owner key hash:" = "código \"hash\" da chave do proprietário:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "owner key index:";
+"owner key index:" = "índice da chave do proprietário:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Keys" = "Chaves do Proprietário";
 
 /* No comment provided by engineer. */
 "Pay" = "Pagar";
@@ -411,7 +402,7 @@
 "payee identity isn't certified" = "identidade do destinatário não é certificada";
 
 /* No comment provided by engineer. */
-"payload:" = "payload:";
+"payload:" = "dados:";
 
 /* No comment provided by engineer. */
 "payment address" = "endereço de pagamento";
@@ -420,10 +411,10 @@
 "payment output" = "saída de pagamento criada";
 
 /* No comment provided by engineer. */
-"payout Address" = "payout Address";
+"payout Address" = "endereço de pagamento";
 
 /* No comment provided by engineer. */
-"payout address:" = "payout address:";
+"payout address:" = "endereço de pagamento:";
 
 /* No comment provided by engineer. */
 "pending" = "pendente";
@@ -438,13 +429,13 @@
 "Please place your phone near NFC device." = "Por favor coloque seu telefone perto do dispositivo NFC";
 
 /* No comment provided by engineer. */
-"Private key" = "Private key";
+"Private key" = "Chave privada";
 
 /* No comment provided by engineer. */
-"Public key" = "Public key";
+"Public key" = "Chave pública";
 
 /* No comment provided by engineer. */
-"public key:" = "public key:";
+"public key:" = "chave pública:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "taxa: %@=%@\natualizado: %@\nbloco # %dde %d\npares conectados: %d\npares dl: %@";
@@ -459,7 +450,7 @@
 "received %@ (%@)" = "recebeu %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "recently mined (locked)";
+"recently mined (locked)" = "minerado recentemente (não disponível)";
 
 /* Recovery phrase */
 "Recovery phrase" = "Frase de recuperação";
@@ -474,7 +465,7 @@
 "reduce payment amount by\n%@ (%@)?" = "reduzir o montante do pagamento por\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registration tx:";
+"registration tx:" = "transação de registro:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Lembrar-me mais tarde";
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "o pedido é para pagamento instantâneo mas você desabilitou pagamentos instantâneos";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "reescanear";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Reexaminar blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "reescaneie a rede blockchain se você acha que estão faltando transações ou se está tendo problemas no envio (o reescaneamento pode demorar vários minutos)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "redefinir";
@@ -564,7 +555,7 @@
 "show" = "mostrar";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
+"Show masternode keys" = "Mostrar chaves do masternode";
 
 /* No comment provided by engineer. */
 "show phrase" = "mostrar a frase";
@@ -612,13 +603,13 @@
 "this request requires an instant payment but you have disabled instant payments" = "esse pedido requer um pagamento instantâneo mas você desabilitou pagamentos instantâneos";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+"This transaction may take several minutes to settle." = "Essa transação pode levar alguns minutos para ser confirmada.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Essa transação pode levar alguns minutos para ser confirmada. Confirmar instantaneamente por um adicional de %@?";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+"This transaction should settle instantly at no extra fee" = "Essa transação pode ser confirmada instantaneamente sem taxa adicional";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Essa carteira não está vazia ou a sincronização ainda não terminou, você não deve limpá-la sem a frase de recuperação";
@@ -630,7 +621,7 @@
 "to: %@" = "para: %@";
 
 /* No comment provided by engineer. */
-"topup amount:" = "topup amount:";
+"topup amount:" = "valor de recarga:";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limite de ID de toque";
@@ -645,7 +636,7 @@
 "trust" = "confiança";
 
 /* No comment provided by engineer. */
-"try again" = "try again";
+"try again" = "tentar novamente";
 
 /* No comment provided by engineer. */
 "Try It!" = "Experimente!";
@@ -654,7 +645,7 @@
 "turn device passcode on" = "ativar senha de dispositivo";
 
 /* No comment provided by engineer. */
-"type:" = "type:";
+"type:" = "digite:";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Incapaz de pegar novo código qr";
@@ -675,25 +666,34 @@
 "unverified" = "não verificada";
 
 /* No comment provided by engineer. */
-"username:" = "username:";
+"User Registration Transaction" = "Transação de Registro de Usuário";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "Transação para Redefinir Usuário";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "Transação para Recarregar Usuário";
+
+/* No comment provided by engineer. */
+"username:" = "usuário:";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verificada, à espera de confirmação";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "voting key hash:";
+"voting key hash:" = "código \"hash\" da chave de votação:";
 
 /* No comment provided by engineer. */
-"voting key index:" = "voting key index:";
+"voting key index:" = "índice da chave de votação:";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Voting Keys";
+"Voting Keys" = "Chaves de Votação";
 
 /* No comment provided by engineer. */
 "wallet address" = "endereço da carteira";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Wallet Keys";
+"Wallet Keys" = "Chaves da Carteira";
 
 /* No comment provided by engineer. */
 "WARNING" = "AVISO";
@@ -702,7 +702,7 @@
 "watch only" = "assistir apenas";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Detectamos que a Dashwallet apresentou um erro durante a migração. Verificar novamente a blockchain irá resolver esse problema ou você pode tentar novamente.  A verificação deve ser realizada preferencialmente na wifi e poderá durar até meia hora. Seu saldo estará disponível uma vez que o processo de sincronização esteja completo.";
 
 /* No comment provided by engineer. */
 "wipe" = "limpar";

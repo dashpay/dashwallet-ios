@@ -15,10 +15,10 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d out of %2$d lock votes";
+"%d out of %d lock votes" = "%1$d извън %2$d заключени гласове";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld used";
+"%ld used" = "%ld използван";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 потвърждения";
@@ -54,7 +54,7 @@
 "Action Needed" = "Необходимо е действие";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Адрес";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "РАЗШИРЕНИ";
@@ -93,15 +93,6 @@
 "block #%d of %d" = "блок #%1$d от %2$d";
 
 /* No comment provided by engineer. */
-"BU Registration Transaction" = "BU Registration Transaction";
-
-/* No comment provided by engineer. */
-"BU Reset Transaction" = "BU Reset Transaction";
-
-/* No comment provided by engineer. */
-"BU Topup Transaction" = "BU Topup Transaction";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Купи Dash";
 
 /* No comment provided by engineer. */
@@ -129,7 +120,7 @@
 "checking private key balance..." = "проверка баланса на частния ключ...";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Classical Transaction";
+"Classical Transaction" = "Класическа транзакция";
 
 /* No comment provided by engineer. */
 "clear" = "изчистване";
@@ -147,7 +138,7 @@
 "close app" = "затвори приложението";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Coinbase Transaction";
+"Coinbase Transaction" = "Coinbase транзакция";
 
 /* Confirm */
 "Confirm" = "Потвърди";
@@ -261,7 +252,7 @@
 "GENERAL" = "ОСНОВЕН";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "holding funds index:";
+"holding funds index:" = "списък на притежаваните средства:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване";
@@ -300,28 +291,28 @@
 "INVALID" = "НЕВАЛИДЕН";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP address/port:";
+"IP address/port:" = "IP адрес/порт:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Нека другите да сканират този QR код, за да получат вашия dash адрес. Всеки може да изпрати dash до портфейла Ви, като ги прехвърли на Вашия адрес.";
 
 /* No comment provided by engineer. */
-"Load more" = "Load more";
+"Load more" = "Зареди още";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "masternode holding address";
+"masternode holding address" = "masternode притежаван адрес";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Masternode Registration Transaction";
+"Masternode Registration Transaction" = "Masternode регистрираща транзакция";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+"Masternode Update Registrar Transaction" = "Masternode актуализира регистрационната транзакция ";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+"Masternode Update Service Transaction" = "Masternode актуализира обслужващата транзакция";
 
 /* No comment provided by engineer. */
 "more..." = "още...";
@@ -336,7 +327,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "НИКОГА не пишете вашата парола за възстановяване в мениджъра на пароли или на друго място. Другите устройства може да са заразени.";
 
 /* No comment provided by engineer. */
-"new public key:" = "new public key:";
+"new public key:" = "нов публичен ключ:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "следва, напиши отдолу своята фраза за възстановяване";
@@ -369,13 +360,13 @@
 "not a valid dash or bitcoin address" = "не е валиден Dash или Bitcoin адрес";
 
 /* No comment provided by engineer. */
-"not operator" = "not operator";
+"not operator" = "не оператор";
 
 /* No comment provided by engineer. */
-"not owner" = "not owner";
+"not owner" = "не собственик";
 
 /* No comment provided by engineer. */
-"not voter" = "not voter";
+"not voter" = "не гласуващ";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -387,22 +378,22 @@
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Използвайте разширените функции само ако сте добре запознат с блокчейн технологиите . \nАко са активирани използвайте само разширени функции, които разбирате.";
 
 /* No comment provided by engineer. */
-"operator key index:" = "operator key index:";
+"operator key index:" = "индекс на операторски ключ:";
 
 /* No comment provided by engineer. */
-"operator key:" = "operator key:";
+"operator key:" = "операторски ключ:";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Operator Keys";
+"Operator Keys" = "Операторски ключове";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "owner key hash:";
+"owner key hash:" = "Хеш на ключа на собственика:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "owner key index:";
+"owner key index:" = "индекс за ключа на собственика:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Owner Keys";
+"Owner Keys" = "Ключове на собственика";
 
 /* No comment provided by engineer. */
 "Pay" = "Плати";
@@ -420,10 +411,10 @@
 "payment output" = "изходящо плащане";
 
 /* No comment provided by engineer. */
-"payout Address" = "payout Address";
+"payout Address" = "адрес за заплащане";
 
 /* No comment provided by engineer. */
-"payout address:" = "payout address:";
+"payout address:" = "адрес за заплащане:";
 
 /* No comment provided by engineer. */
 "pending" = "изчакване";
@@ -438,13 +429,13 @@
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
 
 /* No comment provided by engineer. */
-"Private key" = "Private key";
+"Private key" = "Частен ключ";
 
 /* No comment provided by engineer. */
-"Public key" = "Public key";
+"Public key" = "Публичен адрес";
 
 /* No comment provided by engineer. */
-"public key:" = "public key:";
+"public key:" = "публичен адрес:";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "процент: %@ = %@\nактуалицирани: %@\nблок #%d of %d\nсвързани пиъри: %d\ndl пиъри: %@";
@@ -459,7 +450,7 @@
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "recently mined (locked)";
+"recently mined (locked)" = "наскоро добит(заключен)";
 
 /* Recovery phrase */
 "Recovery phrase" = "Фраза за възстановяване";
@@ -474,7 +465,7 @@
 "reduce payment amount by\n%@ (%@)?" = "намаляване сумата на плащането от\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registration tx:";
+"registration tx:" = "регистрирана tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Напомни ми по-късно";
@@ -492,13 +483,13 @@
 "request is for an instant payment but you have disabled instant payments" = "искането е за  instant payment, но вашите instant payments са изключени";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "сканирайте повторно блокверигата ако мислите, че може да има липсващи транзакции или трудности при изпращане (повторното сканиране може да отнеме няколко минути)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
 
 /* No comment provided by engineer. */
 "reset" = "изчистване";
@@ -564,7 +555,7 @@
 "show" = "покажи";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
+"Show masternode keys" = "Покажи masternode ключове";
 
 /* No comment provided by engineer. */
 "show phrase" = "покажи фраза";
@@ -612,13 +603,13 @@
 "this request requires an instant payment but you have disabled instant payments" = "тази заявка изисква мигновено плащане, но Вие сте изключили мигновените плащанията";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
+"This transaction may take several minutes to settle." = "Тази транзакция може да отнеме няколко минути, за да приключи.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Тази трнзакция може да отнеме няколко минути, за да приключи. Завършете я веднага за още %@?";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+"This transaction should settle instantly at no extra fee" = "Тази транзакция ще бъде уредена мигновено без допълнителна такса";
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Този портфейл не е празен или синхронизирането не е приключило, не можете да го изтриете без фразата за възстановяване";
@@ -630,7 +621,7 @@
 "to: %@" = "до: %@";
 
 /* No comment provided by engineer. */
-"topup amount:" = "topup amount:";
+"topup amount:" = "супа за презареждане:";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID лимит";
@@ -645,7 +636,7 @@
 "trust" = "доверен";
 
 /* No comment provided by engineer. */
-"try again" = "try again";
+"try again" = "опитай отново";
 
 /* No comment provided by engineer. */
 "Try It!" = "Опитай!";
@@ -654,7 +645,7 @@
 "turn device passcode on" = "включи устройство за паролата";
 
 /* No comment provided by engineer. */
-"type:" = "type:";
+"type:" = "вид:";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Не може да се получи нов qr код";
@@ -675,25 +666,34 @@
 "unverified" = "непроверен";
 
 /* No comment provided by engineer. */
-"username:" = "username:";
+"User Registration Transaction" = "Регистриране на транзакция от потребителя";
+
+/* No comment provided by engineer. */
+"User Reset Transaction" = "Възстановяване на транзакция от потребителя";
+
+/* No comment provided by engineer. */
+"User Topup Transaction" = "Зареждане на транзакция от потребителя";
+
+/* No comment provided by engineer. */
+"username:" = "потребителско име:";
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "проверен, в очакване на потвърждение";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "voting key hash:";
+"voting key hash:" = "хеш на ключа за гласуване:";
 
 /* No comment provided by engineer. */
-"voting key index:" = "voting key index:";
+"voting key index:" = "индекс на ключа за гласуване:";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Voting Keys";
+"Voting Keys" = "Ключове за гласуване";
 
 /* No comment provided by engineer. */
 "wallet address" = "адрес на портфейла";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Wallet Keys";
+"Wallet Keys" = "Ключове на портфейла";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
@@ -702,7 +702,7 @@
 "watch only" = "режим на гледане";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Устоановихме, че Dashwallet се е повредил по време на миграцията. Повторното сканиране на блок веригата може да реши този проблем или опитайте отново. Повторното сканиране е препоръчително да се извърши чрез wifi и може да отнеме до половин час. Вашите средства ще бъдат налични след като синхронизацията приключи. ";
 
 /* No comment provided by engineer. */
 "wipe" = "изчисти";
