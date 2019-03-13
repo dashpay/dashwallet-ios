@@ -74,6 +74,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
 @property (nonatomic, assign) SystemSoundID pingsound;
+@property (nonatomic, assign) BOOL performedMigrationChecks;
 
 @end
 
@@ -93,6 +94,8 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     // Do any additional setup after loading the view.
+    
+    self.performedMigrationChecks = FALSE;
     
     _balance = UINT64_MAX;
     
@@ -456,7 +459,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self stopSyncingActivity];
-                                                           [self showBackupDialogIfNeeded];
                                                            if (! self.shouldShowTips) [self hideTips];
                                                            self.shouldShowTips = YES;
                                                            if (![DSAuthenticationManager sharedInstance].didAuthenticate) self.navigationItem.titleView = self.logo;
@@ -468,7 +470,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self stopSyncingActivity];
-                                                           [self showBackupDialogIfNeeded];
                                                            [self.receiveViewController updateAddress];
                                                            [self showErrorBar];
                                                        }];
@@ -596,6 +597,8 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                             
                             self.navigationController.navigationBar.hidden = NO;
                             self.pageViewController.view.alpha = 1.0;
+                            self.performedMigrationChecks = TRUE;
+                            [self showBackupDialogIfNeeded];
                             [self.receiveViewController updateAddress];
                             if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) [self showErrorBar];
                             
@@ -946,12 +949,13 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 
 - (void)showBackupDialogIfNeeded
 {
+    if (!self.performedMigrationChecks) return;
     DSWallet * wallet = [DWEnvironment sharedInstance].currentWallet;
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     NSTimeInterval now = [NSDate timeIntervalSince1970];
     
     if (self.navigationController.visibleViewController != self || ! [defs boolForKey:WALLET_NEEDS_BACKUP_KEY] ||
-        wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 36*60*60) return;
+        wallet.balance == 0 || [defs doubleForKey:BACKUP_DIALOG_TIME_KEY] > now - 1.5*DAY_TIME_INTERVAL) return;
     
     BOOL first = ([defs doubleForKey:BACKUP_DIALOG_TIME_KEY] < 1.0) ? YES : NO;
     
