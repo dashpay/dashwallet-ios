@@ -114,7 +114,7 @@
 "cancel" = "zrušiť";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Zrušiť";
 
 /* No comment provided by engineer. */
 "change" = "zmeniť";
@@ -156,7 +156,7 @@
 "Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "potvrdiť:";
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
@@ -342,7 +342,7 @@
 "Load more" = "Load more";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "Miestna mena";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "locked with InstantSend";
@@ -534,7 +534,7 @@
 "request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
-"rescan" = "rescan";
+"rescan" = "pre-skenovať";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Znova prehľadať reťazec blokov";
@@ -627,7 +627,7 @@
 "spent input" = "spent input";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "Spustiť/obnoviť ďalšiu peňaženku";
 
 /* No comment provided by engineer. */
 "status:" = "stav:";

@@ -63,6 +63,9 @@
 "always require passcode" = "винаги изисквайте парола";
 
 /* No comment provided by engineer. */
+"Amount" = "Количество";
+
+/* No comment provided by engineer. */
 "amount too small" = "твърде малко количество";
 
 /* No comment provided by engineer. */
@@ -76,6 +79,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Сигурен ли си ?";
+
+/* No comment provided by engineer. */
+"available" = "налично";
 
 /* No comment provided by engineer. */
 "bad payment request" = "грешна заявка за плащане";
@@ -99,10 +105,16 @@
 "Buy dash in dashwallet!" = "Купи dash в dashwallet!";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Купи Dash с Uphold акаунт";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Чрез изтриването на това устройство вече няма да имате достъп до средства на това устройство. Това трябва да се направи само, ако вече нямате достъп до фразата за възстановяване си и сте забравили своя ПИН код.";
 
 /* No comment provided by engineer. */
 "cancel" = "отказ";
+
+/* No comment provided by engineer. */
+"Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
 "change" = "промяна";
@@ -142,6 +154,12 @@
 
 /* Confirm */
 "Confirm" = "Потвърди";
+
+/* No comment provided by engineer. */
+"confirm" = "потвърждавам";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Потвърдете трнзакцията";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "потвърдено в блок #%d";
@@ -231,6 +249,12 @@
 "enter" = "вход";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Въведете сумата за трансфер по-долу";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Въведете вашият 2FA код по-долу";
+
+/* No comment provided by engineer. */
 "error signing dash transaction" = "грешка при подписване на dash транзакция";
 
 /* No comment provided by engineer. */
@@ -246,10 +270,19 @@
 "Failed wallet update" = "Неуспешно актуализиране на портфейла";
 
 /* No comment provided by engineer. */
+"Fee" = "Такса";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Таксата ще бъде приспадната от заявената сума";
+
+/* No comment provided by engineer. */
 "from:" = "от:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "ОСНОВЕН";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Отидете на уебсайта";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "списък на притежаваните средства:";
@@ -282,6 +315,9 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Недостатъчни средства";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "Недостатъчно средства";
 
 /* No comment provided by engineer. */
@@ -291,16 +327,31 @@
 "INVALID" = "НЕВАЛИДЕН";
 
 /* No comment provided by engineer. */
+"Invalid amount" = "Невалидна сума";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP адрес/порт:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Нека другите да сканират този QR код, за да получат вашия dash адрес. Всеки може да изпрати dash до портфейла Ви, като ги прехвърли на Вашия адрес.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Свързване на Uphold акаунт";
+
+/* No comment provided by engineer. */
 "Load more" = "Зареди още";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Local currency" = "Местна валута";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "заключена с InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Излез от профила";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Излез от Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode притежаван адрес";
@@ -313,9 +364,6 @@
 
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode актуализира обслужващата транзакция";
-
-/* No comment provided by engineer. */
-"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "more..." = "още...";
@@ -492,9 +540,6 @@
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "изчистване";
 
 /* No comment provided by engineer. */
@@ -511,6 +556,9 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Снимките на екрана са видими от други приложения и устройства. Вашите средства са изложени на риск. Прехвърлете средствата си в друг портфейл.";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "Виж Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "видян от %1$d от%2$d пиъра";
@@ -570,13 +618,22 @@
 "sms not currently available" = "sms не е наличен в момента";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Нещо се обърка";
+
+/* No comment provided by engineer. */
 "spent address" = "изразходен адрес";
 
 /* No comment provided by engineer. */
 "spent input" = "изразходен вход";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "Старт/възстановяване на друг портфейл";
+
+/* No comment provided by engineer. */
 "status:" = "статус:";
+
+/* No comment provided by engineer. */
+"Success" = "Успех";
 
 /* No comment provided by engineer. */
 "swept!" = "изчистен!";
@@ -627,6 +684,9 @@
 "topup amount:" = "супа за презареждане:";
 
 /* No comment provided by engineer. */
+"Total" = "Общо";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID лимит";
 
 /* No comment provided by engineer. */
@@ -634,6 +694,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "История на транзакциите";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Транзакция id";
+
+/* No comment provided by engineer. */
+"Transfer" = "Прехвърляне";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Прехвърлете Dash от вашият Uphold акаунт към този портфейл";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "прехвърляне от Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "доверен";
@@ -667,6 +739,12 @@
 
 /* No comment provided by engineer. */
 "unverified" = "непроверен";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Uphold акаунт";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Регистриране на транзакция от потребителя";
@@ -724,3 +802,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "ти получи dash!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "Необходимо е също да излезете от уебсайта на Uphold, чрез вашият браузър";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Вашата транзакция беше изпратена и сумата би трябвало да се появи във вашият портфейл до няколко минути.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Вашият Dash баланс в Uphold  е";

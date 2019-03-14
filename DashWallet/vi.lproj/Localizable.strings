@@ -63,6 +63,9 @@
 "always require passcode" = "luôn cần mật khẩu";
 
 /* No comment provided by engineer. */
+"Amount" = "Số tiền";
+
+/* No comment provided by engineer. */
 "amount too small" = "số lượng quá nhỏ";
 
 /* No comment provided by engineer. */
@@ -76,6 +79,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Bạn chắc chứ?";
+
+/* No comment provided by engineer. */
+"available" = "còn lại";
 
 /* No comment provided by engineer. */
 "bad payment request" = "yêu cầu thanh toán không đúng";
@@ -99,10 +105,16 @@
 "Buy dash in dashwallet!" = "Mua dash trong dashwallet!";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Mua Dash với tài khoản Uphold";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Bằng việc xoá sạch thiết bị này bạn sẽ không thể truy cập đến số tiền trong thiết bị nữa. Điều này chỉ nên thực hiện nếu bạn không còn có mật khẩu và bạn cũng quên cả mã PIN.";
 
 /* No comment provided by engineer. */
 "cancel" = "huỷ bỏ";
+
+/* No comment provided by engineer. */
+"Cancel" = "Huỷ bỏ";
 
 /* No comment provided by engineer. */
 "change" = "thay đổi";
@@ -142,6 +154,12 @@
 
 /* Confirm */
 "Confirm" = "Xác thực";
+
+/* No comment provided by engineer. */
+"confirm" = "xác thực";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Xác thực giao dịch";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "đã được xác thực trong khối #%d";
@@ -231,6 +249,12 @@
 "enter" = "nhập";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Hãy nhập số tiền cần chuyển vào dưới đây";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Hãy nhập mà xác thực 2 lớp vào dưới đây";
+
+/* No comment provided by engineer. */
 "error signing dash transaction" = "lỗi khi ký giao dịch dash";
 
 /* No comment provided by engineer. */
@@ -246,10 +270,19 @@
 "Failed wallet update" = "Không cập nhận được ví";
 
 /* No comment provided by engineer. */
+"Fee" = "Phí";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Phí sẽ được trừ từ khoản tiền được nhận";
+
+/* No comment provided by engineer. */
 "from:" = "từ:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "TỔNG THỂ";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Đến Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "chỉ số giao dịch đặt cọc";
@@ -282,6 +315,9 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend yêu cầu phải có đủ các đầu vào với 6 xác thực, gửi theo cách thông thường?";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Không đủ tiền";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "không đủ kinh phí";
 
 /* No comment provided by engineer. */
@@ -291,16 +327,31 @@
 "INVALID" = "KHÔNG HỢP LỆ";
 
 /* No comment provided by engineer. */
+"Invalid amount" = "Số tiền không hợp lệ";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "Địa chỉ IP/cổng:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Hãy để người kia quét mã QR này để lấy địa chỉ ví dash của bạn. Bất cứ ai cũng có thể gửi dash đến ví của bạn bằng cách chuyển tiền đến địa chỉ của bạn.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Liên kết với tài khoản Uphold";
+
+/* No comment provided by engineer. */
 "Load more" = "Nạp thêm";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Local currency" = "Tiền địa phương";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "Đã được khoá với InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Đăng xuất";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Đăng xuất khỏi Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "địa chỉ đặt cọc masternode";
@@ -313,9 +364,6 @@
 
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Giao dịch cập nhật dịch vụ Masternode";
-
-/* No comment provided by engineer. */
-"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "more..." = "tiếp...";
@@ -492,9 +540,6 @@
 "Rescan blockchain" = "Quét lại blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "khởi tạo lại";
 
 /* No comment provided by engineer. */
@@ -511,6 +556,9 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Chụp ảnh màn hình có thể nhìn thấy bởi các ứng dụng và thiết bị khác. Tiền của bạn có rủi ro. Hãy chuyển số dư của bạn vào một ví khác.";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "Xem trên Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "được thấy bởi %1$d của %2$d các nút";
@@ -570,13 +618,22 @@
 "sms not currently available" = "sms hiện không sẵn sàng";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Có vấn đề gì đó";
+
+/* No comment provided by engineer. */
 "spent address" = "địa chỉ gửi tiền";
 
 /* No comment provided by engineer. */
 "spent input" = "đầu vào";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "Bắt đầu / Khôi phục một ví khác";
+
+/* No comment provided by engineer. */
 "status:" = "tình trạng:";
+
+/* No comment provided by engineer. */
+"Success" = "Thành công";
 
 /* No comment provided by engineer. */
 "swept!" = "đã được quét!";
@@ -627,6 +684,9 @@
 "topup amount:" = "số lượng nạp thêm:";
 
 /* No comment provided by engineer. */
+"Total" = "Tổng số";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Giới hạn Touch ID";
 
 /* No comment provided by engineer. */
@@ -634,6 +694,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "Lịch sử giao dịch";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Mã giao dịch";
+
+/* No comment provided by engineer. */
+"Transfer" = "Chuyển";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Chuyển Dash từ tài khoản Uphold của bạn vào ví này";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Chuyển từ Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "tin cậy";
@@ -667,6 +739,12 @@
 
 /* No comment provided by engineer. */
 "unverified" = "chưa được kiểm tra";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Tài khoản Uphold";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Giao dịch đăng ký người dùng";
@@ -724,3 +802,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "bạn đã nhận được dash!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "Bạn sẽ cần phải đăng xuất khỏi tài khoản từ trang web Uphold với trình duyệt của mình";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Giao dịch của bạn đã được gửi và số tiền sẽ xuất hiện trong ví của bạn trong vài phút.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Số dư tài khoản Uphold bằng Dash là";

@@ -63,6 +63,9 @@
 "always require passcode" = "يتطلب دائما الرقم السري";
 
 /* No comment provided by engineer. */
+"Amount" = "Amount";
+
+/* No comment provided by engineer. */
 "amount too small" = "المبلغ قليل جدا";
 
 /* No comment provided by engineer. */
@@ -76,6 +79,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "هل انت متأكد ؟ ";
+
+/* No comment provided by engineer. */
+"available" = "available";
 
 /* No comment provided by engineer. */
 "bad payment request" = "طلب دفع سيئة";
@@ -99,10 +105,16 @@
 "Buy dash in dashwallet!" = "شراء داش من محفظة داش";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "من خلال مسح هذا الجهاز ، لن يعود بإمكانك الوصول إلى الأموال على هذا الجهاز. يجب أن يتم ذلك فقط إذا لم يعد بإمكانك الوصول إلى عبارة المرور الخاصة بك ونسيت رمز الرقم السري الخاص بك أيضًا";
 
 /* No comment provided by engineer. */
 "cancel" = "إلغاء";
+
+/* No comment provided by engineer. */
+"Cancel" = "إلغاء ";
 
 /* No comment provided by engineer. */
 "change" = "تغير";
@@ -142,6 +154,12 @@
 
 /* Confirm */
 "Confirm" = "تأكد";
+
+/* No comment provided by engineer. */
+"confirm" = "تأكيد";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "تأكيد في الكتلة # %d";
@@ -231,6 +249,12 @@
 "enter" = "أدخل";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Enter your 2FA code below";
+
+/* No comment provided by engineer. */
 "error signing dash transaction" = "خطأ في تسجيل صفقة داش";
 
 /* No comment provided by engineer. */
@@ -246,10 +270,19 @@
 "Failed wallet update" = "فشل في تحديث المحفظة";
 
 /* No comment provided by engineer. */
+"Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+
+/* No comment provided by engineer. */
 "from:" = "من:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "عام";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "holding funds index:";
@@ -282,6 +315,9 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "إرسال فوري يتطلب مدخلات كافية مع 6 تأكيدات ، وإرسال على أي حال كمعاملة عادية؟";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Insufficient Funds";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "رصيد غير كاف";
 
 /* No comment provided by engineer. */
@@ -291,16 +327,31 @@
 "INVALID" = "غير صالحة";
 
 /* No comment provided by engineer. */
+"Invalid amount" = "Invalid amount";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "دع الآخرين يفحصون رمز QR هذا للحصول على عنوان داش. يمكن لأي شخص إرسال داش إلى محفظتك عن طريق نقلها إلى عنوانك.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Link Uphold Account";
+
+/* No comment provided by engineer. */
 "Load more" = "Load more";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Local currency" = "العملة المحلية";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "locked with InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Log Out";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
@@ -313,9 +364,6 @@
 
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
-
-/* No comment provided by engineer. */
-"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "more..." = "أكثر...";
@@ -492,9 +540,6 @@
 "Rescan blockchain" = "إعادة فحص بلوكشين";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "إعادة تعيين";
 
 /* No comment provided by engineer. */
@@ -511,6 +556,9 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "تكون لقطات الشاشة مرئية للتطبيقات والأجهزة الأخرى. أموالك معرضة للخطر. نقل رصيدك إلى محفظة أخرى.";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "رأيت من %1$d على %2$d أقران";
@@ -570,13 +618,22 @@
 "sms not currently available" = "الرسائل القصيرة غير متوفرة حاليا";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Something went wrong";
+
+/* No comment provided by engineer. */
 "spent address" = "أمضى عنوان";
 
 /* No comment provided by engineer. */
 "spent input" = "ينفق المدخلات";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "بدء / إسترجاع محفظة أخرى";
+
+/* No comment provided by engineer. */
 "status:" = "الحالة:";
+
+/* No comment provided by engineer. */
+"Success" = "Success";
 
 /* No comment provided by engineer. */
 "swept!" = "اجتاحت!";
@@ -627,6 +684,9 @@
 "topup amount:" = "topup amount:";
 
 /* No comment provided by engineer. */
+"Total" = "Total";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "إلمس لمعرفة الحد";
 
 /* No comment provided by engineer. */
@@ -634,6 +694,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "سجل المعاملات";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Transaction id";
+
+/* No comment provided by engineer. */
+"Transfer" = "Transfer";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "التقة";
@@ -669,13 +741,10 @@
 "unverified" = "غير مثبت عليه";
 
 /* No comment provided by engineer. */
-"User Registration Transaction" = "User Registration Transaction";
+"Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"User Reset Transaction" = "User Reset Transaction";
-
-/* No comment provided by engineer. */
-"User Topup Transaction" = "User Topup Transaction";
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";
@@ -733,3 +802,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "لقد تلقيت داش!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";

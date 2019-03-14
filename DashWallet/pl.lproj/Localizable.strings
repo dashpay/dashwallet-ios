@@ -63,6 +63,9 @@
 "always require passcode" = "zawsze wymagaj hasła";
 
 /* No comment provided by engineer. */
+"Amount" = "Ilość";
+
+/* No comment provided by engineer. */
 "amount too small" = "zbyt mała kwota";
 
 /* No comment provided by engineer. */
@@ -76,6 +79,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Jesteś pewien?";
+
+/* No comment provided by engineer. */
+"available" = "dostępne";
 
 /* No comment provided by engineer. */
 "bad payment request" = "błędny żądanie zapłaty";
@@ -99,10 +105,16 @@
 "Buy dash in dashwallet!" = "Kupuj Dashe w aplikacji portfela!";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Kup Dash za pomocą konta Uphold";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Jeśli wyczyścisz to urządzenie, stracisz dostęp do funduszy na tym urządzeniu. Akcja ta powinna byc rozważana tylko w wpadku gdy nie masz dostępu do słów wymaganych do odtworzenia portfela i pinu. ";
 
 /* No comment provided by engineer. */
 "cancel" = "anuluj";
+
+/* No comment provided by engineer. */
+"Cancel" = "Anuluj";
 
 /* No comment provided by engineer. */
 "change" = "zmień";
@@ -142,6 +154,12 @@
 
 /* Confirm */
 "Confirm" = "Potwierdź";
+
+/* No comment provided by engineer. */
+"confirm" = "potwierdź";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Potwierdź transakcje";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potwierdzone w bloku #%d";
@@ -231,6 +249,12 @@
 "enter" = "Wejdź";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Poniżej wpisz ilość do wysyłk";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Poniżej wpisz swój kod 2FA";
+
+/* No comment provided by engineer. */
 "error signing dash transaction" = "błąd podczas podpisywania transakcji dash";
 
 /* No comment provided by engineer. */
@@ -246,10 +270,19 @@
 "Failed wallet update" = "Aktualizacja protfela nie powiodła się";
 
 /* No comment provided by engineer. */
+"Fee" = "Opłata";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Opłata zostanie pobrana z zażądanej ilości";
+
+/* No comment provided by engineer. */
 "from:" = "od:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERALNY";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Przejdź do strony internetowej";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "Index przetrzymujący środki:";
@@ -282,6 +315,9 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend wymaga funduszy wejściowych z 6 potwierdzeniami, wysłać jako normalną transakcję?";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Niewystarczająca ilość środków";
+
+/* No comment provided by engineer. */
 "insufficient funds" = "brak środków";
 
 /* No comment provided by engineer. */
@@ -291,16 +327,31 @@
 "INVALID" = "NIEPOPRAWNE";
 
 /* No comment provided by engineer. */
+"Invalid amount" = "Niewłaściwa ilość";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP adres/port:";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Pozwól innym zeskanować ten kod QR by uzyskać twój adres dash. Każdy może przekazać dashe do twojego portfela poprzez wysłanie ich na twój adres.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Podlinkuj konto Uphold";
+
+/* No comment provided by engineer. */
 "Load more" = "Załaduj więcej";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Local currency" = "Lokalna waluta";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "zablokowane z InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Wyloguj";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Wyloguj z Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adres przetrzymujący masternode";
@@ -313,9 +364,6 @@
 
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Transakcja Aktualizacji Serwisu Masternoda";
-
-/* No comment provided by engineer. */
-"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "more..." = "więcej...";
@@ -492,9 +540,6 @@
 "Rescan blockchain" = "Przeskanuj blockchain ponownie";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "resetuj";
 
 /* No comment provided by engineer. */
@@ -511,6 +556,9 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screeny są widoczne dla innych aplikacji i urządzeń. Twoje fundusze są zagrożone. Przenieś swoje saldo do innego portfela.";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "Sprawdź na Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "postrzeżone przez %1$d z %2$d węzłów";
@@ -570,13 +618,22 @@
 "sms not currently available" = "sms obecnie nie jest dostępny";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Coś poszło nie tak";
+
+/* No comment provided by engineer. */
 "spent address" = "zużyty adres";
 
 /* No comment provided by engineer. */
 "spent input" = "zużyty wkład";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "Rozpocznij / Odtwórz inny porfel";
+
+/* No comment provided by engineer. */
 "status:" = "stan:";
+
+/* No comment provided by engineer. */
+"Success" = "Sukces";
 
 /* No comment provided by engineer. */
 "swept!" = "wymieciony!";
@@ -627,6 +684,9 @@
 "topup amount:" = "doładuj ilość:";
 
 /* No comment provided by engineer. */
+"Total" = "Całkowite";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Limit identyfikacji odcisku palca";
 
 /* No comment provided by engineer. */
@@ -634,6 +694,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "Historia transakcji";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Transakcja id";
+
+/* No comment provided by engineer. */
+"Transfer" = "Prześlij";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Prześlij Dash ze swojego konta Uphold do tego portfela";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Prześlij z Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "zaufanie";
@@ -667,6 +739,12 @@
 
 /* No comment provided by engineer. */
 "unverified" = "niesprawdzona";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Konto Uphold";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Transakcja rejestrująca użytkownika";
@@ -724,3 +802,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "otrzymałeś dash!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "Potrzebujesz także wylogować się z przeglądarki na swoim koncie Uphold ";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Twoja transakcja została wysłana a ilość powinna pojawić się na Twoim koncie w kilka minut.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Stan Twojego konta Uphold w Dash to";
