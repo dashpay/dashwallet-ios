@@ -303,6 +303,9 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"Masternode control" = "Masternode control";
+
+/* No comment provided by engineer. */
 "masternode holding address" = "địa chỉ đặt cọc masternode";
 
 /* No comment provided by engineer. */
@@ -553,9 +556,6 @@
 
 /* No comment provided by engineer. */
 "show" = "hiển thị";
-
-/* No comment provided by engineer. */
-"Show masternode keys" = "Hiển thị các khoá của masternode";
 
 /* No comment provided by engineer. */
 "show phrase" = "hiển thị cụm từ";

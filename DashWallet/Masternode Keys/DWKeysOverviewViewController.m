@@ -45,7 +45,7 @@ static NSString * const OperatorKeysSegueId = @"OperatorKeysSegue";
 
 
 + (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MasternodeKeys" bundle:nil];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Masternode" bundle:nil];
     DWKeysOverviewViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"KeysOverviewViewControllerIdentifier"];
     
     return controller;

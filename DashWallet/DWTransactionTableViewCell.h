@@ -1,6 +1,6 @@
 //
 //  DWTransactionTableViewCell.h
-//  DashSync_Example
+//  DashWallet
 //
 //  Created by Sam Westrich on 6/22/18.
 //  Copyright © 2019 Dash Core Group. All rights reserved.

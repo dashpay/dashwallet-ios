@@ -303,6 +303,9 @@
 "locked with instant send" = "locked with instant send";
 
 /* No comment provided by engineer. */
+"Masternode control" = "Masternode control";
+
+/* No comment provided by engineer. */
 "masternode holding address" = "adresse de masternode";
 
 /* No comment provided by engineer. */
@@ -553,9 +556,6 @@
 
 /* No comment provided by engineer. */
 "show" = "montrer";
-
-/* No comment provided by engineer. */
-"Show masternode keys" = "Voir les clés de masternode";
 
 /* No comment provided by engineer. */
 "show phrase" = "montrer la phrase";

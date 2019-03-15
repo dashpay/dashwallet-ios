@@ -28,7 +28,7 @@
 #import "BRUserDefaultsSwitchCell.h"
 #import "DSCurrencyPriceObject.h"
 #import "DWAboutViewController.h"
-#import "DWKeysOverviewViewController.h"
+#import "DWMasternodeRootViewController.h"
 
 @interface DWSettingsViewController ()
 
@@ -317,7 +317,7 @@
                         break;
                     case 1:
                         cell = [tableView dequeueReusableCellWithIdentifier:selectorIdent];
-                        cell.textLabel.text = NSLocalizedString(@"Show masternode keys", nil);
+                        cell.textLabel.text = NSLocalizedString(@"Masternode control", nil);
                         cell.detailTextLabel.text = nil;
                         break;
                     default:
@@ -537,10 +537,10 @@
 {
     [DSEventManager saveEvent:@"settings:show_masternode_keys"];
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Masternode control", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
-            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
-            [self.navigationController pushViewController:keysViewController animated:YES];
+            DWMasternodeRootViewController *masternodeRootViewController = [DWMasternodeRootViewController controller];
+            [self.navigationController pushViewController:masternodeRootViewController animated:YES];
         }
     }];
 }
