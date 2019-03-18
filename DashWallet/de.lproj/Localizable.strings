@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Masternode Dienst-Aktualisierungs-Transaktion";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "mehr...";
 
 /* No comment provided by engineer. */
 "Moved" = "Verschoben";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Netzwerk";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "nicht Besitzer";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "nicht Wähler";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "ungeprüft";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Benutzer Registrierungs-Transaktion";

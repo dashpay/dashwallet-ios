@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Masternode อัพเดตบริการธุรกรรม";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "เพิ่มเติม";
 
 /* No comment provided by engineer. */
 "Moved" = "เคลื่อนย้าย";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "ไม่ใช่เจ้าของ";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "ไม่ใช่ผู้โหวต";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "พิสูจน์ไม่ได้";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ธุรกรรมการลงทะเบียนผู้ใช้";

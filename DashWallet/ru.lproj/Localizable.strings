@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Транзакция обновления услуг мастерноды";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "ещё...";
 
 /* No comment provided by engineer. */
 "Moved" = "Перемещено";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Сеть";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "не владелец";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "не участник голосования";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "Неподтверждённый";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Транзакция регистрации пользователя";

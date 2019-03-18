@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Masternode актуализира обслужващата транзакция";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "още...";
 
 /* No comment provided by engineer. */
 "Moved" = "Преместен";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Мрежа";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "не собственик";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "не гласуващ";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "непроверен";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Регистриране на транзакция от потребителя";

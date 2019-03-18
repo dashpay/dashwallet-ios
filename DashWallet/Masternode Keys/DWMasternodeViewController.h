@@ -11,6 +11,4 @@
 
 @interface DWMasternodeViewController : UITableViewController<NSFetchedResultsControllerDelegate,UISearchBarDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
-
 @end

@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "mer...";
 
 /* No comment provided by engineer. */
 "Moved" = "Moved";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "not owner";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "not voter";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "overifierad";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";

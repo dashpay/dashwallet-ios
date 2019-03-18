@@ -12,12 +12,13 @@
 #import <arpa/inet.h>
 #import "DWRegisterMasternodeViewController.h"
 #import "DWMasternodeDetailViewController.h"
-#import "DSLocalMasternodeEntity+CoreDataClass.h"
+#import "DWEnvironment.h"
 
 @interface DWMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSString * searchString;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *registerButton;
+@property (nonatomic,strong) DSChain * chain;
 
 @end
 
@@ -25,6 +26,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.chain = [DWEnvironment sharedInstance].currentChain;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -126,11 +128,10 @@
 #pragma mark - Table view data source
 
 -(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    if ([[sectionInfo name] integerValue]) {
-        return @"My Masternodes";
+    if ([self.fetchedResultsController sections].count == 1 || section) {
+        return NSLocalizedString(@"Masternodes",nil);
     } else {
-        return @"Masternodes";
+        return NSLocalizedString(@"My Masternodes",nil);
     }
 }
 

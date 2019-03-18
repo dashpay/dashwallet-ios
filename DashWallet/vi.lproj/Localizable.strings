@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Giao dịch cập nhật dịch vụ Masternode";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "tiếp...";
 
 /* No comment provided by engineer. */
 "Moved" = "Đã chuyển";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Mạng";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "không phải chủ sở hữu";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "không phải người bỏ phiếu";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "chưa được kiểm tra";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Giao dịch đăng ký người dùng";

@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "마스터노드 업데이트 서비스 거래";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "더 보기...";
 
 /* No comment provided by engineer. */
 "Moved" = "이동 완료";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "네트워크";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "소유자 아님";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "투표자 아님";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "인증되지 않음";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "사용자 등록 거래";

@@ -24,9 +24,10 @@ static NSString * const KeyInfoCellId = @"KeyInfoCell";
 static NSString * const LoadMoreCellId = @"LoadMoreCell";
 
 typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
-    DWDerivationPathInfoAddress,
-    DWDerivationPathInfoPublicKey,
-    DWDerivationPathInfoPrivateKey,
+    DWDerivationPathInfo_Address,
+    DWDerivationPathInfo_PublicKey,
+    DWDerivationPathInfo_PrivateKey,
+    DWDerivationPathInfo_UsedOrNot,
     _DWDerivationPathInfo_Count,
 };
 
@@ -83,19 +84,19 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
         NSInteger index = indexPath.section;
         DWDerivationPathInfo info = indexPath.row;
         switch (info) {
-            case DWDerivationPathInfoAddress: {
+            case DWDerivationPathInfo_Address: {
                 cell.textLabel.text = NSLocalizedString(@"Address", nil);
                 cell.detailTextLabel.text = [self.derivationPath addressAtIndex:index];
                 
                 break;
             }
-            case DWDerivationPathInfoPublicKey: {
+            case DWDerivationPathInfo_PublicKey: {
                 cell.textLabel.text = NSLocalizedString(@"Public key", nil);
                 cell.detailTextLabel.text = [self.derivationPath publicKeyDataAtIndex:index].hexString;
                 
                 break;
             }
-            case DWDerivationPathInfoPrivateKey: {
+            case DWDerivationPathInfo_PrivateKey: {
                 cell.textLabel.text = NSLocalizedString(@"Private key", nil);
                 @autoreleasepool {
                     
@@ -107,6 +108,19 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
                         cell.detailTextLabel.text = key.secretKeyString;
                     }
                 }
+                break;
+            }
+            case DWDerivationPathInfo_UsedOrNot: {
+                BOOL used = [self.derivationPath addressIsUsedAtIndex:index];
+                cell.textLabel.text = used?NSLocalizedString(@"Used", nil):NSLocalizedString(@"Not used", nil);
+                if (used) {
+                    DSLocalMasternode * localMasternode = [self.derivationPath.chain.chainManager.masternodeManager localMasternodeUsingIndex:index atDerivationPath:self.derivationPath];
+                    cell.detailTextLabel.text = localMasternode.ipAddressString;
+                } else {
+                    cell.detailTextLabel.text = nil;
+                }
+                
+
                 break;
             }
             default:

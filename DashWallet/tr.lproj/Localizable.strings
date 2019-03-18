@@ -318,10 +318,16 @@
 "Masternode Update Service Transaction" = "Anadüğüm Hizmet Yenileme İşlemi";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "daha fazla...";
 
 /* No comment provided by engineer. */
 "Moved" = "Taşındı";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Ağ";
@@ -367,6 +373,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "sahip değil";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "oy veren değil";
@@ -664,6 +673,9 @@
 
 /* No comment provided by engineer. */
 "unverified" = "doğrulanmadı";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Kullanıcı Kayıt İşlemi";

@@ -26,7 +26,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.signatureMessageInputTextView.text = self.providerRegistrationTransaction.payloadCollateralString;
+    self.signatureMessageInputTextView.text = [NSString stringWithFormat:@"signmessage %@ %@",self.collateralAddress, self.providerRegistrationTransaction.payloadCollateralString];
     
     if ([self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress]) {
         self.signButton.enabled = TRUE;
