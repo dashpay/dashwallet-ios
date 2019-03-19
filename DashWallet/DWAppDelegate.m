@@ -257,9 +257,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x00A0EA)];
     [[UINavigationBar appearance] setTranslucent:NO];
     [[UINavigationBar appearance] setShadowImage:[[UIImage alloc] init]];
-    [[UINavigationBar appearance] setBackgroundImage:[[UIImage alloc] init]
-                                      forBarPosition:UIBarPositionAny
-                                          barMetrics:UIBarMetricsDefault];
     
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]]
      setTitleTextAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}

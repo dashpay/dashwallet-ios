@@ -77,7 +77,9 @@
                             <outlet property="delegate" destination="j5a-Lk-qSc" id="JbZ-NK-XcX"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Masternode Control" id="Ur0-Tn-OnM"/>
+                    <navigationItem key="navigationItem" title="Masternode Control" id="Ur0-Tn-OnM">
+                        <barButtonItem key="backBarButtonItem" title=" " id="jAE-AO-rlr"/>
+                    </navigationItem>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6ZW-OE-5s3" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -103,14 +105,14 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Owner Keys" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="nc7-dg-fSK">
-                                                    <rect key="frame" x="16" y="11" width="107.5" height="22"/>
+                                                    <rect key="frame" x="16" y="12" width="98" height="21"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="0 Used" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="wft-wT-O3h">
-                                                    <rect key="frame" x="283.5" y="13" width="56.5" height="20"/>
+                                                    <rect key="frame" x="289" y="14" width="51" height="19"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="16"/>
                                                     <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -130,14 +132,14 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Voting Keys" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="bXE-II-eFZ">
-                                                    <rect key="frame" x="16" y="11" width="106" height="22"/>
+                                                    <rect key="frame" x="16" y="12" width="95.5" height="21"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="0 Used" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Dkt-vb-r6O">
-                                                    <rect key="frame" x="283.5" y="13" width="56.5" height="20"/>
+                                                    <rect key="frame" x="289" y="14" width="51" height="19"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="16"/>
                                                     <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -157,14 +159,14 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Operator Keys" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Yhm-Tt-8Om">
-                                                    <rect key="frame" x="16" y="11" width="128" height="22"/>
+                                                    <rect key="frame" x="16" y="12" width="116.5" height="21"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="0 Used" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Qff-yX-Q80">
-                                                    <rect key="frame" x="283.5" y="13" width="56.5" height="20"/>
+                                                    <rect key="frame" x="289" y="14" width="51" height="19"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="16"/>
                                                     <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -218,14 +220,14 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="nUi-yu-AQJ">
-                                            <rect key="frame" x="16" y="3" width="34" height="20"/>
+                                            <rect key="frame" x="16" y="4" width="30" height="19"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="16"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Subtitle" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.59999999999999998" id="JgC-5h-LYc" customClass="BRCopyLabel">
-                                            <rect key="frame" x="16" y="23" width="60" height="18.5"/>
+                                            <rect key="frame" x="16" y="23" width="51.5" height="17.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="15"/>
                                             <nil key="textColor"/>
@@ -270,66 +272,9 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
-                        <searchBar key="tableHeaderView" contentMode="redraw" id="5Yj-Ib-Vam">
-                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                            <color key="barTintColor" red="0.0" green="0.55294117649999996" blue="0.89411764709999997" alpha="1" colorSpace="calibratedRGB"/>
-                            <textInputTraits key="textInputTraits"/>
-                            <connections>
-                                <outlet property="delegate" destination="wRQ-nx-6jB" id="IMu-gm-lQC"/>
-                            </connections>
-                        </searchBar>
-                        <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MasternodeTableViewCellIdentifier" rowHeight="93" id="6Rd-TE-d6x" userLabel="MasternodeTableViewCell" customClass="DWMasternodeTableViewCell">
-                                <rect key="frame" x="0.0" y="99.5" width="375" height="93"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6Rd-TE-d6x" id="2sa-Dw-HpS">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="92.5"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9aj-9X-GvS">
-                                            <rect key="frame" x="16" y="16" width="65.5" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zOw-g7-cXK">
-                                            <rect key="frame" x="317" y="16" width="42" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Output Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" translatesAutoresizingMaskIntoConstraints="NO" id="oRg-cv-wTb">
-                                            <rect key="frame" x="16" y="47" width="343" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="oRg-cv-wTb" firstAttribute="leading" secondItem="2sa-Dw-HpS" secondAttribute="leading" constant="16" id="1lm-T2-WYt"/>
-                                        <constraint firstItem="zOw-g7-cXK" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9aj-9X-GvS" secondAttribute="trailing" constant="10" id="2ry-d6-PfE"/>
-                                        <constraint firstItem="9aj-9X-GvS" firstAttribute="leading" secondItem="2sa-Dw-HpS" secondAttribute="leading" constant="16" id="FGa-iU-EXD"/>
-                                        <constraint firstItem="zOw-g7-cXK" firstAttribute="top" secondItem="2sa-Dw-HpS" secondAttribute="top" constant="16" id="HEd-lR-zCB"/>
-                                        <constraint firstAttribute="trailing" secondItem="zOw-g7-cXK" secondAttribute="trailing" constant="16" id="dXg-Hk-r0l"/>
-                                        <constraint firstAttribute="trailing" secondItem="oRg-cv-wTb" secondAttribute="trailing" constant="16" id="nvh-Nb-Ahh"/>
-                                        <constraint firstItem="9aj-9X-GvS" firstAttribute="top" secondItem="2sa-Dw-HpS" secondAttribute="top" constant="16" id="sM3-T3-ahS"/>
-                                        <constraint firstItem="oRg-cv-wTb" firstAttribute="top" secondItem="9aj-9X-GvS" secondAttribute="bottom" constant="10" id="veM-U7-ElR"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <connections>
-                                    <outlet property="masternodeLocationLabel" destination="zOw-g7-cXK" id="qrg-5G-SNt"/>
-                                    <outlet property="outputLabel" destination="oRg-cv-wTb" id="2Wv-a0-dQH"/>
-                                    <segue destination="nYe-3L-Bof" kind="show" identifier="MasternodeDetailSegue" id="my9-dm-VIm"/>
-                                </connections>
-                            </tableViewCell>
-                        </prototypes>
-                        <connections>
-                            <outlet property="dataSource" destination="wRQ-nx-6jB" id="f2x-uO-cjd"/>
-                            <outlet property="delegate" destination="wRQ-nx-6jB" id="JbM-E3-mYt"/>
-                        </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Masternodes" id="P9c-09-eP5">
+                        <barButtonItem key="backBarButtonItem" title=" " id="La7-Je-S0J"/>
                         <barButtonItem key="rightBarButtonItem" title="Register" id="2uP-pr-d34" userLabel="Register Button">
                             <connections>
                                 <segue destination="fsp-BY-ihb" kind="presentation" identifier="RegisterMasternodeSegue" id="a6H-i1-bfe"/>
@@ -348,7 +293,7 @@
         <!--Masternode Detail View Controller-->
         <scene sceneID="koQ-Hy-Pgs">
             <objects>
-                <tableViewController id="nYe-3L-Bof" customClass="DWMasternodeDetailViewController" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="DWMasternodeDetailViewControllerId" id="nYe-3L-Bof" customClass="DWMasternodeDetailViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="HNA-ZA-UcF">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -684,7 +629,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qre-jf-CXO" customClass="BRCopyLabel">
-                                                    <rect key="frame" x="357" y="32" width="41" height="21"/>
+                                                    <rect key="frame" x="318" y="32" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -713,7 +658,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Suk-5r-dVX" customClass="BRCopyLabel">
-                                                    <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                                    <rect key="frame" x="318" y="12" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -745,7 +690,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5lC-cg-gFY" customClass="BRCopyLabel">
-                                                    <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                                    <rect key="frame" x="318" y="12" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -1229,6 +1174,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Masternode" id="Pw7-qF-DK0">
+                        <barButtonItem key="backBarButtonItem" title=" " id="tbY-ME-ITR"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="lgf-uS-ME2">
                             <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>

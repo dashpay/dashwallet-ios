@@ -696,57 +696,59 @@ static NSString *dateFormat(NSString *template)
     }
 }
 
-// MARK: - UIViewControllerAnimatedTransitioning
-
-// This is used for percent driven interactive transitions, as well as for container controllers that have companion
-// animations that might need to synchronize with the main animation.
-- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
-{
-    return 0.35;
-}
-
-// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
-- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
-{
-    UIView *containerView = transitionContext.containerView;
-    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
-    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    
-    BOOL pop = to == self || ![self.navigationController.viewControllers containsObject:from];
-    
-    to.view.center = CGPointMake(containerView.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
-    [containerView addSubview:to.view];
-    
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
-          initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-              to.view.center = from.view.center;
-              from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
-          } completion:^(BOOL finished) {
-              if (pop) [from.view removeFromSuperview];
-              [transitionContext completeTransition:YES];
-          }];
-}
-
-// MARK: - UINavigationControllerDelegate
-
-- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
-                                  animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
-                                                 toViewController:(UIViewController *)toVC
-{
-    return self;
-}
-
-// MARK: - UIViewControllerTransitioningDelegate
-
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
-                                                                  presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
-{
-    return self;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
-{
-    return self;
-}
+// Custom navigation transition disabled due to buggy transitions with search bar
+//
+//// MARK: - UIViewControllerAnimatedTransitioning
+//
+//// This is used for percent driven interactive transitions, as well as for container controllers that have companion
+//// animations that might need to synchronize with the main animation.
+//- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext
+//{
+//    return 0.35;
+//}
+//
+//// This method can only be a nop if the transition is interactive and not a percentDriven interactive transition.
+//- (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext
+//{
+//    UIView *containerView = transitionContext.containerView;
+//    UIViewController *to = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey],
+//    *from = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+//
+//    BOOL pop = to == self || ![self.navigationController.viewControllers containsObject:from];
+//
+//    to.view.center = CGPointMake(containerView.frame.size.width*(pop ? -1 : 3)/2, to.view.center.y);
+//    [containerView addSubview:to.view];
+//
+//    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0 usingSpringWithDamping:0.8
+//          initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+//              to.view.center = from.view.center;
+//              from.view.center = CGPointMake(containerView.frame.size.width*(pop ? 3 : -1)/2, from.view.center.y);
+//          } completion:^(BOOL finished) {
+//              if (pop) [from.view removeFromSuperview];
+//              [transitionContext completeTransition:YES];
+//          }];
+//}
+//
+//// MARK: - UINavigationControllerDelegate
+//
+//- (id<UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+//                                  animationControllerForOperation:(UINavigationControllerOperation)operation fromViewController:(UIViewController *)fromVC
+//                                                 toViewController:(UIViewController *)toVC
+//{
+//    return self;
+//}
+//
+//// MARK: - UIViewControllerTransitioningDelegate
+//
+//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+//                                                                  presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source
+//{
+//    return self;
+//}
+//
+//- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+//{
+//    return self;
+//}
 
 @end

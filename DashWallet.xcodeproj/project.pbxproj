@@ -54,6 +54,9 @@
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
+		2AE125F8224113C600379C6F /* DWBaseMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F7224113C600379C6F /* DWBaseMasternodeViewController.m */; };
+		2AE125FD2241151B00379C6F /* DWMasternodeTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */; };
+		2AE126002241342900379C6F /* DWResultsMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */; };
 		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
@@ -402,6 +405,11 @@
 		2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanView.m; sourceTree = "<group>"; };
 		2AC92C881FEB0B8B008CAEE0 /* DWQRScanViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewModel.h; sourceTree = "<group>"; };
 		2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewModel.m; sourceTree = "<group>"; };
+		2AE125F6224113C600379C6F /* DWBaseMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseMasternodeViewController.h; sourceTree = "<group>"; };
+		2AE125F7224113C600379C6F /* DWBaseMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseMasternodeViewController.m; sourceTree = "<group>"; };
+		2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWMasternodeTableViewCell.xib; sourceTree = "<group>"; };
+		2AE125FE2241342900379C6F /* DWResultsMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWResultsMasternodeViewController.h; sourceTree = "<group>"; };
+		2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWResultsMasternodeViewController.m; sourceTree = "<group>"; };
 		31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
@@ -1216,6 +1224,10 @@
 				FB31C24B223BD3F400BD0868 /* DWUpdateMasternodeRevocationViewController.m */,
 				FB31C243223BD3F200BD0868 /* DWUpdateMasternodeServiceViewController.h */,
 				FB31C24C223BD3F400BD0868 /* DWUpdateMasternodeServiceViewController.m */,
+				2AE125F6224113C600379C6F /* DWBaseMasternodeViewController.h */,
+				2AE125F7224113C600379C6F /* DWBaseMasternodeViewController.m */,
+				2AE125FE2241342900379C6F /* DWResultsMasternodeViewController.h */,
+				2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */,
 			);
 			path = "Masternode Keys";
 			sourceTree = "<group>";
@@ -1237,6 +1249,7 @@
 				FB31C265223BD6FB00BD0868 /* DWKeyValueTableViewCell.m */,
 				FB31C268223BD9F400BD0868 /* DWMasternodeTableViewCell.h */,
 				FB31C267223BD9F400BD0868 /* DWMasternodeTableViewCell.m */,
+				2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1572,6 +1585,7 @@
 				FB3FF0B22226416A0059A9A5 /* Masternode.storyboard in Resources */,
 				2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
+				2AE125FD2241151B00379C6F /* DWMasternodeTableViewCell.xib in Resources */,
 				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 				FBFC2EB921137A7A00D20C57 /* Montserrat-ThinItalic.otf in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
@@ -1904,6 +1918,7 @@
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
 				2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */,
+				2AE126002241342900379C6F /* DWResultsMasternodeViewController.m in Sources */,
 				FB31C262223BD62D00BD0868 /* DWProviderUpdateServiceTableViewCell.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
@@ -1939,6 +1954,7 @@
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				FB31C23C223BCFAA00BD0868 /* DWMasternodeRootViewController.m in Sources */,
+				2AE125F8224113C600379C6F /* DWBaseMasternodeViewController.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
