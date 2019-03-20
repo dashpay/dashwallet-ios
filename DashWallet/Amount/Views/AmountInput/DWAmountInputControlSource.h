@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -18,6 +18,13 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSUInteger, DWAmountType) {
+    // Amount in Dash
+    DWAmountTypeMain,
+    // Amount in local currency
+    DWAmountTypeSupplementary,
+};
 
 @protocol DWAmountInputControlSource <NSObject>
 

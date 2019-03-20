@@ -109,7 +109,6 @@
 		2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
 		2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */; };
 		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
-		2A9FFF34223540A300956D5F /* DWAmountInputControlModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */; };
 		2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
@@ -533,12 +532,6 @@
 		2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainViewController.h; sourceTree = "<group>"; };
 		2A9FFE702230FF4600956D5F /* DWUpholdMainModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainModel.h; sourceTree = "<group>"; };
 		2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainViewController.m; sourceTree = "<group>"; };
-		2A9FFF3C223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
-		2A9FFF3D223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
-		2A9FFF3E223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Main.strings; sourceTree = "<group>"; };
-		2A9FFF3F223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/MainInterface.strings; sourceTree = "<group>"; };
-		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
-		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2A9FFF032233E56E00956D5F /* DWUpholdBuyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyViewController.h; sourceTree = "<group>"; };
 		2A9FFF052233E56E00956D5F /* DWUpholdCardCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCardCellModel.h; sourceTree = "<group>"; };
 		2A9FFF062233E56E00956D5F /* DWUpholdSelectCardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSelectCardViewController.h; sourceTree = "<group>"; };
@@ -565,11 +558,15 @@
 		2A9FFF2D223427AC00956D5F /* DWAmountInputControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControl.h; sourceTree = "<group>"; };
 		2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputControl.m; sourceTree = "<group>"; };
 		2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWAmountInputControl.xib; sourceTree = "<group>"; };
-		2A9FFF32223540A300956D5F /* DWAmountInputControlModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControlModel.h; sourceTree = "<group>"; };
-		2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputControlModel.m; sourceTree = "<group>"; };
 		2A9FFF352235570500956D5F /* DWAmountInputControlSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControlSource.h; sourceTree = "<group>"; };
 		2A9FFF392235811400956D5F /* DWUpholdAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountObject.h; sourceTree = "<group>"; };
 		2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAmountObject.m; sourceTree = "<group>"; };
+		2A9FFF3C223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
+		2A9FFF3D223654D200956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/AboutStoryboard.strings; sourceTree = "<group>"; };
+		2A9FFF3E223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Main.strings; sourceTree = "<group>"; };
+		2A9FFF3F223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/MainInterface.strings; sourceTree = "<group>"; };
+		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
+		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountSendingOptionsModel.m; sourceTree = "<group>"; };
 		2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountSendingOptionsModel.h; sourceTree = "<group>"; };
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
@@ -1293,8 +1290,6 @@
 				2A9FFF2D223427AC00956D5F /* DWAmountInputControl.h */,
 				2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */,
 				2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */,
-				2A9FFF32223540A300956D5F /* DWAmountInputControlModel.h */,
-				2A9FFF33223540A300956D5F /* DWAmountInputControlModel.m */,
 				2A9FFF352235570500956D5F /* DWAmountInputControlSource.h */,
 			);
 			path = AmountInput;
@@ -2303,7 +2298,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -2314,7 +2309,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {
@@ -2452,7 +2447,6 @@
 				2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
-				2A9FFF34223540A300956D5F /* DWAmountInputControlModel.m in Sources */,
 				2A9FFDF32230FF1A00956D5F /* UIViewController+DWChildControllers.m in Sources */,
 				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
 				2A9FFE7D2230FF4600956D5F /* DWAlertPresentationController.m in Sources */,

@@ -17,8 +17,6 @@
 
 #import "DWAmountInputControl.h"
 
-#import "DWAmountInputControlModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const BigAmountTextAlpha = 1.0;
@@ -96,18 +94,20 @@ static CGFloat AmountHeight(BOOL small) {
         [self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
         (self.contentViewHeightConstraint = [self.contentView.heightAnchor constraintEqualToConstant:ViewHeight(self.smallSize)]),
     ]];
-    
+
     [self.contentView addTarget:self action:@selector(switchAmountCurrencyAction:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self mvvm_observe:@"model.source" with:^(typeof(self) self, id<DWAmountInputControlSource> value){
-        self.mainAmountLabel.attributedText = value.dashAttributedString;
-        self.supplementaryAmountLabel.attributedText = value.localCurrencyAttributedString;
-    }];
+}
+
+- (void)setSource:(id<DWAmountInputControlSource>)source {
+    _source = source;
+
+    self.mainAmountLabel.attributedText = source.dashAttributedString;
+    self.supplementaryAmountLabel.attributedText = source.localCurrencyAttributedString;
 }
 
 - (void)setSmallSize:(BOOL)smallSize {
     _smallSize = smallSize;
-    
+
     self.contentViewHeightConstraint.constant = ViewHeight(smallSize);
     self.mainAmountLabel.font = [UIFont systemFontOfSize:MainAmountFontSize(smallSize)];
     self.supplementaryAmountLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize(smallSize)];
@@ -121,20 +121,14 @@ static CGFloat AmountHeight(BOOL small) {
 
 - (void)setControlColor:(UIColor *)controlColor {
     _controlColor = controlColor;
-    
+
     self.mainAmountLabel.textColor = controlColor;
     self.supplementaryAmountLabel.textColor = controlColor;
     self.convertAmountImageView.tintColor = controlColor;
 }
 
-#pragma mark - Private
-
-- (void)switchAmountCurrencyAction:(id)sender {
-    if (![self.delegate amountInputControlSwapIsAllowed:self]) {
-        return;
-    }
-    
-    BOOL wasSwapped = self.model.activeType == DWAmountTypeSupplementary;
+- (void)setActiveTypeAnimated:(DWAmountType)activeType completion:(void (^)(void))completion {
+    BOOL wasSwapped = activeType != DWAmountTypeSupplementary;
     UILabel *bigLabel = nil;
     UILabel *smallLabel = nil;
     if (wasSwapped) {
@@ -150,34 +144,40 @@ static CGFloat AmountHeight(BOOL small) {
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
     smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize(self.smallSize)];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
-    
-    [self.model swapActiveAmountType];
-    
+
     [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         bigLabel.alpha = SmallAmountTextAlpha;
         smallLabel.alpha = BigAmountTextAlpha;
         bigLabel.transform = CGAffineTransformIdentity;
         smallLabel.transform = CGAffineTransformIdentity;
     }
-                     completion:^(BOOL finished) {
-                         CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
-                         CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
-                         CGFloat translation = maxY - labelHeight;
-                         self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
-                         self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
-                         [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:1.0
-                                             options:UIViewAnimationOptionCurveEaseOut
-                                          animations:^{
-                                              [self layoutIfNeeded];
-                                          }
-                                          completion:nil];
-                         [UIView animateWithDuration:0.4 animations:^{
-                             self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
-                         }
-                                          completion:^(BOOL finished) {
-                                              [self.delegate amountInputControlDidFinishSwapAnimation:self];
-                                          }];
-                     }];
+        completion:^(BOOL finished) {
+            CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
+            CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
+            CGFloat translation = maxY - labelHeight;
+            self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
+            self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
+            [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:1.0
+                                options:UIViewAnimationOptionCurveEaseOut
+                             animations:^{
+                                 [self layoutIfNeeded];
+                             }
+                             completion:nil];
+            [UIView animateWithDuration:0.4 animations:^{
+                self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
+            }
+                completion:^(BOOL finished) {
+                    if (completion) {
+                        completion();
+                    }
+                }];
+        }];
+}
+
+#pragma mark - Private
+
+- (void)switchAmountCurrencyAction:(id)sender {
+    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 @end

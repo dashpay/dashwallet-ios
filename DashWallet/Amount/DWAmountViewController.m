@@ -17,6 +17,7 @@
 
 #import "DWAmountViewController.h"
 
+#import "DWAmountInputControl.h"
 #import "DWAmountKeyboard.h"
 #import "DWAmountKeyboardInputViewAudioFeedback.h"
 #import "DWAmountModel.h"
@@ -38,18 +39,9 @@ static CGFloat HorizontalPadding() {
     }
 }
 
-static CGFloat const BigAmountTextAlpha = 1.0;
-static CGFloat const SmallAmountTextAlpha = 0.43;
-static CGFloat const MainAmountFontSize = 26.0;
-static CGFloat const SupplementaryAmountFontSize = 14.0;
-
 @interface DWAmountViewController () <UITextFieldDelegate>
 
-@property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
-@property (strong, nonatomic) IBOutlet UIImageView *convertAmountImageView;
-@property (strong, nonatomic) IBOutlet UILabel *supplementaryAmountLabel;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *mainAmountLabelCenterYConstraint;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *supplementaryAmountLabelCenterYConstraint;
+@property (strong, nonatomic) IBOutlet DWAmountInputControl *inputControl;
 @property (strong, nonatomic) IBOutlet UIStackView *infoStackView;
 @property (strong, nonatomic) IBOutlet UILabel *infoLabel;
 @property (strong, nonatomic) IBOutlet UISwitch *instantSendSwitch;
@@ -119,8 +111,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject * value) {
         self.textField.text = value.amountInternalRepresentation;
-        self.mainAmountLabel.attributedText = value.dashAttributedString;
-        self.supplementaryAmountLabel.attributedText = value.localCurrencyAttributedString;
+        self.inputControl.source = value;
         self.actionBarButton.enabled = value.plainAmount > 0;
     }];
 
@@ -193,50 +184,16 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         return;
     }
 
-    BOOL wasSwapped = (self.model.activeType == DWAmountTypeSupplementary);
-    UILabel *bigLabel = nil;
-    UILabel *smallLabel = nil;
-    if (wasSwapped) {
-        bigLabel = self.supplementaryAmountLabel;
-        smallLabel = self.mainAmountLabel;
-    }
-    else {
-        bigLabel = self.mainAmountLabel;
-        smallLabel = self.supplementaryAmountLabel;
-    }
-    CGFloat scale = SupplementaryAmountFontSize / MainAmountFontSize;
-    bigLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize];
-    bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
-    smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize];
-    smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
-
     [self.model swapActiveAmountType];
+    __weak typeof(self) weakSelf = self;
+    [self.inputControl setActiveTypeAnimated:self.model.activeType completion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
 
-    [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        bigLabel.alpha = SmallAmountTextAlpha;
-        smallLabel.alpha = BigAmountTextAlpha;
-        bigLabel.transform = CGAffineTransformIdentity;
-        smallLabel.transform = CGAffineTransformIdentity;
-    }
-        completion:^(BOOL finished) {
-            CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
-            CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
-            CGFloat translation = maxY - labelHeight;
-            self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
-            self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
-            [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:1.0
-                                options:UIViewAnimationOptionCurveEaseOut
-                             animations:^{
-                                 [self.view layoutIfNeeded];
-                             }
-                             completion:nil];
-            [UIView animateWithDuration:0.4 animations:^{
-                self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
-            }
-                completion:^(BOOL finished) {
-                    [self resetTextFieldPosition];
-                }];
-        }];
+        [strongSelf resetTextFieldPosition];
+    }];
 }
 
 - (void)actionButtonAction:(id)sender {

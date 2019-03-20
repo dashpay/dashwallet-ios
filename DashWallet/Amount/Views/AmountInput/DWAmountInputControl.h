@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,27 +15,20 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIControl.h>
+#import <UIKit/UIKit.h>
+
+#import "DWAmountInputControlSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWAmountInputControl;
-@class DWAmountInputControlModel;
-
-@protocol DWAmountInputControlDelegate <NSObject>
-
-- (BOOL)amountInputControlSwapIsAllowed:(DWAmountInputControl *)control;
-- (void)amountInputControlDidFinishSwapAnimation:(DWAmountInputControl *)control;
-
-@end
-
-@interface DWAmountInputControl : KVOUIControl
+@interface DWAmountInputControl : UIControl
 
 @property (assign, nonatomic) IBInspectable BOOL smallSize;
 @property (strong, nonatomic) IBInspectable UIColor *controlColor;
 
-@property (strong, nonatomic) DWAmountInputControlModel *model;
-@property (nullable, weak, nonatomic) id<DWAmountInputControlDelegate> delegate;
+@property (strong, nonatomic) id<DWAmountInputControlSource> source;
+
+- (void)setActiveTypeAnimated:(DWAmountType)activeType completion:(void (^)(void))completion;
 
 @end
 
