@@ -137,20 +137,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)buyButtonAction:(id)sender {
-    if (self.model.fiatCards.count > 0) {
-        DWUpholdBuyViewController *controller = [DWUpholdBuyViewController controllerWithDashCard:self.model.dashCard
-                                                                                        fiatCards:self.model.fiatCards];
-        controller.delegate = self;
-        [self presentViewController:controller animated:YES completion:nil];
+    NSURL *url = [self.model buyDashURL];
+    if (!url) {
+        return;
     }
-    else {
-        NSURL *url = [self.model buyDashURL];
-        if (!url) {
-            return;
-        }
 
-        [self openSafariAppWithURL:url];
-    }
+    [self openSafariAppWithURL:url];
 }
 
 - (void)logOutButtonAction:(id)sender {

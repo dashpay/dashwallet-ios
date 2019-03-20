@@ -28,9 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 static NSString *const UPHOLD_LAST_ACCESS = @"DW_UPHOLD_LAST_ACCESS";
 
-#warning Remove debug value
-//static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
-static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 1000 * 60.0 * 10.0; // 10 min
+static NSTimeInterval const UPHOLD_KEEP_ALIVE_INTERVAL = 60.0 * 10.0; // 10 min
 
 NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDidLogoutNotification";
 
