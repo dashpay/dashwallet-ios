@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
         _dashInternalRepresentation = dashInternalRepresentation;
         _localInternalRepresentation = localInternalRepresentation;
         
-#warning TODO format dash
+        // TODO: format dash value
         
         _localCurrencyAttributedString = [DWAmountObject attributedStringForLocalCurrencyFormatted:localCurrencyFormatted
                                                                                          textColor:[UIColor blackColor]];

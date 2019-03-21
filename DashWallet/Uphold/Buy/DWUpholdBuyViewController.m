@@ -59,8 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWUpholdBuyInputViewController *)inputController {
     if (!_inputController) {
-        DWUpholdBuyInputViewController *inputController = [DWUpholdBuyInputViewController controllerWithCard:self.dashCard
-                                                                                                     account:self.selectedCard];
+        DWUpholdBuyInputViewController *inputController = [DWUpholdBuyInputViewController controllerWithDashCard:self.dashCard
+                                                                                                        fromCard:self.selectedCard];
         inputController.delegate = self;
         inputController.otpProvider = self;
         _inputController = inputController;

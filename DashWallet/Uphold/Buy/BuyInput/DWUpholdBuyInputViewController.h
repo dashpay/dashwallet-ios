@@ -24,7 +24,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
-@class DWUpholdAccountObject;
 @class DWUpholdTransactionObject;
 @class DWUpholdBuyInputViewController;
 
@@ -45,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, weak, nonatomic) id<DWUpholdBuyInputViewControllerDelegate> delegate;
 @property (nullable, weak, nonatomic) id<DWUpholdOTPProvider> otpProvider;
 
-+ (instancetype)controllerWithCard:(DWUpholdCardObject *)card account:(DWUpholdAccountObject *)account;
++ (instancetype)controllerWithDashCard:(DWUpholdCardObject *)dashCard fromCard:(DWUpholdCardObject *)card;
 
 @end
 
