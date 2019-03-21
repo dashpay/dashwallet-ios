@@ -16,6 +16,7 @@
 #import "DWProviderUpdateServiceTransactionsViewController.h"
 #import <arpa/inet.h>
 #import "BRCopyLabel.h"
+#import "DWEnvironment.h"
 
 @interface DWMasternodeDetailViewController ()
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
@@ -30,6 +31,7 @@
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proRegTxLabel;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proUpRegTxLabel;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proUpServTxLabel;
+@property (strong, nonatomic) DSChain * chain;
 
 @end
 
@@ -53,6 +55,7 @@
     self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
     self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
     self.proUpServTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateServiceTransactions.count];
+    self.chain = [DWEnvironment sharedInstance].currentChain;
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -84,16 +87,16 @@
         {
             switch (indexPath.row) {
                 case 2:
-                    if (self.localMasternode.ownerKeysWallet) {
+                    if (self.localMasternode.ownerKeysWallet && [self.ownerKeyLabel.text isEqualToString:@"SHOW"]) {
                         [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Show owner key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
-                                self.ownerKeyLabel.text = [self.localMasternode ownerKeyStringFromSeed:seed];
+                                self.ownerKeyLabel.text = [[self.localMasternode ownerKeyFromSeed:seed] privateKeyStringForChain:self.chain];
                             }
                         }];
                     }
                     break;
                 case 3:
-                    if (self.localMasternode.operatorKeysWallet) {
+                    if (self.localMasternode.operatorKeysWallet && [self.operatorKeyLabel.text isEqualToString:@"SHOW"]) {
                         [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Show operator key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
                                 self.operatorKeyLabel.text = [self.localMasternode operatorKeyStringFromSeed:seed];
@@ -102,10 +105,10 @@
                     }
                     break;
                 case 4:
-                    if (self.localMasternode.operatorKeysWallet) {
+                    if (self.localMasternode.operatorKeysWallet && [self.votingKeyLabel.text isEqualToString:@"SHOW"]) {
                         [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Show voting key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
-                                self.votingKeyLabel.text = [self.localMasternode votingKeyStringFromSeed:seed];
+                                self.votingKeyLabel.text = [[self.localMasternode votingKeyFromSeed:seed] privateKeyStringForChain:self.chain];
                             }
                         }];
                     }
@@ -137,7 +140,7 @@
     [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:[NSData dataWithUInt256: self.simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse.UInt256 onChain:self.simplifiedMasternodeEntry.chain completion:^(DSTransaction *transaction, NSError *error) {
         if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
             DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-            DSLocalMasternode * localMasternode = [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+            DSLocalMasternode * localMasternode = [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:TRUE];
         }
     }];
     
