@@ -251,8 +251,6 @@ static NSString *dateFormat(NSString *template)
 {
     static NSDateFormatter *monthDayHourFormatter = nil;
     static NSDateFormatter *yearMonthDayHourFormatter = nil;
-    static NSCalendar *calendar = nil;
-    static NSDateComponents *offsetDateComponents = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{ // BUG: need to watch for NSCurrentLocaleDidChangeNotification
@@ -260,9 +258,6 @@ static NSString *dateFormat(NSString *template)
         monthDayHourFormatter.dateFormat = dateFormat(@"Mdjmma");
         yearMonthDayHourFormatter = [NSDateFormatter new];
         yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
-        calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-        offsetDateComponents = [[NSDateComponents alloc] init];
-        offsetDateComponents.year = -1;
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
@@ -271,13 +266,15 @@ static NSString *dateFormat(NSString *template)
     
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSDate *aYearAgo = [calendar dateByAddingComponents:offsetDateComponents toDate:[NSDate date] options:0];
-    NSTimeInterval year = [aYearAgo timeIntervalSince1970];
     
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
-    NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
+    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
+    NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:txDate];
     
-    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:txTime]];
+    NSDateFormatter *desiredFormatter = (nowYear == txYear) ? monthDayHourFormatter : yearMonthDayHourFormatter;
+    date = [desiredFormatter stringFromDate:txDate];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
