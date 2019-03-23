@@ -57,7 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 
             [strongSelf cancelButtonAction];
         }];
-        DWAlertAction *buyAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Buy", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
+        // TODO: localize
+        DWAlertAction *buyAction = [DWAlertAction actionWithTitle:@"Buy" style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -78,13 +79,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.titleLabel.text = NSLocalizedString(@"Buy Dash with Debit/Credit card", nil);
+    // TODO: localize
+    self.titleLabel.text = @"Buy Dash with Debit/Credit card";
 
     self.textField.delegate = self;
-//    self.amountTextField.placeholder = NSLocalizedString(@"Amount", nil);
-//    self.amountTextField.delegate = self;
-//    self.cvcTextField.placeholder = NSLocalizedString(@"CVC", nil);
-//    self.cvcTextField.delegate = self;
 
     [self mvvm_observe:@"self.model.state" with:^(typeof(self) self, NSNumber * value) {
         [self updateState];
@@ -128,29 +126,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)performBuyWithOTPToken:(nullable NSString *)otpToken {
-//    NSString *amountString = self.amountTextField.text;
-//    if (![self.model isAmountInputValid:amountString]) {
-//        [self.amountTextField dw_shakeView];
-//        return;
-//    }
-//
-//    NSString *cvcString = self.cvcTextField.text;
-//    if (![self.model isCVCInputValid:cvcString]) {
-//        [self.cvcTextField dw_shakeView];
-//        return;
-//    }
-//
-//    [self.amountTextField resignFirstResponder];
-//    [self.cvcTextField resignFirstResponder];
-//    
-//    [self.model createTransactionForAmount:amountString cvc:cvcString otpToken:otpToken];
 }
 
 - (void)updateState {
     switch (self.model.state) {
         case DWUpholdBuyInputModelStateNone: {
-//            self.amountTextField.userInteractionEnabled = YES;
-//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
@@ -158,8 +138,6 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdBuyInputModelStateLoading: {
-//            self.amountTextField.userInteractionEnabled = NO;
-//            self.cvcTextField.userInteractionEnabled = NO;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = NO;
             [self.activityIndicatorView startAnimating];
@@ -169,8 +147,6 @@ NS_ASSUME_NONNULL_BEGIN
         case DWUpholdBuyInputModelStateSuccess: {
             [self.delegate upholdBuyInputViewController:self didProduceTransaction:self.model.transaction];
 
-//            self.amountTextField.userInteractionEnabled = YES;
-//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.hidden = YES;
             self.buyAction.enabled = YES;
             [self.activityIndicatorView stopAnimating];
@@ -178,8 +154,6 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWUpholdBuyInputModelStateFail: {
-//            self.amountTextField.userInteractionEnabled = YES;
-//            self.cvcTextField.userInteractionEnabled = YES;
             self.errorLabel.text = NSLocalizedString(@"Something went wrong", nil);
             self.errorLabel.hidden = NO;
             self.buyAction.enabled = YES;

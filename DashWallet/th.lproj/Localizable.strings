@@ -99,16 +99,10 @@
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
 
 /* No comment provided by engineer. */
-"Buy" = "Buy";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "ขาย Dash";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "ขาย dash ใน dashwallet";
-
-/* No comment provided by engineer. */
-"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "ซื้อ Dash ด้วยบัญชี Uphold";
@@ -199,9 +193,6 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "วิกฤติ";
-
-/* No comment provided by engineer. */
-"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "ที่อยู่ Dash";
@@ -571,9 +562,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "เห็นแล้ว %1$d ของ %2$d ผู้ปล่อย ";
-
-/* No comment provided by engineer. */
-"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "send";

@@ -67,7 +67,8 @@ static NSString *const CardTableViewCellId = @"CardTableViewCell";
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.titleLabel.text = NSLocalizedString(@"Select Card", nil);
+    // TODO: localize
+    self.titleLabel.text = @"Select Card";
 }
 
 #pragma mark - Actions

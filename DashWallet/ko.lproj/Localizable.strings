@@ -99,16 +99,10 @@
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
 
 /* No comment provided by engineer. */
-"Buy" = "Buy";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "대시 구입";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "대시 지갑에서 대시 구매하기!";
-
-/* No comment provided by engineer. */
-"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "업홀드 계정으로 대시 구입";
@@ -199,9 +193,6 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "중요";
-
-/* No comment provided by engineer. */
-"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "대시 주소";
@@ -571,9 +562,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%2$d개의 피어중 %1$d개의 피어가 보았습니다";
-
-/* No comment provided by engineer. */
-"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "보내기";

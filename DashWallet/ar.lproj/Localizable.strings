@@ -99,16 +99,10 @@
 "block #%d of %d" = "كتلة # %1$d من %2$d";
 
 /* No comment provided by engineer. */
-"Buy" = "Buy";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "شراء داش ";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "شراء داش من محفظة داش";
-
-/* No comment provided by engineer. */
-"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Buy Dash with Uphold account";
@@ -199,9 +193,6 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "إنتقادي";
-
-/* No comment provided by engineer. */
-"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "عنوان داش";
@@ -571,9 +562,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "رأيت من %1$d على %2$d أقران";
-
-/* No comment provided by engineer. */
-"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "إرسال";

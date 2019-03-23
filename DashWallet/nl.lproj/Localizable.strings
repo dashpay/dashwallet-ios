@@ -99,16 +99,10 @@
 "block #%d of %d" = "blok #%1$d van %2$d";
 
 /* No comment provided by engineer. */
-"Buy" = "Buy";
-
-/* No comment provided by engineer. */
 "Buy Dash" = "Koop Dash";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Koop dash in dashwallet!";
-
-/* No comment provided by engineer. */
-"Buy Dash with Debit/Credit card" = "Buy Dash with Debit/Credit card";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Koop Dash met een Uphold account";
@@ -199,9 +193,6 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "KRITISCH";
-
-/* No comment provided by engineer. */
-"CVC" = "CVC";
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-adres";
@@ -571,9 +562,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "gezien door %1$d van %2$d peers";
-
-/* No comment provided by engineer. */
-"Select Card" = "Select Card";
 
 /* No comment provided by engineer. */
 "send" = "verstuur";
