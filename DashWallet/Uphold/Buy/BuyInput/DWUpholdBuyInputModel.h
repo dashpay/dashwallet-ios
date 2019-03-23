@@ -31,7 +31,6 @@ typedef NS_ENUM(NSUInteger, DWUpholdBuyInputModelState) {
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
-@class DWUpholdAccountObject;
 
 @interface DWUpholdBuyInputModel : NSObject
 
@@ -39,8 +38,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdBuyInputModelState) {
 
 @property (readonly, nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
-- (instancetype)initWithCard:(DWUpholdCardObject *)card
-                     account:(DWUpholdAccountObject *)account;
+- (instancetype)initWithDashCard:(DWUpholdCardObject *)dashCard fromCard:(DWUpholdCardObject *)card;
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range;
 - (BOOL)isAmountInputValid:(NSString *)input;

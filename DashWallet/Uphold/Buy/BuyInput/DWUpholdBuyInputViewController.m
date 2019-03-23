@@ -38,10 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @synthesize providedActions = _providedActions;
 
-+ (instancetype)controllerWithCard:(DWUpholdCardObject *)card account:(DWUpholdAccountObject *)account {
++ (instancetype)controllerWithDashCard:(DWUpholdCardObject *)dashCard fromCard:(DWUpholdCardObject *)card {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdBuyInputStoryboard" bundle:nil];
     DWUpholdBuyInputViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWUpholdBuyInputModel alloc] initWithCard:card account:account];
+    controller.model = [[DWUpholdBuyInputModel alloc] initWithDashCard:dashCard fromCard:card];
 
     return controller;
 }

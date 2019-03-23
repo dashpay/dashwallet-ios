@@ -17,7 +17,6 @@
 
 #import "DWUpholdBuyInputModel.h"
 
-#import "DWUpholdAccountObject.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
 #import "DWDecimalInputValidator.h"
@@ -28,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUpholdBuyInputModel ()
 
 @property (strong, nonatomic) id<DWInputValidator> inputValidator;
+@property (strong, nonatomic) DWUpholdCardObject *dashCard;
 @property (strong, nonatomic) DWUpholdCardObject *card;
-@property (strong, nonatomic) DWUpholdAccountObject *account;
 @property (assign, nonatomic) DWUpholdBuyInputModelState state;
 @property (nullable, weak, nonatomic) DWUpholdCancellationToken createTransactionCancellationToken;
 @property (nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
@@ -38,12 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWUpholdBuyInputModel
 
-- (instancetype)initWithCard:(DWUpholdCardObject *)card
-                     account:(DWUpholdAccountObject *)account {
+- (instancetype)initWithDashCard:(DWUpholdCardObject *)dashCard fromCard:(DWUpholdCardObject *)card {
     self = [super init];
     if (self) {
+        _dashCard = dashCard;
         _card = card;
-//        _account = account;
         _inputValidator = [[DWDecimalInputValidator alloc] init];
     }
     return self;
@@ -67,42 +65,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
-#warning todo here
+    // TODO: validate and input
 }
 
 - (void)createTransactionForAmount:(NSString *)amount cvc:(NSString *)cvc otpToken:(nullable NSString *)otpToken {
-    self.state = DWUpholdBuyInputModelStateLoading;
-
-    DWUpholdClient *client = [DWUpholdClient sharedInstance];
-    __weak typeof(self) weakSelf = self;
-    self.createTransactionCancellationToken =
-        [client createBuyTransactionForDashCard:self.card
-                                        account:self.account
-                                         amount:amount
-                                   securityCode:cvc
-                                       otpToken:otpToken
-                                     completion:^(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
-                                         __strong typeof(weakSelf) strongSelf = weakSelf;
-                                         if (!strongSelf) {
-                                             return;
-                                         }
-
-                                         strongSelf.createTransactionCancellationToken = nil;
-
-                                         strongSelf.transaction = transaction;
-
-                                         if (otpRequired) {
-                                             strongSelf.state = DWUpholdBuyInputModelStateOTP;
-                                         }
-                                         else {
-                                             if (transaction) {
-                                                 strongSelf.state = DWUpholdBuyInputModelStateSuccess;
-                                             }
-                                             else {
-                                                 strongSelf.state = DWUpholdBuyInputModelStateFail;
-                                             }
-                                         }
-                                     }];
+    // TODO: send API request
 }
 
 - (void)resetState {
