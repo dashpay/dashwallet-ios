@@ -397,15 +397,14 @@ static NSSet<NSString *> *FiatCurrencyCodes() {
     NSAssert([action isEqualToString:@"commit"] || [action isEqualToString:@"cancel"], @"Invalid action on transaction");
 
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions/%@/%@",
-                                                   @"6c6d1fea-7ed1-4417-9108-a2ac0252288e",
-                                                   //card.identifier,
+                                                   card.identifier,
                                                    transaction.identifier,
                                                    action];
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
     NSParameterAssert(url);
     HTTPRequest *httpRequest = [HTTPRequest requestWithURL:url
                                                     method:HTTPRequestMethod_POST
-                                                parameters:@{ @"securityCode" : @"123" }];
+                                                parameters:nil];
     if (otpToken) {
         [self authorizeHTTPRequest:httpRequest otpToken:otpToken];
     }
