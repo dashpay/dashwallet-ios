@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.activityIndicatorView startAnimating];
 
     if (@available(iOS 11.0, *)) {
-        self.authenticationSession = nil;
+//        self.authenticationSession = nil;
     }
     else {
         [self dismissViewControllerAnimated:YES completion:nil];
