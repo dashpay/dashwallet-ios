@@ -358,8 +358,6 @@
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
-		22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRUserDefaultsSwitchCell.h; sourceTree = "<group>"; };
-		22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRUserDefaultsSwitchCell.m; sourceTree = "<group>"; };
 		22F45A0F1C3329EB00B07A15 /* DWUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDefaultsConstants.h; sourceTree = "<group>"; };
 		27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testflight.xcconfig"; sourceTree = "<group>"; };
 		29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -1679,8 +1677,6 @@
 		FB43BC6F211B8A0E00BC9879 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				22F45A0C1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.h */,
-				22F45A0D1C3326CC00B07A15 /* BRUserDefaultsSwitchCell.m */,
 				FB43BC80211D96C500BC9879 /* DWTransactionTableViewCell.h */,
 				FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */,
 				FB43BC70211B8A5E00BC9879 /* DWActionTableViewCell.h */,

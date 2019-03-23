@@ -64,31 +64,22 @@ NS_ASSUME_NONNULL_BEGIN
     }
     
     NSString *decimalSeparator = self.decimalSeparator;
+    if ([string containsString:decimalSeparator] && [lastInputString containsString:decimalSeparator]) {
+        return nil;
+    }
+
     NSCharacterSet *resultStringSet = [NSCharacterSet characterSetWithCharactersInString:resultText];
-    
     BOOL stringIsValid = [self.validCharacterSet isSupersetOfSet:resultStringSet];
     if (!stringIsValid) {
         return nil;
     }
     
-    if ([string isEqualToString:decimalSeparator] && [lastInputString containsString:decimalSeparator]) {
-        return nil;
+    while (resultText.length > 1 && [resultText hasPrefix:@"0"]) {
+        resultText = [resultText substringFromIndex:1];
     }
     
-    if ([resultText isEqualToString:decimalSeparator]) {
-        resultText = [@"0" stringByAppendingString:decimalSeparator];
-        
-        return resultText;
-    }
-    
-    if (resultText.length == 2) {
-        NSString *zeroAndDecimalSeparator = [@"0" stringByAppendingString:decimalSeparator];
-        if ([[resultText substringToIndex:1] isEqualToString:@"0"] &&
-            ![resultText isEqualToString:zeroAndDecimalSeparator]) {
-            resultText = [resultText substringWithRange:NSMakeRange(1, 1)];
-            
-            return resultText;
-        }
+    if ([resultText hasPrefix:decimalSeparator]) {
+        resultText = [@"0" stringByAppendingString:resultText];
     }
     
     return resultText;
