@@ -150,11 +150,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)selectAllFunds {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    uint64_t allFunds = wallet.balance;
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
 
-    if (allFunds > 0) {
-        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allFunds];
+    if (allAvailableFunds > 0) {
+        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
         self.amountEnteredInLocalCurrency = nil;
         [self updateCurrentAmount];
     }
