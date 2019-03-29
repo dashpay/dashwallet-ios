@@ -216,9 +216,6 @@
 "email not configured" = "이메일이 설정되지 않았습니다.";
 
 /* No comment provided by engineer. */
-"enable" = "사용";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "향상된 기능 사용";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "요청 만료";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하나, 즉시 지불이 해제된 상태입니다.";
-
-/* No comment provided by engineer. */
 "rescan" = "재스캔";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "이 요청은 즉시 지불을 요구하고 있습니다. 그러나 귀하가 가진 인스턴트샌드가 요구하는 6회의 확인을 거친 입력값이 충분하지 않습니다. 판매자에게 일반 거래를 수락하도록 요청하거나 수 분 정도 기다려주십시오.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하나, 즉시 지불이 중지되었습니다";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "이 거래가 완료되는 데에는 수 분이 소요될 수 있습니다.";

@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DSPaymentProtocolDetails;
 
 typedef NS_ENUM(NSUInteger, DWAmountSendOptionsModelState) {
-    DWAmountSendOptionsModelStateNone,
+    DWAmountSendOptionsModelState_None,
     DWAmountSendOptionsModelState_Regular,
     DWAmountSendOptionsModelState_ProposeInstantSend,
     DWAmountSendOptionsModelState_AutoLocks,

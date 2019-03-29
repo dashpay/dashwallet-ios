@@ -216,9 +216,6 @@
 "email not configured" = "メールアドレスが設定されていません";
 
 /* No comment provided by engineer. */
-"enable" = "有効にする";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "高度な機能を有効にする";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "リクエストの有効期限切れました。";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "リクエストは即時支払い用ですが、あなたは即時支払いを無効にしています。";
-
-/* No comment provided by engineer. */
 "rescan" = "再スキャン";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金［インスタントセンド］に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "このリクエストには即時支払いが必要ですが、あなたは即時支払いを無効にしています。";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";

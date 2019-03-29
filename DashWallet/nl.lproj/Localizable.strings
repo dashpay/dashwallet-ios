@@ -216,9 +216,6 @@
 "email not configured" = "e-mail is niet ingesteld";
 
 /* No comment provided by engineer. */
-"enable" = "Inschakele";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Geavanceerde functies activeren";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "verzoek verlopen";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "het verzoek is voor een directe betaling maar je hebt directe betalingen uitgeschakeld";
-
-/* No comment provided by engineer. */
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "dit verzoek heeft een onmiddellijke betaling nodig maar onmiddellijke betalingen heb je uitgeschakeld";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "De afhandeling van deze transactie kan enkele minuten duren.";

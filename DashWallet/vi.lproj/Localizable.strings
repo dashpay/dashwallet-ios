@@ -216,9 +216,6 @@
 "email not configured" = "e-mail chưa được cấu hình";
 
 /* No comment provided by engineer. */
-"enable" = "enable";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Bật các tính năng nâng cao";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "yêu cầu đã hết hạn";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "yêu cầu này là dành cho giao dịch tức thời nhưng bạn đã tắt tính năng giao dịch tức thời";
-
-/* No comment provided by engineer. */
 "rescan" = "quét lại";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Yêu cầu này cần có một giao dịch tức thời nhưng bạn không có đủ đầu vào với 6 xác thực cần thiết cho InstantSend, bạn có thể phải hỏi người bán hàng xem có chấp nhận giao dịch thông thường hoặc phải đợi một vài phút.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "yêu cầu này cần một thanh toán tức thời nhưng bạn đã tắt chức năng thanh toán tức thời";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Giao dịch này cần mất vài phút để hoàn tất.";

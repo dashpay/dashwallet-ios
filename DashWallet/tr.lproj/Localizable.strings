@@ -216,9 +216,6 @@
 "email not configured" = "e-posta yapılandırılmadı";
 
 /* No comment provided by engineer. */
-"enable" = "etkinleştir";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "İleri seviye özellikleri etkinleştir";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "istek süresi bitti";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "bu istek anında ödeme için ama siz anında ödemeleri devredışı bıraktınız";
-
-/* No comment provided by engineer. */
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "bu istek bir anında ödeme gerektiriyor ama siz anında ödemeleri devredışı bıraktınız";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "İşlemin tamamlanması birkaç dakika sürebilir.";

@@ -216,9 +216,6 @@
 "email not configured" = "ไม่ได้กำหนดค่าอีเมล์";
 
 /* No comment provided by engineer. */
-"enable" = "ทำให้สามารถ";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "เปิดใช้งานคุณลักษณะขั้นสูง";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "คำขอหมดอายุ";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "คำขอเพื่อการชำระเงินทันที แต่คุณได้ยกเลิกการชำระทันทีแล้ว";
-
-/* No comment provided by engineer. */
 "rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณได้ยกเลิกการชำระเงินทันที";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ";

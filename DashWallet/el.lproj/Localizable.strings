@@ -216,9 +216,6 @@
 "email not configured" = "η διεύθυνση ηλεκτρονικού ταχυδρομείου δεν έχει ρυθμιστεί";
 
 /* No comment provided by engineer. */
-"enable" = "enable";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "το αίτημα έληξε";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
-
-/* No comment provided by engineer. */
 "rescan" = "επανάληψη της σάρωσης";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";

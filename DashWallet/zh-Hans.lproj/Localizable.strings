@@ -216,9 +216,6 @@
 "email not configured" = "电子邮件尚未配置";
 
 /* No comment provided by engineer. */
-"enable" = "激活";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "请求已过期";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "交易请求需要即时支付交易，但你已关闭了即时支付功能";
-
-/* No comment provided by engineer. */
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此请求需要即时付款, 但您没有足够6次确认的交易输入来进行即时发送. 您可以询问商家接受普通付款, 或等待几分钟.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "此请求需要即时付款, 但您已禁用了即时支付功能";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";

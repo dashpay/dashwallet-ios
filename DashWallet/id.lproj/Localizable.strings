@@ -216,9 +216,6 @@
 "email not configured" = "email tidak dikonfigurasi";
 
 /* No comment provided by engineer. */
-"enable" = "aktifkan";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Aktifkan fitur lanjutan";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "permintaan telah kedaluwarsa";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "permintaan untuk pembayaran instan tetapi Anda telah menonaktifkan pembayaran instan";
-
-/* No comment provided by engineer. */
 "rescan" = "memindai ulang";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Permintaan ini memerlukan pembayaran instan tetapi Anda tidak memiliki cukup masukan dengan 6 konfirmasi yang diperlukan oleh InstantSend, Anda dapat meminta pedagang untuk menerima transaksi normal atau menunggu beberapa menit.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "permintaan ini memerlukan pembayaran instan tetapi anda telah menonaktifkan pembayaran instan";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Transaksi ini mungkin perlu beberapa menit untuk diselesaikan.";

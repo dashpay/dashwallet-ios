@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
     if (amount == 0) {
-        self.state = DWAmountSendOptionsModelStateNone;
+        self.state = DWAmountSendOptionsModelState_None;
 
         return;
     }

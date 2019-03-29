@@ -216,9 +216,6 @@
 "email not configured" = "email no configurado";
 
 /* No comment provided by engineer. */
-"enable" = "habilitar";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Habilitar funciones avanzadas";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "solicitud expirada";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "la solicitud es para un pago instantáneo pero usted desactivó los pagos instantáneos";
-
-/* No comment provided by engineer. */
 "rescan" = "escanear de nuevo";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esta petición requiere un pago instantáneo pero no cuentas con las 6 confirmaciones necesarias para hacer InstantSend, puedes pedirle al negocio que reciba una transacción normal o esperar unos minutos.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "Esta petición requiere un pago instantáneo pero tienes los pagos instantáneos dehabilitados";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Esta transacción puede tardar varios minutos en liquidarse.";

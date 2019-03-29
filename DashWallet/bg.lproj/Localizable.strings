@@ -216,9 +216,6 @@
 "email not configured" = "имейл адресът не е конфигуриран ";
 
 /* No comment provided by engineer. */
-"enable" = "включено";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Включване на разширените функции";
 
 /* No comment provided by engineer. */
@@ -480,9 +477,6 @@
 "request expired" = "изтекло искане";
 
 /* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "искането е за  instant payment, но вашите instant payments са изключени";
-
-/* No comment provided by engineer. */
 "rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */
@@ -598,9 +592,6 @@
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "тази заявка изисква мигновено плащане, но Вие сте изключили мигновените плащанията";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Тази транзакция може да отнеме няколко минути, за да приключи.";

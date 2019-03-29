@@ -128,7 +128,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         [self mvvm_observe:@"model.sendingOptions.state" with:^(__typeof(self) self, NSNumber * value) {
             DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
             switch (state) {
-                case DWAmountSendOptionsModelStateNone: {
+                case DWAmountSendOptionsModelState_None: {
                     break;
                 }
                 case DWAmountSendOptionsModelState_Regular: {
@@ -154,7 +154,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             }
 
             [UIView animateWithDuration:0.15 animations:^{
-                CGFloat alpha = state == DWAmountSendOptionsModelStateNone ? 0.0 : 1.0;
+                CGFloat alpha = state == DWAmountSendOptionsModelState_None ? 0.0 : 1.0;
                 self.infoStackView.alpha = alpha;
             }];
         }];
@@ -268,8 +268,8 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             break;
         }
         case DWAmountInputIntentSend: {
-            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:shouldUseInstantSend:)],
-                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:shouldUseInstantSend:");
+            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:)],
+                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:");
 
             // Workaround:
             // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
@@ -280,7 +280,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.delegate amountViewController:self
                                      didInputAmount:self.model.amount.plainAmount
-                               shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
+                 wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)  usedInstantSend:self.model.sendingOptions.useInstantSend];
 
                 self.view.userInteractionEnabled = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
