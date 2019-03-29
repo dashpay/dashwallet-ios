@@ -131,13 +131,13 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
                 case DWAmountSendOptionsModelStateNone: {
                     break;
                 }
-                case DWAmountSendOptionsModelStateRegular: {
+                case DWAmountSendOptionsModelState_Regular: {
                     self.instantSendSwitch.hidden = YES;
                     self.infoLabel.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
 
                     break;
                 }
-                case DWAmountSendOptionsModelStateInstantSend: {
+                case DWAmountSendOptionsModelState_ProposeInstantSend: {
                     self.instantSendSwitch.hidden = NO;
                     NSString *instantSendFee = self.model.sendingOptions.instantSendFee;
                     NSParameterAssert(instantSendFee);
@@ -145,7 +145,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
                     break;
                 }
-                case DWAmountSendOptionsModelStateAutoLocks: {
+                case DWAmountSendOptionsModelState_AutoLocks: {
                     self.instantSendSwitch.hidden = YES;
                     self.infoLabel.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
 
