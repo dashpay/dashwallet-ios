@@ -434,6 +434,8 @@ static NSString *sanitizeString(NSString *s)
     NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
     BOOL addressIsFromPasteboard = [[UIPasteboard generalPasteboard].string isEqual:address];
     
+    __block BOOL displayedSentMessage = FALSE;
+    
     [chainManager.transactionManager confirmProtocolRequest:protoReq forAmount:self.amount fromAccount:account acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         if (additionalInfoRequestType == DSRequestingAdditionalInfo_Amount) {
             self.request = protoReq;
@@ -489,114 +491,50 @@ static NSString *sanitizeString(NSString *s)
             }
         }
         return TRUE;
-    } publishedCompletion:^(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL waiting, BOOL sent) {
-        if (error) {
-            if (! waiting && ! sent) {
-                UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                             message:error.localizedDescription
-                                             preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                               
-                                           }];
-                [alert addAction:okButton];
-                [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                [self cancel:nil];
+    } publishedCompletion:^(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL sent) {
+        if (sent) {
+            if (tx.associatedShapeshift) {
+                [self startObservingShapeshift:tx.associatedShapeshift];
+                
             }
-        } else {
-            if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
-                if (tx.associatedShapeshift) {
-                    [self startObservingShapeshift:tx.associatedShapeshift];
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
+                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                                   popOutAfterDelay:2.0]];
+            [[DWEnvironment sharedInstance] playPingSound];
+            
+            displayedSentMessage = TRUE;
+            if (self.request.callbackScheme) {
+                NSURL * callback = [NSURL URLWithString:[self.request.callbackScheme
+                                                         stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
+                                                         [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                                              length:sizeof(UInt256)].reverse]]];
+                [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
                     
-                }
-                sent = YES;
-                tx.timestamp = [NSDate timeIntervalSince1970];
-                [account registerTransaction:tx];
-                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
-                                                            center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                       popOutAfterDelay:2.0]];
-                [[DWEnvironment sharedInstance] playPingSound];
-                
-                
-                if (self.request.callbackScheme) {
-                    NSURL * callback = [NSURL URLWithString:[self.request.callbackScheme
-                                                             stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
-                                                             [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                                                  length:sizeof(UInt256)].reverse]]];
-                    [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
-                        
-                    }];
-                }
-                
-                [self reset:nil];
+                }];
             }
             
-            waiting = NO;
-            
-            if (self.request.details.paymentURL.length > 0) {
-                uint64_t refundAmount = 0;
-                NSMutableData *refundScript = [NSMutableData data];
-                DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
-                [refundScript appendScriptPubKeyForAddress:account.receiveAddress forChain:[DWEnvironment sharedInstance].currentChain];
-                
-                for (NSNumber *amt in self.request.details.outputAmounts) {
-                    refundAmount += amt.unsignedLongLongValue;
-                }
-                
-                // TODO: keep track of commonName/memo to associate them with outputScripts
-                DSPaymentProtocolPayment *payment =
-                [[DSPaymentProtocolPayment alloc] initWithMerchantData:self.request.details.merchantData
-                                                          transactions:@[tx] refundToAmounts:@[@(refundAmount)] refundToScripts:@[refundScript] memo:nil onChain:[DWEnvironment sharedInstance].currentChain];
-                
-                NSLog(@"posting payment to: %@", self.request.details.paymentURL);
-                
-                [DSPaymentRequest postPayment:payment scheme:@"dash" to:self.request.details.paymentURL onChain:[DWEnvironment sharedInstance].currentChain timeout:20.0
-                                   completion:^(DSPaymentProtocolACK *ack, NSError *error) {
-                                       dispatch_async(dispatch_get_main_queue(), ^{
-                                           if (error) {
-                                               if (! waiting && ! sent) {
-                                                   UIAlertController * alert = [UIAlertController
-                                                                                alertControllerWithTitle:@""
-                                                                                message:error.localizedDescription
-                                                                                preferredStyle:UIAlertControllerStyleAlert];
-                                                   UIAlertAction* okButton = [UIAlertAction
-                                                                              actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                              style:UIAlertActionStyleCancel
-                                                                              handler:^(UIAlertAction * action) {
-                                                                                  
-                                                                              }];
-                                                   [alert addAction:okButton];
-                                                   [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-                                                   [self cancel:nil];
-                                               }
-                                           }
-                                           else if (! sent) {
-                                               tx.timestamp = [NSDate timeIntervalSince1970];
-                                               [account registerTransaction:tx];
-                                               [self.view addSubview:[[[BRBubbleView
-                                                                        viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
-                                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                                                      popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
-                                               [[DWEnvironment sharedInstance] playPingSound];
-                                               if (self.request.callbackScheme) {
-                                                   NSURL * callback = [NSURL URLWithString:[self.request.callbackScheme
-                                                                                            stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
-                                                                                            [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
-                                                                                                                                 length:sizeof(UInt256)].reverse]]];
-                                                   [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
-                                                       
-                                                   }];
-                                               }
-                                               
-                                               [self reset:nil];
-                                           }
-                                       });
-                                   }];
+            [self reset:nil];
+        }
+    } requestRelayCompletion:^(DSTransaction * _Nonnull tx, DSPaymentProtocolACK * _Nonnull ack, BOOL relayedToServer) {
+        if (relayedToServer) {
+            if (!displayedSentMessage) {
+                [self.view addSubview:[[[BRBubbleView
+                                         viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
+                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                                       popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
+                [[DWEnvironment sharedInstance] playPingSound];
+            }
+            if (protoReq.callbackScheme) {
+                NSURL * callback = [NSURL URLWithString:[protoReq.callbackScheme
+                                                         stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",address,
+                                                         [NSString hexWithData:[NSData dataWithBytes:tx.txHash.u8
+                                                                                              length:sizeof(UInt256)].reverse]]];
+                [[UIApplication sharedApplication] openURL:callback options:@{} completionHandler:^(BOOL success) {
+                    
+                }];
             }
         }
+        [self reset:nil];
     } errorNotificationBlock:^(NSString * _Nonnull errorTitle, NSString * _Nonnull errorMessage, BOOL shouldCancel) {
         if (errorTitle || errorMessage) {
             UIAlertController * alert = [UIAlertController
