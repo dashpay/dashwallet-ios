@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n需要一個裝置密碼來保護你的錢包。請到設置並打開密碼才能繼續。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n位址已被使用\n達世幣位址僅供一次性使用\n\n重複使用位址降低你和收款人的私隱度，如果收款人沒有直接控制位址位的話可能導致損失";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n容許使用照相機\n設立->私隱->照相機->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "你確定嗎?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "錯誤付款請求";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "錯誤恢復詞組";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "比特幣位址 (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "比特幣付款不能低於 %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d 中 #%1$d 的區塊";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "達世幣付款不能低於 %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "達世幣交易的輸出不能少於 %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "設備的安全性已經受到損害\n任何'越獄'的應用程序可以訪問任何其他應用程序的數據鑰匙扣 (和竊取你的達世幣的)。";
 
 /* No comment provided by engineer. */
@@ -226,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "輸入";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "簽署達世幣交易時發生錯誤";
 
 /* No comment provided by engineer. */
 "exit" = "退出";
@@ -271,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "在以前版本的達世幣錢包中，當最初在此設備上顯示您的密碼詞組時，我們已確定此應用程序未正確顯示所有12個種子字。 請再次寫下您的完整密碼詞組。";
-
-/* No comment provided by engineer. */
-"instant payment" = "即時付款";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時到帳需要足夠的輸入和6次確認的資金，以正常交易發送出去嗎?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "餘額不足";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "餘額不足以支付達世幣的網絡費用";
 
 /* No comment provided by engineer. */
 "INVALID" = "無效";
@@ -366,10 +339,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"OK" = "好";
+"ok" = "確定";
 
 /* No comment provided by engineer. */
-"ok" = "確定";
+"OK" = "好";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -396,9 +369,6 @@
 "Pay" = "付款";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "收款人身份未經認證";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -417,10 +387,10 @@
 "pending" = "處理中";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"Please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "請將手機放在NFC設備附近。";
@@ -459,9 +429,6 @@
 "recovery phrase must have %d words" = "恢復詞組必須包含 %d 個字";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "降低付款金額\n%1$@ (%2$@) 嗎?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
@@ -474,9 +441,6 @@
 "request an amount" = "請求金額";
 
 /* No comment provided by engineer. */
-"request expired" = "請求已經過期";
-
-/* No comment provided by engineer. */
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
@@ -487,9 +451,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "重置";
-
-/* No comment provided by engineer. */
-"retry" = "重試";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
@@ -505,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "被%2$d中%1$d的節點看到";
-
-/* No comment provided by engineer. */
-"send" = "發送";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "從這個私鑰發送%1$@ (%2$@) 到你的錢包嗎 ？達世幣網絡將收取 %3$@ (%4$@) 的費用。";
@@ -588,12 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "這是你的達世幣餘額。達世幣是一種貨幣。匯率隨著市場變化。";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "此付款位址已在你的錢包中";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此請求需要即時付款，即時發送需要6次確認的資金，而你沒有足夠的輸入資金來完成，您可以要求商家接受正常交易或等待幾分鐘。";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
 
 /* No comment provided by engineer. */
@@ -643,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "未知的位址";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "無法識別的位址";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "不支援的或損毀的文件";

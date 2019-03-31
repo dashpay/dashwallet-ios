@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\ndash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "Weet je het zeker?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "foutief betaalverzoek";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "onjuiste herstelzin";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin-adres (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin-betalingen mogen niet minder bedragen dan %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d van %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "dash-betalingen mogen niet minder bedragen dan %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash-transactierestanten mogen niet minder bedragen dan %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen).";
 
 /* No comment provided by engineer. */
@@ -226,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "voer in";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "fout bij het ondertekenen van de dash-transactie";
 
 /* No comment provided by engineer. */
 "exit" = "sluit af";
@@ -271,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In de vorige versie van Dashwallet, waar aanvankelijk de herstelzin werd getoond, hebben we geconstateerd dat de 12 herstelwoorden niet correct werden weergegeven. Schrijf daarom de herstel zin opnieuw op.";
-
-/* No comment provided by engineer. */
-"instant payment" = "directe betaling";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "saldo niet toereikend";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "saldo niet toereikend voor de dash-netwerkvergoeding";
 
 /* No comment provided by engineer. */
 "INVALID" = "ONGELDIG";
@@ -366,10 +339,10 @@
 "not voter" = "geen stemrecht";
 
 /* No comment provided by engineer. */
-"OK" = "Oké";
+"ok" = "oké";
 
 /* No comment provided by engineer. */
-"ok" = "oké";
+"OK" = "Oké";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
@@ -396,9 +369,6 @@
 "Pay" = "Betaal";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "de betaler-identiteit is niet gecertificeerd";
-
-/* No comment provided by engineer. */
 "payload:" = "lading:";
 
 /* No comment provided by engineer. */
@@ -417,10 +387,10 @@
 "pending" = "in wachtrij";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
+"please enter pin to upgrade wallet" = "voer je pincode in om de wallet bij te werken";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "voer je pincode in om de wallet bij te werken";
+"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
@@ -459,9 +429,6 @@
 "recovery phrase must have %d words" = "de herstelzin moet %d woorden bevatten";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "Registratie tx:";
 
 /* No comment provided by engineer. */
@@ -474,9 +441,6 @@
 "request an amount" = "verzoek een bedrag";
 
 /* No comment provided by engineer. */
-"request expired" = "verzoek verlopen";
-
-/* No comment provided by engineer. */
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
@@ -487,9 +451,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "herstel";
-
-/* No comment provided by engineer. */
-"retry" = "probeer opnieuw";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar dash adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
@@ -505,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "gezien door %1$d van %2$d peers";
-
-/* No comment provided by engineer. */
-"send" = "verstuur";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) verstueren van deze persoonlijke sleutel naar jouw portemonnee? Het dash-netwerk zal een vergoeding krijgen van %3$@ (%4$@).";
@@ -588,12 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Dit is je dash-saldo. Dash is een valuta. De wisselkoers wijzigt conform de markt.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "dit betaaladres staat al in je portemonnee";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "De afhandeling van deze transactie kan enkele minuten duren.";
 
 /* No comment provided by engineer. */
@@ -643,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "onbekend adres";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "adres niet herkend";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "niet-ondersteund of corrupt document";
