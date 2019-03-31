@@ -474,7 +474,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:error.localizedDescription
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:DSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"ok", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            
