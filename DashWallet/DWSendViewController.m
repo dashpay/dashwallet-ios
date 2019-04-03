@@ -1109,6 +1109,7 @@ static NSString *sanitizeString(NSString *s)
         self.sendInstantly = usedInstantSend;
         [[NSUserDefaults standardUserDefaults] setBool:usedInstantSend forKey:SEND_INSTANTLY_KEY];
     }
+    [self.request updateForRequestsInstantSend:usedInstantSend requiresInstantSend:self.request.requiresInstantSend];
     [self confirmProtocolRequest:self.request];
 }
 
