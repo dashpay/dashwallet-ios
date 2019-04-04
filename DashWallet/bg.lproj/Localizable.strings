@@ -270,7 +270,7 @@
 "Load more" = "Зареди още";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with instant send" = "заключена с instant send";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode притежаван адрес";
@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "сканирайте повторно блокверигата ако мислите, че може да има липсващи транзакции или трудности при изпращане (повторното сканиране може да отнеме няколко минути)";
 
 /* No comment provided by engineer. */
 "reset" = "изчистване";

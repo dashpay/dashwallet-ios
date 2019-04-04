@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "κάντε επανάληψη της σάρωσης της αλυσίδας των μπλόκ αν νομίζετε ότι μπορεί να έχετε συναλλαγές που λείπουν ή άν έχετε προβλήματα αποστολής (η νέα σάρωση μπορεί να πάρει αρκετά λεπτά)";
 
 /* No comment provided by engineer. */
 "reset" = "επαναφορά";

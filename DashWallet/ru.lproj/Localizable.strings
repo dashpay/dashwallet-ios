@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Пересканировать цепочку блоков";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Пересканировать цепочку блоков, если вы считаете, что могли пропустить транзакцию или возникли проблемы с отправкой (повторное сканирование может занять несколько минут)";
 
 /* No comment provided by engineer. */
 "reset" = "Сбросить";

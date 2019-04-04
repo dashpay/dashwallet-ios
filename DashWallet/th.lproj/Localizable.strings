@@ -447,7 +447,7 @@
 "Rescan blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "สแกน blockchain อีกครั้ง ถ้าคุณคิดว่าอาจธุรกรรมอาจกำลังจะหายหรือกำลังมีปัญหาในการส่ง (การสแกนใหม่อาจใช้เวลาหลายนาที)";
 
 /* No comment provided by engineer. */
 "reset" = "รีเซ็ต";

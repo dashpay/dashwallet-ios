@@ -447,7 +447,7 @@
 "Rescan blockchain" = "memindai ulang blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "pindai ulang blockchain jika Anda merasa telah kehilangan transaksi, atau mengalami masalah pengiriman (proses ulang dapat memakan waktu beberapa menit)";
 
 /* No comment provided by engineer. */
 "reset" = "atur ulang";

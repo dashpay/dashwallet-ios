@@ -447,7 +447,7 @@
 "Rescan blockchain" = "إعادة فحص بلوكشين";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "إعادة فحص بلوكشين إذا كنت تعتقد أن لديك معاملات مفقودة ، أو تواجه مشكلة في الإرسال (يمكن أن تستغرق إعادة الفحص عدة دقائق)";
 
 /* No comment provided by engineer. */
 "reset" = "إعادة تعيين";
