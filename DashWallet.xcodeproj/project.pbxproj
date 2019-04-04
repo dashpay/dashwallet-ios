@@ -125,6 +125,7 @@
 		FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
 		FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */; };
+		FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB4FA9C222505DD60060B017 /* AudioToolbox.framework */; };
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
@@ -599,6 +600,7 @@
 		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB4AB41721CA760E001CC324 /* DWStoryboardSegueWithCompletion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStoryboardSegueWithCompletion.h; sourceTree = "<group>"; };
 		FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStoryboardSegueWithCompletion.m; sourceTree = "<group>"; };
+		FB4FA9C222505DD60060B017 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		FB586CB4213D5EF600836ACC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB6213D5F8200836ACC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CBA213D607500836ACC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Interface.strings"; sourceTree = "<group>"; };
@@ -658,6 +660,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
 				FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */,
 				FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */,
 				FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */,
@@ -951,6 +954,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FB4FA9C222505DD60060B017 /* AudioToolbox.framework */,
 				FBEF3AED2182395800917AB6 /* DashSync.framework */,
 				FB248B621F79BB7C00405AE0 /* SafariServices.framework */,
 				FB248B5C1F73803100405AE0 /* UserNotifications.framework */,

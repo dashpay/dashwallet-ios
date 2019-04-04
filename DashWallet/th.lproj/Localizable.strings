@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nการตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ  เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nที่อยู่ที่ถูกใช้แล้ว\nที่อยู่ dash มีไว้ใช้งานได้เพียงครั้งเดียว\n\nการใช้ซ้ำจะทำให้ความเป็นส่วนตัวทั้งของคุณและผู้รับลดน้อยลงและสามารถเกิดความเสียหายได้ ถ้าผู้รับไม่สามารถควบคุมที่อยู่ได้";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nอนุญาติการเข้าถึงกล้องถ่ายรูป\nการตั้งค่า->ความเป็นส่วนตัว->กล้องถ่ายรูป->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "ใบชำระเงินไม่ถูกต้อง";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "ที่อยู่ Bitcoin  (shapshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "ใบชำระเงิน Bitcoin ไม่สามารถน้อยกว่า %@ ได้";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "รายการธุรกรรม dash ไม่สามารถน้อยกว่า %@  ได้";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น  สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )";
 
 /* No comment provided by engineer. */
@@ -216,9 +204,6 @@
 "email not configured" = "ไม่ได้กำหนดค่าอีเมล์";
 
 /* No comment provided by engineer. */
-"enable" = "ทำให้สามารถ";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "เปิดใช้งานคุณลักษณะขั้นสูง";
 
 /* No comment provided by engineer. */
@@ -229,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "เข้าสู่";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าธุรกรรม dash";
 
 /* No comment provided by engineer. */
 "exit" = "ออก";
@@ -274,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "ใน Dashwallet เวอร์ชันก่อนหน้านี้ เมื่อข้อความรหัสผ่านของคุณแสดงตอนแรกบนอุปกรณ์นี้ แอปนี้ไม่ได้แสดงคำทั้งหมด 12 ตัวอย่างถูกต้อง  โปรดเขียนข้อความรหัสผ่านที่ครบถ้วนอีกครั้ง";
-
-/* No comment provided by engineer. */
-"instant payment" = "ชำระเงินด่วน";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "การส่งด่วนจะต้องใช้ข้อมูลยืนยัน 6 รายการ , ต้องการส่งแบบธรรมดาหรือไม่?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "ยอดเงินไม่เพียงพอ";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "ยอดเงินไม่เพียงพอสำหรับค่าธรรมเนียมเครือข่าย dash";
 
 /* No comment provided by engineer. */
 "INVALID" = "ไม่ถูกต้อง";
@@ -369,10 +339,10 @@
 "not voter" = "ไม่ใช่ผู้โหวต";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "โอเค";
 
 /* No comment provided by engineer. */
-"ok" = "โอเค";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
@@ -399,9 +369,6 @@
 "Pay" = "จ่ายเงิน";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -420,10 +387,10 @@
 "pending" = "อยู่ระหว่างดำเนินการ";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
+"please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
+"Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
@@ -462,9 +429,6 @@
 "recovery phrase must have %d words" = "วลีกู้คืนต้องมี คำ %d";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "ลงทะเบียน tx:";
 
 /* No comment provided by engineer. */
@@ -477,12 +441,6 @@
 "request an amount" = "ขอวงเงิน";
 
 /* No comment provided by engineer. */
-"request expired" = "คำขอหมดอายุ";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "คำขอเพื่อการชำระเงินทันที แต่คุณได้ยกเลิกการชำระทันทีแล้ว";
-
-/* No comment provided by engineer. */
 "rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
@@ -493,9 +451,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "รีเซ็ต";
-
-/* No comment provided by engineer. */
-"retry" = "ลองใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อรับที่อยู่ dash ของพวกเขา คุณสามารถส่งการชำระเงินให้กับทุกคนที่มีที่อยู่ได้";
@@ -511,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "เห็นแล้ว %1$d ของ %2$d ผู้ปล่อย ";
-
-/* No comment provided by engineer. */
-"send" = "send";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "ส่ง %1$@(%2$@) จากคีย์ส่วนตัวนี้ไปยัง wallet ของคุณหรือไม่?  เครือข่าย dash จะได้รับค่าธรรมเนียมของ %3$@ (%4$@)";
@@ -594,15 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "นี่คือยอดเงิน dash ทั้งหมดของคุณ  Dash เป็นสกุลเงิน อัตราแลกเปลี่ยนมีการเปลี่ยนแปลงกับตลาด";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "ที่อยู่การชำระเงินนี้อยู่ใน wallet ของคุณแล้ว";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณได้ยกเลิกการชำระเงินทันที";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "ธุรกรรมนี้อาจใช้เวลาหลายนาทีในการชำระ";
 
 /* No comment provided by engineer. */
@@ -652,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "ไม่พบที่อยู่";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "ที่อยู่ที่ไม่รู้จัก";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "เอกสารไม่รองรับหรือเสียหาย";

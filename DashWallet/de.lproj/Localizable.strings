@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEin Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "ADRESSE WIRD BEREITS VERWENDET\nDash-Adressen sind für einmalige Verwendung gedacht\n\nWiederverwendungen schränken deine Privatsphäre sowie die des Empfängers ein und kann zum Verlust führen, falls der Empfänger seine Adresse nicht selbst verwaltet";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nZugriff auf Kamera erlauben in\nEinstellungen->Datenschutz->Kamera->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "Sind Sie sicher?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "fehlerhafte Zahlungsanforderung";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "fehlerhafte Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin Adresse (Shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Bitcoin Zahlungen dürfen nicht geringer sein als %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Block #%1$d von %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "Dash-Zahlungen können nicht kleiner als %@ sein";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "Dash-Transaktions-Ausgänge können nicht kleiner als %@ sein";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "GERÄTESICHERHEIT KOMPROMITTIERT\nJede 'Jailbreak'-App kann auf die Schlüsselbund-Daten jeder anderen App zugreifen (und so Ihre Dash stehlen).";
 
 /* No comment provided by engineer. */
@@ -216,9 +204,6 @@
 "email not configured" = "E-Mail ist nicht konfiguriert";
 
 /* No comment provided by engineer. */
-"enable" = "Erlauben";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Erweiterte Funktionen aktivieren";
 
 /* No comment provided by engineer. */
@@ -229,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "Eingabe";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "Fehler beim Signieren der Dash-Transaktion";
 
 /* No comment provided by engineer. */
 "exit" = "Beenden";
@@ -274,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Wir haben festgestellt, dass die 12 Worte der Passphrase in einer vorherigen Version der Wallet nicht korrekt dargestellt wurden. Schreiben Sie die vollständige Passphrase bitte erneut ab.";
-
-/* No comment provided by engineer. */
-"instant payment" = "Instant Zahlung";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend erfordert ausreichend Inputs mit 6 Bestätigungen. Dennoch als Standard-Transaktion senden?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "Guthaben nicht ausreichend";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "Unzureichendes Guthaben für die Transaktionsgebühr";
 
 /* No comment provided by engineer. */
 "INVALID" = "UNGÜLTIG";
@@ -369,10 +339,10 @@
 "not voter" = "nicht Wähler";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "Ok";
 
 /* No comment provided by engineer. */
-"ok" = "Ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Aktiviere erweiterte Funktionen nur dann, wenn du mit Blockchain-Technologie vertraut bist.\nVerwende nur erweiterte Funktionen, deren Effekte für dich verständlich sind.";
@@ -399,9 +369,6 @@
 "Pay" = "Zahlen";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "Identität des Zahlenden ist nicht beglaubigt";
-
-/* No comment provided by engineer. */
 "payload:" = "Payload:";
 
 /* No comment provided by engineer. */
@@ -420,10 +387,10 @@
 "pending" = "vorbehaltlich";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "PIN eingeben zum upgraden der Wallet";
+"please enter pin to upgrade wallet" = "PIN eingeben für Wallet Upgrade";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "PIN eingeben für Wallet Upgrade";
+"Please enter pin to upgrade wallet" = "PIN eingeben zum upgraden der Wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Bitte halte dein Telefon nahe an das NFC-Gerät.";
@@ -462,9 +429,6 @@
 "recovery phrase must have %d words" = "Wiederherstellungs-Wortfolge muss %d Wörter haben";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "Zahlung reduzieren um\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "Registrations-TX";
 
 /* No comment provided by engineer. */
@@ -477,12 +441,6 @@
 "request an amount" = "einen Betrag anfordern";
 
 /* No comment provided by engineer. */
-"request expired" = "Anfrage abgelaufen";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "Dies ist eine Zahlungsanforderung für InstantSend. Dieses ist jedoch deaktiviert.";
-
-/* No comment provided by engineer. */
 "rescan" = "Erneut scannen";
 
 /* No comment provided by engineer. */
@@ -493,9 +451,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "Zurücksetzen";
-
-/* No comment provided by engineer. */
-"retry" = "retry";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
@@ -511,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
-
-/* No comment provided by engineer. */
-"send" = "Senden";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel an Ihr Wallet senden? Das Dash-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
@@ -594,15 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Dies ist Ihr Dash-Guthaben. Dash ist eine Währung. Der Wechselkurs ändert sich mit dem Markt.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "Diese Zahlungsadresse ist bereits in Ihrem Wallet";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Diese Anfrage verlangt nach einer sofortigen Zahlung, Sie haben jedoch nicht genügend Eingaben mit 6 Bestätigungen, die für InstantSend notwendig sind, Sie können den Händler darum bitten, dass er eine normale Transaktion akzeptiert oder ein paar Minuten wartet.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "Dies ist eine Zahlungsanforderung für InstantSend, Sie haben jedoch InstantSend deaktiviert.";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Diese Transaktion wird nach mehreren Minuten abgeschlossen sein.";
 
 /* No comment provided by engineer. */
@@ -652,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "unbekannte Adresse";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "nicht erkannte Adresse";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "nicht unterstütztes oder beschädigtes Dokument";
