@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nيجيب إضافة رقم مرور الجهاز لحماية محفظتك. انتقل إلى الإعدادات وشغِّل رقم المرور للمتابعة";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nهذا العنوان مستخدم من قبل \nعناوين داش مخصصة للاستخدام مرة واحدة فقط\n\nإعادة الاستخدام يقلل من الخصوصية لك وللمتلقي ويمكن أن يؤدي إلى الخسارة إذا كان المستلم لا يتحكم مباشرة في العنوان";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nالسماح بالدخول إلى الكاميرا\nالإعدادات->الخصوصية->الكاميرا->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "هل انت متأكد ؟ ";
 
 /* No comment provided by engineer. */
-"bad payment request" = "طلب دفع سيئة";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "كلمة الإستراد سيئة";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "عنوان داش ( التحويل )";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "لا يمكن أن تكون المدفوعات داش أقل من %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "كتلة # %1$d من %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "لا يمكن أن تكون دفعات الداش أقل من %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "لا يمكن أن تكون مخرجات معاملات داش أقل من %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "تسوية أمان الجهاز\nيمكن لأي تطبيق \"جيلبريك\" الوصول إلى بيانات التطبيق الآخر (وسرقة رصيدك في داش).";
 
 /* No comment provided by engineer. */
@@ -216,9 +204,6 @@
 "email not configured" = "البريد الإلكتروني لم يتم تكوينه";
 
 /* No comment provided by engineer. */
-"enable" = "متاح";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
 
 /* No comment provided by engineer. */
@@ -229,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "أدخل";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "خطأ في تسجيل صفقة داش";
 
 /* No comment provided by engineer. */
 "exit" = "خروج";
@@ -274,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "في إصدار سابق من محفظة الداش ، عند عرض عبارة المرور الخاصة بك على هذا الجهاز في البداية ، قررنا أن هذا التطبيق لم يعرض جميع كلمات الإسترجاع الـ 12 بشكل صحيح. يرجى كتابة كلمة المرور كاملة مرة أخرى.";
-
-/* No comment provided by engineer. */
-"instant payment" = "الدفع الفوري";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "إرسال فوري يتطلب مدخلات كافية مع 6 تأكيدات ، وإرسال على أي حال كمعاملة عادية؟";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "رصيد غير كاف";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "أموال غير كافية لرسوم الشبكة داش";
 
 /* No comment provided by engineer. */
 "INVALID" = "غير صالحة";
@@ -369,10 +339,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"OK" = "حسنا";
+"ok" = "حاضر";
 
 /* No comment provided by engineer. */
-"ok" = "حاضر";
+"OK" = "حسنا";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -399,9 +369,6 @@
 "Pay" = "دفع";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "هوية المدفوع لأمره غير معتمدة";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -420,10 +387,10 @@
 "pending" = "قيد الانتظار";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "يرجى إدخال الرقم السري لترقية المحفظة";
+"please enter pin to upgrade wallet" = "يرجى إدخال رقم سري  لترقية المحفظة";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "يرجى إدخال رقم سري  لترقية المحفظة";
+"Please enter pin to upgrade wallet" = "يرجى إدخال الرقم السري لترقية المحفظة";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "يرجى وضع هاتفك بالقرب من جهاز NFC.";
@@ -462,9 +429,6 @@
 "recovery phrase must have %d words" = "استرجاع الكلمة يجب ان تكون %d كلمات";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "تقليل مبلغ الدفع بواسطة\n%1$@ (%2$@)؟";
-
-/* No comment provided by engineer. */
 "registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
@@ -477,25 +441,16 @@
 "request an amount" = "طلب مبلغ";
 
 /* No comment provided by engineer. */
-"request expired" = "طلب منتهي الصلاحية";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "طلب الدفع الفوري ولكنك قمت بتعطيل المدفوعات الفورية";
-
-/* No comment provided by engineer. */
 "rescan" = "إعادة تفحص";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "إعادة فحص بلوكشين";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "إعادة فحص بلوكشين إذا كنت تعتقد أن لديك معاملات مفقودة ، أو تواجه مشكلة في الإرسال (يمكن أن تستغرق إعادة الفحص عدة دقائق)";
 
 /* No comment provided by engineer. */
 "reset" = "إعادة تعيين";
-
-/* No comment provided by engineer. */
-"retry" = "إعادة المحاولة";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "فحص رمز الإستجابة السريع لشخص آخر للحصول على عنوان داش. يمكنك إرسال دفعة لأي شخص لديه عنوان.";
@@ -511,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "رأيت من %1$d على %2$d أقران";
-
-/* No comment provided by engineer. */
-"send" = "إرسال";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "إرسال %1$@ (%2$@) من هذا المفتاح الخاص في محفظتك؟ سوف تتلقى شبكة داش رسوم %3$@ (%4$@).";
@@ -594,15 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "هذا هو رصيدك. داش هي عملة. تغير سعر الصرف مع السوق.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "عنوان الدفع هذا موجود بالفعل في محفظتك";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "يتطلب هذا الطلب دفعة فورية ولكن ليس لديك ما يكفي من المدخلات مع 6 تأكيدات مطلوبة من إرسال فوري ، يمكنك أن تطلب من التاجر قبول معاملة عادية أو الانتظار لبضع دقائق.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "يتطلب هذا الطلب دفعة فورية ولكنك عطلت الدفعات الفورية";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
 
 /* No comment provided by engineer. */
@@ -652,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "عنوان غير معروف";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "عنوان غير معروف";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "مستند غير معتمد أو ضائع";

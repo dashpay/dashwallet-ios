@@ -73,7 +73,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 @property (nonatomic, strong) id urlObserver, fileObserver, balanceObserver, seedObserver;
 @property (nonatomic, strong) id reachabilityObserver, syncStartedObserver, syncFinishedObserver, syncFailedObserver;
 @property (nonatomic, strong) id activeObserver, resignActiveObserver, foregroundObserver, backgroundObserver;
-@property (nonatomic, assign) SystemSoundID pingsound;
 @property (nonatomic, assign) BOOL performedMigrationChecks;
 
 @end
@@ -172,9 +171,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 #if TARGET_IPHONE_SIMULATOR
     jailbroken = NO;
 #endif
-    
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
-                                                                                withExtension:@"aiff"], &_pingsound);
     
     if ([[DWEnvironment sharedInstance].currentChain hasAWallet]) {
         self.splash.hidden = YES;
@@ -729,7 +725,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
     if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
-    AudioServicesDisposeSystemSoundID(self.pingsound);
 }
 
 - (void)setBalance:(uint64_t)balance
@@ -742,7 +737,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                                             [priceManager localCurrencyStringForDashAmount:balance - _balance]]
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                popOutAfterDelay:3.0]];
-        [self ping];
+        [[DWEnvironment sharedInstance] playPingSound];
     }
     
     _balance = balance;
@@ -783,14 +778,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     } else {
         self.navigationItem.titleView = [self titleLabel];
     }
-}
-
-- (void)startActivityWithTimeout:(NSTimeInterval)timeout {
-    // TODO: refactor displaying progress of sending tx
-}
-
-- (void)stopActivityWithSuccess:(BOOL)success {
-    // TODO: refactor displaying progress of sending tx
 }
 
 - (void)startSyncingActivity
@@ -906,11 +893,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
             [self updateTitleViewBalance];
         }
     }
-}
-
-- (void)ping
-{
-    AudioServicesPlaySystemSound(self.pingsound);
 }
 
 - (void)showErrorBar
@@ -1205,7 +1187,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         self.navigationController.navigationBar.hidden = NO;
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
         self.splash.hidden = YES;
-        [self stopActivityWithSuccess:YES];
         [self.pageViewController setViewControllers:@[self.receiveViewController]
                                           direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
         self.receiveViewController.paymentRequest =

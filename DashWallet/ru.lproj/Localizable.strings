@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nКод доступа необходим для защиты Вашего кошелька. Перейдите в настройки и включите код доступа, чтобы продолжить.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС УЖЕ ИСПОЛЬЗОВАН\nАдреса Dash преднозначены для разового использования\n\nповторное использование адреса снижает приватность как для Вас, так и для получателя и может привести к потере средств, если получатель больше не контролирует этот адрес";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nРазрешите доступ к камере:\nНастройки -> Конфиденциальность -> Камера -> %@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "Вы уверены?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "Некорректный платёжный запрос";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "Некорректная фраза восстановления";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Адрес Bitcoin (ShapeShift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "Платеж в Bitcoin не может быть меньше, чем %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Блок #%1$d из %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "Платежи в Dash не могут быть меньше, чем %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "Выходы транзакции не могут быть меньше, чем %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши DASH).";
 
 /* No comment provided by engineer. */
@@ -216,9 +204,6 @@
 "email not configured" = "Почта не настроена";
 
 /* No comment provided by engineer. */
-"enable" = "Включить";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Включить расширенные настройки";
 
 /* No comment provided by engineer. */
@@ -229,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "Ввести";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "Ошибка подписания транзакции";
 
 /* No comment provided by engineer. */
 "exit" = "Выход";
@@ -274,18 +256,6 @@
 
 /* No comment provided by engineer. */
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "В предыдущей версии Dashwallet при первоначальном отображении Вашей кодовой фразы на этом устройстве мы определили, что это приложение неправильно отображает все 12 слов кодовой фразы. Пожалуйста, запишите свою полную кодовую фразу снова.";
-
-/* No comment provided by engineer. */
-"instant payment" = "Мгновенный платёж";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "Недостаточно средств";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "Недостаточно средств для оплаты комиссии сети Dash";
 
 /* No comment provided by engineer. */
 "INVALID" = "НЕКОРРЕКТНО";
@@ -369,10 +339,10 @@
 "not voter" = "не участник голосования";
 
 /* No comment provided by engineer. */
-"OK" = "ОК";
+"ok" = "ок";
 
 /* No comment provided by engineer. */
-"ok" = "ок";
+"OK" = "ОК";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Включайте расширенные функции, только если вы хорошо знакомы с блокчейн-технологией. \nПри включении, используйте только те расширенные функции, которые вы понимаете.";
@@ -399,9 +369,6 @@
 "Pay" = "Оплатить";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "Сертификат личности получателя некорректен";
-
-/* No comment provided by engineer. */
 "payload:" = "полезная нагрузка:";
 
 /* No comment provided by engineer. */
@@ -420,10 +387,10 @@
 "pending" = "Ожидание";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
+"please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
+"Please enter pin to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Пожалуйста, поместите ваш телефон рядом с NFC устройством.";
@@ -462,9 +429,6 @@
 "recovery phrase must have %d words" = "Фраза восстановления должна состоять из %d слов";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "tx регистрации:";
 
 /* No comment provided by engineer. */
@@ -477,25 +441,16 @@
 "request an amount" = "Запросить сумму";
 
 /* No comment provided by engineer. */
-"request expired" = "Срок действия запроса истек";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "Запрос для мгновенного платежа, но Вы отключили эту опцию";
-
-/* No comment provided by engineer. */
 "rescan" = "Повторное сканирование";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Пересканировать цепочку блоков";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "Пересканировать цепочку блоков, если вы считаете, что могли пропустить транзакцию или возникли проблемы с отправкой (повторное сканирование может занять несколько минут)";
 
 /* No comment provided by engineer. */
 "reset" = "Сбросить";
-
-/* No comment provided by engineer. */
-"retry" = "повтор";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Сканируйте QR код ваших друзей чтобы получить их dash адреса. Вы можете отправить платеж кому угодно имея адрес.";
@@ -511,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "Видели %1$d из %2$d узлов";
-
-/* No comment provided by engineer. */
-"send" = "Отправить";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) из этого закрытого ключа в ваш кошелёк? Сеть Dash получит комиссию в %3$@ (%4$@).";
@@ -594,15 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Это Ваш баланс Dash. Dash является валютой. Обменный курс определяется рынком.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "Этот адрес уже находится в вашем кошельке";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно входов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "Это запрос о мгновенном переводе, но вы отключили опцию мгновенных переводов.";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Для подтверждения этой транзакции может понадобиться несколько минут.";
 
 /* No comment provided by engineer. */
@@ -652,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "Неизвестный адрес";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "Нераспознанный адрес";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "Неподдерживаемый или повреждённый документ";

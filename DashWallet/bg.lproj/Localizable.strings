@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nНеобходима е парола на устройството за опазване на портфейла Ви. Отидете в настройки и включете използването на парола, за да продължите.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nВЕЧЕ ИЗПОЛЗВАН АДРЕС\ndash адресите са предназначени за еднократно използване\n\nповторното използване намалява личната неприкосновеност, вашата и на получателя и може да липсва ако получателя на контролира директно адресът ";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nразрешава достъпа до камерата\nНастройки->Неприкосновеност->Камера->%@";
 
 /* No comment provided by engineer. */
@@ -78,16 +75,10 @@
 "Are you sure?" = "Сигурен ли си ?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "грешна заявка за плащане";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "грешна фраза за възстановяване";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin адрес (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin плащане не може да бъде по-малко от %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "блок #%1$d от %2$d";
@@ -189,9 +180,6 @@
 "dash payments can't be less than %@" = "dash плащането не може да бъде по-малко от %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash изходите за транзакцията  не може да бъдат по-малко то %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "СЕКРЕТНОТО УСТРОЙСТВО Е КОМПРОМЕТИРАНО\nВсяко 'jailbreak' приложение може да достъпи всяко друго приложение с важна информация (и да открадне вашите dash).";
 
 /* No comment provided by engineer. */
@@ -216,9 +204,6 @@
 "email not configured" = "имейл адресът не е конфигуриран ";
 
 /* No comment provided by engineer. */
-"enable" = "включено";
-
-/* No comment provided by engineer. */
 "Enable advanced features" = "Включване на разширените функции";
 
 /* No comment provided by engineer. */
@@ -229,9 +214,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "вход";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "грешка при подписване на dash транзакция";
 
 /* No comment provided by engineer. */
 "exit" = "изход";
@@ -276,18 +258,6 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "В предишната версия на Dashwallet, когато първоначално се показва фразата за възстановяване на това устройство, установихме, че това приложение не показва правилно всичките 12 думи за възстановяване. Моля, запишете отново пълната си фраза за възстановяване.";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "Недостатъчно средства";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "Недостатъчно средства за таксата на dash мрежата";
-
-/* No comment provided by engineer. */
 "INVALID" = "НЕВАЛИДЕН";
 
 /* No comment provided by engineer. */
@@ -300,7 +270,7 @@
 "Load more" = "Зареди още";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with instant send" = "заключена с instant send";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode притежаван адрес";
@@ -369,10 +339,10 @@
 "not voter" = "не гласуващ";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ок";
 
 /* No comment provided by engineer. */
-"ok" = "ок";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Използвайте разширените функции само ако сте добре запознат с блокчейн технологиите . \nАко са активирани използвайте само разширени функции, които разбирате.";
@@ -399,9 +369,6 @@
 "Pay" = "Плати";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "идентичността на подателя не е сертифицирана";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -420,10 +387,10 @@
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
+"please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
+"Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
@@ -462,9 +429,6 @@
 "recovery phrase must have %d words" = "фразата за възстановяване трябва да има %d думи";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "намаляване сумата на плащането от\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "регистрирана tx:";
 
 /* No comment provided by engineer. */
@@ -477,25 +441,16 @@
 "request an amount" = "искане на сума";
 
 /* No comment provided by engineer. */
-"request expired" = "изтекло искане";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "искането е за  instant payment, но вашите instant payments са изключени";
-
-/* No comment provided by engineer. */
 "rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "сканирайте повторно блокверигата ако мислите, че може да има липсващи транзакции или трудности при изпращане (повторното сканиране може да отнеме няколко минути)";
 
 /* No comment provided by engineer. */
 "reset" = "изчистване";
-
-/* No comment provided by engineer. */
-"retry" = "повторен опит";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash адрес. Можете да изпратите плащане към всеки с наличен адрес.";
@@ -511,9 +466,6 @@
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "видян от %1$d от%2$d пиъра";
-
-/* No comment provided by engineer. */
-"send" = "изпращам";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Изпрати %1$@ (%2$@) от този частен ключ в твоят портфейл? Dash мрежата ще получи такса от %3$@ (%4$@).";
@@ -594,15 +546,6 @@
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Това е твоят dash баланс. Dash е валута. Валутните курсове се променят с пазара.";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "този адрес за плащане е вече в твоя портфейл";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "тази заявка изисква мигновено плащане, но Вие сте изключили мигновените плащанията";
-
-/* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Тази транзакция може да отнеме няколко минути, за да приключи.";
 
 /* No comment provided by engineer. */
@@ -652,9 +595,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "неизвестен адрес";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "непознат адрес";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "неподдържан или повреден документ";
