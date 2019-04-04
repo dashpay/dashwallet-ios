@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Blok zincirini tekrar tara";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "kaçırdığınız bazı işlemlerin olduğunu düşünüyorsanız veya göndermede sorun yaşıyorsanız blok zincirini tekrar taratın (yeniden tarama bir kaç dakika sürebilir)";
 
 /* No comment provided by engineer. */
 "reset" = "sıfırla";

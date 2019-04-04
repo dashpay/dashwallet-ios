@@ -270,7 +270,7 @@
 "Load more" = "Laad meer";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with instant send" = "vergrendeld met instant send";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adres met saldo van masternode";
@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Blockchain opnieuw scannen";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan de blockchain opnieuw wanneer je het vermoeden hebt dat je transacties mist of problemen hebt met versturen (opnieuw scannen kan enkele minuten duren)";
 
 /* No comment provided by engineer. */
 "reset" = "herstel";

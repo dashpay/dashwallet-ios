@@ -447,7 +447,7 @@
 "Rescan blockchain" = "Reexaminar blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "reescaneie a rede blockchain se você acha que estão faltando transações ou se está tendo problemas no envio (o reescaneamento pode demorar vários minutos)";
 
 /* No comment provided by engineer. */
 "reset" = "redefinir";
