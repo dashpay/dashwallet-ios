@@ -270,7 +270,7 @@
 "Load more" = "Laad meer";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "vergrendeld met instant send";
+"locked with InstantSend" = "vergrendeld met InstantSend";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adres met saldo van masternode";

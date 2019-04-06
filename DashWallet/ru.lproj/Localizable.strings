@@ -270,7 +270,7 @@
 "Load more" = "Загрузить ещё";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with InstantSend" = "зафиксировано InstantSend";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "адрес расположения мастерноды";
