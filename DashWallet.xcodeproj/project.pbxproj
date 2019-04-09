@@ -54,6 +54,7 @@
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
+		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
 		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
@@ -388,6 +389,8 @@
 		2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanView.m; sourceTree = "<group>"; };
 		2AC92C881FEB0B8B008CAEE0 /* DWQRScanViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewModel.h; sourceTree = "<group>"; };
 		2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewModel.m; sourceTree = "<group>"; };
+		2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCrashReporter.h; sourceTree = "<group>"; };
+		2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCrashReporter.m; sourceTree = "<group>"; };
 		31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
@@ -780,6 +783,8 @@
 				2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */,
 				2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */,
 				2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */,
+				2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */,
+				2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */,
 			);
 			path = "Migration Controller";
 			sourceTree = "<group>";
@@ -1742,12 +1747,16 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report.proto",
+				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report_v2.proto",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report.proto",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report_v2.proto",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1798,6 +1807,7 @@
 				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
+				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,

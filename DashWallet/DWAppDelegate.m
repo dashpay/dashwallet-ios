@@ -32,6 +32,7 @@
 #import "DWDataMigrationManager.h"
 #import "DWMigrationViewController.h"
 #import "DWMigrationViewModel.h"
+#import "DWCrashReporter.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
@@ -65,6 +66,8 @@
 {
     // Override point for customization after application launch.
     NSLog(@"Dashwallet has launched");
+    
+    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)

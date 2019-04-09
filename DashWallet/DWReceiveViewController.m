@@ -410,6 +410,8 @@
         actionSheet.popoverPresentationController.sourceRect = ((UIButton*)sender).bounds;
         actionSheet.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
+    
+    [actionSheet addAction:(id)[NSDictionary new]];
 
     // Present action sheet.
     [self presentViewController:actionSheet animated:YES completion:nil];
