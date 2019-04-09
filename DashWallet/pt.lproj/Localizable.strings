@@ -270,10 +270,10 @@
 "Load more" = "Carregar mais";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"locked" = "reservado";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked with InstantSend" = "reservado para EnvioInstantâneo";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "endereço principal do masternode";

@@ -270,10 +270,14 @@
 "Load more" = "Carica di più";
 
 /* No comment provided by engineer. */
+<<<<<<< HEAD
 "locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with instant send" = "bloccato con Instant Send";
+=======
+"locked with InstantSend" = "bloccato con InstantSend";
+ 
 
 /* No comment provided by engineer. */
 "masternode holding address" = "indirizzo di partecipazione del masternode";

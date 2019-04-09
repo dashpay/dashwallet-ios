@@ -345,7 +345,7 @@
                     
                     uint32_t lastBlockHeight = [DWEnvironment sharedInstance].currentChain.lastBlockHeight;
                     if (self.transaction.instantSendReceived && ((self.transaction.blockHeight == TX_UNCONFIRMED) || (lastBlockHeight - self.transaction.blockHeight) < 6)) {
-                        cell.statusLabel.text = NSLocalizedString(@"locked with instant send", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"locked with InstantSend", nil);
                         if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                             cell.moreInfoLabel.text = [NSString stringWithFormat:@"%@ - %@",[NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                                                                         self.transaction.blockHeight], self.txDateString];
