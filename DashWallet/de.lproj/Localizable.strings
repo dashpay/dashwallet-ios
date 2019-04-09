@@ -270,6 +270,9 @@
 "Load more" = "Mehr laden";
 
 /* No comment provided by engineer. */
+"locked" = "abgesichert";
+
+/* No comment provided by engineer. */
 "locked with InstantSend" = "Mit InstantSend abgesichert";
 
 /* No comment provided by engineer. */

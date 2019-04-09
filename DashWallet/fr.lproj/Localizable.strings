@@ -270,6 +270,9 @@
 "Load more" = "Charger plus";
 
 /* No comment provided by engineer. */
+"locked" = "verrouillé";
+
+/* No comment provided by engineer. */
 "locked with InstantSend" = "verrouillé avec InstantSend";
 
 /* No comment provided by engineer. */

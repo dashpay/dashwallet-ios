@@ -270,6 +270,9 @@
 "Load more" = "โหลดเพิ่ม";
 
 /* No comment provided by engineer. */
+"locked" = "ล็อคด้วย";
+
+/* No comment provided by engineer. */
 "locked with InstantSend" = "ล็อคด้วย InstantSend";
 
 /* No comment provided by engineer. */

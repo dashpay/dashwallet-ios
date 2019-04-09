@@ -270,6 +270,9 @@
 "Load more" = "Carregar mais";
 
 /* No comment provided by engineer. */
+"locked" = "reservado";
+
+/* No comment provided by engineer. */
 "locked with InstantSend" = "reservado para EnvioInstantâneo";
 
 /* No comment provided by engineer. */

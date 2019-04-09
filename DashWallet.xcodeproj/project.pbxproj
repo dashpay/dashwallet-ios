@@ -1741,7 +1741,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -1752,7 +1752,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {

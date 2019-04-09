@@ -495,6 +495,12 @@ static NSString *dateFormat(NSString *template)
                 else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:tx]) {
                     unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
                 }
+                else if ([account transactionOutputsAreLocked:tx]) {
+                    unconfirmedLabel.text = NSLocalizedString(@"locked", nil);
+                    unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
+                    textLabel.textColor = [UIColor yellowColor];
+                    balanceLabel.text = localBalanceLabel.text = nil;
+                }
                 else if (!instantSendReceived && confirms < 6) {
                     if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
                     else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
