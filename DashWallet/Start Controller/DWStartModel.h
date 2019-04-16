@@ -21,13 +21,25 @@ typedef NS_ENUM(NSUInteger, DWStartModelState) {
 
 @property (readonly, assign, nonatomic) DWStartModelState state;
 @property (readonly, copy, nonatomic) NSDictionary *deferredLaunchOptions;
-@property (readonly, assign, nonatomic) BOOL applicationCrashedDuringLastMigration;
 
 - (instancetype)initWithLaunchOptions:(NSDictionary *)launchOptions;
 
+// Migration:
+
+@property (readonly, assign, nonatomic) BOOL shouldMigrate;
+@property (readonly, assign, nonatomic) BOOL applicationCrashedDuringLastMigration;
 - (void)startMigration;
 - (void)cancelMigration;
 - (void)cancelMigrationAndRescanBlockchain;
+
+// Crash Reporting:
+
+@property (readonly, assign, nonatomic) BOOL shouldHandleCrashReports;
+- (NSArray <NSString *> *)crashReportFiles;
+- (void)removeCrashReportFiles;
+- (void)updateLastCrashReportAskDate;
+- (NSString *)gatherUserDeviceInfo;
+- (void)finalizeCrashReporting;
 
 @end
 

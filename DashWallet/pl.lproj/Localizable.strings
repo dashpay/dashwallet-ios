@@ -201,6 +201,9 @@
 "double spend" = "podwójny wydatek";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "e-mail nie skonfigurowany";
 
 /* No comment provided by engineer. */
@@ -480,6 +483,9 @@
 "send address as message" = "wyślij adres jako wiadomość";
 
 /* No comment provided by engineer. */
+"send crash report" = "send crash report";
+
+/* No comment provided by engineer. */
 "send request as email" = "wyślij żądanie jako e-mail";
 
 /* No comment provided by engineer. */
@@ -529,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "stan:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "wymieciony!";
@@ -646,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Wykryliśmy, że Dashwallet miał awarię podczas migracji. Ponowne skanowanie blockchain rozwiąże ten problem lub możesz spróbować ponownie dokonać migracji. Zalecane jest aby ponowne reskanowanie przeprowadzić po sieci wifi, może zająć ono około pół godziny. Twoje środki będą dostępne gdy proces synchronizacji zostanie ukończony.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared." = "We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "wyczyść";

@@ -9,6 +9,7 @@
 #import "DWStartModel.h"
 
 #import "DWDataMigrationManager.h"
+#import "DWCrashReporter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,10 +25,14 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _deferredLaunchOptions = [launchOptions copy];
+        _shouldMigrate = [DWDataMigrationManager sharedInstance].shouldMigrate;
         _applicationCrashedDuringLastMigration = ![DWDataMigrationManager sharedInstance].migrationSuccessful;
+        _shouldHandleCrashReports = [DWCrashReporter sharedInstance].shouldHandleCrashReports;
     }
     return self;
 }
+
+#pragma mark - Migration
 
 - (void)startMigration {
     if (self.state != DWStartModelStateNone) {
@@ -63,6 +68,28 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cancelMigrationAndRescanBlockchain {
     [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
     self.state = DWStartModelStateDoneAndRescan;
+}
+
+#pragma mark - Crash Reporting
+
+- (NSArray <NSString *> *)crashReportFiles {
+    return [[DWCrashReporter sharedInstance] crashReportFiles];
+}
+
+- (void)removeCrashReportFiles {
+    [[DWCrashReporter sharedInstance] removeCrashReportFiles];
+}
+
+- (void)updateLastCrashReportAskDate {
+    [[DWCrashReporter sharedInstance] updateLastCrashReportAskDate];
+}
+
+- (NSString *)gatherUserDeviceInfo {
+    return [[DWCrashReporter sharedInstance] gatherUserDeviceInfo];
+}
+
+- (void)finalizeCrashReporting {
+    self.state = DWStartModelStateDone;
 }
 
 @end

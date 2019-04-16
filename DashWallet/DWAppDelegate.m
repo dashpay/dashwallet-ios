@@ -67,24 +67,26 @@
     // Override point for customization after application launch.
     NSLog(@"Dashwallet has launched");
     
-    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
-    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification
                                                object:nil];
-    [self setupDashWalletAppearance];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
     
-    // start updating prices earlier than migration to update `secureTime`
-    [[DSPriceManager sharedInstance] startExchangeRateFetching];
-    
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
     
-    if ([DWDataMigrationManager sharedInstance].shouldMigrate) {
-        [self performMigratingStartWithLaunchOptions:launchOptions];
+    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
+    DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
+    if (migrationManager.shouldMigrate || crashReporter.shouldHandleCrashReports) {
+        // start updating prices earlier than migration to update `secureTime`
+        // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
+        if (migrationManager.shouldMigrate) {
+            [[DSPriceManager sharedInstance] startExchangeRateFetching];
+        }
+        
+        [self performDeferredStartWithLaunchOptions:launchOptions];
     }
     else {
         [self performNormalStartWithLaunchOptions:launchOptions];
@@ -227,7 +229,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //    }
 }
 
-- (void)performMigratingStartWithLaunchOptions:(NSDictionary *)launchOptions {
+- (void)performDeferredStartWithLaunchOptions:(NSDictionary *)launchOptions {
     DWStartModel *viewModel = [[DWStartModel alloc] initWithLaunchOptions:launchOptions];
     DWStartViewController *controller = [DWStartViewController controller];
     controller.viewModel = viewModel;
@@ -237,6 +239,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
+    [[DWCrashReporter sharedInstance] enableCrashReporter];
+    
+    [self setupDashWalletAppearance];
+    
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     UIViewController *controller = [storyboard instantiateInitialViewController];
     self.window.rootViewController = controller;

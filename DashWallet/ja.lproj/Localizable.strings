@@ -201,6 +201,9 @@
 "double spend" = "２重支払い";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "メールアドレスが設定されていません";
 
 /* No comment provided by engineer. */
@@ -480,6 +483,9 @@
 "send address as message" = "ダッシュアドレスをメッセージにて共有";
 
 /* No comment provided by engineer. */
+"send crash report" = "send crash report";
+
+/* No comment provided by engineer. */
 "send request as email" = "リクエストをメールにて共有";
 
 /* No comment provided by engineer. */
@@ -529,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "ステータス:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "全残高送金成功！";
@@ -646,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashウォレットの移行中にクラッシュが発生しました。この問題を解決するためには、ブロックチェーンを再スキャンするか、もう一度お試しください。再スキャンは、最大30分ほどかかりますので、Wi-Fiをお使いください。いったん同期プロセスが完了すれば、あなたの残高がご利用可能となります。";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared." = "We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";

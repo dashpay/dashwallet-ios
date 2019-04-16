@@ -201,6 +201,9 @@
 "double spend" = "double dépense";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "e-mail non configuré";
 
 /* No comment provided by engineer. */
@@ -480,6 +483,9 @@
 "send address as message" = "envoyer l'adresse par message";
 
 /* No comment provided by engineer. */
+"send crash report" = "send crash report";
+
+/* No comment provided by engineer. */
 "send request as email" = "envoyer la demande par e-mail";
 
 /* No comment provided by engineer. */
@@ -529,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "état :";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "balayé !";
@@ -646,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Nous avons détecté que le portefeuille Dash a planté pendant la migration. Réinspecter la blockchain résoudra ce problème, ou bien vous pouvez réessayer. La réinspection doit être faite de préférence sur un réseau wifi et peut prendre jusqu'à une demi-heure. Vos fonds seront disponibles quand la synchronisation sera achevée.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared." = "We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "effacer";

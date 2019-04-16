@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)enableCrashReporter;
 
+- (NSArray <NSString *> *)crashReportFiles;
+- (void)removeCrashReportFiles;
+- (void)updateLastCrashReportAskDate;
+
+- (NSString *)gatherUserDeviceInfo;
+
 @end
 
 NS_ASSUME_NONNULL_END

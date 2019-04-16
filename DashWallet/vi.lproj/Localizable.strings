@@ -201,6 +201,9 @@
 "double spend" = "tiêu lặp";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "e-mail chưa được cấu hình";
 
 /* No comment provided by engineer. */
@@ -480,6 +483,9 @@
 "send address as message" = "gửi địa chỉ bằng tin nhắn";
 
 /* No comment provided by engineer. */
+"send crash report" = "send crash report";
+
+/* No comment provided by engineer. */
 "send request as email" = "gửi yêu cầu bằng e-mail";
 
 /* No comment provided by engineer. */
@@ -529,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "tình trạng:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "đã được quét!";
@@ -646,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi nhận thấy ví Dash bị lỗi trong lúc chuyển đổi dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề này hoặc bạn có thể thử lại lần nữa. Bạn nên cho quét lại khi dùng mạng wifi và nó sẽ mất chừng nửa giờ. Số tiền của bạn sẽ sẵn sàng một khi quá trình đồng bộ được hoàn tất.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared." = "We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "xoá sạch";
