@@ -1,26 +1,26 @@
 //
-//  DWMigrationViewController.m
+//  DWStartViewController.m
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 10/11/2018.
 //  Copyright © 2019 Dash Core. All rights reserved.
 //
 
-#import "DWMigrationViewController.h"
+#import "DWStartViewController.h"
 
-#import "DWMigrationViewModel.h"
+#import "DWStartModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMigrationViewController ()
+@interface DWStartViewController ()
 
 @end
 
-@implementation DWMigrationViewController
+@implementation DWStartViewController
 
 + (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MigrationStoryboard" bundle:nil];
-    DWMigrationViewController *controller = [storyboard instantiateInitialViewController];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"StartStoryboard" bundle:nil];
+    DWStartViewController *controller = [storyboard instantiateInitialViewController];
     return controller;
 }
 
@@ -38,13 +38,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(self.viewModel);
 
     [self mvvm_observe:@"viewModel.state" with:^(__typeof__(self) self, NSNumber * value) {
-        if (self.viewModel.state == DWMigrationViewModelStateDone) {
-            [self.delegate migrationViewController:self
+        if (self.viewModel.state == DWStartModelStateDone) {
+            [self.delegate startViewController:self
                 didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
                             shouldRescanBlockchain:NO];
         }
-        else if (self.viewModel.state == DWMigrationViewModelStateDoneAndRescan) {
-            [self.delegate migrationViewController:self
+        else if (self.viewModel.state == DWStartModelStateDoneAndRescan) {
+            [self.delegate startViewController:self
                 didFinishWithDeferredLaunchOptions:self.viewModel.deferredLaunchOptions
                             shouldRescanBlockchain:YES];
         }

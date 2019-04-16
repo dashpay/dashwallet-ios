@@ -1,24 +1,24 @@
 //
-//  DWMigrationViewModel.m
+//  DWStartModel.m
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 10/11/2018.
 //  Copyright © 2019 Dash Core. All rights reserved.
 //
 
-#import "DWMigrationViewModel.h"
+#import "DWStartModel.h"
 
 #import "DWDataMigrationManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMigrationViewModel ()
+@interface DWStartModel ()
 
-@property (assign, nonatomic) DWMigrationViewModelState state;
+@property (assign, nonatomic) DWStartModelState state;
 
 @end
 
-@implementation DWMigrationViewModel
+@implementation DWStartModel
 
 - (instancetype)initWithLaunchOptions:(NSDictionary *)launchOptions {
     self = [super init];
@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)startMigration {
-    if (self.state != DWMigrationViewModelStateNone) {
+    if (self.state != DWStartModelStateNone) {
         return;
     }
 
-    self.state = DWMigrationViewModelStateInProgress;
+    self.state = DWStartModelStateInProgress;
 
 #ifdef DEBUG
     NSDate *startTime = [NSDate date];
@@ -51,18 +51,18 @@ NS_ASSUME_NONNULL_BEGIN
         NSLog(@"⏲ Migration time: %f", -[startTime timeIntervalSinceNow]);
 #endif /* DEBUG */
 
-        strongSelf.state = DWMigrationViewModelStateDone;
+        strongSelf.state = DWStartModelStateDone;
     }];
 }
 
 - (void)cancelMigration {
     [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
-    self.state = DWMigrationViewModelStateDone;
+    self.state = DWStartModelStateDone;
 }
 
 - (void)cancelMigrationAndRescanBlockchain {
     [[DWDataMigrationManager sharedInstance] destroyOldPersistentStore];
-    self.state = DWMigrationViewModelStateDoneAndRescan;
+    self.state = DWStartModelStateDoneAndRescan;
 }
 
 @end

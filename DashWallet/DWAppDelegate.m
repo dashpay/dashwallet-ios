@@ -30,8 +30,8 @@
 #import <UserNotifications/UserNotifications.h>
 
 #import "DWDataMigrationManager.h"
-#import "DWMigrationViewController.h"
-#import "DWMigrationViewModel.h"
+#import "DWStartViewController.h"
+#import "DWStartModel.h"
 #import "DWCrashReporter.h"
 
 #ifndef IGNORE_WATCH_TARGET
@@ -50,7 +50,7 @@
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
-@interface DWAppDelegate () <DWMigrationViewControllerDelegate>
+@interface DWAppDelegate () <DWStartViewControllerDelegate>
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
@@ -228,8 +228,8 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)performMigratingStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWMigrationViewModel *viewModel = [[DWMigrationViewModel alloc] initWithLaunchOptions:launchOptions];
-    DWMigrationViewController *controller = [DWMigrationViewController controller];
+    DWStartModel *viewModel = [[DWStartModel alloc] initWithLaunchOptions:launchOptions];
+    DWStartViewController *controller = [DWStartViewController controller];
     controller.viewModel = viewModel;
     controller.delegate = self;
     
@@ -413,9 +413,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
 }
 
-#pragma mark - DWMigrationViewControllerDelegate
+#pragma mark - DWStartViewControllerDelegate
 
-- (void)migrationViewController:(DWMigrationViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
+- (void)startViewController:(DWStartViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
     [self performNormalStartWithLaunchOptions:launchOptions];
     
     if (shouldRescanBlockchain) {

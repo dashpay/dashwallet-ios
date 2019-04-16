@@ -1,5 +1,5 @@
 //
-//  DWMigrationViewModel.h
+//  DWStartModel.h
 //  dashwallet
 //
 //  Created by Andrew Podkovyrin on 10/11/2018.
@@ -10,16 +10,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWMigrationViewModelState) {
-    DWMigrationViewModelStateNone,
-    DWMigrationViewModelStateInProgress,
-    DWMigrationViewModelStateDone,
-    DWMigrationViewModelStateDoneAndRescan,
+typedef NS_ENUM(NSUInteger, DWStartModelState) {
+    DWStartModelStateNone,
+    DWStartModelStateInProgress,
+    DWStartModelStateDone,
+    DWStartModelStateDoneAndRescan,
 };
 
-@interface DWMigrationViewModel : NSObject
+@interface DWStartModel : NSObject
 
-@property (readonly, assign, nonatomic) DWMigrationViewModelState state;
+@property (readonly, assign, nonatomic) DWStartModelState state;
 @property (readonly, copy, nonatomic) NSDictionary *deferredLaunchOptions;
 @property (readonly, assign, nonatomic) BOOL applicationCrashedDuringLastMigration;
 
