@@ -143,7 +143,7 @@ NS_ASSUME_NONNULL_BEGIN
         if ([MFMailComposeViewController canSendMail]) {
             MFMailComposeViewController *composeController = [[MFMailComposeViewController alloc] init];
             composeController.subject = @"Crash Report"; // non localizable
-            [composeController setToRecipients:@[ @"contact@dash.org" ]]; // TODO: fix me
+            [composeController setToRecipients:@[ @"support@dash.org" ]];
             
             NSString *body = [NSString stringWithFormat:@"%@:\n\n\n\n\n%@",
                               NSLocalizedString(@"Steps to reproduce the crash", nil),
