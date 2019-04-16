@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
             composeController.subject = @"Crash Report"; // non localizable
             [composeController setToRecipients:@[ @"contact@dash.org" ]]; // TODO: fix me
             
-            NSString *body = [NSString stringWithFormat:@"%@:\n\n\n%@",
+            NSString *body = [NSString stringWithFormat:@"%@:\n\n\n\n\n%@",
                               NSLocalizedString(@"Steps to reproduce the crash", nil),
                               [self.viewModel gatherUserDeviceInfo]];
             [composeController setMessageBody:body isHTML:NO];

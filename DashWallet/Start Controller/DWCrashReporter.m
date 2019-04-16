@@ -81,7 +81,7 @@ static NSString *RamInformation() {
                           vm_stat.inactive_count +
                           vm_stat.wire_count) *
                          pagesize;
-    NSString *ramInfo = [NSString stringWithFormat:@"Used %@ / Total: %@",
+    NSString *ramInfo = [NSString stringWithFormat:@"%@ (used) / %@ (total)",
                                                    FormatBytes(mem_used),
                                                    FormatBytes([NSProcessInfo processInfo].physicalMemory)];
     return ramInfo;
@@ -92,7 +92,7 @@ static NSString *DiskInformation() {
     if (dictionary) {
         NSNumber *fileSystemSizeInBytes = dictionary[NSFileSystemSize];
         NSNumber *freeFileSystemSizeInBytes = dictionary[NSFileSystemFreeSize];
-        NSString *diskInfo = [NSString stringWithFormat:@"Free %@ / Total: %@",
+        NSString *diskInfo = [NSString stringWithFormat:@"%@ (free) / %@ (total)",
                                                         FormatBytes(freeFileSystemSizeInBytes.longLongValue),
                                                         FormatBytes(fileSystemSizeInBytes.longLongValue)];
         return diskInfo;
