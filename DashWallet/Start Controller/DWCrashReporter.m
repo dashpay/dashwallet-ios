@@ -131,17 +131,17 @@ static NSString *DiskInformation() {
 }
 
 - (BOOL)shouldHandleCrashReports {
-    BOOL hasCrashesToSend = [self crashReportFiles].count > 0;
-    if (!hasCrashesToSend) {
-        return NO;
-    }
-
     NSDate *lastAskDate = [[NSUserDefaults standardUserDefaults] objectForKey:DW_CRASH_REPORTER_LAST_ASK_DATE];
     if (lastAskDate) {
         NSTimeInterval ti = -[lastAskDate timeIntervalSinceNow];
         if (ti < DW_CRASH_REPORTER_REMIND_INTERVAL) {
             return NO;
         }
+    }
+    
+    BOOL hasCrashesToSend = [self crashReportFiles].count > 0;
+    if (!hasCrashesToSend) {
+        return NO;
     }
 
     return YES;
