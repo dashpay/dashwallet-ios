@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     UIAlertController *alert = [UIAlertController
                                 alertControllerWithTitle:nil
-                                message:NSLocalizedString(@"We have detected that Dashwallet crashed last time. Help us solving this issue by sending an email with crash report data. Your private data WILL NOT be shared.", nil)
+                                message:NSLocalizedString(@"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.", nil)
                                 preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelAction = [UIAlertAction
                                     actionWithTitle:NSLocalizedString(@"cancel", nil)
