@@ -1164,38 +1164,38 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 }
 
 #if SNAPSHOT
-- (IBAction)nextScreen:(id)sender
-{
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
-    if (self.navigationController.presentedViewController) {
-        if (manager.noWallet) [manager generateRandomSeed];
-        self.showTips = NO;
-        [self.navigationController dismissViewControllerAnimated:NO completion:^{
-            [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
-            self.navigationItem.titleView = self.logo;
-            self.navigationItem.rightBarButtonItem = self.lock;
-            self.pageViewController.view.alpha = 1.0;
-            self.navigationController.navigationBar.hidden = YES;
-            [[UIApplication sharedApplication] setStatusBarHidden:YES];
-            self.splash.hidden = NO;
-            [self.splash
-             addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
-        }];
-    }
-    else if (! self.splash.hidden) {
-        self.navigationController.navigationBar.hidden = NO;
-        [[UIApplication sharedApplication] setStatusBarHidden:NO];
-        self.splash.hidden = YES;
-        [self.pageViewController setViewControllers:@[self.receiveViewController]
-                                          direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-        self.receiveViewController.paymentRequest =
-        [DSPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
-        [self.receiveViewController updateAddress];
-        [self.progress removeFromSuperview];
-        [self.pulse removeFromSuperview];
-    }
-}
+//- (IBAction)nextScreen:(id)sender
+//{
+//    DSWalletManager *manager = [DSWalletManager sharedInstance];
+//
+//    if (self.navigationController.presentedViewController) {
+//        if (manager.noWallet) [manager generateRandomSeed];
+//        self.showTips = NO;
+//        [self.navigationController dismissViewControllerAnimated:NO completion:^{
+//            [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
+//            self.navigationItem.titleView = self.logo;
+//            self.navigationItem.rightBarButtonItem = self.lock;
+//            self.pageViewController.view.alpha = 1.0;
+//            self.navigationController.navigationBar.hidden = YES;
+//            [[UIApplication sharedApplication] setStatusBarHidden:YES];
+//            self.splash.hidden = NO;
+//            [self.splash
+//             addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
+//        }];
+//    }
+//    else if (! self.splash.hidden) {
+//        self.navigationController.navigationBar.hidden = NO;
+//        [[UIApplication sharedApplication] setStatusBarHidden:NO];
+//        self.splash.hidden = YES;
+//        [self.pageViewController setViewControllers:@[self.receiveViewController]
+//                                          direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
+//        self.receiveViewController.paymentRequest =
+//        [DSPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
+//        [self.receiveViewController updateAddress];
+//        [self.progress removeFromSuperview];
+//        [self.pulse removeFromSuperview];
+//    }
+//}
 #endif
 
 // MARK: - UIPageViewControllerDataSource

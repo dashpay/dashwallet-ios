@@ -16,7 +16,8 @@ target 'dashwallet' do
 
   target 'DashWalletScreenshotsUITests' do
     inherit! :search_paths
-    # Pods for testing
+    
+    pod 'SimulatorStatusMagic', '2.4.1'
   end
 
 end

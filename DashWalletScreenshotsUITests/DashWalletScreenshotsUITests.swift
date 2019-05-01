@@ -23,6 +23,11 @@ class DashWalletScreenshotsUITests: XCTestCase {
         super.setUp()
         
         continueAfterFailure = false
+
+        // Set time in status bar to 9:41, full battery, wifi and carrier
+        if _SNAPSHOT {
+            SDStatusBarManager.sharedInstance()?.enableOverrides()
+        }
         
         let app = XCUIApplication()
         setupSnapshot(app)
@@ -30,7 +35,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
     }
     
     func testTakeScreenshots() {
-        if (_SNAPSHOT) {
+        if _SNAPSHOT {
             let app = XCUIApplication()
             snapshot("1")
             
