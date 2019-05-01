@@ -203,13 +203,6 @@
 			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
 			remoteInfo = dashwallet;
 		};
-		757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 75001D3D1A1EE89500585F55;
-			remoteInfo = submodules;
-		};
 		75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
@@ -1246,23 +1239,6 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXLegacyTarget section */
-		75001D3D1A1EE89500585F55 /* submodules */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "-c 'git submodule init && git submodule update'";
-			buildConfigurationList = 75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */;
-			buildPhases = (
-			);
-			buildToolPath = /bin/sh;
-			buildWorkingDirectory = "";
-			dependencies = (
-			);
-			name = submodules;
-			passBuildSettingsInEnvironment = 1;
-			productName = submodules;
-		};
-/* End PBXLegacyTarget section */
-
 /* Begin PBXNativeTarget section */
 		2A4662FF2279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
 			isa = PBXNativeTarget;
@@ -1301,7 +1277,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */,
 				BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */,
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
@@ -1400,9 +1375,6 @@
 						ProvisioningStyle = Automatic;
 						TestTargetID = 75D5F3BD191EC270004AB296;
 					};
-					75001D3D1A1EE89500585F55 = {
-						CreatedOnToolsVersion = 6.1;
-					};
 					75D5F3BD191EC270004AB296 = {
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
@@ -1481,7 +1453,6 @@
 				75D5F3BD191EC270004AB296 /* dashwallet */,
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* DashWalletTests */,
-				75001D3D1A1EE89500585F55 /* submodules */,
 				BA913BDD1BD57E4D005A7C0E /* WatchApp */,
 				BA913BE91BD57E4D005A7C0E /* WatchApp Extension */,
 				2A4662FF2279DC2F0027533B /* DashWalletScreenshotsUITests */,
@@ -1925,11 +1896,6 @@
 			target = 75D5F3BD191EC270004AB296 /* dashwallet */;
 			targetProxy = 2A4663052279DC2F0027533B /* PBXContainerItemProxy */;
 		};
-		757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 75001D3D1A1EE89500585F55 /* submodules */;
-			targetProxy = 757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */;
-		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 75D5F3BD191EC270004AB296 /* dashwallet */;
@@ -2230,20 +2196,6 @@
 				TEST_TARGET_NAME = dashwallet;
 			};
 			name = Testflight;
-		};
-		75001D3F1A1EE89500585F55 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		75001D411A1EE89500585F55 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
 		};
 		75D5F3F4191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2734,13 +2686,6 @@
 			};
 			name = Testflight;
 		};
-		CEE253D71E26A9BC00A25B15 /* Testflight */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Testflight;
-		};
 		CEE253D81E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F12049B257DDE750DE332799 /* Pods-WatchApp.testflight.xcconfig */;
@@ -2919,13 +2864,6 @@
 			};
 			name = Testnet;
 		};
-		FB9CC19F1F8511620079309F /* Testnet */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Testnet;
-		};
 		FB9CC1A01F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7EEDF75116E60BB9EE9C80FB /* Pods-WatchApp.testnet.xcconfig */;
@@ -2973,17 +2911,6 @@
 				2A4663082279DC2F0027533B /* Testnet */,
 				2A4663092279DC2F0027533B /* Release */,
 				2A46630A2279DC2F0027533B /* Testflight */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				75001D3F1A1EE89500585F55 /* Debug */,
-				FB9CC19F1F8511620079309F /* Testnet */,
-				75001D411A1EE89500585F55 /* Release */,
-				CEE253D71E26A9BC00A25B15 /* Testflight */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
