@@ -14,7 +14,7 @@ target 'dashwallet' do
     # Pods for testing
   end
 
-  target 'DashWalletUITests' do
+  target 'DashWalletScreenshotsUITests' do
     inherit! :search_paths
     # Pods for testing
   end
