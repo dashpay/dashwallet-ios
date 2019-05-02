@@ -37,17 +37,45 @@ class DashWalletScreenshotsUITests: XCTestCase {
     func testTakeScreenshots() {
         if _SNAPSHOT {
             let app = XCUIApplication()
+            
+            // Send screen
+            //
             snapshot("1")
             
-//            app.children(matching: .window).element(boundBy: 0).tap()
-//            snapshot("3")
-//
-//            app.pageIndicators.element(boundBy: 0).tap()
-//            snapshot("2")
-//
-//            app.navigationBars.buttons["burger"].tap()
-//            snapshot("4")
+
+            // Receive screen
+            //
+            app.pageIndicators.element(boundBy: 0).tap()
+            snapshot("2")
+            
+            
+            // Request amount screen
+            //
+            app.buttons["share_button"].tap()
+            sleep(1)
+            app.sheets.buttons.element(boundBy: 1).tap()
+            sleep(2)
+            app.staticTexts["3"].tap()
+            app.staticTexts["amount_button_separator"].tap()
+            app.staticTexts["1"].tap()
+            app.staticTexts["4"].tap()
+            snapshot("3")
+
+            
+            // Transactions screen
+            //
+            // press cancel button
+            app.navigationBars["DWAmountView"].children(matching: .button).element(boundBy: 0).tap()
+            // press menu button
+            app.navigationBars["DWRootView"].children(matching: .button).element(boundBy: 0).tap()
+            snapshot("4")
+            
+            // About
+            //
+            app.tables.cells.element(boundBy: 5).tap()
+            app.tables.cells.element(boundBy: 0).tap()
+            snapshot("5")
         }
     }
-
+    
 }

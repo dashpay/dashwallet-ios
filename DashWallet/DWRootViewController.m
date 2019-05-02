@@ -91,6 +91,11 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 {
     [super viewDidLoad];
     
+#if SNAPSHOT
+    // initialized with random wallet
+    [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
+#endif /* SNAPSHOT */
+    
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     // Do any additional setup after loading the view.
     
@@ -235,6 +240,10 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 }
 
 -(void)setObserversWithDeviceIsJailbroken:(BOOL)jailbroken {
+#if SNAPSHOT
+    // Disable syncing in snapshot-mode
+    return;
+#endif /* SNAPSHOT */
     
     self.urlObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:BRURLNotification object:nil queue:nil
@@ -515,6 +524,12 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         priceManager.dashFormat.maximumFractionDigits = 8;
         priceManager.dashFormat.maximum = @(MAX_MONEY/DUFFS);
     }
+    
+#if SNAPSHOT
+    // Don't set passcode
+    return;
+#endif /* SNAPSHOT */
+    
     //todo : this should be implemented in DashSync, not here
     if (!chain.hasAWallet && [dashSyncVersionManager noOldWallet]) {
         if (!authenticationManager.passcodeEnabled) {
@@ -602,9 +617,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                 [self setNeedsStatusBarAppearanceUpdate];
                             }
                             
-#if SNAPSHOT
-                            return;
-#endif
                             if (!authenticated) {
                                 if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                     [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
@@ -1162,41 +1174,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         }];
     };
 }
-
-#if SNAPSHOT
-//- (IBAction)nextScreen:(id)sender
-//{
-//    DSWalletManager *manager = [DSWalletManager sharedInstance];
-//
-//    if (self.navigationController.presentedViewController) {
-//        if (manager.noWallet) [manager generateRandomSeed];
-//        self.showTips = NO;
-//        [self.navigationController dismissViewControllerAnimated:NO completion:^{
-//            [DSAuthenticationManager sharedInstance].didAuthenticate = NO;
-//            self.navigationItem.titleView = self.logo;
-//            self.navigationItem.rightBarButtonItem = self.lock;
-//            self.pageViewController.view.alpha = 1.0;
-//            self.navigationController.navigationBar.hidden = YES;
-//            [[UIApplication sharedApplication] setStatusBarHidden:YES];
-//            self.splash.hidden = NO;
-//            [self.splash
-//             addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(nextScreen:)]];
-//        }];
-//    }
-//    else if (! self.splash.hidden) {
-//        self.navigationController.navigationBar.hidden = NO;
-//        [[UIApplication sharedApplication] setStatusBarHidden:NO];
-//        self.splash.hidden = YES;
-//        [self.pageViewController setViewControllers:@[self.receiveViewController]
-//                                          direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:nil];
-//        self.receiveViewController.paymentRequest =
-//        [DSPaymentRequest requestWithString:@"n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"];
-//        [self.receiveViewController updateAddress];
-//        [self.progress removeFromSuperview];
-//        [self.pulse removeFromSuperview];
-//    }
-//}
-#endif
 
 // MARK: - UIPageViewControllerDataSource
 
