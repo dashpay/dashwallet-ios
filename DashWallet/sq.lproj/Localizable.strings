@@ -201,6 +201,9 @@
 "double spend" = "shpenzim i dyfisht";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "email nuk është konfiguruar";
 
 /* No comment provided by engineer. */
@@ -480,6 +483,9 @@
 "send address as message" = "dërgo adresën sikur mesazh";
 
 /* No comment provided by engineer. */
+"send crash report" = "send crash report";
+
+/* No comment provided by engineer. */
 "send request as email" = "dërgo kërkesën si email";
 
 /* No comment provided by engineer. */
@@ -529,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "statusi:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "të shpenzuara!";
@@ -646,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "fshij";
