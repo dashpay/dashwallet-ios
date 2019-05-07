@@ -337,6 +337,9 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    UITextInputAssistantItem *inputAssistantItem = self.textField.inputAssistantItem;
+    inputAssistantItem.leadingBarButtonGroups = @[];
+    inputAssistantItem.trailingBarButtonGroups = @[];
     self.amountKeyboard.textInput = self.textField;
 
     switch (self.model.inputIntent) {

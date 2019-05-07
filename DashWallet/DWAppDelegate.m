@@ -36,15 +36,15 @@
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
-#endif
+#endif /* IGNORE_WATCH_TARGET */
 
 #if DASH_TESTNET
 #pragma message "testnet build"
-#endif
+#endif /* DASH_TESTNET */
 
 #if SNAPSHOT
 #pragma message "snapshot build"
-#endif
+#endif /* SNAPSHOT */
 
 #define FRESH_INSTALL 0
 

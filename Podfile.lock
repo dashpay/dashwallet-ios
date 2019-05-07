@@ -6,17 +6,20 @@ PODS:
     - secp256k1_dash (= 0.1.2)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
+  - SimulatorStatusMagic (2.4.1)
 
 DEPENDENCIES:
   - Dash-PLCrashReporter (from `https://github.com/podkovyrin/plcrashreporter.git`, commit `41a46e6`, branch `dash`)
   - DashSync (from `../DashSync/`)
   - KVO-MVVM (= 0.5.1)
+  - SimulatorStatusMagic (= 2.4.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
     - KVO-MVVM
     - secp256k1_dash
+    - SimulatorStatusMagic
 
 EXTERNAL SOURCES:
   Dash-PLCrashReporter:
@@ -37,7 +40,8 @@ SPEC CHECKSUMS:
   DashSync: 421125885841a5c20e8a2409718067acf9921f14
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
+  SimulatorStatusMagic: 28d4a9d1a500ac7cea0b2b5a43c1c6ddb40ba56c
 
-PODFILE CHECKSUM: 9fade670636bcedb986039c30c1287b8bfd0a693
+PODFILE CHECKSUM: 39ea70bc2be80ce895aed21982a5429ccd22e571
 
 COCOAPODS: 1.6.1
