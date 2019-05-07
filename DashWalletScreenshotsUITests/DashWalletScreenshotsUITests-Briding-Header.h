@@ -21,7 +21,7 @@
 #include "DashWallet-Prefix.pch"
 
 #import <SimulatorStatusMagic/SDStatusBarManager.h>
-static const bool _SNAPSHOT = 1;
+
 // don't allow BartyCrouch to include "Carrier" string to localized
 // NSLocalizedString(@"Carrier", @"Carrier #bc-ignore!")
 
