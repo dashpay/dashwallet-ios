@@ -176,12 +176,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
 
-    if ([DWEnvironment sharedInstance].currentChainManager.syncProgress >= 1.0) {
-        NSLog(@"background fetch already synced");
-        if (completion) completion(UIBackgroundFetchResultNoData);
-        return;
-    }
-
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
