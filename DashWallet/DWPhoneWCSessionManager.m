@@ -217,8 +217,8 @@
     appleWatchData.balance = [priceManager stringForDashAmount:account.balance];
     appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:account.balance];
 #if SNAPSHOT
-    appleWatchData.balance = [manager stringForDashAmount:42980000],
-    appleWatchData.balanceInLocalCurrency = [manager localCurrencyStringForDashAmount:42980000];
+    appleWatchData.balance = [priceManager stringForDashAmount:42980000];
+    appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:42980000];
 #endif
     appleWatchData.receiveMoneyAddress = account.receiveAddress;
     appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
@@ -321,23 +321,23 @@
     }
 
 #if SNAPSHOT
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    
-    [transactionListData removeAllObjects];
-
-    for (int i = 0; i < 6; i++) {
-        DSTransaction *tx = [DSTransaction new];
-        BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
-        int64_t amount =
-            [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i] longLongValue];
-
-        txData.type = (amount >= 0) ? BRAWTransactionTypeReceive : BRAWTransactionTypeSent;
-        txData.amountText = [manager stringForDashAmount:amount];
-        txData.amountTextInLocalCurrency = [manager localCurrencyStringForDashAmount:amount];
-        tx.timestamp = [NSDate timeIntervalSince1970] - i * 100000;
-        txData.dateText = tx.dateText;
-        [transactionListData addObject:txData];
-    }
+//    DSWalletManager *manager = [DSWalletManager sharedInstance];
+//    
+//    [transactionListData removeAllObjects];
+//
+//    for (int i = 0; i < 6; i++) {
+//        DSTransaction *tx = [DSTransaction new];
+//        BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
+//        int64_t amount =
+//            [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i] longLongValue];
+//
+//        txData.type = (amount >= 0) ? BRAWTransactionTypeReceive : BRAWTransactionTypeSent;
+//        txData.amountText = [manager stringForDashAmount:amount];
+//        txData.amountTextInLocalCurrency = [manager localCurrencyStringForDashAmount:amount];
+//        tx.timestamp = [NSDate timeIntervalSince1970] - i * 100000;
+//        txData.dateText = tx.dateText;
+//        [transactionListData addObject:txData];
+//    }
 #endif
 
     return transactionListData;

@@ -201,6 +201,9 @@
 "double spend" = "двойно похарчени";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "имейл адресът не е конфигуриран ";
 
 /* No comment provided by engineer. */
@@ -270,7 +273,10 @@
 "Load more" = "Зареди още";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked" = "locked";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "заключена с InstantSend";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode притежаван адрес";
@@ -447,7 +453,7 @@
 "Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "сканирайте повторно блокверигата ако мислите, че може да има липсващи транзакции или трудности при изпращане (повторното сканиране може да отнеме няколко минути)";
 
 /* No comment provided by engineer. */
 "reset" = "изчистване";
@@ -475,6 +481,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "изпрати адреса като съобщение";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "изпрати искане като имейл";
@@ -526,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "статус:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "изчистен!";
@@ -643,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Устоановихме, че Dashwallet се е повредил по време на миграцията. Повторното сканиране на блок веригата може да реши този проблем или опитайте отново. Повторното сканиране е препоръчително да се извърши чрез wifi и може да отнеме до половин час. Вашите средства ще бъдат налични след като синхронизацията приключи. ";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "изчисти";

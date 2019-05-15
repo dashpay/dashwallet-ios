@@ -201,6 +201,9 @@
 "double spend" = "gasto duplicado";
 
 /* No comment provided by engineer. */
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+
+/* No comment provided by engineer. */
 "email not configured" = "email no configurado";
 
 /* No comment provided by engineer. */
@@ -270,7 +273,10 @@
 "Load more" = "Cargar más";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"locked" = "bloquear";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "bloquear con InstantSend";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "Dirección de almacenamiento de masternode";
@@ -447,7 +453,7 @@
 "Rescan blockchain" = "Escanear de nuevo la cadena de bloques";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "escanee de nuevo la cadena de bloques si piensa que puede tener transacciones no reflejadas, o si tiene problemas de envío (el escaneado puede durar algunos minutos)";
 
 /* No comment provided by engineer. */
 "reset" = "reiniciar";
@@ -475,6 +481,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "enviar dirección como mensaje";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "enviar solicitud como correo electrónico";
@@ -526,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "status:" = "estado:";
+
+/* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "swept!" = "¡barrido!";
@@ -643,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Hemos detectado que Dashwallet se bloqueó durante la migración. Volver a escanear la cadena de bloques resolverá este problema o puedes intentarlo de nuevo. La reexploración debe realizarse preferiblemente en wifi y demorará hasta media hora. Tus fondos estarán disponibles una vez que se complete el proceso de sincronización.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "borrar";

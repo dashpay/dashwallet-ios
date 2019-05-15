@@ -280,7 +280,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.delegate amountViewController:self
                                      didInputAmount:self.model.amount.plainAmount
-                 wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)  usedInstantSend:self.model.sendingOptions.useInstantSend];
+                 wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)  usedInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend) && self.model.sendingOptions.useInstantSend];
 
                 self.view.userInteractionEnabled = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -337,6 +337,9 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    UITextInputAssistantItem *inputAssistantItem = self.textField.inputAssistantItem;
+    inputAssistantItem.leadingBarButtonGroups = @[];
+    inputAssistantItem.trailingBarButtonGroups = @[];
     self.amountKeyboard.textInput = self.textField;
 
     switch (self.model.inputIntent) {

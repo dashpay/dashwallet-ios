@@ -1,45 +1,51 @@
-# Uncomment the lines below you want to change by removing the # in the beginning
-
 # A list of devices you want to take the screenshots from
- devices([
-   "iPhone 6",
-#   "iPhone 6 Plus",
-#  "iPhone 5",
-#  "iPhone 4s",
-#   "iPad Retina",
-#   "iPad Pro"
- ])
+devices([
+  "iPhone SE",
+  "iPhone 8",
+  "iPhone 8 Plus",
+  "iPhone Xs",
+  "iPhone Xs Max",
+
+  "iPad Air",
+  "iPad Pro (10.5-inch)",
+  "iPad Pro (11-inch)",
+  "iPad Pro (12.9-inch) (2nd generation)",
+])
 
 languages([
-  'da-DK',
-  'de-DE',
-  'el-GR',
-  'en-US',
-  'es-ES',
-  'fr-FR',
-  'hu-HU',
-  'it-IT',
-  'ja-JP',
-  'ko-KR',
-  'nb-NO',
-  'nl-NL',
-  'pl-PL',
-  'pt-PT',
-  'ru-RU',
-  'sq-AL',
-  'sv-SE',
-  'tr-TR',
-  'zh_CN'
+  "en-US",
+  "fr-FR",
+  "ja-JP",
+  "ko-KR",
+  "nl-NL",
+  "ru-RU",  
+  "de-DE",
+  "zh-Hans",
+  "es-ES",
+  "it-IT",
+  "tr-TR",
+  "it-IT",
+  "pl-PL",
+  "el-GR",
+  "pt-PT",
+  "bg-BG",
+  "vi",
+  "th-TH",
+  "zh-Hant-TW",
+  "id-ID",
 ])
 
 # The name of the scheme which contains the UI Tests
-scheme "breadwallet"
+scheme("DashWalletScreenshotsUITests")
 
 # Where should the resulting screenshots be stored?
-output_directory "./screenshots"
+output_directory("./fastlane/screenshots")
 
-clear_previous_screenshots # remove the '#' to clear all previously generated screenshots before creating new ones
+# remove the '#' to clear all previously generated screenshots before creating new ones
+clear_previous_screenshots(true)
 
-# Choose which project/workspace to use
-project "../BreadWallet.xcodeproj"
-# workspace "./Project.xcworkspace"
+# Arguments to pass to the app on launch. See https://docs.fastlane.tools/actions/snapshot/#launch-arguments
+# launch_arguments(["-favColor red"])
+
+# For more information about all available options run
+# fastlane action snapshot
