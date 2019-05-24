@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nCüzdanınızın korunması için bir cihaz şifresi gerekmektedir. Devam etmek için Ayarlar'dan şifreyi etkinleştirin.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES ZATEN KULLANIMDA\ndash adresleri tek kullanımlıktır\n\nadresi tekrar kullanmak hem sizin hem de alıcının gizliliğini azaltır ve eğer alıcı adresi doğrudan kontrol etmiyorsa kayba yol açabilir";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nAyarlar->Gizlilik->Kamera->%@ \nkısmından kamera erişimine izin verin";
 
 /* No comment provided by engineer. */
@@ -63,7 +60,7 @@
 "always require passcode" = "her zaman parola gerektir";
 
 /* No comment provided by engineer. */
-"Amount" = "Tutar";
+"Amount" = "Amount";
 
 /* No comment provided by engineer. */
 "amount too small" = "miktarı çok küçük";
@@ -81,19 +78,13 @@
 "Are you sure?" = "Emin misiniz?";
 
 /* No comment provided by engineer. */
-"available" = "mevcut";
-
-/* No comment provided by engineer. */
-"bad payment request" = "hatalı ödeme talebi";
+"available" = "available";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "hatalı kurtarma cümlesi";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin adresi (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin ödemeleri %@ altında olamaz";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d'in %1$d'ini engelle";
@@ -105,7 +96,7 @@
 "Buy dash in dashwallet!" = "dashwallet'ta dash satın al!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Uphold hesabı ile Dash al";
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Bu cihazı silerseniz bu cihazdaki paraya artık ulaşamazsınız. Bunu sadece parola cümlenize ulaşamıyorsanız ve pin kodunuzu unuttuysanız yapmalısınız.";
@@ -114,7 +105,7 @@
 "cancel" = "iptal";
 
 /* No comment provided by engineer. */
-"Cancel" = "İptal";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "değiştir";
@@ -156,10 +147,10 @@
 "Confirm" = "Onayla";
 
 /* No comment provided by engineer. */
-"confirm" = "onayla";
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "İşlemi onayla";
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d bloğunda onaylandı";
@@ -207,9 +198,6 @@
 "dash payments can't be less than %@" = "dash ödemesi %@ altında olamaz";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash işlemi çıkışı %@ altında olamaz";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve dashlerinizi çalabilir).";
 
 /* No comment provided by engineer. */
@@ -231,10 +219,10 @@
 "double spend" = "çift ödeme";
 
 /* No comment provided by engineer. */
-"email not configured" = "e-posta yapılandırılmadı";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "etkinleştir";
+"email not configured" = "e-posta yapılandırılmadı";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "İleri seviye özellikleri etkinleştir";
@@ -249,13 +237,10 @@
 "enter" = "gir";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Aktarılacak tutarı aşağıya girin";
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "2FA kodunu aşağıya girin";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "dash işlem kaydı hatası";
+"Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
 "exit" = "çık";
@@ -270,10 +255,10 @@
 "Failed wallet update" = "Cüzdan güncellemesi başarısız";
 
 /* No comment provided by engineer. */
-"Fee" = "Ücret";
+"Fee" = "Fee";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Ücret istenen tutardan düşülecek";
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
 
 /* No comment provided by engineer. */
 "from:" = "kaynak:";
@@ -282,7 +267,7 @@
 "GENERAL" = "GENEL";
 
 /* No comment provided by engineer. */
-"Go to Website" = "İnternet sitesine git";
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "tutulan bakiye endeksi:";
@@ -309,25 +294,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Dashwallet'ın önceki sürümlerinden birinde, bu cihazda parola cümlenizi gösterirken bu Uygulamanın 12 kaynak kelimenin hepsini düzgün göstermediğini belirledik. Lütfen tüm parola cümlesini tekrardan bir yere not alın.";
 
 /* No comment provided by engineer. */
-"instant payment" = "anında ödeme";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Anında Gönder için 6 onaylı yeterli girdi gerekir, yine de sıradan işlem olarak gönder?";
-
-/* No comment provided by engineer. */
-"Insufficient Funds" = "Yetersiz Bakiye";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "yetersiz bakiye";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "dash ağ ücreti için yetersiz bakiye";
+"Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
 "INVALID" = "GEÇERSİZ";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Geçersiz tutar";
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adresi/port:";
@@ -336,22 +309,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, dashleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Uphold Hesabını Bağla";
+"Link Uphold Account" = "Link Uphold Account";
 
 /* No comment provided by engineer. */
 "Load more" = "Daha fazla yükle";
 
 /* No comment provided by engineer. */
-"Local currency" = "Yerel para birimi";
+"Local currency" = "Local currency";
+
+/* No comment provided by engineer. */
+"locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "AnındaGönder ile kilitli";
 
 /* No comment provided by engineer. */
-"Log Out" = "Çıkış Yap";
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Uphold'dan çıkış yap";
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "anadüğüm barındırma adresi";
@@ -450,9 +426,6 @@
 "Pay" = "Ödeme";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "alacaklı kimliği onaylı değil";
-
-/* No comment provided by engineer. */
 "payload:" = "ödeme yükü:";
 
 /* No comment provided by engineer. */
@@ -513,9 +486,6 @@
 "recovery phrase must have %d words" = "kurtarma cümlesi %d kelime olmalı";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@) ile ödeme miktarı düşürülsün mü?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "kayıt iş:";
 
 /* No comment provided by engineer. */
@@ -528,12 +498,6 @@
 "request an amount" = "bir miktar isteyin";
 
 /* No comment provided by engineer. */
-"request expired" = "istek süresi bitti";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "bu istek anında ödeme için ama siz anında ödemeleri devredışı bıraktınız";
-
-/* No comment provided by engineer. */
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */
@@ -541,9 +505,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "sıfırla";
-
-/* No comment provided by engineer. */
-"retry" = "tekrar dene";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Başkalarının dash adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
@@ -558,13 +519,10 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Paralarınız risk altında. Bakiyenizi başka bir cüzdana aktarın.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "Uphold'da Gör";
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%d/%d eş tarafından görüldü";
-
-/* No comment provided by engineer. */
-"send" = "gönder";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Özel anahtardan cüzdanınıza %1$@ (%2$@) gönderilsin mi? Bitcoin ağı %3$@ (%4$@) ücreti alacaktır.";
@@ -574,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "adresi mesaj olarak gönder";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "isteği e-posta olarak gönder";
@@ -618,7 +579,7 @@
 "sms not currently available" = "kısa mesaj şu anda kullanılabilir değil";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Bir şeyler ters gitti";
+"Something went wrong" = "Something went wrong";
 
 /* No comment provided by engineer. */
 "spent address" = "harcama adresi";
@@ -627,13 +588,16 @@
 "spent input" = "harcama girişi";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Başka bir cüzdan Başlat / Kurtar";
+"Start / Recover another wallet" = "Start / Recover another wallet";
 
 /* No comment provided by engineer. */
 "status:" = "durum:";
 
 /* No comment provided by engineer. */
-"Success" = "Başarılı";
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
+"Success" = "Success";
 
 /* No comment provided by engineer. */
 "swept!" = "silindi!";
@@ -652,15 +616,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Bu sizin dash bakiyeniz. Dash bir para birimidir. Döviz kurları piyasa ile değişir.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "ödeme adresi zaten cüzdanınızda var";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "bu istek bir anında ödeme gerektiriyor ama siz anında ödemeleri devredışı bıraktınız";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "İşlemin tamamlanması birkaç dakika sürebilir.";
@@ -684,7 +639,7 @@
 "topup amount:" = "yükleme tutarı:";
 
 /* No comment provided by engineer. */
-"Total" = "Toplam";
+"Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limiti";
@@ -696,16 +651,16 @@
 "Transaction history" = "İşlem geçmişi";
 
 /* No comment provided by engineer. */
-"Transaction id" = "İşlem kimliği";
+"Transaction id" = "Transaction id";
 
 /* No comment provided by engineer. */
-"Transfer" = "Aktarma";
+"Transfer" = "Transfer";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Upholf hesabınızdan bu cüzdana Dash aktarın";
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Uphold'dan Aktar";
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "güven";
@@ -729,9 +684,6 @@
 "unknown address" = "bilinmeyen adres";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "onaylanmamış adres";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "desteklenmeyen veya bozuk belge";
 
 /* No comment provided by engineer. */
@@ -744,7 +696,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold hesabı";
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Kullanıcı Kayıt İşlemi";
@@ -786,6 +738,9 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashwallet'ın taşıma işlemi sırasında çöktüğünü tespit ettik. Blok zincirini tekrar tararsanız sorun çözülecektir veya tekrar deneyebilirsiniz. Tekrar taramanın kablosuz ağ üzerinde yapılması tercih edilir ve bu işlem yarım saat kadar sürer. Eşleşme süreci tamamlanınca bakiyenizi kullanabilirsiniz.";
 
 /* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+
+/* No comment provided by engineer. */
 "wipe" = "sil";
 
 /* No comment provided by engineer. */
@@ -804,10 +759,10 @@
 "you received dash!" = "dash aldınız!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "Aynı zamanda tarayıcınızda Uphold internet sitesinden çıkış yapmanız gerekecek";
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "İşleminiz yapıldı ve birkaç dakika içinde tutar cüzdanınızda görülecek.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Uphold hesabınızın Dash bakiyesi:";
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";

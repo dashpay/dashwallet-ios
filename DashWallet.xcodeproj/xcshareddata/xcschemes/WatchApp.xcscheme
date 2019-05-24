@@ -14,6 +14,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+               BuildableName = "WatchApp.app"
+               BlueprintName = "WatchApp"
+               ReferencedContainer = "container:DashWallet.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "75D5F3BD191EC270004AB296"
                BuildableName = "dashwallet.app"
                BlueprintName = "dashwallet"
@@ -26,29 +40,8 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      codeCoverageEnabled = "YES"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "75D5F3E4191EC270004AB296"
-               BuildableName = "DashWalletTests.xctest"
-               BlueprintName = "DashWalletTests"
-               ReferencedContainer = "container:DashWallet.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "31D68B4F1C23B6C10030FAAA"
-               BuildableName = "DashWalletUITests.xctest"
-               BlueprintName = "DashWalletUITests"
-               ReferencedContainer = "container:DashWallet.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
@@ -63,9 +56,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "75D5F3BD191EC270004AB296"
-            BuildableName = "dashwallet.app"
-            BlueprintName = "dashwallet"
+            BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+            BuildableName = "WatchApp.app"
+            BlueprintName = "WatchApp"
             ReferencedContainer = "container:DashWallet.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -82,16 +75,27 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/Dash">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "75D5F3BD191EC270004AB296"
-            BuildableName = "dashwallet.app"
-            BlueprintName = "dashwallet"
+            BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+            BuildableName = "WatchApp.app"
+            BlueprintName = "WatchApp"
             ReferencedContainer = "container:DashWallet.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+            BuildableName = "WatchApp.app"
+            BlueprintName = "WatchApp"
+            ReferencedContainer = "container:DashWallet.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -101,16 +105,27 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/Dash">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "75D5F3BD191EC270004AB296"
-            BuildableName = "dashwallet.app"
-            BlueprintName = "dashwallet"
+            BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+            BuildableName = "WatchApp.app"
+            BlueprintName = "WatchApp"
             ReferencedContainer = "container:DashWallet.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "BA913BDD1BD57E4D005A7C0E"
+            BuildableName = "WatchApp.app"
+            BlueprintName = "WatchApp"
+            ReferencedContainer = "container:DashWallet.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNjë kodkalim është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo kodkalimin dhe vazhdo.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nlejo çasjen e kamerës në\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
@@ -84,16 +81,10 @@
 "available" = "available";
 
 /* No comment provided by engineer. */
-"bad payment request" = "kërkesë për pages e gabuar";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "frazë rikthyese e gabuar";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blloku #%1$d i %2$d";
@@ -114,7 +105,7 @@
 "cancel" = "anulo";
 
 /* No comment provided by engineer. */
-"Cancel" = "anullo";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "ndrysho";
@@ -207,9 +198,6 @@
 "dash payments can't be less than %@" = "dash pagesa nuk mund të jetë më e pak se %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash transaksion outputet nuk mund të jetë më pak se %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SIGURIA E PAJISJES ËSHTË KOMPROMETUAR\n\nÇdo aplikacion 'jailbreak' mund të ketë çasje në të dhënat e aplikacioneve tjera (dhe mund të ju vjedhin dash-at e juaj).";
 
 /* No comment provided by engineer. */
@@ -231,10 +219,10 @@
 "double spend" = "shpenzim i dyfisht";
 
 /* No comment provided by engineer. */
-"email not configured" = "email nuk është konfiguruar";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "enable";
+"email not configured" = "email nuk është konfiguruar";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
@@ -253,9 +241,6 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "gabim duke firmosur dash transaksionin";
 
 /* No comment provided by engineer. */
 "exit" = "exit";
@@ -309,19 +294,7 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
-
-/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "fonde të pamjaftueshme";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "fonde të pamjaftueshme për tarifë";
 
 /* No comment provided by engineer. */
 "INVALID" = "JOVALID";
@@ -343,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Local currency" = "Local currency";
+
+/* No comment provided by engineer. */
+"locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "locked with InstantSend";
@@ -450,9 +426,6 @@
 "Pay" = "Paguaj";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -513,9 +486,6 @@
 "recovery phrase must have %d words" = "fraza rikthyese duhet të ketë %d fjalë";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "zvogëloni shumën e pagesës për\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
@@ -528,12 +498,6 @@
 "request an amount" = "kërko një shumë";
 
 /* No comment provided by engineer. */
-"request expired" = "kërkesa skadoj";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
-
-/* No comment provided by engineer. */
 "rescan" = "riskano";
 
 /* No comment provided by engineer. */
@@ -541,9 +505,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "reseto";
-
-/* No comment provided by engineer. */
-"retry" = "retry";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
@@ -564,9 +525,6 @@
 "seen by %d of %d peers" = "u pa nga %1$d e %2$d peers";
 
 /* No comment provided by engineer. */
-"send" = "send";
-
-/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Dërgo %1$@ (%2$@) nga ky çelës privat në kuletën tuaj? Tarifa për këtë transaksion do të jetë %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
@@ -574,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "dërgo adresën sikur mesazh";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "dërgo kërkesën si email";
@@ -633,6 +594,9 @@
 "status:" = "statusi:";
 
 /* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
 "Success" = "Success";
 
 /* No comment provided by engineer. */
@@ -652,15 +616,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Kjo është dash bilanci juaj. Dash është një monedhë. Kursi i këmbimit ndryshon nga tregu.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "kjo adresë ekziston tashmë ne kuletën tuaj";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
@@ -729,9 +684,6 @@
 "unknown address" = "adresë e panjohur";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "adresë e papranuar";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "dokument i korruptuar apo i pambështetur";
 
 /* No comment provided by engineer. */
@@ -784,6 +736,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "fshij";

@@ -57,7 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if DEBUG
     self.logsCopyButton.hidden = NO;
-#endif
+#endif /* DEBUG */
+    
+#if SNAPSHOT
+    self.logsCopyButton.hidden = YES;
+#endif /* SNAPSHOT */
 
     self.mainTitleLabel.text = [self.model mainTitle];
 

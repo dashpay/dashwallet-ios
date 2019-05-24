@@ -382,10 +382,12 @@
                     uint64_t roundedFeeCostPerByte = self.transaction.roundedFeeCostPerByte;
                     if (roundedFeeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
                         cell.statusLabel.text = roundedFeeCostPerByte == 1?NSLocalizedString(@"1 duff/byte",nil):[NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), roundedFeeCostPerByte];
+                        cell.moreInfoLabel.text = [@(self.transaction.size) stringValue];
                     } else {
-                        cell.statusLabel.text = nil;
+                        cell.statusLabel.text = [@(self.transaction.size) stringValue];
+                        cell.moreInfoLabel.text = nil;
                     }
-                    cell.moreInfoLabel.text = [@(self.transaction.size) stringValue];
+                    
                     
                     return cell;
                 }

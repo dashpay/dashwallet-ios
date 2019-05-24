@@ -62,6 +62,9 @@ static UIColor *BackgroundHighlightedColor() {
         switch (type) {
             case DWAmountButtonTypeSeparator: {
                 titleLabel.text = [NSLocale currentLocale].decimalSeparator;
+#if SNAPSHOT
+                titleLabel.accessibilityIdentifier = @"amount_button_separator";
+#endif /* SNAPSHOT */
 
                 break;
             }

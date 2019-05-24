@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 
@@ -19,12 +20,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSArray * allWallets;
 @property (nonatomic,readonly) DSAccount * currentAccount;
 @property (nonatomic,strong) DSChainManager * currentChainManager;
+@property (nonatomic,readonly) SystemSoundID pingsound;
 
 + (instancetype _Nullable)sharedInstance;
 - (void)clearAllWallets;
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
 -(void)reset;
+-(void)playPingSound;
 
 @end
 

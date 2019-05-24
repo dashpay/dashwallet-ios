@@ -4,7 +4,8 @@ target 'dashwallet' do
   pod 'DashSync', :path => '../DashSync/'
   
   pod 'KVO-MVVM', '0.5.1'
-  
+  pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash', :commit => '41a46e6', :inhibit_warnings => true
+
   # Pods for dashwallet
   
   target 'DashWalletTests' do
@@ -12,9 +13,10 @@ target 'dashwallet' do
     # Pods for testing
   end
 
-  target 'DashWalletUITests' do
+  target 'DashWalletScreenshotsUITests' do
     inherit! :search_paths
-    # Pods for testing
+    
+    pod 'SimulatorStatusMagic', '2.4.1'
   end
 
 end

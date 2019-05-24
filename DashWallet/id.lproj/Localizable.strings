@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nKode akses perangkat diperlukan untuk melindungi dompet Anda. Buka pengaturan dan aktifkan kode akses untuk melanjutkan.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nALAMAT SUDAH DIGUNAKAN\nalamat dash dimaksudkan hanya untuk sekali pakai\n\nmenggunakan kembali mengurangi privasi untuk Anda dan penerima dan dapat mengakibatkan kerugian jika penerima tidak secara langsung mengontrol alamat";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nizinkan akses kamera masuk\nPengaturan-> Privasi-> Kamera->%@";
 
 /* No comment provided by engineer. */
@@ -63,7 +60,7 @@
 "always require passcode" = "selalu membutuhkan kode sandi";
 
 /* No comment provided by engineer. */
-"Amount" = "Jumlah";
+"Amount" = "Amount";
 
 /* No comment provided by engineer. */
 "amount too small" = "jumlah terlalu kecil";
@@ -81,19 +78,13 @@
 "Are you sure?" = "Apakah anda yakin?";
 
 /* No comment provided by engineer. */
-"available" = "tersedia";
-
-/* No comment provided by engineer. */
-"bad payment request" = "permintaan pembayaran yang buruk";
+"available" = "available";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "frasa pemulihan yang buruk";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Alamat Bitcoin (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "pembayaran bitcoin tidak boleh kurang dari %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d of %2$d";
@@ -105,7 +96,7 @@
 "Buy dash in dashwallet!" = "Beli dash di dompet dash!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Beli Dash dengan akun Uphold";
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Dengan menghapus perangkat ini, Anda tidak lagi memiliki akses ke dana di perangkat ini. Ini hanya boleh dilakukan jika Anda tidak lagi memiliki akses ke kata sandi Anda dan lupa kode pin Anda.";
@@ -114,7 +105,7 @@
 "cancel" = "batalkan";
 
 /* No comment provided by engineer. */
-"Cancel" = "Batalkan";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "ganti";
@@ -156,10 +147,10 @@
 "Confirm" = "Memastikan";
 
 /* No comment provided by engineer. */
-"confirm" = "Memastikan";
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Konfirmasi transaksi";
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "dikonfirmasi dalam blok #%d";
@@ -207,9 +198,6 @@
 "dash payments can't be less than %@" = "pembayaran dash tidak boleh kurang dari %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "transaksi jumlah total dash tidak boleh kurang dari %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri dash Anda).";
 
 /* No comment provided by engineer. */
@@ -231,10 +219,10 @@
 "double spend" = "pengiriman ganda";
 
 /* No comment provided by engineer. */
-"email not configured" = "email tidak dikonfigurasi";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "aktifkan";
+"email not configured" = "email tidak dikonfigurasi";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Aktifkan fitur lanjutan";
@@ -249,13 +237,10 @@
 "enter" = "masuk";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Masukkan jumlah yang akan ditransfer di bawah ini";
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Masukkan kode 2FA Anda di bawah ini";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "kesalahan menandatangani transaksi dash";
+"Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
 "exit" = "keluar";
@@ -270,10 +255,10 @@
 "Failed wallet update" = "Pembaruan dompet gagal";
 
 /* No comment provided by engineer. */
-"Fee" = "biaya";
+"Fee" = "Fee";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Biaya akan dikurangkan dari jumlah yang diminta";
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
 
 /* No comment provided by engineer. */
 "from:" = "dari:";
@@ -282,7 +267,7 @@
 "GENERAL" = "UMUM";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Pergi ke Situs Web";
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "memegang dana indeks:";
@@ -309,25 +294,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Dalam versi dompet Dash sebelumnya, ketika awalnya menampilkan kata sandi Anda di perangkat ini, kami telah menetapkan bahwa Aplikasi ini tidak menampilkan semua 12 kata benih dengan benar. Silakan tuliskan kata sandi lengkap Anda lagi.";
 
 /* No comment provided by engineer. */
-"instant payment" = "pembayaran instan";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend membutuhkan input yang cukup dengan 6 konfirmasi, tetap kirim sebagai transaksi biasa?";
-
-/* No comment provided by engineer. */
-"Insufficient Funds" = "Dana tidak mencukupi";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "dana tidak mencukupi";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "dana tidak mencukupi untuk biaya jaringan dash";
+"Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
 "INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Jumlah tidak valid";
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "Alamat IP/port:";
@@ -336,22 +309,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Biarkan orang lain memindai kode QR ini untuk mendapatkan alamat dash Anda. Siapa pun dapat mengirim dash ke dompet Anda dengan mentransfernya ke alamat Anda.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Tautkan Akun Uphold";
+"Link Uphold Account" = "Link Uphold Account";
 
 /* No comment provided by engineer. */
 "Load more" = "Muat lebih";
 
 /* No comment provided by engineer. */
-"Local currency" = "Mata uang lokal";
+"Local currency" = "Local currency";
+
+/* No comment provided by engineer. */
+"locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "dikunci dengan InstantSend";
 
 /* No comment provided by engineer. */
-"Log Out" = "Keluar";
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Keluar dari Uphold";
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "alamat pemegang masternode";
@@ -450,9 +426,6 @@
 "Pay" = "Bayar";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "identitas penerima tidak disertifikasi";
-
-/* No comment provided by engineer. */
 "payload:" = "muatan:";
 
 /* No comment provided by engineer. */
@@ -513,9 +486,6 @@
 "recovery phrase must have %d words" = "frasa pemulihan harus memiliki %d kata";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "kurangi jumlah pembayaran dengan\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "tx pendaftaran:";
 
 /* No comment provided by engineer. */
@@ -528,12 +498,6 @@
 "request an amount" = "meminta jumlah";
 
 /* No comment provided by engineer. */
-"request expired" = "permintaan telah kedaluwarsa";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "permintaan untuk pembayaran instan tetapi Anda telah menonaktifkan pembayaran instan";
-
-/* No comment provided by engineer. */
 "rescan" = "memindai ulang";
 
 /* No comment provided by engineer. */
@@ -541,9 +505,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "atur ulang";
-
-/* No comment provided by engineer. */
-"retry" = "mencoba kembali";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Pindai kode QR orang lain untuk mendapatkan alamat dash mereka. Anda dapat mengirim pembayaran kepada siapa pun yang memiliki alamat.";
@@ -558,13 +519,10 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Tangkapan layar terlihat oleh aplikasi dan perangkat lain. Dana Anda berisiko. Transfer saldo Anda ke dompet lain.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "Lihat di Uphold";
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "terlihat oleh %1$d dari %2$d peer";
-
-/* No comment provided by engineer. */
-"send" = "kirim";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "kirim %1$@ (%2$@) dari kunci pribadi ini ke dompet anda? Jaringan dash akan menerima biaya dari %3$@ (%4$@)";
@@ -574,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "kirim alamat sebagai pesan";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "kirim permintaan sebagai email";
@@ -618,7 +579,7 @@
 "sms not currently available" = "sms saat ini tidak tersedia";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Ada yang salah";
+"Something went wrong" = "Something went wrong";
 
 /* No comment provided by engineer. */
 "spent address" = "alamat yang dipakai";
@@ -627,13 +588,16 @@
 "spent input" = "input yang dipakai";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Mulai / Pulihkan dompet lain";
+"Start / Recover another wallet" = "Start / Recover another wallet";
 
 /* No comment provided by engineer. */
 "status:" = "status:";
 
 /* No comment provided by engineer. */
-"Success" = "Berhasil";
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
+"Success" = "Success";
 
 /* No comment provided by engineer. */
 "swept!" = "bersihkan!";
@@ -652,15 +616,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Ini adalah saldo dash anda. dash adalah mata uang. Nila tukar berubah dengan pasar.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "alamat pembayaran ini sudah ada di dompet anda";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Permintaan ini memerlukan pembayaran instan tetapi Anda tidak memiliki cukup masukan dengan 6 konfirmasi yang diperlukan oleh InstantSend, Anda dapat meminta pedagang untuk menerima transaksi normal atau menunggu beberapa menit.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "permintaan ini memerlukan pembayaran instan tetapi anda telah menonaktifkan pembayaran instan";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Transaksi ini mungkin perlu beberapa menit untuk diselesaikan.";
@@ -696,16 +651,16 @@
 "Transaction history" = "Riwayat transaksi";
 
 /* No comment provided by engineer. */
-"Transaction id" = "ID transaksi";
+"Transaction id" = "Transaction id";
 
 /* No comment provided by engineer. */
 "Transfer" = "Transfer";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash dari akun Uphold Anda ke dompet ini";
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer dari Uphold";
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "Terpercaya";
@@ -729,9 +684,6 @@
 "unknown address" = "alamat diketahui";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "alamat tidak dikenal";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "dokumen yang tidak didukung atau rusak";
 
 /* No comment provided by engineer. */
@@ -744,7 +696,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Akun Uphold";
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Transaksi pendaftaran Pengguna";
@@ -786,6 +738,9 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Kami telah mendeteksi bahwa Dashwallet macet selama migrasi. Memindai ulang blockchain akan menyelesaikan masalah ini atau Anda dapat mencoba lagi. Pemindaian ulang sebaiknya dilakukan pada wifi dan akan memakan waktu hingga setengah jam. Dana Anda akan tersedia setelah proses sinkronisasi selesai.";
 
 /* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+
+/* No comment provided by engineer. */
 "wipe" = "menghapus";
 
 /* No comment provided by engineer. */
@@ -804,10 +759,10 @@
 "you received dash!" = "anda menerima dash!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "Anda juga harus keluar dari situs web Uphold menggunakan browser Anda";
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Saldo Dash akun Uphold Anda adalah";
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";

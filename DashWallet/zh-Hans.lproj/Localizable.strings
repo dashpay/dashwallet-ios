@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n你需要一个密码来保护你的钱包。请转到设置并打开密码再继续。";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n该地址已被使用过\n 达世币地址仅供一次性使用\n\n如果收款人不直接控制地址，重复利用钱包地址会降低你和收款人的隐私，并可能导致损失";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n允许照相机访问\n设置->隐私->照相机->%@";
 
 /* No comment provided by engineer. */
@@ -84,16 +81,10 @@
 "available" = "available";
 
 /* No comment provided by engineer. */
-"bad payment request" = "付款请求错误";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "恢复密语错误";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "比特币地址 (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "比特币支付不能少于 %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d中#%1$d的区块";
@@ -207,9 +198,6 @@
 "dash payments can't be less than %@" = "达世币付款不能低于%@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "达世币交易的输出不能少于%@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "该设备的安全性受到威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据(并窃取你的达世币)。";
 
 /* No comment provided by engineer. */
@@ -231,10 +219,10 @@
 "double spend" = "双重花费";
 
 /* No comment provided by engineer. */
-"email not configured" = "电子邮件尚未配置";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "激活";
+"email not configured" = "电子邮件尚未配置";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
@@ -253,9 +241,6 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "达世币交易签名错误";
 
 /* No comment provided by engineer. */
 "exit" = "退出";
@@ -309,19 +294,7 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "在之前的达世币钱包版本中，我们已确定在最初此设备显示你的恢复词组时，此App并没正确的显示全部的12个恢复词。请再次写下你的完整恢复词组。";
 
 /* No comment provided by engineer. */
-"instant payment" = "即时支付";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即时支付需要交易输出有6次确认，是否改为普通交易并发送？";
-
-/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "资金不足";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "资金不足以支付达世币的网络手续费";
 
 /* No comment provided by engineer. */
 "INVALID" = "无效";
@@ -343,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Local currency" = "Local currency";
+
+/* No comment provided by engineer. */
+"locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "locked with InstantSend";
@@ -450,9 +426,6 @@
 "Pay" = "支付";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "收款人身份未经过认证";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -513,9 +486,6 @@
 "recovery phrase must have %d words" = "恢复密语必须包括 %d 个字";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "减少付款金额\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
@@ -528,12 +498,6 @@
 "request an amount" = "请求金额";
 
 /* No comment provided by engineer. */
-"request expired" = "请求已过期";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "交易请求需要即时支付交易，但你已关闭了即时支付功能";
-
-/* No comment provided by engineer. */
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
@@ -541,9 +505,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "重置";
-
-/* No comment provided by engineer. */
-"retry" = "重试";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
@@ -564,9 +525,6 @@
 "seen by %d of %d peers" = "被%2$d中%1$d节点看到";
 
 /* No comment provided by engineer. */
-"send" = "发送";
-
-/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "从这个私钥发送%1$@ (%2$@) 到你的钱包？ 达世币网络将收到 %3$@ (%4$@) 的费用。";
 
 /* No comment provided by engineer. */
@@ -574,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "以短信形式发送地址";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "以电子邮件发送请求";
@@ -633,6 +594,9 @@
 "status:" = "状态：";
 
 /* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
 "Success" = "Success";
 
 /* No comment provided by engineer. */
@@ -652,15 +616,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "这是您的达世币余额。达世币是一种货币，汇率随着市场变化。";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "此付款地址已在你的钱包中";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "此请求需要即时付款, 但您没有足够6次确认的交易输入来进行即时发送. 您可以询问商家接受普通付款, 或等待几分钟.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "此请求需要即时付款, 但您已禁用了即时支付功能";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
@@ -729,9 +684,6 @@
 "unknown address" = "未知地址";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "无法识别的地址";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "不支持或损坏的文件";
 
 /* No comment provided by engineer. */
@@ -784,6 +736,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "清空";

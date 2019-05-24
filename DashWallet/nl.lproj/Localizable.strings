@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEen toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\ndash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\ngeef toegang tot de camera in\nInstellingen->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
@@ -63,7 +60,7 @@
 "always require passcode" = "altijd toegangscode vereisen";
 
 /* No comment provided by engineer. */
-"Amount" = "Bedrag";
+"Amount" = "Amount";
 
 /* No comment provided by engineer. */
 "amount too small" = "bedrag is te klein";
@@ -81,19 +78,13 @@
 "Are you sure?" = "Weet je het zeker?";
 
 /* No comment provided by engineer. */
-"available" = "beschikbaar";
-
-/* No comment provided by engineer. */
-"bad payment request" = "foutief betaalverzoek";
+"available" = "available";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "onjuiste herstelzin";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin-adres (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin-betalingen mogen niet minder bedragen dan %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d van %2$d";
@@ -105,7 +96,7 @@
 "Buy dash in dashwallet!" = "Koop dash in dashwallet!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Koop Dash met een Uphold account";
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Door dit apparaat schoon te vegen heb je geen toegang meer tot het geld op dit apparaat. Dit zou alleen gedaan moeten worden als je de herstelzin hebt verloren en ook de pincode kwijt bent.";
@@ -114,7 +105,7 @@
 "cancel" = "annuleer";
 
 /* No comment provided by engineer. */
-"Cancel" = "Annuleer";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "wijzig";
@@ -156,10 +147,10 @@
 "Confirm" = "Bevestig";
 
 /* No comment provided by engineer. */
-"confirm" = "bevestig";
+"confirm" = "confirm";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Bevestig transactie";
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bevestigd in blok #%d";
@@ -207,9 +198,6 @@
 "dash payments can't be less than %@" = "dash-betalingen mogen niet minder bedragen dan %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash-transactierestanten mogen niet minder bedragen dan %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen).";
 
 /* No comment provided by engineer. */
@@ -231,10 +219,10 @@
 "double spend" = "dubbel uitgegeven";
 
 /* No comment provided by engineer. */
-"email not configured" = "e-mail is niet ingesteld";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "Inschakele";
+"email not configured" = "e-mail is niet ingesteld";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Geavanceerde functies activeren";
@@ -249,13 +237,10 @@
 "enter" = "voer in";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Voer hieronder het bedrag in dat moet worden overgemaakt";
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "fout bij het ondertekenen van de dash-transactie";
+"Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
 "exit" = "sluit af";
@@ -270,10 +255,10 @@
 "Failed wallet update" = "Mislukte update van de portemonnee";
 
 /* No comment provided by engineer. */
-"Fee" = "Transactiekosten";
+"Fee" = "Fee";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Transactiekosten worden van het gevraagde bedrag afgetrokken";
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
 
 /* No comment provided by engineer. */
 "from:" = "van:";
@@ -282,7 +267,7 @@
 "GENERAL" = "ALGEMEEN";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Ga naar website";
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "index van saldo:";
@@ -309,25 +294,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In de vorige versie van Dashwallet, waar aanvankelijk de herstelzin werd getoond, hebben we geconstateerd dat de 12 herstelwoorden niet correct werden weergegeven. Schrijf daarom de herstel zin opnieuw op.";
 
 /* No comment provided by engineer. */
-"instant payment" = "directe betaling";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
-
-/* No comment provided by engineer. */
-"Insufficient Funds" = "Saldo niet toereikend";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "saldo niet toereikend";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "saldo niet toereikend voor de dash-netwerkvergoeding";
+"Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
 "INVALID" = "ONGELDIG";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Ongeldig bedrag";
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adres/port:";
@@ -336,22 +309,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laat anderen deze QR-code scannen om jouw dash-adres te verkrijgen. Iedereen kan dash naar jouw portemonnee versturen door deze te sturen naar jouw adres.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Koppel Uphold account";
+"Link Uphold Account" = "Link Uphold Account";
 
 /* No comment provided by engineer. */
 "Load more" = "Laad meer";
 
 /* No comment provided by engineer. */
-"Local currency" = "lokale valuta";
+"Local currency" = "Local currency";
+
+/* No comment provided by engineer. */
+"locked" = "locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "vergrendeld met InstantSend";
 
 /* No comment provided by engineer. */
-"Log Out" = "Uitloggen";
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Bij Uphold uitloggen";
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adres met saldo van masternode";
@@ -450,9 +426,6 @@
 "Pay" = "Betaal";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "de betaler-identiteit is niet gecertificeerd";
-
-/* No comment provided by engineer. */
 "payload:" = "lading:";
 
 /* No comment provided by engineer. */
@@ -513,9 +486,6 @@
 "recovery phrase must have %d words" = "de herstelzin moet %d woorden bevatten";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "Registratie tx:";
 
 /* No comment provided by engineer. */
@@ -528,12 +498,6 @@
 "request an amount" = "verzoek een bedrag";
 
 /* No comment provided by engineer. */
-"request expired" = "verzoek verlopen";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "het verzoek is voor een directe betaling maar je hebt directe betalingen uitgeschakeld";
-
-/* No comment provided by engineer. */
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
@@ -541,9 +505,6 @@
 
 /* No comment provided by engineer. */
 "reset" = "herstel";
-
-/* No comment provided by engineer. */
-"retry" = "probeer opnieuw";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar dash adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
@@ -558,13 +519,10 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Je tegoed loopt gevaar. Verplaats je tegoed naar een andere portemonnee.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "Bekijk op Uphold";
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "gezien door %1$d van %2$d peers";
-
-/* No comment provided by engineer. */
-"send" = "verstuur";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) verstueren van deze persoonlijke sleutel naar jouw portemonnee? Het dash-netwerk zal een vergoeding krijgen van %3$@ (%4$@).";
@@ -574,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "verstuur adres als bericht";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "verstuur verzoek als e-mail";
@@ -618,7 +579,7 @@
 "sms not currently available" = "sms is momenteel niet beschikbaar";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Er is iets verkeerd gegaan";
+"Something went wrong" = "Something went wrong";
 
 /* No comment provided by engineer. */
 "spent address" = "spent adres";
@@ -627,13 +588,16 @@
 "spent input" = "spent invoer";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Herstel een andere portemonnee";
+"Start / Recover another wallet" = "Start / Recover another wallet";
 
 /* No comment provided by engineer. */
 "status:" = "status:";
 
 /* No comment provided by engineer. */
-"Success" = "Succes";
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
+"Success" = "Success";
 
 /* No comment provided by engineer. */
 "swept!" = "geveegd!";
@@ -652,15 +616,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Dit is je dash-saldo. Dash is een valuta. De wisselkoers wijzigt conform de markt.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "dit betaaladres staat al in je portemonnee";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "dit verzoek heeft een onmiddellijke betaling nodig maar onmiddellijke betalingen heb je uitgeschakeld";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "De afhandeling van deze transactie kan enkele minuten duren.";
@@ -684,7 +639,7 @@
 "topup amount:" = "top-up bedrag:";
 
 /* No comment provided by engineer. */
-"Total" = "Totaal";
+"Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "touch ID limiet";
@@ -696,16 +651,16 @@
 "Transaction history" = "transactiegeschiedenis";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transactie id";
+"Transaction id" = "Transaction id";
 
 /* No comment provided by engineer. */
-"Transfer" = "overdracht";
+"Transfer" = "Transfer";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Verstuur Dash van je Uphold account naar deze portemonnee";
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Verstuur vanaf Uphold";
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "vertrouw";
@@ -727,9 +682,6 @@
 
 /* No comment provided by engineer. */
 "unknown address" = "onbekend adres";
-
-/* No comment provided by engineer. */
-"unrecognized address" = "adres niet herkend";
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "niet-ondersteund of corrupt document";
@@ -786,6 +738,9 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat Dashwallet tijdens de migratie is gecrashed. Opnieuw scannen van de blokketen zal het issue oplossen of je moet opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Je tegoeden worden beschikbaar zodra het synchronisatieproces is afgerond.";
 
 /* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+
+/* No comment provided by engineer. */
 "wipe" = "wis";
 
 /* No comment provided by engineer. */
@@ -804,10 +759,10 @@
 "you received dash!" = "je hebt dash ontvangen!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "De transactie is verzonden en het bedrag verschijnt binnen een paar minuten in je de portemonnee.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Je saldo in Dash bij Uphold is";
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";

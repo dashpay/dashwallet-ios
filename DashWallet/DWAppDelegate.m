@@ -30,24 +30,27 @@
 #import <UserNotifications/UserNotifications.h>
 
 #import "DWDataMigrationManager.h"
-#import "DWMigrationViewController.h"
-#import "DWMigrationViewModel.h"
+#import "DWStartViewController.h"
+#import "DWStartModel.h"
+#import "DWCrashReporter.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
-#endif
+#endif /* IGNORE_WATCH_TARGET */
 
 #if DASH_TESTNET
 #pragma message "testnet build"
-#endif
+#endif /* DASH_TESTNET */
 
 #if SNAPSHOT
 #pragma message "snapshot build"
-#endif
+#endif /* SNAPSHOT */
 
 #define FRESH_INSTALL 0
 
-@interface DWAppDelegate () <DWMigrationViewControllerDelegate>
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+@interface DWAppDelegate () <DWStartViewControllerDelegate>
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
@@ -68,18 +71,22 @@
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification
                                                object:nil];
-    [self setupDashWalletAppearance];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
     
-    // start updating prices earlier than migration to update `secureTime`
-    [[DSPriceManager sharedInstance] startExchangeRateFetching];
-    
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
     
-    if ([DWDataMigrationManager sharedInstance].shouldMigrate) {
-        [self performMigratingStartWithLaunchOptions:launchOptions];
+    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
+    DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
+    if (migrationManager.shouldMigrate || crashReporter.shouldHandleCrashReports) {
+        // start updating prices earlier than migration to update `secureTime`
+        // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
+        if (migrationManager.shouldMigrate) {
+            [[DSPriceManager sharedInstance] startExchangeRateFetching];
+        }
+        
+        [self performDeferredStartWithLaunchOptions:launchOptions];
     }
     else {
         [self performNormalStartWithLaunchOptions:launchOptions];
@@ -169,12 +176,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
 
-    if ([DWEnvironment sharedInstance].currentChainManager.syncProgress >= 1.0) {
-        NSLog(@"background fetch already synced");
-        if (completion) completion(UIBackgroundFetchResultNoData);
-        return;
-    }
-
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
@@ -222,9 +223,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //    }
 }
 
-- (void)performMigratingStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWMigrationViewModel *viewModel = [[DWMigrationViewModel alloc] initWithLaunchOptions:launchOptions];
-    DWMigrationViewController *controller = [DWMigrationViewController controller];
+- (void)performDeferredStartWithLaunchOptions:(NSDictionary *)launchOptions {
+    DWStartModel *viewModel = [[DWStartModel alloc] initWithLaunchOptions:launchOptions];
+    DWStartViewController *controller = [DWStartViewController controller];
     controller.viewModel = viewModel;
     controller.delegate = self;
     
@@ -232,6 +233,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
+    [[DWCrashReporter sharedInstance] enableCrashReporter];
+    
+    [self setupDashWalletAppearance];
+    
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     UIViewController *controller = [storyboard instantiateInitialViewController];
     self.window.rootViewController = controller;
@@ -408,9 +413,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
 }
 
-#pragma mark - DWMigrationViewControllerDelegate
+#pragma mark - DWStartViewControllerDelegate
 
-- (void)migrationViewController:(DWMigrationViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
+- (void)startViewController:(DWStartViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
     [self performNormalStartWithLaunchOptions:launchOptions];
     
     if (shouldRescanBlockchain) {
