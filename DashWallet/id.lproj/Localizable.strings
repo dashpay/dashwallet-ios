@@ -48,6 +48,9 @@
 "About" = "Tentang";
 
 /* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
+
+/* No comment provided by engineer. */
 "Action Needed" = "Tindakan diperlukan";
 
 /* No comment provided by engineer. */
@@ -273,7 +276,7 @@
 "Load more" = "Muat lebih";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "dikunci dengan InstantSend";
@@ -393,6 +396,9 @@
 "pending" = "tertunda";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "tolong masukkan pin untuk meng-upgrade dompet";
 
 /* No comment provided by engineer. */
@@ -403,6 +409,12 @@
 
 /* No comment provided by engineer. */
 "Private key" = "Kunci pribadi";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Kunci publik";
@@ -615,7 +627,7 @@
 "unsupported url" = "url tidak didukung";
 
 /* No comment provided by engineer. */
-"unverified" = "tidak diverifikasi";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Transaksi pendaftaran Pengguna";
@@ -631,6 +643,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "diverifikasi, menunggu konfirmasi";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "hash kunci suara:";

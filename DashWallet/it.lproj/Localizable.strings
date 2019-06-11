@@ -48,6 +48,9 @@
 "About" = "A proposito di";
 
 /* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
+
+/* No comment provided by engineer. */
 "Action Needed" = "Azione Necessaria";
 
 /* No comment provided by engineer. */
@@ -273,7 +276,7 @@
 "Load more" = "Carica di più";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "bloccato con InstantSend";
@@ -393,6 +396,9 @@
 "pending" = "in attesa di";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
 
 /* No comment provided by engineer. */
@@ -403,6 +409,12 @@
 
 /* No comment provided by engineer. */
 "Private key" = "Chiave privata";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Chiave pubblica";
@@ -615,7 +627,7 @@
 "unsupported url" = "url non supportato";
 
 /* No comment provided by engineer. */
-"unverified" = "non verificato";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Transazione registrazione utente";
@@ -631,6 +643,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verificato, in attesa di conferma";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "hash chiave voto:";
