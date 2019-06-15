@@ -51,6 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateWithAmount:(uint64_t)amount {
     self.instantSendFee = nil;
+    
+    DSSporkManager * sporkManager = [DWEnvironment sharedInstance].currentChainManager.sporkManager;
+    if ([sporkManager llmqInstantSendEnabled]) {
+        self.state = DWAmountSendOptionsModelState_AutoLocks;
+        return;
+    }
 
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
