@@ -199,44 +199,43 @@
     //TODO: make it easy to create a new wallet and transfer balance
     if (! self.screenshotObserver) {
         self.screenshotObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification
-                                                          object:nil queue:nil usingBlock:^(NSNotification *note) {
-                                                              if (!self.inSetupMode) {
-                                                                  
-                                                                  UIAlertController * alert = [UIAlertController
-                                                                                               alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
-                                                                                               message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                                                                                                         "Your funds are at risk. Transfer your balance to another wallet.", nil)
-                                                                                               preferredStyle:UIAlertControllerStyleAlert];
-                                                                  UIAlertAction* okButton = [UIAlertAction
-                                                                                             actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                                             style:UIAlertActionStyleCancel
-                                                                                             handler:^(UIAlertAction * action) {
-                                                                                             }];
-                                                                  [alert addAction:okButton];
-                                                                  [self presentViewController:alert animated:YES completion:nil];
-                                                              }
-                                                              else {
-                                                                  [[DWEnvironment sharedInstance] clearAllWallets];
-                                                                  UINavigationController * navigationController = (UINavigationController*)self.presentingViewController;
-                                                                  [self dismissViewControllerAnimated:TRUE completion:nil];
-                                                                  
-                                                                  UIAlertController * alert = [UIAlertController
-                                                                                               alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
-                                                                                               message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
-                                                                                                                         "Generate a new recovery phrase and keep it secret.", nil)
-                                                                                               preferredStyle:UIAlertControllerStyleAlert];
-                                                                  UIAlertAction* okButton = [UIAlertAction
-                                                                                             actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                                             style:UIAlertActionStyleCancel
-                                                                                             handler:^(UIAlertAction * action) {
-                                                                                             }];
-                                                                  [alert addAction:okButton];
-                                                                  [navigationController.topViewController presentViewController:alert animated:YES completion:nil];
-                                                                  
-                                                                  
-                                                              }
-                                                          }];
+        [[NSNotificationCenter defaultCenter]
+         addObserverForName:UIApplicationUserDidTakeScreenshotNotification
+         object:nil
+         queue:nil
+         usingBlock:^(NSNotification *note) {
+             if (!self.inSetupMode) {
+                 
+                 UIAlertController * alert = [UIAlertController
+                                              alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                              message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                "Your funds are at risk. Transfer your balance to another wallet.", nil)
+                                              preferredStyle:UIAlertControllerStyleAlert];
+                 UIAlertAction* okButton = [UIAlertAction
+                                            actionWithTitle:NSLocalizedString(@"ok", nil)
+                                            style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction * action) {
+                                            }];
+                 [alert addAction:okButton];
+                 [self presentViewController:alert animated:YES completion:nil];
+             }
+             else {
+                 UIAlertController * alert = [UIAlertController
+                                              alertControllerWithTitle:NSLocalizedString(@"WARNING", nil)
+                                              message:NSLocalizedString(@"Screenshots are visible to other apps and devices. "
+                                                    "Generate a new recovery phrase and keep it secret.", nil)
+                                              preferredStyle:UIAlertControllerStyleAlert];
+                 UIAlertAction* okButton = [UIAlertAction
+                                            actionWithTitle:NSLocalizedString(@"ok", nil)
+                                            style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction * action) {
+                                                [[DWEnvironment sharedInstance] clearAllWallets];
+                                                [self dismissViewControllerAnimated:YES completion:nil];
+                                            }];
+                 [alert addAction:okButton];
+                 [self presentViewController:alert animated:YES completion:nil];
+             }
+         }];
     }
 }
 
