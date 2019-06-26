@@ -542,6 +542,7 @@ static NSString *dateFormat(NSString *template)
     
     DSTransaction *tx = self.transactions[indexPath.row];
     BOOL instantSendReceived = tx.instantSendReceived;
+    BOOL processingInstantSend = tx.hasUnverifiedInstantSendLock;
     uint32_t transactionLocksCount = [tx.transactionLockVotes count];
     uint64_t received = [account amountReceivedFromTransaction:tx],
     sent = [account amountSentByTransaction:tx],
@@ -564,22 +565,23 @@ static NSString *dateFormat(NSString *template)
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:tx]) {
-        unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Pending", nil);
         unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
         textLabel.textColor = [UIColor grayColor];
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:tx]) {
-        unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Unverified", nil);
     }
     else if ([account transactionOutputsAreLocked:tx]) {
-        unconfirmedLabel.text = NSLocalizedString(@"locked", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Locked", nil);
         unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
-        textLabel.textColor = [UIColor yellowColor];
+        textLabel.textColor = [UIColor colorWithRed:1 green:221/255 blue:0 alpha:1];
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms < 6) {
-        if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
+        if (processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
+        else if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
         else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
         else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
                                       (int)confirms];
@@ -643,6 +645,7 @@ static NSString *dateFormat(NSString *template)
     
     DWStubTransaction *tx = self.transactions[indexPath.row];
     BOOL instantSendReceived = tx.instantSendReceived;
+    BOOL processingInstantSend = tx.hasUnverifiedInstantSendLock;
     uint64_t received = tx.received;
     uint64_t sent = tx.sent;
     uint64_t balance = tx.balance;
@@ -663,21 +666,22 @@ static NSString *dateFormat(NSString *template)
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms == 0 && tx.transactionIsPending) {
-        unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Pending", nil);
         unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
         textLabel.textColor = [UIColor grayColor];
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms == 0 && !tx.transactionIsVerified) {
-        unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Unverified", nil);
     }
     else if (tx.transactionOutputsAreLocked) {
-        unconfirmedLabel.text = NSLocalizedString(@"locked", nil);
+        unconfirmedLabel.text = NSLocalizedString(@"Locked", nil);
         unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
-        textLabel.textColor = [UIColor yellowColor];
+        textLabel.textColor = [UIColor colorWithRed:1 green:221/255 blue:0 alpha:1];
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms < 6) {
+        if (processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
         if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
         else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
         else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),

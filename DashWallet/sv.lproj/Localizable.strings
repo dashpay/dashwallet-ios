@@ -48,6 +48,9 @@
 "About" = "About";
 
 /* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
+
+/* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
 
 /* No comment provided by engineer. */
@@ -273,7 +276,7 @@
 "Load more" = "Load more";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "locked with InstantSend";
@@ -393,6 +396,9 @@
 "pending" = "bearbetar";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "skriv in din pin-kod för att uppdatera plånboken";
 
 /* No comment provided by engineer. */
@@ -403,6 +409,12 @@
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -615,7 +627,7 @@
 "unsupported url" = "stöd saknas för URL:en";
 
 /* No comment provided by engineer. */
-"unverified" = "overifierad";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";
@@ -631,6 +643,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verifierad, inväntar bekräftelse";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "voting key hash:";

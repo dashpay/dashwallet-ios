@@ -48,6 +48,9 @@
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
+
+/* No comment provided by engineer. */
 "Action Needed" = "必ず実施して下さい";
 
 /* No comment provided by engineer. */
@@ -273,7 +276,7 @@
 "Load more" = "さらにロードする";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "即時送金［インスタントセンド］でロック済み";
@@ -393,6 +396,9 @@
 "pending" = "保留中";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "ウォレットをアップグレードするためにPINコード入力してください。";
 
 /* No comment provided by engineer. */
@@ -403,6 +409,12 @@
 
 /* No comment provided by engineer. */
 "Private key" = "プライベートキー";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "パブリックキー";
@@ -615,7 +627,7 @@
 "unsupported url" = "サポートされていないURL";
 
 /* No comment provided by engineer. */
-"unverified" = "未確認";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ユーザーの取引の登録";
@@ -631,6 +643,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "伝播確認済、承認を待機中";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "投票のキーハッシュ:";
