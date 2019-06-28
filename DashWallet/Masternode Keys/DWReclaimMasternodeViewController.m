@@ -51,7 +51,7 @@
     [self.localMasternode reclaimTransactionToAccount:self.account completion:^(DSTransaction * _Nonnull reclaimTransaction) {
         if (reclaimTransaction) {
             DSMasternodeHoldingsDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:self.localMasternode.holdingKeysWallet];
-            [derivationPath signTransaction:reclaimTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction) {
+            [derivationPath signTransaction:reclaimTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                 if (signedTransaction) {
                     [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:reclaimTransaction completion:^(NSError * _Nullable error) {
                         if (error) {

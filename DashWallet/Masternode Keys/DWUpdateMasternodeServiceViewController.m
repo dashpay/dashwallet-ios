@@ -70,7 +70,7 @@
     uint16_t port = [portString intValue];
     [self.localMasternode updateTransactionFundedByAccount:self.account toIPAddress:ipAddress port:port payoutAddress:nil completion:^(DSProviderUpdateServiceTransaction * _Nonnull providerUpdateServiceTransaction) {
         if (providerUpdateServiceTransaction) {
-            [self.account signTransaction:providerUpdateServiceTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction) {
+            [self.account signTransaction:providerUpdateServiceTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                 if (signedTransaction) {
                     [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:providerUpdateServiceTransaction completion:^(NSError * _Nullable error) {
                         if (error) {

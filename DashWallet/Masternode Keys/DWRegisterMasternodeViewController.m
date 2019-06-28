@@ -84,7 +84,7 @@
 }
 
 -(void)signTransactionInputs:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
-    [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to register this masternode?" completion:^(BOOL signedTransaction) {
+    [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to register this masternode?" completion:^(BOOL signedTransaction, BOOL cancelled) {
         if (signedTransaction) {
             [self.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction completion:^(NSError * _Nullable error) {
                 if (error) {

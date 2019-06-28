@@ -64,7 +64,7 @@
     [self.localMasternode updateTransactionFundedByAccount:self.account changeOperator:self.localMasternode.providerRegistrationTransaction.operatorKey changeVotingKeyHash:votingHash changePayoutAddress:payoutAddress completion:^(DSProviderUpdateRegistrarTransaction * _Nonnull providerUpdateRegistrarTransaction) {
         
         if (providerUpdateRegistrarTransaction) {
-            [self.account signTransaction:providerUpdateRegistrarTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction) {
+            [self.account signTransaction:providerUpdateRegistrarTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                 if (signedTransaction) {
                     [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:providerUpdateRegistrarTransaction completion:^(NSError * _Nullable error) {
                         if (error) {
