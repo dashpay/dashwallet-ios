@@ -30,6 +30,8 @@
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2120F022147A40009906DC /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
+		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
+		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
@@ -44,9 +46,9 @@
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
 		2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */; };
-		2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */; };
-		2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */; };
-		2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */; };
+		2AB231D22196E25D00A6E7E6 /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
+		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
+		2AB231D72196E5CF00A6E7E6 /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
 		2AB8CDDB220D879300A3D1DB /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDA220D879300A3D1DB /* DWAmountViewController.m */; };
 		2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */; };
 		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
@@ -57,8 +59,8 @@
 		2AE125F8224113C600379C6F /* DWBaseMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F7224113C600379C6F /* DWBaseMasternodeViewController.m */; };
 		2AE125FD2241151B00379C6F /* DWMasternodeTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */; };
 		2AE126002241342900379C6F /* DWResultsMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */; };
-		31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */; };
-		31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */; };
+		2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACC989E227B076C000336B3 /* DWStubTransaction.m */; };
+		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -88,7 +90,6 @@
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		7EE06A55AFE483FA7824B06E /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */; };
 		84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84F68C891975E9E2002FC300 /* DWScanViewController.m */; };
-		9F918C4315BDF3093311A41C /* libPods-DashWalletUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */; };
 		BA4A72671BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */; };
 		BA54D3CE1B2EA74000C9CB28 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA54D3CD1B2EA74000C9CB28 /* Media.xcassets */; };
 		BA6645961BD924EB007A6BB1 /* BRAWTransactionRowControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6645951BD924EB007A6BB1 /* BRAWTransactionRowControl.swift */; };
@@ -109,6 +110,7 @@
 		BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BAC7B6BD1BD9C29900165B84 /* DWPhoneWCSessionManager.m */; };
 		BAE12BF21B2DEE7F00895CC5 /* TodayExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* BRTodayViewController.m */; };
+		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
 		FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
@@ -143,6 +145,7 @@
 		FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7D211D6AD000BC9879 /* DWShareActionButton.m */; };
 		FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB43BC7F211D96C500BC9879 /* DWTransactionTableViewCell.m */; };
 		FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */; };
+		FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB4FA9C222505DD60060B017 /* AudioToolbox.framework */; };
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB6B7D612180F6E100147CEB /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B534F1BDA9A2800355E8D /* BRAppleWatchData.m */; };
 		FB6B7D622180F6E500147CEB /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = BA7B53531BDAA0A800355E8D /* BRAppleWatchTransactionData.m */; };
@@ -210,19 +213,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		31D68B551C23B6C10030FAAA /* PBXContainerItemProxy */ = {
+		2A4663052279DC2F0027533B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 75D5F3BD191EC270004AB296;
 			remoteInfo = dashwallet;
-		};
-		757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D5F3B6191EC270004AB296 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 75001D3D1A1EE89500585F55;
-			remoteInfo = submodules;
 		};
 		75D5F3EA191EC270004AB296 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -293,7 +289,7 @@
 /* Begin PBXFileReference section */
 		02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TodayExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		07283055DE20FE578E399BE7 /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0A0F0784925A318771D7E4C3 /* Pods-DashWalletUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.release.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.release.xcconfig"; sourceTree = "<group>"; };
 		1051F8887886AF689351F48A /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
 		206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TodayExtension/Pods-TodayExtension.debug.xcconfig"; sourceTree = "<group>"; };
@@ -337,6 +333,11 @@
 		2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputValidatorTests.m; sourceTree = "<group>"; };
 		2A2120EE22147A40009906DC /* DWAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountObject.h; sourceTree = "<group>"; };
 		2A2120EF22147A40009906DC /* DWAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObject.m; sourceTree = "<group>"; };
+		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
+		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2A46630C2279DD7D0027533B /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		2A46630E2279DF490027533B /* DashWalletScreenshotsUITests-Briding-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWalletScreenshotsUITests-Briding-Header.h"; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
@@ -387,11 +388,11 @@
 		2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountNavigationController.h; sourceTree = "<group>"; };
 		2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
 		2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountKeyboardInputViewAudioFeedback.m; sourceTree = "<group>"; };
-		2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewController.h; sourceTree = "<group>"; };
-		2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewController.m; sourceTree = "<group>"; };
-		2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MigrationStoryboard.storyboard; sourceTree = "<group>"; };
-		2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMigrationViewModel.h; sourceTree = "<group>"; };
-		2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMigrationViewModel.m; sourceTree = "<group>"; };
+		2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartViewController.h; sourceTree = "<group>"; };
+		2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartViewController.m; sourceTree = "<group>"; };
+		2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = StartStoryboard.storyboard; sourceTree = "<group>"; };
+		2AB231D52196E5CF00A6E7E6 /* DWStartModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartModel.h; sourceTree = "<group>"; };
+		2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartModel.m; sourceTree = "<group>"; };
 		2AB8CDD9220D879300A3D1DB /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
 		2AB8CDDA220D879300A3D1DB /* DWAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountViewController.m; sourceTree = "<group>"; };
 		2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountButton.h; sourceTree = "<group>"; };
@@ -410,15 +411,16 @@
 		2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWMasternodeTableViewCell.xib; sourceTree = "<group>"; };
 		2AE125FE2241342900379C6F /* DWResultsMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWResultsMasternodeViewController.h; sourceTree = "<group>"; };
 		2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWResultsMasternodeViewController.m; sourceTree = "<group>"; };
-		31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletUITests.swift; sourceTree = "<group>"; };
 		31D68B541C23B6C10030FAAA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SnapshotHelper.swift; path = fastlane/SnapshotHelper.swift; sourceTree = SOURCE_ROOT; };
+		2ACC989D227B076C000336B3 /* DWStubTransaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStubTransaction.h; sourceTree = "<group>"; };
+		2ACC989E227B076C000336B3 /* DWStubTransaction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStubTransaction.m; sourceTree = "<group>"; };
+		2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCrashReporter.h; sourceTree = "<group>"; };
+		2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCrashReporter.m; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testnet.xcconfig"; sourceTree = "<group>"; };
+		6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		7509C10C1AF3076000D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1101AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
@@ -502,7 +504,7 @@
 		75DE024F1B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Main.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
-		75EDC0E61CD92CE00090B838 /* DashWalletUITests-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DashWalletUITests-Bridging-Header.h"; sourceTree = "<group>"; };
+		75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F747501BF41A9F006A6BE8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/BREventConfirmView.xib; sourceTree = "<group>"; };
 		75F747521BF41AD0006A6BE8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
@@ -510,7 +512,6 @@
 		75FD2FB11BFAB97200D56BBA /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FB31BFAB97500D56BBA /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		75FD2FB51BFAB97A00D56BBA /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
-		7E9BCB73BE35FC9F0B276257 /* Pods-DashWalletUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.release.xcconfig"; sourceTree = "<group>"; };
 		7EEDF75116E60BB9EE9C80FB /* Pods-WatchApp.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testnet.xcconfig"; sourceTree = "<group>"; };
 		84F68C881975E9E2002FC300 /* DWScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWScanViewController.h; sourceTree = "<group>"; };
 		84F68C891975E9E2002FC300 /* DWScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWScanViewController.m; sourceTree = "<group>"; };
@@ -519,7 +520,7 @@
 		934DC791C539EABD2EE14E81 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
 		982607F21196681DAC51A074 /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A169BE797EC811F83373CCB9 /* Pods_dashwallet_no_watch.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_dashwallet_no_watch.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9ADF8F00D78A593DB286203 /* Pods-DashWalletUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.testflight.xcconfig"; sourceTree = "<group>"; };
+		A9529BDC33490B8F700E733D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.release.xcconfig"; sourceTree = "<group>"; };
 		AA118F99071BC98E7056E3F4 /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
 		AAC103D2F3C1CE8C7A598E78 /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
 		B49B8EA157CD1A34396D7677 /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -563,7 +564,7 @@
 		C98AA93FF5283EC6405BCE4B /* Pods-WatchApp Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		CE02413EF0C60B1D1EDE6457 /* Pods-WatchApp Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.release.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.release.xcconfig"; sourceTree = "<group>"; };
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
-		E6C3F25E2C725454B6074C9E /* Pods-DashWalletUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletUITests.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletUITests/Pods-DashWalletUITests.testnet.xcconfig"; sourceTree = "<group>"; };
+		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
 		F12049B257DDE750DE332799 /* Pods-WatchApp.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testflight.xcconfig"; sourceTree = "<group>"; };
 		FB021E511E47E17200D17638 /* FBShimmering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmering.h; sourceTree = "<group>"; };
 		FB021E521E47E17200D17638 /* FBShimmeringLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringLayer.h; sourceTree = "<group>"; };
@@ -652,6 +653,7 @@
 		FB43BC8D21217BB900BC9879 /* zh-Hant-TW */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant-TW"; path = "zh-Hant-TW.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB4AB41721CA760E001CC324 /* DWStoryboardSegueWithCompletion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStoryboardSegueWithCompletion.h; sourceTree = "<group>"; };
 		FB4AB41821CA760E001CC324 /* DWStoryboardSegueWithCompletion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStoryboardSegueWithCompletion.m; sourceTree = "<group>"; };
+		FB4FA9C222505DD60060B017 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		FB586CB4213D5EF600836ACC /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CB6213D5F8200836ACC /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Interface.strings; sourceTree = "<group>"; };
 		FB586CBA213D607500836ACC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Interface.strings"; sourceTree = "<group>"; };
@@ -699,11 +701,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		31D68B4D1C23B6C10030FAAA /* Frameworks */ = {
+		2A4662FD2279DC2F0027533B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9F918C4315BDF3093311A41C /* libPods-DashWalletUITests.a in Frameworks */,
+				CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -711,6 +713,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
 				FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */,
 				FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */,
 				FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */,
@@ -795,6 +798,17 @@
 			path = Entities;
 			sourceTree = "<group>";
 		};
+		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2A46630C2279DD7D0027533B /* SnapshotHelper.swift */,
+				2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */,
+				2A4663042279DC2F0027533B /* Info.plist */,
+				2A46630E2279DF490027533B /* DashWalletScreenshotsUITests-Briding-Header.h */,
+			);
+			path = DashWalletScreenshotsUITests;
+			sourceTree = "<group>";
+		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
 			isa = PBXGroup;
 			children = (
@@ -822,16 +836,18 @@
 			path = TxDetails;
 			sourceTree = "<group>";
 		};
-		2AB231CF2196E23200A6E7E6 /* Migration Controller */ = {
+		2AB231CF2196E23200A6E7E6 /* Start Controller */ = {
 			isa = PBXGroup;
 			children = (
-				2AB231D02196E25D00A6E7E6 /* DWMigrationViewController.h */,
-				2AB231D12196E25D00A6E7E6 /* DWMigrationViewController.m */,
-				2AB231D32196E27300A6E7E6 /* MigrationStoryboard.storyboard */,
-				2AB231D52196E5CF00A6E7E6 /* DWMigrationViewModel.h */,
-				2AB231D62196E5CF00A6E7E6 /* DWMigrationViewModel.m */,
+				2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */,
+				2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */,
+				2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */,
+				2AB231D52196E5CF00A6E7E6 /* DWStartModel.h */,
+				2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */,
+				2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */,
+				2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */,
 			);
-			path = "Migration Controller";
+			path = "Start Controller";
 			sourceTree = "<group>";
 		};
 		2AB8CDD5220D80F100A3D1DB /* Amount */ = {
@@ -881,17 +897,6 @@
 			name = "QR Code Scanner";
 			sourceTree = "<group>";
 		};
-		31D68B511C23B6C10030FAAA /* DashWalletUITests */ = {
-			isa = PBXGroup;
-			children = (
-				31D68B5A1C23B6FD0030FAAA /* SnapshotHelper.swift */,
-				31D68B521C23B6C10030FAAA /* DashWalletUITests.swift */,
-				31D68B541C23B6C10030FAAA /* Info.plist */,
-				75EDC0E61CD92CE00090B838 /* DashWalletUITests-Bridging-Header.h */,
-			);
-			path = DashWalletUITests;
-			sourceTree = "<group>";
-		};
 		752E289B19234A3F00DB5A3C /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -911,6 +916,8 @@
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
 				FB2E5536218BA161003A1B7C /* DWVersionManager.m */,
+				2ACC989D227B076C000336B3 /* DWStubTransaction.h */,
+				2ACC989E227B076C000336B3 /* DWStubTransaction.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -941,7 +948,7 @@
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8F420A21BEE69E00858B91 /* About */,
-				2AB231CF2196E23200A6E7E6 /* Migration Controller */,
+				2AB231CF2196E23200A6E7E6 /* Start Controller */,
 				2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */,
 				759FBB32193290F600AB4465 /* DWRootViewController.h */,
 				759FBB33193290F600AB4465 /* DWRootViewController.m */,
@@ -979,9 +986,9 @@
 				75D5F3C7191EC270004AB296 /* DashWallet */,
 				BAE12BE81B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3EC191EC270004AB296 /* DashWalletTests */,
-				31D68B511C23B6C10030FAAA /* DashWalletUITests */,
 				BA913BDF1BD57E4D005A7C0E /* WatchApp */,
 				BA913BEE1BD57E4D005A7C0E /* WatchApp Extension */,
+				2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */,
 				75D5F3C0191EC270004AB296 /* Frameworks */,
 				75D5F3BF191EC270004AB296 /* Products */,
 				EBFC2EA47915CD4F5BA81564 /* Pods */,
@@ -994,9 +1001,9 @@
 				75D5F3BE191EC270004AB296 /* dashwallet.app */,
 				75D5F3E5191EC270004AB296 /* DashWalletTests.xctest */,
 				BAE12BE51B2DEE7F00895CC5 /* TodayExtension.appex */,
-				31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */,
 				BA913BDE1BD57E4D005A7C0E /* WatchApp.app */,
 				BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */,
+				2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1004,6 +1011,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FB4FA9C222505DD60060B017 /* AudioToolbox.framework */,
 				FBEF3AED2182395800917AB6 /* DashSync.framework */,
 				FB248B621F79BB7C00405AE0 /* SafariServices.framework */,
 				FB248B5C1F73803100405AE0 /* UserNotifications.framework */,
@@ -1021,11 +1029,11 @@
 				BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */,
 				A169BE797EC811F83373CCB9 /* Pods_dashwallet_no_watch.framework */,
 				BEAE29AA65F429DD9EF1A1A7 /* libPods-DashWalletTests.a */,
-				31B0B9B2A5229B6E6848BD9C /* libPods-DashWalletUITests.a */,
 				02771AC5DDCA0A1749C6A05B /* libPods-TodayExtension.a */,
 				07283055DE20FE578E399BE7 /* libPods-WatchApp.a */,
 				C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */,
 				982607F21196681DAC51A074 /* libPods-dashwallet.a */,
+				0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1145,10 +1153,6 @@
 				B49B8EA157CD1A34396D7677 /* Pods-DashWalletTests.testnet.xcconfig */,
 				AAC103D2F3C1CE8C7A598E78 /* Pods-DashWalletTests.release.xcconfig */,
 				B9E5C217A0E8B1689F8307D1 /* Pods-DashWalletTests.testflight.xcconfig */,
-				0A0F0784925A318771D7E4C3 /* Pods-DashWalletUITests.debug.xcconfig */,
-				E6C3F25E2C725454B6074C9E /* Pods-DashWalletUITests.testnet.xcconfig */,
-				7E9BCB73BE35FC9F0B276257 /* Pods-DashWalletUITests.release.xcconfig */,
-				A9ADF8F00D78A593DB286203 /* Pods-DashWalletUITests.testflight.xcconfig */,
 				206554BC730E9F2BB594D044 /* Pods-TodayExtension.debug.xcconfig */,
 				8A9877BEC5093CED81768D3D /* Pods-TodayExtension.testnet.xcconfig */,
 				0E1094F4EE49CA45E8288DBE /* Pods-TodayExtension.release.xcconfig */,
@@ -1169,6 +1173,10 @@
 				5FD4C91FB8EAB529E8E41227 /* Pods-dashwallet no watch.testnet.xcconfig */,
 				3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */,
 				27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */,
+				6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */,
+				75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */,
+				A9529BDC33490B8F700E733D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */,
+				EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -1318,41 +1326,24 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXLegacyTarget section */
-		75001D3D1A1EE89500585F55 /* submodules */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "-c 'git submodule init && git submodule update'";
-			buildConfigurationList = 75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */;
-			buildPhases = (
-			);
-			buildToolPath = /bin/sh;
-			buildWorkingDirectory = "";
-			dependencies = (
-			);
-			name = submodules;
-			passBuildSettingsInEnvironment = 1;
-			productName = submodules;
-		};
-/* End PBXLegacyTarget section */
-
 /* Begin PBXNativeTarget section */
-		31D68B4F1C23B6C10030FAAA /* DashWalletUITests */ = {
+		2A4662FF2279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "DashWalletUITests" */;
+			buildConfigurationList = 2A46630B2279DC2F0027533B /* Build configuration list for PBXNativeTarget "DashWalletScreenshotsUITests" */;
 			buildPhases = (
-				4F32946C767072BBC965A5C3 /* [CP] Check Pods Manifest.lock */,
-				31D68B4C1C23B6C10030FAAA /* Sources */,
-				31D68B4D1C23B6C10030FAAA /* Frameworks */,
-				31D68B4E1C23B6C10030FAAA /* Resources */,
+				B6EBF47E898533CDA1B2A901 /* [CP] Check Pods Manifest.lock */,
+				2A4662FC2279DC2F0027533B /* Sources */,
+				2A4662FD2279DC2F0027533B /* Frameworks */,
+				2A4662FE2279DC2F0027533B /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				31D68B561C23B6C10030FAAA /* PBXTargetDependency */,
+				2A4663062279DC2F0027533B /* PBXTargetDependency */,
 			);
-			name = DashWalletUITests;
-			productName = DashWalletUITests;
-			productReference = 31D68B501C23B6C10030FAAA /* DashWalletUITests.xctest */;
+			name = DashWalletScreenshotsUITests;
+			productName = DashWalletScreenshotsUITests;
+			productReference = 2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		75D5F3BD191EC270004AB296 /* dashwallet */ = {
@@ -1373,7 +1364,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */,
 				BAE12BF11B2DEE7F00895CC5 /* PBXTargetDependency */,
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
@@ -1463,17 +1453,14 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = DW;
-				LastSwiftUpdateCheck = 0720;
+				LastSwiftUpdateCheck = 1020;
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = "Dash Core";
 				TargetAttributes = {
-					31D68B4F1C23B6C10030FAAA = {
-						CreatedOnToolsVersion = 7.2;
-						LastSwiftMigration = 0900;
+					2A4662FF2279DC2F0027533B = {
+						CreatedOnToolsVersion = 10.2.1;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 75D5F3BD191EC270004AB296;
-					};
-					75001D3D1A1EE89500585F55 = {
-						CreatedOnToolsVersion = 6.1;
 					};
 					75D5F3BD191EC270004AB296 = {
 						LastSwiftMigration = 0900;
@@ -1521,7 +1508,7 @@
 			};
 			buildConfigurationList = 75D5F3B9191EC270004AB296 /* Build configuration list for PBXProject "DashWallet" */;
 			compatibilityVersion = "Xcode 8.0";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -1553,16 +1540,15 @@
 				75D5F3BD191EC270004AB296 /* dashwallet */,
 				BAE12BE41B2DEE7F00895CC5 /* TodayExtension */,
 				75D5F3E4191EC270004AB296 /* DashWalletTests */,
-				31D68B4F1C23B6C10030FAAA /* DashWalletUITests */,
-				75001D3D1A1EE89500585F55 /* submodules */,
 				BA913BDD1BD57E4D005A7C0E /* WatchApp */,
 				BA913BE91BD57E4D005A7C0E /* WatchApp Extension */,
+				2A4662FF2279DC2F0027533B /* DashWalletScreenshotsUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		31D68B4E1C23B6C10030FAAA /* Resources */ = {
+		2A4662FE2279DC2F0027533B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1573,7 +1559,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2AB231D42196E27300A6E7E6 /* MigrationStoryboard.storyboard in Resources */,
+				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
 				FBFC2EB521137A7A00D20C57 /* Montserrat-Italic.otf in Resources */,
 				FBFC2EED21137A7A00D20C57 /* Montserrat-Thin.otf in Resources */,
 				FBFC2ED121137A7A00D20C57 /* Montserrat-SemiBoldItalic.otf in Resources */,
@@ -1714,24 +1700,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/scripts/dashsync_version.sh\"\n";
 		};
-		4F32946C767072BBC965A5C3 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DashWalletUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		628D858805D450E2CE9D90A0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1786,6 +1754,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B6EBF47E898533CDA1B2A901 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DashWalletScreenshotsUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		CEE253DB1E26B3B400A25B15 /* Icon Versioning */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1823,21 +1813,21 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
+				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report.proto",
+				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report_v2.proto",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report.proto",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report_v2.proto",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {
@@ -1856,12 +1846,12 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		31D68B4C1C23B6C10030FAAA /* Sources */ = {
+		2A4662FC2279DC2F0027533B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				31D68B531C23B6C10030FAAA /* DashWalletUITests.swift in Sources */,
-				31D68B5B1C23B6FD0030FAAA /* SnapshotHelper.swift in Sources */,
+				2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */,
+				2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1886,6 +1876,7 @@
 				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
+				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
@@ -1910,6 +1901,7 @@
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
+				2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
@@ -1920,6 +1912,7 @@
 				2AB231D72196E5CF00A6E7E6 /* DWMigrationViewModel.m in Sources */,
 				2AE126002241342900379C6F /* DWResultsMasternodeViewController.m in Sources */,
 				FB31C262223BD62D00BD0868 /* DWProviderUpdateServiceTableViewCell.m in Sources */,
+				2AB231D72196E5CF00A6E7E6 /* DWStartModel.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
@@ -1944,7 +1937,7 @@
 				FB31C259223BD3F600BD0868 /* DWUpdateMasternodeRevocationViewController.m in Sources */,
 				FB31C254223BD3F600BD0868 /* DWMasternodeViewController.m in Sources */,
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
-				2AB231D22196E25D00A6E7E6 /* DWMigrationViewController.m in Sources */,
+				2AB231D22196E25D00A6E7E6 /* DWStartViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */,
 				FB31C257223BD3F600BD0868 /* DWProviderUpdateServiceTransactionsViewController.m in Sources */,
@@ -2001,15 +1994,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		31D68B561C23B6C10030FAAA /* PBXTargetDependency */ = {
+		2A4663062279DC2F0027533B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 75D5F3BD191EC270004AB296 /* dashwallet */;
-			targetProxy = 31D68B551C23B6C10030FAAA /* PBXContainerItemProxy */;
-		};
-		757FC2531ADA30D100A1FDF7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 75001D3D1A1EE89500585F55 /* submodules */;
-			targetProxy = 757FC2521ADA30D100A1FDF7 /* PBXContainerItemProxy */;
+			targetProxy = 2A4663052279DC2F0027533B /* PBXContainerItemProxy */;
 		};
 		75D5F3EB191EC270004AB296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2198,51 +2186,119 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		31D68B571C23B6C10030FAAA /* Debug */ = {
+		2A4663072279DC2F0027533B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0A0F0784925A318771D7E4C3 /* Pods-DashWalletUITests.debug.xcconfig */;
+			baseConfigurationReference = 6FBBFC90577C940D8C04E0B1 /* Pods-DashWalletScreenshotsUITests.debug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				INFOPLIST_FILE = DashWalletUITests/Info.plist;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletUITests/DashWalletUITests-Bridging-Header.h";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletScreenshotsUITests/DashWalletScreenshotsUITests-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = dashwallet;
-				USES_XCTRUNNER = YES;
 			};
 			name = Debug;
 		};
-		31D68B581C23B6C10030FAAA /* Release */ = {
+		2A4663082279DC2F0027533B /* Testnet */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7E9BCB73BE35FC9F0B276257 /* Pods-DashWalletUITests.release.xcconfig */;
+			baseConfigurationReference = 75EDC78DE1686E55AE12233C /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				INFOPLIST_FILE = DashWalletUITests/Info.plist;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletUITests/DashWalletUITests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletScreenshotsUITests/DashWalletScreenshotsUITests-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = dashwallet;
-				USES_XCTRUNNER = YES;
+			};
+			name = Testnet;
+		};
+		2A4663092279DC2F0027533B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A9529BDC33490B8F700E733D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletScreenshotsUITests/DashWalletScreenshotsUITests-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = dashwallet;
 			};
 			name = Release;
 		};
-		75001D3F1A1EE89500585F55 /* Debug */ = {
+		2A46630A2279DC2F0027533B /* Testflight */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */;
 			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 44RJ69WHFF;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = DashWalletScreenshotsUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletScreenshotsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletScreenshotsUITests/DashWalletScreenshotsUITests-Briding-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = dashwallet;
 			};
-			name = Debug;
-		};
-		75001D411A1EE89500585F55 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
+			name = Testflight;
 		};
 		75D5F3F4191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2733,29 +2789,6 @@
 			};
 			name = Testflight;
 		};
-		CEE253D61E26A9BC00A25B15 /* Testflight */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9ADF8F00D78A593DB286203 /* Pods-DashWalletUITests.testflight.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				INFOPLIST_FILE = DashWalletUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletUITests/DashWalletUITests-Bridging-Header.h";
-				TEST_TARGET_NAME = dashwallet;
-				USES_XCTRUNNER = YES;
-			};
-			name = Testflight;
-		};
-		CEE253D71E26A9BC00A25B15 /* Testflight */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Testflight;
-		};
 		CEE253D81E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F12049B257DDE750DE332799 /* Pods-WatchApp.testflight.xcconfig */;
@@ -2934,29 +2967,6 @@
 			};
 			name = Testnet;
 		};
-		FB9CC19E1F8511620079309F /* Testnet */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = E6C3F25E2C725454B6074C9E /* Pods-DashWalletUITests.testnet.xcconfig */;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				DEVELOPMENT_TEAM = 44RJ69WHFF;
-				INFOPLIST_FILE = DashWalletUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.DashWalletUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletUITests/DashWalletUITests-Bridging-Header.h";
-				TEST_TARGET_NAME = dashwallet;
-				USES_XCTRUNNER = YES;
-			};
-			name = Testnet;
-		};
-		FB9CC19F1F8511620079309F /* Testnet */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Testnet;
-		};
 		FB9CC1A01F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7EEDF75116E60BB9EE9C80FB /* Pods-WatchApp.testnet.xcconfig */;
@@ -2997,24 +3007,13 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		31D68B591C23B6C10030FAAA /* Build configuration list for PBXNativeTarget "DashWalletUITests" */ = {
+		2A46630B2279DC2F0027533B /* Build configuration list for PBXNativeTarget "DashWalletScreenshotsUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				31D68B571C23B6C10030FAAA /* Debug */,
-				FB9CC19E1F8511620079309F /* Testnet */,
-				31D68B581C23B6C10030FAAA /* Release */,
-				CEE253D61E26A9BC00A25B15 /* Testflight */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		75001D3E1A1EE89500585F55 /* Build configuration list for PBXLegacyTarget "submodules" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				75001D3F1A1EE89500585F55 /* Debug */,
-				FB9CC19F1F8511620079309F /* Testnet */,
-				75001D411A1EE89500585F55 /* Release */,
-				CEE253D71E26A9BC00A25B15 /* Testflight */,
+				2A4663072279DC2F0027533B /* Debug */,
+				2A4663082279DC2F0027533B /* Testnet */,
+				2A4663092279DC2F0027533B /* Release */,
+				2A46630A2279DC2F0027533B /* Testflight */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

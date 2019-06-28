@@ -51,22 +51,37 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateWithAmount:(uint64_t)amount {
     self.instantSendFee = nil;
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-
-    if (amount == 0 || amount > account.balance) {
-        self.state = DWAmountSendOptionsModelStateNone;
-
+    
+    DSSporkManager * sporkManager = [DWEnvironment sharedInstance].currentChainManager.sporkManager;
+    if ([sporkManager llmqInstantSendEnabled]) {
+        self.state = DWAmountSendOptionsModelState_AutoLocks;
         return;
     }
 
-    uint64_t maxIXOutputAmount =
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+
+    if (amount == 0) {
+        self.state = DWAmountSendOptionsModelState_None;
+
+        return;
+    }
+    
+    uint32_t inputsWithInstantSend;
+    uint32_t inputsWithoutInstantSend;
+
+    uint64_t maxIXOutputAmountWithInstantSend =
         [account maxOutputAmountWithConfirmationCount:account.wallet.chain.ixPreviousConfirmationsNeeded
-                                     usingInstantSend:YES];
-    BOOL isInstantSendAvailable = maxIXOutputAmount >= amount;
-    if (!isInstantSendAvailable) {
+                                     usingInstantSend:YES returnInputCount:&inputsWithInstantSend];
+    uint64_t maxIXOutputAmountWithoutInstantSend =
+    [account maxOutputAmountWithConfirmationCount:0
+                                 usingInstantSend:NO returnInputCount:&inputsWithoutInstantSend];
+    
+    uint64_t maxIXOutputAmount = MAX(maxIXOutputAmountWithInstantSend,maxIXOutputAmountWithoutInstantSend);
+    BOOL isInstantSendAmountAvailable = maxIXOutputAmountWithInstantSend >= amount;
+    BOOL isAmountAvailable = maxIXOutputAmountWithoutInstantSend >= amount;
+    if (!isInstantSendAmountAvailable && isAmountAvailable && inputsWithoutInstantSend != inputsWithInstantSend) {
         _useInstantSend = NO;
-        self.state = DWAmountSendOptionsModelStateRegular;
+        self.state = DWAmountSendOptionsModelState_Regular;
 
         return;
     }
@@ -75,28 +90,22 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL canAutoLock = [account canUseAutoLocksForAmount:amount];
     if (!canAutoLock) {
+        if (amount > maxIXOutputAmountWithInstantSend) amount = maxIXOutputAmountWithInstantSend;
         DSTransaction *tx = [account transactionForAmounts:@[ @(amount) ]
                                            toOutputScripts:@[ self.paymentDetails.outputScripts.firstObject ]
                                                    withFee:YES
                                                  isInstant:YES
                                        toShapeshiftAddress:nil];
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-        uint64_t instantSendFee = tx.standardInstantFee - tx.standardFee;
-        NSAssert(instantSendFee > 0, @"Invalid instant send extra fee");
-        if (instantSendFee <= 0) {
-            _useInstantSend = NO;
-            self.state = DWAmountSendOptionsModelStateRegular;
+        uint64_t instantSendExtraFee = MAX(0,tx.standardInstantFee - tx.standardFee);
 
-            return;
-        }
-
-        self.instantSendFee = [priceManager localCurrencyStringForDashAmount:instantSendFee];
-        self.state = DWAmountSendOptionsModelStateInstantSend;
+        self.instantSendFee = [priceManager localCurrencyStringForDashAmount:instantSendExtraFee];
+        self.state = DWAmountSendOptionsModelState_ProposeInstantSend;
 
         return;
     }
 
-    self.state = DWAmountSendOptionsModelStateAutoLocks;
+    self.state = DWAmountSendOptionsModelState_AutoLocks;
 }
 
 @end

@@ -39,10 +39,6 @@ UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 
 - (IBAction)tip:(id)sender;
 
-- (void)startActivityWithTimeout:(NSTimeInterval)timeout;
-- (void)stopActivityWithSuccess:(BOOL)success;
-- (void)ping;
-
 - (IBAction)unwindToRootViewController:(UIStoryboardSegue *)segue;
 
 @end

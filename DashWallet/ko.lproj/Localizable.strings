@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\n지갑을 보호하기 위해 비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 사용된 주소입니다\nDash 주소는 일회성으로만 사용됩니다.\n\n주소 재사용은 사용자와 수신자의 개인 정보 보호에 취약하며, 수신자가 주소를 직접 제어하지 않는 경우 손실이 발생할 수 있습니다";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\n설정->개인 정보 보호->카메라->%@\n에서 이 애플리케이션의 카메라 접근을 허용해 주십시요.";
 
 /* No comment provided by engineer. */
@@ -49,6 +46,9 @@
 
 /* No comment provided by engineer. */
 "About" = "정보";
+
+/* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "조치가 필요함";
@@ -78,16 +78,10 @@
 "Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "잘못된 지불요청";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "잘못된 복원 문구";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "비트코인 주소 (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "비트코인 지불은 %@ 보다 작을 수 없습니다";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
@@ -189,9 +183,6 @@
 "dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다.";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "대시 거래 금액은 %@보다 적을 수 없습니다.";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "장치 보안이 손상된 상태입니다\n\n단말기가 탈옥 돼 있으면 어떤 '탈옥' 어플이든 다른 어플의 키체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
 
 /* No comment provided by engineer. */
@@ -213,10 +204,10 @@
 "double spend" = "이중지불";
 
 /* No comment provided by engineer. */
-"email not configured" = "이메일이 설정되지 않았습니다.";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "사용";
+"email not configured" = "이메일이 설정되지 않았습니다.";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "향상된 기능 사용";
@@ -229,9 +220,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "입력";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "대시 거래 서명 중 오류 발생";
 
 /* No comment provided by engineer. */
 "exit" = "나가기";
@@ -276,18 +264,6 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "이전 버전의 대시 지갑에서 이 디바이스에 암호 문장을 처음 표시 할 때, 이 앱이 12 개의 모든 첫 단어들을 올바르게 표시하지 못했음을 확인했습니다. 전체 암호 문장을 다시 적어주십시오.";
 
 /* No comment provided by engineer. */
-"instant payment" = "즉시 지불";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "인스턴트샌드에는 6회의 확인이 필요합니다, 그래도 정기 거래로 보내시겠습니까?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "잔액 부족";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "대시 네트워크 수수료로 지불할 잔액이 부족합니다";
-
-/* No comment provided by engineer. */
 "INVALID" = "유효하지 않음";
 
 /* No comment provided by engineer. */
@@ -300,7 +276,10 @@
 "Load more" = "더 보기";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Locked" = "Locked";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "인스턴트샌드로 잠김";
 
 /* No comment provided by engineer. */
 "Masternode control" = "Masternode control";
@@ -381,10 +360,10 @@
 "not voter" = "투표자 아님";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "블록체인 기술에 관해 지식이 있는 경우에만 향상된 기능을 사용하십시오.\n이해하는 범위 내에서만 향상된 기능을 사용하실 것을 권장합니다.";
@@ -411,9 +390,6 @@
 "Pay" = "지불";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "수취인의 신원이 인증되지 않았습니다";
-
-/* No comment provided by engineer. */
 "payload:" = "페이로드:";
 
 /* No comment provided by engineer. */
@@ -432,16 +408,25 @@
 "pending" = "대기 중";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "지갑 업데이트를 위해 PIN 을 입력해주세요";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "휴대 전화를 NFC 기기 가까이에 두십시오.";
 
 /* No comment provided by engineer. */
 "Private key" = "비밀 키";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "공개 키";
@@ -474,9 +459,6 @@
 "recovery phrase must have %d words" = "복원 문구는 반드시 %d개의 단어로 구성돼야 합니다";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "등록 tx:";
 
 /* No comment provided by engineer. */
@@ -489,25 +471,16 @@
 "request an amount" = "지불 요청하기";
 
 /* No comment provided by engineer. */
-"request expired" = "요청 만료";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하나, 즉시 지불이 해제된 상태입니다.";
-
-/* No comment provided by engineer. */
 "rescan" = "재스캔";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "블록체인 재스캔";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "보이지 않는 거래 내역이 있는 것으로 생각되거나 송금하는 데 문제가 있다면 블록체인을 재스캔 해보세요 (재스캔에는 몇 분 정도 소요될 수 있습니다).";
 
 /* No comment provided by engineer. */
 "reset" = "초기화";
-
-/* No comment provided by engineer. */
-"retry" = "재시도";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "디른 사람의 QR 코드를 스캔하여 대시 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
@@ -525,9 +498,6 @@
 "seen by %d of %d peers" = "%2$d개의 피어중 %1$d개의 피어가 보았습니다";
 
 /* No comment provided by engineer. */
-"send" = "보내기";
-
-/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "이 비밀 키에서 %1$@ (%2$@)를 당신의 지갑으로 옮기겠습니까? 대시 네트워크에 %3$@ (%4$@)의 수수료가 지급됩니다.";
 
 /* No comment provided by engineer. */
@@ -535,6 +505,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "메시지로 주소 보내기";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "이메일로 지불 요청 보내기";
@@ -585,6 +558,9 @@
 "status:" = "상태:";
 
 /* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
 /* No comment provided by engineer. */
@@ -601,15 +577,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이것이 당신의 대시 잔액입니다. 대시는 화폐입니다. 거래소 가격은 시장 상황에 따라 변합니다.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "이 결제 주소는 이미 당신의 지갑에 존재합니다.";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "이 요청은 즉시 지불을 요구하고 있습니다. 그러나 귀하가 가진 인스턴트샌드가 요구하는 6회의 확인을 거친 입력값이 충분하지 않습니다. 판매자에게 일반 거래를 수락하도록 요청하거나 수 분 정도 기다려주십시오.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "이 요청에는 즉시 지불이 필요하나, 즉시 지불이 중지되었습니다";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "이 거래가 완료되는 데에는 수 분이 소요될 수 있습니다.";
@@ -663,16 +630,13 @@
 "unknown address" = "알 수 없는 주소";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "인식할 수 없는 주소";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "지원되지 않거나 손상된 문서";
 
 /* No comment provided by engineer. */
 "unsupported url" = "지원되지 않는 URL";
 
 /* No comment provided by engineer. */
-"unverified" = "인증되지 않음";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -691,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "투표 키 해시:";
@@ -715,6 +682,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑이 이동하던 중 충돌이 발생하였음을 감지하였습니다. 블록체인 재스캔을 통해 이 문제를 해결하거나 다시 시도하십시오. 재스캔은 WIFI 연결 상태에서 시도하실 것을 권장하며, 약 30분 가량이 소요됩니다. 동기화 과정이 완료되면 당신의 자금 역시 이용할 수 있습니다. ";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "지우기";

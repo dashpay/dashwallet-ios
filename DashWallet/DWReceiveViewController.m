@@ -410,7 +410,7 @@
         actionSheet.popoverPresentationController.sourceRect = ((UIButton*)sender).bounds;
         actionSheet.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
-
+    
     // Present action sheet.
     [self presentViewController:actionSheet animated:YES completion:nil];
 }
@@ -448,9 +448,9 @@ error:(NSError *)error
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSNumber *number = [priceManager localCurrencyNumberForDashAmount:amount];
     if (number) {
-        receiveController.paymentRequest.currencyAmount = number.stringValue;
+        receiveController.paymentRequest.requestedFiatCurrencyAmount = number.floatValue;
     }
-    receiveController.paymentRequest.currency = priceManager.localCurrencyCode;
+    receiveController.paymentRequest.requestedFiatCurrencyCode = priceManager.localCurrencyCode;
     receiveController.view.backgroundColor = self.parentViewController.parentViewController.view.backgroundColor;
     navController.delegate = receiveController;
     [navController pushViewController:receiveController animated:YES];

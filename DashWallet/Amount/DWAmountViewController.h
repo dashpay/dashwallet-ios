@@ -28,9 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 - (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount;
-- (void)amountViewController:(DWAmountViewController *)controller
-              didInputAmount:(uint64_t)amount
-        shouldUseInstantSend:(BOOL)shouldUseInstantSend;
+- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount wasProposedToUseInstantSend:(BOOL)wasProposedInstantSend usedInstantSend:(BOOL)usedInstantSend;
 
 @end
 

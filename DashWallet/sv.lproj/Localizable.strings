@@ -39,9 +39,6 @@
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nEtt lösenord krävs för att skydda din plånbok. Gå till Inställningar och aktivera lösenord för att fortsätta.";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESSEN ÄR REDAN I BRUK\ndash addresser är avsedda för enskilda användningar endast\n\nåteranvändning reducerar anonymiteten för både dig och mottagaren och kan resultera i förlust ifall mottagaren inte direkt kontrollerar addressen";
-
-/* No comment provided by engineer. */
 "\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nbevilja kameraåtkomst i Inställningar->Personligt->Kamera->%@";
 
 /* No comment provided by engineer. */
@@ -49,6 +46,9 @@
 
 /* No comment provided by engineer. */
 "About" = "About";
+
+/* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Action Needed";
@@ -78,16 +78,10 @@
 "Are you sure?" = "Are you sure?";
 
 /* No comment provided by engineer. */
-"bad payment request" = "felaktig betalningsanmodan";
-
-/* No comment provided by engineer. */
 "bad recovery phrase" = "fel återställningsfras";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
-
-/* No comment provided by engineer. */
-"bitcoin payments can't be less than %@" = "bitcoin betalningar kan inte vara mindre än %@";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "block #%1$d av %2$d";
@@ -189,9 +183,6 @@
 "dash payments can't be less than %@" = "betalningar kan inte vara mindre än %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "transaktionens utflöden får ej understiga %@";
-
-/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina dash).";
 
 /* No comment provided by engineer. */
@@ -213,10 +204,10 @@
 "double spend" = "dubbelbetalning";
 
 /* No comment provided by engineer. */
-"email not configured" = "e-post inte konfigurerad";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"enable" = "tillåt";
+"email not configured" = "e-post inte konfigurerad";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Enable advanced features";
@@ -229,9 +220,6 @@
 
 /* No comment provided by engineer. */
 "enter" = "enter";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "fel vid signering av dashtransaktionen";
 
 /* No comment provided by engineer. */
 "exit" = "gå ur";
@@ -276,18 +264,6 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
 
 /* No comment provided by engineer. */
-"instant payment" = "Omedelbar betalning";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "täckning saknas";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "täckning saknas för transaktionsavgiften";
-
-/* No comment provided by engineer. */
 "INVALID" = "OGILTIG";
 
 /* No comment provided by engineer. */
@@ -300,7 +276,10 @@
 "Load more" = "Load more";
 
 /* No comment provided by engineer. */
-"locked with instant send" = "locked with instant send";
+"Locked" = "Locked";
+
+/* No comment provided by engineer. */
+"locked with InstantSend" = "locked with InstantSend";
 
 /* No comment provided by engineer. */
 "Masternode control" = "Masternode control";
@@ -381,10 +360,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "OK";
 
 /* No comment provided by engineer. */
-"ok" = "OK";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -411,9 +390,6 @@
 "Pay" = "Betala";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "betalningsmottagarens identitet är inte certifierad";
-
-/* No comment provided by engineer. */
 "payload:" = "payload:";
 
 /* No comment provided by engineer. */
@@ -432,16 +408,25 @@
 "pending" = "bearbetar";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "skriv in din pin-kod för att uppdatera plånboken";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -474,9 +459,6 @@
 "recovery phrase must have %d words" = "återställningsfrasen måste ha %d ord";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "minska beloppet med\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "registration tx:" = "registration tx:";
 
 /* No comment provided by engineer. */
@@ -489,25 +471,16 @@
 "request an amount" = "begär ett belopp";
 
 /* No comment provided by engineer. */
-"request expired" = "begäran har gått ut";
-
-/* No comment provided by engineer. */
-"request is for an instant payment but you have disabled instant payments" = "Begäran är för en direktbetalning men du har inaktiverat direktbetalning ";
-
-/* No comment provided by engineer. */
 "rescan" = "återläs";
 
 /* No comment provided by engineer. */
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "återläs blockkedjan om du misstänker att det saknas transaktioner, eller om du har problem att skicka dash (återläsning kan ta flera minuter)";
 
 /* No comment provided by engineer. */
 "reset" = "återställ";
-
-/* No comment provided by engineer. */
-"retry" = "försök igen";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
@@ -525,9 +498,6 @@
 "seen by %d of %d peers" = "sett av %1$d av %2$d likar";
 
 /* No comment provided by engineer. */
-"send" = "skicka";
-
-/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Skicka %1$@ (%2$@) från denna privata nyckel till din plånbok? Bitcoin-nätverket erhåller en avgift på %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
@@ -535,6 +505,9 @@
 
 /* No comment provided by engineer. */
 "send address as message" = "skicka adress som meddelande";
+
+/* No comment provided by engineer. */
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "skicka begäran som e-post";
@@ -585,6 +558,9 @@
 "status:" = "status:";
 
 /* No comment provided by engineer. */
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
 "swept!" = "inläst!";
 
 /* No comment provided by engineer. */
@@ -601,15 +577,6 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Detta är ditt dashaldo. Dash är en valuta. Växelkursen ändras av marknaden.";
-
-/* No comment provided by engineer. */
-"this payment address is already in your wallet" = "denna betaladress är redan i plånboken";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
-
-/* No comment provided by engineer. */
-"this request requires an instant payment but you have disabled instant payments" = "denna begäran kräver en direktbetalning men du har inaktiverat direktbetalning";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
@@ -663,16 +630,13 @@
 "unknown address" = "okänd adress";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "oigenkännbar adress";
-
-/* No comment provided by engineer. */
 "unsupported or corrupted document" = "okänd dokumenttyp eller skadat dokument";
 
 /* No comment provided by engineer. */
 "unsupported url" = "stöd saknas för URL:en";
 
 /* No comment provided by engineer. */
-"unverified" = "overifierad";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -691,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "verifierad, inväntar bekräftelse";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "voting key hash:";
@@ -715,6 +682,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+
+/* No comment provided by engineer. */
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "rensa";

@@ -128,16 +128,16 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
         [self mvvm_observe:@"model.sendingOptions.state" with:^(__typeof(self) self, NSNumber * value) {
             DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
             switch (state) {
-                case DWAmountSendOptionsModelStateNone: {
+                case DWAmountSendOptionsModelState_None: {
                     break;
                 }
-                case DWAmountSendOptionsModelStateRegular: {
+                case DWAmountSendOptionsModelState_Regular: {
                     self.instantSendSwitch.hidden = YES;
                     self.infoLabel.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
 
                     break;
                 }
-                case DWAmountSendOptionsModelStateInstantSend: {
+                case DWAmountSendOptionsModelState_ProposeInstantSend: {
                     self.instantSendSwitch.hidden = NO;
                     NSString *instantSendFee = self.model.sendingOptions.instantSendFee;
                     NSParameterAssert(instantSendFee);
@@ -145,7 +145,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
                     break;
                 }
-                case DWAmountSendOptionsModelStateAutoLocks: {
+                case DWAmountSendOptionsModelState_AutoLocks: {
                     self.instantSendSwitch.hidden = YES;
                     self.infoLabel.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
 
@@ -154,7 +154,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             }
 
             [UIView animateWithDuration:0.15 animations:^{
-                CGFloat alpha = state == DWAmountSendOptionsModelStateNone ? 0.0 : 1.0;
+                CGFloat alpha = state == DWAmountSendOptionsModelState_None ? 0.0 : 1.0;
                 self.infoStackView.alpha = alpha;
             }];
         }];
@@ -268,8 +268,8 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             break;
         }
         case DWAmountInputIntentSend: {
-            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:shouldUseInstantSend:)],
-                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:shouldUseInstantSend:");
+            NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:)],
+                     @"Amount view controller's delegate should respond to amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:");
 
             // Workaround:
             // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
@@ -280,7 +280,7 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.delegate amountViewController:self
                                      didInputAmount:self.model.amount.plainAmount
-                               shouldUseInstantSend:self.model.sendingOptions.useInstantSend];
+                 wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)  usedInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend) && self.model.sendingOptions.useInstantSend];
 
                 self.view.userInteractionEnabled = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
@@ -337,6 +337,9 @@ static CGFloat const SupplementaryAmountFontSize = 14.0;
 
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
     self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    UITextInputAssistantItem *inputAssistantItem = self.textField.inputAssistantItem;
+    inputAssistantItem.leadingBarButtonGroups = @[];
+    inputAssistantItem.trailingBarButtonGroups = @[];
     self.amountKeyboard.textInput = self.textField;
 
     switch (self.model.inputIntent) {
