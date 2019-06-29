@@ -67,7 +67,8 @@ static NSString * const OperatorKeysSegueId = @"OperatorKeysSegue";
     self.ownerKeysTitleLabel.text = NSLocalizedString(@"Owner Keys", nil);
     self.votingKeysTitleLabel.text = NSLocalizedString(@"Voting Keys", nil);
     self.operatorKeysTitleLabel.text = NSLocalizedString(@"Operator Keys", nil);
-    self.ownerKeysDetailLabel.text = @"";
+    self.ownerKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                      self.ownerDerivationPath.usedAddresses.count];
     self.votingKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
                                        self.votingDerivationPath.usedAddresses.count];
     self.operatorKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),

@@ -16,18 +16,21 @@
 //
 
 #import "DWDerivationPathKeysViewController.h"
+#import "DWSignMessageViewController.h"
 
 #import <DashSync/DashSync.h>
 #import <DashSync/DSAuthenticationKeysDerivationPath.h>
 
 static NSString * const KeyInfoCellId = @"KeyInfoCell";
 static NSString * const LoadMoreCellId = @"LoadMoreCell";
+static NSString * const SignMessageCellId = @"SignMessageCell";
 
 typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
     DWDerivationPathInfo_Address,
     DWDerivationPathInfo_PublicKey,
     DWDerivationPathInfo_PrivateKey,
     DWDerivationPathInfo_UsedOrNot,
+    DWDerivationPathInfo_SignMessage,
     _DWDerivationPathInfo_Count,
 };
 
@@ -78,25 +81,28 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
         return cell;
     }
     else {
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
+        UITableViewCell *cell;
         
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         NSInteger index = indexPath.section;
         DWDerivationPathInfo info = indexPath.row;
         switch (info) {
             case DWDerivationPathInfo_Address: {
+                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
                 cell.textLabel.text = NSLocalizedString(@"Address", nil);
                 cell.detailTextLabel.text = [self.derivationPath addressAtIndex:index];
                 
                 break;
             }
             case DWDerivationPathInfo_PublicKey: {
+                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
                 cell.textLabel.text = NSLocalizedString(@"Public key", nil);
                 cell.detailTextLabel.text = [self.derivationPath publicKeyDataAtIndex:index].hexString;
                 
                 break;
             }
             case DWDerivationPathInfo_PrivateKey: {
+                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
                 cell.textLabel.text = NSLocalizedString(@"Private key", nil);
                 @autoreleasepool {
                     
@@ -111,6 +117,7 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
                 break;
             }
             case DWDerivationPathInfo_UsedOrNot: {
+                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
                 BOOL used = [self.derivationPath addressIsUsedAtIndex:index];
                 cell.textLabel.text = used?NSLocalizedString(@"Used", nil):NSLocalizedString(@"Not used", nil);
                 if (used) {
@@ -123,6 +130,13 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
 
                 break;
             }
+            case DWDerivationPathInfo_SignMessage: {
+                cell = [tableView dequeueReusableCellWithIdentifier:SignMessageCellId forIndexPath:indexPath];
+                cell.textLabel.text = NSLocalizedString(@"Sign Message", nil);
+                
+                break;
+            }
+                
             default:
                 break;
         }
@@ -143,5 +157,16 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
         [tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:self.visibleIndexes - 1] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
     }
 }
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"SignMessageSegue"]) {
+        DWSignMessageViewController * signMessageViewController = (DWSignMessageViewController*)segue.destinationViewController;
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+        NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated withPassphrase:nil];
+        DSKey *key = [self.derivationPath privateKeyAtIndex:self.tableView.indexPathForSelectedRow.section fromSeed:seed];
+        signMessageViewController.key = key;
+    }
+}
+
 
 @end
