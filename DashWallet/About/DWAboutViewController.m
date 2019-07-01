@@ -17,10 +17,9 @@
 
 #import "DWAboutViewController.h"
 
-#import <SafariServices/SafariServices.h>
-
 #import "BRBubbleView.h"
 #import "DWAboutModel.h"
+#import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -179,7 +178,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    SFSafariViewController *safariViewController = [[SFSafariViewController alloc] initWithURL:url];
+    SFSafariViewController *safariViewController = [SFSafariViewController dw_controllerWithURL:url];
     [self presentViewController:safariViewController animated:YES completion:nil];
 }
 

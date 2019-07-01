@@ -17,14 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWAmountInputControlSource.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWAmountInputValidator;
 
-@interface DWAmountObject : NSObject
-
-@property (readonly, copy, nonatomic) NSAttributedString *dashAttributedString;
-@property (readonly, copy, nonatomic) NSAttributedString *localCurrencyAttributedString;
+@interface DWAmountObject : NSObject <DWAmountInputControlSource>
 
 @property (readonly, copy, nonatomic) NSString *dashFormatted;
 @property (readonly, copy, nonatomic) NSString *localCurrencyFormatted;
@@ -59,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithPlainAmount:(uint64_t)plainAmount;
 
 - (instancetype)init NS_UNAVAILABLE;
+
++ (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted textColor:(UIColor *)textColor;
 
 @end
 

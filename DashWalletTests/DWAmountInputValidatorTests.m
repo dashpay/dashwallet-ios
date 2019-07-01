@@ -225,6 +225,23 @@
     }
 }
 
+- (void)testCopyPasteInput {
+    for (NSLocale *locale in self.locales) {
+        NSString *sep = locale.decimalSeparator;
+
+        NSArray<DWAmountInputTestCase *> *testCases = @[
+            [DWAmountInputTestCase withLastInput:@"0" string:@"00" expectedResult:@"0"],
+            [DWAmountInputTestCase withLastInput:@"0" string:@"001" expectedResult:@"1"],
+            [DWAmountInputTestCase withLastInput:@"0" string:@"10" expectedResult:@"10"],
+            [DWAmountInputTestCase withLastInput:@"10" string:@"20" expectedResult:@"1020"],
+            [DWAmountInputTestCase withLastInput:@"10" string:@"020" expectedResult:@"10020"],
+            [DWAmountInputTestCase withLastInput:@"10" string:FS(@"%@02", sep) expectedResult:FS(@"10%@02", sep)],
+            [DWAmountInputTestCase withLastInput:FS(@"0%@1", sep) string:FS(@"0%@1", sep) expectedResult:nil],
+        ];
+        [self performTests:testCases locale:locale];
+    }
+}
+
 #pragma mark - Private
 
 - (void)performTests:(NSArray<DWAmountInputTestCase *> *)testCases locale:(NSLocale *)locale {
@@ -251,9 +268,9 @@
 }
 
 - (void)checkTestCase:(DWAmountInputTestCase *)testCase validator:(DWAmountInputValidator *)validator locale:(NSLocale *)locale {
-    NSString *result = [validator validatedAmountForLastInputString:testCase.lastInput
-                                                              range:testCase.range
-                                                  replacementString:testCase.string];
+    NSString *result = [validator validatedStringFromLastInputString:testCase.lastInput
+                                                               range:testCase.range
+                                                   replacementString:testCase.string];
 
     if (testCase.expectedResult) {
         XCTAssertEqualObjects(result, testCase.expectedResult,

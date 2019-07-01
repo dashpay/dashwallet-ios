@@ -27,6 +27,7 @@
 #import "DWSendViewController.h"
 #import "DWRootViewController.h"
 #import "DWSettingsViewController.h"
+#import "DWAmountViewController.h"
 #import "BRBubbleView.h"
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"

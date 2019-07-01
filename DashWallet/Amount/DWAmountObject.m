@@ -28,6 +28,9 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
 
 @implementation DWAmountObject
 
+@synthesize dashAttributedString=_dashAttributedString;
+@synthesize localCurrencyAttributedString=_localCurrencyAttributedString;
+
 - (instancetype)initWithDashAmountString:(NSString *)dashAmountString {
     self = [super init];
     if (self) {
@@ -135,22 +138,20 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     return [self initWithDashAmountString:dashAmountString];
 }
 
-#pragma mark - Private
-
-+ (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted {
++ (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted textColor:(UIColor *)textColor {
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:localCurrencyFormatted];
     NSLocale *locale = [NSLocale currentLocale];
     NSString *decimalSeparator = locale.decimalSeparator;
     NSString *insufficientFractionDigits = [NSString stringWithFormat:@"%@00", decimalSeparator];
     NSRange insufficientFractionDigitsRange = [localCurrencyFormatted rangeOfString:insufficientFractionDigits];
-    NSDictionary *defaultAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+    NSDictionary *defaultAttributes = @{NSForegroundColorAttributeName : textColor};
     [attributedString beginEditing];
     if (insufficientFractionDigitsRange.location != NSNotFound) {
         if (insufficientFractionDigitsRange.location > 0) {
             NSRange beforeFractionRange = NSMakeRange(0, insufficientFractionDigitsRange.location);
             [attributedString setAttributes:defaultAttributes range:beforeFractionRange];
         }
-        [attributedString setAttributes:@{ NSForegroundColorAttributeName : [UIColor colorWithWhite:1.0 alpha:0.5] }
+        [attributedString setAttributes:@{ NSForegroundColorAttributeName : [textColor colorWithAlphaComponent:0.5] }
                                   range:insufficientFractionDigitsRange];
         NSUInteger afterFractionIndex = insufficientFractionDigitsRange.location + insufficientFractionDigitsRange.length;
         if (afterFractionIndex < localCurrencyFormatted.length) {
@@ -165,6 +166,12 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
     [attributedString endEditing];
 
     return [attributedString copy];
+}
+
+#pragma mark - Private
+
++ (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted {
+    return [self attributedStringForLocalCurrencyFormatted:localCurrencyFormatted textColor:[UIColor whiteColor]];
 }
 
 + (nullable NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString
