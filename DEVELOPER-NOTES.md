@@ -28,3 +28,27 @@
 #### Getting translations from transifex
 
 1.  Just run  `tx pull`
+
+## In-house crash reporting
+
+DashWallet uses fork of [PLCrashReporter](https://github.com/podkovyrin/plcrashreporter) to allow users to manually send crash reports if they decided to share it with us.
+
+#### Decoding crash reports
+
+Download or clone PLCrashReporter and build **plcrashutil** target (archiving with release configuration might be a good idea).
+
+Run the following command to convert plcrash to regular crash: `./plcrashutil convert --format=ios crash_report.plcrash > report.crash`
+
+Symbolicate resulting crash report with **symbolicatecrash** tool (`/Applications/Xcode.app/Contents/SharedFrameworks/DVTFoundation.framework/Versions/A/Resources/symbolicatecrash`):
+
+1. Set needed env `export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"`
+2. Place .crash, .app and .dSYM in the same directory
+3. Run `symbolicatecrash report.crash > symbolicated.crash`
+
+See also:
+
+[Technical Note TN2151 Understanding and Analyzing Application Crash Reports](https://developer.apple.com/library/archive/technotes/tn2151/_index.html#//apple_ref/doc/uid/DTS40008184)
+
+[Technical Q&A QA1765 How to Match a Crash Report to a Build](https://developer.apple.com/library/archive/qa/qa1765/_index.html#//apple_ref/doc/uid/DTS40012196)
+
+[Symbolicating Your iOS Crash Reports](https://possiblemobile.com/2015/03/symbolicating-your-ios-crash-reports/)
