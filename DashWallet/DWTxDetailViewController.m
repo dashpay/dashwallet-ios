@@ -344,13 +344,18 @@
                     cell.moreInfoLabel.text = nil;
                     
                     uint32_t lastBlockHeight = [DWEnvironment sharedInstance].currentChain.lastBlockHeight;
-                    if (self.transaction.instantSendReceived && ((self.transaction.blockHeight == TX_UNCONFIRMED) || (lastBlockHeight - self.transaction.blockHeight) < 6)) {
+                    if (self.transaction.hasUnverifiedInstantSendLock) {
+                        cell.statusLabel.text = NSLocalizedString(@"processing", nil);
+                        cell.moreInfoLabel.text = NSLocalizedString(@"verifying quorum",nil);
+                    } else if (self.transaction.instantSendReceived && ((self.transaction.blockHeight == TX_UNCONFIRMED) || (lastBlockHeight - self.transaction.blockHeight) < 6)) {
                         cell.statusLabel.text = NSLocalizedString(@"locked with InstantSend", nil);
                         if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                             cell.moreInfoLabel.text = [NSString stringWithFormat:@"%@ - %@",[NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                                                                         self.transaction.blockHeight], self.txDateString];
-                        } else {
+                        } else if (self.transaction.transactionLockVotes.count) {
                             cell.moreInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d out of %d lock votes",nil),self.transaction.transactionLockVotes.count,self.transaction.inputHashes.count*10];
+                        } else {
+                            cell.moreInfoLabel.text = NSLocalizedString(@"accepted by quorum",nil);
                         }
                     } else if ([account transactionOutputsAreLocked:self.transaction]) {
                         cell.statusLabel.text = NSLocalizedString(@"recently mined (locked)", nil);

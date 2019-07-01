@@ -48,6 +48,9 @@
 "About" = "Относно";
 
 /* No comment provided by engineer. */
+"accepted by quorum" = "accepted by quorum";
+
+/* No comment provided by engineer. */
 "Action Needed" = "Необходимо е действие";
 
 /* No comment provided by engineer. */
@@ -318,7 +321,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"locked" = "locked";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "заключена с InstantSend";
@@ -441,6 +444,9 @@
 "payout address:" = "адрес за заплащане:";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
@@ -454,6 +460,12 @@
 
 /* No comment provided by engineer. */
 "Private key" = "Частен ключ";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
+
+/* No comment provided by engineer. */
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Публичен адрес";
@@ -690,7 +702,7 @@
 "unsupported url" = "неподдържан url";
 
 /* No comment provided by engineer. */
-"unverified" = "непроверен";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -712,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "verified, waiting for confirmation" = "проверен, в очакване на потвърждение";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "хеш на ключа за гласуване:";

@@ -12,7 +12,7 @@
  1. Install [fastlane](fastlane.tools) by running `brew cask install fastlane`
  2. Uncomment `#define SNAPSHOT 1` in **DashWallet-Prefix.pch** file
  3. Run `fastlane snapshot` (ETA ~1.5 hours on MBP 2017 i7 2.8 Ghz, 16 RAM) 
- 4. Upload screenshots by running `fastlane deliver`
+ 4. Upload screenshots by running `fastlane deliver --skip_binary_upload --skip_metadata --skip_app_version_update`
 
 ## Managing localized files
 
