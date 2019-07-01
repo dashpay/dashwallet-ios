@@ -5,7 +5,7 @@
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "IgV-bh-Mh7"; */
 "IgV-bh-Mh7.normalTitle" = "copia i \"logs\"";
 
-/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "JbA-bI-SeK"; */
+/* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
 "JbA-bI-SeK.text" = "Dati sul tasso di cambio forniti da\nget-spark.com";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
