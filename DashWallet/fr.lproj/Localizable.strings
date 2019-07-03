@@ -186,6 +186,9 @@
 "couldn't transmit payment to dash network" = "impossible de transmettre le paiement au réseau dash";
 
 /* No comment provided by engineer. */
+"Create a New Wallet" = "Create a New Wallet";
+
+/* No comment provided by engineer. */
 "CRITICAL" = "IMPORTANT";
 
 /* No comment provided by engineer. */
@@ -487,6 +490,9 @@
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "miné récemment (verrouillé)";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Recover Wallet";
 
 /* Recovery phrase */
 "Recovery phrase" = "Phrase de récupération";

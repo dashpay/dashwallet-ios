@@ -186,6 +186,9 @@
 "couldn't transmit payment to dash network" = "지불 내용을 대시 네트워크에 전송할 수 없었습니다";
 
 /* No comment provided by engineer. */
+"Create a New Wallet" = "Create a New Wallet";
+
+/* No comment provided by engineer. */
 "CRITICAL" = "중요";
 
 /* No comment provided by engineer. */
@@ -487,6 +490,9 @@
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "최근 채굴됨 (잠김 상태)";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Recover Wallet";
 
 /* Recovery phrase */
 "Recovery phrase" = "복원 문구";

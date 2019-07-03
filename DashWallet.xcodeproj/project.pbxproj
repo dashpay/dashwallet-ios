@@ -29,6 +29,16 @@
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2120F022147A40009906DC /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
+		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
+		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
+		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
+		2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
+		2A4430F322CBD8B3009BAF7F /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
+		2A4430F422CBD8B3009BAF7F /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
+		2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */; };
+		2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A44311822CBF108009BAF7F /* Montserrat.plist */; };
+		2A44311E22CC9B5A009BAF7F /* DWRootNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */; };
+		2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
@@ -116,9 +126,7 @@
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
 		2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */; };
-		2AB231D22196E25D00A6E7E6 /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
-		2AB231D72196E5CF00A6E7E6 /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
 		2AB8CDDB220D879300A3D1DB /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDA220D879300A3D1DB /* DWAmountViewController.m */; };
 		2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */; };
 		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
@@ -206,8 +214,6 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-		FBFC2E9C211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */; };
-		FBFC2E9D211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */ = {isa = PBXBuildFile; fileRef = FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */; };
 		FBFC2EB521137A7A00D20C57 /* Montserrat-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA021137A7800D20C57 /* Montserrat-Italic.otf */; };
 		FBFC2EB621137A7A00D20C57 /* Montserrat-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA021137A7800D20C57 /* Montserrat-Italic.otf */; };
 		FBFC2EB721137A7A00D20C57 /* Montserrat-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA021137A7800D20C57 /* Montserrat-Italic.otf */; };
@@ -382,6 +388,19 @@
 		2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputValidatorTests.m; sourceTree = "<group>"; };
 		2A2120EE22147A40009906DC /* DWAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountObject.h; sourceTree = "<group>"; };
 		2A2120EF22147A40009906DC /* DWAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObject.m; sourceTree = "<group>"; };
+		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
+		2A4430EC22CBBAC9009BAF7F /* DWSetupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSetupViewController.h; sourceTree = "<group>"; };
+		2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSetupViewController.m; sourceTree = "<group>"; };
+		2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AppAssets.xcassets; sourceTree = "<group>"; };
+		2A44311522CBF0B2009BAF7F /* UIFont+DWFont.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIFont+DWFont.h"; sourceTree = "<group>"; };
+		2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIFont+DWFont.m"; sourceTree = "<group>"; };
+		2A44311822CBF108009BAF7F /* Montserrat.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Montserrat.plist; sourceTree = "<group>"; };
+		2A44311C22CC9B5A009BAF7F /* DWRootNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootNavigationController.h; sourceTree = "<group>"; };
+		2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootNavigationController.m; sourceTree = "<group>"; };
+		2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIColor+DWStyle.h"; sourceTree = "<group>"; };
+		2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIColor+DWStyle.m"; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -828,8 +847,6 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		FBFC2E9A211378CD00D20C57 /* UIFont+SystemFontOverride.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIFont+SystemFontOverride.h"; sourceTree = "<group>"; };
-		FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIFont+SystemFontOverride.m"; sourceTree = "<group>"; };
 		FBFC2EA021137A7800D20C57 /* Montserrat-Italic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.otf"; sourceTree = "<group>"; };
 		FBFC2EA121137A7800D20C57 /* Montserrat-ThinItalic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-ThinItalic.otf"; sourceTree = "<group>"; };
 		FBFC2EA221137A7900D20C57 /* Montserrat-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Bold.otf"; sourceTree = "<group>"; };
@@ -943,6 +960,47 @@
 				2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */,
 			);
 			path = Entities;
+			sourceTree = "<group>";
+		};
+		2A4430E922CBB98D009BAF7F /* Setup */ = {
+			isa = PBXGroup;
+			children = (
+				2A4430EA22CBBA82009BAF7F /* Setup.storyboard */,
+				2A4430EC22CBBAC9009BAF7F /* DWSetupViewController.h */,
+				2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */,
+			);
+			path = Setup;
+			sourceTree = "<group>";
+		};
+		2A4430EF22CBC77A009BAF7F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
+				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
+				2A44311522CBF0B2009BAF7F /* UIFont+DWFont.h */,
+				2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */,
+				2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */,
+				2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2A4430F022CBD566009BAF7F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FBFC2E9E21137A4200D20C57 /* Montserrat */,
+				2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2A44311B22CC9B2C009BAF7F /* RootNavigation */ = {
+			isa = PBXGroup;
+			children = (
+				2A44311C22CC9B5A009BAF7F /* DWRootNavigationController.h */,
+				2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */,
+			);
+			path = RootNavigation;
 			sourceTree = "<group>";
 		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
@@ -1393,8 +1451,6 @@
 			children = (
 				BAA4843A1B3EFFAF0075C749 /* UIImage+Utils.h */,
 				BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */,
-				FBFC2E9A211378CD00D20C57 /* UIFont+SystemFontOverride.h */,
-				FBFC2E9B211378CD00D20C57 /* UIFont+SystemFontOverride.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -1508,6 +1564,10 @@
 		75D5F3C7191EC270004AB296 /* DashWallet */ = {
 			isa = PBXGroup;
 			children = (
+				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
+				2A4430F022CBD566009BAF7F /* Resources */,
+				2A4430EF22CBC77A009BAF7F /* Views */,
+				2A4430E922CBB98D009BAF7F /* Setup */,
 				FB4AB41621CA75D0001CC324 /* Utils */,
 				BAC7B6BF1BD9C2B500165B84 /* AppleWatch */,
 				752E289C19234A4700DB5A3C /* Models */,
@@ -1526,6 +1586,8 @@
 				7579F7FE19231D4600CA56F4 /* ThirdParty */,
 				75D5F3C8191EC270004AB296 /* Supporting Files */,
 				FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */,
+				2A4430E522CBB6EC009BAF7F /* AppDelegate.h */,
+				2A4430E622CBB6EC009BAF7F /* AppDelegate.m */,
 			);
 			path = DashWallet;
 			sourceTree = "<group>";
@@ -1533,7 +1595,6 @@
 		75D5F3C8191EC270004AB296 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				FBFC2E9E21137A4200D20C57 /* Montserrat */,
 				2A8F420821BED16300858B91 /* DashSyncCurrentCommit */,
 				75D5F3C9191EC270004AB296 /* Info.plist */,
 				757E09971ADB8EEB006FD352 /* Localizable.strings */,
@@ -1730,8 +1791,6 @@
 				7525B618192453840041C0F2 /* BRNavigationBar.m */,
 				FB43BC73211CC68E00BC9879 /* DWNumberButton.h */,
 				FB43BC74211CC68E00BC9879 /* DWNumberButton.m */,
-				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
-				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
 				FB43BC79211CE0F800BC9879 /* DWWhiteActionButton.h */,
 				FB43BC7A211CE0F800BC9879 /* DWWhiteActionButton.m */,
 				FB43BC7C211D6AD000BC9879 /* DWShareActionButton.h */,
@@ -1743,6 +1802,7 @@
 		FBFC2E9E21137A4200D20C57 /* Montserrat */ = {
 			isa = PBXGroup;
 			children = (
+				2A44311822CBF108009BAF7F /* Montserrat.plist */,
 				FBFC2EA221137A7900D20C57 /* Montserrat-Bold.otf */,
 				FBFC2EA521137A7900D20C57 /* Montserrat-ExtraLight.otf */,
 				FBFC2EA321137A7900D20C57 /* Montserrat-ExtraLightItalic.otf */,
@@ -2010,6 +2070,7 @@
 				2A9FFE972230FF4700956D5F /* UpholdConfirmTransferStoryboard.storyboard in Resources */,
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
+				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */,
 				2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
@@ -2028,9 +2089,11 @@
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
 				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
+				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				FBFC2EBD21137A7A00D20C57 /* Montserrat-Bold.otf in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
+				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
 				2A9FFF222233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard in Resources */,
 				FBFC2ECD21137A7A00D20C57 /* Montserrat-Light.otf in Resources */,
 				2A9FFE7F2230FF4600956D5F /* DWSelectorFormTableViewCell.xib in Resources */,
@@ -2326,6 +2389,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A4430F322CBD8B3009BAF7F /* DWStartViewController.m in Sources */,
+				2A4430F422CBD8B3009BAF7F /* DWStartModel.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */,
@@ -2338,11 +2403,11 @@
 				2A9FFE7C2230FF4600956D5F /* DWAlertController+DWKeyboard.m in Sources */,
 				2AB8CDDB220D879300A3D1DB /* DWAmountViewController.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
-				FBFC2E9C211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
 				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
+				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
@@ -2378,6 +2443,7 @@
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				2A9FFCD5222EA87F00956D5F /* DSTransactionStatusTableViewCell.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
+				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2A9FFE782230FF4600956D5F /* DWAlertViewActionBaseView.m in Sources */,
@@ -2408,9 +2474,8 @@
 				2A9FFE792230FF4600956D5F /* DWDimmingView.m in Sources */,
 				2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
-				2AB231D72196E5CF00A6E7E6 /* DWStartModel.m in Sources */,
 				2A9FFE8B2230FF4700956D5F /* DWLocalCurrecnySelectorViewController.m in Sources */,
-				2AB231D72196E5CF00A6E7E6 /* DWStartModel.m in Sources */,
+				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				2A9FFE7A2230FF4600956D5F /* DWAnimatableShapeLayer.m in Sources */,
@@ -2421,8 +2486,10 @@
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
+				2A44311E22CC9B5A009BAF7F /* DWRootNavigationController.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
+				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
@@ -2436,11 +2503,9 @@
 				759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */,
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A9FFDF32230FF1A00956D5F /* UIViewController+DWChildControllers.m in Sources */,
-				2AB231D22196E25D00A6E7E6 /* DWStartViewController.m in Sources */,
 				2A9FFE7D2230FF4600956D5F /* DWAlertPresentationController.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
-				2AB231D22196E25D00A6E7E6 /* DWStartViewController.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
@@ -2491,7 +2556,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBFC2E9D211378CD00D20C57 /* UIFont+SystemFontOverride.m in Sources */,
 				BAE12C061B2DEEF700895CC5 /* BRTodayViewController.m in Sources */,
 				FB3FA3D61F2364140071FCC5 /* UIImage+Utils.m in Sources */,
 				75E2503F1B7691C900A2BB2B /* BRBubbleView.m in Sources */,
@@ -2854,7 +2918,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -2911,7 +2975,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"-frandom-seed=$@",
@@ -3198,7 +3262,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"-frandom-seed=$@",
@@ -3378,7 +3442,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (

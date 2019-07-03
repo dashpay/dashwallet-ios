@@ -1,5 +1,5 @@
-//
-//  Created by Sam Westrich
+//  
+//  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -19,9 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBlueActionButton : UIButton
+@interface UIFont (DWFont)
 
-@property (assign, nonatomic) IBInspectable BOOL inverted;
+/**
+ Get the scaled font for the given text style
+
+ @param textStyle The `UIFontTextStyle` for the font.
+ @return  A `UIFont` of the custom font that has been scaled for the users currently selected preferred text size.
+ */
++ (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle;
 
 @end
 
