@@ -17,7 +17,7 @@
 
 #import "DWPinField.h"
 
-#import "DWAmountKeyboardInputViewAudioFeedback.h"
+#import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -143,8 +143,8 @@ static CALayer *PinDotLayer() {
 
 - (nullable UIView *)inputView {
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-    DWAmountKeyboardInputViewAudioFeedback *inputView =
-        [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    DWNumberKeyboardInputViewAudioFeedback *inputView =
+        [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     return inputView;
 }
 

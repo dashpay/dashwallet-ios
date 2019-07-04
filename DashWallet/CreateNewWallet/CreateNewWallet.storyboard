@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Utu-rb-kVa">
-    <device id="retina5_9" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -16,21 +12,21 @@
             <objects>
                 <viewController id="Utu-rb-kVa" customClass="DWCreateNewWalletViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="S7h-Wf-pds">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v2G-4u-CtF" userLabel="Top View">
-                                <rect key="frame" x="16" y="44" width="343" height="519"/>
+                                <rect key="frame" x="20" y="20" width="560" height="365"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nx0-Xr-XMt" userLabel="Center View">
-                                        <rect key="frame" x="0.0" y="185.33333333333331" width="343" height="148.33333333333331"/>
+                                        <rect key="frame" x="0.0" y="119.5" width="560" height="126.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="infinite" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="wky-gc-BHo" customClass="DWPinView">
-                                                <rect key="frame" x="0.0" y="0.0" width="343" height="90"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="560" height="90"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                             </view>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This PIN will be required to unlock your app everytime when you use it." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GGf-Za-9Cg">
-                                                <rect key="frame" x="0.0" y="105.99999999999997" width="343" height="42.333333333333343"/>
+                                                <rect key="frame" x="0.0" y="106" width="560" height="20.5"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                 <color key="textColor" name="SecondaryTextColor"/>
                                                 <nil key="highlightedColor"/>
@@ -55,8 +51,8 @@
                                     <constraint firstItem="Nx0-Xr-XMt" firstAttribute="centerY" secondItem="v2G-4u-CtF" secondAttribute="centerY" id="lao-Ct-zj1"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="DWAmountKeyboard">
-                                <rect key="frame" x="16" y="563" width="343" height="215"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="DWNumberKeyboard">
+                                <rect key="frame" x="20" y="385" width="560" height="215"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="215" id="lmc-OB-GmN"/>

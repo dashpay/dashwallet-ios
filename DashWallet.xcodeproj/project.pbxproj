@@ -130,12 +130,12 @@
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */; };
-		2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */; };
+		2AB21D32221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB21D31221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
 		2AB8CDDB220D879300A3D1DB /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDA220D879300A3D1DB /* DWAmountViewController.m */; };
-		2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */; };
+		2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */; };
 		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
-		2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */; };
+		2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
 		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
@@ -604,8 +604,8 @@
 		2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObjectTests.m; sourceTree = "<group>"; };
 		2AB21D2D220F3A3E00615700 /* DWAmountNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountNavigationController.m; sourceTree = "<group>"; };
 		2AB21D2F220F3B1C00615700 /* DWAmountNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAmountNavigationController.h; sourceTree = "<group>"; };
-		2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
-		2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountKeyboardInputViewAudioFeedback.m; sourceTree = "<group>"; };
+		2AB21D30221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
+		2AB21D31221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboardInputViewAudioFeedback.m; sourceTree = "<group>"; };
 		2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartViewController.m; sourceTree = "<group>"; };
 		2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = StartStoryboard.storyboard; sourceTree = "<group>"; };
@@ -613,11 +613,11 @@
 		2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartModel.m; sourceTree = "<group>"; };
 		2AB8CDD9220D879300A3D1DB /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
 		2AB8CDDA220D879300A3D1DB /* DWAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountViewController.m; sourceTree = "<group>"; };
-		2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountButton.h; sourceTree = "<group>"; };
-		2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountButton.m; sourceTree = "<group>"; };
+		2AB8CDDD220D880100A3D1DB /* DWNumberKeyboardButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboardButton.h; sourceTree = "<group>"; };
+		2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboardButton.m; sourceTree = "<group>"; };
 		2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = AmountStoryboard.storyboard; sourceTree = "<group>"; };
-		2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountKeyboard.h; sourceTree = "<group>"; };
-		2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountKeyboard.m; sourceTree = "<group>"; };
+		2AB8CDE2220DCA7D00A3D1DB /* DWNumberKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboard.h; sourceTree = "<group>"; };
+		2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWNumberKeyboard.m; sourceTree = "<group>"; };
 		2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewController.h; sourceTree = "<group>"; };
 		2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewController.m; sourceTree = "<group>"; };
 		2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanView.h; sourceTree = "<group>"; };
@@ -1032,6 +1032,7 @@
 		2A44312B22CD0304009BAF7F /* SharedViews */ = {
 			isa = PBXGroup;
 			children = (
+				2A9FFF3722357F6800956D5F /* Keyboard */,
 				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
 				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
 			);
@@ -1391,12 +1392,12 @@
 		2A9FFF3722357F6800956D5F /* Keyboard */ = {
 			isa = PBXGroup;
 			children = (
-				2AB8CDDD220D880100A3D1DB /* DWAmountButton.h */,
-				2AB8CDDE220D880100A3D1DB /* DWAmountButton.m */,
-				2AB8CDE2220DCA7D00A3D1DB /* DWAmountKeyboard.h */,
-				2AB8CDE3220DCA7D00A3D1DB /* DWAmountKeyboard.m */,
-				2AB21D30221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.h */,
-				2AB21D31221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m */,
+				2AB8CDDD220D880100A3D1DB /* DWNumberKeyboardButton.h */,
+				2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */,
+				2AB8CDE2220DCA7D00A3D1DB /* DWNumberKeyboard.h */,
+				2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */,
+				2AB21D30221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.h */,
+				2AB21D31221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m */,
 			);
 			path = Keyboard;
 			sourceTree = "<group>";
@@ -1450,7 +1451,6 @@
 			isa = PBXGroup;
 			children = (
 				2A9FFF3822357F7800956D5F /* AmountInput */,
-				2A9FFF3722357F6800956D5F /* Keyboard */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2499,7 +2499,7 @@
 				2A9FFE782230FF4600956D5F /* DWAlertViewActionBaseView.m in Sources */,
 				2A9FFE8D2230FF4700956D5F /* DWSettingsViewController.m in Sources */,
 				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
-				2AB8CDE4220DCA7D00A3D1DB /* DWAmountKeyboard.m in Sources */,
+				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
@@ -2515,7 +2515,7 @@
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				2A9FFE722230FF4600956D5F /* DWAlertController.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
-				2AB21D32221176E600615700 /* DWAmountKeyboardInputViewAudioFeedback.m in Sources */,
+				2AB21D32221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
@@ -2557,7 +2557,7 @@
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
-				2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */,
+				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
 				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,

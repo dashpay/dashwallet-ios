@@ -18,8 +18,8 @@
 #import "DWAmountViewController.h"
 
 #import "DWAmountInputControl.h"
-#import "DWAmountKeyboard.h"
-#import "DWAmountKeyboardInputViewAudioFeedback.h"
+#import "DWNumberKeyboard.h"
+#import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -46,7 +46,7 @@ static CGFloat HorizontalPadding() {
 @property (strong, nonatomic) IBOutlet UILabel *infoLabel;
 @property (strong, nonatomic) IBOutlet UISwitch *instantSendSwitch;
 @property (strong, nonatomic) IBOutlet UITextField *textField;
-@property (strong, nonatomic) IBOutlet DWAmountKeyboard *amountKeyboard;
+@property (strong, nonatomic) IBOutlet DWNumberKeyboard *amountKeyboard;
 @property (strong, nonatomic) IBOutlet UILabel *addressLabel;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerLeadingConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *containerTrailingConstraint;
@@ -293,7 +293,7 @@ static CGFloat HorizontalPadding() {
     self.containerTrailingConstraint.constant = -HorizontalPadding();
 
     CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-    self.textField.inputView = [[DWAmountKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+    self.textField.inputView = [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
     UITextInputAssistantItem *inputAssistantItem = self.textField.inputAssistantItem;
     inputAssistantItem.leadingBarButtonGroups = @[];
     inputAssistantItem.trailingBarButtonGroups = @[];

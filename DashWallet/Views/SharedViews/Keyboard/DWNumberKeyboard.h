@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountKeyboard : UIView
+@interface DWNumberKeyboard : UIView
 
 @property (nullable, weak, nonatomic) UIResponder<UITextInput> *textInput;
 

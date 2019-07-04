@@ -15,9 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DWAmountKeyboard.h"
+#import "DWNumberKeyboard.h"
 
-#import "DWAmountButton.h"
+#import "DWNumberKeyboardButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +26,7 @@ static CGSize const ButtonSize = {91.0, 39.0};
 static const NSUInteger RowsCount = 4;
 static const NSUInteger SectionsCount = 3;
 
-@interface DWAmountKeyboard () <DWAmountButtonDelegate> {
+@interface DWNumberKeyboard () <DWNumberKeyboardButtonDelegate> {
     BOOL _isClearButtonLongPressGestureActive;
 
     struct {
@@ -36,19 +36,19 @@ static const NSUInteger SectionsCount = 3;
     } _delegateFlags;
 }
 
-@property (copy, nonatomic) NSArray<DWAmountButton *> *allButtons;
-@property (copy, nonatomic) NSArray<DWAmountButton *> *digitButtons;
-@property (strong, nonatomic) DWAmountButton *separatorButton;
-@property (strong, nonatomic) DWAmountButton *clearButton;
+@property (copy, nonatomic) NSArray<DWNumberKeyboardButton *> *allButtons;
+@property (copy, nonatomic) NSArray<DWNumberKeyboardButton *> *digitButtons;
+@property (strong, nonatomic) DWNumberKeyboardButton *separatorButton;
+@property (strong, nonatomic) DWNumberKeyboardButton *clearButton;
 
 @end
 
-@implementation DWAmountKeyboard
+@implementation DWNumberKeyboard
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self setupAmountKeyboard];
+        [self setupNumberKeyboard];
     }
     return self;
 }
@@ -56,28 +56,28 @@ static const NSUInteger SectionsCount = 3;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
-        [self setupAmountKeyboard];
+        [self setupNumberKeyboard];
     }
     return self;
 }
 
-- (void)setupAmountKeyboard {
-    NSMutableArray<DWAmountButton *> *buttons = [NSMutableArray array];
-    for (DWAmountButtonType type = DWAmountButtonTypeDigit0; type < DWAmountButtonTypeSeparator; type++) {
-        DWAmountButton *button = [[DWAmountButton alloc] initWithWithType:type];
+- (void)setupNumberKeyboard {
+    NSMutableArray<DWNumberKeyboardButton *> *buttons = [NSMutableArray array];
+    for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonTypeDigit0; type < DWNumberKeyboardButtonTypeSeparator; type++) {
+        DWNumberKeyboardButton *button = [[DWNumberKeyboardButton alloc] initWithWithType:type];
         button.delegate = self;
         [self addSubview:button];
         [buttons addObject:button];
     }
     self.digitButtons = buttons;
 
-    DWAmountButton *separatorButton = [[DWAmountButton alloc] initWithWithType:DWAmountButtonTypeSeparator];
+    DWNumberKeyboardButton *separatorButton = [[DWNumberKeyboardButton alloc] initWithWithType:DWNumberKeyboardButtonTypeSeparator];
     separatorButton.delegate = self;
     [self addSubview:separatorButton];
     self.separatorButton = separatorButton;
     [buttons addObject:separatorButton];
 
-    DWAmountButton *clearButton = [[DWAmountButton alloc] initWithWithType:DWAmountButtonTypeClear];
+    DWNumberKeyboardButton *clearButton = [[DWNumberKeyboardButton alloc] initWithWithType:DWNumberKeyboardButtonTypeClear];
     clearButton.delegate = self;
     [self addSubview:clearButton];
     self.clearButton = clearButton;
@@ -109,8 +109,8 @@ static const NSUInteger SectionsCount = 3;
     CGFloat top = 0.0;
 
     // Number buttons (1-9)
-    for (DWAmountButtonType i = DWAmountButtonTypeDigit1; i < DWAmountButtonTypeSeparator; i++) {
-        DWAmountButton *numberButton = self.digitButtons[i];
+    for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonTypeDigit1; i < DWNumberKeyboardButtonTypeSeparator; i++) {
+        DWNumberKeyboardButton *numberButton = self.digitButtons[i];
         numberButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
 
         if (i % SectionsCount == 0) {
@@ -128,7 +128,7 @@ static const NSUInteger SectionsCount = 3;
 
     // Number button (0)
     left += ButtonSize.width + horizontalSeparator;
-    DWAmountButton *zeroButton = self.digitButtons.firstObject;
+    DWNumberKeyboardButton *zeroButton = self.digitButtons.firstObject;
     zeroButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
 
     // Clear button
@@ -166,16 +166,16 @@ static const NSUInteger SectionsCount = 3;
     _textInput = textInput;
 }
 
-#pragma mark - DWAmountButtonDelegate
+#pragma mark - DWNumberKeyboardButtonDelegate
 
-- (void)amountButton:(DWAmountButton *)amountButton touchBegan:(UITouch *)touch {
+- (void)numberButton:(DWNumberKeyboardButton *)numberButton touchBegan:(UITouch *)touch {
     [[UIDevice currentDevice] playInputClick];
 
-    amountButton.highlighted = YES;
+    numberButton.highlighted = YES;
 }
 
-- (void)amountButton:(DWAmountButton *)amountButton touchMoved:(UITouch *)touch {
-    for (DWAmountButton *button in self.allButtons) {
+- (void)numberButton:(DWNumberKeyboardButton *)numberButton touchMoved:(UITouch *)touch {
+    for (DWNumberKeyboardButton *button in self.allButtons) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
         button.highlighted = CGRectContainsPoint(bounds, point);
@@ -191,8 +191,8 @@ static const NSUInteger SectionsCount = 3;
     }
 }
 
-- (void)amountButton:(DWAmountButton *)amountButton touchEnded:(UITouch *)touch {
-    for (DWAmountButton *button in self.allButtons) {
+- (void)numberButton:(DWNumberKeyboardButton *)numberButton touchEnded:(UITouch *)touch {
+    for (DWNumberKeyboardButton *button in self.allButtons) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
         if (CGRectContainsPoint(bounds, point)) {
@@ -204,19 +204,19 @@ static const NSUInteger SectionsCount = 3;
     [self resetHighlightedButton];
 }
 
-- (void)amountButton:(DWAmountButton *)amountButton touchCancelled:(UITouch *)touch {
+- (void)numberButton:(DWNumberKeyboardButton *)numberButton touchCancelled:(UITouch *)touch {
     [self resetHighlightedButton];
 }
 
 #pragma mark - Private
 
-- (void)performButtonAction:(DWAmountButton *)sender {
+- (void)performButtonAction:(DWNumberKeyboardButton *)sender {
     UIResponder<UITextInput> *textInput = self.textInput;
     if (!textInput) {
         return;
     }
 
-    if (sender.type == DWAmountButtonTypeClear) {
+    if (sender.type == DWNumberKeyboardButtonTypeClear) {
         [self performClearButtonAction:sender textInput:textInput];
     }
     else {
@@ -224,9 +224,9 @@ static const NSUInteger SectionsCount = 3;
     }
 }
 
-- (void)performRegularButtonAction:(DWAmountButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
+- (void)performRegularButtonAction:(DWNumberKeyboardButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
     NSString *text = nil;
-    if (sender.type == DWAmountButtonTypeSeparator) {
+    if (sender.type == DWNumberKeyboardButtonTypeSeparator) {
         text = [NSLocale currentLocale].decimalSeparator;
     }
     else {
@@ -257,7 +257,7 @@ static const NSUInteger SectionsCount = 3;
     }
 }
 
-- (void)performClearButtonAction:(DWAmountButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
+- (void)performClearButtonAction:(DWNumberKeyboardButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
     if (_delegateFlags.textInputSupportsShouldChangeTextInRange) {
         UITextRange *textRange = textInput.selectedTextRange;
         if ([textRange.start isEqual:textRange.end]) {
@@ -328,7 +328,7 @@ static const NSUInteger SectionsCount = 3;
 
 
 - (void)resetHighlightedButton {
-    for (DWAmountButton *button in self.allButtons) {
+    for (DWNumberKeyboardButton *button in self.allButtons) {
         button.highlighted = NO;
     }
     _isClearButtonLongPressGestureActive = NO;

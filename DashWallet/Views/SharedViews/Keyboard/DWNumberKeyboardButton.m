@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWAmountButton.h"
+#import "DWNumberKeyboardButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,15 +35,15 @@ static UIColor *BackgroundHighlightedColor() {
     return [UIColor whiteColor];
 }
 
-@interface DWAmountButton ()
+@interface DWNumberKeyboardButton ()
 
 @property (readonly, strong, nonatomic) UILabel *titleLabel;
 
 @end
 
-@implementation DWAmountButton
+@implementation DWNumberKeyboardButton
 
-- (instancetype)initWithWithType:(DWAmountButtonType)type {
+- (instancetype)initWithWithType:(DWNumberKeyboardButtonType)type {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _type = type;
@@ -60,7 +60,7 @@ static UIColor *BackgroundHighlightedColor() {
         titleLabel.textColor = TextColor();
         titleLabel.font = [UIFont systemFontOfSize:24.0];
         switch (type) {
-            case DWAmountButtonTypeSeparator: {
+            case DWNumberKeyboardButtonTypeSeparator: {
                 titleLabel.text = [NSLocale currentLocale].decimalSeparator;
 #if SNAPSHOT
                 titleLabel.accessibilityIdentifier = @"amount_button_separator";
@@ -68,7 +68,7 @@ static UIColor *BackgroundHighlightedColor() {
 
                 break;
             }
-            case DWAmountButtonTypeClear: {
+            case DWNumberKeyboardButtonTypeClear: {
                 UIImage *image = [[UIImage imageNamed:@"backspace"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
                 NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
                 textAttachment.image = image;
@@ -122,7 +122,7 @@ static UIColor *BackgroundHighlightedColor() {
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     UITouch *touch = [touches anyObject];
     if (touch) {
-        [self.delegate amountButton:self touchBegan:touch];
+        [self.delegate numberButton:self touchBegan:touch];
     }
     [super touchesBegan:touches withEvent:event];
 }
@@ -130,7 +130,7 @@ static UIColor *BackgroundHighlightedColor() {
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     UITouch *touch = [touches anyObject];
     if (touch) {
-        [self.delegate amountButton:self touchMoved:touch];
+        [self.delegate numberButton:self touchMoved:touch];
     }
     [super touchesMoved:touches withEvent:event];
 }
@@ -138,7 +138,7 @@ static UIColor *BackgroundHighlightedColor() {
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     UITouch *touch = [touches anyObject];
     if (touch) {
-        [self.delegate amountButton:self touchEnded:touch];
+        [self.delegate numberButton:self touchEnded:touch];
     }
     [super touchesEnded:touches withEvent:event];
 }
@@ -146,7 +146,7 @@ static UIColor *BackgroundHighlightedColor() {
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     UITouch *touch = [touches anyObject];
     if (touch) {
-        [self.delegate amountButton:self touchCancelled:touch];
+        [self.delegate numberButton:self touchCancelled:touch];
     }
     [super touchesCancelled:touches withEvent:event];
 }

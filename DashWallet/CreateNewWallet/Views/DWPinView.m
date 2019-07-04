@@ -17,7 +17,7 @@
 
 #import "DWPinView.h"
 
-#import "DWAmountKeyboard.h"
+#import "DWNumberKeyboard.h"
 #import "DWPinField.h"
 #import "DWPinInputStepView.h"
 #import "UIColor+DWStyle.h"
@@ -25,7 +25,7 @@
 
 @interface DWPinView () <DWPinFieldDelegate>
 
-@property (nullable, nonatomic, weak) DWAmountKeyboard *keyboard;
+@property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
 
 @property (nonatomic, strong) DWPinInputStepView *setPinView;
 @property (nonatomic, strong) DWPinInputStepView *confirmPinView;
@@ -85,7 +85,7 @@
     ]];
 }
 
-- (void)configureWithKeyboard:(DWAmountKeyboard *)keyboard {
+- (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard {
     NSParameterAssert(keyboard);
     NSAssert(self.confirmPinView.hidden, @"Keyboard should not be re-set in the middle of input");
 

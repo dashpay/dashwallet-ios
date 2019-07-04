@@ -15,27 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWAmountKeyboardInputViewAudioFeedback.h"
-
-#import "UIColor+DWStyle.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWAmountKeyboardInputViewAudioFeedback
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    }
-    return self;
-}
-
-#pragma mark - UIInputViewAudioFeedback
-
-- (BOOL)enableInputClicksWhenVisible {
-    return YES;
-}
+/**
+ Fake input view to make `[[UIDevice currentDevice] playInputClick]` works
+ */
+@interface DWNumberKeyboardInputViewAudioFeedback : UIView <UIInputViewAudioFeedback>
 
 @end
 

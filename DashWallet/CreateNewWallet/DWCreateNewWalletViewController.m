@@ -17,7 +17,7 @@
 
 #import "DWCreateNewWalletViewController.h"
 
-#import "DWAmountKeyboard.h"
+#import "DWNumberKeyboard.h"
 #import "DWPinView.h"
 #import "UIFont+DWFont.h"
 
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet DWPinView *pinView;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
-@property (strong, nonatomic) IBOutlet DWAmountKeyboard *keyboardView;
+@property (strong, nonatomic) IBOutlet DWNumberKeyboard *keyboardView;
 
 @end
 

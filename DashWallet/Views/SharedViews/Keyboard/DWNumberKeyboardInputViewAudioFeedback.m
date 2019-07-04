@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,14 +15,27 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWNumberKeyboardInputViewAudioFeedback.h"
+
+#import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- Fake input view to make `[[UIDevice currentDevice] playInputClick]` works
- */
-@interface DWAmountKeyboardInputViewAudioFeedback : UIView <UIInputViewAudioFeedback>
+@implementation DWNumberKeyboardInputViewAudioFeedback
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    }
+    return self;
+}
+
+#pragma mark - UIInputViewAudioFeedback
+
+- (BOOL)enableInputClicksWhenVisible {
+    return YES;
+}
 
 @end
 
