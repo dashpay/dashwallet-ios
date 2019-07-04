@@ -423,7 +423,7 @@
 "public key:" = "public key:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "เรท: %@ = %@\nอัพเดต: %@\nบล็อค #%d ของ %d\nคู่เชื่อมต่อ: %d\nคู่ dl: %@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "รับ dash ตามที่อยู่นี้: %@";
