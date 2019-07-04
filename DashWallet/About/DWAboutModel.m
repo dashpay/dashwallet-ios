@@ -65,9 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
+    DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
+    DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
+    
     
     return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
-                                                        "connected peers: %d\ndl peer: %@",
+                                                        "connected peers: %d\ndl peer: %@\nquorums validated: %d/%d",
                                                         NULL),
             [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
             [priceManager stringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
@@ -75,7 +78,9 @@ NS_ASSUME_NONNULL_BEGIN
             chain.lastBlockHeight,
             chain.estimatedBlockHeight,
             peerManager.connectedPeerCount,
-            peerManager.downloadPeerName?peerManager.downloadPeerName:@"-"];
+            peerManager.downloadPeerName?peerManager.downloadPeerName:@"-",
+            [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
+            [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
 }
 
 - (void)performCopyLogs {

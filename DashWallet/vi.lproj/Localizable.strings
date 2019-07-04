@@ -423,7 +423,7 @@
 "public key:" = "khoá công khai:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "tỷ giá: 1%@ = 1%@\ncập nhật: 1%@\nblock #%d of 2%d\ncác kết nối: 2%d\ndl peer: 1%@\n";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Nhận dash với địa chỉ này: %@";

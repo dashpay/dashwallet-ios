@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWAboutModel *model;
 
-@property (strong, nonatomic) id chainTipBlockObserver,connectedPeersObserver,downloadPeerObserver;
+@property (strong, nonatomic) id chainTipBlockObserver,connectedPeersObserver,downloadPeerObserver,quorumObserver;
 
 @end
 
@@ -82,6 +82,10 @@ NS_ASSUME_NONNULL_BEGIN
     }];
     
     self.connectedPeersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerConnectedPeersDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [self updateStatusNotification:note];
+    }];
+    
+    self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         [self updateStatusNotification:note];
     }];
     
