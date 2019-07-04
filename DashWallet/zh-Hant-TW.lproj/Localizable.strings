@@ -474,7 +474,7 @@
 "public key:" = "public key:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "滙率: %@ = %@\n更新: %@\n區塊 #%d of %d\n連接的節點: %d\ndl peer: %@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "透過這個位址接受達世: %@";

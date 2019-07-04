@@ -474,7 +474,7 @@
 "public key:" = "Kunci publik:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "nilai: %@ = %@\ndiperbarui: %@\nblok # %d dari %d\npeer tersambung: %d\ndl peer: %@";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Terima dash di alamat ini: %@";
