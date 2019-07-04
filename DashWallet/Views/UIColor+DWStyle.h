@@ -35,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_pinBackgroundColor;
 + (UIColor *)dw_pinInputDotColor;
 
++ (UIColor *)dw_numberKeyboardTextColor;
++ (UIColor *)dw_numberKeyboardHighlightedTextColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

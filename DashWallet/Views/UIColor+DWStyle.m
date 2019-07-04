@@ -81,6 +81,18 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_numberKeyboardTextColor {
+    UIColor *color = [UIColor colorNamed:@"NumberKeyboardTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_numberKeyboardHighlightedTextColor {
+    UIColor *color = [UIColor colorNamed:@"NumberKeyboardHighlightedTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -17,23 +17,32 @@
 
 #import "DWNumberKeyboardButton.h"
 
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static UIColor *TextColor() {
-    return [UIColor whiteColor];
+    return [UIColor dw_numberKeyboardTextColor];
 }
 
 static UIColor *TextHighlightedColor() {
-    return [UIColor colorWithRed:1.0 / 255.0 green:32.0 / 255.0 blue:96.0 / 255.0 alpha:1.0];
+    return [UIColor dw_numberKeyboardHighlightedTextColor];
 }
 
 static UIColor *BackgroundColor() {
-    return [UIColor colorWithRed:1.0 / 255.0 green:32.0 / 255.0 blue:96.0 / 255.0 alpha:1.0];
+    return [UIColor dw_secondaryBackgroundColor];
 }
 
 static UIColor *BackgroundHighlightedColor() {
-    return [UIColor whiteColor];
+    return [UIColor dw_dashBlueColor];
 }
+
+static UIFont *TitleFont() {
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleCallout respectMinSize:YES];
+}
+
+static CGFloat const CORNER_RADIUS = 8.0;
 
 @interface DWNumberKeyboardButton ()
 
@@ -52,13 +61,14 @@ static UIColor *BackgroundHighlightedColor() {
 
         self.backgroundColor = BackgroundColor();
 
+        self.layer.cornerRadius = CORNER_RADIUS;
         self.layer.masksToBounds = YES;
 
         UILabel *titleLabel = [[UILabel alloc] initWithFrame:self.bounds];
         titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.textColor = TextColor();
-        titleLabel.font = [UIFont systemFontOfSize:24.0];
+        titleLabel.font = TitleFont();
         switch (type) {
             case DWNumberKeyboardButtonTypeSeparator: {
                 titleLabel.text = [NSLocale currentLocale].decimalSeparator;
@@ -94,14 +104,13 @@ static UIColor *BackgroundHighlightedColor() {
         }
         [self addSubview:titleLabel];
         _titleLabel = titleLabel;
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(contentSizeCategoryDidChangeNotification:)
+                                                     name:UIContentSizeCategoryDidChangeNotification
+                                                   object:nil];
     }
     return self;
-}
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-
-    self.layer.cornerRadius = ceil(CGRectGetHeight(self.bounds) / 2.0);
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
@@ -149,6 +158,12 @@ static UIColor *BackgroundHighlightedColor() {
         [self.delegate numberButton:self touchCancelled:touch];
     }
     [super touchesCancelled:touches withEvent:event];
+}
+
+#pragma mark - Private
+
+- (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
+    self.titleLabel.font = TitleFont();
 }
 
 @end

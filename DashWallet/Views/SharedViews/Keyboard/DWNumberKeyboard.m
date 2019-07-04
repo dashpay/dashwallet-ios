@@ -21,10 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const VerticalSeparator = 9.0;
-static CGSize const ButtonSize = {91.0, 39.0};
-static const NSUInteger RowsCount = 4;
-static const NSUInteger SectionsCount = 3;
+static CGFloat const PADDING = 5.0;
+static CGFloat const BUTTON_HEIGHT = 50.0;
+static CGFloat const BUTTON_MAX_WIDTH = 115.0;
+
+static const NSUInteger ROWS_COUNT = 4;
+static const NSUInteger SECTIONS_COUNT = 3;
 
 @interface DWNumberKeyboard () <DWNumberKeyboardButtonDelegate> {
     BOOL _isClearButtonLongPressGestureActive;
@@ -93,47 +95,47 @@ static const NSUInteger SectionsCount = 3;
 }
 
 - (CGSize)intrinsicContentSize {
-    return CGSizeMake(ButtonSize.width * SectionsCount, // minimum width
-                      ButtonSize.height * RowsCount + VerticalSeparator * (RowsCount - 1));
+    return CGSizeMake(UIViewNoIntrinsicMetric,
+                      BUTTON_HEIGHT * ROWS_COUNT + PADDING * (ROWS_COUNT - 1));
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
 
     const CGFloat boundsWidth = CGRectGetWidth(self.bounds);
-    const CGFloat boundsHeight = CGRectGetHeight(self.bounds);
-    NSAssert(SectionsCount > 0, @"SectionsCount is invalid");
-    const CGFloat horizontalSeparator = (boundsWidth - ButtonSize.width * SectionsCount) / (SectionsCount - 1);
+    const CGFloat horizontalPadding = PADDING * (SECTIONS_COUNT - 1);
+    const CGFloat buttonWidth = MIN(boundsWidth / SECTIONS_COUNT - horizontalPadding, BUTTON_MAX_WIDTH);
+    const CGFloat leftInitial = (boundsWidth - buttonWidth * SECTIONS_COUNT - horizontalPadding) / 2.0;
 
-    CGFloat left = 0.0;
+    CGFloat left = leftInitial;
     CGFloat top = 0.0;
 
     // Number buttons (1-9)
     for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonTypeDigit1; i < DWNumberKeyboardButtonTypeSeparator; i++) {
         DWNumberKeyboardButton *numberButton = self.digitButtons[i];
-        numberButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
+        numberButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
-        if (i % SectionsCount == 0) {
-            left = 0.0;
-            top += ButtonSize.height + VerticalSeparator;
+        if (i % SECTIONS_COUNT == 0) {
+            left = leftInitial;
+            top += BUTTON_HEIGHT + PADDING;
         }
         else {
-            left += ButtonSize.width + horizontalSeparator;
+            left += buttonWidth + PADDING;
         }
     }
 
     // Separator
-    left = 0.0;
-    self.separatorButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
+    left = leftInitial;
+    self.separatorButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
     // Number button (0)
-    left += ButtonSize.width + horizontalSeparator;
+    left += buttonWidth + PADDING;
     DWNumberKeyboardButton *zeroButton = self.digitButtons.firstObject;
-    zeroButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
+    zeroButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
     // Clear button
-    left += ButtonSize.width + horizontalSeparator;
-    self.clearButton.frame = CGRectMake(left, top, ButtonSize.width, ButtonSize.height);
+    left += buttonWidth + PADDING;
+    self.clearButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 }
 
 - (void)setTextInput:(nullable UIResponder<UITextInput> *)textInput {

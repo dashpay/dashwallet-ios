@@ -58,9 +58,13 @@
         <key>UICTFontTextStyleCallout</key>
         <dict>
             <key>fontName</key>
-            <string>Montserrat-Light</string>
+            <string>Montserrat-Regular</string>
             <key>fontSize</key>
-            <integer>16</integer>
+            <integer>20</integer>
+            <key>maxSize</key>
+            <integer>29</integer>
+            <key>minSize</key>
+            <integer>20</integer>
         </dict>
         <key>UICTFontTextStyleFootnote</key>
         <dict>

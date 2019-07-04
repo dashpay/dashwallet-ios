@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign) CGFloat fontSize;
 @property (readonly, nonatomic, assign) CGFloat maxSize;
+@property (readonly, nonatomic, assign) CGFloat minSize;
 @property (readonly, nonatomic, copy) NSString *fontName;
 
 @end
@@ -38,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _fontSize = [dictionary[@"fontSize"] doubleValue];
         _maxSize = [dictionary[@"maxSize"] doubleValue];
+        _minSize = [dictionary[@"minSize"] doubleValue];
         _fontName = dictionary[@"fontName"];
     }
     return self;
@@ -87,6 +89,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation UIFont (DWFont)
 
 + (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle {
+    return [self dw_fontForTextStyle:textStyle respectMinSize:NO];
+}
+
++ (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle respectMinSize:(BOOL)respectMinSize {
     DWScaledFont *scaledFont = [DWScaledFont sharedInstance];
     DWFontDescription *fontDescription = scaledFont.styles[textStyle];
     if (!fontDescription) {
@@ -107,6 +113,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         resultFont = [fontMetrics scaledFontForFont:font];
+    }
+
+    if (respectMinSize && fontDescription.minSize > 0 && resultFont.pointSize < fontDescription.minSize) {
+        return font;
     }
 
     return resultFont;
