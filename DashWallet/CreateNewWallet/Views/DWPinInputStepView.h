@@ -19,7 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootNavigationController : UINavigationController
+@class DWPinField;
+
+@interface DWPinInputStepView : UIView
+
+@property (readonly, nonatomic, strong) DWPinField *pinField;
+
+@property (nullable, nonatomic, copy) NSString *titleText;
 
 @end
 

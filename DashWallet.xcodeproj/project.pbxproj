@@ -39,6 +39,11 @@
 		2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A44311822CBF108009BAF7F /* Montserrat.plist */; };
 		2A44311E22CC9B5A009BAF7F /* DWRootNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */; };
 		2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
+		2A44312622CCC14F009BAF7F /* DWCreateNewWalletViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */; };
+		2A44312A22CCC1D4009BAF7F /* CreateNewWallet.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */; };
+		2A44312E22CD0324009BAF7F /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312D22CD0324009BAF7F /* DWPinField.m */; };
+		2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */; };
+		2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
@@ -401,6 +406,15 @@
 		2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootNavigationController.m; sourceTree = "<group>"; };
 		2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIColor+DWStyle.h"; sourceTree = "<group>"; };
 		2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIColor+DWStyle.m"; sourceTree = "<group>"; };
+		2A44312422CCC14F009BAF7F /* DWCreateNewWalletViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateNewWalletViewController.h; sourceTree = "<group>"; };
+		2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateNewWalletViewController.m; sourceTree = "<group>"; };
+		2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CreateNewWallet.storyboard; sourceTree = "<group>"; };
+		2A44312C22CD0324009BAF7F /* DWPinField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinField.h; sourceTree = "<group>"; };
+		2A44312D22CD0324009BAF7F /* DWPinField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinField.m; sourceTree = "<group>"; };
+		2A44313022CD37FA009BAF7F /* DWPinInputStepView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinInputStepView.h; sourceTree = "<group>"; };
+		2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinInputStepView.m; sourceTree = "<group>"; };
+		2A44313722CE2CB9009BAF7F /* DWPinView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinView.h; sourceTree = "<group>"; };
+		2A44313822CE2CB9009BAF7F /* DWPinView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinView.m; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -975,12 +989,13 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
-				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
-				2A44311522CBF0B2009BAF7F /* UIFont+DWFont.h */,
-				2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */,
+				2A44312B22CD0304009BAF7F /* SharedViews */,
 				2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */,
 				2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */,
+				2A44311522CBF0B2009BAF7F /* UIFont+DWFont.h */,
+				2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */,
+				2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */,
+				2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1001,6 +1016,39 @@
 				2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */,
 			);
 			path = RootNavigation;
+			sourceTree = "<group>";
+		};
+		2A44312322CCC127009BAF7F /* CreateNewWallet */ = {
+			isa = PBXGroup;
+			children = (
+				2A44312F22CD37E6009BAF7F /* Views */,
+				2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */,
+				2A44312422CCC14F009BAF7F /* DWCreateNewWalletViewController.h */,
+				2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */,
+			);
+			path = CreateNewWallet;
+			sourceTree = "<group>";
+		};
+		2A44312B22CD0304009BAF7F /* SharedViews */ = {
+			isa = PBXGroup;
+			children = (
+				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
+				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
+			);
+			path = SharedViews;
+			sourceTree = "<group>";
+		};
+		2A44312F22CD37E6009BAF7F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A44312C22CD0324009BAF7F /* DWPinField.h */,
+				2A44312D22CD0324009BAF7F /* DWPinField.m */,
+				2A44313022CD37FA009BAF7F /* DWPinInputStepView.h */,
+				2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */,
+				2A44313722CE2CB9009BAF7F /* DWPinView.h */,
+				2A44313822CE2CB9009BAF7F /* DWPinView.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
@@ -1564,6 +1612,7 @@
 		75D5F3C7191EC270004AB296 /* DashWallet */ = {
 			isa = PBXGroup;
 			children = (
+				2A44312322CCC127009BAF7F /* CreateNewWallet */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
 				2A4430F022CBD566009BAF7F /* Resources */,
 				2A4430EF22CBC77A009BAF7F /* Views */,
@@ -1758,8 +1807,6 @@
 			children = (
 				2A9FFDF02230FF1A00956D5F /* SFSafariViewController+DashWallet.h */,
 				2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */,
-				2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */,
-				2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */,
 				2A9FFDF12230FF1A00956D5F /* UIViewController+DWChildControllers.h */,
 				2A9FFDED2230FF1900956D5F /* UIViewController+DWChildControllers.m */,
 				FB4AB41721CA760E001CC324 /* DWStoryboardSegueWithCompletion.h */,
@@ -2084,6 +2131,7 @@
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2A9FFE862230FF4700956D5F /* DWPlaceholderFormTableViewCell.xib in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
+				2A44312A22CCC1D4009BAF7F /* CreateNewWallet.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
@@ -2414,12 +2462,14 @@
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
+				2A44312622CCC14F009BAF7F /* DWCreateNewWalletViewController.m in Sources */,
 				2A9FFE742230FF4600956D5F /* DWAlertDismissalAnimationController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
 				2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
 				2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
+				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
@@ -2508,10 +2558,12 @@
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWAmountButton.m in Sources */,
+				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A9FFE772230FF4600956D5F /* DWAlertViewActionButton.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
+				2A44312E22CD0324009BAF7F /* DWPinField.m in Sources */,
 				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,
 				2A9FFE8A2230FF4700956D5F /* DWSelectorViewController.m in Sources */,
 				2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */,

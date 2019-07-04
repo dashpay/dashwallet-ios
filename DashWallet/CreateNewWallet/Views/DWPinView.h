@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,9 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIView (DWAnimations)
+@class DWAmountKeyboard;
+@class DWPinView;
 
-- (void)dw_shakeView;
+@protocol DWPinViewDelegate <NSObject>
+
+- (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin;
+
+@end
+
+@interface DWPinView : UIView
+
+@property (nullable, nonatomic, weak) id<DWPinViewDelegate> delegate;
+
+- (void)configureWithKeyboard:(DWAmountKeyboard *)keyboard;
+- (void)activatePinView;
 
 @end
 

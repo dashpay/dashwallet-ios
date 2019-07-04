@@ -17,8 +17,8 @@
 
 #import "DWBlueActionButton.h"
 
-#import "UIFont+DWFont.h"
 #import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performInitialSetup {
     self.usedOnDarkBackground = NO;
     self.inverted = NO;
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(setNeedsLayout)
                                                  name:UIContentSizeCategoryDidChangeNotification
@@ -60,13 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
     _usedOnDarkBackground = usedOnDarkBackground;
-    
+
     [self resetAppearance];
 }
 
 - (void)setInverted:(BOOL)inverted {
     _inverted = inverted;
-    
+
     [self resetAppearance];
 }
 
@@ -163,40 +163,39 @@ NS_ASSUME_NONNULL_BEGIN
     self.titleLabel.adjustsFontForContentSizeCategory = YES;
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
-    
+
     self.layer.cornerRadius = [self.class cornerRadius];
     self.layer.masksToBounds = YES;
-    
-    [self setBackgroundColor:[self.class backgroundColorForInverted:self.inverted
-                                               usedOnDarkBackground:self.usedOnDarkBackground]
-                    forState:UIControlStateNormal];
-    [self setBackgroundColor:[self.class highlightedBackgroundColorForInverted:self.inverted
-                                                          usedOnDarkBackground:self.usedOnDarkBackground]
-                    forState:UIControlStateHighlighted];
-    [self setBackgroundColor:[self.class disabledBackgroundColorForInverted:self.inverted
-                                                       usedOnDarkBackground:self.usedOnDarkBackground]
-                    forState:UIControlStateDisabled];
-    
-    [self setTitleColor:[self.class textColorForInverted:self.inverted
-                                    usedOnDarkBackground:self.usedOnDarkBackground]
-               forState:UIControlStateNormal];
-    [self setTitleColor:[self.class highlightedTextColorForInverted:self.inverted
-                                               usedOnDarkBackground:self.usedOnDarkBackground]
-               forState:UIControlStateHighlighted];
-    [self setTitleColor:[self.class disabledTextColorForInverted:self.inverted
-                                            usedOnDarkBackground:self.usedOnDarkBackground]
-               forState:UIControlStateDisabled];
-    
-    [self setBorderWidth:[self.class borderWidthForInverted:self.inverted
-                                       usedOnDarkBackground:self.usedOnDarkBackground]
-                forState:UIControlStateNormal];
-    
-    [self setBorderColor:[self.class borderColorForInverted:self.inverted
-                                       usedOnDarkBackground:self.usedOnDarkBackground]
-                forState:UIControlStateNormal];
-    [self setBorderColor:[self.class disabledBorderColorForInverted:self.inverted
-                                               usedOnDarkBackground:self.usedOnDarkBackground]
-                forState:UIControlStateDisabled];
+
+    BOOL dark = self.usedOnDarkBackground;
+    BOOL inverted = self.inverted;
+
+    UIColor *color = [self.class backgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateNormal];
+
+    color = [self.class highlightedBackgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateHighlighted];
+
+    color = [self.class disabledBackgroundColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBackgroundColor:color forState:UIControlStateDisabled];
+
+    color = [self.class textColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateNormal];
+
+    color = [self.class highlightedTextColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateHighlighted];
+
+    color = [self.class disabledTextColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setTitleColor:color forState:UIControlStateDisabled];
+
+    CGFloat width = [self.class borderWidthForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderWidth:width forState:UIControlStateNormal];
+
+    color = [self.class borderColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderColor:color forState:UIControlStateNormal];
+
+    color = [self.class disabledBorderColorForInverted:inverted usedOnDarkBackground:dark];
+    [self setBorderColor:color forState:UIControlStateDisabled];
 }
 
 - (void)updateButtonState {
@@ -219,7 +218,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
     }
-    
+
     for (NSNumber *flag in @[ @0, @(UIControlStateDisabled), @(UIControlStateSelected), @(UIControlStateHighlighted) ]) {
         state &= ~flag.unsignedIntegerValue;
         NSNumber *borderWidth = self.borderWidths[@(state)];
@@ -234,10 +233,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return inverted ? [UIColor clearColor] : [UIColor dw_dashBlue];
+        return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
     }
     else {
-        return inverted ? [UIColor whiteColor] : [UIColor dw_dashBlue];
+        return inverted ? [UIColor whiteColor] : [UIColor dw_dashBlueColor];
     }
 }
 
@@ -252,41 +251,41 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)disabledBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return inverted ? [UIColor clearColor] : [UIColor dw_disabledButton];
+        return inverted ? [UIColor clearColor] : [UIColor dw_disabledButtonColor];
     }
     else {
-        return inverted ? [UIColor whiteColor] : [UIColor dw_disabledButton];
+        return inverted ? [UIColor whiteColor] : [UIColor dw_disabledButtonColor];
     }
 }
 
 + (UIColor *)textColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return [UIColor dw_title];
+        return [UIColor dw_lightTitleColor];
     }
     else {
-        return inverted ? [UIColor dw_dashBlue] : [UIColor dw_title];
+        return inverted ? [UIColor dw_dashBlueColor] : [UIColor dw_lightTitleColor];
     }
 }
 
 + (UIColor *)highlightedTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return [UIColor dw_dashBlue];
+        return [UIColor dw_dashBlueColor];
     }
     else {
-        return inverted ? [UIColor dw_title] : [UIColor dw_dashBlue];
+        return inverted ? [UIColor dw_lightTitleColor] : [UIColor dw_dashBlueColor];
     }
 }
 
 + (UIColor *)disabledTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor dw_disabledButton] : [UIColor dw_title];
+    return inverted ? [UIColor dw_disabledButtonColor] : [UIColor dw_lightTitleColor];
 }
 
 + (UIColor *)borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor clearColor] : [UIColor dw_dashBlue];
+    return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
 }
 
 + (UIColor *)disabledBorderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor clearColor] : [UIColor dw_disabledButton];
+    return inverted ? [UIColor clearColor] : [UIColor dw_disabledButtonColor];
 }
 
 + (CGFloat)borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {

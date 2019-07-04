@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
  @return  A `UIFont` of the custom font that has been scaled for the users currently selected preferred text size.
  */
 + (instancetype)dw_fontForTextStyle:(UIFontTextStyle)textStyle;
+
++ (UIFont *)dw_navigationBarTitleFont;
 
 @end
 

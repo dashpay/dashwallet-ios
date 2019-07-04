@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -18,6 +18,8 @@
 #import "DWRootNavigationController.h"
 
 #import "DWSetupViewController.h"
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,15 +33,15 @@ NS_ASSUME_NONNULL_BEGIN
     DWSetupViewController *controller = [DWSetupViewController controller];
     self = [super initWithRootViewController:controller];
     if (self) {
-        
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     self.delegate = self;
+    [self setupView];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -54,9 +56,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)navigationController:(UINavigationController *)navigationController
       willShowViewController:(UIViewController *)viewController
-                    animated:(BOOL)animated{
+                    animated:(BOOL)animated {
     BOOL hidden = [viewController isKindOfClass:DWSetupViewController.class];
     [navigationController setNavigationBarHidden:hidden animated:animated];
+
+    // Hide back button title
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@" "
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:nil
+                                                            action:nil];
+    viewController.navigationItem.backBarButtonItem = item;
+}
+
+#pragma mark - Private
+
+- (void)setupView {
+    self.navigationBar.barStyle = UIBarStyleDefault;
+    self.navigationBar.barTintColor = [UIColor dw_dashBlueColor];
+    self.navigationBar.tintColor = [UIColor dw_tintColor];
+    self.navigationBar.translucent = NO;
+
+    self.navigationBar.titleTextAttributes = @{
+        NSForegroundColorAttributeName : [UIColor dw_lightTitleColor],
+        NSFontAttributeName : [UIFont dw_navigationBarTitleFont],
+    };
+
+    [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
+    self.navigationBar.shadowImage = [[UIImage alloc] init];
 }
 
 @end

@@ -19,7 +19,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootNavigationController : UINavigationController
+@class DWPinField;
+
+@protocol DWPinFieldDelegate <NSObject>
+
+- (void)pinFieldDidFinishInput:(DWPinField *)pinField;
+
+@end
+
+@interface DWPinField : UIView <UITextInput>
+
+@property (nullable, nonatomic, weak) id<DWPinFieldDelegate> delegate;
+@property (readonly, nonatomic, copy) NSString *text;
+
+- (void)clear;
 
 @end
 

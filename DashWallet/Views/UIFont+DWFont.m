@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWScaledFont : NSObject
 
-@property (readonly, nonatomic, copy) NSDictionary <UIFontTextStyle, DWFontDescription *> *styles;
+@property (readonly, nonatomic, copy) NSDictionary<UIFontTextStyle, DWFontDescription *> *styles;
 
 @end
 
@@ -68,8 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
         NSURL *url = [[NSBundle mainBundle] URLForResource:@"Montserrat" withExtension:@"plist"];
         NSDictionary *data = [NSDictionary dictionaryWithContentsOfURL:url];
         NSParameterAssert(data);
-        
-        NSMutableDictionary <UIFontTextStyle, DWFontDescription *> *styles = [NSMutableDictionary dictionary];
+
+        NSMutableDictionary<UIFontTextStyle, DWFontDescription *> *styles = [NSMutableDictionary dictionary];
         for (UIFontTextStyle textStyle in data.allKeys) {
             NSDictionary *dictionary = data[textStyle];
             DWFontDescription *fontDescription = [[DWFontDescription alloc] initWithDictionary:dictionary];
@@ -93,13 +93,13 @@ NS_ASSUME_NONNULL_BEGIN
         NSAssert(NO, @"Text style %@ is not defined in plist", textStyle);
         return [UIFont preferredFontForTextStyle:textStyle];
     }
-    
+
     UIFont *font = [UIFont fontWithName:fontDescription.fontName size:fontDescription.fontSize];
     if (!font) {
         NSAssert(NO, @"Font for text style %@ is invalid", textStyle);
         return [UIFont preferredFontForTextStyle:textStyle];
     }
-    
+
     UIFontMetrics *fontMetrics = [UIFontMetrics metricsForTextStyle:textStyle];
     UIFont *resultFont = nil;
     if (fontDescription.maxSize > 0) {
@@ -108,8 +108,12 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         resultFont = [fontMetrics scaledFontForFont:font];
     }
-    
+
     return resultFont;
+}
+
++ (UIFont *)dw_navigationBarTitleFont {
+    return [UIFont fontWithName:@"Montserrat-Medium" size:18.0];
 }
 
 @end

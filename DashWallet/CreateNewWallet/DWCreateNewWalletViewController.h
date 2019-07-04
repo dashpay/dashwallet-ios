@@ -19,7 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootNavigationController : UINavigationController
+@interface DWCreateNewWalletViewController : UIViewController
+
++ (instancetype)controller;
 
 @end
 

@@ -153,6 +153,9 @@
 "confirm" = "confirm";
 
 /* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
+
+/* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
@@ -570,6 +573,9 @@
 "set a trusted node" = "신뢰할 수있는 노드 설정";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Settings" = "설정";
 
 /* No comment provided by engineer. */
@@ -634,6 +640,9 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "이것이 당신의 대시 잔액입니다. 대시는 화폐입니다. 거래소 가격은 시장 상황에 따라 변합니다.";
+
+/* No comment provided by engineer. */
+"This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "이 거래가 완료되는 데에는 수 분이 소요될 수 있습니다.";

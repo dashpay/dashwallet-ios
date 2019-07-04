@@ -153,6 +153,9 @@
 "confirm" = "confirm";
 
 /* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
+
+/* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
@@ -570,6 +573,9 @@
 "set a trusted node" = "configure um nó confiável";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Settings" = "Ajustes";
 
 /* No comment provided by engineer. */
@@ -634,6 +640,9 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Este é o seu saldo de dash. Dash é uma moeda. A taxa de câmbio muda com o mercado.";
+
+/* No comment provided by engineer. */
+"This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Essa transação pode levar alguns minutos para ser confirmada.";

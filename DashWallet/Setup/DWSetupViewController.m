@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -16,6 +16,8 @@
 //
 
 #import "DWSetupViewController.h"
+
+#import "DWCreateNewWalletViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,16 +37,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [self setupView];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
 }
+
 #pragma mark - Actions
 
 - (IBAction)createWalletButtonAction:(id)sender {
+    DWCreateNewWalletViewController *controller = [DWCreateNewWalletViewController controller];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {

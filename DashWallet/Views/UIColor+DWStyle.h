@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -21,9 +21,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIColor (DWStyle)
 
-+ (UIColor *)dw_dashBlue;
-+ (UIColor *)dw_title;
-+ (UIColor *)dw_disabledButton;
++ (UIColor *)dw_backgroundColor;
++ (UIColor *)dw_secondaryBackgroundColor;
+
++ (UIColor *)dw_tintColor;
+
++ (UIColor *)dw_dashBlueColor;
++ (UIColor *)dw_lightTitleColor;
++ (UIColor *)dw_darkTitleColor;
++ (UIColor *)dw_secondaryTextColor;
++ (UIColor *)dw_disabledButtonColor;
+
++ (UIColor *)dw_pinBackgroundColor;
++ (UIColor *)dw_pinInputDotColor;
 
 @end
 

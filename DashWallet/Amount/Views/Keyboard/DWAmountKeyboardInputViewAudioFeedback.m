@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -17,6 +17,8 @@
 
 #import "DWAmountKeyboardInputViewAudioFeedback.h"
 
+#import "UIColor+DWStyle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAmountKeyboardInputViewAudioFeedback
@@ -24,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithRed:0.0 green:141.0 / 255.0 blue:228.0 / 255.0 alpha:1.0];
+        self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     }
     return self;
 }
