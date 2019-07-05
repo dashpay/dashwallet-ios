@@ -40,7 +40,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
 
 @property (copy, nonatomic) NSArray<DWNumberKeyboardButton *> *allButtons;
 @property (copy, nonatomic) NSArray<DWNumberKeyboardButton *> *digitButtons;
-@property (strong, nonatomic) DWNumberKeyboardButton *separatorButton;
+@property (strong, nonatomic) DWNumberKeyboardButton *functionButton;
 @property (strong, nonatomic) DWNumberKeyboardButton *clearButton;
 
 @end
@@ -65,21 +65,24 @@ static const NSUInteger SECTIONS_COUNT = 3;
 
 - (void)setupNumberKeyboard {
     NSMutableArray<DWNumberKeyboardButton *> *buttons = [NSMutableArray array];
-    for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonTypeDigit0; type < DWNumberKeyboardButtonTypeSeparator; type++) {
-        DWNumberKeyboardButton *button = [[DWNumberKeyboardButton alloc] initWithWithType:type];
+    for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonTypeDigit0; type <= DWNumberKeyboardButtonTypeDigit9; type++) {
+        DWNumberKeyboardButton *button = [[DWNumberKeyboardButton alloc] init];
+        button.type = type;
         button.delegate = self;
         [self addSubview:button];
         [buttons addObject:button];
     }
     self.digitButtons = buttons;
 
-    DWNumberKeyboardButton *separatorButton = [[DWNumberKeyboardButton alloc] initWithWithType:DWNumberKeyboardButtonTypeSeparator];
-    separatorButton.delegate = self;
-    [self addSubview:separatorButton];
-    self.separatorButton = separatorButton;
-    [buttons addObject:separatorButton];
+    DWNumberKeyboardButton *functionButton = [[DWNumberKeyboardButton alloc] init];
+    functionButton.type = DWNumberKeyboardButtonTypeSeparator;
+    functionButton.delegate = self;
+    [self addSubview:functionButton];
+    self.functionButton = functionButton;
+    [buttons addObject:functionButton];
 
-    DWNumberKeyboardButton *clearButton = [[DWNumberKeyboardButton alloc] initWithWithType:DWNumberKeyboardButtonTypeClear];
+    DWNumberKeyboardButton *clearButton = [[DWNumberKeyboardButton alloc] init];
+    clearButton.type = DWNumberKeyboardButtonTypeClear;
     clearButton.delegate = self;
     [self addSubview:clearButton];
     self.clearButton = clearButton;
@@ -92,6 +95,10 @@ static const NSUInteger SECTIONS_COUNT = 3;
                                                       action:@selector(clearButtonLongPressGestureRecognizerAction:)];
     longPressGestureRecognizer.cancelsTouchesInView = NO;
     [clearButton addGestureRecognizer:longPressGestureRecognizer];
+}
+
+- (void)configureWithCustomFunctionButtonTitle:(NSString *)customFunctionButtonTitle {
+    [self.functionButton configureAsCustomTypeWithTitle:customFunctionButtonTitle];
 }
 
 - (CGSize)intrinsicContentSize {
@@ -111,7 +118,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
     CGFloat top = 0.0;
 
     // Number buttons (1-9)
-    for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonTypeDigit1; i < DWNumberKeyboardButtonTypeSeparator; i++) {
+    for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonTypeDigit1; i <= DWNumberKeyboardButtonTypeDigit9; i++) {
         DWNumberKeyboardButton *numberButton = self.digitButtons[i];
         numberButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
@@ -126,7 +133,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
 
     // Separator
     left = leftInitial;
-    self.separatorButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
+    self.functionButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
     // Number button (0)
     left += buttonWidth + PADDING;
@@ -227,6 +234,13 @@ static const NSUInteger SECTIONS_COUNT = 3;
 }
 
 - (void)performRegularButtonAction:(DWNumberKeyboardButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
+    if (sender.type == DWNumberKeyboardButtonTypeCustom) {
+        NSParameterAssert(self.delegate);
+        [self.delegate numberKeyboardCustomFunctionButtonTap:self];
+
+        return;
+    }
+
     NSString *text = nil;
     if (sender.type == DWNumberKeyboardButtonTypeSeparator) {
         text = [NSLocale currentLocale].decimalSeparator;

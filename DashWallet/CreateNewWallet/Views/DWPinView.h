@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWPinViewDelegate <NSObject>
 
+- (void)pinViewCancelButtonTap:(DWPinView *)pinView;
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin;
 
 @end

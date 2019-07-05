@@ -31,6 +31,7 @@ typedef NS_ENUM(NSUInteger, DWNumberKeyboardButtonType) {
     DWNumberKeyboardButtonTypeDigit8,
     DWNumberKeyboardButtonTypeDigit9,
     DWNumberKeyboardButtonTypeSeparator,
+    DWNumberKeyboardButtonTypeCustom,
     DWNumberKeyboardButtonTypeClear,
 };
 
@@ -47,15 +48,16 @@ typedef NS_ENUM(NSUInteger, DWNumberKeyboardButtonType) {
 
 @interface DWNumberKeyboardButton : UIView
 
-@property (readonly, assign, nonatomic) DWNumberKeyboardButtonType type;
+@property (assign, nonatomic) DWNumberKeyboardButtonType type;
 @property (assign, nonatomic, getter=isHighlighted) BOOL highlighted;
 @property (nullable, weak, nonatomic) id<DWNumberKeyboardButtonDelegate> delegate;
 
-- (instancetype)initWithWithType:(DWNumberKeyboardButtonType)type;
+- (instancetype)init;
+
+- (void)configureAsCustomTypeWithTitle:(NSString *)title;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

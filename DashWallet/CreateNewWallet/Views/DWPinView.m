@@ -23,7 +23,12 @@
 #import "UIColor+DWStyle.h"
 #import "UIView+DWAnimations.h"
 
-@interface DWPinView () <DWPinFieldDelegate>
+static NSTimeInterval const ANIMATION_DURATION = 0.35;
+static CGFloat const ANIMATION_SPRING_DAMPING = 1.0;
+static CGFloat const ANIMATION_INITIAL_VELOCITY = 0.0;
+static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCurveEaseOut;
+
+@interface DWPinView () <DWPinFieldDelegate, DWNumberKeyboardDelegate>
 
 @property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
 
@@ -91,6 +96,8 @@
 
     self.keyboard = keyboard;
     self.keyboard.textInput = self.setPinView.pinField;
+    self.keyboard.delegate = self;
+    [self.keyboard configureWithCustomFunctionButtonTitle:NSLocalizedString(@"Cancel", nil)];
 }
 
 - (void)activatePinView {
@@ -118,6 +125,17 @@
     }
 }
 
+#pragma mark - DWNumberKeyboardDelegate
+
+- (void)numberKeyboardCustomFunctionButtonTap:(DWNumberKeyboard *)numberKeyboard {
+    if (self.confirmPinView.hidden) {
+        [self.delegate pinViewCancelButtonTap:self];
+    }
+    else {
+        [self resetPin];
+    }
+}
+
 #pragma mark - Private
 
 - (void)confirmPin {
@@ -136,17 +154,18 @@
     self.setPinLeadingContraint.constant = -constant;
     self.confirmPinLeadingContraint.constant = 0;
 
-    [UIView animateWithDuration:0.35
+    [UIView animateWithDuration:ANIMATION_DURATION
         delay:[CATransaction animationDuration]
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseOut
+        usingSpringWithDamping:ANIMATION_SPRING_DAMPING
+        initialSpringVelocity:ANIMATION_INITIAL_VELOCITY
+        options:ANIMATION_OPTIONS
         animations:^{
             [self layoutIfNeeded];
         }
         completion:^(BOOL finished) {
             [self.confirmPinView.pinField becomeFirstResponder];
             self.keyboard.userInteractionEnabled = YES;
+            self.setPinView.hidden = YES;
         }];
 }
 
@@ -183,6 +202,38 @@
             }];
         }
     });
+}
+
+- (void)resetPin {
+    [self.confirmPinView.pinField clear];
+    [self.setPinView.pinField clear];
+
+    [self.confirmPinView.pinField resignFirstResponder];
+    self.keyboard.userInteractionEnabled = NO;
+
+    self.keyboard.textInput = self.setPinView.pinField;
+
+    const CGFloat width = CGRectGetWidth(self.bounds);
+    self.setPinLeadingContraint.constant = -width;
+    [self layoutIfNeeded];
+    self.setPinView.hidden = NO;
+
+    self.setPinLeadingContraint.constant = 0.0;
+    self.confirmPinLeadingContraint.constant = width;
+
+    [UIView animateWithDuration:ANIMATION_DURATION
+        delay:[CATransaction animationDuration]
+        usingSpringWithDamping:ANIMATION_SPRING_DAMPING
+        initialSpringVelocity:ANIMATION_INITIAL_VELOCITY
+        options:ANIMATION_OPTIONS
+        animations:^{
+            [self layoutIfNeeded];
+        }
+        completion:^(BOOL finished) {
+            [self.setPinView.pinField becomeFirstResponder];
+            self.keyboard.userInteractionEnabled = YES;
+            self.confirmPinView.hidden = YES;
+        }];
 }
 
 @end

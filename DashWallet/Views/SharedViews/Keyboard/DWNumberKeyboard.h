@@ -19,9 +19,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWNumberKeyboard;
+
+@protocol DWNumberKeyboardDelegate <NSObject>
+
+- (void)numberKeyboardCustomFunctionButtonTap:(DWNumberKeyboard *)numberKeyboard;
+
+@end
+
 @interface DWNumberKeyboard : UIView
 
-@property (nullable, weak, nonatomic) UIResponder<UITextInput> *textInput;
+@property (nullable, nonatomic, weak) UIResponder<UITextInput> *textInput;
+@property (nullable, nonatomic, weak) id<DWNumberKeyboardDelegate> delegate;
+
+- (void)configureWithCustomFunctionButtonTitle:(NSString *)customFunctionButtonTitle;
 
 @end
 

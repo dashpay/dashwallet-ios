@@ -42,6 +42,16 @@ static UIFont *TitleFont() {
     return [UIFont dw_fontForTextStyle:UIFontTextStyleCallout respectMinSize:YES];
 }
 
+static UIFont *CustomTitleFont() {
+    const CGFloat minSize = 14.0;
+    // UIFontTextStyleBody doesn't support minimum size, check it manually
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    if (font.pointSize < minSize) {
+        font = [UIFont fontWithName:font.fontName size:minSize];
+    }
+    return font;
+}
+
 static CGFloat const CORNER_RADIUS = 8.0;
 
 @interface DWNumberKeyboardButton ()
@@ -52,11 +62,9 @@ static CGFloat const CORNER_RADIUS = 8.0;
 
 @implementation DWNumberKeyboardButton
 
-- (instancetype)initWithWithType:(DWNumberKeyboardButtonType)type {
+- (instancetype)init {
     self = [super initWithFrame:CGRectZero];
     if (self) {
-        _type = type;
-
         self.exclusiveTouch = YES;
 
         self.backgroundColor = BackgroundColor();
@@ -69,39 +77,6 @@ static CGFloat const CORNER_RADIUS = 8.0;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.textColor = TextColor();
         titleLabel.font = TitleFont();
-        switch (type) {
-            case DWNumberKeyboardButtonTypeSeparator: {
-                titleLabel.text = [NSLocale currentLocale].decimalSeparator;
-#if SNAPSHOT
-                titleLabel.accessibilityIdentifier = @"amount_button_separator";
-#endif /* SNAPSHOT */
-
-                break;
-            }
-            case DWNumberKeyboardButtonTypeClear: {
-                UIImage *image = [[UIImage imageNamed:@"backspace"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
-                textAttachment.image = image;
-                textAttachment.bounds = CGRectMake(-3.0, -2.0, image.size.width, image.size.height);
-                // Workaround to make UIKit correctly set text color of the attribute string:
-                // Attributed string that consists only of NSTextAttachment will not change it's color
-                // To solve it append any regular string at the begining (and at the end to center the image)
-                NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] init];
-                [attributedText beginEditing];
-                [attributedText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-                [attributedText appendAttributedString:[NSAttributedString attributedStringWithAttachment:textAttachment]];
-                [attributedText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-                [attributedText endEditing];
-                titleLabel.attributedText = attributedText;
-
-                break;
-            }
-            default: {
-                titleLabel.text = [NSString stringWithFormat:@"%lu", type];
-
-                break;
-            }
-        }
         [self addSubview:titleLabel];
         _titleLabel = titleLabel;
 
@@ -111,6 +86,50 @@ static CGFloat const CORNER_RADIUS = 8.0;
                                                    object:nil];
     }
     return self;
+}
+
+- (void)setType:(DWNumberKeyboardButtonType)type {
+    _type = type;
+
+    switch (type) {
+        case DWNumberKeyboardButtonTypeSeparator: {
+            self.titleLabel.text = [NSLocale currentLocale].decimalSeparator;
+#if SNAPSHOT
+            titleLabel.accessibilityIdentifier = @"amount_button_separator";
+#endif /* SNAPSHOT */
+
+            break;
+        }
+        case DWNumberKeyboardButtonTypeCustom: {
+            self.titleLabel.font = CustomTitleFont();
+            self.titleLabel.adjustsFontSizeToFitWidth = YES;
+
+            break;
+        }
+        case DWNumberKeyboardButtonTypeClear: {
+            UIImage *image = [[UIImage imageNamed:@"backspace"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
+            textAttachment.image = image;
+            textAttachment.bounds = CGRectMake(-3.0, -2.0, image.size.width, image.size.height);
+            // Workaround to make UIKit correctly set text color of the attribute string:
+            // Attributed string that consists only of NSTextAttachment will not change it's color
+            // To solve it append any regular string at the begining (and at the end to center the image)
+            NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] init];
+            [attributedText beginEditing];
+            [attributedText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+            [attributedText appendAttributedString:[NSAttributedString attributedStringWithAttachment:textAttachment]];
+            [attributedText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+            [attributedText endEditing];
+            self.titleLabel.attributedText = attributedText;
+
+            break;
+        }
+        default: {
+            self.titleLabel.text = [NSString stringWithFormat:@"%lu", type];
+
+            break;
+        }
+    }
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
@@ -124,6 +143,11 @@ static CGFloat const CORNER_RADIUS = 8.0;
         self.backgroundColor = BackgroundColor();
         self.titleLabel.textColor = TextColor();
     }
+}
+
+- (void)configureAsCustomTypeWithTitle:(NSString *)title {
+    self.type = DWNumberKeyboardButtonTypeCustom;
+    self.titleLabel.text = title;
 }
 
 #pragma mark - UIResponder
@@ -163,7 +187,12 @@ static CGFloat const CORNER_RADIUS = 8.0;
 #pragma mark - Private
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    self.titleLabel.font = TitleFont();
+    if (self.type == DWNumberKeyboardButtonTypeCustom) {
+        self.titleLabel.font = CustomTitleFont();
+    }
+    else {
+        self.titleLabel.font = TitleFont();
+    }
 }
 
 @end

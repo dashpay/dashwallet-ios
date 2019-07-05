@@ -59,6 +59,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWPinViewDelegate
 
+- (void)pinViewCancelButtonTap:(DWPinView *)pinView {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin {
     NSLog(@">>>>> %@", pin);
 }
