@@ -17,20 +17,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWRootNavigationFullscreenable.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWCreateNewWalletViewController;
-
-@protocol DWCreateNewWalletViewControllerDelegate <NSObject>
-
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller;
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller;
-
-@end
-
-@interface DWCreateNewWalletViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
+@interface DWBiometricAuthViewController : UIViewController <DWRootNavigationFullscreenable>
 
 + (instancetype)controller;
 

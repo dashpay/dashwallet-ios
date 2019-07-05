@@ -17,12 +17,13 @@
 
 #import "DWSetupViewController.h"
 
+#import "DWBiometricAuthViewController.h"
 #import "DWCreateNewWalletViewController.h"
 #import "DWRootModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSetupViewController ()
+@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
 
@@ -63,10 +64,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)createWalletButtonAction:(id)sender {
     DWCreateNewWalletViewController *controller = [DWCreateNewWalletViewController controller];
+    controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
+}
+
+#pragma mark - DWCreateNewWalletViewControllerDelegate
+
+- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller {
+    [self.navigationController popViewControllerAnimated:NO];
+
+    DWBiometricAuthViewController *biometricController = [DWBiometricAuthViewController controller];
+    [self.navigationController pushViewController:biometricController animated:YES];
+}
+
+#pragma mark - DWRootNavigationFullscreenable
+
+- (BOOL)requiresNoNavigationBar {
+    return YES;
 }
 
 #pragma mark - Private

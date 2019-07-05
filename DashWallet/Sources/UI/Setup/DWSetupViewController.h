@@ -17,11 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWRootNavigationFullscreenable.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWRootModel;
 
-@interface DWSetupViewController : UIViewController
+@interface DWSetupViewController : UIViewController <DWRootNavigationFullscreenable>
 
 + (instancetype)controllerWithModel:(DWRootModel *)model;
 

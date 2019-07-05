@@ -15,24 +15,26 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBiometricAuthModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWCreateNewWalletViewController;
+@implementation DWBiometricAuthModel
 
-@protocol DWCreateNewWalletViewControllerDelegate <NSObject>
++ (BOOL)biometricAuthenticationAvailable {
+    LAContext *context = [[LAContext alloc] init];
+    BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
 
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller;
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller;
+    return available;
+}
 
-@end
+- (LABiometryType)biometryType {
+    LAContext *context = [[LAContext alloc] init];
+    BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
+    NSAssert(available, @"LAPolicyDeviceOwnerAuthenticationWithBiometrics should be available");
 
-@interface DWCreateNewWalletViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
+    return context.biometryType;
+}
 
 @end
 

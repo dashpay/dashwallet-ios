@@ -15,24 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWCreateNewWalletViewController;
+@protocol DWRootNavigationFullscreenable <NSObject>
 
-@protocol DWCreateNewWalletViewControllerDelegate <NSObject>
-
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller;
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller;
-
-@end
-
-@interface DWCreateNewWalletViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
+- (BOOL)requiresNoNavigationBar;
 
 @end
 

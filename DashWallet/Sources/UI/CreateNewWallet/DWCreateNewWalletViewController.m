@@ -64,13 +64,16 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWPinViewDelegate
 
 - (void)pinViewCancelButtonTap:(DWPinView *)pinView {
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.delegate createNewWalletViewControllerDidCancel:self];
 }
 
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin {
     BOOL success = [self.model setPin:pin];
-    if (!success) {
-        [self.navigationController popViewControllerAnimated:YES];
+    if (success) {
+        [self.delegate createNewWalletViewControllerDidSetPin:self];
+    }
+    else {
+        [self.delegate createNewWalletViewControllerDidCancel:self];
     }
 }
 

@@ -18,6 +18,7 @@
 #import "DWRootNavigationController.h"
 
 #import "DWRootModel.h"
+#import "DWRootNavigationFullscreenable.h"
 #import "DWSetupViewController.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
@@ -68,7 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)navigationController:(UINavigationController *)navigationController
       willShowViewController:(UIViewController *)viewController
                     animated:(BOOL)animated {
-    BOOL hidden = [viewController isKindOfClass:DWSetupViewController.class];
+    BOOL hidden = [viewController conformsToProtocol:@protocol(DWRootNavigationFullscreenable)] &&
+                  [(id<DWRootNavigationFullscreenable>)viewController requiresNoNavigationBar];
     [navigationController setNavigationBarHidden:hidden animated:animated];
 
     // Hide back button title

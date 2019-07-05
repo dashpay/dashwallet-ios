@@ -15,25 +15,29 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBiometricAuthViewController.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWCreateNewWalletViewController;
-
-@protocol DWCreateNewWalletViewControllerDelegate <NSObject>
-
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller;
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller;
+@interface DWBiometricAuthViewController ()
 
 @end
 
-@interface DWCreateNewWalletViewController : UIViewController
+@implementation DWBiometricAuthViewController
 
-@property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
++ (instancetype)controller {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"BiometricAuth" bundle:nil];
+    DWBiometricAuthViewController *controller = [storyboard instantiateInitialViewController];
 
-+ (instancetype)controller;
+    return controller;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+}
+
+#pragma mark - DWRootNavigationFullscreenable
+
+- (BOOL)requiresNoNavigationBar {
+    return YES;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

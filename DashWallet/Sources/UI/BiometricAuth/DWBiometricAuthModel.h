@@ -15,24 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+#import <LocalAuthentication/LocalAuthentication.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWCreateNewWalletViewController;
+@interface DWBiometricAuthModel : NSObject
 
-@protocol DWCreateNewWalletViewControllerDelegate <NSObject>
+@property (readonly, class, nonatomic, assign) BOOL biometricAuthenticationAvailable;
 
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller;
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller;
-
-@end
-
-@interface DWCreateNewWalletViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
+@property (readonly, nonatomic, assign) LABiometryType biometryType;
 
 @end
 

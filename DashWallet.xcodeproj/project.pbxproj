@@ -46,6 +46,9 @@
 		2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
 		2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
 		2A44314322CF80D9009BAF7F /* DWCreateNewWalletModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314222CF80D9009BAF7F /* DWCreateNewWalletModel.m */; };
+		2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
+		2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */; };
+		2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
@@ -421,6 +424,12 @@
 		2A44313F22CF642C009BAF7F /* DWRootModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModel.m; sourceTree = "<group>"; };
 		2A44314122CF80D9009BAF7F /* DWCreateNewWalletModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateNewWalletModel.h; sourceTree = "<group>"; };
 		2A44314222CF80D9009BAF7F /* DWCreateNewWalletModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateNewWalletModel.m; sourceTree = "<group>"; };
+		2A44314522CF82D9009BAF7F /* DWBiometricAuthViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBiometricAuthViewController.h; sourceTree = "<group>"; };
+		2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBiometricAuthViewController.m; sourceTree = "<group>"; };
+		2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BiometricAuth.storyboard; sourceTree = "<group>"; };
+		2A44314A22CF8801009BAF7F /* DWBiometricAuthModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBiometricAuthModel.h; sourceTree = "<group>"; };
+		2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBiometricAuthModel.m; sourceTree = "<group>"; };
+		2A44314D22CF8BF5009BAF7F /* DWRootNavigationFullscreenable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootNavigationFullscreenable.h; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1018,10 +1027,11 @@
 		2A44311B22CC9B2C009BAF7F /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
-				2A44311C22CC9B5A009BAF7F /* DWRootNavigationController.h */,
-				2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */,
 				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
 				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
+				2A44311C22CC9B5A009BAF7F /* DWRootNavigationController.h */,
+				2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */,
+				2A44314D22CF8BF5009BAF7F /* DWRootNavigationFullscreenable.h */,
 			);
 			path = RootNavigation;
 			sourceTree = "<group>";
@@ -1074,6 +1084,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2A44314422CF828E009BAF7F /* BiometricAuth */,
 				2A44312322CCC127009BAF7F /* CreateNewWallet */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
 				2A4430EF22CBC77A009BAF7F /* Views */,
@@ -1089,6 +1100,18 @@
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2A44314422CF828E009BAF7F /* BiometricAuth */ = {
+			isa = PBXGroup;
+			children = (
+				2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */,
+				2A44314A22CF8801009BAF7F /* DWBiometricAuthModel.h */,
+				2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */,
+				2A44314522CF82D9009BAF7F /* DWBiometricAuthViewController.h */,
+				2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */,
+			);
+			path = BiometricAuth;
 			sourceTree = "<group>";
 		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
@@ -2139,6 +2162,7 @@
 			files = (
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
 				FBFC2EB521137A7A00D20C57 /* Montserrat-Italic.otf in Resources */,
+				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				FBFC2EED21137A7A00D20C57 /* Montserrat-Thin.otf in Resources */,
 				FBFC2ED121137A7A00D20C57 /* Montserrat-SemiBoldItalic.otf in Resources */,
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
@@ -2471,6 +2495,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				2A4430F322CBD8B3009BAF7F /* DWStartViewController.m in Sources */,
 				2A4430F422CBD8B3009BAF7F /* DWStartModel.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
@@ -2559,6 +2584,7 @@
 				2A9FFE792230FF4600956D5F /* DWDimmingView.m in Sources */,
 				2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */,
 				BA7B53541BDAA0A800355E8D /* BRAppleWatchTransactionData.m in Sources */,
+				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				2A9FFE8B2230FF4700956D5F /* DWLocalCurrecnySelectorViewController.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
