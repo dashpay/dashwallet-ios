@@ -45,6 +45,9 @@
 "\ntry again in %@" = "\n%@ 뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "About" = "정보";
 
 /* No comment provided by engineer. */

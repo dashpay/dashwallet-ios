@@ -17,6 +17,7 @@
 
 #import "DWCreateNewWalletViewController.h"
 
+#import "DWCreateNewWalletModel.h"
 #import "DWNumberKeyboard.h"
 #import "DWPinView.h"
 #import "UIFont+DWFont.h"
@@ -24,6 +25,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWCreateNewWalletViewController () <DWPinViewDelegate>
+
+@property (nonatomic, strong) DWCreateNewWalletModel *model;
 
 @property (strong, nonatomic) IBOutlet DWPinView *pinView;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
@@ -37,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"CreateNewWallet" bundle:nil];
     DWCreateNewWalletViewController *controller = [storyboard instantiateInitialViewController];
     controller.title = NSLocalizedString(@"Create a New Wallet", nil);
+    controller.model = [[DWCreateNewWalletModel alloc] init];
 
     return controller;
 }
@@ -64,7 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin {
-    NSLog(@">>>>> %@", pin);
+    BOOL success = [self.model setPin:pin];
+    if (!success) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
 
 #pragma mark - Private

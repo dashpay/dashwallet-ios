@@ -45,6 +45,9 @@
 "\ntry again in %@" = "\n %@でもう一度お試しください";
 
 /* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */

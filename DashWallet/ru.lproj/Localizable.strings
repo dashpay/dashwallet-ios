@@ -45,6 +45,9 @@
 "\ntry again in %@" = "\nПопробуйте ещё раз через %@";
 
 /* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "About" = "О программе";
 
 /* No comment provided by engineer. */
