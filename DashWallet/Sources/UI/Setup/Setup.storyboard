@@ -22,10 +22,10 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RtN-k1-BzT" userLabel="Layout View">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="658"/>
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_with_tag" translatesAutoresizingMaskIntoConstraints="NO" id="s6Q-1B-DYH">
-                                        <rect key="frame" x="41" y="287.66666666666669" width="293" height="83"/>
+                                        <rect key="frame" x="41" y="364.66666666666669" width="293" height="83"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -64,7 +64,6 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ZuB-Um-2ug" firstAttribute="top" secondItem="RtN-k1-BzT" secondAttribute="bottom" id="8MB-I4-A5x"/>
                             <constraint firstAttribute="trailing" secondItem="RtN-k1-BzT" secondAttribute="trailing" id="94u-L2-EHo"/>
                             <constraint firstItem="8ou-NV-Pbn" firstAttribute="top" secondItem="ZuB-Um-2ug" secondAttribute="bottom" constant="8" id="ABl-FG-Uux"/>
                             <constraint firstItem="8ou-NV-Pbn" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leadingMargin" id="CMg-OA-yMi"/>
@@ -74,6 +73,7 @@
                             <constraint firstItem="8ou-NV-Pbn" firstAttribute="trailing" secondItem="CcN-xl-I4O" secondAttribute="trailingMargin" id="JWd-jo-Ps6"/>
                             <constraint firstItem="t1r-hq-hGl" firstAttribute="top" secondItem="CcN-xl-I4O" secondAttribute="top" id="Ntm-1z-4oE"/>
                             <constraint firstAttribute="trailingMargin" secondItem="ZuB-Um-2ug" secondAttribute="trailing" id="O26-UI-DMI"/>
+                            <constraint firstAttribute="bottom" secondItem="RtN-k1-BzT" secondAttribute="bottom" id="cDH-hf-sIY"/>
                             <constraint firstItem="RtN-k1-BzT" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leading" id="dQE-1b-vbP"/>
                             <constraint firstAttribute="bottom" secondItem="t1r-hq-hGl" secondAttribute="bottom" id="hxN-pm-SiQ"/>
                             <constraint firstItem="ZuB-Um-2ug" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leadingMargin" id="iwy-Ca-Vl7"/>
@@ -83,6 +83,7 @@
                     </view>
                     <connections>
                         <outlet property="createWalletButton" destination="ZuB-Um-2ug" id="GQF-wX-DOl"/>
+                        <outlet property="logoLayoutViewBottomContraint" destination="cDH-hf-sIY" id="5SH-fu-toN"/>
                         <outlet property="recoverWalletButton" destination="8ou-NV-Pbn" id="ZSw-31-5fe"/>
                     </connections>
                 </viewController>

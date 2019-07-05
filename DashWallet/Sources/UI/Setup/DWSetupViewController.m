@@ -23,12 +23,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSTimeInterval const ANIMATION_DURATION = 0.25;
+
 @interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
+@property (nonatomic, assign) BOOL initialAnimationCompleted;
 
 @property (strong, nonatomic) IBOutlet UIButton *createWalletButton;
 @property (strong, nonatomic) IBOutlet UIButton *recoverWalletButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *logoLayoutViewBottomContraint;
 
 @end
 
@@ -53,6 +57,20 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (!self.model.walletOperationAllowed) {
         [self showDevicePasscodeAlert];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    if (!self.initialAnimationCompleted) {
+        self.initialAnimationCompleted = YES;
+        
+        self.logoLayoutViewBottomContraint.constant = CGRectGetHeight([UIScreen mainScreen].bounds) -
+                                                      CGRectGetMinY(self.createWalletButton.frame);
+        [UIView animateWithDuration:ANIMATION_DURATION animations:^{
+            [self.view layoutIfNeeded];
+        }];
     }
 }
 
