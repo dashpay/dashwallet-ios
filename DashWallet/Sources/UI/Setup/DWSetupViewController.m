@@ -18,10 +18,13 @@
 #import "DWSetupViewController.h"
 
 #import "DWCreateNewWalletViewController.h"
+#import "DWRootModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSetupViewController ()
+
+@property (nonatomic, strong) DWRootModel *model;
 
 @property (strong, nonatomic) IBOutlet UIButton *createWalletButton;
 @property (strong, nonatomic) IBOutlet UIButton *recoverWalletButton;
@@ -30,15 +33,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSetupViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWRootModel *)model {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Setup" bundle:nil];
-    return [storyboard instantiateInitialViewController];
+    DWSetupViewController *controller = [storyboard instantiateInitialViewController];
+    controller.model = model;
+
+    return controller;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     [self setupView];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    if (!self.model.walletOperationAllowed) {
+        [self showDevicePasscodeAlert];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -60,6 +74,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupView {
     [self.createWalletButton setTitle:NSLocalizedString(@"Create a New Wallet", nil) forState:UIControlStateNormal];
     [self.recoverWalletButton setTitle:NSLocalizedString(@"Recover Wallet", nil) forState:UIControlStateNormal];
+}
+
+- (void)showDevicePasscodeAlert {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", nil)
+                         message:NSLocalizedString(@"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.", nil)
+                  preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *closeButton = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Close App", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
+                }];
+    [alert addAction:closeButton];
+    [self presentViewController:alert animated:NO completion:nil];
 }
 
 @end

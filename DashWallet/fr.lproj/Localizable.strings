@@ -141,6 +141,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "le presse-papier ne contient pas une adresse dash ou bitcoin valide";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "fermer l'application";
 
 /* No comment provided by engineer. */
@@ -700,6 +703,9 @@
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "activer le code d'accès de l'appareil";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "type :";

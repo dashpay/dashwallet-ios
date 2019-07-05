@@ -17,6 +17,7 @@
 
 #import "DWRootNavigationController.h"
 
+#import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
@@ -25,14 +26,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRootNavigationController () <UINavigationControllerDelegate>
 
+@property (readonly, nonatomic, strong) DWRootModel *model;
+
 @end
 
 @implementation DWRootNavigationController
 
 - (instancetype)init {
-    DWSetupViewController *controller = [DWSetupViewController controller];
-    self = [super initWithRootViewController:controller];
+    self = [super init];
     if (self) {
+        _model = [[DWRootModel alloc] init];
     }
     return self;
 }
@@ -42,6 +45,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.delegate = self;
     [self setupView];
+
+    if (self.model.hasAWallet) {
+        // TODO: impl
+    }
+    else {
+        DWSetupViewController *controller = [DWSetupViewController controllerWithModel:self.model];
+        [self pushViewController:controller animated:NO];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

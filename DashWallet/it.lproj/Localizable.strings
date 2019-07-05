@@ -141,6 +141,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "gli appunti non contengono un indirizzo bitcoin o un indirizzo dash valido";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "chiudi app";
 
 /* No comment provided by engineer. */
@@ -700,6 +703,9 @@
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "attiva codice d'accesso dispositivo";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "genere:";

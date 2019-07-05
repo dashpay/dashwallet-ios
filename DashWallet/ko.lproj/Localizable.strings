@@ -141,6 +141,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "클립 보드에 유효한 대시 혹은 비트코인 주소가 없습니다";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "앱 닫기";
 
 /* No comment provided by engineer. */
@@ -700,6 +703,9 @@
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "비밀번호 켜기";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "유형:";

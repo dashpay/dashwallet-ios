@@ -15,15 +15,26 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWRootModel.h"
+
+#import "DWEnvironment.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWRootModel;
+@implementation DWRootModel
 
-@interface DWSetupViewController : UIViewController
+- (BOOL)hasAWallet {
+    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
 
-+ (instancetype)controllerWithModel:(DWRootModel *)model;
+    return (chain.hasAWallet || ![dashSyncVersionManager noOldWallet]);
+}
+
+- (BOOL)walletOperationAllowed {
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    return authenticationManager.passcodeEnabled;
+}
 
 @end
 

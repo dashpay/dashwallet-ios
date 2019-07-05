@@ -141,6 +141,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "Zwischenablage enthält keine gültige Dash oder Bitcoin Adresse";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "App schließen";
 
 /* No comment provided by engineer. */
@@ -700,6 +703,9 @@
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "Aktivieren Sie den Gerätecode";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "Typ:";

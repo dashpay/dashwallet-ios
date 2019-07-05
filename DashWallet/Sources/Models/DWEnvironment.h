@@ -31,7 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DSChainManager *currentChainManager;
 @property (nonatomic, readonly) SystemSoundID pingsound;
 
-+ (instancetype _Nullable)sharedInstance;
++ (instancetype)sharedInstance;
+
 - (void)clearAllWallets;
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;

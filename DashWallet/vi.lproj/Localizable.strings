@@ -141,6 +141,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "bộ đệm không chứa địa chỉ hợp lệ của dash hay bitcoin";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "đóng ứng dụng";
 
 /* No comment provided by engineer. */
@@ -700,6 +703,9 @@
 
 /* No comment provided by engineer. */
 "turn device passcode on" = "hãy bật mật khẩu cho thiết bị của bạn";
+
+/* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "kiểu:";

@@ -19,11 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWRootModel;
+@interface DWRootModel : NSObject
 
-@interface DWSetupViewController : UIViewController
+@property (readonly, nonatomic, assign) BOOL hasAWallet;
 
-+ (instancetype)controllerWithModel:(DWRootModel *)model;
+/**
+ NO if running Dashwallet is not allowed on this device for security reasons
+ */
+@property (readonly, nonatomic, assign) BOOL walletOperationAllowed;
 
 @end
 

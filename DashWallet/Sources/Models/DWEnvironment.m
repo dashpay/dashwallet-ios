@@ -35,6 +35,7 @@
 - (instancetype)init {
     if (!(self = [super init]))
         return nil;
+
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];

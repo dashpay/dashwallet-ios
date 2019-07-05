@@ -44,6 +44,7 @@
 		2A44312E22CD0324009BAF7F /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312D22CD0324009BAF7F /* DWPinField.m */; };
 		2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */; };
 		2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
+		2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
 		2A4663032279DC2F0027533B /* DashWalletScreenshotsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */; };
 		2A46630D2279DD7D0027533B /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A46630C2279DD7D0027533B /* SnapshotHelper.swift */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
@@ -415,6 +416,8 @@
 		2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinInputStepView.m; sourceTree = "<group>"; };
 		2A44313722CE2CB9009BAF7F /* DWPinView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinView.h; sourceTree = "<group>"; };
 		2A44313822CE2CB9009BAF7F /* DWPinView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinView.m; sourceTree = "<group>"; };
+		2A44313E22CF642C009BAF7F /* DWRootModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootModel.h; sourceTree = "<group>"; };
+		2A44313F22CF642C009BAF7F /* DWRootModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModel.m; sourceTree = "<group>"; };
 		2A4663002279DC2F0027533B /* DashWalletScreenshotsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletScreenshotsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A4663022279DC2F0027533B /* DashWalletScreenshotsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashWalletScreenshotsUITests.swift; sourceTree = "<group>"; };
 		2A4663042279DC2F0027533B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1014,6 +1017,8 @@
 			children = (
 				2A44311C22CC9B5A009BAF7F /* DWRootNavigationController.h */,
 				2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */,
+				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
+				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
 			);
 			path = RootNavigation;
 			sourceTree = "<group>";
@@ -2559,6 +2564,7 @@
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
+				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWRootNavigationController.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
