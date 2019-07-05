@@ -1052,6 +1052,35 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		2A44313B22CF62FC009BAF7F /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2A44313D22CF632F009BAF7F /* Models */,
+				2A44313C22CF631E009BAF7F /* UI */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		2A44313C22CF631E009BAF7F /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				2A44312322CCC127009BAF7F /* CreateNewWallet */,
+				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
+				2A4430EF22CBC77A009BAF7F /* Views */,
+				2A4430E922CBB98D009BAF7F /* Setup */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		2A44313D22CF632F009BAF7F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
+				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		2A4663012279DC2F0027533B /* DashWalletScreenshotsUITests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1484,8 +1513,6 @@
 			children = (
 				2A9FFDF62230FF2B00956D5F /* UpholdModel */,
 				2A11F58021947CBE00E7B563 /* DataMigration */,
-				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
-				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
 				FB2E5536218BA161003A1B7C /* DWVersionManager.m */,
 				2ACC989D227B076C000336B3 /* DWStubTransaction.h */,
@@ -1612,11 +1639,8 @@
 		75D5F3C7191EC270004AB296 /* DashWallet */ = {
 			isa = PBXGroup;
 			children = (
-				2A44312322CCC127009BAF7F /* CreateNewWallet */,
-				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
+				2A44313B22CF62FC009BAF7F /* Sources */,
 				2A4430F022CBD566009BAF7F /* Resources */,
-				2A4430EF22CBC77A009BAF7F /* Views */,
-				2A4430E922CBB98D009BAF7F /* Setup */,
 				FB4AB41621CA75D0001CC324 /* Utils */,
 				BAC7B6BF1BD9C2B500165B84 /* AppleWatch */,
 				752E289C19234A4700DB5A3C /* Models */,

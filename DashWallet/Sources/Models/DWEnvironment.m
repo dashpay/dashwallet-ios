@@ -1,9 +1,18 @@
 //
-//  DWEnvironment.m
-//  DashWallet
+//  Created by Sam Westrich
+//  Copyright © 2018-2019 Dash Core Group. All rights reserved.
 //
-//  Created by Sam Westrich on 10/25/18.
-//  Copyright © 2019 Dash Core. All rights reserved.
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
 #import "DWEnvironment.h"
@@ -12,46 +21,45 @@
 
 @implementation DWEnvironment
 
-+ (instancetype)sharedInstance
-{
++ (instancetype)sharedInstance {
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
-    
+
     dispatch_once(&onceToken, ^{
         singleton = [self new];
     });
-    
+
     return singleton;
 }
 
-- (instancetype)init
-{
-    if (! (self = [super init])) return nil;
-    NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+- (instancetype)init {
+    if (!(self = [super init]))
+        return nil;
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
     }
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; //initialization
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
     [self reset];
-    
+
     AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
-                                                                                withExtension:@"aiff"], &_pingsound);
-    
+                                                                                withExtension:@"aiff"],
+                                     &_pingsound);
+
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     AudioServicesDisposeSystemSoundID(self.pingsound);
 }
 
--(void)playPingSound {
+- (void)playPingSound {
     AudioServicesPlaySystemSound(self.pingsound);
 }
 
--(void)reset {
-    NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+- (void)reset {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     switch (chainType) {
         case DSChainType_MainNet:
@@ -66,21 +74,21 @@
     self.currentChainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.currentChain];
 }
 
--(DSWallet*)currentWallet {
+- (DSWallet *)currentWallet {
     return [[self.currentChain wallets] firstObject];
 }
 
--(DSWallet*)currentAccount {
+- (DSWallet *)currentAccount {
     return [[self.currentWallet accounts] firstObject];
 }
 
--(NSArray*)allWallets {
+- (NSArray *)allWallets {
     return [[DSChainsManager sharedInstance] allWallets];
 }
 
 - (void)clearAllWallets {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
-    for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+    for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
         [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
@@ -97,7 +105,7 @@
     }
 }
 
-- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion  {
+- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain testnet]) {
         [DSEventManager saveEvent:@"settings:change_network_testnet"];
         [self switchToNetwork:DSChainType_TestNet withCompletion:completion];
@@ -105,14 +113,14 @@
 }
 
 - (void)switchToNetwork:(DSChainType)chainType withCompletion:(void (^)(BOOL success))completion {
-    NSUserDefaults * userDefaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     if (originalChainType == chainType) {
         completion(YES); //didn't really switch but good enough
         return;
     }
-    DSWallet * wallet = [self currentWallet];
-    DSChain * destinationChain = nil;
+    DSWallet *wallet = [self currentWallet];
+    DSChain *destinationChain = nil;
     switch (chainType) {
         case DSChainType_MainNet:
             destinationChain = [DSChain mainnet];
@@ -124,25 +132,26 @@
             break;
     }
     if (![destinationChain hasAWallet]) {
-        [wallet copyForChain:destinationChain completion:^(DSWallet * _Nullable copiedWallet) {
+        [wallet copyForChain:destinationChain completion:^(DSWallet *_Nullable copiedWallet) {
             if (copiedWallet) {
                 [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
                 [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
                 [self reset];
                 [self.currentChainManager.peerManager connect];
                 completion(YES);
-            } else {
+            }
+            else {
                 completion(NO);
             }
         }];
-    } else {
+    }
+    else {
         [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
         [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];
         completion(YES);
     }
-    
 }
 
 @end
