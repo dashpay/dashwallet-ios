@@ -20,10 +20,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v2G-4u-CtF" userLabel="Top View">
-                                <rect key="frame" x="16" y="44" width="343" height="519"/>
+                                <rect key="frame" x="16" y="44" width="343" height="515"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nx0-Xr-XMt" userLabel="Center View">
-                                        <rect key="frame" x="0.0" y="185.33333333333331" width="343" height="148.33333333333331"/>
+                                        <rect key="frame" x="0.0" y="183.33333333333331" width="343" height="148.33333333333331"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="infinite" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="wky-gc-BHo" customClass="DWPinView">
                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="90"/>
@@ -56,7 +56,7 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="DWNumberKeyboard">
-                                <rect key="frame" x="16" y="563" width="343" height="215"/>
+                                <rect key="frame" x="16" y="559" width="343" height="215"/>
                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="215" id="lmc-OB-GmN"/>
@@ -67,13 +67,25 @@
                         <constraints>
                             <constraint firstItem="v2G-4u-CtF" firstAttribute="top" secondItem="S7h-Wf-pds" secondAttribute="topMargin" id="0uW-G3-rll"/>
                             <constraint firstAttribute="trailingMargin" secondItem="q99-sn-r0g" secondAttribute="trailing" id="3yX-LI-j55"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="q99-sn-r0g" secondAttribute="bottom" id="LO1-hG-b3x"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="q99-sn-r0g" secondAttribute="bottom" constant="4" id="LO1-hG-b3x"/>
                             <constraint firstItem="v2G-4u-CtF" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="UEQ-JE-hj7"/>
                             <constraint firstItem="q99-sn-r0g" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="kTa-PY-Fls"/>
                             <constraint firstAttribute="trailingMargin" secondItem="v2G-4u-CtF" secondAttribute="trailing" id="kb9-CR-E8Q"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="q99-sn-r0g" secondAttribute="bottom" constant="20" id="nxf-Cv-dxm"/>
                             <constraint firstItem="q99-sn-r0g" firstAttribute="top" secondItem="v2G-4u-CtF" secondAttribute="bottom" id="rzO-TL-Hxu"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="sHo-4f-2nX"/>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="nxf-Cv-dxm"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <exclude reference="LO1-hG-b3x"/>
+                                <include reference="nxf-Cv-dxm"/>
+                            </mask>
+                        </variation>
                     </view>
                     <connections>
                         <outlet property="descriptionLabel" destination="GGf-Za-9Cg" id="xIn-72-una"/>

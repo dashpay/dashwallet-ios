@@ -156,10 +156,10 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIRequiresFullScreen</key>
-	<true/>
-	<key>UIRequiresFullScreen~ipad</key>
 	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
