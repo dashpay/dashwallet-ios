@@ -92,7 +92,7 @@ static CGFloat const CORNER_RADIUS = 8.0;
     _type = type;
 
     switch (type) {
-        case DWNumberKeyboardButtonTypeSeparator: {
+        case DWNumberKeyboardButtonType_Separator: {
             self.titleLabel.text = [NSLocale currentLocale].decimalSeparator;
 #if SNAPSHOT
             titleLabel.accessibilityIdentifier = @"amount_button_separator";
@@ -100,13 +100,13 @@ static CGFloat const CORNER_RADIUS = 8.0;
 
             break;
         }
-        case DWNumberKeyboardButtonTypeCustom: {
+        case DWNumberKeyboardButtonType_Custom: {
             self.titleLabel.font = CustomTitleFont();
             self.titleLabel.adjustsFontSizeToFitWidth = YES;
 
             break;
         }
-        case DWNumberKeyboardButtonTypeClear: {
+        case DWNumberKeyboardButtonType_Clear: {
             UIImage *image = [[UIImage imageNamed:@"backspace"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
             NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
             textAttachment.image = image;
@@ -146,7 +146,7 @@ static CGFloat const CORNER_RADIUS = 8.0;
 }
 
 - (void)configureAsCustomTypeWithTitle:(NSString *)title {
-    self.type = DWNumberKeyboardButtonTypeCustom;
+    self.type = DWNumberKeyboardButtonType_Custom;
     self.titleLabel.text = title;
 }
 
@@ -187,7 +187,7 @@ static CGFloat const CORNER_RADIUS = 8.0;
 #pragma mark - Private
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    if (self.type == DWNumberKeyboardButtonTypeCustom) {
+    if (self.type == DWNumberKeyboardButtonType_Custom) {
         self.titleLabel.font = CustomTitleFont();
     }
     else {

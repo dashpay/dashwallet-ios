@@ -20,19 +20,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWNumberKeyboardButtonType) {
-    DWNumberKeyboardButtonTypeDigit0,
-    DWNumberKeyboardButtonTypeDigit1,
-    DWNumberKeyboardButtonTypeDigit2,
-    DWNumberKeyboardButtonTypeDigit3,
-    DWNumberKeyboardButtonTypeDigit4,
-    DWNumberKeyboardButtonTypeDigit5,
-    DWNumberKeyboardButtonTypeDigit6,
-    DWNumberKeyboardButtonTypeDigit7,
-    DWNumberKeyboardButtonTypeDigit8,
-    DWNumberKeyboardButtonTypeDigit9,
-    DWNumberKeyboardButtonTypeSeparator,
-    DWNumberKeyboardButtonTypeCustom,
-    DWNumberKeyboardButtonTypeClear,
+    DWNumberKeyboardButtonType_Digit0,
+    DWNumberKeyboardButtonType_Digit1,
+    DWNumberKeyboardButtonType_Digit2,
+    DWNumberKeyboardButtonType_Digit3,
+    DWNumberKeyboardButtonType_Digit4,
+    DWNumberKeyboardButtonType_Digit5,
+    DWNumberKeyboardButtonType_Digit6,
+    DWNumberKeyboardButtonType_Digit7,
+    DWNumberKeyboardButtonType_Digit8,
+    DWNumberKeyboardButtonType_Digit9,
+    DWNumberKeyboardButtonType_Separator,
+    DWNumberKeyboardButtonType_Custom,
+    DWNumberKeyboardButtonType_Clear,
 };
 
 @class DWNumberKeyboardButton;

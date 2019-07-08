@@ -65,7 +65,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
 
 - (void)setupNumberKeyboard {
     NSMutableArray<DWNumberKeyboardButton *> *buttons = [NSMutableArray array];
-    for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonTypeDigit0; type <= DWNumberKeyboardButtonTypeDigit9; type++) {
+    for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonType_Digit0; type <= DWNumberKeyboardButtonType_Digit9; type++) {
         DWNumberKeyboardButton *button = [[DWNumberKeyboardButton alloc] init];
         button.type = type;
         button.delegate = self;
@@ -75,14 +75,14 @@ static const NSUInteger SECTIONS_COUNT = 3;
     self.digitButtons = buttons;
 
     DWNumberKeyboardButton *functionButton = [[DWNumberKeyboardButton alloc] init];
-    functionButton.type = DWNumberKeyboardButtonTypeSeparator;
+    functionButton.type = DWNumberKeyboardButtonType_Separator;
     functionButton.delegate = self;
     [self addSubview:functionButton];
     self.functionButton = functionButton;
     [buttons addObject:functionButton];
 
     DWNumberKeyboardButton *clearButton = [[DWNumberKeyboardButton alloc] init];
-    clearButton.type = DWNumberKeyboardButtonTypeClear;
+    clearButton.type = DWNumberKeyboardButtonType_Clear;
     clearButton.delegate = self;
     [self addSubview:clearButton];
     self.clearButton = clearButton;
@@ -118,7 +118,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
     CGFloat top = 0.0;
 
     // Number buttons (1-9)
-    for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonTypeDigit1; i <= DWNumberKeyboardButtonTypeDigit9; i++) {
+    for (DWNumberKeyboardButtonType i = DWNumberKeyboardButtonType_Digit1; i <= DWNumberKeyboardButtonType_Digit9; i++) {
         DWNumberKeyboardButton *numberButton = self.digitButtons[i];
         numberButton.frame = CGRectMake(left, top, buttonWidth, BUTTON_HEIGHT);
 
@@ -225,7 +225,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
         return;
     }
 
-    if (sender.type == DWNumberKeyboardButtonTypeClear) {
+    if (sender.type == DWNumberKeyboardButtonType_Clear) {
         [self performClearButtonAction:sender textInput:textInput];
     }
     else {
@@ -234,7 +234,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
 }
 
 - (void)performRegularButtonAction:(DWNumberKeyboardButton *)sender textInput:(UIResponder<UITextInput> *)textInput {
-    if (sender.type == DWNumberKeyboardButtonTypeCustom) {
+    if (sender.type == DWNumberKeyboardButtonType_Custom) {
         NSParameterAssert(self.delegate);
         [self.delegate numberKeyboardCustomFunctionButtonTap:self];
 
@@ -242,7 +242,7 @@ static const NSUInteger SECTIONS_COUNT = 3;
     }
 
     NSString *text = nil;
-    if (sender.type == DWNumberKeyboardButtonTypeSeparator) {
+    if (sender.type == DWNumberKeyboardButtonType_Separator) {
         text = [NSLocale currentLocale].decimalSeparator;
     }
     else {
