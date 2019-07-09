@@ -17,16 +17,17 @@
 
 #import "DWSetupViewController.h"
 
+#import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
 #import "DWCreateNewWalletViewController.h"
 #import "DWRootModel.h"
-#import "DWBiometricAuthModel.h"
+#import "DWSecureWalletInfoViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
-@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate, DWBiometricAuthViewControllerDelegate>
+@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate, DWBiometricAuthViewControllerDelegate, DWSecureWalletInfoViewControllerDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
@@ -66,7 +67,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
     if (!self.initialAnimationCompleted) {
         self.initialAnimationCompleted = YES;
-        
+
         self.logoLayoutViewBottomContraint.constant = CGRectGetHeight([UIScreen mainScreen].bounds) -
                                                       CGRectGetMinY(self.createWalletButton.frame);
         [UIView animateWithDuration:ANIMATION_DURATION animations:^{
@@ -97,18 +98,26 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller {
-    [self.navigationController popViewControllerAnimated:NO];
-
+    UIViewController *newViewController = nil;
     if (DWBiometricAuthModel.biometricAuthenticationAvailable) {
-        DWBiometricAuthViewController *biometricController = [DWBiometricAuthViewController controller];
-        biometricController.delegate = self;
-        [self.navigationController pushViewController:biometricController animated:YES];
+        newViewController = [self biometricAuthController];
     }
+    else {
+        newViewController = [self secureWalletInfoController];
+    }
+    [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
 #pragma mark - DWBiometricAuthViewControllerDelegate
 
 - (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller {
+    UIViewController *newViewController = [self secureWalletInfoController];
+    [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
+}
+
+#pragma mark - DWSecureWalletInfoViewController
+
+- (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller {
     [self.navigationController popViewControllerAnimated:NO];
 }
 
@@ -138,6 +147,20 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                 }];
     [alert addAction:closeButton];
     [self presentViewController:alert animated:NO completion:nil];
+}
+
+- (UIViewController *)biometricAuthController {
+    DWBiometricAuthViewController *controller = [DWBiometricAuthViewController controller];
+    controller.delegate = self;
+
+    return controller;
+}
+
+- (UIViewController *)secureWalletInfoController {
+    DWSecureWalletInfoViewController *controller = [DWSecureWalletInfoViewController controller];
+    controller.delegate = self;
+
+    return controller;
 }
 
 @end

@@ -300,6 +300,9 @@
 "id:" = "id :";
 
 /* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+
+/* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Si vous souhaitez toujours tout effacer, veuillez taper : \"%@\"";
 
 /* No comment provided by engineer. */
@@ -556,6 +559,12 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Les captures d'écran sont visibles aux autres applis et appareils. Vos fonds sont à risque. Transférez votre solde à un autre portefeuille.";
+
+/* No comment provided by engineer. */
+"Secure now" = "Secure now";
+
+/* No comment provided by engineer. */
+"Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";

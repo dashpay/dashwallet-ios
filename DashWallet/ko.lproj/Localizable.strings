@@ -300,6 +300,9 @@
 "id:" = "아이디:";
 
 /* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+
+/* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "그래도 삭제하려면 다음과 같이 입력하십시오: \"%@\"";
 
 /* No comment provided by engineer. */
@@ -556,6 +559,12 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 당신의 지갑에 있는 돈이 위험합니다. 다른 지갑으로 잔액을 옮겨 주세요.";
+
+/* No comment provided by engineer. */
+"Secure now" = "Secure now";
+
+/* No comment provided by engineer. */
+"Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";

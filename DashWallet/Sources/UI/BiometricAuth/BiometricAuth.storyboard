@@ -31,7 +31,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1sf-VT-6yn" userLabel="Title Label">
                                                 <rect key="frame" x="0.0" y="114" width="374" height="24"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                                <nil key="textColor"/>
+                                                <color key="textColor" name="DarkTitleColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -77,7 +77,7 @@
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <action selector="skipBiometricButtonAction:" destination="LkF-gM-ELT" eventType="valueChanged" id="oz7-1c-eMz"/>
+                                    <action selector="skipBiometricButtonAction:" destination="LkF-gM-ELT" eventType="touchUpInside" id="sWP-bH-qQD"/>
                                 </connections>
                             </view>
                         </subviews>
@@ -121,6 +121,9 @@
         </scene>
     </scenes>
     <resources>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

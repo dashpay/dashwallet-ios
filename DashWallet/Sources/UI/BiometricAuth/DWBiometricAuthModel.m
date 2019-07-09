@@ -59,7 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
     return _context;
 }
 
-- (void)enableBiometricAuth:(void(^)(void))completion {
+- (void)enableBiometricAuth:(void (^)(void))completion {
+    NSParameterAssert(completion);
+
     NSString *reason = nil;
     switch (self.context.biometryType) {
         case LABiometryTypeTouchID:
@@ -72,13 +74,13 @@ NS_ASSUME_NONNULL_BEGIN
             reason = @" ";
             break;
     }
-    
+
     [self.context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                  localizedReason:reason
-                           reply:^(BOOL success, NSError * _Nullable error) {
+                           reply:^(BOOL success, NSError *_Nullable error) {
                                // TODO: discuss how biometric Auth should work
                                dispatch_async(dispatch_get_main_queue(), completion);
-    }];
+                           }];
 }
 
 @end

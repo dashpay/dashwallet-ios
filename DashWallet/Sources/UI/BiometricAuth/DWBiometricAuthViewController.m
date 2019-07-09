@@ -18,6 +18,7 @@
 #import "DWBiometricAuthViewController.h"
 
 #import "DWBiometricAuthModel.h"
+#import "UIFont+DWFont.h"
 
 @interface DWBiometricAuthViewController ()
 
@@ -42,7 +43,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [self setupView];
 }
 
@@ -56,7 +57,7 @@
 
 - (IBAction)enableBiometricButtonAction:(id)sender {
     self.view.userInteractionEnabled = NO;
-    
+
     __weak typeof(self) weakSelf = self;
     [self.model enableBiometricAuth:^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -95,9 +96,11 @@
             break;
         }
     }
-    
+
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+
     [self.skipBiometricButton setTitle:NSLocalizedString(@"Skip", nil)
-                                forState:UIControlStateNormal];
+                              forState:UIControlStateNormal];
 }
 
 @end

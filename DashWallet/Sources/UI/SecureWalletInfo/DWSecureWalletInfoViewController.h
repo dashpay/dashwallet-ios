@@ -15,19 +15,25 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-#import <LocalAuthentication/LocalAuthentication.h>
+#import "DWRootNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBiometricAuthModel : NSObject
+@class DWSecureWalletInfoViewController;
 
-@property (readonly, class, nonatomic, assign) BOOL biometricAuthenticationAvailable;
+@protocol DWSecureWalletInfoViewControllerDelegate <NSObject>
 
-@property (readonly, nonatomic, assign) LABiometryType biometryType;
+- (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller;
 
-- (void)enableBiometricAuth:(void (^)(void))completion;
+@end
+
+@interface DWSecureWalletInfoViewController : UIViewController <DWRootNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWSecureWalletInfoViewControllerDelegate> delegate;
+
++ (instancetype)controller;
 
 @end
 
