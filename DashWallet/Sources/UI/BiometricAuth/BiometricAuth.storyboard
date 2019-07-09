@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -14,28 +15,114 @@
         <scene sceneID="Pki-GA-juM">
             <objects>
                 <viewController id="LkF-gM-ELT" customClass="DWBiometricAuthViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="BhK-MU-Ahv">
+                    <view key="view" contentMode="scaleToFill" id="Y3D-LC-66G">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="To be continued..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="s5A-x0-YXT">
-                                <rect key="frame" x="138.5" y="437.5" width="137" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="azW-bJ-LPi" userLabel="Layout View">
+                                <rect key="frame" x="20" y="0.0" width="374" height="742"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nd3-zm-ixF">
+                                        <rect key="frame" x="0.0" y="302" width="374" height="138"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" placeholderIntrinsicWidth="98" placeholderIntrinsicHeight="98" translatesAutoresizingMaskIntoConstraints="NO" id="dmQ-x9-4xv" userLabel="Icon Image View">
+                                                <rect key="frame" x="138" y="0.0" width="98" height="98"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1sf-VT-6yn" userLabel="Title Label">
+                                                <rect key="frame" x="0.0" y="114" width="374" height="24"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="dmQ-x9-4xv" firstAttribute="top" secondItem="nd3-zm-ixF" secondAttribute="top" id="AFL-0T-O6D"/>
+                                            <constraint firstItem="dmQ-x9-4xv" firstAttribute="centerX" secondItem="nd3-zm-ixF" secondAttribute="centerX" id="bOv-ga-m1c"/>
+                                            <constraint firstAttribute="trailing" secondItem="1sf-VT-6yn" secondAttribute="trailing" id="i2v-3A-oGi"/>
+                                            <constraint firstAttribute="bottom" secondItem="1sf-VT-6yn" secondAttribute="bottom" id="jra-iU-YEQ"/>
+                                            <constraint firstItem="1sf-VT-6yn" firstAttribute="leading" secondItem="nd3-zm-ixF" secondAttribute="leading" id="mIr-a9-u2W"/>
+                                            <constraint firstItem="1sf-VT-6yn" firstAttribute="top" secondItem="dmQ-x9-4xv" secondAttribute="bottom" constant="16" id="vRe-lY-uRc"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="nd3-zm-ixF" secondAttribute="trailing" id="eZo-Lf-ey9"/>
+                                    <constraint firstItem="nd3-zm-ixF" firstAttribute="centerY" secondItem="azW-bJ-LPi" secondAttribute="centerY" id="mw7-jC-gGt"/>
+                                    <constraint firstItem="nd3-zm-ixF" firstAttribute="leading" secondItem="azW-bJ-LPi" secondAttribute="leading" id="qEx-LJ-zF1"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6pG-XX-G9G" userLabel="Enable Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="742" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="1Y3-bG-X75"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="enableBiometricButtonAction:" destination="LkF-gM-ELT" eventType="touchUpInside" id="5eV-lB-IjB"/>
+                                </connections>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ppP-lX-CGk" userLabel="Skip Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="804" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="LhY-6X-FIZ"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="skipBiometricButtonAction:" destination="LkF-gM-ELT" eventType="valueChanged" id="oz7-1c-eMz"/>
+                                </connections>
+                            </view>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="s5A-x0-YXT" firstAttribute="centerX" secondItem="BhK-MU-Ahv" secondAttribute="centerX" id="Pms-cP-gtl"/>
-                            <constraint firstItem="s5A-x0-YXT" firstAttribute="centerY" secondItem="BhK-MU-Ahv" secondAttribute="centerY" id="cU8-F6-ApC"/>
+                            <constraint firstItem="azW-bJ-LPi" firstAttribute="top" secondItem="Y3D-LC-66G" secondAttribute="top" id="1Xm-8i-1E2"/>
+                            <constraint firstItem="ppP-lX-CGk" firstAttribute="top" secondItem="6pG-XX-G9G" secondAttribute="bottom" constant="8" id="98O-Gw-mlZ"/>
+                            <constraint firstItem="azW-bJ-LPi" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="MG2-Az-KHJ"/>
+                            <constraint firstItem="6pG-XX-G9G" firstAttribute="top" secondItem="azW-bJ-LPi" secondAttribute="bottom" id="NN2-yE-CAq"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="4" id="RhP-uI-5QW"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="ppP-lX-CGk" secondAttribute="bottom" constant="20" id="Vzw-zu-MBF"/>
+                            <constraint firstItem="ppP-lX-CGk" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="X88-nv-Ujf"/>
+                            <constraint firstItem="6pG-XX-G9G" firstAttribute="leading" secondItem="Y3D-LC-66G" secondAttribute="leadingMargin" id="cI7-YS-4Lp"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="6pG-XX-G9G" secondAttribute="trailing" id="hAg-AF-nQZ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="azW-bJ-LPi" secondAttribute="trailing" id="s4U-eW-WW1"/>
+                            <constraint firstItem="ppP-lX-CGk" firstAttribute="trailing" secondItem="Y3D-LC-66G" secondAttribute="trailingMargin" id="vEb-3b-F8Q"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="3qL-GU-RZz"/>
+                        <viewLayoutGuide key="safeArea" id="qq6-ly-xma"/>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="Vzw-zu-MBF"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <exclude reference="RhP-uI-5QW"/>
+                                <include reference="Vzw-zu-MBF"/>
+                            </mask>
+                        </variation>
                     </view>
+                    <connections>
+                        <outlet property="enableBiometricButton" destination="6pG-XX-G9G" id="roY-wJ-I8L"/>
+                        <outlet property="logoImageView" destination="dmQ-x9-4xv" id="oVV-e1-V7f"/>
+                        <outlet property="skipBiometricButton" destination="ppP-lX-CGk" id="Dsl-VA-urd"/>
+                        <outlet property="titleLabel" destination="1sf-VT-6yn" id="KZ3-gq-fY8"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NeT-Rd-vIM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-233" y="-46"/>
+            <point key="canvasLocation" x="-233.33333333333334" y="-46.205357142857139"/>
         </scene>
     </scenes>
+    <resources>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

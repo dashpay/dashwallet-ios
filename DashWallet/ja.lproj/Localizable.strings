@@ -246,7 +246,13 @@
 "Enable advanced features?" = "高度な機能を有効にしますか？";
 
 /* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "通知の受け取りを有効にする";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
 "enter" = "入力する";
@@ -343,6 +349,12 @@
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "マスターノードの保有アドレス";
@@ -604,6 +616,9 @@
 
 /* No comment provided by engineer. */
 "size:" = "サイズ：";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "SMSは現在利用できません．";

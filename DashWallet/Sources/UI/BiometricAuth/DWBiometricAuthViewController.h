@@ -21,7 +21,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBiometricAuthViewController;
+
+@protocol DWBiometricAuthViewControllerDelegate <NSObject>
+
+- (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller;
+
+@end
+
 @interface DWBiometricAuthViewController : UIViewController <DWRootNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWBiometricAuthViewControllerDelegate> delegate;
 
 + (instancetype)controller;
 

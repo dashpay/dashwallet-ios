@@ -19,21 +19,66 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define SHOULD_SIMULATE_BIOMETRICS 1
+
+@interface DWBiometricAuthModel ()
+
+@property (null_resettable, nonatomic, strong) LAContext *context;
+
+@end
+
 @implementation DWBiometricAuthModel
 
 + (BOOL)biometricAuthenticationAvailable {
+#if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
+    return YES;
+#else
     LAContext *context = [[LAContext alloc] init];
     BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
 
     return available;
+#endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
 - (LABiometryType)biometryType {
-    LAContext *context = [[LAContext alloc] init];
+#if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
+    return LABiometryTypeTouchID;
+#else
+    LAContext *context = self.context;
     BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
     NSAssert(available, @"LAPolicyDeviceOwnerAuthenticationWithBiometrics should be available");
 
     return context.biometryType;
+#endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
+}
+
+- (LAContext *)context {
+    if (!_context) {
+        _context = [[LAContext alloc] init];
+    }
+    return _context;
+}
+
+- (void)enableBiometricAuth:(void(^)(void))completion {
+    NSString *reason = nil;
+    switch (self.context.biometryType) {
+        case LABiometryTypeTouchID:
+            reason = NSLocalizedString(@"Enable Touch ID", nil);
+            break;
+        case LABiometryTypeFaceID:
+            reason = NSLocalizedString(@"Enable Face ID", nil);
+            break;
+        default:
+            reason = @" ";
+            break;
+    }
+    
+    [self.context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                 localizedReason:reason
+                           reply:^(BOOL success, NSError * _Nullable error) {
+                               // TODO: discuss how biometric Auth should work
+                               dispatch_async(dispatch_get_main_queue(), completion);
+    }];
 }
 
 @end

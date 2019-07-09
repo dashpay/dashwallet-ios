@@ -246,7 +246,13 @@
 "Enable advanced features?" = "İleri seviye özellikler etkinleştirilsin mi?";
 
 /* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Bildirim almayı etkinleştir";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
 "enter" = "gir";
@@ -343,6 +349,12 @@
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "anadüğüm barındırma adresi";
@@ -604,6 +616,9 @@
 
 /* No comment provided by engineer. */
 "size:" = "boyut:";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "kısa mesaj şu anda kullanılabilir değil";

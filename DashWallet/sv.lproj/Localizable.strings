@@ -246,7 +246,13 @@
 "Enable advanced features?" = "Enable advanced features?";
 
 /* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Enable receive notifications";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
 "enter" = "enter";
@@ -343,6 +349,12 @@
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
@@ -604,6 +616,9 @@
 
 /* No comment provided by engineer. */
 "size:" = "size:";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "sms är inte tillgängligt för tillfället";

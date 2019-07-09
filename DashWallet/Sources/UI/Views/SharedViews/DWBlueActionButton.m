@@ -232,21 +232,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Styles
 
 + (UIColor *)backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    if (usedOnDarkBackground) {
-        return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
-    }
-    else {
-        return inverted ? [UIColor whiteColor] : [UIColor dw_dashBlueColor];
-    }
+    return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
 }
 
 + (UIColor *)highlightedBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    if (usedOnDarkBackground) {
-        return [UIColor clearColor];
-    }
-    else {
-        return [UIColor whiteColor];
-    }
+    return [UIColor clearColor];
 }
 
 + (UIColor *)disabledBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -272,7 +262,7 @@ NS_ASSUME_NONNULL_BEGIN
         return [UIColor dw_dashBlueColor];
     }
     else {
-        return inverted ? [UIColor dw_lightTitleColor] : [UIColor dw_dashBlueColor];
+        return inverted ? [[UIColor dw_dashBlueColor] colorWithAlphaComponent:0.5] : [UIColor dw_dashBlueColor];
     }
 }
 

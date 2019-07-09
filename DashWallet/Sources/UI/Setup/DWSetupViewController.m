@@ -20,12 +20,13 @@
 #import "DWBiometricAuthViewController.h"
 #import "DWCreateNewWalletViewController.h"
 #import "DWRootModel.h"
+#import "DWBiometricAuthModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
-@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate>
+@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate, DWBiometricAuthViewControllerDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
@@ -98,8 +99,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller {
     [self.navigationController popViewControllerAnimated:NO];
 
-    DWBiometricAuthViewController *biometricController = [DWBiometricAuthViewController controller];
-    [self.navigationController pushViewController:biometricController animated:YES];
+    if (DWBiometricAuthModel.biometricAuthenticationAvailable) {
+        DWBiometricAuthViewController *biometricController = [DWBiometricAuthViewController controller];
+        biometricController.delegate = self;
+        [self.navigationController pushViewController:biometricController animated:YES];
+    }
+}
+
+#pragma mark - DWBiometricAuthViewControllerDelegate
+
+- (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller {
+    [self.navigationController popViewControllerAnimated:NO];
 }
 
 #pragma mark - DWRootNavigationFullscreenable
