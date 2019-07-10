@@ -2021,6 +2021,7 @@
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
 				2A8F420721BED08700858B91 /* Run Script - DashSync Version */,
+				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
 				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
@@ -2372,6 +2373,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		2A4431D722D6391F009BAF7F /* Run Script - clang-format */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - clang-format";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        find \"$SUBDIR\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n        find \"$SUBDIR\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n        find \"$SUBDIR\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n    done\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 		2A8F420721BED08700858B91 /* Run Script - DashSync Version */ = {
 			isa = PBXShellScriptBuildPhase;

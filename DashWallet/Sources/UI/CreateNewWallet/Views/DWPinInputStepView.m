@@ -76,7 +76,8 @@ static CGFloat const VERTICAL_PADDING = 16.0;
         [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
         [inputView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-        [inputView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor constant:VERTICAL_PADDING],
+        [inputView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                            constant:VERTICAL_PADDING],
         [inputView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     ]];
 }

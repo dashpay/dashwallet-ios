@@ -70,9 +70,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
         self.logoLayoutViewBottomContraint.constant = CGRectGetHeight([UIScreen mainScreen].bounds) -
                                                       CGRectGetMinY(self.createWalletButton.frame);
-        [UIView animateWithDuration:ANIMATION_DURATION animations:^{
-            [self.view layoutIfNeeded];
-        }];
+        [UIView animateWithDuration:ANIMATION_DURATION
+                         animations:^{
+                             [self.view layoutIfNeeded];
+                         }];
     }
 }
 

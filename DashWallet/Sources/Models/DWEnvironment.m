@@ -133,18 +133,19 @@
             break;
     }
     if (![destinationChain hasAWallet]) {
-        [wallet copyForChain:destinationChain completion:^(DSWallet *_Nullable copiedWallet) {
-            if (copiedWallet) {
-                [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
-                [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
-                [self reset];
-                [self.currentChainManager.peerManager connect];
-                completion(YES);
-            }
-            else {
-                completion(NO);
-            }
-        }];
+        [wallet copyForChain:destinationChain
+                  completion:^(DSWallet *_Nullable copiedWallet) {
+                      if (copiedWallet) {
+                          [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
+                          [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
+                          [self reset];
+                          [self.currentChainManager.peerManager connect];
+                          completion(YES);
+                      }
+                      else {
+                          completion(NO);
+                      }
+                  }];
     }
     else {
         [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
