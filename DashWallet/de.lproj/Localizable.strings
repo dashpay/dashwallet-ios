@@ -318,6 +318,9 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Wir haben festgestellt, dass die 12 Worte der Passphrase in einer vorherigen Version der Wallet nicht korrekt dargestellt wurden. Schreiben Sie die vollständige Passphrase bitte erneut ab.";
 
 /* No comment provided by engineer. */
+"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
@@ -328,6 +331,9 @@
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP-Adresse/Port:";
+
+/* No comment provided by engineer. */
+"It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Dash-Adresse zu erhalten. Dash werden so an dieses Wallet geschickt.";
@@ -624,6 +630,9 @@
 "show phrase" = "Wiederherstellungs-Wortfolge anzeigen";
 
 /* No comment provided by engineer. */
+"Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
 "size:" = "Größe:";
 
 /* No comment provided by engineer. */
@@ -673,6 +682,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Diese Transaktion wird nach mehreren Minuten abgeschlossen sein.";
@@ -796,6 +808,12 @@
 
 /* No comment provided by engineer. */
 "watch only" = "Nur Betrachten";
+
+/* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Wir haben festgestellt, dass Dashwallet während der Migration abgestürzt ist. Ein erneutes Scannen der Blockchain sollte dieses Problem lösen. Zum erneuten Scannen sollte WiFi eingeschaltet werden und es dauert etwa eine halbe Stunde. Dein Guthaben sollte wieder sichtbar sein, nachdem der Synchronisierungsvorgang abgeschlossen wurde.";

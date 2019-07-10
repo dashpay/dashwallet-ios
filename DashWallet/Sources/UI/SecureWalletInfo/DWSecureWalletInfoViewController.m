@@ -17,7 +17,10 @@
 
 #import "DWSecureWalletInfoViewController.h"
 
+#import "DWBackupInfoViewController.h"
 #import "UIFont+DWFont.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecureWalletInfoViewController ()
 
@@ -50,6 +53,8 @@
 #pragma mark - Actions
 
 - (IBAction)secureNowButtonAction:(id)sender {
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controller];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)skipButtonAction:(id)sender {
@@ -72,3 +77,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

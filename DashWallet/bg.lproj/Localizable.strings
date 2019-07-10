@@ -318,6 +318,9 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "В предишната версия на Dashwallet, когато първоначално се показва фразата за възстановяване на това устройство, установихме, че това приложение не показва правилно всичките 12 думи за възстановяване. Моля, запишете отново пълната си фраза за възстановяване.";
 
 /* No comment provided by engineer. */
+"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
@@ -328,6 +331,9 @@
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP адрес/порт:";
+
+/* No comment provided by engineer. */
+"It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Нека другите да сканират този QR код, за да получат вашия dash адрес. Всеки може да изпрати dash до портфейла Ви, като ги прехвърли на Вашия адрес.";
@@ -624,6 +630,9 @@
 "show phrase" = "покажи фраза";
 
 /* No comment provided by engineer. */
+"Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
 "size:" = "размер:";
 
 /* No comment provided by engineer. */
@@ -673,6 +682,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Тази транзакция може да отнеме няколко минути, за да приключи.";
@@ -796,6 +808,12 @@
 
 /* No comment provided by engineer. */
 "watch only" = "режим на гледане";
+
+/* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Устоановихме, че Dashwallet се е повредил по време на миграцията. Повторното сканиране на блок веригата може да реши този проблем или опитайте отново. Повторното сканиране е препоръчително да се извърши чрез wifi и може да отнеме до половин час. Вашите средства ще бъдат налични след като синхронизацията приключи. ";

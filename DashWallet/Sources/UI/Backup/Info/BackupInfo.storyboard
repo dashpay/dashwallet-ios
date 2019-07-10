@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="D70-fc-SOh">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Backup Info View Controller-->
+        <scene sceneID="XMA-Td-Jcb">
+            <objects>
+                <viewController id="D70-fc-SOh" customClass="DWBackupInfoViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="O8x-wa-1SN">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="3CN-PX-rs2" customClass="DWCenteredTableView">
+                                <rect key="frame" x="20" y="44" width="374" height="744"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <sections/>
+                                <connections>
+                                    <outlet property="dataSource" destination="D70-fc-SOh" id="89R-pJ-zRu"/>
+                                    <outlet property="delegate" destination="D70-fc-SOh" id="SK9-WH-cVQ"/>
+                                </connections>
+                            </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J0k-fo-yHY" userLabel="Show Recovery Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="804" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="D0R-Cv-7bx"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="showRecoveryPhraseButtonAction:" destination="D70-fc-SOh" eventType="touchUpInside" id="plZ-j1-74o"/>
+                                </connections>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="3CN-PX-rs2" firstAttribute="leading" secondItem="O8x-wa-1SN" secondAttribute="leadingMargin" id="1De-Et-rCc"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="3CN-PX-rs2" secondAttribute="trailing" id="46g-ir-tMx"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="J0k-fo-yHY" secondAttribute="bottom" constant="4" id="5U5-Rg-Pz0"/>
+                            <constraint firstItem="J0k-fo-yHY" firstAttribute="leading" secondItem="O8x-wa-1SN" secondAttribute="leadingMargin" id="8RS-fr-Xbs"/>
+                            <constraint firstItem="J0k-fo-yHY" firstAttribute="trailing" secondItem="O8x-wa-1SN" secondAttribute="trailingMargin" id="DBZ-WD-1Vt"/>
+                            <constraint firstItem="3CN-PX-rs2" firstAttribute="top" secondItem="GYD-3W-Voi" secondAttribute="top" id="L0f-bB-EoM"/>
+                            <constraint firstItem="J0k-fo-yHY" firstAttribute="top" secondItem="3CN-PX-rs2" secondAttribute="bottom" constant="16" id="dTV-DK-VNB"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="J0k-fo-yHY" secondAttribute="bottom" constant="20" id="fub-pf-dCj"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="GYD-3W-Voi"/>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="fub-pf-dCj"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <exclude reference="5U5-Rg-Pz0"/>
+                                <include reference="fub-pf-dCj"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="showRecoveryPhraseButton" destination="J0k-fo-yHY" id="a2t-Du-HTW"/>
+                        <outlet property="tableView" destination="3CN-PX-rs2" id="Hb0-Or-jnT"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="KTx-qF-ndL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-436" y="48"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

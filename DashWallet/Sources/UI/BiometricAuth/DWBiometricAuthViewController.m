@@ -20,6 +20,8 @@
 #import "DWBiometricAuthModel.h"
 #import "UIFont+DWFont.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface DWBiometricAuthViewController ()
 
 @property (nonatomic, strong) DWBiometricAuthModel *model;
@@ -104,3 +106,5 @@
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

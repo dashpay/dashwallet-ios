@@ -318,6 +318,9 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "이전 버전의 대시 지갑에서 이 디바이스에 암호 문장을 처음 표시 할 때, 이 앱이 12 개의 모든 첫 단어들을 올바르게 표시하지 못했음을 확인했습니다. 전체 암호 문장을 다시 적어주십시오.";
 
 /* No comment provided by engineer. */
+"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
@@ -328,6 +331,9 @@
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP 주소/포트:";
+
+/* No comment provided by engineer. */
+"It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "다른 사람이 QR코드를 스캔해서 당신의 대시 주소를 확인할 수 있습니다. 당신의 대시 주소를 통해 누구나 당신의 지갑으로 대시를 보낼 수 있습니다.";
@@ -624,6 +630,9 @@
 "show phrase" = "문구 보기";
 
 /* No comment provided by engineer. */
+"Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
 "size:" = "크기:";
 
 /* No comment provided by engineer. */
@@ -673,6 +682,9 @@
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "이 거래가 완료되는 데에는 수 분이 소요될 수 있습니다.";
@@ -796,6 +808,12 @@
 
 /* No comment provided by engineer. */
 "watch only" = "읽기 전용";
+
+/* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑이 이동하던 중 충돌이 발생하였음을 감지하였습니다. 블록체인 재스캔을 통해 이 문제를 해결하거나 다시 시도하십시오. 재스캔은 WIFI 연결 상태에서 시도하실 것을 권장하며, 약 30분 가량이 소요됩니다. 동기화 과정이 완료되면 당신의 자금 역시 이용할 수 있습니다. ";
