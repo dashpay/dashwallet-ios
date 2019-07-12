@@ -87,6 +87,9 @@
 "available" = "available";
 
 /* No comment provided by engineer. */
+"Backup Wallet" = "Backup Wallet";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
@@ -166,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "ยืนยันในกลุ่ม #%d";
+
+/* No comment provided by engineer. */
+"Continue" = "Continue";
 
 /* No comment provided by engineer. */
 "copied" = "คัดลอก";
@@ -490,6 +496,9 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
+
+/* No comment provided by engineer. */
+"Please write this down" = "Please write this down";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";

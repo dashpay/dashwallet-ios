@@ -23,6 +23,9 @@
 #import "DWRootModel.h"
 #import "DWSecureWalletInfoViewController.h"
 
+// TODO: rm
+#import "DWSeedPhraseViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
@@ -90,6 +93,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
+    DWSeedPhraseViewController *c = [DWSeedPhraseViewController controller];
+    [self.navigationController pushViewController:c animated:YES];
 }
 
 #pragma mark - DWCreateNewWalletViewControllerDelegate

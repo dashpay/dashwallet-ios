@@ -87,6 +87,9 @@
 "available" = "available";
 
 /* No comment provided by engineer. */
+"Backup Wallet" = "Backup Wallet";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "恢复密语错误";
 
 /* No comment provided by engineer. */
@@ -166,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "在区块#%d中已确认";
+
+/* No comment provided by engineer. */
+"Continue" = "Continue";
 
 /* No comment provided by engineer. */
 "copied" = "已复制";
@@ -490,6 +496,9 @@
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
+
+/* No comment provided by engineer. */
+"Please write this down" = "Please write this down";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";

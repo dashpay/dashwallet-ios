@@ -76,9 +76,11 @@
         <key>UICTFontTextStyleCaption1</key>
         <dict>
             <key>fontName</key>
-            <string>Montserrat-Light</string>
+            <string>Montserrat-Regular</string>
             <key>fontSize</key>
-            <integer>12</integer>
+            <integer>18</integer>
+            <key>maxSize</key>
+            <integer>29</integer>
         </dict>
         <key>UICTFontTextStyleCaption2</key>
         <dict>

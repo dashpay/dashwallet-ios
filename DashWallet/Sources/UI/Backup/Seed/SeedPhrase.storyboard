@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="fi8-Yb-ggh">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Seed Phrase View Controller-->
+        <scene sceneID="IBr-7z-IA5">
+            <objects>
+                <viewController id="fi8-Yb-ggh" customClass="DWSeedPhraseViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="emA-MQ-KiV">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MDF-Sk-791">
+                                <rect key="frame" x="20" y="44" width="374" height="744"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                            </scrollView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0wf-eo-UfD" userLabel="Continue Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="804" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="VBG-aT-UXz"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="0wf-eo-UfD" firstAttribute="leading" secondItem="emA-MQ-KiV" secondAttribute="leadingMargin" id="2FI-Pi-q6G"/>
+                            <constraint firstItem="MDF-Sk-791" firstAttribute="leading" secondItem="emA-MQ-KiV" secondAttribute="leadingMargin" id="8EG-KL-OsQ"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="0wf-eo-UfD" secondAttribute="bottom" constant="20" id="CDK-zR-MyT"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="0wf-eo-UfD" secondAttribute="bottom" constant="4" id="awO-Fj-k2h"/>
+                            <constraint firstItem="0wf-eo-UfD" firstAttribute="top" secondItem="MDF-Sk-791" secondAttribute="bottom" constant="16" id="pFd-va-39A"/>
+                            <constraint firstItem="MDF-Sk-791" firstAttribute="trailing" secondItem="emA-MQ-KiV" secondAttribute="trailingMargin" id="sLh-iM-sgF"/>
+                            <constraint firstItem="MDF-Sk-791" firstAttribute="top" secondItem="TFc-WA-0wB" secondAttribute="top" id="vrC-Af-8Ga"/>
+                            <constraint firstItem="0wf-eo-UfD" firstAttribute="trailing" secondItem="emA-MQ-KiV" secondAttribute="trailingMargin" id="xLG-TL-u4b"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="TFc-WA-0wB"/>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="CDK-zR-MyT"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=regular">
+                            <mask key="constraints">
+                                <include reference="CDK-zR-MyT"/>
+                                <exclude reference="awO-Fj-k2h"/>
+                            </mask>
+                        </variation>
+                    </view>
+                    <connections>
+                        <outlet property="continueButton" destination="0wf-eo-UfD" id="YWX-4M-IhO"/>
+                        <outlet property="scrollView" destination="MDF-Sk-791" id="Ofh-7X-6ll"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cwj-PJ-7UQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

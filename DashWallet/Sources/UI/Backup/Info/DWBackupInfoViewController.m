@@ -19,6 +19,7 @@
 
 #import "DWBackupInfoCell.h"
 #import "DWBackupInfoHeaderView.h"
+#import "DWSeedPhraseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,6 +50,8 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
 #pragma mark - Actions
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
+    DWSeedPhraseViewController *controller = [DWSeedPhraseViewController controller];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - UITableViewDataSource
@@ -81,6 +84,8 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
 #pragma mark - Private
 
 - (void)setupView {
+    self.title = NSLocalizedString(@"Backup Wallet", nil);
+
     UINib *nib = [UINib nibWithNibName:CELL_ID bundle:nil];
     NSParameterAssert(nib);
     [self.tableView registerNib:nib forCellReuseIdentifier:CELL_ID];

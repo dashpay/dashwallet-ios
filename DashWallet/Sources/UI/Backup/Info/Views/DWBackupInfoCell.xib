@@ -29,6 +29,7 @@
                     </imageView>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vzq-YV-0zv">
                         <rect key="frame" x="34" y="0.0" width="286" height="27.5"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                         <color key="textColor" name="SecondaryTextColor"/>
                         <nil key="highlightedColor"/>
