@@ -17,47 +17,34 @@
 
 #import "DWBackupInfoHeaderView.h"
 
+#import "DevicesCompatibility.h"
 #import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+static CGFloat DescriptionBottomPadding(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 28.0;
+    }
+    else {
+        return 56.0;
+    }
+}
+
 @interface DWBackupInfoHeaderView ()
 
-@property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *descriptionBottomPadding;
 
 @end
 
 @implementation DWBackupInfoHeaderView
 
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
+- (void)awakeFromNib {
+    [super awakeFromNib];
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-
-- (void)commonInit {
-    [[NSBundle mainBundle] loadNibNamed:NSStringFromClass([self class]) owner:self options:nil];
-    [self addSubview:self.contentView];
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-
-    [NSLayoutConstraint activateConstraints:@[
-        [self.contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [self.contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [self.contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    ]];
+    self.descriptionBottomPadding.constant = DescriptionBottomPadding();
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];

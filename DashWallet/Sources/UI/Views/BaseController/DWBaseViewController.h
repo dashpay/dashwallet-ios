@@ -15,25 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
-#import "DWRootNavigationFullscreenable.h"
+#import "DWDeviceAdaptableController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBiometricAuthViewController;
+@interface DWBaseViewController : UIViewController <DWDeviceAdaptableController>
 
-@protocol DWBiometricAuthViewControllerDelegate <NSObject>
-
-- (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller;
-
-@end
-
-@interface DWBiometricAuthViewController : DWBaseViewController <DWRootNavigationFullscreenable>
-
-@property (nullable, nonatomic, weak) id<DWBiometricAuthViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
++ (CGFloat)deviceSpecificBottomPadding;
 
 @end
 

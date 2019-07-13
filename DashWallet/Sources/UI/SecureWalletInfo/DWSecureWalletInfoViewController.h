@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseViewController.h"
 
 #import "DWRootNavigationFullscreenable.h"
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWSecureWalletInfoViewController : UIViewController <DWRootNavigationFullscreenable>
+@interface DWSecureWalletInfoViewController : DWBaseViewController <DWRootNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWSecureWalletInfoViewControllerDelegate> delegate;
 

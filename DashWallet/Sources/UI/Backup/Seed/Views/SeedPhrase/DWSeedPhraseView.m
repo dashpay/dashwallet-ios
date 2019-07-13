@@ -79,7 +79,7 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 }
 
 static NSUInteger MaxWordsInARow(void) {
-    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+    if (IS_IPHONE_5_OR_LESS) {
         return NSUIntegerMax;
     }
     else {
@@ -281,7 +281,7 @@ static NSUInteger MaxWordsInARow(void) {
     for (DWSeedPhraseRow *row in rows) {
         CGFloat x = (width - row.width) / 2.0;
         NSAssert(x >= 0.0, @"Invalid layout: row width > view width");
-        
+
         for (NSUInteger i = 0; i < row.wordViews.count; i++) {
             DWSeedWordView *const wordView = row.wordViews[i];
             const CGSize size = [row.wordSizes[i] CGSizeValue];

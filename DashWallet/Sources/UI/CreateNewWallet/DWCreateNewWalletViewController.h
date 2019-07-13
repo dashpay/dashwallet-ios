@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWCreateNewWalletViewController : UIViewController
+@interface DWCreateNewWalletViewController : DWBaseViewController
 
 @property (nullable, nonatomic, weak) id<DWCreateNewWalletViewControllerDelegate> delegate;
 

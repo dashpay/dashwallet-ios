@@ -20,6 +20,7 @@
 #import "DWCreateNewWalletModel.h"
 #import "DWNumberKeyboard.h"
 #import "DWPinView.h"
+#import "DevicesCompatibility.h"
 #import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet DWPinView *pinView;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet DWNumberKeyboard *keyboardView;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
@@ -87,6 +89,17 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.pinView configureWithKeyboard:self.keyboardView];
     self.pinView.delegate = self;
+}
+
+#pragma mark - Configuration
+
++ (CGFloat)deviceSpecificBottomPadding {
+    if (IS_IPAD) {
+        return 24.0;
+    }
+    else {
+        return 4.0;
+    }
 }
 
 @end

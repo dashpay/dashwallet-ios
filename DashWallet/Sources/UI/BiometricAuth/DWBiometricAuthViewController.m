@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *enableBiometricButton;
 @property (strong, nonatomic) IBOutlet UIButton *skipBiometricButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
 

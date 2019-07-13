@@ -61,6 +61,8 @@ static CGFloat const VERTICAL_PADDING = 16.0;
     titleLabel.textColor = [UIColor dw_darkTitleColor];
     titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
     titleLabel.textAlignment = NSTextAlignmentCenter;
+    titleLabel.adjustsFontSizeToFitWidth = YES;
+    titleLabel.minimumScaleFactor = 0.5;
     [self addSubview:titleLabel];
     self.titleLabel = titleLabel;
 

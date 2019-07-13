@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedPhraseViewController : UIViewController
+@interface DWPreviewSeedPhraseViewController : UIViewController
 
 + (instancetype)controller;
 

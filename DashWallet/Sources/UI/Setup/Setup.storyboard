@@ -72,7 +72,6 @@
                             <constraint firstItem="8ou-NV-Pbn" firstAttribute="trailing" secondItem="CcN-xl-I4O" secondAttribute="trailingMargin" id="JWd-jo-Ps6"/>
                             <constraint firstItem="t1r-hq-hGl" firstAttribute="top" secondItem="CcN-xl-I4O" secondAttribute="top" id="Ntm-1z-4oE"/>
                             <constraint firstAttribute="trailingMargin" secondItem="ZuB-Um-2ug" secondAttribute="trailing" id="O26-UI-DMI"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="8ou-NV-Pbn" secondAttribute="bottom" constant="20" id="St1-nh-eRp"/>
                             <constraint firstAttribute="bottomMargin" secondItem="8ou-NV-Pbn" secondAttribute="bottom" constant="4" id="WS4-F1-bRH"/>
                             <constraint firstAttribute="bottom" secondItem="RtN-k1-BzT" secondAttribute="bottom" id="cDH-hf-sIY"/>
                             <constraint firstItem="RtN-k1-BzT" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leading" id="dQE-1b-vbP"/>
@@ -81,19 +80,9 @@
                             <constraint firstAttribute="trailing" secondItem="t1r-hq-hGl" secondAttribute="trailing" id="zIV-Q9-QfE"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="3fa-gZ-Ozx"/>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="St1-nh-eRp"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=regular">
-                            <mask key="constraints">
-                                <include reference="St1-nh-eRp"/>
-                                <exclude reference="WS4-F1-bRH"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
+                        <outlet property="contentBottomConstraint" destination="WS4-F1-bRH" id="hq3-kj-rcj"/>
                         <outlet property="createWalletButton" destination="ZuB-Um-2ug" id="GQF-wX-DOl"/>
                         <outlet property="logoLayoutViewBottomContraint" destination="cDH-hf-sIY" id="5SH-fu-toN"/>
                         <outlet property="recoverWalletButton" destination="8ou-NV-Pbn" id="ZSw-31-5fe"/>

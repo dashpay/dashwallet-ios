@@ -24,7 +24,7 @@
 #import "DWSecureWalletInfoViewController.h"
 
 // TODO: rm
-#import "DWSeedPhraseViewController.h"
+#import "DWPreviewSeedPhraseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +38,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) IBOutlet UIButton *createWalletButton;
 @property (strong, nonatomic) IBOutlet UIButton *recoverWalletButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *logoLayoutViewBottomContraint;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
@@ -93,7 +94,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
-    DWSeedPhraseViewController *c = [DWSeedPhraseViewController controller];
+    DWPreviewSeedPhraseViewController *c = [DWPreviewSeedPhraseViewController controller];
     [self.navigationController pushViewController:c animated:YES];
 }
 

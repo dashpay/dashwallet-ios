@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWBaseViewController.h"
 
 #import "DWRootNavigationFullscreenable.h"
 
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWRootModel;
 
-@interface DWSetupViewController : UIViewController <DWRootNavigationFullscreenable>
+@interface DWSetupViewController : DWBaseViewController <DWRootNavigationFullscreenable>
 
 + (instancetype)controllerWithModel:(DWRootModel *)model;
 

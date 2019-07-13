@@ -19,11 +19,13 @@
 
 #import "DWBackupInfoCell.h"
 #import "DWBackupInfoHeaderView.h"
-#import "DWSeedPhraseViewController.h"
+#import "DWPreviewSeedPhraseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const CELL_ID = @"DWBackupInfoCell";
+
+static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @interface DWBackupInfoViewController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -31,6 +33,7 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UIButton *showRecoveryPhraseButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
@@ -47,10 +50,32 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
     [self setupView];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.tableView flashScrollIndicators];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
+    UIView *headerView = self.tableView.tableHeaderView;
+    if (headerView != nil) {
+        CGSize size = [headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+        if (headerView.frame.size.height != size.height) {
+            CGRect frame = headerView.frame;
+            frame.size.height = size.height;
+            headerView.frame = frame;
+
+            self.tableView.tableHeaderView = headerView;
+        }
+    }
+}
+
 #pragma mark - Actions
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
-    DWSeedPhraseViewController *controller = [DWSeedPhraseViewController controller];
+    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controller];
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -69,12 +94,6 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
     return cell;
 }
 
-#pragma mark - UITableViewDelegate
-
-- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    return [[DWBackupInfoHeaderView alloc] init];
-}
-
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
@@ -89,6 +108,7 @@ static NSString *const CELL_ID = @"DWBackupInfoCell";
     UINib *nib = [UINib nibWithNibName:CELL_ID bundle:nil];
     NSParameterAssert(nib);
     [self.tableView registerNib:nib forCellReuseIdentifier:CELL_ID];
+    self.tableView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
     [self.showRecoveryPhraseButton setTitle:NSLocalizedString(@"Show Recovery Phrase", nil)
                                    forState:UIControlStateNormal];

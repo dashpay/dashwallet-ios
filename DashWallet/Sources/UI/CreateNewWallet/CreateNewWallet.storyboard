@@ -29,8 +29,9 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="90"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                             </view>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This PIN will be required to unlock your app everytime when you use it." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GGf-Za-9Cg">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This PIN will be required to unlock your app everytime when you use it." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GGf-Za-9Cg">
                                                 <rect key="frame" x="0.0" y="105.99999999999997" width="343" height="42.333333333333343"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                 <color key="textColor" name="SecondaryTextColor"/>
                                                 <nil key="highlightedColor"/>
@@ -71,23 +72,12 @@
                             <constraint firstItem="v2G-4u-CtF" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="UEQ-JE-hj7"/>
                             <constraint firstItem="q99-sn-r0g" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="kTa-PY-Fls"/>
                             <constraint firstAttribute="trailingMargin" secondItem="v2G-4u-CtF" secondAttribute="trailing" id="kb9-CR-E8Q"/>
-                            <constraint firstAttribute="bottomMargin" secondItem="q99-sn-r0g" secondAttribute="bottom" constant="20" id="nxf-Cv-dxm"/>
                             <constraint firstItem="q99-sn-r0g" firstAttribute="top" secondItem="v2G-4u-CtF" secondAttribute="bottom" id="rzO-TL-Hxu"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="sHo-4f-2nX"/>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="nxf-Cv-dxm"/>
-                            </mask>
-                        </variation>
-                        <variation key="heightClass=regular-widthClass=regular">
-                            <mask key="constraints">
-                                <exclude reference="LO1-hG-b3x"/>
-                                <include reference="nxf-Cv-dxm"/>
-                            </mask>
-                        </variation>
                     </view>
                     <connections>
+                        <outlet property="contentBottomConstraint" destination="LO1-hG-b3x" id="O4f-rP-Yds"/>
                         <outlet property="descriptionLabel" destination="GGf-Za-9Cg" id="xIn-72-una"/>
                         <outlet property="keyboardView" destination="q99-sn-r0g" id="lTX-K9-9QX"/>
                         <outlet property="pinView" destination="wky-gc-BHo" id="VVJ-hu-3Lh"/>
