@@ -17,13 +17,23 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWSeedPhraseType.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedWordCollectionCell : UICollectionViewCell
+@class DWSeedWordModel;
 
-@property (nullable, nonatomic, copy) NSString *text;
+@interface DWSeedWordView : UIControl
 
-+ (CGSize)sizeForText:(NSString *)text maxWidth:(CGFloat)maxWidth;
+@property (nullable, nonatomic, strong) DWSeedWordModel *model;
+
+- (instancetype)initWithType:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
++ (CGSize)sizeForModel:(DWSeedWordModel *)model maxWidth:(CGFloat)maxWidth type:(DWSeedPhraseType)type;
 
 @end
 

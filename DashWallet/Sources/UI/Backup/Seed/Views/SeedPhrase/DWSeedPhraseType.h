@@ -15,16 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#ifndef DWSeedPhraseType_h
+#define DWSeedPhraseType_h
 
-NS_ASSUME_NONNULL_BEGIN
+typedef NS_ENUM(NSUInteger, DWSeedPhraseType) {
+    DWSeedPhraseType_Preview,
+    DWSeedPhraseType_Select,
+};
 
-@class DWSeedPhraseModel;
-
-@interface DWSeedPhraseView : UIView
-
-@property (nullable, nonatomic, strong) DWSeedPhraseModel *model;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWSeedPhraseType_h */

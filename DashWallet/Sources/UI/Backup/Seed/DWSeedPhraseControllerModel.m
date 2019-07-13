@@ -15,29 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWSeedPhraseModel.h"
+#import "DWSeedPhraseControllerModel.h"
 
-#import <DashSync/DashSync.h>
+#import "DWSeedPhraseModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWSeedPhraseModel
+@implementation DWSeedPhraseControllerModel
 
-- (instancetype)initAsNewWalletWithTitle:(NSString *)title {
-    // TODO: correct language type
-    NSString *seed = [DSWallet generateRandomSeedForLanguage:DSBIP39Language_English];
-    return [self initWithSeed:seed title:title];
-}
-
-- (instancetype)initWithSeed:(NSString *)seed title:(NSString *)title {
-    NSParameterAssert(seed);
-
+- (instancetype)initWithSubTitle:(NSString *)subTitle {
     self = [super init];
     if (self) {
-        _words = [seed componentsSeparatedByString:@" "];
-        NSAssert(_words.count > 0, @"Invalid seed phrase");
-
-        _title = [title copy];
+        _subTitle = [subTitle copy];
+        _seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
     }
     return self;
 }

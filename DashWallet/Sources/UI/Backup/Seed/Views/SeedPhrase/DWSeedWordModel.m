@@ -15,19 +15,21 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWSeedWordModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedPhraseModel : NSObject
+@implementation DWSeedWordModel
 
-@property (readonly, nonatomic, copy) NSArray<NSString *> *words;
-@property (readonly, nonatomic, copy) NSString *title;
+- (instancetype)initWithWord:(NSString *)word {
+    NSParameterAssert(word);
 
-- (instancetype)initAsNewWalletWithTitle:(NSString *)title;
-- (instancetype)initWithSeed:(NSString *)seed title:(NSString *)title NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
+    self = [super init];
+    if (self) {
+        _word = word;
+    }
+    return self;
+}
 
 @end
 

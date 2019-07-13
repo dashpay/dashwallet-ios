@@ -17,8 +17,8 @@
 
 #import "DWSeedPhraseViewController.h"
 
-#import "DWSeedPhraseModel.h"
-#import "DWSeedPhraseView.h"
+#import "DWSeedPhraseControllerModel.h"
+#import "DWSeedPhraseTitledView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,12 +26,12 @@ static CGFloat const COMPACT_PADDING = 16.0;
 
 @interface DWSeedPhraseViewController ()
 
-@property (nonatomic, strong) DWSeedPhraseModel *model;
+@property (nonatomic, strong) DWSeedPhraseControllerModel *model;
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
 
-@property (nonatomic, strong) DWSeedPhraseView *seedPhraseView;
+@property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseViewTopConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseViewBottomConstraint;
 
@@ -43,7 +43,7 @@ static CGFloat const COMPACT_PADDING = 16.0;
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"SeedPhrase" bundle:nil];
     DWSeedPhraseViewController *controller = [storyboard instantiateInitialViewController];
     NSString *title = NSLocalizedString(@"Please write this down", nil);
-    controller.model = [[DWSeedPhraseModel alloc] initAsNewWalletWithTitle:title];
+    controller.model = [[DWSeedPhraseControllerModel alloc] initWithSubTitle:title];
 
     return controller;
 }
@@ -62,12 +62,13 @@ static CGFloat const COMPACT_PADDING = 16.0;
     [self.continueButton setTitle:NSLocalizedString(@"Continue", nil)
                          forState:UIControlStateNormal];
 
-    DWSeedPhraseView *seedPhraseView = [[DWSeedPhraseView alloc] initWithFrame:CGRectZero];
+    DWSeedPhraseTitledView *seedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Preview];
     seedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
     seedPhraseView.model = self.model;
     [self.scrollView addSubview:seedPhraseView];
 
-    self.seedPhraseViewTopConstraint = [seedPhraseView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor constant:COMPACT_PADDING];
+    self.seedPhraseViewTopConstraint = [seedPhraseView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor
+                                                                                constant:COMPACT_PADDING];
     self.seedPhraseViewBottomConstraint = [seedPhraseView.bottomAnchor constraintEqualToAnchor:self.scrollView.bottomAnchor];
 
     [NSLayoutConstraint activateConstraints:@[
