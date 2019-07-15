@@ -798,6 +798,9 @@
 "verified, waiting for confirmation" = "伝播確認済、承認を待機中";
 
 /* No comment provided by engineer. */
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */

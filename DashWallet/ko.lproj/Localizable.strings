@@ -798,6 +798,9 @@
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
 
 /* No comment provided by engineer. */
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */

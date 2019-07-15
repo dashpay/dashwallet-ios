@@ -798,6 +798,9 @@
 "verified, waiting for confirmation" = "己核實，正等待確認";
 
 /* No comment provided by engineer. */
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */

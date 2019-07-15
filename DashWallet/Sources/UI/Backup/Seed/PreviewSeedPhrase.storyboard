@@ -46,7 +46,7 @@
                         <constraints>
                             <constraint firstItem="LWn-cx-hoh" firstAttribute="trailing" secondItem="emA-MQ-KiV" secondAttribute="trailingMargin" id="7dq-VW-eUm"/>
                             <constraint firstItem="TFc-WA-0wB" firstAttribute="bottom" secondItem="LWn-cx-hoh" secondAttribute="bottom" constant="4" id="7tC-k0-ig0"/>
-                            <constraint firstItem="LWn-cx-hoh" firstAttribute="top" secondItem="emA-MQ-KiV" secondAttribute="topMargin" id="jHx-fX-zOh"/>
+                            <constraint firstItem="LWn-cx-hoh" firstAttribute="top" secondItem="TFc-WA-0wB" secondAttribute="top" id="oyb-fe-MsN"/>
                             <constraint firstItem="LWn-cx-hoh" firstAttribute="leading" secondItem="emA-MQ-KiV" secondAttribute="leadingMargin" id="wPq-ak-BP3"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="TFc-WA-0wB"/>

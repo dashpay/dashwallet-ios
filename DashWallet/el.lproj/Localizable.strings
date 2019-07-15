@@ -798,6 +798,9 @@
 "verified, waiting for confirmation" = "επαληθευμένη, αναμονή για επιβεβαίωση";
 
 /* No comment provided by engineer. */
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */

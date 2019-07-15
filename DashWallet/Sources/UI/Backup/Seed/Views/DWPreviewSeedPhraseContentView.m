@@ -65,7 +65,8 @@ static CGFloat const BOTTOM_PADDING = 12.0;
             [confirmationCheckbox.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
             [confirmationCheckbox.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
             [confirmationCheckbox.trailingAnchor constraintGreaterThanOrEqualToAnchor:self.trailingAnchor],
-            [confirmationCheckbox.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+            [confirmationCheckbox.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
+                                                              constant:-BOTTOM_PADDING],
         ]];
     }
     return self;
