@@ -15,13 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPreviewSeedPhraseViewController : DWBaseViewController
+@class DWSeedPhraseControllerModel;
 
-+ (instancetype)controller;
+@interface DWPreviewSeedPhraseContentView : UIView
+
+@property (nullable, nonatomic, strong) DWSeedPhraseControllerModel *model;
+@property (nonatomic, assign) CGSize visibleSize;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

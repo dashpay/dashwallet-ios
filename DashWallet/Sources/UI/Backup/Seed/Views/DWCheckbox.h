@@ -15,13 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPreviewSeedPhraseViewController : DWBaseViewController
+@interface DWCheckbox : UIControl
 
-+ (instancetype)controller;
+@property (nullable, nonatomic, copy) IBInspectable NSString *title;
+@property (nonatomic, assign, getter=isOn) IBInspectable BOOL on;
 
 @end
 

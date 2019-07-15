@@ -303,6 +303,9 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
 
 /* No comment provided by engineer. */
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
 "id:" = "아이디:";
 
 /* No comment provided by engineer. */
@@ -498,7 +501,7 @@
 "Please place your phone near NFC device." = "휴대 전화를 NFC 기기 가까이에 두십시오.";
 
 /* No comment provided by engineer. */
-"Please write this down" = "Please write this down";
+"Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
 "Private key" = "비밀 키";

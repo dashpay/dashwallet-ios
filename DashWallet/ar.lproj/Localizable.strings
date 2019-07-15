@@ -303,6 +303,9 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "أقبل أنني سأفقد عملاتي إذا لم أعد أمتلك كلمة الإستراد";
 
 /* No comment provided by engineer. */
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
 "id:" = "رقم التعريف:";
 
 /* No comment provided by engineer. */
@@ -498,7 +501,7 @@
 "Please place your phone near NFC device." = "يرجى وضع هاتفك بالقرب من جهاز NFC.";
 
 /* No comment provided by engineer. */
-"Please write this down" = "Please write this down";
+"Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";

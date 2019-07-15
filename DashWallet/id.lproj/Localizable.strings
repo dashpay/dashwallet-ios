@@ -303,6 +303,9 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Saya menerima bahwa saya akan kehilangan koin saya jika saya tidak lagi memiliki frasa pemulihan";
 
 /* No comment provided by engineer. */
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
 "id:" = "id:";
 
 /* No comment provided by engineer. */
@@ -498,7 +501,7 @@
 "Please place your phone near NFC device." = "Silakan letakkan ponsel Anda di dekat perangkat NFC.";
 
 /* No comment provided by engineer. */
-"Please write this down" = "Please write this down";
+"Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
 "Private key" = "Kunci pribadi";

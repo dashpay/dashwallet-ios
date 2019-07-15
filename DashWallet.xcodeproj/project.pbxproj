@@ -163,6 +163,9 @@
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
 		2AD1CE6822D9E25B00C99324 /* DWSeedPhraseControllerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6722D9E25B00C99324 /* DWSeedPhraseControllerModel.m */; };
 		2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
+		2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7622DB51B500C99324 /* DWCheckbox.m */; };
+		2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
+		2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -693,6 +696,12 @@
 		2AD1CE6B22DA33F900C99324 /* DWDeviceAdaptableController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceAdaptableController.h; sourceTree = "<group>"; };
 		2AD1CE6C22DA357D00C99324 /* DWBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseViewController.h; sourceTree = "<group>"; };
 		2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseViewController.m; sourceTree = "<group>"; };
+		2AD1CE7522DB51B500C99324 /* DWCheckbox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCheckbox.h; sourceTree = "<group>"; };
+		2AD1CE7622DB51B500C99324 /* DWCheckbox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCheckbox.m; sourceTree = "<group>"; };
+		2AD1CE7822DB5F5200C99324 /* DWPreviewSeedPhraseContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPreviewSeedPhraseContentView.h; sourceTree = "<group>"; };
+		2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseContentView.m; sourceTree = "<group>"; };
+		2AD1CE7E22DC92BF00C99324 /* NSString+DWTextSize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+DWTextSize.h"; sourceTree = "<group>"; };
+		2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+DWTextSize.m"; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1131,6 +1140,7 @@
 		2A44313B22CF62FC009BAF7F /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				2AD1CE7D22DC928C00C99324 /* Categories */,
 				2A44313D22CF632F009BAF7F /* Models */,
 				2A44313C22CF631E009BAF7F /* UI */,
 			);
@@ -1233,6 +1243,10 @@
 				2AD1CE6122D9125000C99324 /* SeedPhrase */,
 				2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */,
 				2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */,
+				2AD1CE7522DB51B500C99324 /* DWCheckbox.h */,
+				2AD1CE7622DB51B500C99324 /* DWCheckbox.m */,
+				2AD1CE7822DB5F5200C99324 /* DWPreviewSeedPhraseContentView.h */,
+				2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1675,6 +1689,15 @@
 				2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */,
 			);
 			path = BaseController;
+			sourceTree = "<group>";
+		};
+		2AD1CE7D22DC928C00C99324 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				2AD1CE7E22DC92BF00C99324 /* NSString+DWTextSize.h */,
+				2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */,
+			);
+			path = Categories;
 			sourceTree = "<group>";
 		};
 		752E289B19234A3F00DB5A3C /* Views */ = {
@@ -2677,6 +2700,7 @@
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
+				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
@@ -2758,6 +2782,7 @@
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
 				2A9FFCD4222EA87F00956D5F /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
+				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
 				2A9FFE792230FF4600956D5F /* DWDimmingView.m in Sources */,
 				2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */,
@@ -2772,6 +2797,7 @@
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
+				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,

@@ -17,13 +17,12 @@
 
 #import "DWPreviewSeedPhraseViewController.h"
 
+#import "DWPreviewSeedPhraseContentView.h"
 #import "DWSeedPhraseControllerModel.h"
-#import "DWSeedPhraseTitledView.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const COMPACT_PADDING = 16.0;
-static CGFloat const DEFAULT_PADDING = 64.0;
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @interface DWPreviewSeedPhraseViewController ()
@@ -32,9 +31,9 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
-@property (nonatomic, strong) DWSeedPhraseTitledView *contentView;
-@property (nonatomic, strong) NSLayoutConstraint *contentViewTopConstraint;
+@property (nonatomic, strong) DWPreviewSeedPhraseContentView *contentView;
 
 @end
 
@@ -43,7 +42,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 + (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"PreviewSeedPhrase" bundle:nil];
     DWPreviewSeedPhraseViewController *controller = [storyboard instantiateInitialViewController];
-    NSString *title = NSLocalizedString(@"Please write this down", nil);
+    NSString *title = NSLocalizedString(@"Please write it down", nil);
     controller.model = [[DWSeedPhraseControllerModel alloc] initWithSubTitle:title];
 
     return controller;
@@ -64,16 +63,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
-    const CGFloat height = CGRectGetHeight(self.scrollView.bounds);
-    const CGFloat contentHeight = self.contentView.intrinsicContentSize.height;
-    CGFloat constant = 0.0;
-    if (height - contentHeight >= DEFAULT_PADDING * 2.0) {
-        constant = DEFAULT_PADDING;
-    }
-    else {
-        constant = COMPACT_PADDING;
-    }
-    self.contentViewTopConstraint.constant = constant;
+    self.contentView.visibleSize = self.scrollView.bounds.size;
 }
 
 #pragma mark - Private
@@ -81,27 +71,61 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (void)setupView {
     self.title = NSLocalizedString(@"Backup Wallet", nil);
 
-    [self.continueButton setTitle:NSLocalizedString(@"Continue", nil)
-                         forState:UIControlStateNormal];
+    NSString *continueButtonTitle = NSLocalizedString(@"Continue", nil);
+    if (IS_IPHONE_5_OR_LESS) {
+        self.continueButton.hidden = YES;
+
+        UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithTitle:continueButtonTitle
+                                                                          style:UIBarButtonItemStylePlain
+                                                                         target:self
+                                                                         action:@selector(continueButtonAction:)];
+        self.navigationItem.rightBarButtonItem = barButtonItem;
+    }
+    else {
+        self.continueButton.hidden = NO;
+        [self.continueButton setTitle:continueButtonTitle forState:UIControlStateNormal];
+    }
 
     self.scrollView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
-    DWSeedPhraseTitledView *contentView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Preview];
+    DWPreviewSeedPhraseContentView *contentView = [[DWPreviewSeedPhraseContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.model = self.model;
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
-    self.contentViewTopConstraint = [contentView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor
-                                                                          constant:COMPACT_PADDING];
-
     [NSLayoutConstraint activateConstraints:@[
-        self.contentViewTopConstraint,
+        [contentView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor],
         [contentView.leadingAnchor constraintEqualToAnchor:self.scrollView.leadingAnchor],
         [contentView.bottomAnchor constraintEqualToAnchor:self.scrollView.bottomAnchor],
         [contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
         [contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
+}
+
+#pragma mark - Actions
+
+- (IBAction)continueButtonAction:(id)sender {
+}
+
+#pragma mark - Configuration
+
++ (CGFloat)deviceSpecificBottomPadding {
+    if (IS_IPAD) { // All iPads including ones with home indicator
+        return 24.0;
+    }
+    else if (DEVICE_HAS_HOME_INDICATOR) { // iPhone X-like, XS Max, X
+        return 4.0;
+    }
+    else if (IS_IPHONE_6_PLUS) { // iPhone 6 Plus-like
+        return 20.0;
+    }
+    else if (IS_IPHONE_6) { // iPhone 6-like
+        return 16.0;
+    }
+    else { // iPhone 5-like
+        return 0.0;
+    }
 }
 
 @end

@@ -18,6 +18,7 @@
 #import "DWSeedWordView.h"
 
 #import "DWSeedWordModel.h"
+#import "NSString+DWTextSize.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 
@@ -183,18 +184,14 @@ static NSDictionary *TextAttributes(DWSeedPhraseType type) {
     NSAssert(model.word.length > 0, @"Invalid seed word");
 
     NSString *const text = model.word;
-    const CGSize maxSize = CGSizeMake(maxWidth, CGFLOAT_MAX);
-    NSDictionary *const attributes = TextAttributes(type);
-
-    const CGRect rect = [text boundingRectWithSize:maxSize
-                                           options:NSStringDrawingUsesLineFragmentOrigin
-                                        attributes:attributes
-                                           context:nil];
+    UIFont *const font = WordFont(type);
+    const CGSize textSize = [text dw_textSizeWithFont:font maxWidth:maxWidth];
 
     const CGFloat horizontalPadding = HorizontalPadding(type);
     const CGFloat verticalPadding = VerticalPadding(type);
-    const CGSize size = CGSizeMake(ceil(CGRectGetWidth(rect) + horizontalPadding * 2),
-                                   ceil(CGRectGetHeight(rect) + verticalPadding * 2));
+
+    const CGSize size = CGSizeMake(ceil(textSize.width + horizontalPadding * 2),
+                                   ceil(textSize.height + verticalPadding * 2));
 
     return size;
 }

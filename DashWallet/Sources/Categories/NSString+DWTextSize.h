@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPreviewSeedPhraseViewController : DWBaseViewController
+@interface NSString (DWTextSize)
 
-+ (instancetype)controller;
+- (CGSize)dw_textSizeWithFont:(UIFont *)font maxWidth:(CGFloat)maxWidth;
+- (CGSize)dw_textSizeWithFont:(UIFont *)font maxSize:(CGSize)maxSize;
+- (CGSize)dw_textSizeWithAttributes:(NSDictionary *)attributes maxSize:(CGSize)maxSize;
 
 @end
 
