@@ -170,6 +170,9 @@
 		2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
 		2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8922DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m */; };
 		2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8C22DCB3B600C99324 /* DWVerifySeedPhraseModel.m */; };
+		2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8F22DD070000C99324 /* DWSeedPhraseViewLayout.m */; };
+		2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */; };
+		2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -713,6 +716,12 @@
 		2AD1CE8922DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWVerifySeedPhraseContentView.m; sourceTree = "<group>"; };
 		2AD1CE8B22DCB3B600C99324 /* DWVerifySeedPhraseModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWVerifySeedPhraseModel.h; sourceTree = "<group>"; };
 		2AD1CE8C22DCB3B600C99324 /* DWVerifySeedPhraseModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWVerifySeedPhraseModel.m; sourceTree = "<group>"; };
+		2AD1CE8E22DD070000C99324 /* DWSeedPhraseViewLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseViewLayout.h; sourceTree = "<group>"; };
+		2AD1CE8F22DD070000C99324 /* DWSeedPhraseViewLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseViewLayout.m; sourceTree = "<group>"; };
+		2AD1CE9222DD078600C99324 /* DWSeedPhraseRow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseRow.h; sourceTree = "<group>"; };
+		2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseRow.m; sourceTree = "<group>"; };
+		2AD1CE9522DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWSeedWordModel+DWLayoutSupport.h"; sourceTree = "<group>"; };
+		2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWSeedWordModel+DWLayoutSupport.m"; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1680,6 +1689,7 @@
 		2AD1CE6122D9125000C99324 /* SeedPhrase */ = {
 			isa = PBXGroup;
 			children = (
+				2AD1CE9122DD076C00C99324 /* Layout */,
 				2A4431E722D738C0009BAF7F /* DWSeedPhraseModel.h */,
 				2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */,
 				2AD1CE6522D9161A00C99324 /* DWSeedPhraseType.h */,
@@ -1732,6 +1742,19 @@
 				2AD1CE8922DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		2AD1CE9122DD076C00C99324 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				2AD1CE8E22DD070000C99324 /* DWSeedPhraseViewLayout.h */,
+				2AD1CE8F22DD070000C99324 /* DWSeedPhraseViewLayout.m */,
+				2AD1CE9222DD078600C99324 /* DWSeedPhraseRow.h */,
+				2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */,
+				2AD1CE9522DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.h */,
+				2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */,
+			);
+			path = Layout;
 			sourceTree = "<group>";
 		};
 		752E289B19234A3F00DB5A3C /* Views */ = {
@@ -2734,6 +2757,7 @@
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
+				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
@@ -2770,6 +2794,7 @@
 				2A9FFE8C2230FF4700956D5F /* DWSettingsControllerModel.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
+				2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */,
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
@@ -2875,6 +2900,7 @@
 				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,
 				2A9FFE8A2230FF4700956D5F /* DWSelectorViewController.m in Sources */,
 				2AB21D2E220F3A3E00615700 /* DWAmountNavigationController.m in Sources */,
+				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,

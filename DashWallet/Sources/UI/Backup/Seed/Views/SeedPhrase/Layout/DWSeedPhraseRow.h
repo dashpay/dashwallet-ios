@@ -17,15 +17,27 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWSeedPhraseType.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedWordModel : NSObject <NSCopying>
+extern CGFloat DWInteritemSpacing(DWSeedPhraseType type);
 
-@property (nonatomic, copy) NSString *word;
-@property (nonatomic, assign, getter=isSelected) BOOL selected;
+@class DWSeedWordModel;
 
-- (instancetype)initWithWord:(NSString *)word NS_DESIGNATED_INITIALIZER;
+@interface DWSeedPhraseRow : NSObject
+
+@property (readonly, nonatomic, strong) NSArray<DWSeedWordModel *> *wordModels;
+@property (readonly, nonatomic, strong) NSArray<NSValue *> *wordSizes;
+
+@property (readonly, nonatomic, assign) CGFloat height;
+@property (readonly, nonatomic, assign) CGFloat width;
+
+- (instancetype)initWithType:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+- (BOOL)canAddWordWithSize:(CGSize)wordSize parentWidth:(CGFloat)parentWidth;
+- (void)addWord:(DWSeedWordModel *)wordModel size:(CGSize)size;
 
 @end
 

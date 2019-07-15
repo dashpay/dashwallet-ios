@@ -31,6 +31,39 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (BOOL)isEqual:(id)object {
+    if (self == object) {
+        return YES;
+    }
+
+    if (![object isKindOfClass:[self class]]) {
+        return NO;
+    }
+
+    return [self isEqualToWordModel:object];
+}
+
+- (BOOL)isEqualToWordModel:(DWSeedWordModel *)object {
+    if (!object) {
+        return NO;
+    }
+
+    return [self.word isEqualToString:object.word];
+}
+
+- (NSUInteger)hash {
+    return self.word.hash;
+}
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(nullable NSZone *)zone {
+    __typeof(self) copy = [[self.class alloc] initWithWord:self.word];
+    copy.selected = self.selected;
+
+    return copy;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

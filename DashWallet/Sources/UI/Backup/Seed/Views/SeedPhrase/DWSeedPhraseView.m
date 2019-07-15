@@ -18,8 +18,8 @@
 #import "DWSeedPhraseView.h"
 
 #import "DWSeedPhraseModel.h"
+#import "DWSeedPhraseViewLayout.h"
 #import "DWSeedWordView.h"
-#import "DevicesCompatibility.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,33 +30,6 @@ static UIColor *BackgroundColor(DWSeedPhraseType type) {
             return [UIColor dw_backgroundColor];
         case DWSeedPhraseType_Select:
             return [UIColor dw_secondaryBackgroundColor];
-    }
-}
-
-static CGFloat LineSpacing(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return 0.0;
-        case DWSeedPhraseType_Select:
-            return 8.0;
-    }
-}
-
-static CGFloat InteritemSpacing(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return 0.0;
-        case DWSeedPhraseType_Select:
-            return 8.0;
-    }
-}
-
-static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return 10.0;
-        case DWSeedPhraseType_Select:
-            return 8.0;
     }
 }
 
@@ -78,104 +51,12 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
     }
 }
 
-static NSUInteger MaxWordsInARow(void) {
-    if (IS_IPHONE_5_OR_LESS) {
-        return NSUIntegerMax;
-    }
-    else {
-        return 4;
-    }
-}
-
-#pragma mark - Layout Support
-
-@interface DWSeedPhraseRow : NSObject
-
-@property (readonly, nonatomic, assign) DWSeedPhraseType type;
-
-@property (readonly, nonatomic, strong) NSMutableArray<DWSeedWordView *> *wordViews;
-@property (readonly, nonatomic, strong) NSMutableArray<NSValue *> *wordSizes;
-
-@property (readonly, nonatomic, assign) CGFloat height;
-@property (readonly, nonatomic, assign) CGFloat width;
-
-@end
-
-@implementation DWSeedPhraseRow
-
-- (instancetype)initWithType:(DWSeedPhraseType)type {
-    self = [super init];
-    if (self) {
-        _type = type;
-
-        _wordViews = [NSMutableArray array];
-        _wordSizes = [NSMutableArray array];
-    }
-    return self;
-}
-
-- (BOOL)canAddWordWithSize:(CGSize)wordSize parentWidth:(CGFloat)parentWidth {
-    const NSUInteger count = self.wordViews.count;
-    const BOOL isEmpty = (count == 0);
-    if (isEmpty) {
-        // always allow to add new word if empty
-        return YES;
-    }
-
-    if (count < MaxWordsInARow()) {
-        const CGFloat currentWidth = self.width;
-        const CGFloat interitemSpacing = InteritemSpacing(self.type);
-        const BOOL isFits = (currentWidth + wordSize.width + interitemSpacing <= parentWidth);
-
-        return isFits;
-    }
-
-    return NO;
-}
-
-- (void)addWordView:(DWSeedWordView *)wordView size:(CGSize)size {
-    [self.wordViews addObject:wordView];
-    [self.wordSizes addObject:[NSValue valueWithCGSize:size]];
-}
-
-- (CGFloat)height {
-    CGFloat height = 0.0;
-
-    for (NSValue *wordSize in self.wordSizes) {
-        const CGSize size = wordSize.CGSizeValue;
-        height = MAX(height, size.height);
-    }
-
-    return height;
-}
-
-- (CGFloat)width {
-    CGFloat width = 0.0;
-
-    for (NSValue *wordSize in self.wordSizes) {
-        const CGSize size = wordSize.CGSizeValue;
-        width += size.width;
-    }
-
-    const NSUInteger count = self.wordSizes.count;
-    if (count > 1) {
-        const CGFloat interitemSpacing = InteritemSpacing(self.type);
-        width += interitemSpacing * (count - 1);
-    }
-
-    return width;
-}
-
-@end
-
-#pragma mark - View
-
-@interface DWSeedPhraseView ()
+@interface DWSeedPhraseView () <DWSeedPhraseViewLayoutDataSource>
 
 @property (readonly, nonatomic, assign) DWSeedPhraseType type;
 
 @property (nullable, nonatomic, copy) NSArray<DWSeedWordView *> *wordViews;
-@property (nonatomic, assign) CGFloat currentHeight;
+@property (nullable, nonatomic, strong) DWSeedPhraseViewLayout *layout;
 
 @end
 
@@ -202,6 +83,9 @@ static NSUInteger MaxWordsInARow(void) {
 - (void)setModel:(nullable DWSeedPhraseModel *)model {
     _model = model;
 
+    self.layout = [[DWSeedPhraseViewLayout alloc] initWithSeedPhrase:model type:self.type];
+    self.layout.dataSource = self;
+
     [self reloadData];
 }
 
@@ -212,13 +96,19 @@ static NSUInteger MaxWordsInARow(void) {
 }
 
 - (CGSize)intrinsicContentSize {
-    return CGSizeMake(UIViewNoIntrinsicMetric, self.currentHeight);
+    return CGSizeMake(UIViewNoIntrinsicMetric, self.layout ? self.layout.height : 0.0);
 }
 
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
     [self reloadData];
+}
+
+#pragma mark - DWSeedPhraseViewLayoutDataSource
+
+- (CGFloat)viewWidthForSeedPhraseViewLayout:(DWSeedPhraseViewLayout *)layout {
+    return CGRectGetWidth(self.bounds);
 }
 
 #pragma mark - Private
@@ -239,64 +129,20 @@ static NSUInteger MaxWordsInARow(void) {
     [self setNeedsLayout];
 }
 
-- (void)setCurrentHeight:(CGFloat)currentHeight {
-    _currentHeight = currentHeight;
-
-    [self invalidateIntrinsicContentSize];
-}
-
-// O(n^2)
 - (void)layoutWordViews {
     if (self.wordViews.count == 0) {
-        self.currentHeight = 0.0;
-
         return;
     }
 
-    const DWSeedPhraseType type = self.type;
-    const CGFloat width = CGRectGetWidth(self.bounds);
-    const CGFloat lineSpacing = LineSpacing(type);
-    const CGFloat interitemSpacing = InteritemSpacing(type);
-
-    NSMutableArray<DWSeedPhraseRow *> *rows = [NSMutableArray array];
-
-    DWSeedPhraseRow *currentRow = [[DWSeedPhraseRow alloc] initWithType:type];
-    [rows addObject:currentRow];
+    [self.layout performLayout];
 
     for (DWSeedWordView *wordView in self.wordViews) {
-        const CGSize wordSize = [DWSeedWordView sizeForModel:wordView.model maxWidth:width type:type];
-
-        const BOOL canAddWord = [currentRow canAddWordWithSize:wordSize parentWidth:width];
-        if (!canAddWord) {
-            currentRow = [[DWSeedPhraseRow alloc] initWithType:type];
-            [rows addObject:currentRow];
-        }
-
-        [currentRow addWordView:wordView size:wordSize];
+        DWSeedWordModel *wordModel = wordView.model;
+        const CGRect frame = [self.layout frameForWord:wordModel];
+        wordView.frame = frame;
     }
 
-    const CGFloat contentPadding = ContentVerticalPadding(type);
-    CGFloat y = contentPadding;
-
-    for (DWSeedPhraseRow *row in rows) {
-        CGFloat x = (width - row.width) / 2.0;
-        NSAssert(x >= 0.0, @"Invalid layout: row width > view width");
-
-        for (NSUInteger i = 0; i < row.wordViews.count; i++) {
-            DWSeedWordView *const wordView = row.wordViews[i];
-            const CGSize size = [row.wordSizes[i] CGSizeValue];
-
-            wordView.frame = CGRectMake(x, y, size.width, size.height);
-
-            x += size.width + interitemSpacing;
-        }
-
-        y += row.height + lineSpacing;
-    }
-
-    y += contentPadding;
-
-    self.currentHeight = y;
+    [self invalidateIntrinsicContentSize];
 }
 
 @end

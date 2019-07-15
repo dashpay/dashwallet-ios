@@ -25,7 +25,7 @@ static CGFloat const DEFAULT_PADDING = 64.0;
 static CGFloat const COMPACT_PADDING = 16.0;
 static CGFloat const BOTTOM_PADDING = 12.0;
 
-static CGSize const CLEAR_BUTTON_SIZE = { 110.0, 50.0 };
+static CGSize const CLEAR_BUTTON_SIZE = {110.0, 50.0};
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -84,7 +84,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (void)clearButtonAction:(id)sender {
-    
 }
 
 @end

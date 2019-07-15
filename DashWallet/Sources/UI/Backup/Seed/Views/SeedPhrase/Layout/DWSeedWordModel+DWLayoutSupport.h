@@ -15,17 +15,16 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWSeedWordModel.h"
+
+#import "DWSeedPhraseType.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedWordModel : NSObject <NSCopying>
+@interface DWSeedWordModel (DWLayoutSupport)
 
-@property (nonatomic, copy) NSString *word;
-@property (nonatomic, assign, getter=isSelected) BOOL selected;
-
-- (instancetype)initWithWord:(NSString *)word NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
++ (UIFont *)dw_wordFontForType:(DWSeedPhraseType)type;
+- (CGSize)dw_sizeWithMaxWidth:(CGFloat)maxWidth type:(DWSeedPhraseType)type;
 
 @end
 

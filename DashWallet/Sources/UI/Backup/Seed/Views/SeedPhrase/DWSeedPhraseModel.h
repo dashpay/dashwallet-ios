@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSArray<DWSeedWordModel *> *words;
 
 - (instancetype)initAsNewWallet;
-- (instancetype)initWithSeed:(NSString *)seedNS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSeed:(NSString *)seed NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

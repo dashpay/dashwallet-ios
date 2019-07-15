@@ -17,30 +17,12 @@
 
 #import "DWSeedWordView.h"
 
+#import "DWSeedWordModel+DWLayoutSupport.h"
 #import "DWSeedWordModel.h"
-#import "NSString+DWTextSize.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGFloat VerticalPadding(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return 10.0;
-        case DWSeedPhraseType_Select:
-            return 13.0;
-    }
-}
-
-static CGFloat HorizontalPadding(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return 8.0;
-        case DWSeedPhraseType_Select:
-            return 20.0;
-    }
-}
 
 static UIColor *BackgroundColor(DWSeedPhraseType type) {
     switch (type) {
@@ -80,12 +62,7 @@ static UIColor *TextSelectedBackgroundColor(DWSeedPhraseType type) {
 }
 
 static UIFont *WordFont(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-        case DWSeedPhraseType_Select:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
-    }
+    return [DWSeedWordModel dw_wordFontForType:type];
 }
 
 static CGFloat CornerRadius(DWSeedPhraseType type) {
@@ -176,24 +153,6 @@ static NSDictionary *TextAttributes(DWSeedPhraseType type) {
     }
 
     self.wordLabel.backgroundColor = selected ? TextSelectedBackgroundColor(type) : TextBackgroundColor(type);
-}
-
-#pragma mark - Class
-
-+ (CGSize)sizeForModel:(DWSeedWordModel *)model maxWidth:(CGFloat)maxWidth type:(DWSeedPhraseType)type {
-    NSAssert(model.word.length > 0, @"Invalid seed word");
-
-    NSString *const text = model.word;
-    UIFont *const font = WordFont(type);
-    const CGSize textSize = [text dw_textSizeWithFont:font maxWidth:maxWidth];
-
-    const CGFloat horizontalPadding = HorizontalPadding(type);
-    const CGFloat verticalPadding = VerticalPadding(type);
-
-    const CGSize size = CGSizeMake(ceil(textSize.width + horizontalPadding * 2),
-                                   ceil(textSize.height + verticalPadding * 2));
-
-    return size;
 }
 
 @end

@@ -33,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-+ (CGSize)sizeForModel:(DWSeedWordModel *)model maxWidth:(CGFloat)maxWidth type:(DWSeedPhraseType)type;
-
 @end
 
 NS_ASSUME_NONNULL_END

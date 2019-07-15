@@ -17,15 +17,31 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWSeedPhraseRow.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedWordModel : NSObject <NSCopying>
+@class DWSeedPhraseModel;
+@class DWSeedPhraseViewLayout;
 
-@property (nonatomic, copy) NSString *word;
-@property (nonatomic, assign, getter=isSelected) BOOL selected;
+@protocol DWSeedPhraseViewLayoutDataSource <NSObject>
 
-- (instancetype)initWithWord:(NSString *)word NS_DESIGNATED_INITIALIZER;
+- (CGFloat)viewWidthForSeedPhraseViewLayout:(DWSeedPhraseViewLayout *)layout;
+
+@end
+
+@interface DWSeedPhraseViewLayout : NSObject
+
+@property (readonly, nonatomic, assign) CGFloat height;
+
+@property (nullable, nonatomic, weak) id<DWSeedPhraseViewLayoutDataSource> dataSource;
+
+- (instancetype)initWithSeedPhrase:(DWSeedPhraseModel *)seedPhrase type:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+- (void)performLayout;
+
+- (CGRect)frameForWord:(DWSeedWordModel *)wordModel;
 
 @end
 
