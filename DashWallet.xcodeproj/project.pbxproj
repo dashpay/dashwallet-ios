@@ -161,7 +161,7 @@
 		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
-		2AD1CE6822D9E25B00C99324 /* DWSeedPhraseControllerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6722D9E25B00C99324 /* DWSeedPhraseControllerModel.m */; };
+		2AD1CE6822D9E25B00C99324 /* DWSeedPhraseTitledModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */; };
 		2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
 		2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7622DB51B500C99324 /* DWCheckbox.m */; };
 		2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
@@ -173,6 +173,7 @@
 		2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8F22DD070000C99324 /* DWSeedPhraseViewLayout.m */; };
 		2AD1CE9422DD078600C99324 /* DWSeedPhraseRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */; };
 		2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */; };
+		2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -697,8 +698,8 @@
 		2AD1CE6222D9127600C99324 /* DWSeedWordModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedWordModel.h; sourceTree = "<group>"; };
 		2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedWordModel.m; sourceTree = "<group>"; };
 		2AD1CE6522D9161A00C99324 /* DWSeedPhraseType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseType.h; sourceTree = "<group>"; };
-		2AD1CE6622D9E25B00C99324 /* DWSeedPhraseControllerModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseControllerModel.h; sourceTree = "<group>"; };
-		2AD1CE6722D9E25B00C99324 /* DWSeedPhraseControllerModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseControllerModel.m; sourceTree = "<group>"; };
+		2AD1CE6622D9E25B00C99324 /* DWSeedPhraseTitledModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseTitledModel.h; sourceTree = "<group>"; };
+		2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseTitledModel.m; sourceTree = "<group>"; };
 		2AD1CE6922D9E75400C99324 /* DevicesCompatibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DevicesCompatibility.h; sourceTree = "<group>"; };
 		2AD1CE6B22DA33F900C99324 /* DWDeviceAdaptableController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceAdaptableController.h; sourceTree = "<group>"; };
 		2AD1CE6C22DA357D00C99324 /* DWBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseViewController.h; sourceTree = "<group>"; };
@@ -722,6 +723,7 @@
 		2AD1CE9322DD078600C99324 /* DWSeedPhraseRow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseRow.m; sourceTree = "<group>"; };
 		2AD1CE9522DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWSeedWordModel+DWLayoutSupport.h"; sourceTree = "<group>"; };
 		2AD1CE9622DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWSeedWordModel+DWLayoutSupport.m"; sourceTree = "<group>"; };
+		2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameplayKit.framework; path = System/Library/Frameworks/GameplayKit.framework; sourceTree = SDKROOT; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -985,6 +987,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
 				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
 				FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */,
 				FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */,
@@ -1249,8 +1252,6 @@
 			isa = PBXGroup;
 			children = (
 				2A4431DE22D72156009BAF7F /* Views */,
-				2AD1CE6622D9E25B00C99324 /* DWSeedPhraseControllerModel.h */,
-				2AD1CE6722D9E25B00C99324 /* DWSeedPhraseControllerModel.m */,
 				2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */,
 				2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */,
 				2A4431DC22D675DC009BAF7F /* PreviewSeedPhrase.storyboard */,
@@ -1262,6 +1263,8 @@
 			isa = PBXGroup;
 			children = (
 				2AD1CE6122D9125000C99324 /* SeedPhrase */,
+				2AD1CE6622D9E25B00C99324 /* DWSeedPhraseTitledModel.h */,
+				2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */,
 				2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */,
 				2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */,
 				2AD1CE7522DB51B500C99324 /* DWCheckbox.h */,
@@ -1869,6 +1872,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */,
 				FB4FA9C222505DD60060B017 /* AudioToolbox.framework */,
 				FBEF3AED2182395800917AB6 /* DashSync.framework */,
 				FB248B621F79BB7C00405AE0 /* SafariServices.framework */,
@@ -2870,7 +2874,7 @@
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
-				2AD1CE6822D9E25B00C99324 /* DWSeedPhraseControllerModel.m in Sources */,
+				2AD1CE6822D9E25B00C99324 /* DWSeedPhraseTitledModel.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */,

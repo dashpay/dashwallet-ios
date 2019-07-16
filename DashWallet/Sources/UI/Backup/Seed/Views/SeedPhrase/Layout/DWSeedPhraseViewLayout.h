@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performLayout;
 
-- (CGRect)frameForWord:(DWSeedWordModel *)wordModel;
+- (CGRect)frameForWordAtIndex:(NSUInteger)index;
 
 @end
 

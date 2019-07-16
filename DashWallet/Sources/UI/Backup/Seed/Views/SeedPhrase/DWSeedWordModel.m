@@ -19,6 +19,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWSeedWordModel ()
+
+@property (nonatomic, assign) NSUInteger index;
+
+@end
+
 @implementation DWSeedWordModel
 
 - (instancetype)initWithWord:(NSString *)word {
@@ -58,8 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - NSCopying
 
 - (id)copyWithZone:(nullable NSZone *)zone {
-    __typeof(self) copy = [[self.class alloc] initWithWord:self.word];
+    typeof(self) copy = [[self.class alloc] initWithWord:self.word];
     copy.selected = self.selected;
+    copy.visible = self.visible;
 
     return copy;
 }

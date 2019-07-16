@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 CGFloat DWInteritemSpacing(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 0.0;
         case DWSeedPhraseType_Select:
             return 8.0;

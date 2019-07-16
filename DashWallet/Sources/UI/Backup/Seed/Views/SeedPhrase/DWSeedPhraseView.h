@@ -22,10 +22,20 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedPhraseModel;
+@class DWSeedPhraseView;
+@class DWSeedWordModel;
+
+@protocol DWSeedPhraseViewDelegate <NSObject>
+
+- (BOOL)seedPhraseView:(DWSeedPhraseView *)view allowedToSelectWord:(DWSeedWordModel *)wordModel;
+- (void)seedPhraseView:(DWSeedPhraseView *)view didSelectWord:(DWSeedWordModel *)wordModel;
+
+@end
 
 @interface DWSeedPhraseView : UIView
 
 @property (nullable, nonatomic, strong) DWSeedPhraseModel *model;
+@property (nullable, nonatomic, weak) id<DWSeedPhraseViewDelegate> delegate;
 
 - (instancetype)initWithType:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
 

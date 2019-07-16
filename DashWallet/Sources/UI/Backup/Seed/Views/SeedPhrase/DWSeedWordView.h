@@ -15,15 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIControl.h>
 
 #import "DWSeedPhraseType.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSTimeInterval const DW_VERIFY_APPEAR_ANIMATION_DURATION;
+
 @class DWSeedWordModel;
 
-@interface DWSeedWordView : UIControl
+@interface DWSeedWordView : KVOUIControl
 
 @property (nullable, nonatomic, strong) DWSeedWordModel *model;
 
@@ -32,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
+
+- (void)animateDiscardedSelectionWithCompletion:(void (^)(void))completion;
 
 @end
 

@@ -94,7 +94,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *c = [DWPreviewSeedPhraseViewController controller];
+    DWPreviewSeedPhraseViewController *c = [DWPreviewSeedPhraseViewController controllerForNewWallet];
     [self.navigationController pushViewController:c animated:YES];
 }
 

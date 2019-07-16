@@ -17,10 +17,18 @@
 
 #import "DWSeedPhraseModel.h"
 
-#import "DWSeedWordModel.h"
 #import <DashSync/DashSync.h>
+#import <GameplayKit/GameplayKit.h>
+
+#import "DWSeedWordModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWSeedPhraseModel ()
+
+- (instancetype)initByCopyingSeedPhrase:(DWSeedPhraseModel *)seedPhrase NS_DESIGNATED_INITIALIZER;
+
+@end
 
 @implementation DWSeedPhraseModel
 
@@ -43,9 +51,50 @@ NS_ASSUME_NONNULL_BEGIN
             DWSeedWordModel *word = [[DWSeedWordModel alloc] initWithWord:seedWord];
             [words addObject:word];
         }
+
         _words = [words copy];
     }
     return self;
+}
+
+- (instancetype)initByShufflingSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
+    self = [super init];
+    if (self) {
+        NSMutableArray<DWSeedWordModel *> *words = [NSMutableArray array];
+        for (DWSeedWordModel *wordModel in seedPhrase.words) {
+            DWSeedWordModel *newWord = [wordModel copy];
+            newWord.selected = NO;
+            newWord.visible = NO;
+            [words addObject:newWord];
+        }
+
+        _words = [words shuffledArray];
+    }
+    return self;
+}
+
+- (instancetype)initByCopyingSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
+    self = [super init];
+    if (self) {
+        NSMutableArray<DWSeedWordModel *> *words = [NSMutableArray array];
+        for (DWSeedWordModel *wordModel in seedPhrase.words) {
+            DWSeedWordModel *newWord = [wordModel copy];
+            newWord.selected = NO;
+            newWord.visible = NO;
+            [words addObject:newWord];
+        }
+
+        _words = [words copy];
+    }
+    return self;
+}
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(nullable NSZone *)zone {
+    typeof(self) copy = [[self.class alloc] initByCopyingSeedPhrase:self];
+
+    return copy;
 }
 
 @end

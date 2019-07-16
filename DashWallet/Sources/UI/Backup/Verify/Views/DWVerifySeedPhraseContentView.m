@@ -17,25 +17,46 @@
 
 #import "DWVerifySeedPhraseContentView.h"
 
+#import "DWSeedPhraseTitledModel.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedPhraseView.h"
+#import "DWSeedWordView.h"
+#import "DWVerifySeedPhraseModel.h"
+#import "DevicesCompatibility.h"
 #import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 static CGFloat const DEFAULT_PADDING = 64.0;
 static CGFloat const COMPACT_PADDING = 16.0;
 static CGFloat const BOTTOM_PADDING = 12.0;
 
-static CGSize const CLEAR_BUTTON_SIZE = {110.0, 50.0};
+static CGFloat HintTopPadding(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 16.0;
+    }
+    else {
+        return 24.0;
+    }
+}
+
+static CGFloat HintBottomPadding(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 8.0;
+    }
+    else {
+        return 16.0;
+    }
+}
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWVerifySeedPhraseContentView ()
+@interface DWVerifySeedPhraseContentView () <DWSeedPhraseViewDelegate>
 
-@property (nonatomic, strong) DWSeedPhraseTitledView *previewSeedPhraseView;
-@property (nonatomic, strong) UIButton *clearButton;
-@property (nonatomic, strong) DWSeedPhraseView *selectSeedPhraseView;
+@property (nonatomic, strong) DWSeedPhraseTitledView *verificationSeedPhraseView;
+@property (nonatomic, strong) UILabel *hintLabel;
+@property (nonatomic, strong) DWSeedPhraseView *shuffledSeedPhraseView;
 
-@property (nonatomic, strong) NSLayoutConstraint *previewSeedPhraseTopConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *verificationSeedPhraseTopConstraint;
 
 @end
 
@@ -44,30 +65,49 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        DWSeedPhraseTitledView *previewSeedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Preview];
-        previewSeedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:previewSeedPhraseView];
-        _previewSeedPhraseView = previewSeedPhraseView;
+        self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-        UIButton *clearButton = [UIButton buttonWithType:UIButtonTypeSystem];
-        clearButton.translatesAutoresizingMaskIntoConstraints = NO;
-        clearButton.tintColor = [UIColor dw_dashBlueColor];
-        [clearButton setImage:[UIImage imageNamed:@"backspace"] forState:UIControlStateNormal];
-        [clearButton addTarget:self action:@selector(clearButtonAction:) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:clearButton];
+        DWSeedPhraseTitledView *verificationSeedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Verify];
+        verificationSeedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:verificationSeedPhraseView];
+        _verificationSeedPhraseView = verificationSeedPhraseView;
 
-        _previewSeedPhraseTopConstraint = [previewSeedPhraseView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                                                                          constant:COMPACT_PADDING];
+        UILabel *hintLabel = [[UILabel alloc] init];
+        hintLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        hintLabel.backgroundColor = self.backgroundColor;
+        hintLabel.textAlignment = NSTextAlignmentCenter;
+        hintLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+        hintLabel.textColor = [UIColor dw_secondaryTextColor];
+        hintLabel.adjustsFontForContentSizeCategory = YES;
+        hintLabel.numberOfLines = 0;
+        hintLabel.text = NSLocalizedString(@"Please tap on the words from your recovery phrase in the right order", nil);
+        [self addSubview:hintLabel];
+        _hintLabel = hintLabel;
+
+        DWSeedPhraseView *shuffledSeedPhraseView = [[DWSeedPhraseView alloc] initWithType:DWSeedPhraseType_Select];
+        shuffledSeedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
+        shuffledSeedPhraseView.delegate = self;
+        [self addSubview:shuffledSeedPhraseView];
+        _shuffledSeedPhraseView = shuffledSeedPhraseView;
+
+        _verificationSeedPhraseTopConstraint = [verificationSeedPhraseView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                                                                                    constant:COMPACT_PADDING];
 
         [NSLayoutConstraint activateConstraints:@[
-            _previewSeedPhraseTopConstraint,
-            [previewSeedPhraseView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [previewSeedPhraseView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            _verificationSeedPhraseTopConstraint,
+            [verificationSeedPhraseView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [verificationSeedPhraseView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-            [clearButton.topAnchor constraintEqualToAnchor:previewSeedPhraseView.bottomAnchor],
-            [clearButton.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-            [clearButton.widthAnchor constraintEqualToConstant:CLEAR_BUTTON_SIZE.width],
-            [clearButton.heightAnchor constraintEqualToConstant:CLEAR_BUTTON_SIZE.height],
+            [hintLabel.topAnchor constraintGreaterThanOrEqualToAnchor:verificationSeedPhraseView.bottomAnchor
+                                                             constant:HintTopPadding()],
+            [hintLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [hintLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+
+            [shuffledSeedPhraseView.topAnchor constraintEqualToAnchor:hintLabel.bottomAnchor
+                                                             constant:HintBottomPadding()],
+            [shuffledSeedPhraseView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [shuffledSeedPhraseView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [shuffledSeedPhraseView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         ]];
     }
     return self;
@@ -81,9 +121,60 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-#pragma mark - Actions
+- (CGSize)intrinsicContentSize {
+    const CGFloat height = self.verificationSeedPhraseTopConstraint.constant +
+                           [self minimumContentHeightWithoutTopPadding];
 
-- (void)clearButtonAction:(id)sender {
+    return CGSizeMake(self.visibleSize.width, MAX(height, self.visibleSize.height));
+}
+
+- (void)setModel:(nullable DWVerifySeedPhraseModel *)model {
+    _model = model;
+
+    self.verificationSeedPhraseView.model = model.titledSeedPhrase;
+    self.shuffledSeedPhraseView.model = model.shuffledSeedPhrase;
+}
+
+- (void)setVisibleSize:(CGSize)visibleSize {
+    _visibleSize = visibleSize;
+
+    const CGFloat contentHeight = COMPACT_PADDING + [self minimumContentHeightWithoutTopPadding];
+    if (visibleSize.height - contentHeight >= DEFAULT_PADDING * 2.0) {
+        self.verificationSeedPhraseTopConstraint.constant = DEFAULT_PADDING;
+    }
+    else {
+        self.verificationSeedPhraseTopConstraint.constant = COMPACT_PADDING;
+    }
+
+    [self setNeedsLayout];
+}
+
+- (CGFloat)minimumContentHeightWithoutTopPadding {
+    const CGFloat contentHeight = self.verificationSeedPhraseView.intrinsicContentSize.height +
+                                  HintTopPadding() +
+                                  self.hintLabel.intrinsicContentSize.height +
+                                  HintBottomPadding() +
+                                  self.shuffledSeedPhraseView.intrinsicContentSize.height;
+
+    return contentHeight;
+}
+
+#pragma mark - DWSeedPhraseViewDelegate
+
+- (BOOL)seedPhraseView:(DWSeedPhraseView *)view allowedToSelectWord:(DWSeedWordModel *)wordModel {
+    return [self.model allowedToSelectWord:wordModel];
+}
+
+- (void)seedPhraseView:(DWSeedPhraseView *)view didSelectWord:(DWSeedWordModel *)wordModel {
+    [self.model selectWord:wordModel];
+
+    if (self.model.seedPhraseHasBeenVerified) {
+        // show result when animation ends
+        dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(DW_VERIFY_APPEAR_ANIMATION_DURATION * NSEC_PER_SEC));
+        dispatch_after(when, dispatch_get_main_queue(), ^{
+            [self.delegate verifySeedPhraseContentViewDidVerify:self];
+        });
+    }
 }
 
 @end

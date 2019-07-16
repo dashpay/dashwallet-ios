@@ -20,6 +20,7 @@
 
 typedef NS_ENUM(NSUInteger, DWSeedPhraseType) {
     DWSeedPhraseType_Preview,
+    DWSeedPhraseType_Verify,
     DWSeedPhraseType_Select,
 };
 

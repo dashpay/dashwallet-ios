@@ -21,11 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSeedPhraseControllerModel;
+@class DWSeedPhraseTitledModel;
 
 @interface DWSeedPhraseTitledView : UIView
 
-@property (nullable, nonatomic, strong) DWSeedPhraseControllerModel *model;
+@property (nullable, nonatomic, strong) DWSeedPhraseTitledModel *model;
 
 - (instancetype)initWithType:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
 

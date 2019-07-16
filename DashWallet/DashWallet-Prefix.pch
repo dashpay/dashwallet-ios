@@ -11,6 +11,14 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+// Compile-time check for keypaths
+// More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
+#if DEBUG
+#define DW_KEYPATH(object, property) ((void)(NO && ((void)object.property, NO)), @ #property)
+#else
+#define DW_KEYPATH(object, property) @ #property
+#endif
+
 
 // TODO: rm imports below (to not pollute the visible space):
 

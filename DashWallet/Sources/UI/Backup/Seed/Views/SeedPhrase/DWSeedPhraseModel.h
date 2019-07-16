@@ -21,12 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedWordModel;
 
-@interface DWSeedPhraseModel : NSObject
+@interface DWSeedPhraseModel : NSObject <NSCopying>
 
 @property (readonly, nonatomic, copy) NSArray<DWSeedWordModel *> *words;
 
 - (instancetype)initAsNewWallet;
 - (instancetype)initWithSeed:(NSString *)seed NS_DESIGNATED_INITIALIZER;
+- (instancetype)initByShufflingSeedPhrase:(DWSeedPhraseModel *)seedPhrase NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

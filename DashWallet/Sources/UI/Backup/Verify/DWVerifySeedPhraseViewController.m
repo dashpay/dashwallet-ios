@@ -19,6 +19,7 @@
 
 #import "DWVerifySeedPhraseContentView.h"
 #import "DWVerifySeedPhraseModel.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,8 +41,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 + (instancetype)controllerWithSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"VerifySeedPhrase" bundle:nil];
     DWVerifySeedPhraseViewController *controller = [storyboard instantiateInitialViewController];
-    NSString *title = NSLocalizedString(@"Verify", nil);
-    controller.model = [[DWVerifySeedPhraseModel alloc] initWithSubTitle:title seedPhrase:seedPhrase];
+    controller.model = [[DWVerifySeedPhraseModel alloc] initWithSeedPhrase:seedPhrase];
 
     return controller;
 }
@@ -67,6 +67,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - DWVerifySeedPhraseContentViewDelegate
 
 - (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view {
+    UIViewController *c = [UIViewController new];
+    c.title = @"Verified Successfully";
+    c.view.backgroundColor = [UIColor whiteColor];
+    [self.navigationController pushViewController:c animated:YES];
 }
 
 #pragma mark - Private
@@ -90,6 +94,26 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         [contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
         [contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
+}
+
+#pragma mark - Configuration
+
++ (CGFloat)deviceSpecificBottomPadding {
+    if (IS_IPAD) { // All iPads including ones with home indicator
+        return 24.0;
+    }
+    else if (DEVICE_HAS_HOME_INDICATOR) { // iPhone X-like, XS Max, X
+        return 4.0;
+    }
+    else if (IS_IPHONE_6_PLUS) { // iPhone 6 Plus-like
+        return 20.0;
+    }
+    else if (IS_IPHONE_6) { // iPhone 6-like
+        return 16.0;
+    }
+    else { // iPhone 5-like
+        return 0.0;
+    }
 }
 
 @end

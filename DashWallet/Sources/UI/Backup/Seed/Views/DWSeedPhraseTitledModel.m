@@ -15,19 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWSeedPhraseControllerModel.h"
+#import "DWSeedPhraseTitledModel.h"
 
 #import "DWSeedPhraseModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWSeedPhraseControllerModel
+@implementation DWSeedPhraseTitledModel
 
-- (instancetype)initWithSubTitle:(NSString *)subTitle {
+- (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase {
     self = [super init];
     if (self) {
         _subTitle = [subTitle copy];
-        _seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
+        _seedPhrase = seedPhrase;
     }
     return self;
 }

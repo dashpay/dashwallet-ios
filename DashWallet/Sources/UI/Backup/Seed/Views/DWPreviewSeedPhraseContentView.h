@@ -19,12 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSeedPhraseControllerModel;
+@class DWSeedPhraseTitledModel;
+@class DWPreviewSeedPhraseContentView;
+
+@protocol DWPreviewSeedPhraseContentViewDelegate <NSObject>
+
+- (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
+               didChangeConfirmation:(BOOL)confirmed;
+
+@end
 
 @interface DWPreviewSeedPhraseContentView : UIView
 
-@property (nullable, nonatomic, strong) DWSeedPhraseControllerModel *model;
+@property (nullable, nonatomic, strong) DWSeedPhraseTitledModel *model;
 @property (nonatomic, assign) CGSize visibleSize;
+@property (nullable, nonatomic, weak) id<DWPreviewSeedPhraseContentViewDelegate> delegate;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

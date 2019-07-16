@@ -19,14 +19,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWSeedPhraseTitledModel;
 @class DWSeedPhraseModel;
+@class DWSeedWordModel;
 
 @interface DWVerifySeedPhraseModel : NSObject
 
-@property (readonly, nonatomic, copy) NSString *subTitle;
-@property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
+@property (readonly, nonatomic, strong) DWSeedPhraseTitledModel *titledSeedPhrase;
+@property (readonly, nonatomic, strong) DWSeedPhraseModel *shuffledSeedPhrase;
+@property (readonly, nonatomic, assign) BOOL seedPhraseHasBeenVerified;
 
-- (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase;
+- (instancetype)initWithSeedPhrase:(DWSeedPhraseModel *)seedPhrase;
+
+- (BOOL)allowedToSelectWord:(DWSeedWordModel *)sampleWordModel;
+- (void)selectWord:(DWSeedWordModel *)sampleWordModel;
 
 @end
 

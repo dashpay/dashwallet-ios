@@ -48,6 +48,9 @@ static CGFloat const BOTTOM_PADDING = 12.0;
         DWCheckbox *confirmationCheckbox = [[DWCheckbox alloc] initWithFrame:CGRectZero];
         confirmationCheckbox.translatesAutoresizingMaskIntoConstraints = NO;
         confirmationCheckbox.title = NSLocalizedString(@"I wrote it down", nil);
+        [confirmationCheckbox addTarget:self
+                                 action:@selector(confirmationCheckboxAction:)
+                       forControlEvents:UIControlEventValueChanged];
         [self addSubview:confirmationCheckbox];
         _confirmationCheckbox = confirmationCheckbox;
 
@@ -87,11 +90,11 @@ static CGFloat const BOTTOM_PADDING = 12.0;
     return CGSizeMake(self.visibleSize.width, MAX(height, self.visibleSize.height));
 }
 
-- (nullable DWSeedPhraseControllerModel *)model {
+- (nullable DWSeedPhraseTitledModel *)model {
     return self.seedPhraseView.model;
 }
 
-- (void)setModel:(nullable DWSeedPhraseControllerModel *)model {
+- (void)setModel:(nullable DWSeedPhraseTitledModel *)model {
     self.seedPhraseView.model = model;
 }
 
@@ -116,6 +119,12 @@ static CGFloat const BOTTOM_PADDING = 12.0;
                                   BOTTOM_PADDING;
 
     return contentHeight;
+}
+
+#pragma mark - Actions
+
+- (void)confirmationCheckboxAction:(DWCheckbox *)sender {
+    [self.delegate previewSeedPhraseContentView:self didChangeConfirmation:sender.isOn];
 }
 
 @end

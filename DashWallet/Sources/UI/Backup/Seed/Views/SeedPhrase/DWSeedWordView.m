@@ -24,37 +24,43 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSTimeInterval const DW_VERIFY_APPEAR_ANIMATION_DURATION = 0.25;
+
 static UIColor *BackgroundColor(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return [UIColor dw_backgroundColor];
         case DWSeedPhraseType_Select:
-            return [UIColor dw_secondaryBackgroundColor];
-    }
-}
-
-static UIColor *TextColor(DWSeedPhraseType type) {
-    switch (type) {
-        case DWSeedPhraseType_Preview:
             return [UIColor dw_dashBlueColor];
-        case DWSeedPhraseType_Select:
-            return [UIColor dw_lightTitleColor];
     }
 }
 
 static UIColor *TextBackgroundColor(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return [UIColor dw_backgroundColor];
         case DWSeedPhraseType_Select:
-            return [UIColor dw_dashBlueColor];
+            return [UIColor clearColor];
     }
 }
 
-static UIColor *TextSelectedBackgroundColor(DWSeedPhraseType type) {
+static UIColor *TextColor(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
-            NSCAssert(NO, @"DWSeedPhraseType_Preview is not selectable");
+        case DWSeedPhraseType_Verify:
+            return [UIColor dw_dashBlueColor];
+        case DWSeedPhraseType_Select:
+            return [UIColor dw_lightTitleColor];
+    }
+}
+
+static UIColor *SelectedBackgroundColor(DWSeedPhraseType type) {
+    switch (type) {
+        case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
+            NSCAssert(NO, @"DWSeedPhraseType_Preview / DWSeedPhraseType_Verify is not selectable");
             return [UIColor dw_backgroundColor];
         case DWSeedPhraseType_Select:
             return [UIColor dw_disabledButtonColor];
@@ -68,6 +74,7 @@ static UIFont *WordFont(DWSeedPhraseType type) {
 static CGFloat CornerRadius(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 0.0;
         case DWSeedPhraseType_Select:
             return 8.0;
@@ -77,6 +84,7 @@ static CGFloat CornerRadius(DWSeedPhraseType type) {
 static BOOL MasksToBounds(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return NO;
         case DWSeedPhraseType_Select:
             return YES;
@@ -121,6 +129,31 @@ static NSDictionary *TextAttributes(DWSeedPhraseType type) {
         wordLabel.minimumScaleFactor = 0.5;
         [self addSubview:wordLabel];
         _wordLabel = wordLabel;
+
+        if (type == DWSeedPhraseType_Verify) {
+            [self mvvm_observe:DW_KEYPATH(self, model.visible)
+                          with:^(typeof(self) self, NSNumber *value) {
+                              if (!self.model) {
+                                  return;
+                              }
+
+                              const BOOL isVisible = self.model.isVisible;
+                              [UIView animateWithDuration:isVisible ? DW_VERIFY_APPEAR_ANIMATION_DURATION : 0.0
+                                               animations:^{
+                                                   self.wordLabel.alpha = isVisible ? 1.0 : 0.0;
+                                               }];
+                          }];
+        }
+        else if (type == DWSeedPhraseType_Select) {
+            [self mvvm_observe:DW_KEYPATH(self, model.selected)
+                          with:^(typeof(self) self, NSNumber *value) {
+                              if (!self.model) {
+                                  return;
+                              }
+
+                              self.selected = self.model.selected;
+                          }];
+        }
     }
     return self;
 }
@@ -148,11 +181,49 @@ static NSDictionary *TextAttributes(DWSeedPhraseType type) {
     [super setSelected:selected];
 
     DWSeedPhraseType type = self.type;
-    if (type == DWSeedPhraseType_Preview) {
+    if (type != DWSeedPhraseType_Select) {
         return;
     }
 
-    self.wordLabel.backgroundColor = selected ? TextSelectedBackgroundColor(type) : TextBackgroundColor(type);
+    self.backgroundColor = selected ? SelectedBackgroundColor(type) : BackgroundColor(type);
+}
+
+- (void)animateDiscardedSelectionWithCompletion:(void (^)(void))completion {
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:completion];
+
+    const CFTimeInterval shakeDuration = 0.35;
+    const CFTimeInterval shakeBeginTime = 0.1;
+    const CFTimeInterval firstPartDuration = shakeBeginTime + shakeDuration;
+    const CFTimeInterval secondPartDuration = 0.1;
+
+    CABasicAnimation *redColorAnimation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
+    redColorAnimation.fromValue = (id)[UIColor dw_dashBlueColor].CGColor;
+    redColorAnimation.toValue = (id)[UIColor dw_redColor].CGColor;
+    redColorAnimation.duration = shakeBeginTime;
+    redColorAnimation.beginTime = 0.0;
+    redColorAnimation.fillMode = kCAFillModeForwards;
+    redColorAnimation.removedOnCompletion = NO;
+
+    CAKeyframeAnimation *shakeAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.translation.x"];
+    shakeAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    shakeAnimation.values = @[ @(-8), @(8), @(-6), @(6), @(-4), @(4), @(0) ];
+    shakeAnimation.beginTime = shakeBeginTime;
+    shakeAnimation.duration = shakeDuration;
+
+    CABasicAnimation *blueColorAnimation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
+    blueColorAnimation.fromValue = (id)[UIColor dw_redColor].CGColor;
+    blueColorAnimation.toValue = (id)[UIColor dw_dashBlueColor].CGColor;
+    blueColorAnimation.duration = secondPartDuration;
+    blueColorAnimation.beginTime = firstPartDuration;
+
+    CAAnimationGroup *groupAnimation = [CAAnimationGroup animation];
+    groupAnimation.animations = @[ redColorAnimation, shakeAnimation, blueColorAnimation ];
+    groupAnimation.duration = firstPartDuration + secondPartDuration;
+
+    [self.layer addAnimation:groupAnimation forKey:@"DWDiscardedSelectionAnimation"];
+
+    [CATransaction commit];
 }
 
 @end

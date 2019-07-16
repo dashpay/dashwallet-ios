@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat LineSpacing(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 0.0;
         case DWSeedPhraseType_Select:
             return 8.0;
@@ -35,6 +36,7 @@ static CGFloat LineSpacing(DWSeedPhraseType type) {
 static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 10.0;
         case DWSeedPhraseType_Select:
             return 8.0;
@@ -45,7 +47,7 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
 
 @property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
 @property (readonly, nonatomic, assign) DWSeedPhraseType type;
-@property (readonly, nonatomic, strong) NSMutableDictionary<DWSeedWordModel *, NSValue *> *frameByWord;
+@property (readonly, nonatomic, strong) NSMutableArray<NSValue *> *frames;
 @property (nonatomic, assign) CGFloat height;
 @property (nonatomic, assign) BOOL didPerformLayout;
 
@@ -59,7 +61,7 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     if (self) {
         _seedPhrase = seedPhrase;
         _type = type;
-        _frameByWord = [NSMutableDictionary dictionary];
+        _frames = [NSMutableArray array];
     }
     return self;
 }
@@ -102,7 +104,7 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
             const CGSize size = [row.wordSizes[i] CGSizeValue];
 
             const CGRect frame = CGRectMake(x, y, size.width, size.height);
-            self.frameByWord[wordModel] = [NSValue valueWithCGRect:frame];
+            [self.frames addObject:[NSValue valueWithCGRect:frame]];
 
             x += size.width + interitemSpacing;
         }
@@ -117,14 +119,22 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     self.didPerformLayout = YES;
 }
 
-- (CGRect)frameForWord:(DWSeedWordModel *)wordModel {
+- (CGRect)frameForWordAtIndex:(NSUInteger)index {
     NSAssert(self.didPerformLayout, @"Requesting frames before calling performLayout method");
-    NSParameterAssert(wordModel);
 
-    NSValue *frameValue = self.frameByWord[wordModel];
-    NSAssert(frameValue, @"Invalid layout - wordModel is not in the seed phrase");
+    NSAssert(index != NSNotFound, @"Invalid index");
+    if (index == NSNotFound) {
+        return CGRectZero;
+    }
 
-    return frameValue.CGRectValue;
+    NSAssert(index >= 0 && index < self.frames.count, @"Invalid index");
+
+    if (index >= 0 && index < self.frames.count) {
+        NSValue *frameValue = self.frames[index];
+        return frameValue.CGRectValue;
+    }
+
+    return CGRectZero;
 }
 
 @end

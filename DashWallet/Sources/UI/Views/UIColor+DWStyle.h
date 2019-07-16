@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_lightTitleColor;
 + (UIColor *)dw_darkTitleColor;
 + (UIColor *)dw_secondaryTextColor;
++ (UIColor *)dw_redColor;
 + (UIColor *)dw_disabledButtonColor;
 
 + (UIColor *)dw_pinBackgroundColor;

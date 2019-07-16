@@ -19,6 +19,7 @@
 
 #import "DWSeedPhraseModel.h"
 #import "DWSeedPhraseViewLayout.h"
+#import "DWSeedWordModel.h"
 #import "DWSeedWordView.h"
 #import "UIColor+DWStyle.h"
 
@@ -27,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 static UIColor *BackgroundColor(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return [UIColor dw_backgroundColor];
         case DWSeedPhraseType_Select:
             return [UIColor dw_secondaryBackgroundColor];
@@ -36,6 +38,7 @@ static UIColor *BackgroundColor(DWSeedPhraseType type) {
 static CGFloat CornerRadius(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 8.0;
         case DWSeedPhraseType_Select:
             return 0.0;
@@ -45,6 +48,7 @@ static CGFloat CornerRadius(DWSeedPhraseType type) {
 static BOOL MasksToBounds(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return YES;
         case DWSeedPhraseType_Select:
             return NO;
@@ -121,6 +125,11 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
     for (DWSeedWordModel *wordModel in self.model.words) {
         DWSeedWordView *wordView = [[DWSeedWordView alloc] initWithType:self.type];
         wordView.model = wordModel;
+        if (self.type == DWSeedPhraseType_Select) {
+            [wordView addTarget:self
+                          action:@selector(wordViewAction:)
+                forControlEvents:UIControlEventTouchUpInside];
+        }
         [self addSubview:wordView];
         [wordViews addObject:wordView];
     }
@@ -138,11 +147,35 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 
     for (DWSeedWordView *wordView in self.wordViews) {
         DWSeedWordModel *wordModel = wordView.model;
-        const CGRect frame = [self.layout frameForWord:wordModel];
+        const NSUInteger index = [self.wordViews indexOfObject:wordView];
+        const CGRect frame = [self.layout frameForWordAtIndex:index];
         wordView.frame = frame;
     }
 
     [self invalidateIntrinsicContentSize];
+}
+
+#pragma mark - Actions
+
+- (void)wordViewAction:(DWSeedWordView *)sender {
+    NSParameterAssert(self.delegate);
+
+    DWSeedWordModel *wordModel = sender.model;
+    if (wordModel.isSelected) {
+        return;
+    }
+
+    BOOL allowed = [self.delegate seedPhraseView:self allowedToSelectWord:wordModel];
+    if (allowed) {
+        [self.delegate seedPhraseView:self didSelectWord:wordModel];
+    }
+    else {
+        sender.userInteractionEnabled = NO;
+        __weak typeof(sender) weakSender = sender;
+        [sender animateDiscardedSelectionWithCompletion:^{
+            weakSender.userInteractionEnabled = YES;
+        }];
+    }
 }
 
 @end

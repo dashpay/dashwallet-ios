@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat VerticalPadding(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 10.0;
         case DWSeedPhraseType_Select:
             return 13.0;
@@ -34,6 +35,7 @@ static CGFloat VerticalPadding(DWSeedPhraseType type) {
 static CGFloat HorizontalPadding(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return 8.0;
         case DWSeedPhraseType_Select:
             return 20.0;
@@ -45,6 +47,7 @@ static CGFloat HorizontalPadding(DWSeedPhraseType type) {
 + (UIFont *)dw_wordFontForType:(DWSeedPhraseType)type {
     switch (type) {
         case DWSeedPhraseType_Preview:
+        case DWSeedPhraseType_Verify:
             return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
         case DWSeedPhraseType_Select:
             return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];

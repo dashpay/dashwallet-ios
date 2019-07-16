@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPreviewSeedPhraseViewController : DWBaseViewController
 
-+ (instancetype)controller;
++ (instancetype)controllerForNewWallet;
 
 @end
 

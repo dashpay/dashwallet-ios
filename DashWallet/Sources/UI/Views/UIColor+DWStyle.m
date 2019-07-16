@@ -63,6 +63,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_redColor {
+    UIColor *color = [UIColor colorNamed:@"RedColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_disabledButtonColor {
     UIColor *color = [UIColor colorNamed:@"DisabledButtonColor"];
     NSParameterAssert(color);

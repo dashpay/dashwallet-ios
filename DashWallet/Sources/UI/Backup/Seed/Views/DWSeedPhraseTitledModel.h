@@ -21,12 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedPhraseModel;
 
-@interface DWSeedPhraseControllerModel : NSObject
+@interface DWSeedPhraseTitledModel : NSObject
 
 @property (readonly, nonatomic, copy) NSString *subTitle;
 @property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
 
-- (instancetype)initWithSubTitle:(NSString *)subTitle;
+- (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase;
 
 @end
 

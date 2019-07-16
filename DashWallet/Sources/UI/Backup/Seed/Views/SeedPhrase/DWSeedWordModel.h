@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *word;
 @property (nonatomic, assign, getter=isSelected) BOOL selected;
+@property (nonatomic, assign, getter=isVisible) BOOL visible;
 
 - (instancetype)initWithWord:(NSString *)word NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

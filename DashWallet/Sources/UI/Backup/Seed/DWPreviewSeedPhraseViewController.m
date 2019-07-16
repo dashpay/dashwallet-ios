@@ -18,32 +18,56 @@
 #import "DWPreviewSeedPhraseViewController.h"
 
 #import "DWPreviewSeedPhraseContentView.h"
-#import "DWSeedPhraseControllerModel.h"
+#import "DWSeedPhraseModel.h"
+#import "DWSeedPhraseTitledModel.h"
+#import "DWVerifySeedPhraseViewController.h"
 #import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
-@interface DWPreviewSeedPhraseViewController ()
+#pragma mark - Helper
 
-@property (nonatomic, strong) DWSeedPhraseControllerModel *model;
+@protocol DWPreviewContinueButton <NSObject>
+
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
+
+@end
+
+@interface UIButton (DWPreviewContinueButton_UIButton) <DWPreviewContinueButton>
+@end
+@implementation UIButton (DWPreviewContinueButton_UIButton)
+@end
+
+@interface UIBarButtonItem (DWPreviewContinueButton_UIBarButtonItem) <DWPreviewContinueButton>
+@end
+@implementation UIBarButtonItem (DWPreviewContinueButton_UIBarButtonItem)
+@end
+
+#pragma mark - Controller
+
+@interface DWPreviewSeedPhraseViewController () <DWPreviewSeedPhraseContentViewDelegate>
+
+@property (nonatomic, strong) DWSeedPhraseTitledModel *model;
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @property (nonatomic, strong) DWPreviewSeedPhraseContentView *contentView;
+@property (nullable, nonatomic, weak) id<DWPreviewContinueButton> previewContinueButton;
 
 @end
 
 @implementation DWPreviewSeedPhraseViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerForNewWallet {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"PreviewSeedPhrase" bundle:nil];
     DWPreviewSeedPhraseViewController *controller = [storyboard instantiateInitialViewController];
     NSString *title = NSLocalizedString(@"Please write it down", nil);
-    controller.model = [[DWSeedPhraseControllerModel alloc] initWithSubTitle:title];
+    DWSeedPhraseModel *seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
+    controller.model = [[DWSeedPhraseTitledModel alloc] initWithSubTitle:title seedPhrase:seedPhrase];
 
     return controller;
 }
@@ -80,17 +104,21 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
                                                                          target:self
                                                                          action:@selector(continueButtonAction:)];
         self.navigationItem.rightBarButtonItem = barButtonItem;
+        self.previewContinueButton = barButtonItem;
     }
     else {
         self.continueButton.hidden = NO;
         [self.continueButton setTitle:continueButtonTitle forState:UIControlStateNormal];
+        self.previewContinueButton = self.continueButton;
     }
+    self.previewContinueButton.enabled = NO;
 
     self.scrollView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
     DWPreviewSeedPhraseContentView *contentView = [[DWPreviewSeedPhraseContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.model = self.model;
+    contentView.delegate = self;
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
@@ -106,6 +134,16 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Actions
 
 - (IBAction)continueButtonAction:(id)sender {
+    DWVerifySeedPhraseViewController *controller = [DWVerifySeedPhraseViewController
+        controllerWithSeedPhrase:self.model.seedPhrase];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+#pragma mark - DWPreviewSeedPhraseContentViewDelegate
+
+- (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
+               didChangeConfirmation:(BOOL)confirmed {
+    self.previewContinueButton.enabled = confirmed;
 }
 
 #pragma mark - Configuration
