@@ -102,6 +102,14 @@ static CGFloat TitleSeedPhrasePadding(void) {
     self.seedPhraseView.model = model.seedPhrase;
 }
 
+- (void)prepareForAppearanceAnimation {
+    [self.seedPhraseView prepareForAppearanceAnimation];
+}
+
+- (void)showSeedPhraseAnimated {
+    [self.seedPhraseView showSeedPhraseAnimated];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

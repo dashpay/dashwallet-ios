@@ -33,6 +33,8 @@ static CGFloat const BOTTOM_PADDING = 12.0;
 
 @property (nonatomic, strong) NSLayoutConstraint *seedPhraseTopConstraint;
 
+@property (nonatomic, assign) BOOL initialAnimationCompleted;
+
 @end
 
 @implementation DWPreviewSeedPhraseContentView
@@ -110,6 +112,17 @@ static CGFloat const BOTTOM_PADDING = 12.0;
     }
 
     [self setNeedsLayout];
+}
+
+- (void)viewWillAppear {
+    if (!self.initialAnimationCompleted) {
+        [self.seedPhraseView prepareForAppearanceAnimation];
+    }
+    self.initialAnimationCompleted = YES;
+}
+
+- (void)viewDidAppear {
+    [self.seedPhraseView showSeedPhraseAnimated];
 }
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {

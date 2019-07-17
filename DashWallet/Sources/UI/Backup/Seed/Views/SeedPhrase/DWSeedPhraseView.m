@@ -137,6 +137,27 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
     return CGSizeMake(UIViewNoIntrinsicMetric, self.layout ? self.layout.height : 0.0);
 }
 
+- (void)prepareForAppearanceAnimation {
+    for (DWSeedWordView *wordView in self.wordViews) {
+        wordView.alpha = 0.0;
+    }
+}
+
+- (void)showSeedPhraseAnimated {
+    NSTimeInterval delay = 0.0;
+    const NSTimeInterval animationDuration = 0.04;
+    for (DWSeedWordView *wordView in self.wordViews) {
+        [UIView animateWithDuration:animationDuration
+                              delay:delay
+                            options:UIViewAnimationOptionCurveEaseInOut
+                         animations:^{
+                             wordView.alpha = 1.0;
+                         }
+                         completion:nil];
+        delay += animationDuration;
+    }
+}
+
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
@@ -154,7 +175,7 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 - (void)reloadData {
     [self.wordViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     self.wordViews = nil;
-    
+
     [self.layout invalidateLayout];
 
     DWSeedPhraseType type = self.type;

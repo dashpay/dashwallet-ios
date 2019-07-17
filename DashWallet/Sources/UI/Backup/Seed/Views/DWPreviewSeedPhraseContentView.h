@@ -38,6 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
+- (void)viewWillAppear;
+- (void)viewDidAppear;
+
 @end
 
 NS_ASSUME_NONNULL_END
