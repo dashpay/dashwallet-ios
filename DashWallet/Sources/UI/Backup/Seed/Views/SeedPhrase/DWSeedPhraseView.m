@@ -25,6 +25,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSTimeInterval WORD_APPEARANCE_ANIMATION_DURATION = 0.065;
+
 static UIColor *BackgroundColor(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
@@ -81,14 +83,16 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 
 #pragma mark - View
 
+typedef NSMutableDictionary<DWSeedWordModel *, NSMutableArray<DWSeedWordView *> *> DWWordViewsReusePool;
+
 @interface DWSeedPhraseView () <DWSeedPhraseViewLayoutDataSource,
                                 UIDragInteractionDelegate,
                                 UIDropInteractionDelegate>
 
 @property (readonly, nonatomic, assign) DWSeedPhraseType type;
 
-@property (nullable, nonatomic, copy) NSArray<DWSeedWordView *> *wordViews;
 @property (nullable, nonatomic, strong) DWSeedPhraseViewLayout *layout;
+@property (nullable, nonatomic, copy) NSArray<DWSeedWordView *> *wordViews;
 @property (nonatomic, assign) BOOL hasActiveDragInteractions;
 
 @end
@@ -118,11 +122,17 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
     return self;
 }
 
-- (void)setModel:(nullable DWSeedPhraseModel *)model {
-    _model = model;
+- (nullable DWSeedPhraseModel *)model {
+    return self.layout.seedPhrase;
+}
 
-    self.layout = [[DWSeedPhraseViewLayout alloc] initWithSeedPhrase:model type:self.type];
-    self.layout.dataSource = self;
+- (void)setModel:(nullable DWSeedPhraseModel *)model {
+    NSAssert(model != nil, @"Setting nil model is not supported");
+
+    DWSeedPhraseViewLayout *layout = [[DWSeedPhraseViewLayout alloc] initWithSeedPhrase:model
+                                                                                   type:self.type];
+    layout.dataSource = self;
+    self.layout = layout;
 
     [self reloadData];
 }
@@ -145,7 +155,8 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 
 - (void)showSeedPhraseAnimated {
     NSTimeInterval delay = 0.0;
-    const NSTimeInterval animationDuration = 0.04;
+    const NSTimeInterval animationDuration = WORD_APPEARANCE_ANIMATION_DURATION;
+
     for (DWSeedWordView *wordView in self.wordViews) {
         [UIView animateWithDuration:animationDuration
                               delay:delay
@@ -154,8 +165,18 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
                              wordView.alpha = 1.0;
                          }
                          completion:nil];
+
         delay += animationDuration;
     }
+}
+
+- (void)setModelAnimated:(DWSeedPhraseModel *)model {
+    const NSTimeInterval animationDuration = WORD_APPEARANCE_ANIMATION_DURATION * self.wordViews.count;
+
+    [UIView animateWithDuration:animationDuration
+                     animations:^{
+                         self.model = model;
+                     }];
 }
 
 #pragma mark - Notifications
@@ -173,17 +194,58 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 #pragma mark - Private
 
 - (void)reloadData {
-    [self.wordViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    self.wordViews = nil;
+    DWSeedPhraseModel *model = self.layout.seedPhrase;
+    DWWordViewsReusePool *reusePool = [self wordViewsReusePool];
+    NSMutableArray<DWSeedWordView *> *wordViews = [NSMutableArray array];
 
-    [self.layout invalidateLayout];
+    for (DWSeedWordModel *wordModel in model.words) {
+        DWSeedWordView *wordView = [self wordViewForWord:wordModel reusePool:reusePool];
+        [wordViews addObject:wordView];
+    }
+    self.wordViews = wordViews;
 
+#ifdef DEBUG
+    // Since we're not really reuse DWSeedPhraseView with different DWSeedPhraseModel's
+    // by the end of the reload reuse pool should be empty
+
+    for (NSArray *pool in reusePool.allValues) {
+        NSAssert(pool.count == 0, @"Reusing DWSeedPhraseView with different models is not well tested");
+    }
+#endif
+
+    if (CGRectGetWidth(self.bounds) > 0.0) {
+        [self layoutWordViews];
+    }
+}
+
+- (DWWordViewsReusePool *)wordViewsReusePool {
+    DWWordViewsReusePool *wordViewsByWords = [NSMutableDictionary dictionary];
+
+    for (DWSeedWordView *wordView in self.wordViews) {
+        DWSeedWordModel *wordModel = wordView.model;
+        NSMutableArray<DWSeedWordView *> *pool = wordViewsByWords[wordModel];
+        if (!pool) {
+            pool = [NSMutableArray array];
+            wordViewsByWords[wordModel] = pool;
+        }
+        [pool addObject:wordView];
+    }
+
+    return wordViewsByWords;
+}
+
+- (DWSeedWordView *)wordViewForWord:(DWSeedWordModel *)wordModel reusePool:(DWWordViewsReusePool *)reusePool {
     DWSeedPhraseType type = self.type;
 
-    NSMutableArray<DWSeedWordView *> *wordViews = [NSMutableArray array];
-    for (DWSeedWordModel *wordModel in self.model.words) {
-        DWSeedWordView *wordView = [[DWSeedWordView alloc] initWithType:type];
-        wordView.model = wordModel;
+    DWSeedWordView *wordView = nil;
+
+    NSMutableArray<DWSeedWordView *> *pool = reusePool[wordModel];
+    if (pool.count > 0) {
+        wordView = pool.firstObject;
+        [pool removeObjectAtIndex:0];
+    }
+    else {
+        wordView = [[DWSeedWordView alloc] initWithType:type];
         [self addSubview:wordView];
 
         if (type == DWSeedPhraseType_Select) {
@@ -196,12 +258,11 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
             dragInteraction.enabled = YES;
             [wordView addInteraction:dragInteraction];
         }
-
-        [wordViews addObject:wordView];
     }
-    self.wordViews = wordViews;
 
-    [self setNeedsLayout];
+    wordView.model = wordModel;
+
+    return wordView;
 }
 
 - (void)layoutWordViews {

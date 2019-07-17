@@ -58,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSLayoutConstraint *verificationSeedPhraseTopConstraint;
 
+@property (nonatomic, assign) BOOL initialAnimationCompleted;
+
 @end
 
 @implementation DWVerifySeedPhraseContentView
@@ -131,8 +133,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setModel:(nullable DWVerifySeedPhraseModel *)model {
     _model = model;
 
-    self.verificationSeedPhraseView.model = model.titledSeedPhrase;
-    self.shuffledSeedPhraseView.model = model.shuffledSeedPhrase;
+    // init shuffled view with normal model first
+    // shuffled model will be set animated later (viewDidAppear)
+
+    DWSeedPhraseTitledModel *normalOrderedModel = model.titledSeedPhrase;
+    self.verificationSeedPhraseView.model = normalOrderedModel;
+    self.shuffledSeedPhraseView.model = normalOrderedModel.seedPhrase;
 }
 
 - (void)setVisibleSize:(CGSize)visibleSize {
@@ -147,6 +153,13 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self setNeedsLayout];
+}
+
+- (void)viewDidAppear {
+    if (!self.initialAnimationCompleted) {
+        [self.shuffledSeedPhraseView setModelAnimated:self.model.shuffledSeedPhrase];
+    }
+    self.initialAnimationCompleted = YES;
 }
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {

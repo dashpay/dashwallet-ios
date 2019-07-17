@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSeedPhraseViewLayout : NSObject
 
+@property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
 @property (readonly, nonatomic, assign) CGFloat height;
 
 @property (nullable, nonatomic, weak) id<DWSeedPhraseViewLayoutDataSource> dataSource;
@@ -40,7 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)performLayout;
-- (void)invalidateLayout;
 
 - (CGRect)frameForWordAtIndex:(NSUInteger)index;
 

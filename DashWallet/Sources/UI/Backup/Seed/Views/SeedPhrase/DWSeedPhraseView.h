@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)prepareForAppearanceAnimation;
 - (void)showSeedPhraseAnimated;
 
+- (void)setModelAnimated:(DWSeedPhraseModel *)model;
+
 @end
 
 NS_ASSUME_NONNULL_END

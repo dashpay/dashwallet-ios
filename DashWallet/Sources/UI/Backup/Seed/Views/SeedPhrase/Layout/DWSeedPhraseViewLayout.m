@@ -45,7 +45,6 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
 
 @interface DWSeedPhraseViewLayout ()
 
-@property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
 @property (readonly, nonatomic, assign) DWSeedPhraseType type;
 @property (readonly, nonatomic, strong) NSMutableArray<NSValue *> *frames;
 @property (nonatomic, assign) CGFloat height;
@@ -69,6 +68,8 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
 // O(n^2)
 - (void)performLayout {
     NSAssert(self.dataSource, @"dataSource is not set");
+
+    [self invalidateLayout];
 
     const DWSeedPhraseType type = self.type;
     const CGFloat width = [self.dataSource viewWidthForSeedPhraseViewLayout:self];
@@ -119,11 +120,6 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     self.didPerformLayout = YES;
 }
 
-- (void)invalidateLayout {
-    self.didPerformLayout = NO;
-    [self.frames removeAllObjects];
-}
-
 - (CGRect)frameForWordAtIndex:(NSUInteger)index {
     NSAssert(self.didPerformLayout, @"Requesting frames before calling performLayout method");
 
@@ -140,6 +136,13 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     }
 
     return CGRectZero;
+}
+
+#pragma mark - Private
+
+- (void)invalidateLayout {
+    self.didPerformLayout = NO;
+    [self.frames removeAllObjects];
 }
 
 @end
