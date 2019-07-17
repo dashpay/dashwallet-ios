@@ -28,9 +28,11 @@
         <key>UICTFontTextStyleTitle3</key>
         <dict>
             <key>fontName</key>
-            <string>Montserrat-Light</string>
+            <string>Montserrat-Regular</string>
             <key>fontSize</key>
-            <integer>20</integer>
+            <integer>18</integer>
+            <key>maxSize</key>
+            <integer>29</integer>
         </dict>
         <key>UICTFontTextStyleHeadline</key>
         <dict>
@@ -76,20 +78,20 @@
         <key>UICTFontTextStyleCaption1</key>
         <dict>
             <key>fontName</key>
-            <string>Montserrat-Regular</string>
+            <string>Montserrat-Medium</string>
             <key>fontSize</key>
-            <integer>18</integer>
+            <integer>14</integer>
             <key>maxSize</key>
-            <integer>29</integer>
+            <integer>27</integer>
         </dict>
         <key>UICTFontTextStyleCaption2</key>
         <dict>
             <key>fontName</key>
             <string>Montserrat-Medium</string>
             <key>fontSize</key>
-            <integer>14</integer>
+            <integer>12</integer>
             <key>maxSize</key>
-            <integer>27</integer>
+            <integer>24</integer>
         </dict>
     </dict>
 </plist>

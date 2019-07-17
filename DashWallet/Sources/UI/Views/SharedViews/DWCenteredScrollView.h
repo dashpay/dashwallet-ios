@@ -19,26 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWVerifySeedPhraseModel;
-@class DWVerifySeedPhraseContentView;
-
-@protocol DWVerifySeedPhraseContentViewDelegate <NSObject>
-
-- (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view;
-
-@end
-
-@interface DWVerifySeedPhraseContentView : UIView
-
-@property (nullable, nonatomic, strong) DWVerifySeedPhraseModel *model;
-
-@property (nonatomic, assign) CGSize visibleSize;
-@property (nullable, nonatomic, weak) id<DWVerifySeedPhraseContentViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)viewDidAppear;
+@interface DWCenteredScrollView : UIScrollView
 
 @end
 

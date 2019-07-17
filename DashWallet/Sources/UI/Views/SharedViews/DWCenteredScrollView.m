@@ -15,30 +15,21 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWCenteredScrollView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWVerifySeedPhraseModel;
-@class DWVerifySeedPhraseContentView;
+@implementation DWCenteredScrollView
 
-@protocol DWVerifySeedPhraseContentViewDelegate <NSObject>
+- (void)layoutSubviews {
+    [super layoutSubviews];
 
-- (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view;
+    const CGFloat viewHeight = CGRectGetHeight(self.frame);
+    const CGFloat contentHeight = self.contentSize.height;
+    const CGFloat marginHeight = MAX(0.0, (viewHeight - contentHeight) / 2.0);
 
-@end
-
-@interface DWVerifySeedPhraseContentView : UIView
-
-@property (nullable, nonatomic, strong) DWVerifySeedPhraseModel *model;
-
-@property (nonatomic, assign) CGSize visibleSize;
-@property (nullable, nonatomic, weak) id<DWVerifySeedPhraseContentViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)viewDidAppear;
+    self.contentInset = UIEdgeInsetsMake(marginHeight, 0.0, -marginHeight, 0.0);
+}
 
 @end
 

@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) IBInspectable BOOL usedOnDarkBackground;
 @property (assign, nonatomic) IBInspectable BOOL inverted;
+@property (assign, nonatomic) IBInspectable BOOL small;
 
 @end
 

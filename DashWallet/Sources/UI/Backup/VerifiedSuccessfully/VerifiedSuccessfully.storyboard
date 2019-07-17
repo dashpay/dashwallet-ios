@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="PEk-iI-57W">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Verified Successfully View Controller-->
+        <scene sceneID="pbt-RE-fM6">
+            <objects>
+                <viewController id="PEk-iI-57W" customClass="DWVerifiedSuccessfullyViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="54K-It-TJG">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="70R-CV-sC3" customClass="DWCenteredScrollView">
+                                <rect key="frame" x="20" y="44" width="374" height="818"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cyD-gM-R0G" userLabel="Content View">
+                                        <rect key="frame" x="0.0" y="0.0" width="374" height="240.5"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_secure_wallet_big" translatesAutoresizingMaskIntoConstraints="NO" id="GJ9-4Z-JDo">
+                                                <rect key="frame" x="149.5" y="0.0" width="75" height="96"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="75" id="XWX-T1-yIL"/>
+                                                    <constraint firstAttribute="height" constant="96" id="oMs-yc-swi"/>
+                                                </constraints>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Kqh-mH-tqk" userLabel="Title Label">
+                                                <rect key="frame" x="0.0" y="124" width="374" height="24"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                                <color key="textColor" name="DarkTitleColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8z5-yC-Rn6" userLabel="Description Label">
+                                                <rect key="frame" x="0.0" y="162" width="374" height="20.5"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jC3-Xp-Uc5" customClass="DWBlueActionButton">
+                                                <rect key="frame" x="160" y="206.5" width="54" height="34"/>
+                                                <state key="normal" title="Button"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
+                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                                </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="continueButtonAction:" destination="PEk-iI-57W" eventType="touchUpInside" id="afH-Y5-9po"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="jC3-Xp-Uc5" firstAttribute="centerX" secondItem="cyD-gM-R0G" secondAttribute="centerX" id="6Ma-P5-W8s"/>
+                                            <constraint firstItem="GJ9-4Z-JDo" firstAttribute="centerX" secondItem="cyD-gM-R0G" secondAttribute="centerX" id="728-gF-XGv"/>
+                                            <constraint firstItem="jC3-Xp-Uc5" firstAttribute="top" secondItem="8z5-yC-Rn6" secondAttribute="bottom" constant="24" id="JOd-bI-daO"/>
+                                            <constraint firstItem="Kqh-mH-tqk" firstAttribute="leading" secondItem="cyD-gM-R0G" secondAttribute="leading" id="KOT-ht-LC0"/>
+                                            <constraint firstItem="8z5-yC-Rn6" firstAttribute="leading" secondItem="cyD-gM-R0G" secondAttribute="leading" id="M30-QF-2Yu"/>
+                                            <constraint firstAttribute="trailing" secondItem="8z5-yC-Rn6" secondAttribute="trailing" id="RrQ-lQ-gM6"/>
+                                            <constraint firstItem="GJ9-4Z-JDo" firstAttribute="top" secondItem="cyD-gM-R0G" secondAttribute="top" id="baD-gU-Vz6"/>
+                                            <constraint firstAttribute="trailing" secondItem="Kqh-mH-tqk" secondAttribute="trailing" id="c4j-yp-Kiw"/>
+                                            <constraint firstItem="Kqh-mH-tqk" firstAttribute="top" secondItem="GJ9-4Z-JDo" secondAttribute="bottom" constant="28" id="cfh-4F-R0V"/>
+                                            <constraint firstItem="8z5-yC-Rn6" firstAttribute="top" secondItem="Kqh-mH-tqk" secondAttribute="bottom" constant="14" id="dfp-eq-eJP"/>
+                                            <constraint firstAttribute="bottom" secondItem="jC3-Xp-Uc5" secondAttribute="bottom" id="vrg-aS-NP0"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="cyD-gM-R0G" firstAttribute="width" secondItem="70R-CV-sC3" secondAttribute="width" id="1m2-Rd-tal"/>
+                                    <constraint firstAttribute="trailing" secondItem="cyD-gM-R0G" secondAttribute="trailing" id="GSC-BD-KP1"/>
+                                    <constraint firstAttribute="bottom" secondItem="cyD-gM-R0G" secondAttribute="bottom" id="fti-4a-02U"/>
+                                    <constraint firstItem="cyD-gM-R0G" firstAttribute="top" secondItem="70R-CV-sC3" secondAttribute="top" id="gxt-ys-DvF"/>
+                                    <constraint firstItem="cyD-gM-R0G" firstAttribute="leading" secondItem="70R-CV-sC3" secondAttribute="leading" id="mEe-SE-dJB"/>
+                                </constraints>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="70R-CV-sC3" firstAttribute="leading" secondItem="54K-It-TJG" secondAttribute="leadingMargin" id="EEq-nm-8c1"/>
+                            <constraint firstItem="70R-CV-sC3" firstAttribute="top" secondItem="Z0P-NO-yr4" secondAttribute="top" id="SGe-AX-I3b"/>
+                            <constraint firstItem="70R-CV-sC3" firstAttribute="bottom" secondItem="Z0P-NO-yr4" secondAttribute="bottom" id="bsW-dC-bk2"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="70R-CV-sC3" secondAttribute="trailing" id="nf4-Yn-7e5"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="Z0P-NO-yr4"/>
+                    </view>
+                    <connections>
+                        <outlet property="continueButton" destination="jC3-Xp-Uc5" id="llf-BZ-HVR"/>
+                        <outlet property="descriptionLabel" destination="8z5-yC-Rn6" id="c2s-x0-GSp"/>
+                        <outlet property="scrollView" destination="70R-CV-sC3" id="E4G-9H-BxG"/>
+                        <outlet property="titleLabel" destination="Kqh-mH-tqk" id="Kjd-8t-xPb"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TTf-y5-G4q" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="11.594202898550726" y="174.77678571428569"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icon_secure_wallet_big" width="75" height="96"/>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryTextColor">
+            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

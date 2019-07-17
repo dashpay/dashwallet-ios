@@ -17,6 +17,7 @@
 
 #import "DWVerifySeedPhraseViewController.h"
 
+#import "DWVerifiedSuccessfullyViewController.h"
 #import "DWVerifySeedPhraseContentView.h"
 #import "DWVerifySeedPhraseModel.h"
 #import "DevicesCompatibility.h"
@@ -68,10 +69,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - DWVerifySeedPhraseContentViewDelegate
 
 - (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view {
-    UIViewController *c = [UIViewController new];
-    c.title = @"Verified Successfully";
-    c.view.backgroundColor = [UIColor whiteColor];
-    [self.navigationController pushViewController:c animated:YES];
+    DWVerifiedSuccessfullyViewController *controller = [DWVerifiedSuccessfullyViewController controller];
+    [self.navigationController setViewControllers:@[ controller ] animated:YES];
 }
 
 #pragma mark - Private

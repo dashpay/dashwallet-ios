@@ -17,28 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWRootNavigationFullscreenable.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWVerifySeedPhraseModel;
-@class DWVerifySeedPhraseContentView;
+@interface DWVerifiedSuccessfullyViewController : UIViewController <DWRootNavigationFullscreenable>
 
-@protocol DWVerifySeedPhraseContentViewDelegate <NSObject>
-
-- (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view;
-
-@end
-
-@interface DWVerifySeedPhraseContentView : UIView
-
-@property (nullable, nonatomic, strong) DWVerifySeedPhraseModel *model;
-
-@property (nonatomic, assign) CGSize visibleSize;
-@property (nullable, nonatomic, weak) id<DWVerifySeedPhraseContentViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)viewDidAppear;
++ (instancetype)controller;
 
 @end
 

@@ -70,6 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self resetAppearance];
 }
 
+- (void)setSmall:(BOOL)small {
+    _small = small;
+
+    [self resetAppearance];
+}
+
 - (void)setEnabled:(BOOL)enabled {
     [super setEnabled:enabled];
 
@@ -162,7 +168,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetAppearance {
     self.titleLabel.adjustsFontForContentSizeCategory = YES;
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+    UIFontTextStyle textStyle = self.small ? UIFontTextStyleCaption2 : UIFontTextStyleCaption1;
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:textStyle];
+
+    if (self.small) {
+        self.contentEdgeInsets = [self.class smallButtonContentEdgeInsets];
+    }
 
     self.layer.cornerRadius = [self.class cornerRadius];
     self.layer.masksToBounds = YES;
@@ -280,6 +291,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (CGFloat)borderWidthForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     return 2.0;
+}
+
++ (UIEdgeInsets)smallButtonContentEdgeInsets {
+    return UIEdgeInsetsMake(10.0, 20.0, 10.0, 20.0);
 }
 
 + (CGFloat)cornerRadius {
