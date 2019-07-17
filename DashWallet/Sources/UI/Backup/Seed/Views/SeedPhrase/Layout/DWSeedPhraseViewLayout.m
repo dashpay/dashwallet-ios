@@ -119,6 +119,11 @@ static CGFloat ContentVerticalPadding(DWSeedPhraseType type) {
     self.didPerformLayout = YES;
 }
 
+- (void)invalidateLayout {
+    self.didPerformLayout = NO;
+    [self.frames removeAllObjects];
+}
+
 - (CGRect)frameForWordAtIndex:(NSUInteger)index {
     NSAssert(self.didPerformLayout, @"Requesting frames before calling performLayout method");
 

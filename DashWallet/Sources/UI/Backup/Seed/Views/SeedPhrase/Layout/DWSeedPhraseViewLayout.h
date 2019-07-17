@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)performLayout;
+- (void)invalidateLayout;
 
 - (CGRect)frameForWordAtIndex:(NSUInteger)index;
 

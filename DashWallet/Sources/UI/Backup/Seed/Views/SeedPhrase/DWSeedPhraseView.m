@@ -154,6 +154,8 @@ static BOOL MasksToBounds(DWSeedPhraseType type) {
 - (void)reloadData {
     [self.wordViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     self.wordViews = nil;
+    
+    [self.layout invalidateLayout];
 
     DWSeedPhraseType type = self.type;
 
