@@ -129,31 +129,26 @@ typedef NSMutableDictionary<DWSeedWordModel *, NSMutableArray<DWSeedWordView *> 
 - (void)setModel:(nullable DWSeedPhraseModel *)model {
     NSAssert(model != nil, @"Setting nil model is not supported");
 
-    DWSeedPhraseViewLayout *layout = [[DWSeedPhraseViewLayout alloc] initWithSeedPhrase:model
-                                                                                   type:self.type];
-    layout.dataSource = self;
-    self.layout = layout;
-
-    [self reloadData];
+    [self setModel:model animation:DWSeedPhraseViewAnimation_None];
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
 
-    [self layoutWordViews];
+    [self layoutWordViewsWithAnimation:DWSeedPhraseViewAnimation_None];
 }
 
 - (CGSize)intrinsicContentSize {
     return CGSizeMake(UIViewNoIntrinsicMetric, self.layout ? self.layout.height : 0.0);
 }
 
-- (void)prepareForAppearanceAnimation {
+- (void)prepareForSequenceAnimation {
     for (DWSeedWordView *wordView in self.wordViews) {
         wordView.alpha = 0.0;
     }
 }
 
-- (void)showSeedPhraseAnimated {
+- (void)showSeedPhraseAnimatedAsSequence {
     NSTimeInterval delay = 0.0;
     const NSTimeInterval animationDuration = WORD_APPEARANCE_ANIMATION_DURATION;
 
@@ -170,19 +165,29 @@ typedef NSMutableDictionary<DWSeedWordModel *, NSMutableArray<DWSeedWordView *> 
     }
 }
 
-- (void)setModelAnimated:(DWSeedPhraseModel *)model {
-    const NSTimeInterval animationDuration = WORD_APPEARANCE_ANIMATION_DURATION * self.wordViews.count;
+- (void)setModel:(DWSeedPhraseModel *)model animation:(DWSeedPhraseViewAnimation)animation {
+    if (animation == DWSeedPhraseViewAnimation_Sequence) {
+        // prepare for sequence animation
+        [UIView animateWithDuration:WORD_APPEARANCE_ANIMATION_DURATION
+                         animations:^{
+                             for (DWSeedWordView *wordView in self.wordViews) {
+                                 wordView.alpha = 0.0;
+                             }
+                         }];
+    }
 
-    [UIView animateWithDuration:animationDuration
-                     animations:^{
-                         self.model = model;
-                     }];
+    DWSeedPhraseViewLayout *layout = [[DWSeedPhraseViewLayout alloc] initWithSeedPhrase:model
+                                                                                   type:self.type];
+    layout.dataSource = self;
+    self.layout = layout;
+
+    [self reloadDataWithAnimation:animation];
 }
 
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    [self reloadData];
+    [self reloadDataWithAnimation:DWSeedPhraseViewAnimation_None];
 }
 
 #pragma mark - DWSeedPhraseViewLayoutDataSource
@@ -193,29 +198,33 @@ typedef NSMutableDictionary<DWSeedWordModel *, NSMutableArray<DWSeedWordView *> 
 
 #pragma mark - Private
 
-- (void)reloadData {
+- (void)reloadDataWithAnimation:(DWSeedPhraseViewAnimation)animation {
     DWSeedPhraseModel *model = self.layout.seedPhrase;
     DWWordViewsReusePool *reusePool = [self wordViewsReusePool];
     NSMutableArray<DWSeedWordView *> *wordViews = [NSMutableArray array];
 
     for (DWSeedWordModel *wordModel in model.words) {
         DWSeedWordView *wordView = [self wordViewForWord:wordModel reusePool:reusePool];
+
+        // prepare for sequence animation
+        if (animation == DWSeedPhraseViewAnimation_Sequence) {
+            wordView.alpha = 0.0;
+        }
+
         [wordViews addObject:wordView];
     }
     self.wordViews = wordViews;
 
-#ifdef DEBUG
-    // Since we're not really reuse DWSeedPhraseView with different DWSeedPhraseModel's
-    // by the end of the reload reuse pool should be empty
+    [self cleanupReusePool:reusePool animation:animation];
 
-    for (NSArray *pool in reusePool.allValues) {
-        NSAssert(pool.count == 0, @"Reusing DWSeedPhraseView with different models is not well tested");
+    // otherwise, words will be layed out later in `-layoutSubviews`
+    BOOL isLayoutAllowed = CGRectGetWidth(self.bounds) > 0.0;
+    if (isLayoutAllowed) {
+        [self layoutWordViewsWithAnimation:animation];
     }
-#endif
 
-    if (CGRectGetWidth(self.bounds) > 0.0) {
-        [self layoutWordViews];
-    }
+    NSAssert(isLayoutAllowed || animation == DWSeedPhraseViewAnimation_None,
+             @"Animating before initial layout is not supported");
 }
 
 - (DWWordViewsReusePool *)wordViewsReusePool {
@@ -265,21 +274,53 @@ typedef NSMutableDictionary<DWSeedWordModel *, NSMutableArray<DWSeedWordView *> 
     return wordView;
 }
 
-- (void)layoutWordViews {
+- (void)cleanupReusePool:(DWWordViewsReusePool *)reusePool animation:(DWSeedPhraseViewAnimation)animation {
+    for (NSArray<DWSeedWordView *> *pool in reusePool.allValues) {
+        for (DWSeedWordView *wordView in pool) {
+            const BOOL animated = animation != DWSeedPhraseViewAnimation_None;
+            const NSTimeInterval animationDuration = animated ? WORD_APPEARANCE_ANIMATION_DURATION : 0.0;
+            [UIView animateWithDuration:animationDuration
+                animations:^{
+                    wordView.alpha = 0.0;
+                }
+                completion:^(BOOL finished) {
+                    [wordView removeFromSuperview];
+                }];
+        }
+    }
+}
+
+- (void)layoutWordViewsWithAnimation:(DWSeedPhraseViewAnimation)animation {
     if (self.wordViews.count == 0) {
         return;
     }
 
     [self.layout performLayout];
 
-    for (DWSeedWordView *wordView in self.wordViews) {
-        DWSeedWordModel *wordModel = wordView.model;
-        const NSUInteger index = [self.wordViews indexOfObject:wordView];
-        const CGRect frame = [self.layout frameForWordAtIndex:index];
-        wordView.frame = frame;
+    void (^layoutBlock)(void) = ^{
+        for (DWSeedWordView *wordView in self.wordViews) {
+            DWSeedWordModel *wordModel = wordView.model;
+            const NSUInteger index = [self.wordViews indexOfObject:wordView];
+            const CGRect frame = [self.layout frameForWordAtIndex:index];
+            wordView.frame = frame;
+        }
+    };
+
+    // Final destination of animation provided by `setModel:animation:`
+
+    if (animation == DWSeedPhraseViewAnimation_Shuffle) {
+        const NSTimeInterval animationDuration = WORD_APPEARANCE_ANIMATION_DURATION * self.wordViews.count;
+        [UIView animateWithDuration:animationDuration animations:layoutBlock];
+    }
+    else {
+        layoutBlock();
     }
 
     [self invalidateIntrinsicContentSize];
+
+    if (animation == DWSeedPhraseViewAnimation_Sequence) {
+        [self showSeedPhraseAnimatedAsSequence];
+    }
 }
 
 #pragma mark - Actions

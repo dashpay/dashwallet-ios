@@ -21,6 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWSeedPhraseTitledModel ()
+
+@property (nonatomic, strong) DWSeedPhraseModel *seedPhrase;
+
+@end
+
 @implementation DWSeedPhraseTitledModel
 
 - (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase {
@@ -30,6 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
         _seedPhrase = seedPhrase;
     }
     return self;
+}
+
+- (void)resetSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
+    self.seedPhrase = seedPhrase;
 }
 
 @end

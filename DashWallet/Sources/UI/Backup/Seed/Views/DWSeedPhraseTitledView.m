@@ -103,11 +103,15 @@ static CGFloat TitleSeedPhrasePadding(void) {
 }
 
 - (void)prepareForAppearanceAnimation {
-    [self.seedPhraseView prepareForAppearanceAnimation];
+    [self.seedPhraseView prepareForSequenceAnimation];
 }
 
 - (void)showSeedPhraseAnimated {
-    [self.seedPhraseView showSeedPhraseAnimated];
+    [self.seedPhraseView showSeedPhraseAnimatedAsSequence];
+}
+
+- (void)updateSeedPhraseModelAnimated:(DWSeedPhraseModel *)seedPhrase {
+    [self.seedPhraseView setModel:seedPhrase animation:DWSeedPhraseViewAnimation_Sequence];
 }
 
 @end

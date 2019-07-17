@@ -26,6 +26,9 @@ static CGFloat const DEFAULT_PADDING = 64.0;
 static CGFloat const COMPACT_PADDING = 16.0;
 static CGFloat const BOTTOM_PADDING = 12.0;
 
+static NSTimeInterval const CONFIRMATION_SHOW_DELAY = 2.0;
+static NSTimeInterval const ANIMATION_DURATION = 0.3;
+
 @interface DWPreviewSeedPhraseContentView ()
 
 @property (nonatomic, strong) DWSeedPhraseTitledView *seedPhraseView;
@@ -50,6 +53,7 @@ static CGFloat const BOTTOM_PADDING = 12.0;
         DWCheckbox *confirmationCheckbox = [[DWCheckbox alloc] initWithFrame:CGRectZero];
         confirmationCheckbox.translatesAutoresizingMaskIntoConstraints = NO;
         confirmationCheckbox.title = NSLocalizedString(@"I wrote it down", nil);
+        confirmationCheckbox.alpha = 0.0;
         [confirmationCheckbox addTarget:self
                                  action:@selector(confirmationCheckboxAction:)
                        forControlEvents:UIControlEventValueChanged];
@@ -117,12 +121,22 @@ static CGFloat const BOTTOM_PADDING = 12.0;
 - (void)viewWillAppear {
     if (!self.initialAnimationCompleted) {
         [self.seedPhraseView prepareForAppearanceAnimation];
+        [self showConfirmationCheckBoxAfterDelay];
     }
     self.initialAnimationCompleted = YES;
 }
 
 - (void)viewDidAppear {
     [self.seedPhraseView showSeedPhraseAnimated];
+}
+
+- (void)updateSeedPhraseModelAnimated:(DWSeedPhraseModel *)seedPhrase {
+    [self.seedPhraseView updateSeedPhraseModelAnimated:seedPhrase];
+
+    // reset confirmation checkbox
+    self.confirmationCheckbox.on = NO;
+    self.confirmationCheckbox.alpha = 0.0;
+    [self showConfirmationCheckBoxAfterDelay];
 }
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {
@@ -138,6 +152,20 @@ static CGFloat const BOTTOM_PADDING = 12.0;
 
 - (void)confirmationCheckboxAction:(DWCheckbox *)sender {
     [self.delegate previewSeedPhraseContentView:self didChangeConfirmation:sender.isOn];
+}
+
+#pragma mark - Private
+
+- (void)showConfirmationCheckBoxAfterDelay {
+    // Use weak here in case when user poped screen before timer fires
+    __weak typeof(self) weakSelf = self;
+    dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(CONFIRMATION_SHOW_DELAY * NSEC_PER_SEC));
+    dispatch_after(when, dispatch_get_main_queue(), ^{
+        [UIView animateWithDuration:ANIMATION_DURATION
+                         animations:^{
+                             weakSelf.confirmationCheckbox.alpha = 1.0;
+                         }];
+    });
 }
 
 @end

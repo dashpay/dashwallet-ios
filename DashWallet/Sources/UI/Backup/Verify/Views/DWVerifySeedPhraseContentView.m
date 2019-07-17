@@ -157,7 +157,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidAppear {
     if (!self.initialAnimationCompleted) {
-        [self.shuffledSeedPhraseView setModelAnimated:self.model.shuffledSeedPhrase];
+        [self.shuffledSeedPhraseView setModel:self.model.shuffledSeedPhrase
+                                    animation:DWSeedPhraseViewAnimation_Shuffle];
     }
     self.initialAnimationCompleted = YES;
 }

@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWSeedPhraseView;
 @class DWSeedWordModel;
 
+typedef NS_ENUM(NSUInteger, DWSeedPhraseViewAnimation) {
+    DWSeedPhraseViewAnimation_None,
+    DWSeedPhraseViewAnimation_Sequence,
+    DWSeedPhraseViewAnimation_Shuffle,
+};
+
 @protocol DWSeedPhraseViewDelegate <NSObject>
 
 - (BOOL)seedPhraseView:(DWSeedPhraseView *)view allowedToSelectWord:(DWSeedWordModel *)wordModel;
@@ -43,10 +49,22 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)prepareForAppearanceAnimation;
-- (void)showSeedPhraseAnimated;
 
-- (void)setModelAnimated:(DWSeedPhraseModel *)model;
+/**
+ Hide all words.
+ Should be called before `showSeedPhraseAnimatedAsSequence`
+ Usually called in `viewWillAppear:`
+ */
+- (void)prepareForSequenceAnimation;
+
+/**
+ Show words animated one by one
+ Call `prepareForSequenceAnimation` before performing animation
+ Usually called in `viewDidAppear:`
+ */
+- (void)showSeedPhraseAnimatedAsSequence;
+
+- (void)setModel:(DWSeedPhraseModel *)model animation:(DWSeedPhraseViewAnimation)animation;
 
 @end
 

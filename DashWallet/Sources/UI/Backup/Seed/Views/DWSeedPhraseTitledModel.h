@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase;
 
+- (void)resetSeedPhrase:(DWSeedPhraseModel *)seedPhrase;
+
 @end
 
 NS_ASSUME_NONNULL_END

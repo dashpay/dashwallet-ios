@@ -22,6 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedPhraseTitledModel;
+@class DWSeedPhraseModel;
 
 @interface DWSeedPhraseTitledView : UIView
 
@@ -35,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)prepareForAppearanceAnimation;
 - (void)showSeedPhraseAnimated;
+
+- (void)updateSeedPhraseModelAnimated:(DWSeedPhraseModel *)seedPhrase;
 
 @end
 

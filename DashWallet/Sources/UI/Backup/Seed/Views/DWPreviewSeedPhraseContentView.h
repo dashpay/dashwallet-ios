@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedPhraseTitledModel;
 @class DWPreviewSeedPhraseContentView;
+@class DWSeedPhraseModel;
 
 @protocol DWPreviewSeedPhraseContentViewDelegate <NSObject>
 
@@ -40,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewWillAppear;
 - (void)viewDidAppear;
+
+- (void)updateSeedPhraseModelAnimated:(DWSeedPhraseModel *)seedPhrase;
 
 @end
 

@@ -136,6 +136,11 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         [contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
         [contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(userDidTakeScreenshotNotification:)
+                                                 name:UIApplicationUserDidTakeScreenshotNotification
+                                               object:nil];
 }
 
 #pragma mark - Actions
@@ -151,6 +156,28 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
                didChangeConfirmation:(BOOL)confirmed {
     self.previewContinueButton.enabled = confirmed;
+}
+
+#pragma mark - Notifications
+
+- (void)userDidTakeScreenshotNotification:(NSNotification *)notification {
+    NSString *title = NSLocalizedString(@"WARNING", nil);
+    NSString *message = NSLocalizedString(@"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.", nil);
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"OK", nil)
+                  style:UIAlertActionStyleCancel
+                handler:^(UIAlertAction *action) {
+                    DWSeedPhraseModel *seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
+                    [self.model resetSeedPhrase:seedPhrase];
+                    [self.contentView updateSeedPhraseModelAnimated:seedPhrase];
+                    self.previewContinueButton.enabled = NO;
+                }];
+    [alert addAction:okAction];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Configuration
