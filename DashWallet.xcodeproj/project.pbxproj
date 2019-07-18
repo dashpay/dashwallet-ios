@@ -1802,6 +1802,7 @@
 				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
 				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
+				FB8ACEB722E054EA00EE5035 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -2314,6 +2315,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
+		};
+		FB8ACEB722E054EA00EE5035 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\necho \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\nexit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/UpholdModel/DWUpholdMainnetConstants.m\"\nelse\n# check if original file exist (in case it was moved or deleted while refactoring)\nif [ ! -f \"DashWallet/UpholdModel/DWUpholdConstants.m\" ]; then\necho \"error: DWUpholdConstants.m file not found! Fix Uphold Constants build phase\"\nexit 1\nfi\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
