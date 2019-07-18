@@ -206,6 +206,15 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWUpholdRequestTransferModelStateFailInsufficientFunds: {
+            self.textField.userInteractionEnabled = YES;
+            self.errorLabel.text = NSLocalizedString(@"Fee is greater than balance", nil);
+            self.errorLabel.hidden = NO;
+            self.transferAction.enabled = YES;
+            [self.activityIndicatorView stopAnimating];
+            
+            break;
+        }
         case DWUpholdRequestTransferModelStateOTP: {
             __weak typeof(self) weakSelf = self;
             [self.otpProvider requestOTPWithCompletion:^(NSString *_Nullable otpToken) {

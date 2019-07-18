@@ -255,6 +255,10 @@ static NSSet<NSString *> *FiatCurrencyCodes() {
                                                completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction))completion {
     NSParameterAssert(amount);
     NSParameterAssert(address);
+    
+    // Uphold supports only "." as delimeter
+    amount = [amount stringByReplacingOccurrencesOfString:@"," withString:@"."];
+    
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", card.identifier];
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
     NSParameterAssert(url);
@@ -292,6 +296,10 @@ static NSSet<NSString *> *FiatCurrencyCodes() {
                                                   completion:(void (^)(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction))completion {
     NSParameterAssert(amount);
     NSParameterAssert(securityCode);
+    
+    // Uphold supports only "." as delimeter
+    amount = [amount stringByReplacingOccurrencesOfString:@"," withString:@"."];
+
     NSString *urlPath = [NSString stringWithFormat:@"v0/me/cards/%@/transactions", @"6c6d1fea-7ed1-4417-9108-a2ac0252288e"]; //card.identifier];
     NSURL *url = [[self baseURL] URLByAppendingPathComponent:urlPath];
     NSParameterAssert(url);

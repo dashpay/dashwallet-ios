@@ -129,10 +129,15 @@ NS_ASSUME_NONNULL_BEGIN
                                           NSDecimalNumber *amountNumber = [NSDecimalNumber decimalNumberWithString:amount];
                                           NSDecimalNumber *correctedAmountNumber = [amountNumber decimalNumberBySubtracting:transaction.fee];
                                           NSString *correctedAmount = [correctedAmountNumber descriptionWithLocale:[NSLocale currentLocale]];
-
-                                          [strongSelf createTransactionForAmount:correctedAmount
-                                                        feeWasDeductedFromAmount:YES
-                                                                        otpToken:nil];
+                                          
+                                          if (correctedAmountNumber.doubleValue <= 0.0) {
+                                              strongSelf.state = DWUpholdRequestTransferModelStateFailInsufficientFunds;
+                                          }
+                                          else {
+                                              [strongSelf createTransactionForAmount:correctedAmount
+                                                            feeWasDeductedFromAmount:YES
+                                                                            otpToken:nil];
+                                          }
 
                                           return;
                                       }
