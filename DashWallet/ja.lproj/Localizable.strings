@@ -15,7 +15,7 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = " %2$dの%1$dが投票をロック\n\n";
+"%d out of %d lock votes" = " %2$dの%1$dがロック投票\n";
 
 /* No comment provided by engineer. */
 "%ld used" = "%ld 使用済み";
@@ -48,7 +48,7 @@
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "クォーラムにより許可済み";
 
 /* No comment provided by engineer. */
 "Action Needed" = "必ず実施して下さい";
@@ -126,7 +126,7 @@
 "checking private key balance..." = "秘密鍵の残高を確認中…";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "従来の取引\n";
+"Classical Transaction" = "クラシカルなトランザクション\n";
 
 /* No comment provided by engineer. */
 "clear" = "消去する";
@@ -222,7 +222,7 @@
 "double spend" = "２重支払い";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "Eメールクライアントが設定されていません。 「設定」であなたのメールアカウントを追加してください";
 
 /* No comment provided by engineer. */
 "email not configured" = "メールアドレスが設定されていません";
@@ -259,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
@@ -321,7 +324,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "ロック済み";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "即時送金［インスタントセンド］でロック済み";
@@ -444,7 +447,7 @@
 "payout address:" = "支出アドレス:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "保留中";
 
 /* No comment provided by engineer. */
 "pending" = "保留中";
@@ -462,10 +465,10 @@
 "Private key" = "プライベートキー";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "処理中";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "処理中";
 
 /* No comment provided by engineer. */
 "Public key" = "パブリックキー";
@@ -474,7 +477,7 @@
 "public key:" = "パブリックキー:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "レート: %1$@ = %2$@\nアップデート日時: %3$@\nブロック #%4$d of %5$d\n接続先ピア: %6$d\nDLピア: %7$@\nクォーラムによる確認: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "このアドレスでDashを受取る： %@";
@@ -546,7 +549,7 @@
 "send address as message" = "ダッシュアドレスをメッセージにて共有";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "クラッシュレポートを送信する";
 
 /* No comment provided by engineer. */
 "send request as email" = "リクエストをメールにて共有";
@@ -606,7 +609,7 @@
 "status:" = "ステータス:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "クラッシュを再現する手順";
 
 /* No comment provided by engineer. */
 "Success" = "Success";
@@ -702,7 +705,7 @@
 "unsupported url" = "サポートされていないURL";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "未検証";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -726,7 +729,7 @@
 "verified, waiting for confirmation" = "伝播確認済、承認を待機中";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "クォーラムを検証中";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "投票のキーハッシュ:";
@@ -753,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashウォレットの移行中にクラッシュが発生しました。この問題を解決するためには、ブロックチェーンを再スキャンするか、もう一度お試しください。再スキャンは、最大30分ほどかかりますので、Wi-Fiをお使いください。いったん同期プロセスが完了すれば、あなたの残高がご利用可能となります。";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dashウォレットが前回開かれた際にクラッシュしていたことが判明しました。 クラッシュレポートデータを送信して問題の解決にご協力ください。 あなたの取引履歴やその他の個人情報は共有されません。";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";

@@ -48,7 +48,7 @@
 "About" = "Giới thiệu";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "được chấp nhận bởi quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Cần bạn hành động";
@@ -222,7 +222,7 @@
 "double spend" = "tiêu lặp";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "Phần mềm email chưa được cấu hình. Hãy thêm tài khoản email của bạn trong phần Setting của iPhone";
 
 /* No comment provided by engineer. */
 "email not configured" = "e-mail chưa được cấu hình";
@@ -259,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
@@ -321,7 +324,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "Đã khoá";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "Đã được khoá với InstantSend";
@@ -444,7 +447,7 @@
 "payout address:" = "địa chỉ thanh toán";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "Đang chờ";
 
 /* No comment provided by engineer. */
 "pending" = "đang chờ";
@@ -462,10 +465,10 @@
 "Private key" = "Khoá riêng";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "đang xử lý";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "Đang xử lý";
 
 /* No comment provided by engineer. */
 "Public key" = "Khoá công khai";
@@ -474,7 +477,7 @@
 "public key:" = "khoá công khai:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "tỷ giá: %1$@ = %2$@\ncập nhật: %3$@\nkhối # %4$dcủa %5$d\ncác thành phần được kết nối: %6$d\ndl peer: %7$@\nquorum được kiểm chứng: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Nhận dash với địa chỉ này: %@";
@@ -546,7 +549,7 @@
 "send address as message" = "gửi địa chỉ bằng tin nhắn";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "gửi thông báo lỗi";
 
 /* No comment provided by engineer. */
 "send request as email" = "gửi yêu cầu bằng e-mail";
@@ -606,7 +609,7 @@
 "status:" = "tình trạng:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "Các bước để tái tạo lại lỗi";
 
 /* No comment provided by engineer. */
 "Success" = "Success";
@@ -702,7 +705,7 @@
 "unsupported url" = "địa chỉ url không được hỗ trợ";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "Chưa được xác thực";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -726,7 +729,7 @@
 "verified, waiting for confirmation" = "đã được kiểm tra, đang đợi xác thực";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "đang kiểm tra quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "mã băm của khoá bỏ phiếu";
@@ -753,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Chúng tôi nhận thấy ví Dash bị lỗi trong lúc chuyển đổi dữ liệu. Quét lại blockchain sẽ giải quyết được vấn đề này hoặc bạn có thể thử lại lần nữa. Bạn nên cho quét lại khi dùng mạng wifi và nó sẽ mất chừng nửa giờ. Số tiền của bạn sẽ sẵn sàng một khi quá trình đồng bộ được hoàn tất.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Chúng tôi phát hiện rằng ví Dashwallet đã bị lỗi trong lần cuối nó được mở. Bạn có muốn giúp chúng tôi giải quyết vấn đề đó bằng việc gửi chúng tôi dữ liệu thông báo lỗi? Lịch sử giao dịch của bạn và bất cứ thông tin cá nhân SẼ KHÔNG BỊ chia sẻ.";
 
 /* No comment provided by engineer. */
 "wipe" = "xoá sạch";
