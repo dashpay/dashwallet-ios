@@ -17,24 +17,23 @@
 
 #import "DWHomeViewController.h"
 
-#import "DWTabBarView.h"
+#import "DWNavigationController.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController ()
 
-@property (nullable, nonatomic, strong) UIView *contentView;
-@property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
-
 @end
 
 @implementation DWHomeViewController
 
-+ (instancetype)controller {
++ (UIViewController *)controllerEmbededInNavigation {
     DWHomeViewController *controller = [[DWHomeViewController alloc] init];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
 
-    return controller;
+    return navigationController;
 }
 
 - (void)viewDidLoad {
@@ -43,30 +42,18 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - Private
+
 - (void)setupView {
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
-    contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    contentView.backgroundColor = self.view.backgroundColor;
-    [self.view addSubview:contentView];
-    self.contentView = contentView;
-
-    DWTabBarView *tabBarView = [[DWTabBarView alloc] initWithFrame:CGRectZero];
-    tabBarView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:tabBarView];
-    self.tabBarView = tabBarView;
-
-    [NSLayoutConstraint activateConstraints:@[
-        [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-
-        [tabBarView.topAnchor constraintEqualToAnchor:contentView.bottomAnchor],
-        [tabBarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [tabBarView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [tabBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-    ]];
+    UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
+    NSParameterAssert(logoImage);
+    self.navigationItem.titleView = [[UIImageView alloc] initWithImage:logoImage];
 }
 
 @end

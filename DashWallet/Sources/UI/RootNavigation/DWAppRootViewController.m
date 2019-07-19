@@ -17,12 +17,14 @@
 
 #import "DWAppRootViewController.h"
 
-#import "DWHomeViewController.h"
+#import "DWMainTabbarViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate>
 
@@ -48,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     UIViewController *controller = nil;
     if (self.model.hasAWallet) {
-        controller = [self homeController];
+        controller = [self mainController];
     }
     else {
         controller = [self setupController];
@@ -56,12 +58,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self displayViewController:controller];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.currentController.preferredStatusBarStyle;
+- (nullable UIViewController *)childViewControllerForStatusBarStyle {
+    return self.currentController;
 }
 
-- (BOOL)prefersStatusBarHidden {
-    return self.currentController.prefersStatusBarHidden;
+- (nullable UIViewController *)childViewControllerForStatusBarHidden {
+    return self.currentController;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -75,9 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    // TODO: transition
-    UIViewController *homeController = [self homeController];
-    [self displayViewController:homeController];
+    UIViewController *mainController = [self mainController];
+    [self performTransitionToViewController:mainController];
 }
 
 #pragma mark - Private
@@ -103,8 +104,8 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
-- (UIViewController *)homeController {
-    DWHomeViewController *controller = [DWHomeViewController controller];
+- (UIViewController *)mainController {
+    DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
 
     return controller;
 }
@@ -124,6 +125,47 @@ NS_ASSUME_NONNULL_BEGIN
     [controller didMoveToParentViewController:self];
 
     self.currentController = controller;
+
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (void)performTransitionToViewController:(UIViewController *)toViewController {
+    UIViewController *fromViewController = self.childViewControllers.firstObject;
+    NSAssert(fromViewController, @"To perform transition there should be child view controller. Use displayViewController: instead");
+
+    UIView *toView = toViewController.view;
+    UIView *fromView = fromViewController.view;
+    UIView *contentView = self.view;
+
+    self.currentController = toViewController;
+
+    [fromViewController willMoveToParentViewController:nil];
+    [self addChildViewController:toViewController];
+
+    toView.frame = contentView.bounds;
+    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [contentView addSubview:toView];
+
+    toView.alpha = 0.0;
+    toView.transform = CGAffineTransformMakeScale(1.25, 1.25);
+
+    [UIView animateWithDuration:TRANSITION_DURATION
+        delay:0.0
+        usingSpringWithDamping:1.0
+        initialSpringVelocity:0.0
+        options:UIViewAnimationOptionCurveEaseInOut
+        animations:^{
+            toView.alpha = 1.0;
+            toView.transform = CGAffineTransformIdentity;
+            fromView.alpha = 0.0;
+
+            [self setNeedsStatusBarAppearanceUpdate];
+        }
+        completion:^(BOOL finished) {
+            [fromView removeFromSuperview];
+            [fromViewController removeFromParentViewController];
+            [toViewController didMoveToParentViewController:self];
+        }];
 }
 
 @end

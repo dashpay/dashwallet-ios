@@ -32,12 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.topViewController.preferredStatusBarStyle;
+- (nullable UIViewController *)childViewControllerForStatusBarStyle {
+    return self.topViewController;
 }
 
-- (BOOL)prefersStatusBarHidden {
-    return self.topViewController.prefersStatusBarHidden;
+- (nullable UIViewController *)childViewControllerForStatusBarHidden {
+    return self.topViewController;
 }
 
 #pragma mark - UINavigationControllerDelegate

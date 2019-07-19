@@ -99,6 +99,18 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_tabbarBorderColor {
+    UIColor *color = [UIColor colorNamed:@"TabbarBorderColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_tabbarInactiveButtonColor {
+    UIColor *color = [UIColor colorNamed:@"TabbarInactiveButtonColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

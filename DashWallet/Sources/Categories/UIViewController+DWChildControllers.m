@@ -75,6 +75,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
             [fromView removeFromSuperview];
             [fromViewController removeFromParentViewController];
             [toViewController didMoveToParentViewController:self];
+
+            if (completion) {
+                completion(finished);
+            }
         }];
 }
 

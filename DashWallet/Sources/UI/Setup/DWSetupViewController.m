@@ -19,15 +19,12 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
-#import "DWHomeViewController.h"
+#import "DWMainTabbarViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSecureWalletInfoViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
-
-// TODO: rm
-#import "DWPreviewSeedPhraseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -92,8 +89,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *c = [DWPreviewSeedPhraseViewController controllerForNewWallet];
-    [self.navigationController pushViewController:c animated:YES];
+    // TODO: for test purposes
+    [self completeSetup];
 }
 
 #pragma mark - DWSetPinViewControllerDelegate

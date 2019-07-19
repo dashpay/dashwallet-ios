@@ -39,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_numberKeyboardTextColor;
 + (UIColor *)dw_numberKeyboardHighlightedTextColor;
 
++ (UIColor *)dw_tabbarBorderColor;
++ (UIColor *)dw_tabbarInactiveButtonColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

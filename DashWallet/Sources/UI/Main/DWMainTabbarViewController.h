@@ -15,30 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWTabBarView.h"
-
-#import "DevicesCompatibility.h"
-#import "UIColor+DWStyle.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const TABBAR_HEIGHT = 49.0;
-static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
+@interface DWMainTabbarViewController : UIViewController
 
-@implementation DWTabBarView
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.backgroundColor = [UIColor dw_backgroundColor];
-    }
-    return self;
-}
-
-- (CGSize)intrinsicContentSize {
-    return CGSizeMake(UIViewNoIntrinsicMetric,
-                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : TABBAR_HEIGHT);
-}
++ (instancetype)controller;
 
 @end
 
