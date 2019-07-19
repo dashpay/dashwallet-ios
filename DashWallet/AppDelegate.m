@@ -39,7 +39,15 @@
 #pragma message "snapshot build"
 #endif /* SNAPSHOT */
 
-#define FRESH_INSTALL 0
+#define FRESH_INSTALL 1
+
+#if FRESH_INSTALL
+#pragma message "Running app as fresh installed..."
+#endif /* FRESH_INSTALL */
+
+#if (FRESH_INSTALL && !DEBUG)
+#error "Debug flag FRESH_INSTALL is active during Release build. Comment this out to continue."
+#endif /* (FRESH_INSTALL && !DEBUG) */
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -50,6 +58,19 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
+#if FRESH_INSTALL
+    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    NSArray *secItemClasses = @[(__bridge id)kSecClassGenericPassword,
+                                (__bridge id)kSecClassInternetPassword,
+                                (__bridge id)kSecClassCertificate,
+                                (__bridge id)kSecClassKey,
+                                (__bridge id)kSecClassIdentity];
+    for (id secItemClass in secItemClasses) {
+        NSDictionary *spec = @{(__bridge id)kSecClass: secItemClass};
+        SecItemDelete((__bridge CFDictionaryRef)spec);
+    }
+#endif /* FRESH_INSTALL */
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification
@@ -156,8 +177,9 @@ NS_ASSUME_NONNULL_BEGIN
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
     
 #if FRESH_INSTALL
-    [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
-#endif
+    // TODO: fix. Disabled due to crashing :(
+//    [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
+#endif /* FRESH_INSTALL */
     
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
     
