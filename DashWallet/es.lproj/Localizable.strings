@@ -48,7 +48,7 @@
 "About" = "Acerca de";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "aceptada por el quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Acción Necesaria";
@@ -222,7 +222,7 @@
 "double spend" = "gasto duplicado";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "El email del cliente no está configurado. Por favor agregue una cuenta de email en Configuración";
 
 /* No comment provided by engineer. */
 "email not configured" = "email no configurado";
@@ -259,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
@@ -321,7 +324,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "Asegurado";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "bloquear con InstantSend";
@@ -444,7 +447,7 @@
 "payout address:" = "dirección de pago:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "Pendiente";
 
 /* No comment provided by engineer. */
 "pending" = "pendiente";
@@ -462,10 +465,10 @@
 "Private key" = "Llave privada";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "procesando";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "Procesando";
 
 /* No comment provided by engineer. */
 "Public key" = "Llave pública";
@@ -474,7 +477,7 @@
 "public key:" = "llave pública:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "tasa: %1$@ = %2$@\nactualizados: %3$@\nbloque #%4$d de %5$d\npares conectados: %6$d\npares descargados: %7$@\nquorums validados: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Recibe dash en esta dirección: %@";
@@ -546,7 +549,7 @@
 "send address as message" = "enviar dirección como mensaje";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "enviar reporte de fallo";
 
 /* No comment provided by engineer. */
 "send request as email" = "enviar solicitud como correo electrónico";
@@ -606,7 +609,7 @@
 "status:" = "estado:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "Pasos para reproducir el fallo";
 
 /* No comment provided by engineer. */
 "Success" = "Success";
@@ -702,7 +705,7 @@
 "unsupported url" = "url no soportada";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "Sin verificar";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -726,7 +729,7 @@
 "verified, waiting for confirmation" = "verificado, esperando confirmación";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "verificando quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "llave de votación hash:";
@@ -753,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Hemos detectado que Dashwallet se bloqueó durante la migración. Volver a escanear la cadena de bloques resolverá este problema o puedes intentarlo de nuevo. La reexploración debe realizarse preferiblemente en wifi y demorará hasta media hora. Tus fondos estarán disponibles una vez que se complete el proceso de sincronización.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Detectamos que la Dashwallet dejó de funcionar la última vez que se utilizó. ¿Le gustaría ayudarnos a resolver este problema enviándonos un reporte con los datos del fallo? Su historial de transacciones y cualquier otra información privada NO SERÁ compartida.";
 
 /* No comment provided by engineer. */
 "wipe" = "borrar";

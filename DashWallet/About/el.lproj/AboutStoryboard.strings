@@ -1,12 +1,12 @@
 
 /* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "HmO-ts-UI5"; */
-"HmO-ts-UI5.normalTitle" = "Contact Support";
+"HmO-ts-UI5.normalTitle" = "Επικοινωνήστε με την υποστήριξη";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "IgV-bh-Mh7"; */
-"IgV-bh-Mh7.normalTitle" = "Αντιγραφή ημερολογίου";
+"IgV-bh-Mh7.normalTitle" = "αντιγραφή αρχείων καταγραφής";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
-"JbA-bI-SeK.text" = "Exchange rate data provided by";
+"JbA-bI-SeK.text" = "Τα δεδομένα συναλλαγματικής ισοτιμίας παρέχονται από\nget-spark.com";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
-"wFp-Ai-6c0.text" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:";
+"wFp-Ai-6c0.text" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nΑυτή η εφαρμογή είναι ανοιχτού κώδικα:";

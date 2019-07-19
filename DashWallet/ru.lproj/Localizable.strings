@@ -48,7 +48,7 @@
 "About" = "О программе";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "принято кворумом";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Требуется действие";
@@ -222,7 +222,7 @@
 "double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "E-mail клиент не настроен. Пожалуйста, добавьте ваш e-mail аккаунт в Настройках. ";
 
 /* No comment provided by engineer. */
 "email not configured" = "Почта не настроена";
@@ -259,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
@@ -321,7 +324,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "Зафиксировано";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "зафиксировано InstantSend";
@@ -444,7 +447,7 @@
 "payout address:" = "адрес для выплаты:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "В ожидании";
 
 /* No comment provided by engineer. */
 "pending" = "Ожидание";
@@ -462,10 +465,10 @@
 "Private key" = "Приватный ключ";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "обрабатывается";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "Обрабатывается";
 
 /* No comment provided by engineer. */
 "Public key" = "Публичный ключ";
@@ -474,7 +477,7 @@
 "public key:" = "публичный ключ:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "курс: %1$@ = %2$@\nобновлено: %3$@\nблок #%4$d из %5$d\nподключённые узлы: %6$d\nтекущий узел: %7$@\nутверждённые кворумы: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Получить DASH на этот адрес: %@";
@@ -546,7 +549,7 @@
 "send address as message" = "Отправить адрес в сообщении";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "отправить отчёт об ошибке";
 
 /* No comment provided by engineer. */
 "send request as email" = "Отправить запрос по почте";
@@ -606,7 +609,7 @@
 "status:" = "Cтатус:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "Шаги для воспроизведения ошибки";
 
 /* No comment provided by engineer. */
 "Success" = "Success";
@@ -702,7 +705,7 @@
 "unsupported url" = "Неподдерживаемый URL-адрес";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "Неподтверждённый";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -726,7 +729,7 @@
 "verified, waiting for confirmation" = "Проверено, ожидание подтверждения";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "подтверждение кворума";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "хеш ключа голосования:";
@@ -753,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Обнаружено, что во время миграции Dashwallet произошёл сбой. Повторное сканирование блокчейна решит эту проблему, либо попробуйте ещё раз. Повторное сканирование желательно проводить с использованием Wi-Fi и это займет до получаса. Ваши средства будут доступны после завершения процесса синхронизации.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Мы обнаружили, что во время последней сессии кошелёк Dash Wallet завершил работу некорректно. Хотите отправить отчёт об ошибках, чтобы помочь нам решить эту проблему? Ваша история транзакций и любая другая личная информация НЕ БУДЕТ передана.  ";
 
 /* No comment provided by engineer. */
 "wipe" = "Стереть";
