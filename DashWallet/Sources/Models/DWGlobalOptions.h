@@ -15,20 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <DashSync/DSDynamicOptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSeedPhraseModel;
+/**
+ A centralized place of User Defaults shared among several parts of the app
+ 
+ To add a new option: add a property with UsedDefaults-supported type and mark it as @dynamic
+ in the implementation
+ */
+@interface DWGlobalOptions : DSDynamicOptions
 
-@interface DWSeedPhraseTitledModel : NSObject
+@property (nonatomic, assign) BOOL walletNeedsBackup;
 
-@property (readonly, nonatomic, copy) NSString *subTitle;
-@property (readonly, nonatomic, strong) DWSeedPhraseModel *seedPhrase;
+@property (nonatomic, assign) BOOL biometricAuthConfigured;
+@property (nonatomic, assign) BOOL biometricAuthEnabled;
 
-- (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase;
-
-- (void)resetSeedPhrase:(DWSeedPhraseModel *)seedPhrase;
++ (instancetype)sharedInstance;
 
 @end
 

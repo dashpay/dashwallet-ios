@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleDefault;
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 

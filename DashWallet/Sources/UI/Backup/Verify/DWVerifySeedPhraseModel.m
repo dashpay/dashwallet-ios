@@ -17,8 +17,8 @@
 
 #import "DWVerifySeedPhraseModel.h"
 
+#import "DWGlobalOptions.h"
 #import "DWSeedPhraseModel.h"
-#import "DWSeedPhraseTitledModel.h"
 #import "DWSeedWordModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,9 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         // copy seedPhrase to produce new editable instances of DWSeedWordModel
-        _titledSeedPhrase =
-            [[DWSeedPhraseTitledModel alloc] initWithSubTitle:NSLocalizedString(@"Verify", nil)
-                                                   seedPhrase:[seedPhrase copy]];
+        _seedPhrase = [seedPhrase copy];
         _shuffledSeedPhrase = [[DWSeedPhraseModel alloc] initByShufflingSeedPhrase:seedPhrase];
     }
     return self;
@@ -50,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Allow if: not visible AND (it's first OR prev is visible)
 
-    DWSeedPhraseModel *const seedPhrase = self.titledSeedPhrase.seedPhrase;
+    DWSeedPhraseModel *const seedPhrase = self.seedPhrase;
     NSArray<DWSeedWordModel *> *const words = seedPhrase.words;
     for (NSUInteger i = 0; i < words.count; i++) {
         DWSeedWordModel *wordModel = words[i];
@@ -85,15 +83,17 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(!wordModel.visible, @"Word is already verified");
     wordModel.visible = YES;
 
-    DWSeedPhraseModel *const seedPhrase = self.titledSeedPhrase.seedPhrase;
+    DWSeedPhraseModel *const seedPhrase = self.seedPhrase;
     NSArray<DWSeedWordModel *> *const words = seedPhrase.words;
     if (wordModel == words.lastObject) {
         self.seedPhraseHasBeenVerified = YES;
+
+        [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
     }
 }
 
 - (nullable DWSeedWordModel *)firstNotVisibleWordMatching:(DWSeedWordModel *)sampleWordModel {
-    DWSeedPhraseModel *const seedPhrase = self.titledSeedPhrase.seedPhrase;
+    DWSeedPhraseModel *const seedPhrase = self.seedPhrase;
     NSArray<DWSeedWordModel *> *const words = seedPhrase.words;
     for (DWSeedWordModel *wordModel in words) {
         if (wordModel.isVisible == NO && [wordModel isEqual:sampleWordModel]) {

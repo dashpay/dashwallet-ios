@@ -17,7 +17,6 @@
 
 #import "DWSeedPhraseTitledView.h"
 
-#import "DWSeedPhraseTitledModel.h"
 #import "DWSeedPhraseView.h"
 #import "DevicesCompatibility.h"
 #import "UIColor+DWStyle.h"
@@ -95,11 +94,20 @@ static CGFloat TitleSeedPhrasePadding(void) {
     return CGSizeMake(width, height);
 }
 
-- (void)setModel:(nullable DWSeedPhraseTitledModel *)model {
-    _model = model;
+- (nullable DWSeedPhraseModel *)model {
+    return self.seedPhraseView.model;
+}
 
-    self.titleLabel.text = model.subTitle;
-    self.seedPhraseView.model = model.seedPhrase;
+- (void)setModel:(nullable DWSeedPhraseModel *)model {
+    self.seedPhraseView.model = model;
+}
+
+- (nullable NSString *)title {
+    return self.titleLabel.text;
+}
+
+- (void)setTitle:(nullable NSString *)title {
+    self.titleLabel.text = title;
 }
 
 - (void)prepareForAppearanceAnimation {

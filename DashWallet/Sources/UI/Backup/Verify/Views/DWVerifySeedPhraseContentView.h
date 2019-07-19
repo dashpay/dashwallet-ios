@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWVerifySeedPhraseContentView : UIView
 
 @property (nullable, nonatomic, strong) DWVerifySeedPhraseModel *model;
+@property (nullable, nonatomic, copy) NSString *title;
 
 @property (nonatomic, assign) CGSize visibleSize;
 @property (nullable, nonatomic, weak) id<DWVerifySeedPhraseContentViewDelegate> delegate;

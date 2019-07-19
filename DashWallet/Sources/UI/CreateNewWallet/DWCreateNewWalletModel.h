@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWCreateNewWalletModel : NSObject
 
+@property (readonly, class, nonatomic, assign) BOOL shouldSetPin;
+
 - (BOOL)setPin:(NSString *)pin;
 
 @end

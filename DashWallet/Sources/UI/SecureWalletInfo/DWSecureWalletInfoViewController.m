@@ -45,6 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleDefault;
+}
+
 #pragma mark - DWRootNavigationFullscreenable
 
 - (BOOL)requiresNoNavigationBar {

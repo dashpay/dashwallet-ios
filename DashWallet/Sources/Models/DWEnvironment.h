@@ -18,6 +18,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <Foundation/Foundation.h>
 
+// TODO: rm after redesign
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -34,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 - (void)clearAllWallets;
+- (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin;
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)reset;

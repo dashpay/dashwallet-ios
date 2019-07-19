@@ -12,13 +12,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^CheckPassphraseCompletionBlock)(BOOL needsCheck,BOOL authenticated,BOOL cancelled,NSString * _Nullable seedPhrase);
+typedef void (^CheckPassphraseCompletionBlock)(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase);
 
 @interface DWVersionManager : NSObject
 
-+ (instancetype _Nullable)sharedInstance;
++ (instancetype)sharedInstance;
 
-- (void)checkPassphraseWasShownCorrectlyForWallet:(DSWallet*)wallet withCompletion:(CheckPassphraseCompletionBlock)completion;
+- (void)migrateUserDefaults;
+
+- (void)checkPassphraseWasShownCorrectlyForWallet:(DSWallet *)wallet withCompletion:(CheckPassphraseCompletionBlock)completion;
 
 @end
 

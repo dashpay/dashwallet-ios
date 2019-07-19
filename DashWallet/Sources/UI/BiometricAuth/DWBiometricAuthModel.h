@@ -23,11 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBiometricAuthModel : NSObject
 
+@property (readonly, class, nonatomic, assign) BOOL shouldEnableBiometricAuthentication;
 @property (readonly, class, nonatomic, assign) BOOL biometricAuthenticationAvailable;
 
 @property (readonly, nonatomic, assign) LABiometryType biometryType;
 
 - (void)enableBiometricAuth:(void (^)(void))completion;
+- (void)disableBiometricAuth;
 
 @end
 

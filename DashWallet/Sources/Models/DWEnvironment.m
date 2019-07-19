@@ -88,6 +88,10 @@
 }
 
 - (void)clearAllWallets {
+    [self clearAllWalletsAndRemovePin:YES];
+}
+
+- (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
@@ -96,7 +100,10 @@
         [chain unregisterAllWallets];
         [chain.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
-    [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets
+
+    if (shouldRemovePin) {
+        [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets
+    }
 }
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {

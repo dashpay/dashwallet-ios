@@ -18,8 +18,8 @@
 #import "DWPreviewSeedPhraseViewController.h"
 
 #import "DWPreviewSeedPhraseContentView.h"
+#import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
-#import "DWSeedPhraseTitledModel.h"
 #import "DWVerifySeedPhraseViewController.h"
 #import "DevicesCompatibility.h"
 
@@ -49,7 +49,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @interface DWPreviewSeedPhraseViewController () <DWPreviewSeedPhraseContentViewDelegate>
 
-@property (nonatomic, strong) DWSeedPhraseTitledModel *model;
+@property (nonatomic, strong) DWPreviewSeedPhraseModel *model;
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
@@ -65,9 +65,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 + (instancetype)controllerForNewWallet {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"PreviewSeedPhrase" bundle:nil];
     DWPreviewSeedPhraseViewController *controller = [storyboard instantiateInitialViewController];
-    NSString *title = NSLocalizedString(@"Please write it down", nil);
-    DWSeedPhraseModel *seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
-    controller.model = [[DWSeedPhraseTitledModel alloc] initWithSubTitle:title seedPhrase:seedPhrase];
+    controller.model = [[DWPreviewSeedPhraseModel alloc] init];
 
     return controller;
 }
@@ -76,6 +74,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     [super viewDidLoad];
 
     [self setupView];
+    [self setupContentViewModel];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -122,10 +121,11 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
     self.scrollView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
+
     DWPreviewSeedPhraseContentView *contentView = [[DWPreviewSeedPhraseContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    contentView.model = self.model;
     contentView.delegate = self;
+    contentView.title = NSLocalizedString(@"Please write it down", nil);
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
@@ -143,11 +143,20 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
                                                object:nil];
 }
 
+- (void)setupContentViewModel {
+    NSAssert(self.contentView, @"Configure content view first");
+
+    DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
+    self.contentView.model = seedPhrase;
+}
+
 #pragma mark - Actions
 
 - (IBAction)continueButtonAction:(id)sender {
+    DWSeedPhraseModel *seedPhrase = self.contentView.model;
+
     DWVerifySeedPhraseViewController *controller = [DWVerifySeedPhraseViewController
-        controllerWithSeedPhrase:self.model.seedPhrase];
+        controllerWithSeedPhrase:seedPhrase];
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -171,9 +180,11 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         actionWithTitle:NSLocalizedString(@"OK", nil)
                   style:UIAlertActionStyleCancel
                 handler:^(UIAlertAction *action) {
-                    DWSeedPhraseModel *seedPhrase = [[DWSeedPhraseModel alloc] initAsNewWallet];
-                    [self.model resetSeedPhrase:seedPhrase];
+                    [self.model clearAllWallets];
+
+                    DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
                     [self.contentView updateSeedPhraseModelAnimated:seedPhrase];
+
                     self.previewContinueButton.enabled = NO;
                 }];
     [alert addAction:okAction];

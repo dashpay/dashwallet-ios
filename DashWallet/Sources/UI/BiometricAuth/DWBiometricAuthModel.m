@@ -17,6 +17,8 @@
 
 #import "DWBiometricAuthModel.h"
 
+#import "DWGlobalOptions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
@@ -28,6 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation DWBiometricAuthModel
+
++ (BOOL)shouldEnableBiometricAuthentication {
+    return ![DWGlobalOptions sharedInstance].biometricAuthConfigured;
+}
 
 + (BOOL)biometricAuthenticationAvailable {
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
@@ -79,8 +85,15 @@ NS_ASSUME_NONNULL_BEGIN
                  localizedReason:reason
                            reply:^(BOOL success, NSError *_Nullable error) {
                                // TODO: discuss how biometric Auth should work
+
+                               [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
+                               [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
                                dispatch_async(dispatch_get_main_queue(), completion);
                            }];
+}
+
+- (void)disableBiometricAuth {
+    [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
 }
 
 @end

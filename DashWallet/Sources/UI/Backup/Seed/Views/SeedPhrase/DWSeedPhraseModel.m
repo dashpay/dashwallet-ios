@@ -17,7 +17,6 @@
 
 #import "DWSeedPhraseModel.h"
 
-#import <DashSync/DashSync.h>
 #import <GameplayKit/GameplayKit.h>
 
 #import "DWSeedWordModel.h"
@@ -31,12 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation DWSeedPhraseModel
-
-- (instancetype)initAsNewWallet {
-    // TODO: correct language type
-    NSString *seed = [DSWallet generateRandomSeedForLanguage:DSBIP39Language_English];
-    return [self initWithSeed:seed];
-}
 
 - (instancetype)initWithSeed:(NSString *)seed {
     NSParameterAssert(seed);

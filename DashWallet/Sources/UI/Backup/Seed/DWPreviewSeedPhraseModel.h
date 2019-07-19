@@ -15,32 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWSeedPhraseTitledModel.h"
-
-#import "DWSeedPhraseModel.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSeedPhraseTitledModel ()
+@class DWSeedPhraseModel;
 
-@property (nonatomic, strong) DWSeedPhraseModel *seedPhrase;
+@interface DWPreviewSeedPhraseModel : NSObject
 
-@end
+@property (readonly, class, nonatomic, assign) BOOL shouldVerifyPassphrase;
 
-@implementation DWSeedPhraseTitledModel
-
-- (instancetype)initWithSubTitle:(NSString *)subTitle seedPhrase:(DWSeedPhraseModel *)seedPhrase {
-    self = [super init];
-    if (self) {
-        _subTitle = [subTitle copy];
-        _seedPhrase = seedPhrase;
-    }
-    return self;
-}
-
-- (void)resetSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
-    self.seedPhrase = seedPhrase;
-}
+- (DWSeedPhraseModel *)getOrCreateNewWallet;
+- (void)clearAllWallets;
 
 @end
 

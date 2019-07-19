@@ -23,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWCreateNewWalletModel
 
++ (BOOL)shouldSetPin {
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    return ![authenticationManager hasPin];
+}
+
 - (BOOL)setPin:(NSString *)pin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     return [authenticationManager setPin:pin];

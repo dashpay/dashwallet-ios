@@ -161,7 +161,6 @@
 		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
-		2AD1CE6822D9E25B00C99324 /* DWSeedPhraseTitledModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */; };
 		2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
 		2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7622DB51B500C99324 /* DWCheckbox.m */; };
 		2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
@@ -177,6 +176,8 @@
 		2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9C22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m */; };
 		2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */; };
 		2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */; };
+		2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */; };
+		2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 751B2B5B1B68911700EA87FB /* DWTxHistoryViewController.m */; };
 		7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7525B618192453840041C0F2 /* BRNavigationBar.m */; };
@@ -701,8 +702,6 @@
 		2AD1CE6222D9127600C99324 /* DWSeedWordModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedWordModel.h; sourceTree = "<group>"; };
 		2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedWordModel.m; sourceTree = "<group>"; };
 		2AD1CE6522D9161A00C99324 /* DWSeedPhraseType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseType.h; sourceTree = "<group>"; };
-		2AD1CE6622D9E25B00C99324 /* DWSeedPhraseTitledModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseTitledModel.h; sourceTree = "<group>"; };
-		2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseTitledModel.m; sourceTree = "<group>"; };
 		2AD1CE6922D9E75400C99324 /* DevicesCompatibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DevicesCompatibility.h; sourceTree = "<group>"; };
 		2AD1CE6B22DA33F900C99324 /* DWDeviceAdaptableController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceAdaptableController.h; sourceTree = "<group>"; };
 		2AD1CE6C22DA357D00C99324 /* DWBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseViewController.h; sourceTree = "<group>"; };
@@ -732,6 +731,10 @@
 		2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = VerifiedSuccessfully.storyboard; sourceTree = "<group>"; };
 		2AD1CEA022DFC80800C99324 /* DWCenteredScrollView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCenteredScrollView.h; sourceTree = "<group>"; };
 		2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCenteredScrollView.m; sourceTree = "<group>"; };
+		2AD1CEA622E0C8C800C99324 /* DWPreviewSeedPhraseModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPreviewSeedPhraseModel.h; sourceTree = "<group>"; };
+		2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseModel.m; sourceTree = "<group>"; };
+		2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalOptions.h; sourceTree = "<group>"; };
+		2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalOptions.m; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1197,8 +1200,12 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
+				FB2E5536218BA161003A1B7C /* DWVersionManager.m */,
 				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
+				2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */,
+				2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1263,6 +1270,8 @@
 			isa = PBXGroup;
 			children = (
 				2A4431DE22D72156009BAF7F /* Views */,
+				2AD1CEA622E0C8C800C99324 /* DWPreviewSeedPhraseModel.h */,
+				2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */,
 				2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */,
 				2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */,
 				2A4431DC22D675DC009BAF7F /* PreviewSeedPhrase.storyboard */,
@@ -1274,8 +1283,6 @@
 			isa = PBXGroup;
 			children = (
 				2AD1CE6122D9125000C99324 /* SeedPhrase */,
-				2AD1CE6622D9E25B00C99324 /* DWSeedPhraseTitledModel.h */,
-				2AD1CE6722D9E25B00C99324 /* DWSeedPhraseTitledModel.m */,
 				2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */,
 				2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */,
 				2AD1CE7522DB51B500C99324 /* DWCheckbox.h */,
@@ -1797,8 +1804,6 @@
 			children = (
 				2A9FFDF62230FF2B00956D5F /* UpholdModel */,
 				2A11F58021947CBE00E7B563 /* DataMigration */,
-				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
-				FB2E5536218BA161003A1B7C /* DWVersionManager.m */,
 				2ACC989D227B076C000336B3 /* DWStubTransaction.h */,
 				2ACC989E227B076C000336B3 /* DWStubTransaction.m */,
 			);
@@ -2784,6 +2789,7 @@
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
+				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
@@ -2879,6 +2885,7 @@
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
 				2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */,
 				2A9FFE8B2230FF4700956D5F /* DWLocalCurrecnySelectorViewController.m in Sources */,
+				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
@@ -2898,7 +2905,6 @@
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
-				2AD1CE6822D9E25B00C99324 /* DWSeedPhraseTitledModel.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */,

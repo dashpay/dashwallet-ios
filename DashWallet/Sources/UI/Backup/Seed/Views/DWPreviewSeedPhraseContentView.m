@@ -96,12 +96,20 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     return CGSizeMake(self.visibleSize.width, MAX(height, self.visibleSize.height));
 }
 
-- (nullable DWSeedPhraseTitledModel *)model {
+- (nullable DWSeedPhraseModel *)model {
     return self.seedPhraseView.model;
 }
 
-- (void)setModel:(nullable DWSeedPhraseTitledModel *)model {
+- (void)setModel:(nullable DWSeedPhraseModel *)model {
     self.seedPhraseView.model = model;
+}
+
+- (nullable NSString *)title {
+    return self.seedPhraseView.title;
+}
+
+- (void)setTitle:(nullable NSString *)title {
+    self.seedPhraseView.title = title;
 }
 
 - (void)setVisibleSize:(CGSize)visibleSize {

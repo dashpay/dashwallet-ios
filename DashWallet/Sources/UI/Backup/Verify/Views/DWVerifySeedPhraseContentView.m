@@ -17,7 +17,6 @@
 
 #import "DWVerifySeedPhraseContentView.h"
 
-#import "DWSeedPhraseTitledModel.h"
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedPhraseView.h"
 #import "DWSeedWordView.h"
@@ -71,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         DWSeedPhraseTitledView *verificationSeedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Verify];
         verificationSeedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
+        verificationSeedPhraseView.title = NSLocalizedString(@"Verify", nil);
         [self addSubview:verificationSeedPhraseView];
         _verificationSeedPhraseView = verificationSeedPhraseView;
 
@@ -136,9 +136,17 @@ NS_ASSUME_NONNULL_BEGIN
     // init shuffled view with normal model first
     // shuffled model will be set animated later (viewDidAppear)
 
-    DWSeedPhraseTitledModel *normalOrderedModel = model.titledSeedPhrase;
+    DWSeedPhraseModel *normalOrderedModel = model.seedPhrase;
     self.verificationSeedPhraseView.model = normalOrderedModel;
-    self.shuffledSeedPhraseView.model = normalOrderedModel.seedPhrase;
+    self.shuffledSeedPhraseView.model = normalOrderedModel;
+}
+
+- (nullable NSString *)title {
+    return self.verificationSeedPhraseView.title;
+}
+
+- (void)setTitle:(nullable NSString *)title {
+    self.verificationSeedPhraseView.title = title;
 }
 
 - (void)setVisibleSize:(CGSize)visibleSize {

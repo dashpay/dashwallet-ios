@@ -19,7 +19,9 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
+#import "DWCreateNewWalletModel.h"
 #import "DWCreateNewWalletViewController.h"
+#import "DWPreviewSeedPhraseModel.h"
 #import "DWRootModel.h"
 #import "DWSecureWalletInfoViewController.h"
 
@@ -88,9 +90,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - Actions
 
 - (IBAction)createWalletButtonAction:(id)sender {
-    DWCreateNewWalletViewController *controller = [DWCreateNewWalletViewController controller];
-    controller.delegate = self;
-    [self.navigationController pushViewController:controller animated:YES];
+    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
+    NSParameterAssert(newViewController);
+    [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
@@ -105,20 +107,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller {
-    UIViewController *newViewController = nil;
-    if (DWBiometricAuthModel.biometricAuthenticationAvailable) {
-        newViewController = [self biometricAuthController];
-    }
-    else {
-        newViewController = [self secureWalletInfoController];
-    }
+    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
+    NSParameterAssert(newViewController);
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
 #pragma mark - DWBiometricAuthViewControllerDelegate
 
 - (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller {
-    UIViewController *newViewController = [self secureWalletInfoController];
+    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
+    NSParameterAssert(newViewController);
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
@@ -154,6 +152,27 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                 }];
     [alert addAction:closeButton];
     [self presentViewController:alert animated:NO completion:nil];
+}
+
+- (nullable UIViewController *)nextControllerForCreateWalletRoutine {
+    if (DWCreateNewWalletModel.shouldSetPin) {
+        return [self setPinController];
+    }
+    else if (DWBiometricAuthModel.shouldEnableBiometricAuthentication && DWBiometricAuthModel.biometricAuthenticationAvailable) {
+        return [self biometricAuthController];
+    }
+    else if (DWPreviewSeedPhraseModel.shouldVerifyPassphrase) {
+        return [self secureWalletInfoController];
+    }
+
+    return nil;
+}
+
+- (UIViewController *)setPinController {
+    DWCreateNewWalletViewController *controller = [DWCreateNewWalletViewController controller];
+    controller.delegate = self;
+
+    return controller;
 }
 
 - (UIViewController *)biometricAuthController {

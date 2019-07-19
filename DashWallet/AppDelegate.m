@@ -24,6 +24,7 @@
 #import "DWStartViewController.h"
 #import "DWStartModel.h"
 #import "DWCrashReporter.h"
+#import "DWVersionManager.h"
 
 // TODO: re-enable Watch App
 //#ifndef IGNORE_WATCH_TARGET
@@ -57,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
     
+    [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
     
     DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
