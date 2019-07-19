@@ -15,15 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateNewWalletModel : NSObject
+@class DWSetPinViewController;
 
-@property (readonly, class, nonatomic, assign) BOOL shouldSetPin;
+@protocol DWSetPinViewControllerDelegate <NSObject>
 
-- (BOOL)setPin:(NSString *)pin;
+- (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller;
+- (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller;
+
+@end
+
+@interface DWSetPinViewController : DWBaseViewController
+
+@property (nullable, nonatomic, weak) id<DWSetPinViewControllerDelegate> delegate;
+
++ (instancetype)controller;
 
 @end
 

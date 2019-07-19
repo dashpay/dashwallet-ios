@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWCreateNewWalletModel.h"
+#import "DWSetPinModel.h"
 
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWCreateNewWalletModel
+@implementation DWSetPinModel
 
 + (BOOL)shouldSetPin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];

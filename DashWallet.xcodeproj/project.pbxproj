@@ -39,13 +39,13 @@
 		2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A44311822CBF108009BAF7F /* Montserrat.plist */; };
 		2A44311E22CC9B5A009BAF7F /* DWRootNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */; };
 		2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
-		2A44312622CCC14F009BAF7F /* DWCreateNewWalletViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */; };
-		2A44312A22CCC1D4009BAF7F /* CreateNewWallet.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */; };
+		2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312522CCC14F009BAF7F /* DWSetPinViewController.m */; };
+		2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* SetPin.storyboard */; };
 		2A44312E22CD0324009BAF7F /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312D22CD0324009BAF7F /* DWPinField.m */; };
 		2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313122CD37FA009BAF7F /* DWPinInputStepView.m */; };
 		2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
 		2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
-		2A44314322CF80D9009BAF7F /* DWCreateNewWalletModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314222CF80D9009BAF7F /* DWCreateNewWalletModel.m */; };
+		2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314222CF80D9009BAF7F /* DWSetPinModel.m */; };
 		2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
 		2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */; };
 		2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */; };
@@ -443,9 +443,9 @@
 		2A44311D22CC9B5A009BAF7F /* DWRootNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootNavigationController.m; sourceTree = "<group>"; };
 		2A44311F22CCA2A0009BAF7F /* UIColor+DWStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIColor+DWStyle.h"; sourceTree = "<group>"; };
 		2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIColor+DWStyle.m"; sourceTree = "<group>"; };
-		2A44312422CCC14F009BAF7F /* DWCreateNewWalletViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateNewWalletViewController.h; sourceTree = "<group>"; };
-		2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateNewWalletViewController.m; sourceTree = "<group>"; };
-		2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CreateNewWallet.storyboard; sourceTree = "<group>"; };
+		2A44312422CCC14F009BAF7F /* DWSetPinViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSetPinViewController.h; sourceTree = "<group>"; };
+		2A44312522CCC14F009BAF7F /* DWSetPinViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSetPinViewController.m; sourceTree = "<group>"; };
+		2A44312922CCC1D4009BAF7F /* SetPin.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SetPin.storyboard; sourceTree = "<group>"; };
 		2A44312C22CD0324009BAF7F /* DWPinField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinField.h; sourceTree = "<group>"; };
 		2A44312D22CD0324009BAF7F /* DWPinField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinField.m; sourceTree = "<group>"; };
 		2A44313022CD37FA009BAF7F /* DWPinInputStepView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinInputStepView.h; sourceTree = "<group>"; };
@@ -454,8 +454,8 @@
 		2A44313822CE2CB9009BAF7F /* DWPinView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinView.m; sourceTree = "<group>"; };
 		2A44313E22CF642C009BAF7F /* DWRootModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootModel.h; sourceTree = "<group>"; };
 		2A44313F22CF642C009BAF7F /* DWRootModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModel.m; sourceTree = "<group>"; };
-		2A44314122CF80D9009BAF7F /* DWCreateNewWalletModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateNewWalletModel.h; sourceTree = "<group>"; };
-		2A44314222CF80D9009BAF7F /* DWCreateNewWalletModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateNewWalletModel.m; sourceTree = "<group>"; };
+		2A44314122CF80D9009BAF7F /* DWSetPinModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSetPinModel.h; sourceTree = "<group>"; };
+		2A44314222CF80D9009BAF7F /* DWSetPinModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSetPinModel.m; sourceTree = "<group>"; };
 		2A44314522CF82D9009BAF7F /* DWBiometricAuthViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBiometricAuthViewController.h; sourceTree = "<group>"; };
 		2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBiometricAuthViewController.m; sourceTree = "<group>"; };
 		2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BiometricAuth.storyboard; sourceTree = "<group>"; };
@@ -1087,6 +1087,9 @@
 		2A4430E922CBB98D009BAF7F /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				2A9CEBA322E1C25700A50237 /* SecureWallet */,
+				2A44314422CF828E009BAF7F /* BiometricAuth */,
+				2A44312322CCC127009BAF7F /* SetPin */,
 				2A4430EC22CBBAC9009BAF7F /* DWSetupViewController.h */,
 				2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */,
 				2A4430EA22CBBA82009BAF7F /* Setup.storyboard */,
@@ -1131,17 +1134,17 @@
 			path = RootNavigation;
 			sourceTree = "<group>";
 		};
-		2A44312322CCC127009BAF7F /* CreateNewWallet */ = {
+		2A44312322CCC127009BAF7F /* SetPin */ = {
 			isa = PBXGroup;
 			children = (
 				2A44312F22CD37E6009BAF7F /* Views */,
-				2A44312922CCC1D4009BAF7F /* CreateNewWallet.storyboard */,
-				2A44312422CCC14F009BAF7F /* DWCreateNewWalletViewController.h */,
-				2A44312522CCC14F009BAF7F /* DWCreateNewWalletViewController.m */,
-				2A44314122CF80D9009BAF7F /* DWCreateNewWalletModel.h */,
-				2A44314222CF80D9009BAF7F /* DWCreateNewWalletModel.m */,
+				2A44312922CCC1D4009BAF7F /* SetPin.storyboard */,
+				2A44312422CCC14F009BAF7F /* DWSetPinViewController.h */,
+				2A44312522CCC14F009BAF7F /* DWSetPinViewController.m */,
+				2A44314122CF80D9009BAF7F /* DWSetPinModel.h */,
+				2A44314222CF80D9009BAF7F /* DWSetPinModel.m */,
 			);
-			path = CreateNewWallet;
+			path = SetPin;
 			sourceTree = "<group>";
 		};
 		2A44312B22CD0304009BAF7F /* SharedViews */ = {
@@ -1186,10 +1189,6 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				2A4431BF22D4CAB3009BAF7F /* Backup */,
-				2A4431B922D4ACAC009BAF7F /* SecureWalletInfo */,
-				2A44314422CF828E009BAF7F /* BiometricAuth */,
-				2A44312322CCC127009BAF7F /* CreateNewWallet */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
 				2A4430EF22CBC77A009BAF7F /* Views */,
 				2A4430E922CBB98D009BAF7F /* Setup */,
@@ -1232,18 +1231,7 @@
 			path = SecureWalletInfo;
 			sourceTree = "<group>";
 		};
-		2A4431BF22D4CAB3009BAF7F /* Backup */ = {
-			isa = PBXGroup;
-			children = (
-				2AD1CE9A22DFBA0900C99324 /* VerifiedSuccessfully */,
-				2AD1CE8122DC9B3900C99324 /* Verify */,
-				2A4431D822D67592009BAF7F /* Seed */,
-				2A4431C022D4CAC6009BAF7F /* Info */,
-			);
-			path = Backup;
-			sourceTree = "<group>";
-		};
-		2A4431C022D4CAC6009BAF7F /* Info */ = {
+		2A4431C022D4CAC6009BAF7F /* BackupInfo */ = {
 			isa = PBXGroup;
 			children = (
 				2A4431C922D52776009BAF7F /* Views */,
@@ -1251,7 +1239,7 @@
 				2A4431C222D4CAEA009BAF7F /* DWBackupInfoViewController.m */,
 				2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */,
 			);
-			path = Info;
+			path = BackupInfo;
 			sourceTree = "<group>";
 		};
 		2A4431C922D52776009BAF7F /* Views */ = {
@@ -1314,6 +1302,18 @@
 				2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */,
 			);
 			path = About;
+			sourceTree = "<group>";
+		};
+		2A9CEBA322E1C25700A50237 /* SecureWallet */ = {
+			isa = PBXGroup;
+			children = (
+				2A4431C022D4CAC6009BAF7F /* BackupInfo */,
+				2A4431B922D4ACAC009BAF7F /* SecureWalletInfo */,
+				2A4431D822D67592009BAF7F /* Seed */,
+				2AD1CE9A22DFBA0900C99324 /* VerifiedSuccessfully */,
+				2AD1CE8122DC9B3900C99324 /* Verify */,
+			);
+			path = SecureWallet;
 			sourceTree = "<group>";
 		};
 		2A9FFCCB222EA87E00956D5F /* TxDetails */ = {
@@ -2450,7 +2450,7 @@
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2A9FFE862230FF4700956D5F /* DWPlaceholderFormTableViewCell.xib in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
-				2A44312A22CCC1D4009BAF7F /* CreateNewWallet.storyboard in Resources */,
+				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A4431DD22D675DC009BAF7F /* PreviewSeedPhrase.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
@@ -2809,7 +2809,7 @@
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
-				2A44312622CCC14F009BAF7F /* DWCreateNewWalletViewController.m in Sources */,
+				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				2A9FFE742230FF4600956D5F /* DWAlertDismissalAnimationController.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
@@ -2841,7 +2841,7 @@
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
-				2A44314322CF80D9009BAF7F /* DWCreateNewWalletModel.m in Sources */,
+				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				2A9FFE732230FF4600956D5F /* DWAlertAction.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,

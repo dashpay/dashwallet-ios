@@ -19,11 +19,11 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
-#import "DWCreateNewWalletModel.h"
-#import "DWCreateNewWalletViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRootModel.h"
 #import "DWSecureWalletInfoViewController.h"
+#import "DWSetPinModel.h"
+#import "DWSetPinViewController.h"
 
 // TODO: rm
 #import "DWPreviewSeedPhraseViewController.h"
@@ -32,7 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
-@interface DWSetupViewController () <DWCreateNewWalletViewControllerDelegate, DWBiometricAuthViewControllerDelegate, DWSecureWalletInfoViewControllerDelegate>
+@interface DWSetupViewController () <DWSetPinViewControllerDelegate,
+                                     DWBiometricAuthViewControllerDelegate,
+                                     DWSecureWalletInfoViewControllerDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
@@ -100,13 +102,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self.navigationController pushViewController:c animated:YES];
 }
 
-#pragma mark - DWCreateNewWalletViewControllerDelegate
+#pragma mark - DWSetPinViewControllerDelegate
 
-- (void)createNewWalletViewControllerDidCancel:(DWCreateNewWalletViewController *)controller {
+- (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)createNewWalletViewControllerDidSetPin:(DWCreateNewWalletViewController *)controller {
+- (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
     NSParameterAssert(newViewController);
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
@@ -155,7 +157,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (nullable UIViewController *)nextControllerForCreateWalletRoutine {
-    if (DWCreateNewWalletModel.shouldSetPin) {
+    if (DWSetPinModel.shouldSetPin) {
         return [self setPinController];
     }
     else if (DWBiometricAuthModel.shouldEnableBiometricAuthentication && DWBiometricAuthModel.biometricAuthenticationAvailable) {
@@ -169,7 +171,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (UIViewController *)setPinController {
-    DWCreateNewWalletViewController *controller = [DWCreateNewWalletViewController controller];
+    DWSetPinViewController *controller = [DWSetPinViewController controller];
     controller.delegate = self;
 
     return controller;

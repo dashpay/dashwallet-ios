@@ -15,19 +15,19 @@
 //  limitations under the License.
 //
 
-#import "DWCreateNewWalletViewController.h"
+#import "DWSetPinViewController.h"
 
-#import "DWCreateNewWalletModel.h"
 #import "DWNumberKeyboard.h"
 #import "DWPinView.h"
+#import "DWSetPinModel.h"
 #import "DevicesCompatibility.h"
 #import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWCreateNewWalletViewController () <DWPinViewDelegate>
+@interface DWSetPinViewController () <DWPinViewDelegate>
 
-@property (nonatomic, strong) DWCreateNewWalletModel *model;
+@property (nonatomic, strong) DWSetPinModel *model;
 
 @property (strong, nonatomic) IBOutlet DWPinView *pinView;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
@@ -36,13 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWCreateNewWalletViewController
+@implementation DWSetPinViewController
 
 + (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"CreateNewWallet" bundle:nil];
-    DWCreateNewWalletViewController *controller = [storyboard instantiateInitialViewController];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"SetPin" bundle:nil];
+    DWSetPinViewController *controller = [storyboard instantiateInitialViewController];
     controller.title = NSLocalizedString(@"Create a New Wallet", nil);
-    controller.model = [[DWCreateNewWalletModel alloc] init];
+    controller.model = [[DWSetPinModel alloc] init];
 
     return controller;
 }
@@ -66,16 +66,16 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWPinViewDelegate
 
 - (void)pinViewCancelButtonTap:(DWPinView *)pinView {
-    [self.delegate createNewWalletViewControllerDidCancel:self];
+    [self.delegate setPinViewControllerDidCancel:self];
 }
 
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin {
     BOOL success = [self.model setPin:pin];
     if (success) {
-        [self.delegate createNewWalletViewControllerDidSetPin:self];
+        [self.delegate setPinViewControllerDidSetPin:self];
     }
     else {
-        [self.delegate createNewWalletViewControllerDidCancel:self];
+        [self.delegate setPinViewControllerDidCancel:self];
     }
 }
 
