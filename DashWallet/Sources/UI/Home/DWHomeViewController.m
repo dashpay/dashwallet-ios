@@ -15,18 +15,33 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
-#import "DWSecureWalletDelegate.h"
+#import "DWHomeViewController.h"
+
+#import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSeedPhraseModel;
+@interface DWHomeViewController ()
 
-@interface DWVerifySeedPhraseViewController : DWBaseViewController
+@end
 
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
+@implementation DWHomeViewController
 
-+ (instancetype)controllerWithSeedPhrase:(DWSeedPhraseModel *)seedPhrase;
++ (instancetype)controller {
+    DWHomeViewController *controller = [[DWHomeViewController alloc] init];
+
+    return controller;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self setupView];
+}
+
+- (void)setupView {
+    self.view.backgroundColor = [UIColor dw_backgroundColor];
+}
 
 @end
 

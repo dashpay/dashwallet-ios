@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)continueButtonAction:(id)sender {
+    [self.delegate secureWalletRoutineDidVerify:self];
 }
 
 #pragma mark - Private

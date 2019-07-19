@@ -59,11 +59,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)secureNowButtonAction:(id)sender {
     DWBackupInfoViewController *controller = [DWBackupInfoViewController controller];
+    controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)skipButtonAction:(id)sender {
-    [self.delegate secureWalletInfoViewControllerDidFinish:self];
+    [self.delegate secureWalletRoutineDidCanceled:self];
 }
 
 #pragma mark - Private

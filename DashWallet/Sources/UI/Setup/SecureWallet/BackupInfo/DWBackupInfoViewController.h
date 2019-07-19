@@ -16,10 +16,13 @@
 //
 
 #import "DWBaseViewController.h"
+#import "DWSecureWalletDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBackupInfoViewController : DWBaseViewController
+
+@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
 + (instancetype)controller;
 

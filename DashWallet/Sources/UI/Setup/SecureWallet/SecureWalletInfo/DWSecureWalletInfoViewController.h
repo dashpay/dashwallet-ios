@@ -18,20 +18,13 @@
 #import "DWBaseViewController.h"
 
 #import "DWRootNavigationFullscreenable.h"
+#import "DWSecureWalletDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSecureWalletInfoViewController;
-
-@protocol DWSecureWalletInfoViewControllerDelegate <NSObject>
-
-- (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller;
-
-@end
-
 @interface DWSecureWalletInfoViewController : DWBaseViewController <DWRootNavigationFullscreenable>
 
-@property (nullable, nonatomic, weak) id<DWSecureWalletInfoViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
 + (instancetype)controller;
 

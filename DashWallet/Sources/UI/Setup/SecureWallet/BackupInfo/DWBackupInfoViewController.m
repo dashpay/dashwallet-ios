@@ -76,6 +76,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
     DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerForNewWallet];
+    controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }
 

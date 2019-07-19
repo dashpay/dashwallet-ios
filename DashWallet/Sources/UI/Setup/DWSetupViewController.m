@@ -19,6 +19,7 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
+#import "DWHomeViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWRootModel.h"
 #import "DWSecureWalletInfoViewController.h"
@@ -34,7 +35,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @interface DWSetupViewController () <DWSetPinViewControllerDelegate,
                                      DWBiometricAuthViewControllerDelegate,
-                                     DWSecureWalletInfoViewControllerDelegate>
+                                     DWSecureWalletDelegate>
 
 @property (nonatomic, strong) DWRootModel *model;
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
@@ -122,7 +123,15 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
-#pragma mark - DWSecureWalletInfoViewController
+#pragma mark - DWSecureWalletDelegate
+
+- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
+    [self completeSetup];
+}
+
+- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
+    [self completeSetup];
+}
 
 - (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller {
     [self.navigationController popViewControllerAnimated:NO];
@@ -189,6 +198,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     controller.delegate = self;
 
     return controller;
+}
+
+- (void)completeSetup {
+    [self.delegate setupViewControllerDidFinish:self];
 }
 
 @end

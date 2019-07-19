@@ -17,6 +17,7 @@
 
 #import "DWRootNavigationController.h"
 
+#import "DWHomeViewController.h"
 #import "DWRootModel.h"
 #import "DWRootNavigationFullscreenable.h"
 #import "DWSetupViewController.h"
@@ -25,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootNavigationController () <UINavigationControllerDelegate>
+@interface DWRootNavigationController () <UINavigationControllerDelegate, DWSetupViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DWRootModel *model;
 
@@ -48,11 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 
     if (self.model.hasAWallet) {
-        // TODO: impl
+        [self showHomeController];
     }
     else {
-        DWSetupViewController *controller = [DWSetupViewController controllerWithModel:self.model];
-        [self pushViewController:controller animated:NO];
+        [self showSetupController];
     }
 }
 
@@ -81,6 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
     viewController.navigationItem.backBarButtonItem = item;
 }
 
+#pragma mark - DWSetupViewControllerDelegate
+
+- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
+    [self showHomeController];
+}
+
 #pragma mark - Private
 
 - (void)setupView {
@@ -96,6 +102,17 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
     self.navigationBar.shadowImage = [[UIImage alloc] init];
+}
+
+- (void)showSetupController {
+    DWSetupViewController *controller = [DWSetupViewController controllerWithModel:self.model];
+    controller.delegate = self;
+    [self setViewControllers:@[ controller ] animated:YES];
+}
+
+- (void)showHomeController {
+    DWHomeViewController *controller = [DWHomeViewController controller];
+    [self setViewControllers:@[ controller ] animated:YES];
 }
 
 @end

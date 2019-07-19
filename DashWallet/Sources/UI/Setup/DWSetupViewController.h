@@ -22,8 +22,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWRootModel;
+@class DWSetupViewController;
+
+@protocol DWSetupViewControllerDelegate <NSObject>
+
+- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller;
+
+@end
 
 @interface DWSetupViewController : DWBaseViewController <DWRootNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWSetupViewControllerDelegate> delegate;
 
 + (instancetype)controllerWithModel:(DWRootModel *)model;
 
