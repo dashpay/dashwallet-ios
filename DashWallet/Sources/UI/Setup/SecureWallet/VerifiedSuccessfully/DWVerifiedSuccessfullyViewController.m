@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.scrollView flashScrollIndicators];
 }
 
-#pragma mark - DWRootNavigationFullscreenable
+#pragma mark - DWNavigationFullscreenable
 
 - (BOOL)requiresNoNavigationBar {
     return YES;

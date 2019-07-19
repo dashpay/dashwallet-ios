@@ -28,7 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWPreviewSeedPhraseModel
 
 + (BOOL)shouldVerifyPassphrase {
-    return [DWGlobalOptions sharedInstance].walletNeedsBackup;
+    // during setup always suggest to verify the wallet
+    return YES;
 }
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {

@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleDefault;
 }
 
-#pragma mark - DWRootNavigationFullscreenable
+#pragma mark - DWNavigationFullscreenable
 
 - (BOOL)requiresNoNavigationBar {
     return YES;

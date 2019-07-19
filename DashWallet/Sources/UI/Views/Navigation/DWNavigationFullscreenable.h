@@ -15,18 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWNavigationFullscreenable.h"
-#import "DWSecureWalletDelegate.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWVerifiedSuccessfullyViewController : UIViewController <DWNavigationFullscreenable>
+@protocol DWNavigationFullscreenable <NSObject>
 
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
-
-+ (instancetype)controller;
+- (BOOL)requiresNoNavigationBar;
 
 @end
 

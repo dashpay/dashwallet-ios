@@ -17,11 +17,15 @@
 
 #import "DWHomeViewController.h"
 
+#import "DWTabBarView.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController ()
+
+@property (nullable, nonatomic, strong) UIView *contentView;
+@property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
 
 @end
 
@@ -40,7 +44,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setupView {
-    self.view.backgroundColor = [UIColor dw_backgroundColor];
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+    UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    contentView.backgroundColor = self.view.backgroundColor;
+    [self.view addSubview:contentView];
+    self.contentView = contentView;
+
+    DWTabBarView *tabBarView = [[DWTabBarView alloc] initWithFrame:CGRectZero];
+    tabBarView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:tabBarView];
+    self.tabBarView = tabBarView;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+
+        [tabBarView.topAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+        [tabBarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [tabBarView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [tabBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    ]];
 }
 
 @end

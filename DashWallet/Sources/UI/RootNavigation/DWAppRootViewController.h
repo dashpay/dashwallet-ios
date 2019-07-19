@@ -17,16 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWNavigationFullscreenable.h"
-#import "DWSecureWalletDelegate.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWVerifiedSuccessfullyViewController : UIViewController <DWNavigationFullscreenable>
+@interface DWAppRootViewController : UIViewController
 
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 
-+ (instancetype)controller;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

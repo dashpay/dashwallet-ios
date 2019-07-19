@@ -17,11 +17,10 @@
 
 #import "DWBaseViewController.h"
 
-#import "DWRootNavigationFullscreenable.h"
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWRootModel;
 @class DWSetupViewController;
 
 @protocol DWSetupViewControllerDelegate <NSObject>
@@ -30,11 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWSetupViewController : DWBaseViewController <DWRootNavigationFullscreenable>
+@interface DWSetupViewController : DWBaseViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWSetupViewControllerDelegate> delegate;
 
-+ (instancetype)controllerWithModel:(DWRootModel *)model;
++ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWSetupViewControllerDelegate>)delegate;
 
 @end
 

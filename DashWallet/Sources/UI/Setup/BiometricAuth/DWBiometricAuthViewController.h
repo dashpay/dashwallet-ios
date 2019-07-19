@@ -17,7 +17,7 @@
 
 #import "DWBaseViewController.h"
 
-#import "DWRootNavigationFullscreenable.h"
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWBiometricAuthViewController : DWBaseViewController <DWRootNavigationFullscreenable>
+@interface DWBiometricAuthViewController : DWBaseViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWBiometricAuthViewControllerDelegate> delegate;
 

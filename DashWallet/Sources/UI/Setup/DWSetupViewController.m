@@ -20,8 +20,8 @@
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
 #import "DWHomeViewController.h"
+#import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
-#import "DWRootModel.h"
 #import "DWSecureWalletInfoViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
@@ -37,7 +37,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                                      DWBiometricAuthViewControllerDelegate,
                                      DWSecureWalletDelegate>
 
-@property (nonatomic, strong) DWRootModel *model;
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 
 @property (strong, nonatomic) IBOutlet UIButton *createWalletButton;
@@ -49,26 +48,20 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @implementation DWSetupViewController
 
-+ (instancetype)controllerWithModel:(DWRootModel *)model {
++ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWSetupViewControllerDelegate>)delegate {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Setup" bundle:nil];
     DWSetupViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = model;
+    controller.delegate = delegate;
 
-    return controller;
+    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
+
+    return navigationController;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     [self setupView];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    if (!self.model.walletOperationAllowed) {
-        [self showDevicePasscodeAlert];
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -137,7 +130,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self.navigationController popViewControllerAnimated:NO];
 }
 
-#pragma mark - DWRootNavigationFullscreenable
+#pragma mark - DWNavigationFullscreenable
 
 - (BOOL)requiresNoNavigationBar {
     return YES;
@@ -148,21 +141,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)setupView {
     [self.createWalletButton setTitle:NSLocalizedString(@"Create a New Wallet", nil) forState:UIControlStateNormal];
     [self.recoverWalletButton setTitle:NSLocalizedString(@"Recover Wallet", nil) forState:UIControlStateNormal];
-}
-
-- (void)showDevicePasscodeAlert {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", nil)
-                         message:NSLocalizedString(@"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.", nil)
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *closeButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Close App", nil)
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction *action) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
-                }];
-    [alert addAction:closeButton];
-    [self presentViewController:alert animated:NO completion:nil];
 }
 
 - (nullable UIViewController *)nextControllerForCreateWalletRoutine {

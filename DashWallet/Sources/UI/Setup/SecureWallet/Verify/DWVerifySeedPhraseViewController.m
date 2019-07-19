@@ -53,6 +53,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     [self setupView];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
@@ -71,7 +75,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view {
     DWVerifiedSuccessfullyViewController *controller = [DWVerifiedSuccessfullyViewController controller];
     controller.delegate = self.delegate;
-    [self.navigationController setViewControllers:@[ controller ] animated:YES];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - Private

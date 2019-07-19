@@ -28,7 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Init
 
 - (instancetype)init {
-    NSDictionary *defaults = @{};
+    NSDictionary *defaults = @{
+        @"walletNeedsBackup" : @YES,
+    };
 
     self = [super initWithDefaults:defaults];
     return self;

@@ -18,7 +18,7 @@
 #import "AppDelegate.h"
 
 #import <UserNotifications/UserNotifications.h>
-#import "DWRootNavigationController.h"
+#import "DWAppRootViewController.h"
 #import <DashSync/DashSync.h>
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
@@ -134,7 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
     [[DWCrashReporter sharedInstance] enableCrashReporter];
     
-    DWRootNavigationController *rootController = [[DWRootNavigationController alloc] init];
+    DWAppRootViewController *rootController = [[DWAppRootViewController alloc] init];
     self.window.rootViewController = rootController;
     
     [self setupDashWalletComponentsWithOptions:launchOptions];

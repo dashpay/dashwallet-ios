@@ -15,49 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DWRootNavigationController.h"
+#import "DWNavigationController.h"
 
-#import "DWHomeViewController.h"
-#import "DWRootModel.h"
-#import "DWRootNavigationFullscreenable.h"
-#import "DWSetupViewController.h"
+#import "DWNavigationFullscreenable.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootNavigationController () <UINavigationControllerDelegate, DWSetupViewControllerDelegate>
-
-@property (readonly, nonatomic, strong) DWRootModel *model;
-
-@end
-
-@implementation DWRootNavigationController
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _model = [[DWRootModel alloc] init];
-    }
-    return self;
-}
+@implementation DWNavigationController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     self.delegate = self;
     [self setupView];
-
-    if (self.model.hasAWallet) {
-        [self showHomeController];
-    }
-    else {
-        [self showSetupController];
-    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
+    return self.topViewController.preferredStatusBarStyle;
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -69,8 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)navigationController:(UINavigationController *)navigationController
       willShowViewController:(UIViewController *)viewController
                     animated:(BOOL)animated {
-    BOOL hidden = [viewController conformsToProtocol:@protocol(DWRootNavigationFullscreenable)] &&
-                  [(id<DWRootNavigationFullscreenable>)viewController requiresNoNavigationBar];
+    BOOL hidden = [viewController conformsToProtocol:@protocol(DWNavigationFullscreenable)] &&
+                  [(id<DWNavigationFullscreenable>)viewController requiresNoNavigationBar];
     [navigationController setNavigationBarHidden:hidden animated:animated];
 
     // Hide back button title
@@ -79,12 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                             target:nil
                                                             action:nil];
     viewController.navigationItem.backBarButtonItem = item;
-}
-
-#pragma mark - DWSetupViewControllerDelegate
-
-- (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    [self showHomeController];
 }
 
 #pragma mark - Private
@@ -102,17 +72,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
     self.navigationBar.shadowImage = [[UIImage alloc] init];
-}
-
-- (void)showSetupController {
-    DWSetupViewController *controller = [DWSetupViewController controllerWithModel:self.model];
-    controller.delegate = self;
-    [self setViewControllers:@[ controller ] animated:YES];
-}
-
-- (void)showHomeController {
-    DWHomeViewController *controller = [DWHomeViewController controller];
-    [self setViewControllers:@[ controller ] animated:YES];
 }
 
 @end

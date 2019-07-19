@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWRootNavigationFullscreenable <NSObject>
-
-- (BOOL)requiresNoNavigationBar;
+/**
+ Styled UINavigationController that supports `DWNavigationFullscreenable` protocol
+ and hides back button title
+ */
+@interface DWNavigationController : UINavigationController <UINavigationControllerDelegate>
 
 @end
 
