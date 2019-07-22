@@ -34,6 +34,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @property (nonatomic, strong) DWVerifySeedPhraseContentView *contentView;
+@property (null_resettable, nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
 
 @end
 
@@ -62,6 +63,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
     [self.contentView viewDidAppear];
     [self.scrollView flashScrollIndicators];
+    [self.feedbackGenerator prepare];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -73,6 +75,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - DWVerifySeedPhraseContentViewDelegate
 
 - (void)verifySeedPhraseContentViewDidVerify:(DWVerifySeedPhraseContentView *)view {
+    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
+
     DWVerifiedSuccessfullyViewController *controller = [DWVerifiedSuccessfullyViewController controller];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
@@ -99,6 +103,13 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         [contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
         [contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
     ]];
+}
+
+- (UINotificationFeedbackGenerator *)feedbackGenerator {
+    if (!_feedbackGenerator) {
+        _feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
+    }
+    return _feedbackGenerator;
 }
 
 #pragma mark - Configuration

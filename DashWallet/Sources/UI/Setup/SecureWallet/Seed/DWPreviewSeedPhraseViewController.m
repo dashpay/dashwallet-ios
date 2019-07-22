@@ -57,6 +57,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @property (nonatomic, strong) DWPreviewSeedPhraseContentView *contentView;
 @property (nullable, nonatomic, weak) id<DWPreviewContinueButton> previewContinueButton;
+@property (null_resettable, nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
 
 @end
 
@@ -153,6 +154,13 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     self.contentView.model = seedPhrase;
 }
 
+- (UINotificationFeedbackGenerator *)feedbackGenerator {
+    if (!_feedbackGenerator) {
+        _feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
+    }
+    return _feedbackGenerator;
+}
+
 #pragma mark - Actions
 
 - (IBAction)continueButtonAction:(id)sender {
@@ -174,6 +182,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Notifications
 
 - (void)userDidTakeScreenshotNotification:(NSNotification *)notification {
+    [self.feedbackGenerator prepare];
+
     NSString *title = NSLocalizedString(@"WARNING", nil);
     NSString *message = NSLocalizedString(@"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.", nil);
 
@@ -185,6 +195,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
                   style:UIAlertActionStyleCancel
                 handler:^(UIAlertAction *action) {
                     [self.model clearAllWallets];
+
+                    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
 
                     DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
                     [self.contentView updateSeedPhraseModelAnimated:seedPhrase];

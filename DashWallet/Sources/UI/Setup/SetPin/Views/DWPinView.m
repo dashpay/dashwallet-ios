@@ -37,6 +37,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
 
 @property (nonatomic, strong) NSLayoutConstraint *setPinLeadingContraint;
 @property (nonatomic, strong) NSLayoutConstraint *confirmPinLeadingContraint;
+@property (nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
 
 @end
 
@@ -76,6 +77,8 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     confirmPinView.hidden = YES;
     [self addSubview:confirmPinView];
     self.confirmPinView = confirmPinView;
+
+    _feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
 
     [NSLayoutConstraint activateConstraints:@[
         [setPinView.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -166,6 +169,8 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
             [self.confirmPinView.pinField becomeFirstResponder];
             self.keyboard.userInteractionEnabled = YES;
             self.setPinView.hidden = YES;
+
+            [self.feedbackGenerator prepare];
         }];
 }
 
@@ -186,9 +191,13 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
         NSString *secondPin = strongSelf.confirmPinView.pinField.text;
 
         if ([firstPin isEqualToString:secondPin]) {
+            [strongSelf.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
+
             [strongSelf.delegate pinView:strongSelf didFinishWithPin:secondPin];
         }
         else {
+            [strongSelf.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
+
             [strongSelf.confirmPinView.pinField dw_shakeViewWithCompletion:^{
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
@@ -199,6 +208,8 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
 
                 [strongSelf.confirmPinView.pinField becomeFirstResponder];
                 strongSelf.keyboard.userInteractionEnabled = YES;
+
+                [strongSelf.feedbackGenerator prepare];
             }];
         }
     });
