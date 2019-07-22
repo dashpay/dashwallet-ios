@@ -129,7 +129,6 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     DWPreviewSeedPhraseContentView *contentView = [[DWPreviewSeedPhraseContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
-    contentView.title = NSLocalizedString(@"Please write it down", nil);
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
@@ -189,6 +188,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
                     DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
                     [self.contentView updateSeedPhraseModelAnimated:seedPhrase];
+                    [self.contentView showScreenshotDetectedErrorMessage];
 
                     self.previewContinueButton.enabled = NO;
                 }];

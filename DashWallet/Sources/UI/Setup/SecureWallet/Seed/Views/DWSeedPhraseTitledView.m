@@ -33,6 +33,15 @@ static CGFloat TitleSeedPhrasePadding(void) {
     }
 }
 
+static UIColor *TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle titleStyle) {
+    switch (titleStyle) {
+        case DWSeedPhraseTitledViewTitleStyle_Default:
+            return [UIColor dw_darkTitleColor];
+        case DWSeedPhraseTitledViewTitleStyle_Error:
+            return [UIColor dw_redColor];
+    }
+}
+
 @interface DWSeedPhraseTitledView ()
 
 @property (nonatomic, strong) UILabel *titleLabel;
@@ -52,7 +61,7 @@ static CGFloat TitleSeedPhrasePadding(void) {
         titleLabel.backgroundColor = self.backgroundColor;
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-        titleLabel.textColor = [UIColor dw_darkTitleColor];
+        titleLabel.textColor = TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle_Default);
         titleLabel.adjustsFontForContentSizeCategory = YES;
         titleLabel.numberOfLines = 0;
         [self addSubview:titleLabel];
@@ -108,6 +117,12 @@ static CGFloat TitleSeedPhrasePadding(void) {
 
 - (void)setTitle:(nullable NSString *)title {
     self.titleLabel.text = title;
+}
+
+- (void)setTitleStyle:(DWSeedPhraseTitledViewTitleStyle)titleStyle {
+    _titleStyle = titleStyle;
+
+    self.titleLabel.textColor = TitleColorForStyle(titleStyle);
 }
 
 - (void)prepareForAppearanceAnimation {

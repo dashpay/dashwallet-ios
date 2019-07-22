@@ -576,6 +576,9 @@
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Escanee el código QR de terceros para obtener su dirección dash o bitcoin. Puede enviar un pago a cualquier poseedor de una dirección.";
 
 /* No comment provided by engineer. */
+"Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
+
+/* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Las capturas de pantalla son visibles para otras aplicaciones y dispositivos. Genere una nueva frase de recuperación y téngala en secreto.";
 
 /* No comment provided by engineer. */

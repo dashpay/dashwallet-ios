@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPreviewSeedPhraseContentView : UIView
 
 @property (nullable, nonatomic, strong) DWSeedPhraseModel *model;
-@property (nullable, nonatomic, copy) NSString *title;
 
 @property (nonatomic, assign) CGSize visibleSize;
 @property (nullable, nonatomic, weak) id<DWPreviewSeedPhraseContentViewDelegate> delegate;
@@ -44,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidAppear;
 
 - (void)updateSeedPhraseModelAnimated:(DWSeedPhraseModel *)seedPhrase;
+- (void)showScreenshotDetectedErrorMessage;
 
 @end
 

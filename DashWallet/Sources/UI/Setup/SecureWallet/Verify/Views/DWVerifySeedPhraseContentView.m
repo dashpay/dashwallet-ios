@@ -141,14 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
     self.shuffledSeedPhraseView.model = normalOrderedModel;
 }
 
-- (nullable NSString *)title {
-    return self.verificationSeedPhraseView.title;
-}
-
-- (void)setTitle:(nullable NSString *)title {
-    self.verificationSeedPhraseView.title = title;
-}
-
 - (void)setVisibleSize:(CGSize)visibleSize {
     _visibleSize = visibleSize;
 

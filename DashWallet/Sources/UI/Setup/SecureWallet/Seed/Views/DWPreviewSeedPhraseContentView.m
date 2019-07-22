@@ -28,6 +28,7 @@ static CGFloat const BOTTOM_PADDING = 12.0;
 
 static NSTimeInterval const CONFIRMATION_SHOW_DELAY = 2.0;
 static NSTimeInterval const ANIMATION_DURATION = 0.3;
+static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 
 @interface DWPreviewSeedPhraseContentView ()
 
@@ -47,6 +48,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     if (self) {
         DWSeedPhraseTitledView *seedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Preview];
         seedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
+        seedPhraseView.title = NSLocalizedString(@"Please write it down", nil);
         [self addSubview:seedPhraseView];
         _seedPhraseView = seedPhraseView;
 
@@ -104,14 +106,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     self.seedPhraseView.model = model;
 }
 
-- (nullable NSString *)title {
-    return self.seedPhraseView.title;
-}
-
-- (void)setTitle:(nullable NSString *)title {
-    self.seedPhraseView.title = title;
-}
-
 - (void)setVisibleSize:(CGSize)visibleSize {
     _visibleSize = visibleSize;
 
@@ -145,6 +139,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     self.confirmationCheckbox.on = NO;
     self.confirmationCheckbox.alpha = 0.0;
     [self showConfirmationCheckBoxAfterDelay];
+}
+
+- (void)showScreenshotDetectedErrorMessage {
+    self.seedPhraseView.title = NSLocalizedString(@"Screenshot detected. New recovery phrase:", nil);
+    self.seedPhraseView.titleStyle = DWSeedPhraseTitledViewTitleStyle_Error;
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SCREENSHOT_ERROR_MSG_DELAY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        weakSelf.seedPhraseView.title = NSLocalizedString(@"Please write it down", nil);
+        weakSelf.seedPhraseView.titleStyle = DWSeedPhraseTitledViewTitleStyle_Default;
+    });
 }
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {

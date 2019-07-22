@@ -23,10 +23,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWSeedPhraseModel;
 
+typedef NS_ENUM(NSUInteger, DWSeedPhraseTitledViewTitleStyle) {
+    DWSeedPhraseTitledViewTitleStyle_Default,
+    DWSeedPhraseTitledViewTitleStyle_Error,
+};
+
 @interface DWSeedPhraseTitledView : UIView
 
 @property (nullable, nonatomic, strong) DWSeedPhraseModel *model;
 @property (nullable, nonatomic, copy) NSString *title;
+@property (nonatomic, assign) DWSeedPhraseTitledViewTitleStyle titleStyle;
 
 - (instancetype)initWithType:(DWSeedPhraseType)type NS_DESIGNATED_INITIALIZER;
 
