@@ -17,16 +17,20 @@
 
 #import "DWHomeViewController.h"
 
+#import "DWHomeView.h"
 #import "DWNavigationController.h"
-#import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController ()
 
+@property (strong, nonatomic) DWHomeView *view;
+
 @end
 
 @implementation DWHomeViewController
+
+@dynamic view;
 
 + (UIViewController *)controllerEmbededInNavigation {
     DWHomeViewController *controller = [[DWHomeViewController alloc] init];
@@ -34,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
         [[DWNavigationController alloc] initWithRootViewController:controller];
 
     return navigationController;
+}
+
+- (void)loadView {
+    CGRect frame = [UIScreen mainScreen].bounds;
+    self.view = [[DWHomeView alloc] initWithFrame:frame];
+    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }
 
 - (void)viewDidLoad {
@@ -49,8 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
-    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
     UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
     NSParameterAssert(logoImage);
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:logoImage];

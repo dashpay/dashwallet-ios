@@ -63,8 +63,26 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_tertiaryTextColor {
+    UIColor *color = [UIColor colorNamed:@"TertiaryTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_redColor {
     UIColor *color = [UIColor colorNamed:@"RedColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_darkBlueColor {
+    UIColor *color = [UIColor colorNamed:@"DarkBlueColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_greenColor {
+    UIColor *color = [UIColor colorNamed:@"GreenColor"];
     NSParameterAssert(color);
     return color;
 }
@@ -107,6 +125,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_tabbarInactiveButtonColor {
     UIColor *color = [UIColor colorNamed:@"TabbarInactiveButtonColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_progressBackgroundColor {
+    UIColor *color = [UIColor colorNamed:@"ProgressBackgroundColor"];
     NSParameterAssert(color);
     return color;
 }

@@ -19,33 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DWStyle)
+@interface DWHomeView : UIView
 
-+ (UIColor *)dw_backgroundColor;
-+ (UIColor *)dw_secondaryBackgroundColor;
-
-+ (UIColor *)dw_tintColor;
-
-+ (UIColor *)dw_dashBlueColor;
-+ (UIColor *)dw_lightTitleColor;
-+ (UIColor *)dw_darkTitleColor;
-+ (UIColor *)dw_secondaryTextColor;
-+ (UIColor *)dw_tertiaryTextColor;
-+ (UIColor *)dw_redColor;
-+ (UIColor *)dw_darkBlueColor;
-+ (UIColor *)dw_greenColor;
-+ (UIColor *)dw_disabledButtonColor;
-
-+ (UIColor *)dw_pinBackgroundColor;
-+ (UIColor *)dw_pinInputDotColor;
-
-+ (UIColor *)dw_numberKeyboardTextColor;
-+ (UIColor *)dw_numberKeyboardHighlightedTextColor;
-
-+ (UIColor *)dw_tabbarBorderColor;
-+ (UIColor *)dw_tabbarInactiveButtonColor;
-
-+ (UIColor *)dw_progressBackgroundColor;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

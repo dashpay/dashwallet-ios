@@ -51,11 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performInitialSetup {
     self.usedOnDarkBackground = NO;
     self.inverted = NO;
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(setNeedsLayout)
-                                                 name:UIContentSizeCategoryDidChangeNotification
-                                               object:nil];
 }
 
 - (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -166,8 +161,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetAppearance {
-    self.titleLabel.adjustsFontForContentSizeCategory = YES;
-    self.titleLabel.adjustsFontSizeToFitWidth = YES;
     UIFontTextStyle textStyle = self.small ? UIFontTextStyleCaption2 : UIFontTextStyleCaption1;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:textStyle];
 
