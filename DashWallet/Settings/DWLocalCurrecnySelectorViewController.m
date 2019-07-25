@@ -17,12 +17,31 @@
 
 #import "DWLocalCurrecnySelectorViewController.h"
 
+#import "DWFormTableViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWLocalCurrecnySelectorViewController ()
+
+@property (nonatomic, strong) UILabel *priceSourceLabel;
+
+@end
 
 @implementation DWLocalCurrecnySelectorViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    CGFloat height = 160.0;
+    CGRect frame = CGRectMake(0.0, -height, CGRectGetWidth([UIScreen mainScreen].bounds), height);
+    UILabel *priceSourceLabel = [[UILabel alloc] initWithFrame:frame];
+    priceSourceLabel.textColor = [UIColor darkTextColor];
+    priceSourceLabel.font = [UIFont systemFontOfSize:15.0];
+    priceSourceLabel.numberOfLines = 0;
+    priceSourceLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    priceSourceLabel.textAlignment = NSTextAlignmentCenter;
+    [self.formController.tableView addSubview:priceSourceLabel];
+    self.priceSourceLabel = priceSourceLabel;
 
     [self walletBalanceDidChangeNotification:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -32,8 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)walletBalanceDidChangeNotification:(nullable NSNotification *)sender {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     self.title = [NSString stringWithFormat:@"1 DASH = %@",
-                                            [[DSPriceManager sharedInstance] localCurrencyStringForDashAmount:DUFFS]];
+                                            [priceManager localCurrencyStringForDashAmount:DUFFS]];
+    self.priceSourceLabel.text = [NSString stringWithFormat:@"📈 %@",
+                                  priceManager.lastPriceSourceInfo ?: @"?"];
 }
 
 @end
