@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
             
-            [strongSelf.delegate upholdLogoutTutorialViewControllerDidCancel:self];
+            [strongSelf.delegate upholdLogoutTutorialViewControllerDidCancel:strongSelf];
         }];
         DWAlertAction *goToWebsiteAction = [DWAlertAction actionWithTitle:NSLocalizedString(@"Go to Website", nil) style:DWAlertActionStyleDefault handler:^(DWAlertAction *_Nonnull action) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
             
-            [strongSelf.delegate upholdLogoutTutorialViewControllerOpenUpholdWebsite:self];
+            [strongSelf.delegate upholdLogoutTutorialViewControllerOpenUpholdWebsite:strongSelf];
         }];
         _providedActions = @[ cancelAction, goToWebsiteAction ];
     }
