@@ -62,7 +62,15 @@ typedef void (^UpholdHTTPLoaderCompletionBlock)(id _Nullable parsedData, DWUphol
         NSString *otpTokenHeader = responseHeaders[@"OTP-Token"];
         BOOL otpRequired = (otpTokenHeader && [otpTokenHeader caseInsensitiveCompare:@"required"] == NSOrderedSame) || hasOTPError;
         if (statusCode == 401) {
-            upholdStatusCode = otpRequired ? DWUpholdAPIProviderResponseStatusCodeOTPRequired : DWUpholdAPIProviderResponseStatusCodeUnauthorized;
+            if (otpRequired) {
+                upholdStatusCode = DWUpholdAPIProviderResponseStatusCodeOTPRequired;
+            }
+            else if (responseHeaders[@"otp-method-id"]) {
+                upholdStatusCode = DWUpholdAPIProviderResponseStatusCodeOTPInvalid;
+            }
+            else {
+                upholdStatusCode = DWUpholdAPIProviderResponseStatusCodeUnauthorized;
+            }
         }
 
         if (completion) {

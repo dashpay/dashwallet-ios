@@ -225,7 +225,8 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
         }
 
         if (completion) {
-            BOOL otpRequired = statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired;
+            BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
+                               (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
             completion(success ? transaction : nil, otpRequired);
         }
 
@@ -255,7 +256,8 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
         }
 
         if (completion) {
-            BOOL otpRequired = statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired;
+            BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
+                               (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
             completion(success ? transaction : nil, otpRequired);
         }
 
@@ -285,7 +287,8 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
                                     }
 
                                     if (completion) {
-                                        BOOL otpRequired = statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired;
+                                        BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
+                                                           (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
                                         completion(success, otpRequired);
                                     }
 
