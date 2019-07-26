@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSyncView : UIView
 
+- (void)setProgress:(float)progress animated:(BOOL)animated;
+
 @end
 
 NS_ASSUME_NONNULL_END

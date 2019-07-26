@@ -64,6 +64,14 @@ NS_ASSUME_NONNULL_BEGIN
     ]];
 
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.percentLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+}
+
+- (void)setProgress:(float)progress animated:(BOOL)animated {
+    [self.progressView setProgress:progress animated:animated];
 }
 
 @end

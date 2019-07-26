@@ -17,14 +17,14 @@
 
 #import "DWHomeView.h"
 
-#import "DWBalancePayReceiveButtonsView.h"
+#import "DWHomeHeaderView.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeView () <UITableViewDataSource, UITableViewDelegate>
 
-@property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
+@property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
@@ -37,8 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-        DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
-        _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
+        DWHomeHeaderView *headerView = [[DWHomeHeaderView alloc] initWithFrame:CGRectZero];
+        _headerView = headerView;
 
         UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
         topOverscrollView.backgroundColor = [UIColor dw_dashBlueColor];
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        tableView.tableHeaderView = balancePayReceiveButtonsView;
+        tableView.tableHeaderView = headerView;
         [tableView addSubview:topOverscrollView];
         [self addSubview:tableView];
         _tableView = tableView;

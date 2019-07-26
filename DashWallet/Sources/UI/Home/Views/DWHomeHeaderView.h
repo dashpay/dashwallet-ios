@@ -19,11 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWProgressView : UIView
+@interface DWHomeHeaderView : UIView
 
-@property (nonatomic, assign) float progress;
-
-- (void)setProgress:(float)progress animated:(BOOL)animated;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 
