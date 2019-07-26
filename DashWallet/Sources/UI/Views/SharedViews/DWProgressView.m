@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -48,12 +48,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)commonInit {
     self.backgroundColor = [UIColor dw_progressBackgroundColor];
-    
+
     CALayer *greenLayer = [CALayer layer];
     greenLayer.backgroundColor = [UIColor dw_greenColor].CGColor;
     [self.layer addSublayer:greenLayer];
     self.greenLayer = greenLayer;
-    
+
     CALayer *blueLayer = [CALayer layer];
     blueLayer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
     [self.layer addSublayer:blueLayer];

@@ -40,4 +40,4 @@ fastlane/test_output
 Pods/
 
 # Production Constants
-DWUpholdConstants__Release.m
+DWUpholdMainnetConstants__Release.m

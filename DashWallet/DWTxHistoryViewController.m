@@ -588,7 +588,7 @@ static NSString *dateFormat(NSString *template)
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms < 6) {
-        if (processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
+        if (confirms == 0 && processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
         else if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
         else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
         else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
@@ -689,8 +689,8 @@ static NSString *dateFormat(NSString *template)
         balanceLabel.text = localBalanceLabel.text = nil;
     }
     else if (!instantSendReceived && confirms < 6) {
-        if (processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
-        if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
+        if (confirms == 0 && processingInstantSend) unconfirmedLabel.text = NSLocalizedString(@"Processing", nil);
+        else if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
         else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
         else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
                                       (int)confirms];

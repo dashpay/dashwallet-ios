@@ -187,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
-    if (self.presentedViewController) {
+    if ([self.presentedViewController isKindOfClass:DWUpholdTransferViewController.class]) {
         [self dismissViewControllerAnimated:YES completion:nil];
     }
 }

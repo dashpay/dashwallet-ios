@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by Samuel Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,11 +15,21 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSyncView : UIView
+@interface DWUpholdMainnetConstants : NSObject
+
++ (NSString *)authorizeURLFormat;
++ (NSString *)baseURLString;
++ (NSString *)clientID;
++ (NSString *)clientSecret;
++ (NSString *)buyCardURLFormat;
++ (NSString *)transactionURLFormat;
++ (NSString *)logoutURLString;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

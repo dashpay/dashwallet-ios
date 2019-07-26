@@ -19,8 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWFormTableViewController;
+
 @interface DWSelectorViewController : UIViewController
 
+@property (readonly, strong, nonatomic) DWFormTableViewController *formController;
 @property (copy, nonatomic) void (^didSelectItemBlock)(NSString *item, NSUInteger index);
 
 - (void)setItems:(NSArray<NSString *> *)items selectedIndex:(NSUInteger)selectedIndex placeholderText:(nullable NSString *)placeholderText;

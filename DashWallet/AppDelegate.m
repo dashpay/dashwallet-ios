@@ -71,6 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif /* FRESH_INSTALL */
     
+    [DSLogger sharedInstance];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification

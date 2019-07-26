@@ -17,9 +17,9 @@
 
 #import "DWSyncView.h"
 
+#import "DWProgressView.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
-#import "DWProgressView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

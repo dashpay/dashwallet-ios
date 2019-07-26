@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by Samuel Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,11 +15,40 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWUpholdMainnetConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSyncView : UIView
+@implementation DWUpholdMainnetConstants
+
++ (NSString *)authorizeURLFormat {
+    return @"";
+}
+
++ (NSString *)baseURLString {
+    return @"https://api.uphold.com/";
+}
+
++ (NSString *)clientID {
+    return @"";
+}
+
++ (NSString *)clientSecret {
+    return @"";
+}
+
++ (NSString *)buyCardURLFormat {
+    return @"https://uphold.com/dashboard/cards/%@/add";
+}
+
++ (NSString *)transactionURLFormat {
+    return @"https://uphold.com/reserve/transactions/%@";
+}
+
++ (NSString *)logoutURLString {
+    return @"https://uphold.com/";
+
+}
 
 @end
 

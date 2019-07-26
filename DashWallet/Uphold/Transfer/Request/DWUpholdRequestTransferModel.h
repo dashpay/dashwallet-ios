@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
     DWUpholdRequestTransferModelStateLoading,
     DWUpholdRequestTransferModelStateSuccess,
     DWUpholdRequestTransferModelStateFail,
+    DWUpholdRequestTransferModelStateFailInsufficientFunds,
     DWUpholdRequestTransferModelStateOTP,
 };
 
