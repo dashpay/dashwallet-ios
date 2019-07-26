@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)mainTitle;
 - (NSString *)status;
 
-- (void)performCopyLogs;
+- (NSArray <NSURL *> *)logFiles;
 
 - (void)setFixedPeer:(NSString *)fixedPeer;
 - (void)clearFixedPeer;
