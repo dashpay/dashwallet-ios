@@ -60,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)linkUpholdAccountButtonAction:(id)sender {
+    self.linkButton.userInteractionEnabled = NO;
+    
     NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
 
     NSString *callbackURLScheme = @"dashwallet://";
@@ -73,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
         if (callbackURL) {
             [strongSelf handleCallbackURL:callbackURL];
         }
+        strongSelf.linkButton.userInteractionEnabled = YES;
     };
 
     if (@available(iOS 12.0, *)) {
@@ -111,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.activityIndicatorView startAnimating];
 
     if (@available(iOS 11.0, *)) {
-//        self.authenticationSession = nil;
+        self.authenticationSession = nil;
     }
     else {
         [self dismissViewControllerAnimated:YES completion:nil];
