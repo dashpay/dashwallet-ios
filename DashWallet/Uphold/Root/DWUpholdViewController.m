@@ -80,18 +80,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWUpholdLogoutTutorialViewControllerDelegate
 
 - (void)upholdLogoutTutorialViewControllerDidCancel:(DWUpholdLogoutTutorialViewController *)controller {
-    [controller dismissViewControllerAnimated:NO completion:^{
-        [self dismissViewControllerAnimated:YES completion:nil];
-    }];
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)upholdLogoutTutorialViewControllerOpenUpholdWebsite:(DWUpholdLogoutTutorialViewController *)controller {
-    [controller dismissViewControllerAnimated:NO completion:^{
+    [controller dismissViewControllerAnimated:YES completion:^{
         NSURL *url = [NSURL URLWithString:[DWUpholdConstants logoutURLString]];
         NSParameterAssert(url);
         [self openSafariAppWithURL:url];
-        
-        [self dismissViewControllerAnimated:YES completion:nil];
     }];
 }
 
