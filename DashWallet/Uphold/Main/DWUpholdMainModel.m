@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
     dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
     NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
     NSString *available = [self.dashCard.available descriptionWithLocale:[NSLocale currentLocale]];
-    NSString *availableFormatted = [NSString stringWithFormat:@" %@ %@", available, NSLocalizedString(@"available", nil)];
+    NSString *availableFormatted = [NSString stringWithFormat:@" %@", available];
     NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     [result beginEditing];
     [result appendAttributedString:dashSymbol];
