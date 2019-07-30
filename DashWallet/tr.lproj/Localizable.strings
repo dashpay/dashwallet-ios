@@ -63,7 +63,7 @@
 "always require passcode" = "her zaman parola gerektir";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "Tutar";
 
 /* No comment provided by engineer. */
 "amount too small" = "miktarı çok küçük";
@@ -81,7 +81,7 @@
 "Are you sure?" = "Emin misiniz?";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "mevcut";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "hatalı kurtarma cümlesi";
@@ -99,7 +99,7 @@
 "Buy dash in dashwallet!" = "dashwallet'ta dash satın al!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "Uphold hesabı ile Dash al";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Bu cihazı silerseniz bu cihazdaki paraya artık ulaşamazsınız. Bunu sadece parola cümlenize ulaşamıyorsanız ve pin kodunuzu unuttuysanız yapmalısınız.";
@@ -108,7 +108,7 @@
 "cancel" = "iptal";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "İptal";
 
 /* No comment provided by engineer. */
 "change" = "değiştir";
@@ -150,10 +150,10 @@
 "Confirm" = "Onayla";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "onayla";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "İşlemi onayla";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d bloğunda onaylandı";
@@ -240,10 +240,10 @@
 "enter" = "gir";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "Aktarılacak tutarı aşağıya girin";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "2FA kodunu aşağıya girin";
 
 /* No comment provided by engineer. */
 "exit" = "çık";
@@ -258,13 +258,13 @@
 "Failed wallet update" = "Cüzdan güncellemesi başarısız";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Ücret";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "Ücret istenen tutardan düşülecek";
 
 /* No comment provided by engineer. */
 "from:" = "kaynak:";
@@ -273,7 +273,7 @@
 "GENERAL" = "GENEL";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "İnternet sitesine git";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "tutulan bakiye endeksi:";
@@ -300,13 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Dashwallet'ın önceki sürümlerinden birinde, bu cihazda parola cümlenizi gösterirken bu Uygulamanın 12 kaynak kelimenin hepsini düzgün göstermediğini belirledik. Lütfen tüm parola cümlesini tekrardan bir yere not alın.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "Yetersiz Bakiye";
 
 /* No comment provided by engineer. */
 "INVALID" = "GEÇERSİZ";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Geçersiz tutar";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adresi/port:";
@@ -315,13 +315,13 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, dashleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "Uphold Hesabını Bağla";
 
 /* No comment provided by engineer. */
 "Load more" = "Daha fazla yükle";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "Yerel para birimi";
 
 /* No comment provided by engineer. */
 "Locked" = "Kilitlendi";
@@ -330,10 +330,10 @@
 "locked with InstantSend" = "AnındaGönder ile kilitli";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "Çıkış Yap";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "Uphold'dan çıkış yap";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "anadüğüm barındırma adresi";
@@ -534,7 +534,7 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Paralarınız risk altında. Bakiyenizi başka bir cüzdana aktarın.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "Uphold'da Gör";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%d/%d eş tarafından görüldü";
@@ -594,7 +594,7 @@
 "sms not currently available" = "kısa mesaj şu anda kullanılabilir değil";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "Bir şeyler ters gitti";
 
 /* No comment provided by engineer. */
 "spent address" = "harcama adresi";
@@ -603,7 +603,7 @@
 "spent input" = "harcama girişi";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "Başka bir cüzdan Başlat / Kurtar";
 
 /* No comment provided by engineer. */
 "status:" = "durum:";
@@ -612,7 +612,7 @@
 "Steps to reproduce the crash" = "Çökmeyi yeniden oluşturma adımları";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "Başarılı";
 
 /* No comment provided by engineer. */
 "swept!" = "silindi!";
@@ -654,7 +654,7 @@
 "topup amount:" = "yükleme tutarı:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "Toplam";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limiti";
@@ -666,16 +666,16 @@
 "Transaction history" = "İşlem geçmişi";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "İşlem kimliği";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "Aktarma";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "Upholf hesabınızdan bu cüzdana Dash aktarın";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "Uphold'dan Aktar";
 
 /* No comment provided by engineer. */
 "trust" = "güven";
@@ -711,7 +711,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "Uphold hesabı";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Kullanıcı Kayıt İşlemi";
@@ -777,10 +777,10 @@
 "you received dash!" = "dash aldınız!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "Aynı zamanda tarayıcınızda Uphold internet sitesinden çıkış yapmanız gerekecek";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "İşleminiz yapıldı ve birkaç dakika içinde tutar cüzdanınızda görülecek.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "Uphold hesabınızın Dash bakiyesi:";

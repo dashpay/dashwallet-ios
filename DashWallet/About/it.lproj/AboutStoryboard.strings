@@ -6,7 +6,7 @@
 "IgV-bh-Mh7.normalTitle" = "copia i \"logs\"";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
-"JbA-bI-SeK.text" = "Dati sul tasso di cambio forniti da\nget-spark.com";
+"JbA-bI-SeK.text" = "Dati sul tasso di cambio forniti da";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
 "wFp-Ai-6c0.text" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nQuesta app è \"open source\":";

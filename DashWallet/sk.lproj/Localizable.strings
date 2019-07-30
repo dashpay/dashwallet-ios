@@ -108,7 +108,7 @@
 "cancel" = "zrušiť";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Zrušiť";
 
 /* No comment provided by engineer. */
 "change" = "zmeniť";
@@ -150,7 +150,7 @@
 "Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "potvrdiť:";
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
@@ -321,7 +321,7 @@
 "Load more" = "Načítať viac";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "Miestna mena";
 
 /* No comment provided by engineer. */
 "Locked" = "Locked";
@@ -603,7 +603,7 @@
 "spent input" = "minutý vstup";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "Spustiť/obnoviť ďalšiu peňaženku";
 
 /* No comment provided by engineer. */
 "status:" = "stav:";
