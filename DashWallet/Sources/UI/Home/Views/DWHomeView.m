@@ -21,6 +21,7 @@
 #import "DWHomeModel.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
+#import "DWTxListHeaderView.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
+@property (readonly, nonatomic, strong) DWTxListHeaderView *txListHeaderView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
 @end
@@ -47,6 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
         topOverscrollView.backgroundColor = [UIColor dw_dashBlueColor];
         _topOverscrollView = topOverscrollView;
 
+        DWTxListHeaderView *txListHeaderView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
+        _txListHeaderView = txListHeaderView;
+
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         tableView.tableHeaderView = headerView;
@@ -54,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
         tableView.delegate = self;
         tableView.rowHeight = UITableViewAutomaticDimension;
         tableView.estimatedRowHeight = 74.0;
+        tableView.sectionHeaderHeight = UITableViewAutomaticDimension;
+        tableView.estimatedSectionHeaderHeight = 64.0;
         tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [tableView addSubview:topOverscrollView];
         [self addSubview:tableView];
@@ -98,6 +105,13 @@ NS_ASSUME_NONNULL_BEGIN
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+}
+
+#pragma mark - UITableViewDelegate
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
+    return headerView;
 }
 
 #pragma mark - UIScrollViewDelegate

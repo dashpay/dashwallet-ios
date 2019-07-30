@@ -25,6 +25,7 @@
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Exx-AC-8HV">
                                 <rect key="frame" x="0.0" y="27" width="288" height="20.5"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                 <color key="textColor" name="TertiaryTextColor"/>
                                 <nil key="highlightedColor"/>
