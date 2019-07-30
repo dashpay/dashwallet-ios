@@ -6,7 +6,7 @@
 "IgV-bh-Mh7.normalTitle" = "αντιγραφή αρχείων καταγραφής";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
-"JbA-bI-SeK.text" = "Τα δεδομένα συναλλαγματικής ισοτιμίας παρέχονται από\nget-spark.com";
+"JbA-bI-SeK.text" = "Τα δεδομένα συναλλαγματικής ισοτιμίας παρέχονται από";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
 "wFp-Ai-6c0.text" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nΑυτή η εφαρμογή είναι ανοιχτού κώδικα:";

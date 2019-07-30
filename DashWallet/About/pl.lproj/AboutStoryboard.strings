@@ -1,12 +1,12 @@
 
 /* Class = "UIButton"; normalTitle = "Contact Support"; ObjectID = "HmO-ts-UI5"; */
-"HmO-ts-UI5.normalTitle" = "Skontaktuj sie z Support-em";
+"HmO-ts-UI5.normalTitle" = "Skontaktuj się z Support-em";
 
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "IgV-bh-Mh7"; */
 "IgV-bh-Mh7.normalTitle" = "kopiuj logi";
 
 /* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
-"JbA-bI-SeK.text" = "Kurs wymiany dostarczony przez\nget-spark.com";
+"JbA-bI-SeK.text" = "Kurs wymiany dostarczony przez";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
 "wFp-Ai-6c0.text" = "Prawa autorskie © 2019 Dash Core \nFork breadwallet.\nTa aplikacja jest open-source:";

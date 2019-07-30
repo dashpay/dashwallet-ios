@@ -108,7 +108,7 @@
 "cancel" = "άκυρο";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Ακύρωση";
 
 /* No comment provided by engineer. */
 "change" = "αλλαγή";
@@ -321,7 +321,7 @@
 "Load more" = "Φόρτωσε περισσότερα";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "Τοπικό νόμισμα";
 
 /* No comment provided by engineer. */
 "Locked" = "Κλείδωσε";
@@ -603,7 +603,7 @@
 "spent input" = "εξοφλημένες εισόδοι";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "Έναρξη / Ανάκτηση ενός άλλου πορτοφολιού";
 
 /* No comment provided by engineer. */
 "status:" = "κατάσταση:";

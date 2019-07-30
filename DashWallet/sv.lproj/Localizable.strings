@@ -108,7 +108,7 @@
 "cancel" = "avbryt";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Ångra";
 
 /* No comment provided by engineer. */
 "change" = "ändra";
@@ -150,7 +150,7 @@
 "Confirm" = "Bekräfta";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "bekräfta";
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";

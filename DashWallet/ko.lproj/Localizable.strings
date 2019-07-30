@@ -48,7 +48,7 @@
 "About" = "정보";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "쿼럼에 의해 수용됨";
 
 /* No comment provided by engineer. */
 "Action Needed" = "조치가 필요함";
@@ -63,7 +63,7 @@
 "always require passcode" = "항상 비밀번호 필요";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "금액";
 
 /* No comment provided by engineer. */
 "amount too small" = "금액이 너무 적습니다";
@@ -81,7 +81,7 @@
 "Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "가능";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "잘못된 복원 문구";
@@ -99,7 +99,7 @@
 "Buy dash in dashwallet!" = "대시 지갑에서 대시 구매하기!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "업홀드 계정으로 대시 구입";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "이 디바이스를 삭제하면 더 이상 이 디바이스의 금액에 액세스할 수 없습니다. 이 작업은 더 이상 암호문장에 접근할 수 없고 PIN코드도 분실한 경우에만 실행해야 합니다.";
@@ -108,7 +108,7 @@
 "cancel" = "취소";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "취소";
 
 /* No comment provided by engineer. */
 "change" = "변경";
@@ -150,10 +150,10 @@
 "Confirm" = "승인";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "확인";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "거래 확인";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d 블록에서 승인";
@@ -222,7 +222,7 @@
 "double spend" = "이중지불";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "이메일 클라이언트가 설정되지 않았습니다. 설정에서 당신의 이메일 계정을 추가해주십시오.";
 
 /* No comment provided by engineer. */
 "email not configured" = "이메일이 설정되지 않았습니다.";
@@ -240,10 +240,10 @@
 "enter" = "입력";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "아래에 송금할 금액을 입력하세요";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
 /* No comment provided by engineer. */
 "exit" = "나가기";
@@ -258,13 +258,13 @@
 "Failed wallet update" = "지갑 업데이트 실패";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "수수료";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "수수료가 잔고보다 큽니다";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "요청된 금액에서 수수료가 차감됩니다";
 
 /* No comment provided by engineer. */
 "from:" = "보낸 주소:";
@@ -273,7 +273,7 @@
 "GENERAL" = "일반";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "웹사이트로 가기";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "보유 중인 자금 인덱스:";
@@ -300,13 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "이전 버전의 대시 지갑에서 이 디바이스에 암호 문장을 처음 표시 할 때, 이 앱이 12 개의 모든 첫 단어들을 올바르게 표시하지 못했음을 확인했습니다. 전체 암호 문장을 다시 적어주십시오.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "잔액 부족";
 
 /* No comment provided by engineer. */
 "INVALID" = "유효하지 않음";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "유효하지 않은 금액";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP 주소/포트:";
@@ -315,25 +315,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "다른 사람이 QR코드를 스캔해서 당신의 대시 주소를 확인할 수 있습니다. 당신의 대시 주소를 통해 누구나 당신의 지갑으로 대시를 보낼 수 있습니다.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "업홀드 계정 연결";
 
 /* No comment provided by engineer. */
 "Load more" = "더 보기";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "현지 통화";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "잠김";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "인스턴트샌드로 잠김";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "로그아웃";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "업홀드에서 로그아웃";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "마스터노드 보유 주소";
@@ -447,7 +447,7 @@
 "payout address:" = "지불 주소:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "대기 중";
 
 /* No comment provided by engineer. */
 "pending" = "대기 중";
@@ -465,10 +465,10 @@
 "Private key" = "비밀 키";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "처리 중";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "처리 중";
 
 /* No comment provided by engineer. */
 "Public key" = "공개 키";
@@ -477,7 +477,7 @@
 "public key:" = "공개 키:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "비율: %1$@ = %2$@\n업데이트: %3$@\n블록 %5$d 중 #%4$d\n연결된 피어: %6$d\ndl 피어: %7$@\n유효한 쿼럼: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "다음의 주소로 대시를 받습니다: %@";
@@ -534,7 +534,7 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "스크린샷은 다른 앱이나 기기에서 볼  수 있습니다. 당신의 지갑에 있는 돈이 위험합니다. 다른 지갑으로 잔액을 옮겨 주세요.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "업홀드에서 확인";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%2$d개의 피어중 %1$d개의 피어가 보았습니다";
@@ -549,7 +549,7 @@
 "send address as message" = "메시지로 주소 보내기";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "충돌 리포트 보내기";
 
 /* No comment provided by engineer. */
 "send request as email" = "이메일로 지불 요청 보내기";
@@ -594,7 +594,7 @@
 "sms not currently available" = "현재 SMS 사용이 불가능 합니다.";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "뭔가 잘못되었습니다";
 
 /* No comment provided by engineer. */
 "spent address" = "대시를 소비한 주소";
@@ -603,16 +603,16 @@
 "spent input" = "사용된 입력";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "새 지갑 / 지갑 복원";
 
 /* No comment provided by engineer. */
 "status:" = "상태:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "충돌 복사본 생성 방법";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "성공";
 
 /* No comment provided by engineer. */
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
@@ -654,7 +654,7 @@
 "topup amount:" = "충전 금액:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "총계";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "터치 ID 제한";
@@ -666,16 +666,16 @@
 "Transaction history" = "거래 내역";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "거래 ID";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "송금";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "당신의 대시를 업홀드 계정에서 이 지갑으로 전송합니다";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "업홀드로부터 전송";
 
 /* No comment provided by engineer. */
 "trust" = "신뢰";
@@ -705,13 +705,13 @@
 "unsupported url" = "지원되지 않는 URL";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "인증되지 않음";
 
 /* No comment provided by engineer. */
-"Uphold" = "Uphold";
+"Uphold" = "업홀드";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "업홀드 계정";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "사용자 등록 거래";
@@ -729,7 +729,7 @@
 "verified, waiting for confirmation" = "확인됨, 승인을 기다리는 중";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "쿼럼 확인 중";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "투표 키 해시:";
@@ -756,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "대시 지갑이 이동하던 중 충돌이 발생하였음을 감지하였습니다. 블록체인 재스캔을 통해 이 문제를 해결하거나 다시 시도하십시오. 재스캔은 WIFI 연결 상태에서 시도하실 것을 권장하며, 약 30분 가량이 소요됩니다. 동기화 과정이 완료되면 당신의 자금 역시 이용할 수 있습니다. ";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "지난 번 대시 지갑을 실행하였을 때 충돌이 발생하였음을 감지하였습니다. 대시에 충돌 보고서 데이터를 전송해 해당 이슈를 해결할 수 있도록 도와주시겠습니까? 당신의 거래 내역 및 기타 개인 정보는 절대로 공유되지 않습니다.";
 
 /* No comment provided by engineer. */
 "wipe" = "지우기";
@@ -777,10 +777,10 @@
 "you received dash!" = "대시를 받았습니다!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "또한 당신의 브라우저를 이용하여 업홀드 웹사이트에서 로그아웃 하십시오.";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "당신의 업홀드 계정 대시 잔고는 다음과 같습니다";

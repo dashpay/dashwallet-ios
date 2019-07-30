@@ -63,7 +63,7 @@
 "always require passcode" = "Zugangscode immer abfragen";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "Betrag";
 
 /* No comment provided by engineer. */
 "amount too small" = "Betrag zu niedrig";
@@ -81,7 +81,7 @@
 "Are you sure?" = "Sind Sie sicher?";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "verfügbar";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "fehlerhafte Wiederherstellungs-Wortfolge";
@@ -99,7 +99,7 @@
 "Buy dash in dashwallet!" = "Dash in der Dashwallet kaufen!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "Dash über Uphold-Konto kaufen";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Durch das Zurücksetzen des Gerätes, geht das gespeicherte Guthaben verloren. Dies sollte nur geschehen, wenn kein Zugang mehr zur Passphrase besteht und der PIN-Code vergessen wurde.";
@@ -108,7 +108,7 @@
 "cancel" = "Abbrechen";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Abbrechen";
 
 /* No comment provided by engineer. */
 "change" = "Ändern";
@@ -150,10 +150,10 @@
 "Confirm" = "Bestätigen";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "Bestätigen";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "Transaktion bestätigen";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "Bestätigt in Block #%d";
@@ -240,10 +240,10 @@
 "enter" = "Eingabe";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "Trage den Transaktionsbetrag unten ein";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "Trage den 2FA-Code unten ein";
 
 /* No comment provided by engineer. */
 "exit" = "Beenden";
@@ -258,13 +258,13 @@
 "Failed wallet update" = "Wallet Update gescheitert";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Gebühr";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "Gebühr wird vom angefragten Betrag abgezogen";
 
 /* No comment provided by engineer. */
 "from:" = "von:";
@@ -273,7 +273,7 @@
 "GENERAL" = "ALLGEMEIN";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "Webseite besuchen";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "Holding-Fonds-Index:";
@@ -300,13 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Wir haben festgestellt, dass die 12 Worte der Passphrase in einer vorherigen Version der Wallet nicht korrekt dargestellt wurden. Schreiben Sie die vollständige Passphrase bitte erneut ab.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "Guthaben nicht ausreichend";
 
 /* No comment provided by engineer. */
 "INVALID" = "UNGÜLTIG";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Ungültiger Betrag";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP-Adresse/Port:";
@@ -315,13 +315,13 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Andere können diesen QR-Code scannen, um Ihre Dash-Adresse zu erhalten. Dash werden so an dieses Wallet geschickt.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "Uphold-Konto verknüpfen";
 
 /* No comment provided by engineer. */
 "Load more" = "Mehr laden";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "Lokale Währung";
 
 /* No comment provided by engineer. */
 "Locked" = "Gesichert";
@@ -330,10 +330,10 @@
 "locked with InstantSend" = "Mit InstantSend abgesichert";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "Abmelden";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "Aus Uphold abmelden";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "Masternode Halter-Adresse";
@@ -534,7 +534,7 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots sind sichtbar für andere Apps und Geräte. Ihr Guthaben ist gefährdet. Übertragen Sie Ihr Guthaben auf ein anderes Wallet.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "Auf Uphold ansehen";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
@@ -594,7 +594,7 @@
 "sms not currently available" = "SMS aktuell nicht verfügbar";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "Etwas hat nicht funktioniert";
 
 /* No comment provided by engineer. */
 "spent address" = "Geleerte Adresse";
@@ -603,7 +603,7 @@
 "spent input" = "Ausgegebener Eingang";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "Erstellen/Wiederherstellen eines neuen Wallets";
 
 /* No comment provided by engineer. */
 "status:" = "Status:";
@@ -612,7 +612,7 @@
 "Steps to reproduce the crash" = "Schritte, um den Absturz zu reproduzieren";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "Erfolg";
 
 /* No comment provided by engineer. */
 "swept!" = "geleert!";
@@ -654,7 +654,7 @@
 "topup amount:" = "Aufladungs-Betrag:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "Gesamt";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch-ID Limit";
@@ -666,16 +666,16 @@
 "Transaction history" = "Transaktionshistorie";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "Transaktions-ID";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "Transferieren";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "Dash vom Uphold-Konto an die Wallet transferieren";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "Von Uphold transferieren";
 
 /* No comment provided by engineer. */
 "trust" = "Vertrauen";
@@ -711,7 +711,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "Uphold-Konto";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Benutzer Registrierungs-Transaktion";
@@ -777,10 +777,10 @@
 "you received dash!" = "Sie haben Dash erhalten!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "Du musst dich mit deinem Browser von der Uphold-Webseite abmelden";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Deine Transaktion wurde versendet und der Betrag sollte in ein paar Minuten in der Wallet zu sehen sein.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "Das Dash-Guthaben deines Uphold-Kontos beträgt";
