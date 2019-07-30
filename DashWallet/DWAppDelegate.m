@@ -65,6 +65,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    [DSLogger sharedInstance];
+    
     NSLog(@"Dashwallet has launched");
     
     [[NSNotificationCenter defaultCenter] addObserver:self

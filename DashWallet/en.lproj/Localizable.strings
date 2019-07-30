@@ -63,6 +63,9 @@
 "always require passcode" = "always require passcode";
 
 /* No comment provided by engineer. */
+"Amount" = "Amount";
+
+/* No comment provided by engineer. */
 "amount too small" = "amount too small";
 
 /* No comment provided by engineer. */
@@ -76,6 +79,9 @@
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
+"available" = "available";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "bad recovery phrase";
@@ -93,10 +99,16 @@
 "Buy dash in dashwallet!" = "Buy dash in dashwallet!";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
 
 /* No comment provided by engineer. */
 "cancel" = "cancel";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "change" = "change";
@@ -136,6 +148,12 @@
 
 /* Confirm */
 "Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "confirmed in block #%d";
@@ -222,6 +240,12 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Enter your 2FA code below";
+
+/* No comment provided by engineer. */
 "exit" = "exit";
 
 /* No comment provided by engineer. */
@@ -234,10 +258,22 @@
 "Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
+"Fee" = "Fee";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+
+/* No comment provided by engineer. */
 "from:" = "from:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERAL";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "holding funds index:";
@@ -264,7 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Insufficient Funds";
+
+/* No comment provided by engineer. */
 "INVALID" = "INVALID";
+
+/* No comment provided by engineer. */
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP address/port:";
@@ -273,13 +315,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Link Uphold Account";
+
+/* No comment provided by engineer. */
 "Load more" = "Load more";
+
+/* No comment provided by engineer. */
+"Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
 "Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "locked with InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Log Out";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
@@ -348,10 +402,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -393,16 +447,16 @@
 "payout address:" = "payout address:";
 
 /* No comment provided by engineer. */
-"pending" = "pending";
-
-/* No comment provided by engineer. */
 "Pending" = "Pending";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+"pending" = "pending";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Please place your phone near NFC device.";
@@ -411,10 +465,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -465,9 +519,6 @@
 "Rescan blockchain" = "Rescan blockchain";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)";
-
-/* No comment provided by engineer. */
 "reset" = "reset";
 
 /* No comment provided by engineer. */
@@ -481,6 +532,9 @@
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
+
+/* No comment provided by engineer. */
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "seen by %1$d of %2$d peers";
@@ -540,16 +594,25 @@
 "sms not currently available" = "sms not currently available";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Something went wrong";
+
+/* No comment provided by engineer. */
 "spent address" = "spent address";
 
 /* No comment provided by engineer. */
 "spent input" = "spent input";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "Start / Recover another wallet";
+
+/* No comment provided by engineer. */
 "status:" = "status:";
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Steps to reproduce the crash";
+
+/* No comment provided by engineer. */
+"Success" = "Success";
 
 /* No comment provided by engineer. */
 "swept!" = "swept!";
@@ -591,6 +654,9 @@
 "topup amount:" = "topup amount:";
 
 /* No comment provided by engineer. */
+"Total" = "Total";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "Touch ID limit";
 
 /* No comment provided by engineer. */
@@ -598,6 +664,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "Transaction history";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Transaction id";
+
+/* No comment provided by engineer. */
+"Transfer" = "Transfer";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "trust";
@@ -628,6 +706,12 @@
 
 /* No comment provided by engineer. */
 "Unverified" = "Unverified";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";
@@ -691,3 +775,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "you received dash!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";

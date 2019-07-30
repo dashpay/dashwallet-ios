@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="OjP-q7-7yM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="OjP-q7-7yM">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,7 +24,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="O0k-Qq-dio">
-                                <rect key="frame" x="0.0" y="165.5" width="375" height="236"/>
+                                <rect key="frame" x="0.0" y="165.5" width="375" height="236.5"/>
                                 <subviews>
                                     <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1dF-je-BVW">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="0.5"/>
@@ -51,15 +51,13 @@ This app is open source:</string>
                                             <fragment content="#bc-ignore!"/>
                                         </attributedString>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="JbA-bI-SeK">
-                                        <rect key="frame" x="76" y="181.5" width="223" height="34.5"/>
-                                        <string key="text">Exchange rate data provided by
-get-spark.com</string>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Exchange rate data provided by" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="JbA-bI-SeK">
+                                        <rect key="frame" x="8" y="181.5" width="359" height="17.5"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="A9n-y4-dbh">
-                                        <rect key="frame" x="0.0" y="235.5" width="375" height="0.5"/>
+                                        <rect key="frame" x="0.0" y="236" width="375" height="0.5"/>
                                         <color key="backgroundColor" red="0.67000001669999998" green="0.67000001669999998" blue="0.67000001669999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="kYe-Ic-bbd"/>
@@ -76,22 +74,34 @@ DashSync commit-sha</string>
                                             <fragment content="#bc-ignore!"/>
                                         </attributedString>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="rates2.dashretail.org" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="300" translatesAutoresizingMaskIntoConstraints="NO" id="1Se-57-ivk">
+                                        <rect key="frame" x="8" y="199" width="359" height="17.5"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
                                 <gestureRecognizers/>
                                 <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="1Se-57-ivk" secondAttribute="bottom" constant="20" id="4i3-07-Gcz"/>
                                     <constraint firstAttribute="trailing" secondItem="A9n-y4-dbh" secondAttribute="trailing" id="6fX-eh-a6M"/>
                                     <constraint firstAttribute="centerX" secondItem="fOq-5h-DMe" secondAttribute="centerX" id="9Sf-3f-GiU"/>
                                     <constraint firstItem="fOq-5h-DMe" firstAttribute="top" secondItem="wFp-Ai-6c0" secondAttribute="bottom" constant="6" id="GGR-zp-A14"/>
+                                    <constraint firstAttribute="trailing" secondItem="1Se-57-ivk" secondAttribute="trailing" constant="8" id="JtS-uk-wKw"/>
                                     <constraint firstItem="A9n-y4-dbh" firstAttribute="leading" secondItem="O0k-Qq-dio" secondAttribute="leading" id="JvX-p4-IbM"/>
-                                    <constraint firstAttribute="centerX" secondItem="JbA-bI-SeK" secondAttribute="centerX" id="Rbd-El-mol"/>
+                                    <constraint firstItem="1Se-57-ivk" firstAttribute="top" secondItem="JbA-bI-SeK" secondAttribute="bottom" id="Pl8-J2-Cxx"/>
+                                    <constraint firstItem="1Se-57-ivk" firstAttribute="leading" secondItem="O0k-Qq-dio" secondAttribute="leading" constant="8" id="SJs-u1-4tK"/>
                                     <constraint firstItem="wFp-Ai-6c0" firstAttribute="top" secondItem="9g8-ZB-ELZ" secondAttribute="bottom" constant="10" id="VHe-Na-Wcb"/>
+                                    <constraint firstAttribute="trailing" secondItem="JbA-bI-SeK" secondAttribute="trailing" constant="8" id="ZWh-9s-ByD"/>
                                     <constraint firstAttribute="centerX" secondItem="wFp-Ai-6c0" secondAttribute="centerX" id="ara-vi-y3b"/>
                                     <constraint firstItem="9g8-ZB-ELZ" firstAttribute="top" secondItem="O0k-Qq-dio" secondAttribute="top" constant="20" id="cgD-Kg-m7Y"/>
                                     <constraint firstAttribute="bottom" secondItem="A9n-y4-dbh" secondAttribute="bottom" id="f9I-bN-I2w"/>
                                     <constraint firstItem="JbA-bI-SeK" firstAttribute="top" secondItem="fOq-5h-DMe" secondAttribute="bottom" constant="18" id="hHY-Oz-Tnp"/>
                                     <constraint firstItem="1dF-je-BVW" firstAttribute="top" secondItem="O0k-Qq-dio" secondAttribute="top" id="iZy-Sc-EHB"/>
-                                    <constraint firstAttribute="bottom" secondItem="JbA-bI-SeK" secondAttribute="bottom" constant="20" id="oOe-SF-NQd"/>
+                                    <constraint firstItem="JbA-bI-SeK" firstAttribute="leading" secondItem="O0k-Qq-dio" secondAttribute="leading" constant="8" id="uOW-Yx-XZw"/>
                                     <constraint firstAttribute="trailing" secondItem="1dF-je-BVW" secondAttribute="trailing" id="y59-tX-fdL"/>
                                     <constraint firstItem="1dF-je-BVW" firstAttribute="leading" secondItem="O0k-Qq-dio" secondAttribute="leading" id="ypv-Ht-jjt"/>
                                     <constraint firstItem="9g8-ZB-ELZ" firstAttribute="centerX" secondItem="O0k-Qq-dio" secondAttribute="centerX" id="zJo-Nj-xxF"/>
@@ -130,7 +140,7 @@ DashSync commit-sha</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HmO-ts-UI5">
-                                <rect key="frame" x="112.5" y="431.5" width="150" height="34"/>
+                                <rect key="frame" x="112.5" y="432" width="150" height="34"/>
                                 <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="18"/>
                                 <state key="normal" title="Contact Support"/>
                                 <connections>
