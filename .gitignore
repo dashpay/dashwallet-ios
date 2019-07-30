@@ -34,8 +34,12 @@ DerivedData/
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
+fastlane/Deliverfile.swift
+fastlane/metadata/
 fastlane/test_output
 
 # CocoaPods
 Pods/
 
+# Uphold
+DWUpholdMainnetConstants__Release.m
