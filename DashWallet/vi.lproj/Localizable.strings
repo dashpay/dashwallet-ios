@@ -699,6 +699,9 @@
 "the app will now close" = "ứng dụng sẽ được đóng bây giờ";
 
 /* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Đây là địa chỉ dash của bạn. Chạm vào để chép nó hoặc gửi nó qua email hoặc sms. Địa chỉ sẽ thay đổi mỗi khi bạn nhận tiền, nhưng địa chỉ cũ luôn hoạt động.";
 
 /* No comment provided by engineer. */

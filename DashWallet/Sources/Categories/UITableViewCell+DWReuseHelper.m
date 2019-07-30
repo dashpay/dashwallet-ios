@@ -15,16 +15,15 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "UITableViewCell+DWReuseHelper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@implementation UITableViewCell (DWReuseHelper)
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
++ (NSString *)dw_reuseIdentifier {
+    return NSStringFromClass(self);
+}
 
 @end
 

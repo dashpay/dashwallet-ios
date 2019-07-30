@@ -72,6 +72,12 @@
 		2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E531922EA382B00E5168A /* DWSyncView.xib */; };
 		2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531C22EA49FE00E5168A /* DWProgressView.m */; };
 		2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */; };
+		2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
+		2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */; };
+		2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */; };
+		2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */; };
+		2A4E534422F02BC300E5168A /* UITableViewCell+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UITableViewCell+DWReuseHelper.m */; };
+		2A4E534822F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534722F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
@@ -516,6 +522,18 @@
 		2A4E531C22EA49FE00E5168A /* DWProgressView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWProgressView.m; sourceTree = "<group>"; };
 		2A4E531E22EB2DF400E5168A /* DWHomeHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeHeaderView.h; sourceTree = "<group>"; };
 		2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeHeaderView.m; sourceTree = "<group>"; };
+		2A4E533622F023AB00E5168A /* DWHomeModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeModel.h; sourceTree = "<group>"; };
+		2A4E533722F023AB00E5168A /* DWHomeModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeModel.m; sourceTree = "<group>"; };
+		2A4E533922F0248D00E5168A /* DWTransactionListDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataSource.h; sourceTree = "<group>"; };
+		2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataSource.m; sourceTree = "<group>"; };
+		2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxListEmptyTableViewCell.h; sourceTree = "<group>"; };
+		2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxListEmptyTableViewCell.m; sourceTree = "<group>"; };
+		2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWTxListEmptyTableViewCell.xib; sourceTree = "<group>"; };
+		2A4E534222F02BC300E5168A /* UITableViewCell+DWReuseHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+DWReuseHelper.h"; sourceTree = "<group>"; };
+		2A4E534322F02BC300E5168A /* UITableViewCell+DWReuseHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITableViewCell+DWReuseHelper.m"; sourceTree = "<group>"; };
+		2A4E534522F02C6000E5168A /* DWUIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUIKit.h; sourceTree = "<group>"; };
+		2A4E534622F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UICollectionViewCell+DWReuseHelper.h"; sourceTree = "<group>"; };
+		2A4E534722F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UICollectionViewCell+DWReuseHelper.m"; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
@@ -1125,6 +1143,7 @@
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A4E533C22F025ED00E5168A /* Cells */,
 				2A307CB422E7006600A18347 /* DWBalancePayReceiveButtonsView.h */,
 				2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */,
 				2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */,
@@ -1165,6 +1184,7 @@
 				2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */,
 				2A9FFDEE2230FF1A00956D5F /* UIView+DWAnimations.h */,
 				2A9FFDEF2230FF1A00956D5F /* UIView+DWAnimations.m */,
+				2A4E534522F02C6000E5168A /* DWUIKit.h */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1353,6 +1373,16 @@
 			path = DashWalletScreenshotsUITests;
 			sourceTree = "<group>";
 		};
+		2A4E533C22F025ED00E5168A /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				2A4E533D22F025FE00E5168A /* DWTxListEmptyTableViewCell.h */,
+				2A4E533E22F025FE00E5168A /* DWTxListEmptyTableViewCell.m */,
+				2A4E533F22F025FE00E5168A /* DWTxListEmptyTableViewCell.xib */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
 			isa = PBXGroup;
 			children = (
@@ -1413,6 +1443,10 @@
 				2A307CB322E6FA7F00A18347 /* Views */,
 				2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */,
 				2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */,
+				2A4E533622F023AB00E5168A /* DWHomeModel.h */,
+				2A4E533722F023AB00E5168A /* DWHomeModel.m */,
+				2A4E533922F0248D00E5168A /* DWTransactionListDataSource.h */,
+				2A4E533A22F0248D00E5168A /* DWTransactionListDataSource.m */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -1844,6 +1878,10 @@
 				2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */,
 				2A9FFDF12230FF1A00956D5F /* UIViewController+DWChildControllers.h */,
 				2A9FFDED2230FF1900956D5F /* UIViewController+DWChildControllers.m */,
+				2A4E534222F02BC300E5168A /* UITableViewCell+DWReuseHelper.h */,
+				2A4E534322F02BC300E5168A /* UITableViewCell+DWReuseHelper.m */,
+				2A4E534622F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.h */,
+				2A4E534722F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -2526,6 +2564,7 @@
 				2A4431D622D52F67009BAF7F /* DWBackupInfoCell.xib in Resources */,
 				FBFC2EB521137A7A00D20C57 /* Montserrat-Italic.otf in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
+				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
 				FBFC2EED21137A7A00D20C57 /* Montserrat-Thin.otf in Resources */,
 				FBFC2ED121137A7A00D20C57 /* Montserrat-SemiBoldItalic.otf in Resources */,
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
@@ -2921,6 +2960,7 @@
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
 				BA7B53501BDA9A2800355E8D /* BRAppleWatchData.m in Sources */,
 				2A9FFE7C2230FF4600956D5F /* DWAlertController+DWKeyboard.m in Sources */,
+				2A4E534422F02BC300E5168A /* UITableViewCell+DWReuseHelper.m in Sources */,
 				2AB8CDDB220D879300A3D1DB /* DWAmountViewController.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
@@ -2968,6 +3008,7 @@
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
 				2A44314322CF80D9009BAF7F /* DWSetPinModel.m in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
+				2A4E534822F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m in Sources */,
 				2A9FFE732230FF4600956D5F /* DWAlertAction.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				2A9FFCD5222EA87F00956D5F /* DSTransactionStatusTableViewCell.m in Sources */,
@@ -2990,6 +3031,7 @@
 				757BE7E3192C0E9D0061CB20 /* DWRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
+				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
 				2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */,
@@ -3053,11 +3095,13 @@
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
+				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
+				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A9FFE772230FF4600956D5F /* DWAlertViewActionButton.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,

@@ -699,6 +699,9 @@
 "the app will now close" = "アプリを閉じます";
 
 /* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これはあなたのDashアドレスです。タップするとコピーされメールやSMSで共有できます。取引を行うごとにアドレスは入れ替わりますが、一度表示したアドレスに対して送られたDashはいつまでも自動的に受け取られます。";
 
 /* No comment provided by engineer. */

@@ -19,12 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@interface UITableViewCell (DWReuseHelper)
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
+@property (class, readonly, nonatomic) NSString *dw_reuseIdentifier;
 
 @end
 

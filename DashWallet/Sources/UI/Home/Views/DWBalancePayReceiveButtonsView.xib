@@ -13,6 +13,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWBalancePayReceiveButtonsView">
             <connections>
                 <outlet property="balanceViewHeightContraint" destination="p2n-oJ-XJI" id="62L-6s-OUV"/>
+                <outlet property="buttonsStackView" destination="EA2-6i-Tmo" id="SQh-LO-qDo"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="qz5-pT-jzT"/>
                 <outlet property="dashBalanceLabel" destination="hzD-1y-Vru" id="FhN-mM-oBi"/>
                 <outlet property="fiatBalanceLabel" destination="QGt-Lq-fJB" id="Abq-d5-RR2"/>

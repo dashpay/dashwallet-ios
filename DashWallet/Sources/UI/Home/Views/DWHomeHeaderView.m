@@ -62,6 +62,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
+    [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

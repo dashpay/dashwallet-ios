@@ -20,10 +20,8 @@
 #import "DWSeedPhraseTitledView.h"
 #import "DWSeedPhraseView.h"
 #import "DWSeedWordView.h"
+#import "DWUIKit.h"
 #import "DWVerifySeedPhraseModel.h"
-#import "DevicesCompatibility.h"
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
 
 static CGFloat const DEFAULT_PADDING = 64.0;
 static CGFloat const COMPACT_PADDING = 16.0;

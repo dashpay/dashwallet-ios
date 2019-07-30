@@ -15,16 +15,25 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWHomeModel.h"
+
+#import "DWTransactionListDataSource.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@interface DWHomeModel ()
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@end
 
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
+@implementation DWHomeModel
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _allDataSource = [[DWTransactionListDataSource alloc] init];
+    }
+    return self;
+}
 
 @end
 

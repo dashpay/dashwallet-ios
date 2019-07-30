@@ -15,16 +15,26 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWTxListEmptyTableViewCell.h"
+
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@interface DWTxListEmptyTableViewCell ()
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@property (strong, nonatomic) IBOutlet UILabel *placeholderLabel;
 
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
+@end
+
+@implementation DWTxListEmptyTableViewCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+
+    self.placeholderLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.placeholderLabel.text = NSLocalizedString(@"There are no transactions to display", nil);
+}
 
 @end
 

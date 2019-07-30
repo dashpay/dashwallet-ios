@@ -699,6 +699,9 @@
 "the app will now close" = "该应用将立即关闭";
 
 /* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "这是你的达世币地址。点击可将其复制，或将其用电子邮件或短信发送。每次你获得资金这个地址都会改变，但旧地址依然可用。";
 
 /* No comment provided by engineer. */

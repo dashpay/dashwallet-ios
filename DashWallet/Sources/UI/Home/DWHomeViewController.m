@@ -17,6 +17,7 @@
 
 #import "DWHomeViewController.h"
 
+#import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWNavigationController.h"
 
@@ -62,6 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
     UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
     NSParameterAssert(logoImage);
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:logoImage];
+
+    self.view.model = [[DWHomeModel alloc] init];
 }
 
 @end

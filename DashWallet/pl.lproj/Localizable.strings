@@ -699,6 +699,9 @@
 "the app will now close" = "aplikacja zamknie się teraz";
 
 /* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "To jest twój adres dash. Stuknij by go skopiować, wysłać przez e-mail lub sms. Adres będzie się zmieniał za każdym razem, kiedy otrzymasz środki, ale stare adresy będą zawsze działać.";
 
 /* No comment provided by engineer. */

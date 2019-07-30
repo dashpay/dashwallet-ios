@@ -1,4 +1,4 @@
-//
+//  
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,16 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#ifndef DWUIKit_h
+#define DWUIKit_h
 
-NS_ASSUME_NONNULL_BEGIN
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
-@interface DWHomeHeaderView : UIView
+#import "UIView+DWAnimations.h"
+#import "DevicesCompatibility.h"
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+#import "UITableViewCell+DWReuseHelper.h"
+#import "UICollectionViewCell+DWReuseHelper.h"
 
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWUIKit_h */

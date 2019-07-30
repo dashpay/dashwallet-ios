@@ -18,11 +18,14 @@
 #import "DWHomeView.h"
 
 #import "DWHomeHeaderView.h"
-#import "UIColor+DWStyle.h"
+#import "DWHomeModel.h"
+#import "DWTransactionListDataSource.h"
+#import "DWTxListEmptyTableViewCell.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeView () <UITableViewDataSource, UITableViewDelegate>
+@interface DWHomeView () <UITableViewDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
@@ -47,9 +50,23 @@ NS_ASSUME_NONNULL_BEGIN
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         tableView.tableHeaderView = headerView;
+        tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        tableView.delegate = self;
+        tableView.rowHeight = UITableViewAutomaticDimension;
+        tableView.estimatedRowHeight = 74.0;
+        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [tableView addSubview:topOverscrollView];
         [self addSubview:tableView];
         _tableView = tableView;
+
+        NSArray<NSString *> *cellIds = @[
+            DWTxListEmptyTableViewCell.dw_reuseIdentifier,
+        ];
+        for (NSString *cellId in cellIds) {
+            UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
+            NSParameterAssert(nib);
+            [tableView registerNib:nib forCellReuseIdentifier:cellId];
+        }
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(setNeedsLayout)
@@ -57,6 +74,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                    object:nil];
     }
     return self;
+}
+
+- (void)setModel:(DWHomeModel *)model {
+    NSParameterAssert(model);
+    _model = model;
+
+    self.tableView.dataSource = model.allDataSource;
+    [self.tableView reloadData];
 }
 
 - (void)layoutSubviews {
@@ -73,6 +98,12 @@ NS_ASSUME_NONNULL_BEGIN
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self.headerView parentScrollViewDidScroll:scrollView];
 }
 
 @end

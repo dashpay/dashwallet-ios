@@ -19,12 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@property (readonly, copy, nonatomic) NSArray *items;
 
-- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 
 @end
 

@@ -17,8 +17,8 @@
 
 #import "DWSeedWordModel+DWLayoutSupport.h"
 
+#import "DWUIKit.h"
 #import "NSString+DWTextSize.h"
-#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

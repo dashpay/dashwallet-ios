@@ -17,10 +17,10 @@
 
 #import "DWVerifySeedPhraseViewController.h"
 
+#import "DWUIKit.h"
 #import "DWVerifiedSuccessfullyViewController.h"
 #import "DWVerifySeedPhraseContentView.h"
 #import "DWVerifySeedPhraseModel.h"
-#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

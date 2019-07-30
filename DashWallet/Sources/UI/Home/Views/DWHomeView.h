@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWHomeModel;
+
 @interface DWHomeView : UIView
+
+@property (nonatomic, strong) DWHomeModel *model;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

@@ -18,8 +18,7 @@
 #import "DWNavigationController.h"
 
 #import "DWNavigationFullscreenable.h"
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

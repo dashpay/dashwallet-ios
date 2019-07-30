@@ -699,6 +699,9 @@
 "the app will now close" = "приложението ще се затвори сега";
 
 /* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Това е вашият dash адрес. Докоснете, за да го копирате или да го изпратите по имейл или SMS. Адресът ще се променя всеки път, когато получават средства, но старите адреси винаги работят.";
 
 /* No comment provided by engineer. */

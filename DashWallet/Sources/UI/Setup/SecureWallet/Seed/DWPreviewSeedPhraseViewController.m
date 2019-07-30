@@ -20,8 +20,8 @@
 #import "DWPreviewSeedPhraseContentView.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
+#import "DWUIKit.h"
 #import "DWVerifySeedPhraseViewController.h"
-#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

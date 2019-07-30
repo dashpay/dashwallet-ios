@@ -17,7 +17,7 @@
 
 #import "DWUpholdOTPViewController.h"
 
-#import "UIView+DWAnimations.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

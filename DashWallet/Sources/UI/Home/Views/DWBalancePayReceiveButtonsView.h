@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBalancePayReceiveButtonsView : UIView
 
+- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
+
 @end
 
 NS_ASSUME_NONNULL_END

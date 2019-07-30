@@ -17,7 +17,7 @@
 
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 
-#import "UIColor+DWStyle.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

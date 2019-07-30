@@ -17,7 +17,7 @@
 
 #import "DWBaseViewController.h"
 
-#import "DevicesCompatibility.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
