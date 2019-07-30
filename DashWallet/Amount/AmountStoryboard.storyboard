@@ -34,68 +34,11 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ltG-IX-nvT" userLabel="Top Container View">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="298.5"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ziw-nO-VoZ" customClass="UIControl">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ziw-nO-VoZ" customClass="DWAmountInputControl">
                                                 <rect key="frame" x="0.0" y="96.5" width="375" height="106"/>
-                                                <subviews>
-                                                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nLL-zN-xqA" userLabel="Main Alignment View">
-                                                        <rect key="frame" x="0.0" y="0.0" width="375" height="32"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="13K-tL-CGS"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Main Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="X6B-fB-brO" userLabel="Main Amount">
-                                                        <rect key="frame" x="0.0" y="0.0" width="375" height="32"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="Xqy-ZB-y6B"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="26"/>
-                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JjM-je-hMI" userLabel="Supplementary Alignment View">
-                                                        <rect key="frame" x="0.0" y="74" width="375" height="32"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="1Vo-T5-x6c"/>
-                                                        </constraints>
-                                                    </view>
-                                                    <label opaque="NO" userInteractionEnabled="NO" alpha="0.42999999999999999" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Supplementary Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="bPo-qH-xOA" userLabel="Supplementary Amount">
-                                                        <rect key="frame" x="0.0" y="74" width="375" height="32"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="32" id="SgB-6J-NZm"/>
-                                                        </constraints>
-                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!"/>
-                                                        </attributedString>
-                                                    </label>
-                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="convert" translatesAutoresizingMaskIntoConstraints="NO" id="5qr-w3-8k3">
-                                                        <rect key="frame" x="180.5" y="50" width="14" height="14"/>
-                                                    </imageView>
-                                                </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstItem="X6B-fB-brO" firstAttribute="leading" secondItem="Ziw-nO-VoZ" secondAttribute="leading" id="3HU-3V-w9w"/>
-                                                    <constraint firstItem="5qr-w3-8k3" firstAttribute="centerX" secondItem="Ziw-nO-VoZ" secondAttribute="centerX" id="8yE-5F-NN0"/>
-                                                    <constraint firstAttribute="trailing" secondItem="JjM-je-hMI" secondAttribute="trailing" id="KOd-GN-daR"/>
-                                                    <constraint firstAttribute="bottom" secondItem="JjM-je-hMI" secondAttribute="bottom" id="KxW-7w-TPC"/>
-                                                    <constraint firstItem="nLL-zN-xqA" firstAttribute="top" secondItem="Ziw-nO-VoZ" secondAttribute="top" id="SJ3-Pn-NJS"/>
-                                                    <constraint firstAttribute="trailing" secondItem="nLL-zN-xqA" secondAttribute="trailing" id="TtH-uN-Pec"/>
-                                                    <constraint firstAttribute="trailing" secondItem="X6B-fB-brO" secondAttribute="trailing" id="WiF-4U-dcc"/>
-                                                    <constraint firstItem="bPo-qH-xOA" firstAttribute="centerY" secondItem="JjM-je-hMI" secondAttribute="centerY" id="WqM-gd-Sc3"/>
-                                                    <constraint firstItem="5qr-w3-8k3" firstAttribute="top" secondItem="nLL-zN-xqA" secondAttribute="bottom" constant="18" id="Xfh-yb-Cdc"/>
-                                                    <constraint firstItem="bPo-qH-xOA" firstAttribute="leading" secondItem="Ziw-nO-VoZ" secondAttribute="leading" id="hBr-WK-Zoo"/>
-                                                    <constraint firstAttribute="trailing" secondItem="bPo-qH-xOA" secondAttribute="trailing" id="hG8-tU-m2K"/>
-                                                    <constraint firstItem="JjM-je-hMI" firstAttribute="leading" secondItem="Ziw-nO-VoZ" secondAttribute="leading" id="mdo-72-ZAm"/>
-                                                    <constraint firstItem="X6B-fB-brO" firstAttribute="centerY" secondItem="nLL-zN-xqA" secondAttribute="centerY" id="pNU-lE-sF2"/>
-                                                    <constraint firstItem="nLL-zN-xqA" firstAttribute="leading" secondItem="Ziw-nO-VoZ" secondAttribute="leading" id="q05-0f-ZEk"/>
-                                                    <constraint firstItem="JjM-je-hMI" firstAttribute="top" secondItem="5qr-w3-8k3" secondAttribute="bottom" constant="10" id="rqk-R8-Foj"/>
+                                                    <constraint firstAttribute="height" constant="106" id="HQw-FJ-mK8"/>
                                                 </constraints>
                                                 <connections>
                                                     <action selector="switchAmountCurrencyAction:" destination="JQC-42-iop" eventType="touchUpInside" id="ky4-fW-NFs"/>
@@ -213,14 +156,10 @@
                         <outlet property="amountKeyboard" destination="M0g-X7-Onr" id="uCS-BN-2q5"/>
                         <outlet property="containerLeadingConstraint" destination="U75-9I-asr" id="891-g4-4gq"/>
                         <outlet property="containerTrailingConstraint" destination="z91-cA-4A1" id="irg-dX-IOY"/>
-                        <outlet property="convertAmountImageView" destination="5qr-w3-8k3" id="ote-hq-1PU"/>
                         <outlet property="infoLabel" destination="LYt-ov-Ilw" id="gWg-0Z-CJj"/>
                         <outlet property="infoStackView" destination="KS5-Xa-6HP" id="Dhx-Xe-1Q8"/>
+                        <outlet property="inputControl" destination="Ziw-nO-VoZ" id="sY5-yj-s4F"/>
                         <outlet property="instantSendSwitch" destination="MVw-Yj-0dd" id="5tZ-H0-MKU"/>
-                        <outlet property="mainAmountLabel" destination="X6B-fB-brO" id="1dF-aa-myl"/>
-                        <outlet property="mainAmountLabelCenterYConstraint" destination="pNU-lE-sF2" id="TZb-QR-vH6"/>
-                        <outlet property="supplementaryAmountLabel" destination="bPo-qH-xOA" id="Di5-Kd-W7s"/>
-                        <outlet property="supplementaryAmountLabelCenterYConstraint" destination="WqM-gd-Sc3" id="OZd-YJ-o2S"/>
                         <outlet property="textField" destination="NSm-vd-Ubz" id="ftv-Kl-chE"/>
                     </connections>
                 </viewController>
@@ -229,7 +168,4 @@
             <point key="canvasLocation" x="29.600000000000001" y="175.86206896551727"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="convert" width="14" height="14"/>
-    </resources>
 </document>

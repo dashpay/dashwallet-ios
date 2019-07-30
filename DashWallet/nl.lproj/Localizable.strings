@@ -48,7 +48,7 @@
 "About" = "Over";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "geaccepteerd door quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Actie Benodigd";
@@ -61,6 +61,9 @@
 
 /* No comment provided by engineer. */
 "always require passcode" = "altijd toegangscode vereisen";
+
+/* No comment provided by engineer. */
+"Amount" = "Bedrag";
 
 /* No comment provided by engineer. */
 "amount too small" = "bedrag is te klein";
@@ -78,6 +81,9 @@
 "Are you sure?" = "Weet je het zeker?";
 
 /* No comment provided by engineer. */
+"available" = "beschikbaar";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "onjuiste herstelzin";
 
 /* No comment provided by engineer. */
@@ -93,10 +99,16 @@
 "Buy dash in dashwallet!" = "Koop dash in dashwallet!";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Koop Dash met een Uphold account";
+
+/* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Door dit apparaat schoon te vegen heb je geen toegang meer tot het geld op dit apparaat. Dit zou alleen gedaan moeten worden als je de herstelzin hebt verloren en ook de pincode kwijt bent.";
 
 /* No comment provided by engineer. */
 "cancel" = "annuleer";
+
+/* No comment provided by engineer. */
+"Cancel" = "Annuleer";
 
 /* No comment provided by engineer. */
 "change" = "wijzig";
@@ -136,6 +148,12 @@
 
 /* Confirm */
 "Confirm" = "Bevestig";
+
+/* No comment provided by engineer. */
+"confirm" = "bevestig";
+
+/* No comment provided by engineer. */
+"Confirm transaction" = "Bevestig transactie";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "bevestigd in blok #%d";
@@ -204,7 +222,7 @@
 "double spend" = "dubbel uitgegeven";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "E-mailprogramma is niet geconfigureerd. Voer a.u.b. je e-mailaccount toe aan Instellingen";
 
 /* No comment provided by engineer. */
 "email not configured" = "e-mail is niet ingesteld";
@@ -222,6 +240,12 @@
 "enter" = "voer in";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Voer hieronder het bedrag in dat moet worden overgemaakt";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
+
+/* No comment provided by engineer. */
 "exit" = "sluit af";
 
 /* No comment provided by engineer. */
@@ -234,10 +258,22 @@
 "Failed wallet update" = "Mislukte update van de portemonnee";
 
 /* No comment provided by engineer. */
+"Fee" = "Transactiekosten";
+
+/* No comment provided by engineer. */
+"Fee is greater than balance" = "Fee is greater than balance";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Transactiekosten worden van het gevraagde bedrag afgetrokken";
+
+/* No comment provided by engineer. */
 "from:" = "van:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "ALGEMEEN";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Ga naar website";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "index van saldo:";
@@ -264,7 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In de vorige versie van Dashwallet, waar aanvankelijk de herstelzin werd getoond, hebben we geconstateerd dat de 12 herstelwoorden niet correct werden weergegeven. Schrijf daarom de herstel zin opnieuw op.";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Saldo niet toereikend";
+
+/* No comment provided by engineer. */
 "INVALID" = "ONGELDIG";
+
+/* No comment provided by engineer. */
+"Invalid amount" = "Ongeldig bedrag";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adres/port:";
@@ -273,13 +315,25 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Laat anderen deze QR-code scannen om jouw dash-adres te verkrijgen. Iedereen kan dash naar jouw portemonnee versturen door deze te sturen naar jouw adres.";
 
 /* No comment provided by engineer. */
+"Link Uphold Account" = "Koppel Uphold account";
+
+/* No comment provided by engineer. */
 "Load more" = "Laad meer";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Local currency" = "lokale valuta";
+
+/* No comment provided by engineer. */
+"Locked" = "Vergrendeld";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "vergrendeld met InstantSend";
+
+/* No comment provided by engineer. */
+"Log Out" = "Uitloggen";
+
+/* No comment provided by engineer. */
+"Log out from Uphold" = "Bij Uphold uitloggen";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adres met saldo van masternode";
@@ -348,10 +402,10 @@
 "not voter" = "geen stemrecht";
 
 /* No comment provided by engineer. */
-"ok" = "oké";
+"OK" = "Oké";
 
 /* No comment provided by engineer. */
-"OK" = "Oké";
+"ok" = "oké";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
@@ -393,16 +447,16 @@
 "payout address:" = "uitbetalingsadres:";
 
 /* No comment provided by engineer. */
+"Pending" = "Wachtende";
+
+/* No comment provided by engineer. */
 "pending" = "in wachtrij";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "voer je pincode in om de wallet bij te werken";
-
-/* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
@@ -411,10 +465,10 @@
 "Private key" = "persoonlijke sleutel";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "verwerken";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Verwerken";
 
 /* No comment provided by engineer. */
 "Public key" = "Publieke sleutel";
@@ -423,7 +477,7 @@
 "public key:" = "publieke sleutel:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "koers: %1$@ = %2$@\nbijgewerkt: %3$@\nblok #%4$d van %5$d\nverbonden peers: %6$d\ndl peer: %7$@\nquorums gevalideerd: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Ontvang dash op dit adres: %@";
@@ -465,9 +519,6 @@
 "Rescan blockchain" = "Blockchain opnieuw scannen";
 
 /* No comment provided by engineer. */
-"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "scan de blockchain opnieuw wanneer je het vermoeden hebt dat je transacties mist of problemen hebt met versturen (opnieuw scannen kan enkele minuten duren)";
-
-/* No comment provided by engineer. */
 "reset" = "herstel";
 
 /* No comment provided by engineer. */
@@ -483,6 +534,9 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Schermafdrukken zijn zichtbaar voor andere apps en apparaten. Je tegoed loopt gevaar. Verplaats je tegoed naar een andere portemonnee.";
 
 /* No comment provided by engineer. */
+"See on Uphold" = "Bekijk op Uphold";
+
+/* No comment provided by engineer. */
 "seen by %d of %d peers" = "gezien door %1$d van %2$d peers";
 
 /* No comment provided by engineer. */
@@ -495,7 +549,7 @@
 "send address as message" = "verstuur adres als bericht";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "verstuur crashrapport";
 
 /* No comment provided by engineer. */
 "send request as email" = "verstuur verzoek als e-mail";
@@ -540,16 +594,25 @@
 "sms not currently available" = "sms is momenteel niet beschikbaar";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Er is iets verkeerd gegaan";
+
+/* No comment provided by engineer. */
 "spent address" = "spent adres";
 
 /* No comment provided by engineer. */
 "spent input" = "spent invoer";
 
 /* No comment provided by engineer. */
+"Start / Recover another wallet" = "Start / Herstel een andere portemonnee";
+
+/* No comment provided by engineer. */
 "status:" = "status:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "Steppen om crash te reproduceren";
+
+/* No comment provided by engineer. */
+"Success" = "Succes";
 
 /* No comment provided by engineer. */
 "swept!" = "geveegd!";
@@ -591,6 +654,9 @@
 "topup amount:" = "top-up bedrag:";
 
 /* No comment provided by engineer. */
+"Total" = "Totaal";
+
+/* No comment provided by engineer. */
 "Touch ID limit" = "touch ID limiet";
 
 /* No comment provided by engineer. */
@@ -598,6 +664,18 @@
 
 /* No comment provided by engineer. */
 "Transaction history" = "transactiegeschiedenis";
+
+/* No comment provided by engineer. */
+"Transaction id" = "Transactie id";
+
+/* No comment provided by engineer. */
+"Transfer" = "overdracht";
+
+/* No comment provided by engineer. */
+"Transfer Dash from your Uphold account to this wallet" = "Verstuur Dash van je Uphold account naar deze portemonnee";
+
+/* No comment provided by engineer. */
+"Transfer from Uphold" = "Verstuur vanaf Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "vertrouw";
@@ -627,7 +705,13 @@
 "unsupported url" = "niet-ondersteunde URL";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "Ongeverifieerd";
+
+/* No comment provided by engineer. */
+"Uphold" = "Uphold";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Gebruiker registratie transactie";
@@ -645,7 +729,7 @@
 "verified, waiting for confirmation" = "geverifieerd, bezig met wachten op bevestiging";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "quorum aan het verifiëren";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "hash van stem-sleutel:";
@@ -672,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We detecteerden dat Dashwallet tijdens de migratie is gecrashed. Opnieuw scannen van de blokketen zal het issue oplossen of je moet opnieuw proberen. Opnieuw scannen dient bij voorkeur met wifi te worden gedaan en duurt ongeveer een half uur. Je tegoeden worden beschikbaar zodra het synchronisatieproces is afgerond.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We hebben gedetecteerd dat Dashwallet is gecrasht toen het voor de laatste keer werd gebruikt. Wil je ons helpen dat issue op te lossen door een crashrapport in te sturen? Je transactiegeschiedenis en andere privé-informatie WORDT NIET gedeeld.";
 
 /* No comment provided by engineer. */
 "wipe" = "wis";
@@ -691,3 +775,12 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "je hebt dash ontvangen!";
+
+/* No comment provided by engineer. */
+"You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";
+
+/* No comment provided by engineer. */
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "De transactie is verzonden en het bedrag verschijnt binnen een paar minuten in je de portemonnee.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Je saldo in Dash bij Uphold is";

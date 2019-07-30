@@ -5,8 +5,8 @@
 /* Class = "UIButton"; normalTitle = "copy logs"; ObjectID = "IgV-bh-Mh7"; */
 "IgV-bh-Mh7.normalTitle" = "kayıtları kopyala";
 
-/* Class = "UILabel"; text = "Exchange rate data provided by\nget-spark.com"; ObjectID = "JbA-bI-SeK"; */
-"JbA-bI-SeK.text" = "Kur verisini sağlayan\nget-spark.com";
+/* Class = "UILabel"; text = "Exchange rate data provided by"; ObjectID = "JbA-bI-SeK"; */
+"JbA-bI-SeK.text" = "Kur verisini sağlayan";
 
 /* Class = "UILabel"; text = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:"; ObjectID = "wFp-Ai-6c0"; */
 "wFp-Ai-6c0.text" = "Copyright © 2019 Dash Core\nbreadwallet çatalı.\nBu uygulama açık kaynaklıdır:";

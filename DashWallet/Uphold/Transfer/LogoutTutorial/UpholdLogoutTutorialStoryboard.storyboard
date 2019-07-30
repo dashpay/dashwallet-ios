@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="kuo-DD-Is9">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Montserrat-Medium.otf">
+            <string>Montserrat-Medium</string>
+        </array>
+        <array key="Montserrat-Regular.otf">
+            <string>Montserrat-Regular</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Uphold Logout Tutorial View Controller-->
+        <scene sceneID="APH-Tz-khA">
+            <objects>
+                <viewController id="kuo-DD-Is9" customClass="DWUpholdLogoutTutorialViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="I4l-AM-cUr">
+                        <rect key="frame" x="0.0" y="0.0" width="270" height="320"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="r6B-E1-65H" userLabel="Root View">
+                                <rect key="frame" x="0.0" y="0.0" width="270" height="320"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="900" text="Logout from Uphold" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="qWr-Ep-aed">
+                                        <rect key="frame" x="0.0" y="0.0" width="270" height="22"/>
+                                        <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                        <attributedString key="userComments">
+                                            <fragment content="#bc-ignore!"/>
+                                        </attributedString>
+                                    </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1aZ-cs-R6V" userLabel="Center View">
+                                        <rect key="frame" x="0.0" y="22" width="270" height="298"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fOi-pK-BoG" userLabel="Content View">
+                                                <rect key="frame" x="0.0" y="12.5" width="270" height="273"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="You also need to logout from Uphold website in your browser" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="ka4-XH-c2V">
+                                                        <rect key="frame" x="0.0" y="0.0" width="270" height="34.5"/>
+                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <color key="textColor" red="0.47058823529999999" green="0.47058823529999999" blue="0.47058823529999999" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <nil key="highlightedColor"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!"/>
+                                                        </attributedString>
+                                                    </label>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-logout-tutorial" translatesAutoresizingMaskIntoConstraints="NO" id="awr-2h-UQZ">
+                                                        <rect key="frame" x="0.0" y="50.5" width="270" height="222.5"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" secondItem="awr-2h-UQZ" secondAttribute="width" multiplier="0.825" id="PIp-lc-gIC"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="awr-2h-UQZ" firstAttribute="leading" secondItem="fOi-pK-BoG" secondAttribute="leading" id="4RI-a9-pPf"/>
+                                                    <constraint firstAttribute="bottom" secondItem="awr-2h-UQZ" secondAttribute="bottom" id="Npk-jC-O3l"/>
+                                                    <constraint firstAttribute="trailing" secondItem="awr-2h-UQZ" secondAttribute="trailing" id="OYQ-dQ-osA"/>
+                                                    <constraint firstItem="awr-2h-UQZ" firstAttribute="top" secondItem="ka4-XH-c2V" secondAttribute="bottom" constant="16" id="P6b-TB-Ve6"/>
+                                                    <constraint firstItem="ka4-XH-c2V" firstAttribute="leading" secondItem="fOi-pK-BoG" secondAttribute="leading" id="Tth-un-A9I"/>
+                                                    <constraint firstAttribute="trailing" secondItem="ka4-XH-c2V" secondAttribute="trailing" id="YQo-82-Qrl"/>
+                                                    <constraint firstItem="ka4-XH-c2V" firstAttribute="top" secondItem="fOi-pK-BoG" secondAttribute="top" id="gIl-87-eJu"/>
+                                                </constraints>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="fOi-pK-BoG" secondAttribute="bottom" id="J6o-21-bPI"/>
+                                            <constraint firstItem="fOi-pK-BoG" firstAttribute="top" relation="greaterThanOrEqual" secondItem="1aZ-cs-R6V" secondAttribute="top" id="Kys-Fb-4Pb"/>
+                                            <constraint firstItem="fOi-pK-BoG" firstAttribute="centerY" secondItem="1aZ-cs-R6V" secondAttribute="centerY" id="Njs-LH-Okt"/>
+                                            <constraint firstItem="fOi-pK-BoG" firstAttribute="leading" secondItem="1aZ-cs-R6V" secondAttribute="leading" id="c2Q-pk-UTk"/>
+                                            <constraint firstAttribute="trailing" secondItem="fOi-pK-BoG" secondAttribute="trailing" id="shA-Sq-fFb"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="1aZ-cs-R6V" secondAttribute="bottom" id="7mi-fb-3WN"/>
+                                    <constraint firstAttribute="trailing" secondItem="qWr-Ep-aed" secondAttribute="trailing" id="Bt5-Ny-OBC"/>
+                                    <constraint firstAttribute="height" constant="320" id="D7j-xC-ohh"/>
+                                    <constraint firstAttribute="trailing" secondItem="1aZ-cs-R6V" secondAttribute="trailing" id="MUn-b5-A7m"/>
+                                    <constraint firstItem="qWr-Ep-aed" firstAttribute="leading" secondItem="r6B-E1-65H" secondAttribute="leading" id="NwX-dK-x66"/>
+                                    <constraint firstItem="qWr-Ep-aed" firstAttribute="top" secondItem="r6B-E1-65H" secondAttribute="top" id="QlR-d0-8oJ"/>
+                                    <constraint firstItem="1aZ-cs-R6V" firstAttribute="top" secondItem="qWr-Ep-aed" secondAttribute="bottom" id="k65-jR-7VN"/>
+                                    <constraint firstItem="1aZ-cs-R6V" firstAttribute="leading" secondItem="r6B-E1-65H" secondAttribute="leading" id="lvv-cq-c4m"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="r6B-E1-65H" firstAttribute="leading" secondItem="KoG-0N-XK1" secondAttribute="leading" id="B14-IW-ldY"/>
+                            <constraint firstItem="KoG-0N-XK1" firstAttribute="trailing" secondItem="r6B-E1-65H" secondAttribute="trailing" id="Mrd-6b-yLc"/>
+                            <constraint firstItem="r6B-E1-65H" firstAttribute="top" secondItem="KoG-0N-XK1" secondAttribute="top" id="TNn-yq-O9D"/>
+                            <constraint firstItem="KoG-0N-XK1" firstAttribute="bottom" secondItem="r6B-E1-65H" secondAttribute="bottom" id="oCm-EZ-9zN"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="KoG-0N-XK1"/>
+                    </view>
+                    <size key="freeformSize" width="270" height="320"/>
+                    <connections>
+                        <outlet property="descriptionLabel" destination="ka4-XH-c2V" id="NRH-JZ-xmE"/>
+                        <outlet property="titleLabel" destination="qWr-Ep-aed" id="yrE-MM-1xO"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="rzt-p7-bvT" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="382" y="146"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="uphold-logout-tutorial" width="360" height="297"/>
+    </resources>
+</document>

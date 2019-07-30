@@ -26,20 +26,20 @@
 
 #import "DWTxHistoryViewController.h"
 #import "DWRootViewController.h"
-#import "DWSettingsViewController.h"
 #import "DWTxDetailViewController.h"
 #import "DWSeedViewController.h"
 #import "UIImage+Utils.h"
 #import <WebKit/WebKit.h>
 #import "DWActionTableViewCell.h"
 #import "DWTransactionTableViewCell.h"
+#import "DWSettingsViewController.h"
+#import "DWUpholdViewController.h"
 
 #if SNAPSHOT
 #import "DWStubTransaction.h"
 #endif /* SNAPSHOT */
 
 #define TRANSACTION_CELL_HEIGHT 75
-#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 #define OFFBLUE_COLOR [UIColor colorWithRed:25.0f/255.0f green:96.0f/255.0f blue:165.0f/255.0f alpha:1.0f]
 
 static NSString *dateFormat(NSString *template)
@@ -453,7 +453,7 @@ static NSString *dateFormat(NSString *template)
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
             
         case 1:
-            return (buyEnabled ? 3 : 2);
+            return (buyEnabled ? 4 : 3);
     }
     
     return 0;
@@ -509,7 +509,15 @@ static NSString *dateFormat(NSString *template)
                 }
                 case 2:
                 {
-                    
+                    cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
+                    DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
+                    cell.textLabel.text = NSLocalizedString(@"Uphold account", nil);
+                    actionCell.imageIcon = [UIImage imageNamed:@"uphold-icon"];
+                    actionCell.selectedImageIcon = [UIImage imageNamed:@"uphold-icon-selected"];
+                    break;
+                }
+                case 3:
+                {
                     cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
                     DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
                     cell.textLabel.text = NSLocalizedString(@"Settings", nil);
@@ -826,9 +834,25 @@ static NSString *dateFormat(NSString *template)
                     [self scanQR:nil];
                     break;
                     
-                case 2: // settings
+                case 2: { // uphold
+                    if ([DSAuthenticationManager sharedInstance].didAuthenticate) {
+                        UIViewController *upholdController = [DWUpholdViewController controller];
+                        [self.navigationController pushViewController:upholdController animated:YES];
+                    }
+                    else {
+                        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                            if (authenticatedOrSuccess) {
+                                UIViewController *upholdController = [DWUpholdViewController controller];
+                                [self.navigationController pushViewController:upholdController animated:YES];
+                            }
+                        }];
+                    }
+                    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                    break;
+                }
+                case 3: // settings
                     [DSEventManager saveEvent:@"tx_history:settings"];
-                    destinationController = [self.storyboard instantiateViewControllerWithIdentifier:@"SettingsViewController"];
+                    destinationController = [DWSettingsViewController controller];
                     [self.navigationController pushViewController:destinationController animated:YES];
                     break;
             }
