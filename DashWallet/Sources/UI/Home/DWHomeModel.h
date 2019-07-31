@@ -27,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 
+@property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
+@property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
+
 @end
 
 NS_ASSUME_NONNULL_END

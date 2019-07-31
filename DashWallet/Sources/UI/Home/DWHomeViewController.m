@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController ()
 
+@property (null_resettable, strong, nonatomic) DWHomeModel *model;
+
 @property (strong, nonatomic) DWHomeView *view;
 
 @end
@@ -51,6 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+    [self performJailbreakCheck];
+
+    // TODO: impl migration stuff from protectedViewDidAppear of DWRootViewController
+    // TODO: check if wallet is watchOnly and show info about it
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -59,12 +65,69 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
+- (DWHomeModel *)model {
+    if (_model == nil) {
+        _model = [[DWHomeModel alloc] init];
+    }
+
+    return _model;
+}
+
 - (void)setupView {
     UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
     NSParameterAssert(logoImage);
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:logoImage];
 
-    self.view.model = [[DWHomeModel alloc] init];
+    self.view.model = self.model;
+}
+
+- (void)performJailbreakCheck {
+    if (!self.model.isJailbroken) {
+        return;
+    }
+
+    NSString *title = NSLocalizedString(@"WARNING", nil);
+    NSString *message = nil;
+    UIAlertAction *mainAction = nil;
+
+    if (!self.model.isWalletEmpty) {
+        message = NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                     "Any 'jailbreak' app can access any other app's keychain data "
+                                     "(and steal your dash). "
+                                     "Wipe this wallet immediately and restore on a secure device.",
+                                    nil);
+        mainAction = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Wipe", nil)
+                      style:UIAlertActionStyleDestructive
+                    handler:^(UIAlertAction *action){
+                        // TODO: Show wipe wallet screen (to input seed phrase)
+                    }];
+    }
+    else {
+        message = NSLocalizedString(@"DEVICE SECURITY COMPROMISED\n"
+                                     "Any 'jailbreak' app can access any other app's keychain data "
+                                     "(and steal your dash).",
+                                    nil);
+        mainAction = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Close App", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *action) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
+                    }];
+    }
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *ignoreAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ignore", nil)
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:nil];
+    [alert addAction:ignoreAction];
+
+    [alert addAction:mainAction];
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

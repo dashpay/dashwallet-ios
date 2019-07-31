@@ -330,6 +330,9 @@
 "ignore" = "무시";
 
 /* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* No comment provided by engineer. */
 "Import private key" = "프라이빗 키 가져오기";
 
 /* No comment provided by engineer. */
@@ -868,6 +871,9 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "wipe" = "지우기";
