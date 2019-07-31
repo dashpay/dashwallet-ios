@@ -17,11 +17,16 @@
 
 #import "DWHomeModel.h"
 
+#import "DWEnvironment.h"
+#import "DWSyncModel.h"
 #import "DWTransactionListDataSource.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeModel ()
+
+@property (strong, nonatomic) DSReachabilityManager *reachability;
 
 @end
 
@@ -30,9 +35,36 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
+        // START_SYNC_ENTRY_POINT
+        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+
+        _reachability = [DSReachabilityManager sharedManager];
+        if (!_reachability.monitoring) {
+            [_reachability startMonitoring];
+        }
+
+        _syncModel = [[DWSyncModel alloc] initWithReachability:_reachability];
+
         _allDataSource = [[DWTransactionListDataSource alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(reachabilityDidChangeNotification)
+                                                     name:DSReachabilityDidChangeNotification
+                                                   object:nil];
     }
     return self;
+}
+
+#pragma mark - Notifications
+
+- (void)reachabilityDidChangeNotification {
+    if ([DWEnvironment sharedInstance].currentChain.hasAWallet &&
+        self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
+        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+
+        // START_SYNC_ENTRY_POINT
+        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+    }
 }
 
 @end

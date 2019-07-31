@@ -18,11 +18,14 @@
 #import "DWSecureWalletInfoViewController.h"
 
 #import "DWBackupInfoViewController.h"
+#import "DWPreviewSeedPhraseModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecureWalletInfoViewController ()
+
+@property (strong, nonatomic) DWPreviewSeedPhraseModel *seedPhraseModel;
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
@@ -43,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+
+    // Create wallet entry point
+    self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
+    [self.seedPhraseModel getOrCreateNewWallet];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -58,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)secureNowButtonAction:(id)sender {
-    DWBackupInfoViewController *controller = [DWBackupInfoViewController controller];
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithModel:self.seedPhraseModel];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }

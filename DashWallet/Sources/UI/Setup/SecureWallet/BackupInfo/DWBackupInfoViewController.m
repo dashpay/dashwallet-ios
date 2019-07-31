@@ -28,6 +28,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @interface DWBackupInfoViewController () <UITableViewDataSource, UITableViewDelegate>
 
+@property (nonatomic, strong) DWPreviewSeedPhraseModel *seedPhraseModel;
+
 @property (null_resettable, copy, nonatomic) NSArray<NSString *> *items;
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
@@ -38,9 +40,12 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @implementation DWBackupInfoViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"BackupInfo" bundle:nil];
-    return [storyboard instantiateInitialViewController];
+    DWBackupInfoViewController *controller = [storyboard instantiateInitialViewController];
+    controller.seedPhraseModel = model;
+
+    return controller;
 }
 
 - (void)viewDidLoad {
@@ -78,7 +83,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Actions
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerForNewWallet];
+    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerWithModel:self.seedPhraseModel];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }

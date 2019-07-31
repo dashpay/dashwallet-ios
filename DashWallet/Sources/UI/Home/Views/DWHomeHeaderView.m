@@ -18,6 +18,8 @@
 #import "DWHomeHeaderView.h"
 
 #import "DWBalancePayReceiveButtonsView.h"
+#import "DWHomeModel.h"
+#import "DWSyncModel.h"
 #import "DWSyncView.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -55,9 +57,25 @@ NS_ASSUME_NONNULL_BEGIN
             [stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         ]];
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.syncView setProgress:0.5 animated:YES];
-        });
+        // KVO
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.state)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncView setSyncState:self.model.syncModel.state];
+                      }];
+
+        [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
+                      with:^(typeof(self) self, NSNumber *value) {
+                          if (!value) {
+                              return;
+                          }
+
+                          [self.syncView setProgress:self.model.syncModel.progress animated:YES];
+                      }];
     }
     return self;
 }

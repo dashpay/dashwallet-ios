@@ -282,6 +282,9 @@
 "Face ID spending limit" = "Limite di spesa Face ID";
 
 /* No comment provided by engineer. */
+"FAILED" = "FAILED";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "\nAggiornamento del portafoglio fallito";
 
 /* No comment provided by engineer. */
@@ -421,6 +424,9 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "nessun dato del tasso di cambio";
+
+/* No comment provided by engineer. */
+"No internet connection" = "No internet connection";
 
 /* No comment provided by engineer. */
 "node ip" = "\"ip\" del nodo";
@@ -696,6 +702,9 @@
 "swept!" = "pulito!";
 
 /* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
+/* No comment provided by engineer. */
 "Syncing:" = "Sincronizzazione:";
 
 /* No comment provided by engineer. */
@@ -862,6 +871,9 @@
 
 /* No comment provided by engineer. */
 "wipe" = "eliminare";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SCRIVI LA TUA FRASE DI RECUPERO";

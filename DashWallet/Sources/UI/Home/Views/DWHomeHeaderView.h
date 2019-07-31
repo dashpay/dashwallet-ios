@@ -15,11 +15,15 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeHeaderView : UIView
+@class DWHomeModel;
+
+@interface DWHomeHeaderView : KVOUIView
+
+@property (nullable, nonatomic, strong) DWHomeModel *model;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

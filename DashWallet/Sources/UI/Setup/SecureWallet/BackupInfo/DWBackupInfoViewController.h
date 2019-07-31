@@ -20,11 +20,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPreviewSeedPhraseModel;
+
 @interface DWBackupInfoViewController : DWBaseViewController
 
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
-+ (instancetype)controller;
++ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model;
 
 @end
 

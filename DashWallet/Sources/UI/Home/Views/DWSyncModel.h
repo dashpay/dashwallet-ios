@@ -19,13 +19,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTransactionListDataSource;
-@class DWSyncModel;
+@class DSReachabilityManager;
 
-@interface DWHomeModel : NSObject
+typedef NS_ENUM(NSUInteger, DWSyncModelState) {
+    DWSyncModelState_Syncing,
+    DWSyncModelState_SyncDone,
+    DWSyncModelState_SyncFailed,
+    DWSyncModelState_NoConnection,
+};
 
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *allDataSource;
-@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
+@interface DWSyncModel : NSObject
+
+@property (readonly, nonatomic, assign) DWSyncModelState state;
+@property (readonly, nonatomic, assign) float progress;
+
+- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

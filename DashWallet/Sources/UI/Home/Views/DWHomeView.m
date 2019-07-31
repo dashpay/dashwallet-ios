@@ -87,6 +87,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(model);
     _model = model;
 
+    self.headerView.model = model;
+
     self.tableView.dataSource = model.allDataSource;
     [self.tableView reloadData];
 }

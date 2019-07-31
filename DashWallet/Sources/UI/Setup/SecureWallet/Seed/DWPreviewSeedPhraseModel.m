@@ -37,10 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
     if (!hasAWallet) {
         [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
 
-
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-        // TODO: not sure if we need to connect right now
-        //        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
+
+        // START_SYNC_ENTRY_POINT
+        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
     }
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
