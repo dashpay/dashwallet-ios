@@ -22,16 +22,23 @@
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
 #import "DWTxListHeaderView.h"
+#import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeView () <UITableViewDelegate>
+@interface DWHomeView () <DWHomeHeaderViewDelegate,
+                          UITableViewDataSource,
+                          UITableViewDelegate,
+                          DWHomeModelUpdatesObserver>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) DWTxListHeaderView *txListHeaderView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
+
+// strong ref to current datasource to make sure it always exists while tableView use it
+@property (nonatomic, strong) DWTransactionListDataSource *currentDataSource;
 
 @end
 
@@ -43,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
         DWHomeHeaderView *headerView = [[DWHomeHeaderView alloc] initWithFrame:CGRectZero];
+        headerView.delegate = self;
         _headerView = headerView;
 
         UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -56,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         tableView.tableHeaderView = headerView;
         tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        tableView.dataSource = self;
         tableView.delegate = self;
         tableView.rowHeight = UITableViewAutomaticDimension;
         tableView.estimatedRowHeight = 74.0;
@@ -68,6 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         NSArray<NSString *> *cellIds = @[
             DWTxListEmptyTableViewCell.dw_reuseIdentifier,
+            DWTxListTableViewCell.dw_reuseIdentifier,
         ];
         for (NSString *cellId in cellIds) {
             UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -86,11 +96,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setModel:(DWHomeModel *)model {
     NSParameterAssert(model);
     _model = model;
+    model.updatesObserver = self;
 
     self.headerView.model = model;
-
-    self.tableView.dataSource = model.allDataSource;
-    [self.tableView reloadData];
 }
 
 - (void)layoutSubviews {
@@ -109,6 +117,40 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+#pragma mark - DWHomeModelUpdatesObserver
+
+- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate {
+    DWTransactionListDataSource *dataSource = self.model.dataSource;
+    self.currentDataSource = dataSource;
+
+    if (dataSource.isEmpty) {
+        self.tableView.dataSource = self;
+        [self.tableView reloadData];
+    }
+    else {
+        self.tableView.dataSource = dataSource;
+
+        if (shouldAnimate) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+        else {
+            [self.tableView reloadData];
+        }
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString *cellId = DWTxListEmptyTableViewCell.dw_reuseIdentifier;
+    DWTxListEmptyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                       forIndexPath:indexPath];
+    return cell;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
@@ -120,6 +162,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     [self.headerView parentScrollViewDidScroll:scrollView];
+}
+
+#pragma mark - DWHomeHeaderViewDelegate
+
+- (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view {
+    [self setNeedsLayout];
 }
 
 @end

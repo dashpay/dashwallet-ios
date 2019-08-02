@@ -15,17 +15,31 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@class DSReachabilityManager;
 
-@interface DWHomeView : KVOUIView
+/*
+ Either same as DSTransactionManagerSyncFinishedNotification or `[DWEnvironment sharedInstance].currentChainManager.syncProgress == 1`
+ */
+extern NSString *const DWSyncFinishedNotification;
 
-@property (nonatomic, strong) DWHomeModel *model;
+typedef NS_ENUM(NSUInteger, DWSyncModelState) {
+    DWSyncModelState_Syncing,
+    DWSyncModelState_SyncDone,
+    DWSyncModelState_SyncFailed,
+    DWSyncModelState_NoConnection,
+};
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+@interface DWSyncModel : NSObject
+
+@property (readonly, nonatomic, assign) DWSyncModelState state;
+@property (readonly, nonatomic, assign) float progress;
+
+- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

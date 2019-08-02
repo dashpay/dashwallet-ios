@@ -15,18 +15,20 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIColor.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@class DSTransaction;
 
-@interface DWHomeView : KVOUIView
+@protocol DWTransactionListDataProviderProtocol <NSObject>
 
-@property (nonatomic, strong) DWHomeModel *model;
+- (NSString *)dateForTransaction:(DSTransaction *)tx;
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+- (NSAttributedString *)stringForDashAmount:(uint64_t)dashAmount
+                                  tintColor:(UIColor *)tintColor
+                                       font:(UIFont *)font;
 
 @end
 

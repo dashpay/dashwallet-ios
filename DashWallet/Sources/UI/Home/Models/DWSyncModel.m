@@ -22,6 +22,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSString *const DWSyncFinishedNotification = @"DWSyncFinishedNotification";
+
 static NSTimeInterval const SYNC_LOOP_INTERVAL = 0.2;
 static NSUInteger const MAX_REACHABILITY_CHECKS_FAILURES = 3;
 static double const SYNCING_COMPLETED_PROGRESS = 0.995;
@@ -82,10 +84,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
 
     [self stopSyncingActivityFailed:NO];
-
-    // TODO
-    // self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
-    // [self.receiveViewController updateAddress];
 }
 
 - (void)transactionManagerSyncFailedNotification {
@@ -140,6 +138,8 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
     else {
         self.state = DWSyncModelState_SyncDone;
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWSyncFinishedNotification object:nil];
     }
 }
 

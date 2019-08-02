@@ -39,7 +39,7 @@
 #pragma message "snapshot build"
 #endif /* SNAPSHOT */
 
-#define FRESH_INSTALL 1
+#define FRESH_INSTALL 0
 
 #if FRESH_INSTALL
 #pragma message "Running app as fresh installed..."

@@ -17,25 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWTransactionListDataProviderProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
-
-typedef NS_ENUM(NSUInteger, DWSyncModelState) {
-    DWSyncModelState_Syncing,
-    DWSyncModelState_SyncDone,
-    DWSyncModelState_SyncFailed,
-    DWSyncModelState_NoConnection,
-};
-
-@interface DWSyncModel : NSObject
-
-@property (readonly, nonatomic, assign) DWSyncModelState state;
-@property (readonly, nonatomic, assign) float progress;
-
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+@interface DWTransactionListDataProvider : NSObject <DWTransactionListDataProviderProtocol>
 
 @end
 

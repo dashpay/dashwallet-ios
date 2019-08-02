@@ -15,15 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
+@class UIFont;
+@class UIColor;
 
-@property (readonly, copy, nonatomic) NSArray *items;
+@interface DWBalanceModel : NSObject
 
-@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (readonly, nonatomic, assign) uint64_t value;
+
+- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (NSString *)fiatAmountString;
+
+- (instancetype)initWithValue:(uint64_t)value;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

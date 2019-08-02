@@ -20,10 +20,18 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeModel;
+@class DWHomeHeaderView;
+
+@protocol DWHomeHeaderViewDelegate <NSObject>
+
+- (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view;
+
+@end
 
 @interface DWHomeHeaderView : KVOUIView
 
 @property (nullable, nonatomic, strong) DWHomeModel *model;
+@property (nullable, nonatomic, weak) id<DWHomeHeaderViewDelegate> delegate;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

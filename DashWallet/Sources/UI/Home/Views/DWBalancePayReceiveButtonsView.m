@@ -17,6 +17,8 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 
+#import "DWBalanceModel.h"
+#import "DWHomeModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,6 +90,22 @@ static CGFloat const BalanceButtonMinHeight(void) {
     self.receiveButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
     self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(contentSizeCategoryDidChangeNotification:)
+                                                 name:UIContentSizeCategoryDidChangeNotification
+                                               object:nil];
+
+    // KVO
+
+    [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
+                  with:^(typeof(self) self, id value) {
+                      if (!value) {
+                          return;
+                      }
+
+                      [self updateBalance];
+                  }];
 }
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
@@ -107,6 +125,24 @@ static CGFloat const BalanceButtonMinHeight(void) {
 }
 
 - (IBAction)receiveButtonAction:(id)sender {
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
+    [self updateBalance];
+}
+
+#pragma mark - Private
+
+- (void)updateBalance {
+    DWBalanceModel *balanceModel = self.model.balanceModel;
+
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+    UIColor *tintColor = [UIColor dw_lightTitleColor];
+    self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
+                                                                        tintColor:tintColor];
+    self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
 }
 
 @end

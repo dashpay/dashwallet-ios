@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_darkTitleColor;
 + (UIColor *)dw_secondaryTextColor;
 + (UIColor *)dw_tertiaryTextColor;
++ (UIColor *)dw_quaternaryTextColor;
 + (UIColor *)dw_redColor;
 + (UIColor *)dw_darkBlueColor;
 + (UIColor *)dw_greenColor;

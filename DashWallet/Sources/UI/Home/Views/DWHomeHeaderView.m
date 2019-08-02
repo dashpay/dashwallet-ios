@@ -24,6 +24,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
+
 @interface DWHomeHeaderView ()
 
 @property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
@@ -65,7 +67,20 @@ NS_ASSUME_NONNULL_BEGIN
                               return;
                           }
 
-                          [self.syncView setSyncState:self.model.syncModel.state];
+                          const DWSyncModelState state = self.model.syncModel.state;
+
+                          [self.syncView setSyncState:state];
+
+                          if (state == DWSyncModelState_SyncDone) {
+                              [self performSelector:@selector(hideSyncView)
+                                         withObject:nil
+                                         afterDelay:SYNCVIEW_HIDE_DELAY];
+                          }
+                          else {
+                              [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                                       selector:@selector(hideSyncView)
+                                                                         object:nil];
+                          }
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.syncModel.progress)
@@ -80,8 +95,20 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)setModel:(nullable DWHomeModel *)model {
+    _model = model;
+
+    self.balancePayReceiveButtonsView.model = model;
+}
+
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
     [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
+}
+
+- (void)hideSyncView {
+    self.syncView.hidden = YES;
+
+    [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
 @end

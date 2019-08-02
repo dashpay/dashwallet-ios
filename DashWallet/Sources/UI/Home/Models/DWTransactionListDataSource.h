@@ -15,17 +15,17 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@class DSTransaction;
 
-@interface DWHomeView : KVOUIView
+@interface DWTransactionListDataSource : NSObject <UITableViewDataSource>
 
-@property (nonatomic, strong) DWHomeModel *model;
+@property (readonly, copy, nonatomic) NSArray<DSTransaction *> *items;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

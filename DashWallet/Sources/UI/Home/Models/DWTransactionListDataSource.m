@@ -15,14 +15,33 @@
 //  limitations under the License.
 //
 
-#import "DWTransactionListDataSource.h"
+#import "DWTransactionListDataSource+DWProtected.h"
 
-#import "DWTxListEmptyTableViewCell.h"
+#import <DashSync/DashSync.h>
+
+#import "DWTxListTableViewCell.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWTransactionListDataSource ()
+
+@property (nullable, nonatomic, weak) id<DWTransactionListDataProviderProtocol> dataProvider;
+
+@end
+
 @implementation DWTransactionListDataSource
+
+
+- (instancetype)initWithTransactions:(NSArray<DSTransaction *> *)transactions
+                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
+    self = [super init];
+    if (self) {
+        _items = [transactions copy];
+        _dataProvider = dataProvider;
+    }
+    return self;
+}
 
 - (BOOL)isEmpty {
     return (self.items.count == 0);
@@ -31,25 +50,16 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (self.isEmpty) {
-        return 1;
-    }
-    else {
-        return self.items.count;
-    }
+    return self.items.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.isEmpty) {
-        NSString *cellId = DWTxListEmptyTableViewCell.dw_reuseIdentifier;
-        DWTxListEmptyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
-                                                                           forIndexPath:indexPath];
-        return cell;
-    }
-    else {
-        // TODO
-        return UITableViewCell.new;
-    }
+    NSString *cellId = DWTxListTableViewCell.dw_reuseIdentifier;
+    DWTxListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                  forIndexPath:indexPath];
+    DSTransaction *transaction = self.items[indexPath.row];
+    [cell configureWithTransaction:transaction dataProvider:self.dataProvider];
+    return cell;
 }
 
 @end

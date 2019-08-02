@@ -69,6 +69,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_quaternaryTextColor {
+    UIColor *color = [UIColor colorNamed:@"QuaternaryTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_redColor {
     UIColor *color = [UIColor colorNamed:@"RedColor"];
     NSParameterAssert(color);

@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#import "DWTransactionListDataSource.h"
+
+#import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@interface DWTransactionListDataSource (DWProtected)
 
-@interface DWHomeView : KVOUIView
-
-@property (nonatomic, strong) DWHomeModel *model;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithTransactions:(NSArray<DSTransaction *> *)transactions
+                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end
 

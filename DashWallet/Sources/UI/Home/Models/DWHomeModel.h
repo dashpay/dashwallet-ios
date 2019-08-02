@@ -21,11 +21,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWTransactionListDataSource;
 @class DWSyncModel;
+@class DWHomeModel;
+@class DWBalanceModel;
+
+typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
+    DWHomeTxDisplayMode_All,
+    DWHomeTxDisplayMode_Received,
+    DWHomeTxDisplayMode_Sent,
+};
+
+@protocol DWHomeModelUpdatesObserver <NSObject>
+
+- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate;
+
+@end
 
 @interface DWHomeModel : NSObject
 
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *allDataSource;
+@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
+@property (readonly, nonatomic, assign) DWHomeTxDisplayMode displayMode;
+@property (readonly, nonatomic, strong) DWBalanceModel *balanceModel;
+
+@property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
 @property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
