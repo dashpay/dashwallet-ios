@@ -45,10 +45,13 @@
 "\ntry again in %@" = "\n%@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "About" = "Hakkında";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "nisap tarafından kabul edildi";
+"accepted by quorum" = "accepted by quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Eylem Gerekiyor";
@@ -82,6 +85,12 @@
 
 /* No comment provided by engineer. */
 "available" = "available";
+
+/* No comment provided by engineer. */
+"Available balance" = "Available balance";
+
+/* No comment provided by engineer. */
+"Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "hatalı kurtarma cümlesi";
@@ -141,6 +150,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "panoda geçerli bir dash veya bitcoin adresi yok";
 
 /* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
 "close app" = "uygulamayı kapat";
 
 /* No comment provided by engineer. */
@@ -153,10 +165,16 @@
 "confirm" = "confirm";
 
 /* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
+
+/* No comment provided by engineer. */
 "Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "#%d bloğunda onaylandı";
+
+/* No comment provided by engineer. */
+"Continue" = "Continue";
 
 /* No comment provided by engineer. */
 "copied" = "kopyalandı";
@@ -184,6 +202,9 @@
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "ödeme dash ağına iletilemedi";
+
+/* No comment provided by engineer. */
+"Create a New Wallet" = "Create a New Wallet";
 
 /* No comment provided by engineer. */
 "CRITICAL" = "KRİTİK";
@@ -222,7 +243,7 @@
 "double spend" = "çift ödeme";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-posta istemcisi yapılandırılmadı. Lütfen e-posta hesabınızı Ayarlar’a ekleyin.";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
 "email not configured" = "e-posta yapılandırılmadı";
@@ -234,7 +255,13 @@
 "Enable advanced features?" = "İleri seviye özellikler etkinleştirilsin mi?";
 
 /* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Bildirim almayı etkinleştir";
+
+/* No comment provided by engineer. */
+"Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
 "enter" = "gir";
@@ -282,7 +309,13 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eğer kurtarma metnime sahip olmazsam paralarımı kaybedeceğimi kabul ediyorum";
 
 /* No comment provided by engineer. */
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
 "id:" = "kimlik:";
+
+/* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin: \"%@\"";
@@ -300,6 +333,9 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Dashwallet'ın önceki sürümlerinden birinde, bu cihazda parola cümlenizi gösterirken bu Uygulamanın 12 kaynak kelimenin hepsini düzgün göstermediğini belirledik. Lütfen tüm parola cümlesini tekrardan bir yere not alın.";
 
 /* No comment provided by engineer. */
+"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
@@ -310,6 +346,9 @@
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adresi/port:";
+
+/* No comment provided by engineer. */
+"It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Bitcoin adresinizi edinmek için diğer QR kodlarını tarayın. İsteyen herkes, dashleri cüzdanınıza adresinize transfer yoluyla gönderebilir.";
@@ -324,7 +363,7 @@
 "Local currency" = "Local currency";
 
 /* No comment provided by engineer. */
-"Locked" = "Kilitlendi";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "AnındaGönder ile kilitli";
@@ -334,6 +373,12 @@
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
+
+/* No comment provided by engineer. */
+"Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "anadüğüm barındırma adresi";
@@ -447,7 +492,7 @@
 "payout address:" = "ödeme adresi:";
 
 /* No comment provided by engineer. */
-"Pending" = "Bekliyor";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "pending" = "bekliyor";
@@ -462,13 +507,19 @@
 "Please place your phone near NFC device." = "Lütfen telefonunuzu bir NFC cihazının yakınına yerleştirin.";
 
 /* No comment provided by engineer. */
+"Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+
+/* No comment provided by engineer. */
+"Please write it down" = "Please write it down";
+
+/* No comment provided by engineer. */
 "Private key" = "Özel anahtar";
 
 /* No comment provided by engineer. */
-"processing" = "işleniyor";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
-"Processing" = "İşleniyor";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Herkese açık anahtar";
@@ -477,7 +528,10 @@
 "public key:" = "herkese açık anahtar:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "oran: %1$@ = %2$@\ngüncellendi: %3$@\nblok #%4$d of %5$d\nbağlanan eşler: %6$d\ndl eş: %7$@\nnisaplar doğrulandı: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+
+/* No comment provided by engineer. */
+"Receive" = "Receive";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Bitcoinleri şu adresten al: %@";
@@ -490,6 +544,9 @@
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "yeni kazıldı (kilitli)";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Recover Wallet";
 
 /* Recovery phrase */
 "Recovery phrase" = "Kurtarma cümlesi";
@@ -528,10 +585,19 @@
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Başkalarının dash veya bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
 
 /* No comment provided by engineer. */
+"Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
+
+/* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Yeni bir kurtarma metni oluşturun ve gizli tutun.";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Ekran görüntüleri diğer uygulamalar ve cihazlar tarafından görülebilir. Paralarınız risk altında. Bakiyenizi başka bir cüzdana aktarın.";
+
+/* No comment provided by engineer. */
+"Secure now" = "Secure now";
+
+/* No comment provided by engineer. */
+"Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";
@@ -549,7 +615,7 @@
 "send address as message" = "adresi mesaj olarak gönder";
 
 /* No comment provided by engineer. */
-"send crash report" = "çökme raporu gönder";
+"send crash report" = "send crash report";
 
 /* No comment provided by engineer. */
 "send request as email" = "isteği e-posta olarak gönder";
@@ -565,6 +631,9 @@
 
 /* No comment provided by engineer. */
 "set a trusted node" = "güvenilir bir düğüm belirle";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "Ayarlar";
@@ -588,7 +657,13 @@
 "show phrase" = "metni göster";
 
 /* No comment provided by engineer. */
+"Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
 "size:" = "boyut:";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
 
 /* No comment provided by engineer. */
 "sms not currently available" = "kısa mesaj şu anda kullanılabilir değil";
@@ -609,7 +684,7 @@
 "status:" = "durum:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Çökmeyi yeniden oluşturma adımları";
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
 "Success" = "Success";
@@ -631,6 +706,12 @@
 
 /* No comment provided by engineer. */
 "This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Bu sizin dash bakiyeniz. Dash bir para birimidir. Döviz kurları piyasa ile değişir.";
+
+/* No comment provided by engineer. */
+"This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
+
+/* No comment provided by engineer. */
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "İşlemin tamamlanması birkaç dakika sürebilir.";
@@ -690,6 +771,9 @@
 "turn device passcode on" = "cihaz parolasını aç";
 
 /* No comment provided by engineer. */
+"Turn device passcode on" = "Turn device passcode on";
+
+/* No comment provided by engineer. */
 "type:" = "tür:";
 
 /* No comment provided by engineer. */
@@ -705,7 +789,7 @@
 "unsupported url" = "desteklenmeyen bağlantı";
 
 /* No comment provided by engineer. */
-"Unverified" = "Doğrulanmamış";
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -726,10 +810,16 @@
 "username:" = "kullanıcı adı:";
 
 /* No comment provided by engineer. */
+"Verified Successfully" = "Verified Successfully";
+
+/* No comment provided by engineer. */
 "verified, waiting for confirmation" = "doğrulandı, onaylanma için bekleniyor";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "nisap doğrulanıyor";
+"Verify" = "Verify";
+
+/* No comment provided by engineer. */
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "oy verme anahtarı hashi:";
@@ -753,10 +843,16 @@
 "watch only" = "sadece saat için";
 
 /* No comment provided by engineer. */
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
+
+/* No comment provided by engineer. */
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
+
+/* No comment provided by engineer. */
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashwallet'ın taşıma işlemi sırasında çöktüğünü tespit ettik. Blok zincirini tekrar tararsanız sorun çözülecektir veya tekrar deneyebilirsiniz. Tekrar taramanın kablosuz ağ üzerinde yapılması tercih edilir ve bu işlem yarım saat kadar sürer. Eşleşme süreci tamamlanınca bakiyenizi kullanabilirsiniz.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dash cüzdanı'nın son açıldığında çökme yaşadığını tespit ettik. Çökme raporu verilerini bize göndererek bu sorunu çözmemize yardımcı olmak ister misiniz? İşlem geçmişiniz ve diğer özel bilgileriniz paylaşılmayacaktır.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "wipe" = "sil";
@@ -784,3 +880,6 @@
 
 /* No comment provided by engineer. */
 "Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+
+/* No comment provided by engineer. */
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";

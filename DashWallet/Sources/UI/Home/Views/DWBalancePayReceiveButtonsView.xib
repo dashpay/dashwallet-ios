@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWBalancePayReceiveButtonsView">
+            <connections>
+                <outlet property="balanceViewHeightContraint" destination="p2n-oJ-XJI" id="62L-6s-OUV"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="qz5-pT-jzT"/>
+                <outlet property="dashBalanceLabel" destination="hzD-1y-Vru" id="FhN-mM-oBi"/>
+                <outlet property="fiatBalanceLabel" destination="QGt-Lq-fJB" id="Abq-d5-RR2"/>
+                <outlet property="payButton" destination="azq-Gs-XjY" id="ZWf-c2-QIm"/>
+                <outlet property="receiveButton" destination="D1Y-c8-69n" id="Igg-5m-SEZ"/>
+                <outlet property="titleLabel" destination="chD-8m-nbL" id="QdS-vN-Q9N"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="185"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sT7-1V-JD7" userLabel="Blue View">
+                    <rect key="frame" x="0.0" y="0.0" width="414" height="160"/>
+                    <color key="backgroundColor" name="DashBlueColor"/>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hLW-nv-HXU" userLabel="Balance View">
+                    <rect key="frame" x="20" y="8" width="374" height="121"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eje-aF-LFe" userLabel="Centered View">
+                            <rect key="frame" x="0.0" y="22" width="374" height="77"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chD-8m-nbL" userLabel="Title Label">
+                                    <rect key="frame" x="0.0" y="0.0" width="374" height="20.333333333333332"/>
+                                    <color key="backgroundColor" name="DashBlueColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                    <color key="textColor" name="DarkBlueColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hzD-1y-Vru" userLabel="Dash Label">
+                                    <rect key="frame" x="0.0" y="25.333333333333336" width="374" height="31.333333333333336"/>
+                                    <color key="backgroundColor" name="DashBlueColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                    <color key="textColor" name="LightTitleColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QGt-Lq-fJB" userLabel="Fiat Label">
+                                    <rect key="frame" x="0.0" y="56.666666666666679" width="374" height="20.333333333333336"/>
+                                    <color key="backgroundColor" name="DashBlueColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                    <color key="textColor" name="LightTitleColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" name="DashBlueColor"/>
+                            <constraints>
+                                <constraint firstItem="hzD-1y-Vru" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="99K-h7-da1"/>
+                                <constraint firstAttribute="bottom" secondItem="QGt-Lq-fJB" secondAttribute="bottom" id="B0Q-UU-70W"/>
+                                <constraint firstItem="QGt-Lq-fJB" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="IUE-rd-hTh"/>
+                                <constraint firstItem="chD-8m-nbL" firstAttribute="leading" secondItem="Eje-aF-LFe" secondAttribute="leading" id="R1J-3Q-NX9"/>
+                                <constraint firstItem="hzD-1y-Vru" firstAttribute="top" secondItem="chD-8m-nbL" secondAttribute="bottom" constant="5" id="aaT-vt-MuG"/>
+                                <constraint firstAttribute="trailing" secondItem="QGt-Lq-fJB" secondAttribute="trailing" id="cnY-BK-fRx"/>
+                                <constraint firstAttribute="trailing" secondItem="hzD-1y-Vru" secondAttribute="trailing" id="nHD-nk-Lt6"/>
+                                <constraint firstAttribute="trailing" secondItem="chD-8m-nbL" secondAttribute="trailing" id="vG7-ST-jnS"/>
+                                <constraint firstItem="chD-8m-nbL" firstAttribute="top" secondItem="Eje-aF-LFe" secondAttribute="top" id="wdQ-OK-CE3"/>
+                                <constraint firstItem="QGt-Lq-fJB" firstAttribute="top" secondItem="hzD-1y-Vru" secondAttribute="bottom" id="zcb-St-6mA"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" name="DashBlueColor"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Eje-aF-LFe" secondAttribute="bottom" id="8zI-Tf-w5J"/>
+                        <constraint firstAttribute="trailing" secondItem="Eje-aF-LFe" secondAttribute="trailing" id="Khc-Jc-fpe"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="leading" secondItem="hLW-nv-HXU" secondAttribute="leading" id="Lln-Vp-JzZ"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="top" relation="greaterThanOrEqual" secondItem="hLW-nv-HXU" secondAttribute="top" id="QHY-PA-vLe"/>
+                        <constraint firstItem="Eje-aF-LFe" firstAttribute="centerY" secondItem="hLW-nv-HXU" secondAttribute="centerY" id="VCP-km-lpH"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="120" id="p2n-oJ-XJI"/>
+                    </constraints>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
+                    <rect key="frame" x="20" y="137" width="374" height="40"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWButton">
+                            <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
+                            <color key="backgroundColor" name="BackgroundColor"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
+                            <state key="normal" title="Pay" image="icon_pay_small">
+                                <color key="titleColor" name="DarkTitleColor"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                    <integer key="value" value="8"/>
+                                </userDefinedRuntimeAttribute>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="payButtonAction:" destination="-1" eventType="touchUpInside" id="iGb-We-6VX"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWButton">
+                            <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
+                            <color key="backgroundColor" name="BackgroundColor"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
+                            <state key="normal" title="Receive" image="icon_receive_small">
+                                <color key="titleColor" name="DarkTitleColor"/>
+                            </state>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                    <integer key="value" value="8"/>
+                                </userDefinedRuntimeAttribute>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="receiveButtonAction:" destination="-1" eventType="touchUpInside" id="bu5-2H-2Kk"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="40" id="h6x-zh-Y9d"/>
+                    </constraints>
+                </stackView>
+            </subviews>
+            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+            <constraints>
+                <constraint firstItem="sT7-1V-JD7" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="4Yc-nj-5xW"/>
+                <constraint firstItem="hLW-nv-HXU" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="61J-LS-i83"/>
+                <constraint firstItem="sT7-1V-JD7" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="FXo-UO-gyY"/>
+                <constraint firstAttribute="bottom" secondItem="EA2-6i-Tmo" secondAttribute="bottom" constant="8" id="Jwn-mg-rro"/>
+                <constraint firstAttribute="trailingMargin" secondItem="EA2-6i-Tmo" secondAttribute="trailing" id="PMm-AB-bmS"/>
+                <constraint firstItem="EA2-6i-Tmo" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="fod-Oc-LzB"/>
+                <constraint firstAttribute="bottom" secondItem="sT7-1V-JD7" secondAttribute="bottom" constant="25" id="pXX-4p-a9b"/>
+                <constraint firstItem="EA2-6i-Tmo" firstAttribute="top" secondItem="hLW-nv-HXU" secondAttribute="bottom" constant="8" id="q93-aT-n4b"/>
+                <constraint firstAttribute="trailing" secondItem="sT7-1V-JD7" secondAttribute="trailing" id="q9G-y5-srg"/>
+                <constraint firstItem="hLW-nv-HXU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="qSj-CK-nao"/>
+                <constraint firstAttribute="trailingMargin" secondItem="hLW-nv-HXU" secondAttribute="trailing" id="sXe-PJ-mqd"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <edgeInsets key="layoutMargins" top="0.0" left="16" bottom="0.0" right="16"/>
+            <variation key="widthClass=regular">
+                <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
+            </variation>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_pay_small" width="16" height="16"/>
+        <image name="icon_receive_small" width="16" height="16"/>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DarkBlueColor">
+            <color red="0.0039215686274509803" green="0.12549019607843137" blue="0.37647058823529411" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="LightTitleColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

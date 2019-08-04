@@ -81,7 +81,7 @@
 "7h3-k2-QrR.text" = "NIKDY nezadávajte frázu pre obnovenie do správcov hesiel alebo inde. Iné zariadenia môžu byť infikované.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "NEDOVOĽTE, aby niekto videl vašu frázu pre obnovenie, lebo by mohol minúť vaše Dashe.";
+"AH2-hg-79I.text" = "NEDOVOĽTE, aby niekto videl Vašu frázu pre obnovenie, lebo by mohol minúť Vaše Dashe.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
 "FJd-qY-pGg.normalTitle" = "Ukázať prístupové heslo";
