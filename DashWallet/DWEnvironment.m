@@ -85,7 +85,6 @@
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
         [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
         [chain unregisterAllWallets];
-        [chain.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
     [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets
 }
