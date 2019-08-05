@@ -261,7 +261,7 @@
 "Fee" = "Tarifa";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "La tarifa es mayor que el saldo";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "La tarifa se deducirá de la cantidad solicitada";
