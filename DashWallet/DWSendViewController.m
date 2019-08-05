@@ -501,7 +501,7 @@ static NSString *sanitizeString(NSString *s)
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                    popOutAfterDelay:2.0]];
-            [[DWEnvironment sharedInstance] playPingSound];
+//            [[DWEnvironment sharedInstance] playPingSound];
             
             displayedSentMessage = TRUE;
             if (self.request.callbackScheme) {
@@ -523,7 +523,7 @@ static NSString *sanitizeString(NSString *s)
                                          viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
                                          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                        popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
-                [[DWEnvironment sharedInstance] playPingSound];
+//                [[DWEnvironment sharedInstance] playPingSound];
             }
             if (protoReq.callbackScheme) {
                 NSURL * callback = [NSURL URLWithString:[protoReq.callbackScheme

@@ -15,26 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWShortcutsView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
-@class DWHomeView;
-
-@protocol DWHomeViewDelegate <NSObject>
-
-- (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender;
+@interface DWShortcutsView ()
 
 @end
 
-@interface DWHomeView : UIView
+@implementation DWShortcutsView
 
-@property (nonatomic, strong) DWHomeModel *model;
-@property (nullable, nonatomic, weak) id<DWHomeViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
 
 @end
 

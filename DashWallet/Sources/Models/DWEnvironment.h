@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-#import <AudioToolbox/AudioToolbox.h>
 #import <Foundation/Foundation.h>
 
 // TODO: rm after redesign
@@ -30,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSArray *allWallets;
 @property (nonatomic, readonly) DSAccount *currentAccount;
 @property (nonatomic, strong) DSChainManager *currentChainManager;
-@property (nonatomic, readonly) SystemSoundID pingsound;
 
 + (instancetype)sharedInstance;
 
@@ -39,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)reset;
-- (void)playPingSound;
 
 @end
 

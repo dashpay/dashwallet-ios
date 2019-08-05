@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWHomeView () <DWHomeHeaderViewDelegate,
                           UITableViewDataSource,
                           UITableViewDelegate,
-                          DWHomeModelUpdatesObserver>
+                          DWHomeModelUpdatesObserver,
+                          DWTxListHeaderViewDelegate>
 
 @property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
-@property (readonly, nonatomic, strong) DWTxListHeaderView *txListHeaderView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
 // strong ref to current datasource to make sure it always exists while tableView use it
@@ -56,9 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
         UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
         topOverscrollView.backgroundColor = [UIColor dw_dashBlueColor];
         _topOverscrollView = topOverscrollView;
-
-        DWTxListHeaderView *txListHeaderView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
-        _txListHeaderView = txListHeaderView;
 
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -155,6 +152,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
+    headerView.model = self.model;
+    headerView.delegate = self;
     return headerView;
 }
 
@@ -162,6 +161,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     [self.headerView parentScrollViewDidScroll:scrollView];
+}
+
+#pragma mark - DWTxListHeaderViewDelegate
+
+- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender {
+    [self.delegate homeView:self showTxFilter:sender];
 }
 
 #pragma mark - DWHomeHeaderViewDelegate

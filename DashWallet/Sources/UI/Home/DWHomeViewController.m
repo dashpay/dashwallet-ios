@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController ()
+@interface DWHomeViewController () <DWHomeViewDelegate>
 
 @property (null_resettable, strong, nonatomic) DWHomeModel *model;
 
@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
     CGRect frame = [UIScreen mainScreen].bounds;
     self.view = [[DWHomeView alloc] initWithFrame:frame];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.view.delegate = self;
 }
 
 - (void)viewDidLoad {
@@ -61,6 +62,60 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - DWHomeViewDelegate
+
+- (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
+    NSString *title = NSLocalizedString(@"Filter Transactions", nil);
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"All", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.displayMode = DWHomeTxDisplayMode_All;
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Received", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.displayMode = DWHomeTxDisplayMode_Received;
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Sent", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.displayMode = DWHomeTxDisplayMode_Sent;
+                    }];
+        [alert addAction:action];
+    }
+
+    {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+        [alert addAction:action];
+    }
+
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = sender;
+        alert.popoverPresentationController.sourceRect = sender.bounds;
+    }
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Private

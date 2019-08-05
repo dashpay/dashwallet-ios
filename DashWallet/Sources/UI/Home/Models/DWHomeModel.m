@@ -28,6 +28,7 @@
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
+#import "UIDevice+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,7 +54,7 @@ static BOOL IsJailbroken(void) {
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
+//@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 @property (nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
@@ -119,6 +120,16 @@ static BOOL IsJailbroken(void) {
     if (self.allDataSource) {
         [updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:NO];
     }
+}
+
+- (void)setDisplayMode:(DWHomeTxDisplayMode)displayMode {
+    if (_displayMode == displayMode) {
+        return;
+    }
+
+    _displayMode = displayMode;
+
+    [self.updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:YES];
 }
 
 - (BOOL)isJailbroken {
@@ -263,7 +274,7 @@ static BOOL IsJailbroken(void) {
     if (self.balanceModel &&
         balanceValue > self.balanceModel.value &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-        [[DWEnvironment sharedInstance] playPingSound];
+        [[UIDevice currentDevice] dw_playCoinSound];
     }
 
     self.balanceModel = [[DWBalanceModel alloc] initWithValue:balanceValue];

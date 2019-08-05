@@ -63,6 +63,9 @@
 "ADVANCED" = "高度な設定";
 
 /* No comment provided by engineer. */
+"All" = "All";
+
+/* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
@@ -295,6 +298,9 @@
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+
+/* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
 
 /* No comment provided by engineer. */
 "from:" = "送金元:";

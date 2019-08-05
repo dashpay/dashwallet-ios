@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+@property (strong, nonatomic) IBOutlet UIButton *filterButton;
 
 @end
 
@@ -62,6 +63,29 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.titleLabel.text = NSLocalizedString(@"History", nil);
+
+    self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+}
+
+- (void)setModel:(nullable DWHomeModel *)model {
+    _model = model;
+
+    UIButton *button = self.filterButton;
+    switch (self.model.displayMode) {
+        case DWHomeTxDisplayMode_All:
+            [button setTitle:NSLocalizedString(@"All", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Received:
+            [button setTitle:NSLocalizedString(@"Received", nil) forState:UIControlStateNormal];
+            break;
+        case DWHomeTxDisplayMode_Sent:
+            [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
+            break;
+    }
+}
+
+- (IBAction)filterButtonAction:(UIButton *)sender {
+    [self.delegate txListHeaderView:self filterButtonAction:sender];
 }
 
 @end

@@ -44,19 +44,7 @@
     [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; //initialization
     [self reset];
 
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)[[NSBundle mainBundle] URLForResource:@"coinflip"
-                                                                                withExtension:@"aiff"],
-                                     &_pingsound);
-
     return self;
-}
-
-- (void)dealloc {
-    AudioServicesDisposeSystemSoundID(self.pingsound);
-}
-
-- (void)playPingSound {
-    AudioServicesPlaySystemSound(self.pingsound);
 }
 
 - (void)reset {

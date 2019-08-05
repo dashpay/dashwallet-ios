@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
-@property (readonly, nonatomic, assign) DWHomeTxDisplayMode displayMode;
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 @property (readonly, nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;

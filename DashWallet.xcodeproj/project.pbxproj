@@ -30,6 +30,8 @@
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2120F022147A40009906DC /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
 		2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */; };
+		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
+		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
 		2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */; };
 		2A307CB822E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */; };
 		2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A307CBB22E8925100A18347 /* DWHomeView.m */; };
@@ -458,6 +460,10 @@
 		2A2120EF22147A40009906DC /* DWAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountObject.m; sourceTree = "<group>"; };
 		2A2CD6E622F46D40008C7BC9 /* DWBalanceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceModel.h; sourceTree = "<group>"; };
 		2A2CD6E722F46D40008C7BC9 /* DWBalanceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceModel.m; sourceTree = "<group>"; };
+		2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsView.h; sourceTree = "<group>"; };
+		2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWShortcutsView.m; sourceTree = "<group>"; };
+		2A2CD6EC22F48159008C7BC9 /* UIDevice+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIDevice+DashWallet.h"; sourceTree = "<group>"; };
+		2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+DashWallet.m"; sourceTree = "<group>"; };
 		2A307CB422E7006600A18347 /* DWBalancePayReceiveButtonsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalancePayReceiveButtonsView.h; sourceTree = "<group>"; };
 		2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalancePayReceiveButtonsView.m; sourceTree = "<group>"; };
 		2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWBalancePayReceiveButtonsView.xib; sourceTree = "<group>"; };
@@ -1194,6 +1200,8 @@
 				2A4E531922EA382B00E5168A /* DWSyncView.xib */,
 				2A4E531E22EB2DF400E5168A /* DWHomeHeaderView.h */,
 				2A4E531F22EB2DF400E5168A /* DWHomeHeaderView.m */,
+				2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */,
+				2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1925,6 +1933,8 @@
 				2A4E534322F02BC300E5168A /* UITableViewCell+DWReuseHelper.m */,
 				2A4E534622F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.h */,
 				2A4E534722F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m */,
+				2A2CD6EC22F48159008C7BC9 /* UIDevice+DashWallet.h */,
+				2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -3034,6 +3044,7 @@
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
+				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				2A9FFE8C2230FF4700956D5F /* DWSettingsControllerModel.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
@@ -3123,6 +3134,7 @@
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
 				2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */,
+				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,

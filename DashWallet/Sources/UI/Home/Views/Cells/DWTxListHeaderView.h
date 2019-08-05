@@ -17,9 +17,22 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWHomeModel.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWTxListHeaderView;
+
+@protocol DWTxListHeaderViewDelegate <NSObject>
+
+- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender;
+
+@end
+
 @interface DWTxListHeaderView : UIView
+
+@property (nullable, strong, nonatomic) DWHomeModel *model;
+@property (nullable, nonatomic, weak) id<DWTxListHeaderViewDelegate> delegate;
 
 @end
 
