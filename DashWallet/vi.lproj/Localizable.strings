@@ -261,7 +261,7 @@
 "Fee" = "Phí";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "Phí gửi lớn hơn số dư";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Phí sẽ được trừ từ khoản tiền được nhận";

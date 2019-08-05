@@ -48,7 +48,7 @@
 "About" = "O programe";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "akceptované kvórom";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Vyžaduje sa akcia";
@@ -63,7 +63,7 @@
 "always require passcode" = "vždy vyžadovať číselné heslo";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "Suma";
 
 /* No comment provided by engineer. */
 "amount too small" = "príliš malá suma";
@@ -81,7 +81,7 @@
 "Are you sure?" = "Ste si istý?";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "dostupné";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "zlá fráza pre obnovenie";
@@ -99,7 +99,7 @@
 "Buy dash in dashwallet!" = "Kúpiť Dash v Dash peňaženke!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "Kúpiť Dash s účtom na Upholde";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Vyčistením tohto zariadenia už nebudete mať prístup k prostriedkom na tomto zariadení. Toto by sa malo robiť len vtedy, ak už nemáte prístup k vašej prístupovej fráze a zabudli ste aj váš PIN kód.";
@@ -153,7 +153,7 @@
 "confirm" = "potvrdiť:";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "Potvrdiť transakciu";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potvrdené v bloku #%d";
@@ -222,7 +222,7 @@
 "double spend" = "dvojité minutie";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "E-mailový klient nie je nakonfigurovaný. Pridajte váš e-mailový účet v časti Nastavenia";
 
 /* No comment provided by engineer. */
 "email not configured" = "email nie je nastavený";
@@ -240,10 +240,10 @@
 "enter" = "zadať";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "Nižšie zadajte sumu, ktorú chcete previesť";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "Nižšie zadajte váš 2FA kód";
 
 /* No comment provided by engineer. */
 "exit" = "ukončiť";
@@ -258,13 +258,13 @@
 "Failed wallet update" = "Zlyhala aktualizácia peňaženky";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Poplatok";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "Poplatok je väčší ako zostatok";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "Poplatok bude odpočítaný z požadovanej sumy";
 
 /* No comment provided by engineer. */
 "from:" = "od:";
@@ -273,7 +273,7 @@
 "GENERAL" = "VŠEOBECNÉ";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "Prejsť na webovú stránku";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "index držania zdrojov:";
@@ -300,13 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "V predchádzajúcej verzii Dash peňaženky, keď sme na začiatku zobrazovali prístupovú frázu na tomto zariadení, sme zistili, že táto aplikácia nesprávne zobrazila všetkých 12 slov. Znova zadajte úplnú prístupovú frázu.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "Nedostatok prostriedkov";
 
 /* No comment provided by engineer. */
 "INVALID" = "NEPLATNÉ";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Neplatná suma";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP adresa/port:";
@@ -315,7 +315,7 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Umožnite ostatným skenovať tento QR kód, aby získali vašu dash adresu. Ktokoľvek môže poslať dash do peňaženky tým, že ho presunie na vašu adresu.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "Pripojiť Uphold účet";
 
 /* No comment provided by engineer. */
 "Load more" = "Načítať viac";
@@ -324,16 +324,16 @@
 "Local currency" = "Miestna mena";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "Uzamknuté";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "uzamknutá cez InstantSend";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "Odhlásiť";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "Odhlásiť s Upholdu";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "adresa držiteľa masternódu";
@@ -447,7 +447,7 @@
 "payout address:" = "adresa platby:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "Čakajúce";
 
 /* No comment provided by engineer. */
 "pending" = "čakajúce";
@@ -465,10 +465,10 @@
 "Private key" = "Privátny kľúč";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "spracováva sa";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "Spracováva sa";
 
 /* No comment provided by engineer. */
 "Public key" = "Verejný kľúč";
@@ -477,7 +477,7 @@
 "public key:" = "verejný kľúč:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rýchlosť: %1$@ = %2$@\naktualizované: %3$@\nblok #%4$d z %5$d\npripojených uzlov: %6$d\ndl uzol: %7$@\npotvrdené kvórami: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Prijať dash na tejto adrese: %@";
@@ -534,7 +534,7 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia. Vaše finančné prostriedky sú ohrozené. Preneste svoj zostatok do inej peňaženky.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "Ukázať na Upholde";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "videné %1$d z %2$d rovesníkov";
@@ -549,7 +549,7 @@
 "send address as message" = "odoslať adresu ako správu";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "poslať správu o chybe";
 
 /* No comment provided by engineer. */
 "send request as email" = "odoslať žiadosť ako e-mail";
@@ -594,7 +594,7 @@
 "sms not currently available" = "sms nie je momentálne dostupná";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "Niečo sa pokazilo";
 
 /* No comment provided by engineer. */
 "spent address" = "adresa pre míňanie";
@@ -609,10 +609,10 @@
 "status:" = "stav:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "Kroky na reprodukciu chyby";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "Úspešné";
 
 /* No comment provided by engineer. */
 "swept!" = "načítať!";
@@ -654,7 +654,7 @@
 "topup amount:" = "suma dobitia:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "Celkovo";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limit pre Touch ID";
@@ -666,16 +666,16 @@
 "Transaction history" = "História transakcií";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "Id transakcie";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "Presun";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "Preneste Dash z vášho účtu na Upholde do tejto peňaženky";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "Presunúť s Upholdu";
 
 /* No comment provided by engineer. */
 "trust" = "dôverovať";
@@ -705,13 +705,13 @@
 "unsupported url" = "nepodporovaná url";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "Neoverené";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "Účet na Upholde";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Používateľove registračné transakcie";
@@ -729,7 +729,7 @@
 "verified, waiting for confirmation" = "overené, čaká sa na potvrdenie";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "overovacie kvórum";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "hash hlasovacieho kľúča:";
@@ -756,7 +756,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Zistili sme, že Dashwallet zlyhal počas migrácie. Opätovné skenovanie blockchainu tento problém vyrieši, prípadne môžete skúsiť znova. Opätovné skenovanie by sa malo prednostne vykonávať na wifi a môže trvať zhruba pol hodiny. Vaše prostriedky budú k dispozícii po dokončení procesu synchronizácie.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Zistili sme, že program Dashwallet sa naposledy neukončil správne. Chceli by ste nám pomôcť vyriešiť problém odoslaním údajov o zlyhaní? Vaša história transakcií ani akékoľvek ďalšie súkromné informácie NEBUDÚ zdieľané.";
 
 /* No comment provided by engineer. */
 "wipe" = "vymazať";
@@ -777,10 +777,10 @@
 "you received dash!" = "obdržali ste dash!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "Zostatok na vašom Uphold účte je";
