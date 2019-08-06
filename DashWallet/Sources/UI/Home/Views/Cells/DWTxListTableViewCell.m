@@ -17,8 +17,6 @@
 
 #import "DWTxListTableViewCell.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,9 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
 
 @property (nullable, nonatomic, weak) id<DWTransactionListDataProviderProtocol> dataProvider;
-
-@property (nonatomic, assign) uint64_t dashAmount;
-@property (nonatomic, strong) UIColor *dashAmountTintColor;
+@property (nonatomic, strong) id<DWTransactionListDataItem> transactionData;
 
 @end
 
@@ -64,79 +60,29 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(dataProvider);
 
     self.dataProvider = dataProvider;
+    self.transactionData = [self.dataProvider transactionDataForTransaction:transaction];
 
-    // TODO: refactor logic below into model's
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-
-    const uint64_t sent = [account amountSentByTransaction:transaction];
-    const uint64_t received = [account amountReceivedFromTransaction:transaction];
-
-    NSString *address = nil;
-    if (sent > 0) {
-        for (NSString *outputAddress in transaction.outputAddresses) {
-            if ([outputAddress isKindOfClass:NSString.class]) {
-                address = outputAddress;
-                break;
-            }
-        }
-    }
-    else {
-        for (NSString *inputAddress in transaction.inputAddresses) {
-            if ([inputAddress isKindOfClass:NSString.class]) {
-                address = inputAddress;
-                break;
-            }
-        }
-    }
-
-    uint64_t dashAmount;
-    UIColor *tintColor = nil;
-    if (sent > 0 && received == sent) {
-        // moved
-        dashAmount = sent;
-        tintColor = [UIColor dw_darkTitleColor];
-    }
-    else if (sent > 0) {
-        // sent
-        dashAmount = received - sent;
-        tintColor = [UIColor dw_darkTitleColor];
-    }
-    else {
-        // received
-        dashAmount = received;
-        tintColor = [UIColor dw_dashBlueColor];
-    }
-
-    self.dashAmount = dashAmount;
-    self.dashAmountTintColor = tintColor;
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *fiatAmount = [priceManager localCurrencyStringForDashAmount:dashAmount];
-
-    self.addressLabel.text = address;
+    self.addressLabel.text = self.transactionData.address;
     self.dateLabel.text = [self.dataProvider dateForTransaction:transaction];
-    self.fiatAmountLabel.text = fiatAmount;
-
-    [self updateDashAmountLabelWithDashAmount:dashAmount tintColor:tintColor];
+    self.fiatAmountLabel.text = self.transactionData.fiatAmount;
+    [self updateDashAmountLabel];
 }
 
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    [self updateDashAmountLabelWithDashAmount:self.dashAmount tintColor:self.dashAmountTintColor];
+    [self updateDashAmountLabel];
 }
 
 #pragma mark - Private
 
-- (void)updateDashAmountLabelWithDashAmount:(uint64_t)dashAmount tintColor:(UIColor *)tintColor {
+- (void)updateDashAmountLabel {
     NSParameterAssert(self.dataProvider);
+    NSParameterAssert(self.transactionData);
 
     UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-
-    self.dashAmountLabel.attributedText = [self.dataProvider stringForDashAmount:dashAmount
-                                                                       tintColor:tintColor
-                                                                            font:font];
+    self.dashAmountLabel.attributedText = [self.dataProvider dashAmountStringFrom:self.transactionData
+                                                                             font:font];
 }
 
 @end

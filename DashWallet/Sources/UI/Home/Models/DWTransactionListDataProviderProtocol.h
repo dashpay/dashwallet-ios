@@ -22,13 +22,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
 
+@protocol DWTransactionListDataItem <NSObject>
+
+/// to (sent) / from (received)
+@property (readonly, nonatomic, copy) NSString *address;
+@property (readonly, nonatomic, assign) uint64_t dashAmount;
+@property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
+@property (readonly, nonatomic, copy) NSString *fiatAmount;
+
+@end
+
 @protocol DWTransactionListDataProviderProtocol <NSObject>
 
-- (NSString *)dateForTransaction:(DSTransaction *)tx;
+- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction;
 
-- (NSAttributedString *)stringForDashAmount:(uint64_t)dashAmount
-                                  tintColor:(UIColor *)tintColor
-                                       font:(UIFont *)font;
+- (NSString *)dateForTransaction:(DSTransaction *)transaction;
+
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font;
 
 @end
 

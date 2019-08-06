@@ -20,6 +20,8 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIImage+DSUtils.h>
 
+#import "UIColor+DWStyle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *dateFormat(NSString *template) {
@@ -38,6 +40,23 @@ static NSString *dateFormat(NSString *template) {
                                                     range:NSMakeRange(0, format.length)];
     return format;
 }
+
+#pragma mark - Data Item
+
+@interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
+
+@property (nonatomic, copy) NSString *address;
+@property (nonatomic, assign) uint64_t dashAmount;
+@property (nonatomic, strong) UIColor *dashAmountTintColor;
+@property (nonatomic, copy) NSString *fiatAmount;
+
+@end
+
+@implementation DWTransactionListDataItemObject
+
+@end
+
+#pragma mark - Provider
 
 @interface DWTransactionListDataProvider ()
 
@@ -72,8 +91,8 @@ static NSString *dateFormat(NSString *template) {
 
 #pragma mark - DWTransactionListDataProviderProtocol
 
-- (NSString *)dateForTransaction:(DSTransaction *)tx {
-    NSString *date = self.txDates[uint256_obj(tx.txHash)];
+- (NSString *)dateForTransaction:(DSTransaction *)transaction {
+    NSString *date = self.txDates[uint256_obj(transaction.txHash)];
     if (date) {
         return date;
     }
@@ -81,7 +100,7 @@ static NSString *dateFormat(NSString *template) {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
 
-    NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
+    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
     NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
     NSCalendar *calendar = [NSCalendar currentCalendar];
     NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
@@ -90,16 +109,69 @@ static NSString *dateFormat(NSString *template) {
     NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.monthDayHourFormatter : self.yearMonthDayHourFormatter;
     date = [desiredFormatter stringFromDate:txDate];
 
-    if (tx.blockHeight != TX_UNCONFIRMED) {
-        self.txDates[uint256_obj(tx.txHash)] = date;
+    if (transaction.blockHeight != TX_UNCONFIRMED) {
+        self.txDates[uint256_obj(transaction.txHash)] = date;
     }
 
     return date;
 }
 
-- (NSAttributedString *)stringForDashAmount:(uint64_t)dashAmount
-                                  tintColor:(UIColor *)tintColor
-                                       font:(UIFont *)font {
+- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
+    // inherited from DWTxDetailViewController `- (void)setTransaction:(DSTransaction *)transaction`
+
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    DSAccount *account = transaction.account;
+
+    const uint64_t sent = [account amountSentByTransaction:transaction];
+    const uint64_t received = [account amountReceivedFromTransaction:transaction];
+
+    uint64_t dashAmount;
+    UIColor *tintColor = nil;
+    BOOL treatAsSent;
+    if (sent > 0 && received == sent) {
+        // moved
+        dashAmount = sent;
+        tintColor = [UIColor dw_darkTitleColor];
+        treatAsSent = YES;
+    }
+    else if (sent > 0) {
+        // sent
+        dashAmount = received - sent;
+        tintColor = [UIColor dw_darkTitleColor];
+        treatAsSent = YES;
+    }
+    else {
+        // received
+        dashAmount = received;
+        tintColor = [UIColor dw_dashBlueColor];
+        treatAsSent = NO;
+    }
+
+    DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
+
+    if (treatAsSent) {
+        NSMutableArray<NSString *> *outputs = [self outputsForTransaction:transaction
+                                                                     sent:sent
+                                                                 received:received];
+        dataItem.address = outputs.firstObject;
+    }
+    else {
+        NSMutableArray<NSString *> *inputs = [self inputsForTransaction:transaction];
+        dataItem.address = inputs.firstObject;
+    }
+
+    dataItem.dashAmount = dashAmount;
+    dataItem.dashAmountTintColor = tintColor;
+    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dashAmount];
+
+    return dataItem;
+}
+
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font {
+    const uint64_t dashAmount = transactionData.dashAmount;
+    UIColor *tintColor = transactionData.dashAmountTintColor;
+
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-self.dashNumberFormatter.maximumFractionDigits];
     NSString *string = [self.dashNumberFormatter stringFromNumber:number];
@@ -124,7 +196,74 @@ static NSString *dateFormat(NSString *template) {
         [attributedString addAttribute:NSForegroundColorAttributeName value:tintColor range:fullRange];
         [attributedString addAttribute:NSFontAttributeName value:font range:fullRange];
     }
+
     return [attributedString copy];
+}
+
+#pragma mark - Private
+
+- (NSMutableArray<NSString *> *)inputsForTransaction:(DSTransaction *)transaction {
+    NSMutableArray<NSString *> *inputs = [NSMutableArray array];
+
+    for (NSString *inputAddress in transaction.inputAddresses) {
+        if (![inputs containsObject:inputAddress]) {
+            [inputs addObject:inputAddress];
+        }
+    }
+
+    return inputs;
+}
+
+- (NSMutableArray<NSString *> *)outputsForTransaction:(DSTransaction *)transaction
+                                                 sent:(uint64_t)sent
+                                             received:(uint64_t)received {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    DSAccount *account = transaction.account;
+
+    const uint64_t fee = [account feeForTransaction:transaction];
+
+    NSMutableArray<NSString *> *outputs = [NSMutableArray array];
+
+    NSUInteger outputAmountIndex = 0;
+
+    for (NSString *address in transaction.outputAddresses) {
+        NSData *script = transaction.outputScripts[outputAmountIndex];
+
+        if (address == (id)[NSNull null]) {
+            if (sent > 0) {
+                if ([script UInt8AtOffset:0] == OP_RETURN) {
+                    UInt8 length = [script UInt8AtOffset:1];
+                    if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
+                        NSMutableData *data = [NSMutableData data];
+                        uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+                        [data appendBytes:&v length:1];
+                        NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+
+                        [data appendData:addressData];
+                        [outputs addObject:[NSString base58checkWithData:data]];
+                    }
+                }
+                else {
+                    [outputs addObject:NSLocalizedString(@"unknown address", nil)];
+                }
+            }
+        }
+        else if ([transaction isKindOfClass:DSProviderRegistrationTransaction.class] && [((DSProviderRegistrationTransaction *)transaction).masternodeHoldingWallet containsHoldingAddress:address]) {
+            if (sent == 0 || received + MASTERNODE_COST + fee == sent) {
+                [outputs addObject:address];
+            }
+        }
+        else if ([account containsAddress:address]) {
+            if (sent == 0 || received == sent) {
+                [outputs addObject:address];
+            }
+        }
+        else if (sent > 0) {
+            [outputs addObject:address];
+        }
+    }
+
+    return outputs;
 }
 
 @end

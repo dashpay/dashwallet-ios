@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
 
-// strong ref to current datasource to make sure it always exists while tableView use it
+// strong ref to current datasource to make sure it always exists while tableView uses it
 @property (nonatomic, strong) DWTransactionListDataSource *currentDataSource;
 
 @end
