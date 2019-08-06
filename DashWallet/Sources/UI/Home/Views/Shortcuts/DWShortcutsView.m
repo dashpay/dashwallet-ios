@@ -126,6 +126,10 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+
+    DWShortcutAction *action = self.model.items[indexPath.item];
+    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+    [self.actionDelegate shortcutsView:self didSelectAction:action sender:cell];
 }
 
 #pragma mark - Notifications

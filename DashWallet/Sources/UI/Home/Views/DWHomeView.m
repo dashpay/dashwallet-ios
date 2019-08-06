@@ -98,6 +98,14 @@ NS_ASSUME_NONNULL_BEGIN
     self.headerView.model = model;
 }
 
+- (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    return self.headerView.shortcutsDelegate;
+}
+
+- (void)setShortcutsDelegate:(nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    self.headerView.shortcutsDelegate = shortcutsDelegate;
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
 

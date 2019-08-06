@@ -17,6 +17,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWShortcutsActionDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWShortcutsModel;
@@ -32,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) DWShortcutsModel *model;
 @property (nullable, nonatomic, weak) id<DWShortcutsViewDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> actionDelegate;
 
 @end
 

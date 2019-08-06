@@ -17,6 +17,8 @@
 
 #import <KVO-MVVM/KVOUIView.h>
 
+#import "DWShortcutsActionDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeModel;
@@ -32,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) DWHomeModel *model;
 @property (nullable, nonatomic, weak) id<DWHomeHeaderViewDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> shortcutsDelegate;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

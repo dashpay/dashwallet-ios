@@ -20,10 +20,11 @@
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWNavigationController.h"
+#import "DWShortcutAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeViewController () <DWHomeViewDelegate>
+@interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
 
 @property (null_resettable, strong, nonatomic) DWHomeModel *model;
 
@@ -48,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.view = [[DWHomeView alloc] initWithFrame:frame];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.delegate = self;
+    self.view.shortcutsDelegate = self;
 }
 
 - (void)viewDidLoad {
@@ -116,6 +118,12 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - DWShortcutsActionDelegate
+
+- (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {
+    NSLog(@">>> ACTION %@", @(action.type));
 }
 
 #pragma mark - Private

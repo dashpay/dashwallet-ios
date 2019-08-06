@@ -107,6 +107,14 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     self.balancePayReceiveButtonsView.model = model;
 }
 
+- (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    return self.shortcutsView.actionDelegate;
+}
+
+- (void)setShortcutsDelegate:(nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    self.shortcutsView.actionDelegate = shortcutsDelegate;
+}
+
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
     [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
 }

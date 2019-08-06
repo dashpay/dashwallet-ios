@@ -489,6 +489,7 @@
 		2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicCollectionView.m; sourceTree = "<group>"; };
 		2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPressableButton.h; sourceTree = "<group>"; };
 		2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPressableButton.m; sourceTree = "<group>"; };
+		2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsActionDelegate.h; sourceTree = "<group>"; };
 		2A307CB422E7006600A18347 /* DWBalancePayReceiveButtonsView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalancePayReceiveButtonsView.h; sourceTree = "<group>"; };
 		2A307CB522E7006600A18347 /* DWBalancePayReceiveButtonsView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalancePayReceiveButtonsView.m; sourceTree = "<group>"; };
 		2A307CB722E7006F00A18347 /* DWBalancePayReceiveButtonsView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWBalancePayReceiveButtonsView.xib; sourceTree = "<group>"; };
@@ -1221,6 +1222,7 @@
 				2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */,
 				2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */,
 				2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */,
+				2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */,
 			);
 			path = Shortcuts;
 			sourceTree = "<group>";
