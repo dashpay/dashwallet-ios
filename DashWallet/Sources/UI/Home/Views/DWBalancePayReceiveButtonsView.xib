@@ -81,23 +81,23 @@
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="leading" secondItem="hLW-nv-HXU" secondAttribute="leading" id="Lln-Vp-JzZ"/>
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="top" relation="greaterThanOrEqual" secondItem="hLW-nv-HXU" secondAttribute="top" id="QHY-PA-vLe"/>
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="centerY" secondItem="hLW-nv-HXU" secondAttribute="centerY" id="VCP-km-lpH"/>
-                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="120" id="p2n-oJ-XJI"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="990" constant="120" id="p2n-oJ-XJI"/>
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uKY-Ue-hYI" userLabel="Buttons Container View">
                     <rect key="frame" x="20" y="137" width="374" height="40"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KuJ-kV-DqU" userLabel="Pay Shadow View" customClass="DWShadowView">
-                            <rect key="frame" x="8" y="0.0" width="176.66666666666666" height="40"/>
+                            <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D7n-gC-fC8" userLabel="Receive Shadow View" customClass="DWShadowView">
-                            <rect key="frame" x="189.66666666666663" y="0.0" width="176.33333333333337" height="40"/>
+                            <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
                         </view>
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
-                            <rect key="frame" x="8" y="0.0" width="358" height="40"/>
+                            <rect key="frame" x="0.0" y="0.0" width="374" height="40"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWButton">
-                                    <rect key="frame" x="0.0" y="0.0" width="176.66666666666666" height="40"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                     <color key="tintColor" name="DashBlueColor"/>
@@ -116,7 +116,7 @@
                                     </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWButton">
-                                    <rect key="frame" x="181.66666666666663" y="0.0" width="176.33333333333337" height="40"/>
+                                    <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                     <color key="tintColor" name="DashBlueColor"/>
@@ -143,9 +143,9 @@
                         <constraint firstAttribute="height" constant="40" id="8mi-A8-wRY"/>
                         <constraint firstItem="D7n-gC-fC8" firstAttribute="top" secondItem="D1Y-c8-69n" secondAttribute="top" id="CFH-1s-hRn"/>
                         <constraint firstItem="D7n-gC-fC8" firstAttribute="width" secondItem="D1Y-c8-69n" secondAttribute="width" id="GND-Lr-Fy8"/>
-                        <constraint firstAttribute="trailingMargin" secondItem="EA2-6i-Tmo" secondAttribute="trailing" id="HwQ-vd-LEi"/>
+                        <constraint firstAttribute="trailing" secondItem="EA2-6i-Tmo" secondAttribute="trailing" id="HwQ-vd-LEi"/>
                         <constraint firstItem="KuJ-kV-DqU" firstAttribute="height" secondItem="azq-Gs-XjY" secondAttribute="height" id="Liz-h7-s1s"/>
-                        <constraint firstItem="EA2-6i-Tmo" firstAttribute="leading" secondItem="uKY-Ue-hYI" secondAttribute="leadingMargin" id="O89-94-JNe"/>
+                        <constraint firstItem="EA2-6i-Tmo" firstAttribute="leading" secondItem="uKY-Ue-hYI" secondAttribute="leading" id="O89-94-JNe"/>
                         <constraint firstItem="KuJ-kV-DqU" firstAttribute="leading" secondItem="azq-Gs-XjY" secondAttribute="leading" id="OAR-HV-SB1"/>
                         <constraint firstItem="EA2-6i-Tmo" firstAttribute="top" secondItem="uKY-Ue-hYI" secondAttribute="top" id="WOW-L2-CHC"/>
                         <constraint firstItem="D7n-gC-fC8" firstAttribute="leading" secondItem="D1Y-c8-69n" secondAttribute="leading" id="ed5-vb-Tcc"/>

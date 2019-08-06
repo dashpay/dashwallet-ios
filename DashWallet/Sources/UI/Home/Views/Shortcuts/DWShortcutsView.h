@@ -19,7 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWShortcutsModel;
+@class DWShortcutsView;
+
+@protocol DWShortcutsViewDelegate <NSObject>
+
+- (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view;
+
+@end
+
 @interface DWShortcutsView : UIView
+
+@property (readonly, strong, nonatomic) DWShortcutsModel *model;
+@property (nullable, nonatomic, weak) id<DWShortcutsViewDelegate> delegate;
 
 @end
 

@@ -19,6 +19,7 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 #import "DWHomeModel.h"
+#import "DWShortcutsView.h"
 #import "DWSyncModel.h"
 #import "DWSyncView.h"
 
@@ -26,10 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
 
-@interface DWHomeHeaderView ()
+@interface DWHomeHeaderView () <DWShortcutsViewDelegate>
 
 @property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
+@property (readonly, nonatomic, strong) DWShortcutsView *shortcutsView;
 @property (readonly, nonatomic, strong) UIStackView *stackView;
 
 @end
@@ -45,7 +47,11 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
         DWSyncView *syncView = [[DWSyncView alloc] initWithFrame:CGRectZero];
         _syncView = syncView;
 
-        NSArray<UIView *> *views = @[ balancePayReceiveButtonsView, syncView ];
+        DWShortcutsView *shortcutsView = [[DWShortcutsView alloc] initWithFrame:CGRectZero];
+        shortcutsView.delegate = self;
+        _shortcutsView = shortcutsView;
+
+        NSArray<UIView *> *views = @[ balancePayReceiveButtonsView, syncView, shortcutsView ];
         UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
         stackView.translatesAutoresizingMaskIntoConstraints = NO;
         stackView.axis = UILayoutConstraintAxisVertical;
@@ -104,6 +110,14 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
     [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
 }
+
+#pragma mark - DWShortcutsViewDelegate
+
+- (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view {
+    [self.delegate homeHeaderViewDidUpdateContents:self];
+}
+
+#pragma mark - Private
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;

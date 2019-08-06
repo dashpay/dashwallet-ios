@@ -147,6 +147,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_shortcutSpecialBackgroundColor {
+    UIColor *color = [UIColor colorNamed:@"ShortcutSpecialBackgroundColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWShortcutAction;
+
 @interface DWShortcutCollectionViewCell : UICollectionViewCell
+
+@property (nullable, nonatomic, strong) DWShortcutAction *model;
 
 @end
 

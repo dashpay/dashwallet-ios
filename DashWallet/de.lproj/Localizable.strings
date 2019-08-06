@@ -56,6 +56,9 @@
 /* No comment provided by engineer. */
 "Action Needed" = "Eingreifen erforderlich";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "Adresse";
 
@@ -103,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "Block #%1$d von %2$d";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Dash kaufen";
@@ -338,6 +344,9 @@
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
+
 /* No comment provided by engineer. */
 "Import private key" = "Privaten Schlüssel importieren";
 
@@ -373,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "Mehr laden";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "Local currency";
@@ -494,6 +506,12 @@
 /* No comment provided by engineer. */
 "Pay" = "Zahlen";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
+
 /* No comment provided by engineer. */
 "payload:" = "Payload:";
 
@@ -581,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "Später erinnern";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "Anfrage";
 
@@ -602,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -614,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -709,6 +733,15 @@
 
 /* No comment provided by engineer. */
 "swept!" = "geleert!";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
 
 /* No comment provided by engineer. */
 "Syncing" = "Syncing";

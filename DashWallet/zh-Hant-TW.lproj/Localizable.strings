@@ -56,6 +56,9 @@
 /* No comment provided by engineer. */
 "Action Needed" = "需要用戶採取行動";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "Address";
 
@@ -103,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d 中 #%1$d 的區塊";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "購買達世幣";
@@ -338,6 +344,9 @@
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
+
 /* No comment provided by engineer. */
 "Import private key" = "導入私鑰";
 
@@ -373,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "Load more";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "Local currency";
@@ -494,6 +506,12 @@
 /* No comment provided by engineer. */
 "Pay" = "付款";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
+
 /* No comment provided by engineer. */
 "payload:" = "payload:";
 
@@ -581,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "稍後提醒我";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "請求";
 
@@ -602,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -614,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -709,6 +733,15 @@
 
 /* No comment provided by engineer. */
 "swept!" = "掃過!";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
 
 /* No comment provided by engineer. */
 "Syncing" = "Syncing";
