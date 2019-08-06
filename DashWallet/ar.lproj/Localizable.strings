@@ -126,7 +126,7 @@
 "cancel" = "إلغاء";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "إلغاء ";
 
 /* No comment provided by engineer. */
 "change" = "تغير";
@@ -171,7 +171,7 @@
 "Confirm" = "تأكد";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "تأكيد";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -387,7 +387,7 @@
 "Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "العملة المحلية";
 
 /* No comment provided by engineer. */
 "Locked" = "Locked";
@@ -720,7 +720,7 @@
 "spent input" = "ينفق المدخلات";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "بدء / إسترجاع محفظة أخرى";
 
 /* No comment provided by engineer. */
 "status:" = "الحالة:";

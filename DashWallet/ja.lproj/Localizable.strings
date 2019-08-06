@@ -15,7 +15,7 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = " %2$dの%1$dが投票をロック\n\n";
+"%d out of %d lock votes" = " %2$dの%1$dがロック投票\n";
 
 /* No comment provided by engineer. */
 "%ld used" = "%ld 使用済み";
@@ -51,7 +51,7 @@
 "About" = "このアプリについて";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "accepted by quorum";
+"accepted by quorum" = "クォーラムにより許可済み";
 
 /* No comment provided by engineer. */
 "Action Needed" = "必ず実施して下さい";
@@ -72,7 +72,7 @@
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "金額";
 
 /* No comment provided by engineer. */
 "amount too small" = "金額が小さすぎます";
@@ -90,7 +90,7 @@
 "Are you sure?" = "本当によろしいですか？";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "ご利用できます";
 
 /* No comment provided by engineer. */
 "Available balance" = "Available balance";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "DashウォレットでDashを買う";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "UpholdアカウントでDashを買う";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "この端末を初期化すると、この端末の資金にアクセスできなくなります。 端末の初期化は復元パスフレーズへのアクセス権がなくなり、PINコードも忘れてしまった場合にのみ実施して下さい。";
@@ -126,7 +126,7 @@
 "cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
 "change" = "変更";
@@ -144,7 +144,7 @@
 "checking private key balance..." = "秘密鍵の残高を確認中…";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "従来の取引\n";
+"Classical Transaction" = "クラシカルなトランザクション\n";
 
 /* No comment provided by engineer. */
 "clear" = "消去する";
@@ -171,13 +171,13 @@
 "Confirm" = "承認";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "承認";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "取引を承認する";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "ブロック#%dにて承認済み";
@@ -252,7 +252,7 @@
 "double spend" = "２重支払い";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "Eメールクライアントが設定されていません。 「設定」であなたのメールアカウントを追加してください";
 
 /* No comment provided by engineer. */
 "email not configured" = "メールアドレスが設定されていません";
@@ -276,10 +276,10 @@
 "enter" = "入力する";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "下に送金額を入力してください";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "下に2FAコードを入力してください";
 
 /* No comment provided by engineer. */
 "exit" = "終了する";
@@ -297,13 +297,13 @@
 "Failed wallet update" = "ウォレットの更新に失敗しました";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "手数料";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "手数料は請求金額から差し引かれます";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
@@ -315,7 +315,7 @@
 "GENERAL" = "一般";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "ウェブサイトへ行く";
 
 /* No comment provided by engineer. */
 "History" = "History";
@@ -360,13 +360,13 @@
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "資金不足";
 
 /* No comment provided by engineer. */
 "INVALID" = "無効";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "無効な金額";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP アドレス/ポート:";
@@ -378,7 +378,7 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "取引相手はこのQRコードをスキャンすれば、あなたのDashアドレスをコピーできます。Dashをそのアドレスに送金すれば、あなたのウォレットにDashが送られてきます。";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "Upholdアカウントをリンクさせる";
 
 /* No comment provided by engineer. */
 "Load more" = "さらにロードする";
@@ -387,19 +387,19 @@
 "Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "通貨表示";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "ロック済み";
 
 /* No comment provided by engineer. */
 "locked with InstantSend" = "即時送金［インスタントセンド］でロック済み";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "ログアウトする";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "Upholdからログアウトする";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Login with Face ID";
@@ -528,7 +528,7 @@
 "payout address:" = "支出アドレス:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"Pending" = "保留中";
 
 /* No comment provided by engineer. */
 "pending" = "保留中";
@@ -552,10 +552,10 @@
 "Private key" = "プライベートキー";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"processing" = "処理中";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "処理中";
 
 /* No comment provided by engineer. */
 "Public key" = "パブリックキー";
@@ -564,7 +564,7 @@
 "public key:" = "パブリックキー:";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "レート: %1$@ = %2$@\nアップデート日時: %3$@\nブロック #%4$d of %5$d\n接続先ピア: %6$d\nDLピア: %7$@\nクォーラムによる確認: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive" = "Receive";
@@ -642,7 +642,7 @@
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "Upholdで確認する";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "%1$d / %2$d ピアにて伝播確認済";
@@ -657,7 +657,7 @@
 "send address as message" = "ダッシュアドレスをメッセージにて共有";
 
 /* No comment provided by engineer. */
-"send crash report" = "send crash report";
+"send crash report" = "クラッシュレポートを送信する";
 
 /* No comment provided by engineer. */
 "send request as email" = "リクエストをメールにて共有";
@@ -711,7 +711,7 @@
 "sms not currently available" = "SMSは現在利用できません．";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "問題が生じました";
 
 /* No comment provided by engineer. */
 "spent address" = "当ウォレット外の使用済みアドレス";
@@ -720,16 +720,16 @@
 "spent input" = "使用済み入力";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "ウォレットの新規作成及び復元";
 
 /* No comment provided by engineer. */
 "status:" = "ステータス:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "クラッシュを再現する手順";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "成功";
 
 /* No comment provided by engineer. */
 "swept!" = "全残高送金成功！";
@@ -792,7 +792,7 @@
 "topup amount:" = "追加金額:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "合計";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Touch IDの送金可能額";
@@ -804,16 +804,16 @@
 "Transaction history" = "取引履歴";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "取引のid";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "送金";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "あなたUpholdアカウントからこのウォレットにDashを送金する";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "Upholdから送金する";
 
 /* No comment provided by engineer. */
 "trust" = "信頼する";
@@ -846,13 +846,13 @@
 "unsupported url" = "サポートされていないURL";
 
 /* No comment provided by engineer. */
-"Unverified" = "Unverified";
+"Unverified" = "未検証";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "Upholdアカウント";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ユーザーの取引の登録";
@@ -876,7 +876,7 @@
 "Verify" = "Verify";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "verifying quorum";
+"verifying quorum" = "クォーラムを検証中";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "投票のキーハッシュ:";
@@ -909,7 +909,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Dashウォレットの移行中にクラッシュが発生しました。この問題を解決するためには、ブロックチェーンを再スキャンするか、もう一度お試しください。再スキャンは、最大30分ほどかかりますので、Wi-Fiをお使いください。いったん同期プロセスが完了すれば、あなたの残高がご利用可能となります。";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dashウォレットが前回開かれた際にクラッシュしていたことが判明しました。 クラッシュレポートデータを送信して問題の解決にご協力ください。 あなたの取引履歴やその他の個人情報は共有されません。";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";
@@ -936,13 +936,13 @@
 "you received dash!" = "Dashを受け取りました！";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "またブラウザーを使ってUpholdのウェブサイトからログアウトする必要もあります";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "あなたの取引は送られたので、数分内にその金額がウォレットに表示されるでしょう";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "あなたのUpholdアカウントのDash残高は";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";

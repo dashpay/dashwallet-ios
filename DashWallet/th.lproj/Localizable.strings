@@ -72,7 +72,7 @@
 "always require passcode" = "จำเป็นต้องใช้รหัสตลอด";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "จำนวน";
 
 /* No comment provided by engineer. */
 "amount too small" = "จำนวนเงินน้อยเกินไป";
@@ -90,7 +90,7 @@
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "ที่สามารถใช้ได้";
 
 /* No comment provided by engineer. */
 "Available balance" = "Available balance";
@@ -117,7 +117,7 @@
 "Buy dash in dashwallet!" = "ขาย dash ใน dashwallet";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "ซื้อ Dash ด้วยบัญชี Uphold";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "การล้างข้อมูลอุปกรณ์นี้ คุณจะไม่สามารถเข้าถึงเงินในอุปกรณ์นี้ได้อีกต่อไป   ควรล้างข้อมูลเฉพาะเมื่อคุณไม่สามารถเข้าถึงข้อความรหัสผ่านและลืมรหัสผ่านของคุณ";
@@ -126,7 +126,7 @@
 "cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
 "change" = "เปลี่ยนแปลง";
@@ -171,13 +171,13 @@
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "ยืนยันธุรกรรม";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "ยืนยันในกลุ่ม #%d";
@@ -276,10 +276,10 @@
 "enter" = "เข้าสู่";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "ป้อนจำนวนเงินที่ต้องการโอนด้านล่าง";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "ป้อนรหัส 2FA ของคุณด้านล่าง";
 
 /* No comment provided by engineer. */
 "exit" = "ออก";
@@ -297,13 +297,13 @@
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "ค่าธรรมเนียม";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
@@ -315,7 +315,7 @@
 "GENERAL" = "ทั่วไป";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "ไปยังเว็บไซต์";
 
 /* No comment provided by engineer. */
 "History" = "History";
@@ -360,13 +360,13 @@
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "กองทุนไม่เพียงพอ";
 
 /* No comment provided by engineer. */
 "INVALID" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "จำนวนเงินไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "ที่อยู่ IP / พอร์ต";
@@ -378,7 +378,7 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "เชื่อมบัญชี Uphold";
 
 /* No comment provided by engineer. */
 "Load more" = "โหลดเพิ่ม";
@@ -387,7 +387,7 @@
 "Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
-"Local currency" = "Local currency";
+"Local currency" = "สกุลเงินท้องถิ่น";
 
 /* No comment provided by engineer. */
 "Locked" = "Locked";
@@ -396,10 +396,10 @@
 "locked with InstantSend" = "ล็อคด้วย InstantSend";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "ออกจากระบบ";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "ออกจากระบบ Uphold";
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Login with Face ID";
@@ -642,7 +642,7 @@
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "เปิดดูที่ Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "เห็นแล้ว %1$d ของ %2$d ผู้ปล่อย ";
@@ -711,7 +711,7 @@
 "sms not currently available" = "sms ไม่พร้อมใช้งาน";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "มีบางอย่างผิดพลาด";
 
 /* No comment provided by engineer. */
 "spent address" = "ที่อยู่ที่ใช้แล้ว";
@@ -720,7 +720,7 @@
 "spent input" = "ข้อมูลที่ใช้แล้ว";
 
 /* No comment provided by engineer. */
-"Start / Recover another wallet" = "Start / Recover another wallet";
+"Start / Recover another wallet" = "เริ่ม/กู้คืน wallet อื่น";
 
 /* No comment provided by engineer. */
 "status:" = "สถานะ:";
@@ -729,7 +729,7 @@
 "Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "สำเร็จ";
 
 /* No comment provided by engineer. */
 "swept!" = "ลบล้าง";
@@ -792,7 +792,7 @@
 "topup amount:" = "เติมเงิน:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "ทั้งหมด";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "ขีดจำกัด Touch ID";
@@ -804,13 +804,13 @@
 "Transaction history" = "ประวัติการทำรายการ";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "id ธุรกรรม";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "โอน";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "โอน Dash จากบัญชี Uphold ไปยัง wallet นี้";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";
@@ -852,7 +852,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "บัญชี Uphold";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ธุรกรรมการลงทะเบียนผู้ใช้";
@@ -936,13 +936,13 @@
 "you received dash!" = "คุณได้รับ dash ";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "ธุรกรรมของคุณถูกส่งแล้วและจำนวนเงินจะปรากฏใน wallet ของคุณในอีกไม่กี่นาที";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "ยอด Dash ของบัญชี Uphold ของคุณคือ";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";

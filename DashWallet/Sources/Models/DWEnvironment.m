@@ -86,7 +86,6 @@
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
         [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
         [chain unregisterAllWallets];
-        [chain.chainManager.masternodeManager loadFileDistributedMasternodeLists];
     }
 
     if (shouldRemovePin) {
