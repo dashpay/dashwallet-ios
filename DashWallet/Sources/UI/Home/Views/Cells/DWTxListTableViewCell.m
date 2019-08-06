@@ -53,10 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [super setHighlighted:highlighted animated:animated];
 
-    // TODO: fix me
+    [self dw_pressedAnimation:DWPressedAnimationStrength_Light pressed:highlighted];
 }
 
 - (void)configureWithTransaction:(DSTransaction *)transaction

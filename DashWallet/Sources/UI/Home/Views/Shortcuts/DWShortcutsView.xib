@@ -23,7 +23,7 @@
             <rect key="frame" x="0.0" y="0.0" width="450" height="95"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" showsVerticalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="nkl-dj-KFj">
+                <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="nkl-dj-KFj">
                     <rect key="frame" x="20" y="8" width="410" height="79"/>
                     <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                     <constraints>

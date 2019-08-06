@@ -173,6 +173,12 @@ static UIColor *BackgroundColorForAction(DWShortcutAction *action) {
     self.iconImageView.image = IconForAction(model);
 }
 
+- (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
+
+    [self dw_pressedAnimation:DWPressedAnimationStrength_Heavy pressed:highlighted];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

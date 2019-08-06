@@ -96,7 +96,7 @@
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
                             <rect key="frame" x="0.0" y="0.0" width="374" height="40"/>
                             <subviews>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWButton">
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWPressableButton">
                                     <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
@@ -115,7 +115,7 @@
                                         <action selector="payButtonAction:" destination="-1" eventType="touchUpInside" id="iGb-We-6VX"/>
                                     </connections>
                                 </button>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWButton">
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWPressableButton">
                                     <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
                                     <color key="backgroundColor" name="BackgroundColor"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
