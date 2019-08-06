@@ -38,7 +38,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatBalanceLabel;
-@property (strong, nonatomic) IBOutlet UIStackView *buttonsStackView;
+@property (strong, nonatomic) IBOutlet UIView *buttonsContainerView;
 @property (strong, nonatomic) IBOutlet UIButton *payButton;
 @property (strong, nonatomic) IBOutlet UIButton *receiveButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *balanceViewHeightContraint;
@@ -110,13 +110,13 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
     const CGFloat offset = scrollView.contentOffset.y + scrollView.contentInset.top;
-    const CGRect buttonsFrame = self.buttonsStackView.frame;
+    const CGRect buttonsFrame = self.buttonsContainerView.frame;
     const CGFloat threshold = CGRectGetHeight(buttonsFrame) / 2.0;
     // start descreasing alpha when scroll offset reached the point before half of buttons height until
     // center of the buttons
     CGFloat alpha = 1.0 - (threshold + offset - CGRectGetMinY(buttonsFrame)) / threshold;
     alpha = MAX(0.0, MIN(1.0, alpha));
-    self.buttonsStackView.alpha = alpha;
+    self.buttonsContainerView.alpha = alpha;
 }
 
 #pragma mark - Actions

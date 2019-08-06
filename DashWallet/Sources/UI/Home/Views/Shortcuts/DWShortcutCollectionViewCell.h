@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,12 @@
 //  limitations under the License.
 //
 
-#ifndef DWUIKit_h
-#define DWUIKit_h
+#import <UIKit/UIKit.h>
 
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+NS_ASSUME_NONNULL_BEGIN
 
-#import "UIView+DWAnimations.h"
-#import "CALayer+DWShadow.h"
-#import "DevicesCompatibility.h"
+@interface DWShortcutCollectionViewCell : UICollectionViewCell
 
-#import "UITableViewCell+DWReuseHelper.h"
-#import "UICollectionViewCell+DWReuseHelper.h"
+@end
 
-#endif /* DWUIKit_h */
+NS_ASSUME_NONNULL_END

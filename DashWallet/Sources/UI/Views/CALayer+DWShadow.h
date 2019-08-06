@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,25 @@
 //  limitations under the License.
 //
 
-#ifndef DWUIKit_h
-#define DWUIKit_h
+#import <QuartzCore/QuartzCore.h>
 
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+NS_ASSUME_NONNULL_BEGIN
 
-#import "UIView+DWAnimations.h"
-#import "CALayer+DWShadow.h"
-#import "DevicesCompatibility.h"
+@interface CALayer (DWShadow)
 
-#import "UITableViewCell+DWReuseHelper.h"
-#import "UICollectionViewCell+DWReuseHelper.h"
 
-#endif /* DWUIKit_h */
+/**
+ Convinience method to apply shadow values as they set in Sketch.app
+ 
+ @warning 'spread' value should be set in `layoutSubviews` as `shadowPath`.
+ See `DWShadowView`
+ */
+- (void)dw_applyShadowWithColor:(UIColor *)color
+                          alpha:(float)alpha
+                              x:(CGFloat)x
+                              y:(CGFloat)y
+                           blur:(CGFloat)blur;
+
+@end
+
+NS_ASSUME_NONNULL_END

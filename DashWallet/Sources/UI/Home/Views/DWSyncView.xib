@@ -24,82 +24,94 @@
             <rect key="frame" x="0.0" y="0.0" width="414" height="86"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="84Y-h0-Lak" userLabel="Rounded View">
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G7Z-qS-2di" userLabel="Shadow View" customClass="DWShadowView">
                     <rect key="frame" x="20" y="8" width="374" height="70"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pYG-Sd-FBs">
-                            <rect key="frame" x="23" y="17.5" width="257.5" height="35"/>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="84Y-h0-Lak" userLabel="Rounded View">
+                            <rect key="frame" x="0.0" y="0.0" width="374" height="70"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R4b-Le-Xyn" userLabel="Title Label">
-                                    <rect key="frame" x="0.0" y="0.0" width="257.5" height="14.5"/>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pYG-Sd-FBs">
+                                    <rect key="frame" x="23" y="17.5" width="257.5" height="35"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R4b-Le-Xyn" userLabel="Title Label">
+                                            <rect key="frame" x="0.0" y="0.0" width="257.5" height="14.5"/>
+                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                            <color key="textColor" name="SecondaryTextColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Description Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VKe-Yj-7cK" userLabel="Description Label">
+                                            <rect key="frame" x="0.0" y="14.5" width="257.5" height="20.5"/>
+                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                            <color key="textColor" name="QuaternaryTextColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
                                     <color key="backgroundColor" name="BackgroundColor"/>
-                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                    <color key="textColor" name="SecondaryTextColor"/>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="VKe-Yj-7cK" secondAttribute="trailing" id="Lz0-oj-dRN"/>
+                                        <constraint firstItem="VKe-Yj-7cK" firstAttribute="top" secondItem="R4b-Le-Xyn" secondAttribute="bottom" id="NBO-pq-Sey"/>
+                                        <constraint firstAttribute="bottom" secondItem="VKe-Yj-7cK" secondAttribute="bottom" id="Pfm-Mf-rGe"/>
+                                        <constraint firstItem="VKe-Yj-7cK" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="leading" id="dtv-pf-Q8B"/>
+                                        <constraint firstItem="R4b-Le-Xyn" firstAttribute="top" secondItem="pYG-Sd-FBs" secondAttribute="top" id="kEy-Hk-0z7"/>
+                                        <constraint firstAttribute="trailing" secondItem="R4b-Le-Xyn" secondAttribute="trailing" id="pyP-cH-dxP"/>
+                                        <constraint firstItem="R4b-Le-Xyn" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="leading" id="wMg-MM-cel"/>
+                                    </constraints>
+                                </view>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="270" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tmC-WD-m2y" userLabel="Percent Label">
+                                    <rect key="frame" x="296.5" y="5" width="61.5" height="60"/>
+                                    <color key="backgroundColor" name="BackgroundColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                    <color key="textColor" name="DashBlueColor"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Description Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VKe-Yj-7cK" userLabel="Description Label">
-                                    <rect key="frame" x="0.0" y="14.5" width="257.5" height="20.5"/>
-                                    <color key="backgroundColor" name="BackgroundColor"/>
-                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                    <color key="textColor" name="QuaternaryTextColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XDT-qQ-rV0" userLabel="Progress View" customClass="DWProgressView">
+                                    <rect key="frame" x="0.0" y="65" width="374" height="5"/>
+                                    <color key="backgroundColor" name="ProgressBackgroundColor"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="5" id="29r-qc-OFs"/>
+                                    </constraints>
+                                </view>
                             </subviews>
                             <color key="backgroundColor" name="BackgroundColor"/>
                             <constraints>
-                                <constraint firstAttribute="trailing" secondItem="VKe-Yj-7cK" secondAttribute="trailing" id="Lz0-oj-dRN"/>
-                                <constraint firstItem="VKe-Yj-7cK" firstAttribute="top" secondItem="R4b-Le-Xyn" secondAttribute="bottom" id="NBO-pq-Sey"/>
-                                <constraint firstAttribute="bottom" secondItem="VKe-Yj-7cK" secondAttribute="bottom" id="Pfm-Mf-rGe"/>
-                                <constraint firstItem="VKe-Yj-7cK" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="leading" id="dtv-pf-Q8B"/>
-                                <constraint firstItem="R4b-Le-Xyn" firstAttribute="top" secondItem="pYG-Sd-FBs" secondAttribute="top" id="kEy-Hk-0z7"/>
-                                <constraint firstAttribute="trailing" secondItem="R4b-Le-Xyn" secondAttribute="trailing" id="pyP-cH-dxP"/>
-                                <constraint firstItem="R4b-Le-Xyn" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="leading" id="wMg-MM-cel"/>
+                                <constraint firstItem="pYG-Sd-FBs" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" constant="23" id="4M1-sB-uB6"/>
+                                <constraint firstAttribute="trailing" secondItem="tmC-WD-m2y" secondAttribute="trailing" constant="16" id="7Wj-Bs-xGt"/>
+                                <constraint firstItem="pYG-Sd-FBs" firstAttribute="top" relation="greaterThanOrEqual" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="DBl-90-CUb"/>
+                                <constraint firstItem="XDT-qQ-rV0" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" id="F8P-RE-A1S"/>
+                                <constraint firstItem="pYG-Sd-FBs" firstAttribute="centerY" secondItem="84Y-h0-Lak" secondAttribute="centerY" id="Jjf-sd-b8L"/>
+                                <constraint firstItem="tmC-WD-m2y" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="trailing" constant="16" id="NVU-zY-g4B"/>
+                                <constraint firstItem="tmC-WD-m2y" firstAttribute="top" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="RJd-zp-REO"/>
+                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="pYG-Sd-FBs" secondAttribute="bottom" constant="5" id="WBu-hy-fI4"/>
+                                <constraint firstAttribute="bottom" secondItem="XDT-qQ-rV0" secondAttribute="bottom" id="Wvk-ep-LdK"/>
+                                <constraint firstAttribute="bottom" secondItem="tmC-WD-m2y" secondAttribute="bottom" constant="5" id="Ye4-7i-91M"/>
+                                <constraint firstAttribute="trailing" secondItem="XDT-qQ-rV0" secondAttribute="trailing" id="aCI-Dp-lwd"/>
                             </constraints>
-                        </view>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="270" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tmC-WD-m2y" userLabel="Percent Label">
-                            <rect key="frame" x="296.5" y="5" width="61.5" height="60"/>
-                            <color key="backgroundColor" name="BackgroundColor"/>
-                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
-                            <color key="textColor" name="DashBlueColor"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XDT-qQ-rV0" userLabel="Progress View" customClass="DWProgressView">
-                            <rect key="frame" x="0.0" y="65" width="374" height="5"/>
-                            <color key="backgroundColor" name="ProgressBackgroundColor"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="5" id="29r-qc-OFs"/>
-                            </constraints>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                    <integer key="value" value="8"/>
+                                </userDefinedRuntimeAttribute>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                            </userDefinedRuntimeAttributes>
                         </view>
                     </subviews>
-                    <color key="backgroundColor" name="BackgroundColor"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
-                        <constraint firstItem="pYG-Sd-FBs" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" constant="23" id="4M1-sB-uB6"/>
-                        <constraint firstAttribute="trailing" secondItem="tmC-WD-m2y" secondAttribute="trailing" constant="16" id="7Wj-Bs-xGt"/>
-                        <constraint firstItem="pYG-Sd-FBs" firstAttribute="top" relation="greaterThanOrEqual" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="DBl-90-CUb"/>
-                        <constraint firstItem="XDT-qQ-rV0" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" id="F8P-RE-A1S"/>
-                        <constraint firstItem="pYG-Sd-FBs" firstAttribute="centerY" secondItem="84Y-h0-Lak" secondAttribute="centerY" id="Jjf-sd-b8L"/>
-                        <constraint firstItem="tmC-WD-m2y" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="trailing" constant="16" id="NVU-zY-g4B"/>
-                        <constraint firstItem="tmC-WD-m2y" firstAttribute="top" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="RJd-zp-REO"/>
-                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="pYG-Sd-FBs" secondAttribute="bottom" constant="5" id="WBu-hy-fI4"/>
-                        <constraint firstAttribute="bottom" secondItem="XDT-qQ-rV0" secondAttribute="bottom" id="Wvk-ep-LdK"/>
-                        <constraint firstAttribute="bottom" secondItem="tmC-WD-m2y" secondAttribute="bottom" constant="5" id="Ye4-7i-91M"/>
-                        <constraint firstAttribute="trailing" secondItem="XDT-qQ-rV0" secondAttribute="trailing" id="aCI-Dp-lwd"/>
-                        <constraint firstAttribute="height" constant="70" id="gCu-mn-tda"/>
+                        <constraint firstAttribute="trailing" secondItem="84Y-h0-Lak" secondAttribute="trailing" id="XJN-RE-K40"/>
+                        <constraint firstAttribute="height" constant="70" id="cLk-Ah-r4w"/>
+                        <constraint firstItem="84Y-h0-Lak" firstAttribute="top" secondItem="G7Z-qS-2di" secondAttribute="top" id="d1z-NP-Opp"/>
+                        <constraint firstAttribute="bottom" secondItem="84Y-h0-Lak" secondAttribute="bottom" id="eEe-mC-lX8"/>
+                        <constraint firstItem="84Y-h0-Lak" firstAttribute="leading" secondItem="G7Z-qS-2di" secondAttribute="leading" id="l7h-wd-kqh"/>
                     </constraints>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                            <integer key="value" value="8"/>
-                        </userDefinedRuntimeAttribute>
-                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                    </userDefinedRuntimeAttributes>
                 </view>
             </subviews>
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <constraints>
-                <constraint firstItem="84Y-h0-Lak" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="5L4-h6-y8F"/>
-                <constraint firstItem="84Y-h0-Lak" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="GPq-nO-12o"/>
-                <constraint firstAttribute="trailingMargin" secondItem="84Y-h0-Lak" secondAttribute="trailing" id="Jab-U6-1QL"/>
-                <constraint firstAttribute="bottom" secondItem="84Y-h0-Lak" secondAttribute="bottom" constant="8" id="bam-Jt-fPz"/>
+                <constraint firstItem="G7Z-qS-2di" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="46W-A9-F5i"/>
+                <constraint firstItem="G7Z-qS-2di" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="KZm-PI-XH6"/>
+                <constraint firstItem="G7Z-qS-2di" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="ZEJ-nJ-Vs3"/>
+                <constraint firstAttribute="bottom" secondItem="G7Z-qS-2di" secondAttribute="bottom" constant="8" id="jvX-3T-U2T"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>

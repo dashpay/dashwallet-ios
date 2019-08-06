@@ -48,6 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_progressBackgroundColor;
 
++ (UIColor *)dw_shadowColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,17 +15,25 @@
 //  limitations under the License.
 //
 
-#ifndef DWUIKit_h
-#define DWUIKit_h
+#import "CALayer+DWShadow.h"
 
 #import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
 
-#import "UIView+DWAnimations.h"
-#import "CALayer+DWShadow.h"
-#import "DevicesCompatibility.h"
+NS_ASSUME_NONNULL_BEGIN
 
-#import "UITableViewCell+DWReuseHelper.h"
-#import "UICollectionViewCell+DWReuseHelper.h"
+@implementation CALayer (DWShadow)
 
-#endif /* DWUIKit_h */
+- (void)dw_applyShadowWithColor:(UIColor *)color
+                          alpha:(float)alpha
+                              x:(CGFloat)x
+                              y:(CGFloat)y
+                           blur:(CGFloat)blur {
+    self.shadowColor = color.CGColor;
+    self.shadowOpacity = alpha;
+    self.shadowOffset = CGSizeMake(x, y);
+    self.shadowRadius = blur / 2.0;
+}
+
+@end
+
+NS_ASSUME_NONNULL_END

@@ -141,6 +141,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_shadowColor {
+    UIColor *color = [UIColor colorNamed:@"ShadowColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
