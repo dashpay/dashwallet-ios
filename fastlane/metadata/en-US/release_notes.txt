@@ -1,0 +1,3 @@
+Dashwallet v3.0 was made to support one of the Dash Network’s biggest improvements to date: LLMQ based InstantSend. Through groundbreaking innovation involving threshold signatures on the Masternode network this enhanced version of InstantSend allows for every transaction on the Dash Network to be guaranteed - no need to wait for confirmations - all at the lowest fees for any major decentralized cryptocurrency.
+
+Version 3.0.2 improves stability and allows quicker processing of InstantSend transactions.

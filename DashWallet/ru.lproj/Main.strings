@@ -81,7 +81,7 @@
 "7h3-k2-QrR.text" = "НИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.";
 
 /* Class = "UILabel"; text = "DO NOT let anyone see your recovery phrase or they can spend your dash."; ObjectID = "AH2-hg-79I"; */
-"AH2-hg-79I.text" = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
+"AH2-hg-79I.text" = "НЕ ПОЗВОЛЯЙТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
 
 /* Class = "UIButton"; normalTitle = "Show Passphrase"; ObjectID = "FJd-qY-pGg"; */
 "FJd-qY-pGg.normalTitle" = "Показать фразу";
