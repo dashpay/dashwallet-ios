@@ -19,6 +19,7 @@
 
 #import "DWHomeHeaderView.h"
 #import "DWHomeModel.h"
+#import "DWSharedUIConstants.h"
 #import "DWTransactionListDataSource.h"
 #import "DWTxListEmptyTableViewCell.h"
 #import "DWTxListHeaderView.h"
@@ -68,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
         tableView.sectionHeaderHeight = UITableViewAutomaticDimension;
         tableView.estimatedSectionHeaderHeight = 64.0;
         tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        tableView.contentInset = UIEdgeInsetsMake(0.0, 0.0, DW_TABBAR_NOTCH, 0.0);
         [tableView addSubview:topOverscrollView];
         [self addSubview:tableView];
         _tableView = tableView;
