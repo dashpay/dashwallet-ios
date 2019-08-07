@@ -21,7 +21,7 @@
 #import "DWSeedPhraseViewLayout.h"
 #import "DWSeedWordModel.h"
 #import "DWSeedWordView.h"
-#import "UIColor+DWStyle.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

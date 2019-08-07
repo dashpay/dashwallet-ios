@@ -43,6 +43,41 @@ NS_ASSUME_NONNULL_BEGIN
     [self.layer addAnimation:shakeAnimation forKey:@"DWShakeAnimation"];
 }
 
+- (void)dw_pressedAnimation:(DWPressedAnimationStrength)strength pressed:(BOOL)pressed {
+    CGAffineTransform transform;
+    if (pressed) {
+        CGFloat scale;
+        switch (strength) {
+            case DWPressedAnimationStrength_Heavy:
+                scale = 0.93;
+                break;
+            case DWPressedAnimationStrength_Medium:
+                scale = 0.95;
+                break;
+            case DWPressedAnimationStrength_Light:
+                scale = 0.97;
+                break;
+        }
+        transform = CGAffineTransformMakeScale(scale, scale);
+    }
+    else {
+        transform = CGAffineTransformIdentity;
+    }
+
+    const UIViewAnimationOptions options =
+        (UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction);
+
+    [UIView animateWithDuration:0.4
+                          delay:0.0
+         usingSpringWithDamping:0.5
+          initialSpringVelocity:1.0
+                        options:options
+                     animations:^{
+                         self.transform = transform;
+                     }
+                     completion:nil];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

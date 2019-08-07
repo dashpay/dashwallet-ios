@@ -15,11 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBalancePayReceiveButtonsView : UIView
+@class DWHomeModel;
+
+@interface DWBalancePayReceiveButtonsView : KVOUIView
+
+@property (nullable, nonatomic, strong) DWHomeModel *model;
+
+- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
 
 @end
 

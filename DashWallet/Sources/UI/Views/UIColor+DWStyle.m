@@ -69,6 +69,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_quaternaryTextColor {
+    UIColor *color = [UIColor colorNamed:@"QuaternaryTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_redColor {
     UIColor *color = [UIColor colorNamed:@"RedColor"];
     NSParameterAssert(color);
@@ -131,6 +137,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_progressBackgroundColor {
     UIColor *color = [UIColor colorNamed:@"ProgressBackgroundColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_shadowColor {
+    UIColor *color = [UIColor colorNamed:@"ShadowColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
++ (UIColor *)dw_shortcutSpecialBackgroundColor {
+    UIColor *color = [UIColor colorNamed:@"ShortcutSpecialBackgroundColor"];
     NSParameterAssert(color);
     return color;
 }

@@ -21,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWProgressView : UIView
 
+@property (nonatomic, assign) float progress;
+
+- (void)setProgress:(float)progress animated:(BOOL)animated;
+
 @end
 
 NS_ASSUME_NONNULL_END

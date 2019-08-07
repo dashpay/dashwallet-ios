@@ -56,11 +56,17 @@
 /* No comment provided by engineer. */
 "Action Needed" = "Tindakan diperlukan";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "Alamat";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "TINGKAT LANJUT";
+
+/* No comment provided by engineer. */
+"All" = "All";
 
 /* No comment provided by engineer. */
 "always require passcode" = "selalu membutuhkan kode sandi";
@@ -100,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d of %2$d";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Beli Dash";
@@ -282,6 +291,9 @@
 "Face ID spending limit" = "Identitas wajah pengiriman terbatas";
 
 /* No comment provided by engineer. */
+"FAILED" = "FAILED";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "Pembaruan dompet gagal";
 
 /* No comment provided by engineer. */
@@ -294,6 +306,9 @@
 "Fee will be deducted from requested amount" = "Biaya akan dikurangkan dari jumlah yang diminta";
 
 /* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
 "from:" = "dari:";
 
 /* No comment provided by engineer. */
@@ -301,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "Pergi ke Situs Web";
+
+/* No comment provided by engineer. */
+"History" = "History";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "memegang dana indeks:";
@@ -322,6 +340,12 @@
 
 /* No comment provided by engineer. */
 "ignore" = "abaikan";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
 "Import private key" = "Impor kunci pribadi";
@@ -358,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "Muat lebih";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "Mata uang lokal";
@@ -420,6 +447,9 @@
 "no exchange rate data" = "tidak ada data nilai tukar";
 
 /* No comment provided by engineer. */
+"No internet connection" = "No internet connection";
+
+/* No comment provided by engineer. */
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
@@ -475,6 +505,12 @@
 
 /* No comment provided by engineer. */
 "Pay" = "Bayar";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
 "payload:" = "muatan:";
@@ -563,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "Ingatkan saya nanti";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "meminta";
 
@@ -584,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Pindai kode QR orang lain untuk mendapatkan alamat dash atau bitcoin mereka. Anda dapat mengirim pembayaran kepada siapa pun yang memiliki alamat.";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -596,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -692,11 +734,26 @@
 /* No comment provided by engineer. */
 "swept!" = "bersihkan!";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
+
+/* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
 /* No comment provided by engineer. */
 "Syncing:" = "Sinkronisasi:";
 
 /* No comment provided by engineer. */
 "the app will now close" = "aplikasi sekarang akan ditutup";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ini adalah alamat dash Anda. Ketuk untuk menyalin atau mengirimnya melalui email atau sms. Alamat akan berubah setiap kali Anda menerima dana, tetapi alamat lama selalu berfungsi.";
@@ -855,7 +912,13 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Kami telah mendeteksi bahwa Dashwallet macet saat terakhir kali dibuka. Apakah Anda ingin membantu kami menyelesaikan masalah dengan mengirimkan data laporan kerusakan kepada kami? Riwayat transaksi Anda dan informasi pribadi lainnya TIDAK AKAN dibagikan.";
 
 /* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
 "wipe" = "menghapus";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "CATAT FRASA PEMULIHAN ANDA";

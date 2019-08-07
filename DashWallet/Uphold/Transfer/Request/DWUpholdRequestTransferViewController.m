@@ -18,7 +18,7 @@
 #import "DWUpholdRequestTransferViewController.h"
 
 #import "DWUpholdRequestTransferModel.h"
-#import "UIView+DWAnimations.h"
+#import "DWUIKit.h"
 #import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN

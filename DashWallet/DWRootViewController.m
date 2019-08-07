@@ -753,7 +753,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                                             [priceManager localCurrencyStringForDashAmount:balance - _balance]]
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                popOutAfterDelay:3.0]];
-        [[DWEnvironment sharedInstance] playPingSound];
+//        [[DWEnvironment sharedInstance] playPingSound];
     }
     
     _balance = balance;

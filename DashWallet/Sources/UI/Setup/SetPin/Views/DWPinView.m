@@ -20,8 +20,7 @@
 #import "DWNumberKeyboard.h"
 #import "DWPinField.h"
 #import "DWPinInputStepView.h"
-#import "UIColor+DWStyle.h"
-#import "UIView+DWAnimations.h"
+#import "DWUIKit.h"
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
 static CGFloat const ANIMATION_SPRING_DAMPING = 1.0;

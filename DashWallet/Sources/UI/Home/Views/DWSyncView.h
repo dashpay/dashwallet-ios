@@ -17,9 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWSyncModel.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSyncView : UIView
+
+- (void)setSyncState:(DWSyncModelState)state;
+- (void)setProgress:(float)progress animated:(BOOL)animated;
 
 @end
 

@@ -56,11 +56,17 @@
 /* No comment provided by engineer. */
 "Action Needed" = "Ação necessária";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "Endereço";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ADVANCED";
+
+/* No comment provided by engineer. */
+"All" = "All";
 
 /* No comment provided by engineer. */
 "always require passcode" = "sempre exija a senha";
@@ -100,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloco #%1$d de %2$d";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Comprar Dash";
@@ -282,6 +291,9 @@
 "Face ID spending limit" = "Limite de gastos por Face ID";
 
 /* No comment provided by engineer. */
+"FAILED" = "FAILED";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "Falha ao atualizar a carteira ";
 
 /* No comment provided by engineer. */
@@ -294,6 +306,9 @@
 "Fee will be deducted from requested amount" = "Taxa será deduzida do valor requisitado";
 
 /* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
 "from:" = "de:";
 
 /* No comment provided by engineer. */
@@ -301,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "Ir para o site";
+
+/* No comment provided by engineer. */
+"History" = "History";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "índice do endereço do masternode:";
@@ -322,6 +340,12 @@
 
 /* No comment provided by engineer. */
 "ignore" = "ignorar";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
 "Import private key" = "Importe chave privada";
@@ -358,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "Carregar mais";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "Moeda local";
@@ -420,6 +447,9 @@
 "no exchange rate data" = "não há dados da taxa de câmbio";
 
 /* No comment provided by engineer. */
+"No internet connection" = "No internet connection";
+
+/* No comment provided by engineer. */
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
@@ -475,6 +505,12 @@
 
 /* No comment provided by engineer. */
 "Pay" = "Pagar";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
 "payload:" = "dados:";
@@ -563,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "Lembrar-me mais tarde";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "Pedido";
 
@@ -584,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -596,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -692,11 +734,26 @@
 /* No comment provided by engineer. */
 "swept!" = "fundos transferidos!";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
+
+/* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
 /* No comment provided by engineer. */
 "Syncing:" = "Sincronizando:";
 
 /* No comment provided by engineer. */
 "the app will now close" = "o aplicativo vai fechar agora";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Este é seu endereço dash. Toque para copiá-lo ou enviá-lo por e-mail ou sms. O endereço vai mudar cada vez que você receber fundos, mas endereços antigos sempre funcionam.";
@@ -855,7 +912,13 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Nós detectamos que o Dashwallet caiu da última vez que foi aberto. Gostaria de nos ajudar a resolver o problema enviando-nos os dados do relatório de falha? Seu histórico de transações e qualquer outra informação privada NÃO SERÃO compartilhados.";
 
 /* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
 "wipe" = "limpar";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "ANOTE SUA FRASE DE RECUPERAÇÃO";

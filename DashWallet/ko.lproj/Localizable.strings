@@ -56,11 +56,17 @@
 /* No comment provided by engineer. */
 "Action Needed" = "조치가 필요함";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "주소";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "향상된 기능";
+
+/* No comment provided by engineer. */
+"All" = "All";
 
 /* No comment provided by engineer. */
 "always require passcode" = "항상 비밀번호 필요";
@@ -100,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "%2$d개중 %1$d번째 블록";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "대시 구입";
@@ -282,6 +291,9 @@
 "Face ID spending limit" = "Face ID 사용 금액 제한";
 
 /* No comment provided by engineer. */
+"FAILED" = "FAILED";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "지갑 업데이트 실패";
 
 /* No comment provided by engineer. */
@@ -294,6 +306,9 @@
 "Fee will be deducted from requested amount" = "요청된 금액에서 수수료가 차감됩니다";
 
 /* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
 "from:" = "보낸 주소:";
 
 /* No comment provided by engineer. */
@@ -301,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "웹사이트로 가기";
+
+/* No comment provided by engineer. */
+"History" = "History";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "보유 중인 자금 인덱스:";
@@ -322,6 +340,12 @@
 
 /* No comment provided by engineer. */
 "ignore" = "무시";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
 "Import private key" = "프라이빗 키 가져오기";
@@ -358,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "더 보기";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "현지 통화";
@@ -420,6 +447,9 @@
 "no exchange rate data" = "가격 정보가 없습니다.";
 
 /* No comment provided by engineer. */
+"No internet connection" = "No internet connection";
+
+/* No comment provided by engineer. */
 "node ip" = "노드 IP";
 
 /* No comment provided by engineer. */
@@ -475,6 +505,12 @@
 
 /* No comment provided by engineer. */
 "Pay" = "지불";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
 "payload:" = "페이로드:";
@@ -563,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "나중에 확인";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "요청";
 
@@ -584,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "다른 사람의 QR 코드를 스캔하여 대시 혹은 비트코인 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -596,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -692,11 +734,26 @@
 /* No comment provided by engineer. */
 "swept!" = "잔액이 지갑으로 보내졌습니다!";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
+
+/* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
 /* No comment provided by engineer. */
 "Syncing:" = "동기화 중:";
 
 /* No comment provided by engineer. */
 "the app will now close" = "앱을 종료합니다";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이것이 당신의 대시 주소입니다. 탭 하여 복사하시거나 이메일, 혹은 SMS를 이용해 다른 사람에게 보낼 수 있습니다. 이 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 그러나 이전 주소도 언제든지 계속 사용할 수 있습니다.";
@@ -855,7 +912,13 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "지난 번 대시 지갑을 실행하였을 때 충돌이 발생하였음을 감지하였습니다. 대시에 충돌 보고서 데이터를 전송해 해당 이슈를 해결할 수 있도록 도와주시겠습니까? 당신의 거래 내역 및 기타 개인 정보는 절대로 공유되지 않습니다.";
 
 /* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
 "wipe" = "지우기";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "복원 문구를 옮겨 적어주세요";

@@ -17,9 +17,24 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWShortcutsActionDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWHomeModel;
+@class DWHomeView;
+
+@protocol DWHomeViewDelegate <NSObject>
+
+- (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender;
+
+@end
+
 @interface DWHomeView : UIView
+
+@property (nonatomic, strong) DWHomeModel *model;
+@property (nullable, nonatomic, weak) id<DWHomeViewDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> shortcutsDelegate;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

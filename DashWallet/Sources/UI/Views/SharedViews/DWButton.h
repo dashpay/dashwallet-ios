@@ -19,7 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
 /**
  UIButton with Dynamic type support
  */

@@ -56,11 +56,17 @@
 /* No comment provided by engineer. */
 "Action Needed" = "การกระทำที่จำเป็น";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
+
 /* No comment provided by engineer. */
 "Address" = "ที่อยู่";
 
 /* No comment provided by engineer. */
 "ADVANCED" = "ขั้นสูง";
+
+/* No comment provided by engineer. */
+"All" = "All";
 
 /* No comment provided by engineer. */
 "always require passcode" = "จำเป็นต้องใช้รหัสตลอด";
@@ -100,6 +106,9 @@
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "ขาย Dash";
@@ -282,6 +291,9 @@
 "Face ID spending limit" = "จำกัดใช้ Face ID";
 
 /* No comment provided by engineer. */
+"FAILED" = "FAILED";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
 
 /* No comment provided by engineer. */
@@ -294,6 +306,9 @@
 "Fee will be deducted from requested amount" = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
 
 /* No comment provided by engineer. */
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
 "from:" = "จาก:";
 
 /* No comment provided by engineer. */
@@ -301,6 +316,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "ไปยังเว็บไซต์";
+
+/* No comment provided by engineer. */
+"History" = "History";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "ดัชนีกองทุนกำลังถือ:";
@@ -322,6 +340,12 @@
 
 /* No comment provided by engineer. */
 "ignore" = "เพิกเฉย";
+
+/* No comment provided by engineer. */
+"Ignore" = "Ignore";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
 "Import private key" = "นำเข้าคีย์ส่วนตัว";
@@ -358,6 +382,9 @@
 
 /* No comment provided by engineer. */
 "Load more" = "โหลดเพิ่ม";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local currency" = "สกุลเงินท้องถิ่น";
@@ -420,6 +447,9 @@
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
 
 /* No comment provided by engineer. */
+"No internet connection" = "No internet connection";
+
+/* No comment provided by engineer. */
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
@@ -475,6 +505,12 @@
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
 "payload:" = "payload:";
@@ -563,6 +599,9 @@
 /* No comment provided by engineer. */
 "Remind me later" = "เตือนฉันภายหลัง";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
+
 /* No comment provided by engineer. */
 "Request" = "ขอร้อง";
 
@@ -584,6 +623,9 @@
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อดูที่อยู่ dash หรือ ที่  bitcoin ของพวกเขา";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
@@ -596,7 +638,7 @@
 /* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
-/* No comment provided by engineer. */
+/* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
@@ -692,11 +734,26 @@
 /* No comment provided by engineer. */
 "swept!" = "ลบล้าง";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
+
+/* No comment provided by engineer. */
+"Syncing" = "Syncing";
+
 /* No comment provided by engineer. */
 "Syncing:" = "ซิงค์";
 
 /* No comment provided by engineer. */
 "the app will now close" = "แอพพลิเคชั่นจะปิดตอนนี้";
+
+/* No comment provided by engineer. */
+"There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "นี่คือที่อยู่ dash ของคุณ แตะเพื่อคัดลอกหรือส่งโดยอีเมล์หรือข้อความ ที่อยู่จะเปลี่ยนแปลงทุกครั้งที่คุณรับเงิน แต่ที่อยู่เดิมจะทำงานได้เสมอ";
@@ -855,7 +912,13 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
 "wipe" = "ลบล้าง";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "เขียนวลีการกู้คืนของคุณ";

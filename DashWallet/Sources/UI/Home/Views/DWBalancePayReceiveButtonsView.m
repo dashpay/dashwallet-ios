@@ -17,9 +17,9 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 
-#import "DevicesCompatibility.h"
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+#import "DWBalanceModel.h"
+#import "DWHomeModel.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +38,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatBalanceLabel;
+@property (strong, nonatomic) IBOutlet UIView *buttonsContainerView;
 @property (strong, nonatomic) IBOutlet UIButton *payButton;
 @property (strong, nonatomic) IBOutlet UIButton *receiveButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *balanceViewHeightContraint;
@@ -89,6 +90,33 @@ static CGFloat const BalanceButtonMinHeight(void) {
     self.receiveButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
     self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(contentSizeCategoryDidChangeNotification:)
+                                                 name:UIContentSizeCategoryDidChangeNotification
+                                               object:nil];
+
+    // KVO
+
+    [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
+                  with:^(typeof(self) self, id value) {
+                      if (!value) {
+                          return;
+                      }
+
+                      [self updateBalance];
+                  }];
+}
+
+- (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
+    const CGFloat offset = scrollView.contentOffset.y + scrollView.contentInset.top;
+    const CGRect buttonsFrame = self.buttonsContainerView.frame;
+    const CGFloat threshold = CGRectGetHeight(buttonsFrame) / 2.0;
+    // start descreasing alpha when scroll offset reached the point before half of buttons height until
+    // center of the buttons
+    CGFloat alpha = 1.0 - (threshold + offset - CGRectGetMinY(buttonsFrame)) / threshold;
+    alpha = MAX(0.0, MIN(1.0, alpha));
+    self.buttonsContainerView.alpha = alpha;
 }
 
 #pragma mark - Actions
@@ -97,6 +125,24 @@ static CGFloat const BalanceButtonMinHeight(void) {
 }
 
 - (IBAction)receiveButtonAction:(id)sender {
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
+    [self updateBalance];
+}
+
+#pragma mark - Private
+
+- (void)updateBalance {
+    DWBalanceModel *balanceModel = self.model.balanceModel;
+
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+    UIColor *tintColor = [UIColor dw_lightTitleColor];
+    self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
+                                                                        tintColor:tintColor];
+    self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
 }
 
 @end

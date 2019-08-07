@@ -20,14 +20,15 @@
 #import "DWBackupInfoCell.h"
 #import "DWBackupInfoHeaderView.h"
 #import "DWPreviewSeedPhraseViewController.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *const CELL_ID = @"DWBackupInfoCell";
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @interface DWBackupInfoViewController () <UITableViewDataSource, UITableViewDelegate>
+
+@property (nonatomic, strong) DWPreviewSeedPhraseModel *seedPhraseModel;
 
 @property (null_resettable, copy, nonatomic) NSArray<NSString *> *items;
 
@@ -39,9 +40,12 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 @implementation DWBackupInfoViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"BackupInfo" bundle:nil];
-    return [storyboard instantiateInitialViewController];
+    DWBackupInfoViewController *controller = [storyboard instantiateInitialViewController];
+    controller.seedPhraseModel = model;
+
+    return controller;
 }
 
 - (void)viewDidLoad {
@@ -79,7 +83,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Actions
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerForNewWallet];
+    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerWithModel:self.seedPhraseModel];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }
@@ -91,7 +95,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DWBackupInfoCell *cell = (DWBackupInfoCell *)[tableView dequeueReusableCellWithIdentifier:CELL_ID
+    NSString *cellId = DWBackupInfoCell.dw_reuseIdentifier;
+    DWBackupInfoCell *cell = (DWBackupInfoCell *)[tableView dequeueReusableCellWithIdentifier:cellId
                                                                                  forIndexPath:indexPath];
     NSAssert([cell isKindOfClass:DWBackupInfoCell.class], @"Invalid table view configuration - unknown cell");
     cell.text = self.items[indexPath.row];
@@ -110,9 +115,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (void)setupView {
     self.title = NSLocalizedString(@"Backup Wallet", nil);
 
-    UINib *nib = [UINib nibWithNibName:CELL_ID bundle:nil];
+    NSString *cellId = DWBackupInfoCell.dw_reuseIdentifier;
+    UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
     NSParameterAssert(nib);
-    [self.tableView registerNib:nib forCellReuseIdentifier:CELL_ID];
+    [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
     self.tableView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
     [self.showRecoveryPhraseButton setTitle:NSLocalizedString(@"Show Recovery Phrase", nil)

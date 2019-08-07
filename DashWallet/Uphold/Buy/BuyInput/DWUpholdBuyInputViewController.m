@@ -18,7 +18,7 @@
 #import "DWUpholdBuyInputViewController.h"
 
 #import "DWUpholdBuyInputModel.h"
-#import "UIView+DWAnimations.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

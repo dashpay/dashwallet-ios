@@ -17,16 +17,29 @@
 
 #import "DWHomeView.h"
 
-#import "DWBalancePayReceiveButtonsView.h"
-#import "UIColor+DWStyle.h"
+#import "DWHomeHeaderView.h"
+#import "DWHomeModel.h"
+#import "DWSharedUIConstants.h"
+#import "DWTransactionListDataSource.h"
+#import "DWTxListEmptyTableViewCell.h"
+#import "DWTxListHeaderView.h"
+#import "DWTxListTableViewCell.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeView () <UITableViewDataSource, UITableViewDelegate>
+@interface DWHomeView () <DWHomeHeaderViewDelegate,
+                          UITableViewDataSource,
+                          UITableViewDelegate,
+                          DWHomeModelUpdatesObserver,
+                          DWTxListHeaderViewDelegate>
 
-@property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
+@property (readonly, nonatomic, strong) DWHomeHeaderView *headerView;
 @property (readonly, nonatomic, strong) UIView *topOverscrollView;
 @property (readonly, nonatomic, strong) UITableView *tableView;
+
+// strong ref to current datasource to make sure it always exists while tableView uses it
+@property (nonatomic, strong) DWTransactionListDataSource *currentDataSource;
 
 @end
 
@@ -37,8 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-        DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
-        _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
+        DWHomeHeaderView *headerView = [[DWHomeHeaderView alloc] initWithFrame:CGRectZero];
+        headerView.delegate = self;
+        _headerView = headerView;
 
         UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
         topOverscrollView.backgroundColor = [UIColor dw_dashBlueColor];
@@ -46,10 +60,29 @@ NS_ASSUME_NONNULL_BEGIN
 
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];
         tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        tableView.tableHeaderView = balancePayReceiveButtonsView;
+        tableView.tableHeaderView = headerView;
+        tableView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+        tableView.dataSource = self;
+        tableView.delegate = self;
+        tableView.rowHeight = UITableViewAutomaticDimension;
+        tableView.estimatedRowHeight = 74.0;
+        tableView.sectionHeaderHeight = UITableViewAutomaticDimension;
+        tableView.estimatedSectionHeaderHeight = 64.0;
+        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        tableView.contentInset = UIEdgeInsetsMake(0.0, 0.0, DW_TABBAR_NOTCH, 0.0);
         [tableView addSubview:topOverscrollView];
         [self addSubview:tableView];
         _tableView = tableView;
+
+        NSArray<NSString *> *cellIds = @[
+            DWTxListEmptyTableViewCell.dw_reuseIdentifier,
+            DWTxListTableViewCell.dw_reuseIdentifier,
+        ];
+        for (NSString *cellId in cellIds) {
+            UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
+            NSParameterAssert(nib);
+            [tableView registerNib:nib forCellReuseIdentifier:cellId];
+        }
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(setNeedsLayout)
@@ -57,6 +90,22 @@ NS_ASSUME_NONNULL_BEGIN
                                                    object:nil];
     }
     return self;
+}
+
+- (void)setModel:(DWHomeModel *)model {
+    NSParameterAssert(model);
+    _model = model;
+    model.updatesObserver = self;
+
+    self.headerView.model = model;
+}
+
+- (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    return self.headerView.shortcutsDelegate;
+}
+
+- (void)setShortcutsDelegate:(nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
+    self.headerView.shortcutsDelegate = shortcutsDelegate;
 }
 
 - (void)layoutSubviews {
@@ -73,6 +122,67 @@ NS_ASSUME_NONNULL_BEGIN
             self.tableView.tableHeaderView = tableHeaderView;
         }
     }
+}
+
+#pragma mark - DWHomeModelUpdatesObserver
+
+- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate {
+    DWTransactionListDataSource *dataSource = self.model.dataSource;
+    self.currentDataSource = dataSource;
+
+    if (dataSource.isEmpty) {
+        self.tableView.dataSource = self;
+        [self.tableView reloadData];
+    }
+    else {
+        self.tableView.dataSource = dataSource;
+
+        if (shouldAnimate) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+        else {
+            [self.tableView reloadData];
+        }
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSString *cellId = DWTxListEmptyTableViewCell.dw_reuseIdentifier;
+    DWTxListEmptyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                       forIndexPath:indexPath];
+    return cell;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    DWTxListHeaderView *headerView = [[DWTxListHeaderView alloc] initWithFrame:CGRectZero];
+    headerView.model = self.model;
+    headerView.delegate = self;
+    return headerView;
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self.headerView parentScrollViewDidScroll:scrollView];
+}
+
+#pragma mark - DWTxListHeaderViewDelegate
+
+- (void)txListHeaderView:(DWTxListHeaderView *)view filterButtonAction:(UIView *)sender {
+    [self.delegate homeView:self showTxFilter:sender];
+}
+
+#pragma mark - DWHomeHeaderViewDelegate
+
+- (void)homeHeaderViewDidUpdateContents:(DWHomeHeaderView *)view {
+    [self setNeedsLayout];
 }
 
 @end

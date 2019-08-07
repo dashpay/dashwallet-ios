@@ -13,6 +13,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWBalancePayReceiveButtonsView">
             <connections>
                 <outlet property="balanceViewHeightContraint" destination="p2n-oJ-XJI" id="62L-6s-OUV"/>
+                <outlet property="buttonsContainerView" destination="uKY-Ue-hYI" id="rSX-lT-CgZ"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="qz5-pT-jzT"/>
                 <outlet property="dashBalanceLabel" destination="hzD-1y-Vru" id="FhN-mM-oBi"/>
                 <outlet property="fiatBalanceLabel" destination="QGt-Lq-fJB" id="Abq-d5-RR2"/>
@@ -80,65 +81,91 @@
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="leading" secondItem="hLW-nv-HXU" secondAttribute="leading" id="Lln-Vp-JzZ"/>
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="top" relation="greaterThanOrEqual" secondItem="hLW-nv-HXU" secondAttribute="top" id="QHY-PA-vLe"/>
                         <constraint firstItem="Eje-aF-LFe" firstAttribute="centerY" secondItem="hLW-nv-HXU" secondAttribute="centerY" id="VCP-km-lpH"/>
-                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="120" id="p2n-oJ-XJI"/>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="990" constant="120" id="p2n-oJ-XJI"/>
                     </constraints>
                 </view>
-                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uKY-Ue-hYI" userLabel="Buttons Container View">
                     <rect key="frame" x="20" y="137" width="374" height="40"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWButton">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KuJ-kV-DqU" userLabel="Pay Shadow View" customClass="DWShadowView">
                             <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
-                            <color key="backgroundColor" name="BackgroundColor"/>
-                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
-                            <state key="normal" title="Pay" image="icon_pay_small">
-                                <color key="titleColor" name="DarkTitleColor"/>
-                            </state>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                    <integer key="value" value="8"/>
-                                </userDefinedRuntimeAttribute>
-                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                            </userDefinedRuntimeAttributes>
-                            <connections>
-                                <action selector="payButtonAction:" destination="-1" eventType="touchUpInside" id="iGb-We-6VX"/>
-                            </connections>
-                        </button>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWButton">
+                        </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D7n-gC-fC8" userLabel="Receive Shadow View" customClass="DWShadowView">
                             <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
-                            <color key="backgroundColor" name="BackgroundColor"/>
-                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                            <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
-                            <state key="normal" title="Receive" image="icon_receive_small">
-                                <color key="titleColor" name="DarkTitleColor"/>
-                            </state>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                    <integer key="value" value="8"/>
-                                </userDefinedRuntimeAttribute>
-                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                            </userDefinedRuntimeAttributes>
-                            <connections>
-                                <action selector="receiveButtonAction:" destination="-1" eventType="touchUpInside" id="bu5-2H-2Kk"/>
-                            </connections>
-                        </button>
+                        </view>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EA2-6i-Tmo">
+                            <rect key="frame" x="0.0" y="0.0" width="374" height="40"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="azq-Gs-XjY" customClass="DWPressableButton">
+                                    <rect key="frame" x="0.0" y="0.0" width="184.66666666666666" height="40"/>
+                                    <color key="backgroundColor" name="BackgroundColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                    <color key="tintColor" name="DashBlueColor"/>
+                                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
+                                    <state key="normal" title="Pay" image="icon_pay_small">
+                                        <color key="titleColor" name="DarkTitleColor"/>
+                                    </state>
+                                    <userDefinedRuntimeAttributes>
+                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                            <integer key="value" value="8"/>
+                                        </userDefinedRuntimeAttribute>
+                                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    </userDefinedRuntimeAttributes>
+                                    <connections>
+                                        <action selector="payButtonAction:" destination="-1" eventType="touchUpInside" id="iGb-We-6VX"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D1Y-c8-69n" customClass="DWPressableButton">
+                                    <rect key="frame" x="189.66666666666663" y="0.0" width="184.33333333333337" height="40"/>
+                                    <color key="backgroundColor" name="BackgroundColor"/>
+                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                    <color key="tintColor" name="DashBlueColor"/>
+                                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="16" maxY="0.0"/>
+                                    <state key="normal" title="Receive" image="icon_receive_small">
+                                        <color key="titleColor" name="DarkTitleColor"/>
+                                    </state>
+                                    <userDefinedRuntimeAttributes>
+                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                            <integer key="value" value="8"/>
+                                        </userDefinedRuntimeAttribute>
+                                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    </userDefinedRuntimeAttributes>
+                                    <connections>
+                                        <action selector="receiveButtonAction:" destination="-1" eventType="touchUpInside" id="bu5-2H-2Kk"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
                     </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="40" id="h6x-zh-Y9d"/>
+                        <constraint firstItem="KuJ-kV-DqU" firstAttribute="width" secondItem="azq-Gs-XjY" secondAttribute="width" id="0Oq-Oh-wsU"/>
+                        <constraint firstAttribute="height" constant="40" id="8mi-A8-wRY"/>
+                        <constraint firstItem="D7n-gC-fC8" firstAttribute="top" secondItem="D1Y-c8-69n" secondAttribute="top" id="CFH-1s-hRn"/>
+                        <constraint firstItem="D7n-gC-fC8" firstAttribute="width" secondItem="D1Y-c8-69n" secondAttribute="width" id="GND-Lr-Fy8"/>
+                        <constraint firstAttribute="trailing" secondItem="EA2-6i-Tmo" secondAttribute="trailing" id="HwQ-vd-LEi"/>
+                        <constraint firstItem="KuJ-kV-DqU" firstAttribute="height" secondItem="azq-Gs-XjY" secondAttribute="height" id="Liz-h7-s1s"/>
+                        <constraint firstItem="EA2-6i-Tmo" firstAttribute="leading" secondItem="uKY-Ue-hYI" secondAttribute="leading" id="O89-94-JNe"/>
+                        <constraint firstItem="KuJ-kV-DqU" firstAttribute="leading" secondItem="azq-Gs-XjY" secondAttribute="leading" id="OAR-HV-SB1"/>
+                        <constraint firstItem="EA2-6i-Tmo" firstAttribute="top" secondItem="uKY-Ue-hYI" secondAttribute="top" id="WOW-L2-CHC"/>
+                        <constraint firstItem="D7n-gC-fC8" firstAttribute="leading" secondItem="D1Y-c8-69n" secondAttribute="leading" id="ed5-vb-Tcc"/>
+                        <constraint firstItem="KuJ-kV-DqU" firstAttribute="top" secondItem="azq-Gs-XjY" secondAttribute="top" id="hZF-N4-Auo"/>
+                        <constraint firstItem="D7n-gC-fC8" firstAttribute="height" secondItem="D1Y-c8-69n" secondAttribute="height" id="pUV-Fx-ovm"/>
+                        <constraint firstAttribute="bottom" secondItem="EA2-6i-Tmo" secondAttribute="bottom" id="whE-WP-PQ7"/>
                     </constraints>
-                </stackView>
+                </view>
             </subviews>
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <constraints>
+                <constraint firstAttribute="bottom" secondItem="uKY-Ue-hYI" secondAttribute="bottom" constant="8" id="1CA-a1-DYt"/>
                 <constraint firstItem="sT7-1V-JD7" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="4Yc-nj-5xW"/>
                 <constraint firstItem="hLW-nv-HXU" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="61J-LS-i83"/>
                 <constraint firstItem="sT7-1V-JD7" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="FXo-UO-gyY"/>
-                <constraint firstAttribute="bottom" secondItem="EA2-6i-Tmo" secondAttribute="bottom" constant="8" id="Jwn-mg-rro"/>
-                <constraint firstAttribute="trailingMargin" secondItem="EA2-6i-Tmo" secondAttribute="trailing" id="PMm-AB-bmS"/>
-                <constraint firstItem="EA2-6i-Tmo" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="fod-Oc-LzB"/>
+                <constraint firstItem="uKY-Ue-hYI" firstAttribute="top" secondItem="hLW-nv-HXU" secondAttribute="bottom" constant="8" id="Mbp-Fd-DS3"/>
+                <constraint firstItem="uKY-Ue-hYI" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="mJD-V7-oid"/>
                 <constraint firstAttribute="bottom" secondItem="sT7-1V-JD7" secondAttribute="bottom" constant="25" id="pXX-4p-a9b"/>
-                <constraint firstItem="EA2-6i-Tmo" firstAttribute="top" secondItem="hLW-nv-HXU" secondAttribute="bottom" constant="8" id="q93-aT-n4b"/>
                 <constraint firstAttribute="trailing" secondItem="sT7-1V-JD7" secondAttribute="trailing" id="q9G-y5-srg"/>
+                <constraint firstItem="uKY-Ue-hYI" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="qSb-Ka-r4s"/>
                 <constraint firstItem="hLW-nv-HXU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="qSj-CK-nao"/>
                 <constraint firstAttribute="trailingMargin" secondItem="hLW-nv-HXU" secondAttribute="trailing" id="sXe-PJ-mqd"/>
             </constraints>

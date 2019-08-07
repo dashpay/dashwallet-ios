@@ -89,8 +89,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
-    // TODO: for test purposes
-    [self completeSetup];
+    // TODO: impl
 }
 
 #pragma mark - DWSetPinViewControllerDelegate

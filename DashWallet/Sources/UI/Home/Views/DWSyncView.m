@@ -18,8 +18,7 @@
 #import "DWSyncView.h"
 
 #import "DWProgressView.h"
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,6 +63,38 @@ NS_ASSUME_NONNULL_BEGIN
     ]];
 
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.percentLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+}
+
+- (void)setSyncState:(DWSyncModelState)state {
+    self.titleLabel.text = NSLocalizedString(@"Syncing", nil);
+
+    switch (state) {
+        case DWSyncModelState_Syncing:
+        case DWSyncModelState_SyncDone: {
+            self.descriptionLabel.text = NSLocalizedString(@"with Dash blockchain", nil);
+
+            break;
+        }
+        case DWSyncModelState_SyncFailed: {
+            self.descriptionLabel.text = NSLocalizedString(@"FAILED", nil);
+
+            break;
+        }
+        case DWSyncModelState_NoConnection: {
+            self.descriptionLabel.text = NSLocalizedString(@"No internet connection", nil);
+
+            break;
+        }
+    }
+}
+
+- (void)setProgress:(float)progress animated:(BOOL)animated {
+    self.percentLabel.text = [NSString stringWithFormat:@"%0.1f%%", progress * 100.0];
+    [self.progressView setProgress:progress animated:animated];
 }
 
 @end

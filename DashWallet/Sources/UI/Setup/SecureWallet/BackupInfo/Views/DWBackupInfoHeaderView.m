@@ -17,8 +17,7 @@
 
 #import "DWBackupInfoHeaderView.h"
 
-#import "DevicesCompatibility.h"
-#import "UIFont+DWFont.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

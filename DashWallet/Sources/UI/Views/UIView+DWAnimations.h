@@ -19,10 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWPressedAnimationStrength) {
+    /// 93% scale, works best with square controls
+    DWPressedAnimationStrength_Heavy,
+    /// 95% scale, works best with medium-width (~= half of the screen width) rectangle controls
+    DWPressedAnimationStrength_Medium,
+    /// 97% scale, works best with big-width (~= screen width) rectangle views
+    DWPressedAnimationStrength_Light,
+};
+
 @interface UIView (DWAnimations)
 
 - (void)dw_shakeViewWithCompletion:(void (^)(void))completion;
 - (void)dw_shakeView;
+
+- (void)dw_pressedAnimation:(DWPressedAnimationStrength)strength pressed:(BOOL)pressed;
 
 @end
 
