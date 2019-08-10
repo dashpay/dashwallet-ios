@@ -25,10 +25,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSTimeInterval const ANIMATION_DURATION = 0.35;
+
 @interface DWMainTabbarViewController () <DWTabBarViewDelegate>
 
 @property (nullable, nonatomic, copy) NSArray<UIViewController *> *viewControllers;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
+@property (nullable, nonatomic, strong) UIViewController *modalController;
 
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
@@ -51,22 +54,47 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
-    return self.currentController;
+    return self.modalController ?: self.currentController;
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarHidden {
-    return self.currentController;
+    return self.modalController ?: self.currentController;
 }
 
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
-    DWPaymentsViewController *controller = [DWPaymentsViewController controller];
+    if (self.modalController) {
+        return;
+    }
 
-    [self presentViewController:controller animated:YES completion:nil];
+    tabBarView.userInteractionEnabled = NO;
+
+    DWPaymentsViewController *controller = [DWPaymentsViewController controller];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    self.modalController = navigationController;
+
+    [self displayModalViewController:navigationController
+                          completion:^{
+                              tabBarView.userInteractionEnabled = YES;
+                          }];
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
+    if (!self.modalController) {
+        return;
+    }
+
+    tabBarView.userInteractionEnabled = NO;
+
+    UIViewController *controller = self.modalController;
+    self.modalController = nil;
+
+    [self hideModalController:controller
+                   completion:^{
+                       tabBarView.userInteractionEnabled = YES;
+                   }];
 }
 
 #pragma mark - Private
@@ -108,6 +136,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)displayViewController:(UIViewController *)controller {
     NSParameterAssert(controller);
+    if (!controller) {
+        return;
+    }
 
     UIView *contentView = self.contentView;
     UIView *childView = controller.view;
@@ -123,6 +154,82 @@ NS_ASSUME_NONNULL_BEGIN
     self.currentController = controller;
 
     [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (void)displayModalViewController:(UIViewController *)controller completion:(void (^)(void))completion {
+    NSParameterAssert(controller);
+    if (!controller) {
+        return;
+    }
+
+    [self.currentController beginAppearanceTransition:NO animated:YES];
+
+    UIView *contentView = self.contentView;
+    UIView *childView = controller.view;
+
+    [self addChildViewController:controller];
+
+    childView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [contentView addSubview:childView];
+
+    CGRect frame = contentView.bounds;
+    frame.origin.y = CGRectGetHeight(frame);
+    childView.frame = frame;
+
+    [UIView animateWithDuration:ANIMATION_DURATION
+        delay:0.0
+        usingSpringWithDamping:1.0
+        initialSpringVelocity:0.0
+        options:UIViewAnimationOptionCurveEaseInOut
+        animations:^{
+            childView.frame = contentView.bounds;
+
+            [self setNeedsStatusBarAppearanceUpdate];
+        }
+        completion:^(BOOL finished) {
+            [controller didMoveToParentViewController:self];
+
+            [self.currentController endAppearanceTransition];
+
+            if (completion) {
+                completion();
+            }
+        }];
+}
+
+- (void)hideModalController:(UIViewController *)controller completion:(void (^)(void))completion {
+    NSParameterAssert(controller);
+    if (!controller) {
+        return;
+    }
+
+    [self.currentController beginAppearanceTransition:YES animated:YES];
+
+    UIView *childView = controller.view;
+    [controller willMoveToParentViewController:nil];
+
+    [UIView animateWithDuration:ANIMATION_DURATION
+        delay:0.0
+        usingSpringWithDamping:1.0
+        initialSpringVelocity:0.0
+        options:UIViewAnimationOptionCurveEaseInOut
+        animations:^{
+            CGRect frame = childView.frame;
+            frame.origin.y = CGRectGetHeight(frame);
+            childView.frame = frame;
+
+            [self setNeedsStatusBarAppearanceUpdate];
+        }
+        completion:^(BOOL finished) {
+            [childView removeFromSuperview];
+            [controller removeFromParentViewController];
+
+            [self.currentController endAppearanceTransition];
+
+            if (completion) {
+                completion();
+            }
+        }];
 }
 
 @end
