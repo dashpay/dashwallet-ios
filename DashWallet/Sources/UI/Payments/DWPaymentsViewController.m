@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSLocalizedString(@"Pay", nil),
         NSLocalizedString(@"Receive", nil),
     ];
+    self.segmentedControl.shouldAnimateSelection = NO;
     self.segmentedControl.items = items;
     [self.segmentedControl addTarget:self
                               action:@selector(segmentedControlAction:)

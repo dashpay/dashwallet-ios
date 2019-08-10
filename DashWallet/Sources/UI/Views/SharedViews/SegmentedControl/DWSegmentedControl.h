@@ -24,7 +24,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, copy, nonatomic) NSArray<NSString *> *items;
 
 @property (nonatomic, assign) NSInteger selectedSegmentIndex;
-@property (nonatomic, assign) CGFloat selectedSegmentIndexPercent; // allows to set selection between items
+/**
+ Allows to set selection position between the items.
+ Use this propery within `scrollViewDidScroll:` to update selecetion state accordingly.
+ Paging in `UIScrollView` must be enabled.
+ */
+@property (nonatomic, assign) CGFloat selectedSegmentIndexPercent;
+/**
+ If this property set to `YES` selection will be animated when user switches current selected segment.
+ If `DWSegmentedControl` is bounded to the scrollView via `selectedSegmentIndexPercent` property set this to
+ `NO`. Default is `YES`.
+ */
+@property (nonatomic, assign) BOOL shouldAnimateSelection;
 
 - (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex animated:(BOOL)animated;
 

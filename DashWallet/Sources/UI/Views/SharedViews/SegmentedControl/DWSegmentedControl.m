@@ -85,6 +85,8 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 }
 
 - (void)segmentedControl_setup {
+    self.shouldAnimateSelection = YES;
+
     self.backgroundColor = [UIColor dw_backgroundColor];
 
     self.layer.cornerRadius = 4.0;
@@ -172,31 +174,37 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 
     _selectedSegmentIndexPercent = selectedSegmentIndex;
 
-    CGRect fromFrame = self.selectionView.frame;
     CGRect toFrame = self.buttons[selectedSegmentIndex].frame;
 
-    self.animator = [[DWProgressAnimator alloc] init];
-    __weak typeof(self) weakSelf = self;
-    [self.animator animateWithDuration:ANIMATION_DURATION
-        animations:^(CGFloat progress) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
+    if (animated) {
+        CGRect fromFrame = self.selectionView.frame;
+        self.animator = [[DWProgressAnimator alloc] init];
+        __weak typeof(self) weakSelf = self;
+        [self.animator animateWithDuration:ANIMATION_DURATION
+            animations:^(CGFloat progress) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                CGFloat x = DWInterpolate(fromFrame.origin.x, toFrame.origin.x, progress);
+                strongSelf.selectionView.frame = CGRectMake(x, toFrame.origin.y, toFrame.size.width, toFrame.size.height);
+
+                [strongSelf updateOverlaps];
             }
+            completion:^(BOOL finished) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
 
-            CGFloat x = DWInterpolate(fromFrame.origin.x, toFrame.origin.x, progress);
-            strongSelf.selectionView.frame = CGRectMake(x, toFrame.origin.y, toFrame.size.width, toFrame.size.height);
-
-            [strongSelf updateOverlaps];
-        }
-        completion:^(BOOL finished) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            strongSelf.animator = nil;
-        }];
+                strongSelf.animator = nil;
+            }];
+    }
+    else {
+        self.selectionView.frame = toFrame;
+        [self updateOverlaps];
+    }
 }
 
 - (void)setSelectedSegmentIndexPercent:(CGFloat)selectedSegmentIndexPercent {
@@ -238,10 +246,23 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 #pragma mark - Actions
 
 - (void)buttonAction:(DWOverlapControl *)sender {
+    if (sender.selected) {
+        return;
+    }
+
+    for (DWOverlapControl *button in self.buttons) {
+        button.selected = (button == sender);
+    }
+
     NSUInteger selectedIndex = [self.buttons indexOfObject:sender];
     NSAssert(selectedIndex != NSNotFound, @"Invalid state");
 
-    [self setSelectedSegmentIndex:selectedIndex animated:YES];
+    if (self.shouldAnimateSelection) {
+        [self setSelectedSegmentIndex:selectedIndex animated:YES];
+    }
+    else {
+        _selectedSegmentIndexPercent = selectedIndex;
+    }
 
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
