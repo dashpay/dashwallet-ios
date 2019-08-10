@@ -19,20 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTabBarView;
+@interface DWSegmentedControl : UIControl
 
-@protocol DWTabBarViewDelegate <NSObject>
+@property (nullable, copy, nonatomic) NSArray<NSString *> *items;
 
-- (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView;
-- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView;
+@property (nonatomic, assign) NSInteger selectedSegmentIndex;
 
-@end
-
-@interface DWTabBarView : UIView
-
-@property (nullable, nonatomic, weak) id<DWTabBarViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex animated:(BOOL)animated;
 
 @end
 

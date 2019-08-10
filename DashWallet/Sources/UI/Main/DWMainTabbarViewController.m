@@ -18,12 +18,14 @@
 #import "DWMainTabbarViewController.h"
 
 #import "DWHomeViewController.h"
+#import "DWNavigationController.h"
+#import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainTabbarViewController ()
+@interface DWMainTabbarViewController () <DWTabBarViewDelegate>
 
 @property (nullable, nonatomic, copy) NSArray<UIViewController *> *viewControllers;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
@@ -56,6 +58,17 @@ NS_ASSUME_NONNULL_BEGIN
     return self.currentController;
 }
 
+#pragma mark - DWTabBarViewDelegate
+
+- (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
+    DWPaymentsViewController *controller = [DWPaymentsViewController controller];
+
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
+}
+
 #pragma mark - Private
 
 - (void)setupView {
@@ -69,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWTabBarView *tabBarView = [[DWTabBarView alloc] initWithFrame:CGRectZero];
     tabBarView.translatesAutoresizingMaskIntoConstraints = NO;
+    tabBarView.delegate = self;
     [self.view addSubview:tabBarView];
     self.tabBarView = tabBarView;
 

@@ -17,22 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWNavigationFullscreenable.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTabBarView;
+@interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
 
-@protocol DWTabBarViewDelegate <NSObject>
-
-- (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView;
-- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView;
-
-@end
-
-@interface DWTabBarView : UIView
-
-@property (nullable, nonatomic, weak) id<DWTabBarViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
++ (instancetype)controller;
 
 @end
 

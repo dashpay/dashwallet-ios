@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Zh6-OB-CNe">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Payments View Controller-->
+        <scene sceneID="73o-GX-tl3">
+            <objects>
+                <viewController id="Zh6-OB-CNe" customClass="DWPaymentsViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="sqo-JG-nXd">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="his-9a-KlT" userLabel="Nav Bar Like View">
+                                <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="HoW-Ig-0SF"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1hT-sr-wN7" userLabel="Segment Content View">
+                                <rect key="frame" x="20" y="88" width="374" height="44"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5nS-sr-YzK" customClass="DWSegmentedControl">
+                                        <rect key="frame" x="0.0" y="4" width="374" height="40"/>
+                                        <color key="backgroundColor" name="BackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="Sfx-me-bTJ"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <constraints>
+                                    <constraint firstItem="5nS-sr-YzK" firstAttribute="leading" secondItem="1hT-sr-wN7" secondAttribute="leading" id="8iL-3t-5Zn"/>
+                                    <constraint firstAttribute="trailing" secondItem="5nS-sr-YzK" secondAttribute="trailing" id="G76-Ib-QzH"/>
+                                    <constraint firstItem="5nS-sr-YzK" firstAttribute="top" secondItem="1hT-sr-wN7" secondAttribute="top" constant="4" id="fjw-Gr-1A2"/>
+                                    <constraint firstAttribute="height" constant="44" id="t06-uS-A8t"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="his-9a-KlT" firstAttribute="leading" secondItem="un1-2d-gkb" secondAttribute="leading" id="CgB-6C-M0x"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="1hT-sr-wN7" secondAttribute="trailing" id="Cnk-hI-PoR"/>
+                            <constraint firstItem="un1-2d-gkb" firstAttribute="trailing" secondItem="his-9a-KlT" secondAttribute="trailing" id="R99-sr-qXJ"/>
+                            <constraint firstItem="1hT-sr-wN7" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leadingMargin" id="b7q-0N-R6f"/>
+                            <constraint firstItem="1hT-sr-wN7" firstAttribute="top" secondItem="his-9a-KlT" secondAttribute="bottom" id="cnD-8M-5aT"/>
+                            <constraint firstItem="his-9a-KlT" firstAttribute="top" secondItem="un1-2d-gkb" secondAttribute="top" id="eog-sd-NAv"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="un1-2d-gkb"/>
+                    </view>
+                    <connections>
+                        <outlet property="segmentedControl" destination="5nS-sr-YzK" id="tDs-21-Lsm"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4Bg-LM-gMh" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-110" y="88"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

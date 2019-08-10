@@ -120,6 +120,8 @@ static UIColor *InactiveButtonColor(void) {
 - (void)layoutSubviews {
     [super layoutSubviews];
 
+    NSAssert(self.buttons.count > 0, @"Invalid state");
+
     const CGSize size = self.bounds.size;
     const CGFloat buttonWidth = size.width / self.buttons.count;
     CGFloat x = 0.0;
@@ -152,6 +154,13 @@ static UIColor *InactiveButtonColor(void) {
 #pragma mark - Actions
 
 - (void)paymentsButtonAction:(DWPaymentsButton *)sender {
+    if (sender.opened == NO) {
+        [self.delegate tabBarViewDidOpenPayments:self];
+    }
+    else {
+        [self.delegate tabBarViewDidClosePayments:self];
+    }
+
     sender.opened = !sender.opened;
 }
 

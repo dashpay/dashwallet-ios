@@ -112,8 +112,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
     const CGFloat offset = scrollView.contentOffset.y + scrollView.contentInset.top;
     const CGRect buttonsFrame = self.buttonsContainerView.frame;
     const CGFloat threshold = CGRectGetHeight(buttonsFrame) / 2.0;
-    // start descreasing alpha when scroll offset reached the point before half of buttons height until
-    // center of the buttons
+    // start descreasing alpha when scroll offset reached the point before the half of buttons height until the center of the buttons
     CGFloat alpha = 1.0 - (threshold + offset - CGRectGetMinY(buttonsFrame)) / threshold;
     alpha = MAX(0.0, MIN(1.0, alpha));
     self.buttonsContainerView.alpha = alpha;
