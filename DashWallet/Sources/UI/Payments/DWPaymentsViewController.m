@@ -17,13 +17,16 @@
 
 #import "DWPaymentsViewController.h"
 
+#import "DWControllerCollectionView.h"
 #import "DWSegmentedControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPaymentsViewController ()
+@interface DWPaymentsViewController () <DWControllerCollectionViewDataSource,
+                                        UICollectionViewDelegateFlowLayout>
 
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
+@property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
 @end
 
@@ -60,6 +63,58 @@ NS_ASSUME_NONNULL_BEGIN
         NSLocalizedString(@"Receive", nil),
     ];
     self.segmentedControl.items = items;
+    [self.segmentedControl addTarget:self
+                              action:@selector(segmentedControlAction:)
+                    forControlEvents:UIControlEventValueChanged];
+
+    self.controllerCollectionView.delegate = self;
+    self.controllerCollectionView.controllerDataSource = self;
+    self.controllerCollectionView.containerViewController = self;
+}
+
+#pragma mark - Actions
+
+- (void)segmentedControlAction:(DWSegmentedControl *)sender {
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:sender.selectedSegmentIndex inSection:0];
+    [self.controllerCollectionView scrollToItemAtIndexPath:indexPath
+                                          atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
+                                                  animated:YES];
+}
+
+#pragma mark DWControllerCollectionViewDataSource
+
+- (NSInteger)numberOfItemsInControllerCollectionView:(DWControllerCollectionView *)view {
+    return 2;
+}
+
+- (UIViewController *)controllerCollectionView:(DWControllerCollectionView *)view controllerForIndexPath:(NSIndexPath *)indexPath {
+    UIViewController *controller = [UIViewController new];
+    if (indexPath.item == 0) {
+        controller.view.backgroundColor = [UIColor lightGrayColor];
+    }
+    else {
+        controller.view.backgroundColor = [UIColor darkGrayColor];
+    }
+    return controller;
+}
+
+#pragma mark UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return collectionView.bounds.size;
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    const CGFloat offset = scrollView.contentOffset.x;
+    const CGFloat pageWidth = CGRectGetWidth(scrollView.bounds);
+    if (pageWidth == 0.0) {
+        return;
+    }
+
+    const CGFloat percent = offset / pageWidth;
+    self.segmentedControl.selectedSegmentIndexPercent = percent;
 }
 
 @end

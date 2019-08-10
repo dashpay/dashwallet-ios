@@ -145,7 +145,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 
     [self.buttons makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [self.buttons removeAllObjects];
-    _selectedSegmentIndex = 0;
+    _selectedSegmentIndexPercent = 0.0;
 
     for (NSString *item in items) {
         DWOverlapControl *button = SegmentedButton(item);
@@ -157,16 +157,20 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
     [self setNeedsLayout];
 }
 
+- (NSInteger)selectedSegmentIndex {
+    return (NSInteger)self.selectedSegmentIndexPercent;
+}
+
 - (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex {
     [self setSelectedSegmentIndex:selectedSegmentIndex animated:NO];
 }
 
 - (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex animated:(BOOL)animated {
-    if (_selectedSegmentIndex == selectedSegmentIndex) {
+    if ((NSInteger)_selectedSegmentIndexPercent == selectedSegmentIndex) {
         return;
     }
 
-    _selectedSegmentIndex = selectedSegmentIndex;
+    _selectedSegmentIndexPercent = selectedSegmentIndex;
 
     CGRect fromFrame = self.selectionView.frame;
     CGRect toFrame = self.buttons[selectedSegmentIndex].frame;
@@ -193,6 +197,17 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 
             strongSelf.animator = nil;
         }];
+}
+
+- (void)setSelectedSegmentIndexPercent:(CGFloat)selectedSegmentIndexPercent {
+    _selectedSegmentIndexPercent = selectedSegmentIndexPercent;
+
+    CGRect selectionFrame = self.selectionView.frame;
+    const CGFloat x = CGRectGetWidth(selectionFrame) * selectedSegmentIndexPercent;
+    selectionFrame.origin.x = x;
+
+    self.selectionView.frame = selectionFrame;
+    [self updateOverlaps];
 }
 
 #pragma mark - Private

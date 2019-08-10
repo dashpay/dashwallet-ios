@@ -45,19 +45,35 @@
                                     <constraint firstAttribute="height" constant="44" id="t06-uS-A8t"/>
                                 </constraints>
                             </view>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="ZtR-LU-F8z" customClass="DWControllerCollectionView">
+                                <rect key="frame" x="0.0" y="132" width="414" height="730"/>
+                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="Cwf-Gm-cxH">
+                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                            </collectionView>
                         </subviews>
                         <color key="backgroundColor" name="BackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="un1-2d-gkb" firstAttribute="trailing" secondItem="ZtR-LU-F8z" secondAttribute="trailing" id="4lH-DZ-DrY"/>
                             <constraint firstItem="his-9a-KlT" firstAttribute="leading" secondItem="un1-2d-gkb" secondAttribute="leading" id="CgB-6C-M0x"/>
                             <constraint firstAttribute="trailingMargin" secondItem="1hT-sr-wN7" secondAttribute="trailing" id="Cnk-hI-PoR"/>
                             <constraint firstItem="un1-2d-gkb" firstAttribute="trailing" secondItem="his-9a-KlT" secondAttribute="trailing" id="R99-sr-qXJ"/>
                             <constraint firstItem="1hT-sr-wN7" firstAttribute="leading" secondItem="sqo-JG-nXd" secondAttribute="leadingMargin" id="b7q-0N-R6f"/>
                             <constraint firstItem="1hT-sr-wN7" firstAttribute="top" secondItem="his-9a-KlT" secondAttribute="bottom" id="cnD-8M-5aT"/>
+                            <constraint firstItem="ZtR-LU-F8z" firstAttribute="top" secondItem="1hT-sr-wN7" secondAttribute="bottom" id="e32-K3-RUy"/>
                             <constraint firstItem="his-9a-KlT" firstAttribute="top" secondItem="un1-2d-gkb" secondAttribute="top" id="eog-sd-NAv"/>
+                            <constraint firstItem="ZtR-LU-F8z" firstAttribute="leading" secondItem="un1-2d-gkb" secondAttribute="leading" id="utL-gh-M4q"/>
+                            <constraint firstItem="un1-2d-gkb" firstAttribute="bottom" secondItem="ZtR-LU-F8z" secondAttribute="bottom" id="vny-n1-paS"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="un1-2d-gkb"/>
                     </view>
                     <connections>
+                        <outlet property="controllerCollectionView" destination="ZtR-LU-F8z" id="wrr-dC-7pS"/>
                         <outlet property="segmentedControl" destination="5nS-sr-YzK" id="tDs-21-Lsm"/>
                     </connections>
                 </viewController>

@@ -104,6 +104,7 @@
 		2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
 		2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */; };
 		2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
+		2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
@@ -610,6 +611,8 @@
 		2A8B9E4B22FEBF7A00FF8653 /* DWProgressAnimator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWProgressAnimator.h; sourceTree = "<group>"; };
 		2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DWProgressAnimator.mm; sourceTree = "<group>"; };
 		2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWOverlapControl.m; sourceTree = "<group>"; };
+		2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWControllerCollectionView.h; sourceTree = "<group>"; };
+		2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWControllerCollectionView.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -1295,6 +1298,7 @@
 			isa = PBXGroup;
 			children = (
 				2A9CEBAE22E1DF7E00A50237 /* Navigation */,
+				2A8B9E5022FED73600FF8653 /* ControllerCollection */,
 				2AD1CE6A22DA337700C99324 /* BaseController */,
 				2A44312B22CD0304009BAF7F /* SharedViews */,
 				2AD1CE6922D9E75400C99324 /* DevicesCompatibility.h */,
@@ -1543,6 +1547,15 @@
 				2A8B9E4822FEBDC700FF8653 /* DWUnitBezier.h */,
 			);
 			path = SegmentedControl;
+			sourceTree = "<group>";
+		};
+		2A8B9E5022FED73600FF8653 /* ControllerCollection */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */,
+				2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */,
+			);
+			path = ControllerCollection;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -3260,6 +3273,7 @@
 				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
+				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */,

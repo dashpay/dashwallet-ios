@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, copy, nonatomic) NSArray<NSString *> *items;
 
 @property (nonatomic, assign) NSInteger selectedSegmentIndex;
+@property (nonatomic, assign) CGFloat selectedSegmentIndexPercent; // allows to set selection between items
 
 - (void)setSelectedSegmentIndex:(NSInteger)selectedSegmentIndex animated:(BOOL)animated;
 
