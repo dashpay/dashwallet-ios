@@ -242,7 +242,7 @@
 		757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* DWWelcomeViewController.m */; };
 		757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* DWSeedViewController.m */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
-		75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWReceiveViewController.m */; };
+		75878BC1192AEC3F002505AB /* DWOLDReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */; };
 		758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* DWTxDetailViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* DWRootViewController.m */; };
@@ -924,13 +924,13 @@
 		757BE7E7192D4E880061CB20 /* DWSeedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSeedViewController.h; sourceTree = "<group>"; };
 		757BE7E8192D4E880061CB20 /* DWSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSeedViewController.m; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75878BC0192AEC3F002505AB /* DWReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWOLDReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxHistoryViewController.h; sourceTree = "<group>"; };
 		758DBD0C1980634900389E2A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		758DBD0D1980634900389E2A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
-		759FBB31193290F600AB4465 /* DWReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
+		759FBB31193290F600AB4465 /* DWOLDReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWOLDReceiveViewController.h; sourceTree = "<group>"; };
 		759FBB32193290F600AB4465 /* DWRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRootViewController.h; sourceTree = "<group>"; };
 		759FBB33193290F600AB4465 /* DWRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWRootViewController.m; sourceTree = "<group>"; };
 		759FBB34193290F600AB4465 /* DWSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSendViewController.h; sourceTree = "<group>"; };
@@ -1550,6 +1550,7 @@
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
 			isa = PBXGroup;
 			children = (
+				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
 				2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */,
 				2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */,
@@ -1616,6 +1617,13 @@
 				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2A8B9E712302E43400FF8653 /* Receive */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Receive;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -2222,8 +2230,8 @@
 				759FBB33193290F600AB4465 /* DWRootViewController.m */,
 				759FBB34193290F600AB4465 /* DWSendViewController.h */,
 				759FBB35193290F600AB4465 /* DWSendViewController.m */,
-				759FBB31193290F600AB4465 /* DWReceiveViewController.h */,
-				75878BC0192AEC3F002505AB /* DWReceiveViewController.m */,
+				759FBB31193290F600AB4465 /* DWOLDReceiveViewController.h */,
+				75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */,
 				84F68C881975E9E2002FC300 /* DWScanViewController.h */,
 				84F68C891975E9E2002FC300 /* DWScanViewController.m */,
 				75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */,
@@ -3275,7 +3283,7 @@
 				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
 				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
-				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
+				75878BC1192AEC3F002505AB /* DWOLDReceiveViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A9FFF202233E56E00956D5F /* DWUpholdBuyInputViewController.m in Sources */,

@@ -29,7 +29,7 @@
 
 @class DSPaymentRequest;
 
-@interface DWReceiveViewController : UIViewController<UIActionSheetDelegate,
+@interface DWOLDReceiveViewController : UIViewController<UIActionSheetDelegate,
 MFMessageComposeViewControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate,
 UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
 

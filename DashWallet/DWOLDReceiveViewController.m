@@ -24,7 +24,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DWReceiveViewController.h"
+#import "DWOLDReceiveViewController.h"
 #import "DWRootViewController.h"
 #import "BRBubbleView.h"
 #import "DWAppGroupConstants.h"
@@ -42,7 +42,7 @@
 //#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
 //                       stringByAppendingPathComponent:@"qr.png"]
 
-@interface DWReceiveViewController () <DWAmountViewControllerDelegate>
+@interface DWOLDReceiveViewController () <DWAmountViewControllerDelegate>
 
 @property (nonatomic, strong) UIImage *qrImage;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -56,7 +56,7 @@
 
 @end
 
-@implementation DWReceiveViewController
+@implementation DWOLDReceiveViewController
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
@@ -440,7 +440,7 @@ error:(NSError *)error
 - (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount {
     [DSEventManager saveEvent:@"receive:show_request"];
     UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
-    DWReceiveViewController *receiveController = [self.storyboard
+    DWOLDReceiveViewController *receiveController = [self.storyboard
                                                   instantiateViewControllerWithIdentifier:@"RequestViewController"];
     
     receiveController.paymentRequest = self.paymentRequest;

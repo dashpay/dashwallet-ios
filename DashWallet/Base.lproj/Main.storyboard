@@ -684,7 +684,7 @@
         <!--Receive View Controller-->
         <scene sceneID="qxd-iA-4Pl">
             <objects>
-                <viewController storyboardIdentifier="RequestViewController" id="Zni-gW-a05" customClass="DWReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="RequestViewController" id="Zni-gW-a05" customClass="DWOLDReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eNl-J2-B2Z">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -795,7 +795,7 @@
         <!--Receive View Controller-->
         <scene sceneID="1OV-CI-Wjb">
             <objects>
-                <viewController storyboardIdentifier="ReceiveViewController" id="XLw-gP-lYw" customClass="DWReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ReceiveViewController" id="XLw-gP-lYw" customClass="DWOLDReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bFo-w9-Ygt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
