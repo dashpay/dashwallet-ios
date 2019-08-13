@@ -29,6 +29,9 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 더프/바이트";
 
+/* no Dash address (in clipboard) */
+"<no Dash address>" = "<no Dash address>";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\"는 복원 문구에 쓰이는 단어가 아닙니다.";
 
@@ -438,6 +441,9 @@
 "next, write down your recovery phrase" = "그 다음, 당신의 복원 문구를 옮겨 적으십시오";
 
 /* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "NFC 장치가 유효한 대시 주소를 전송하지 못했습니다";
 
 /* No comment provided by engineer. */
@@ -506,8 +512,17 @@
 /* No comment provided by engineer. */
 "Pay" = "지불";
 
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
+
+/* No comment provided by engineer. */
+"Pay to" = "Pay to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Pay to Address" = "Pay to Address";
+
+/* No comment provided by engineer. */
+"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -520,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "payment output" = "거래 출력";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "payout Address" = "지불 주소";
@@ -618,6 +636,9 @@
 "reset" = "초기화";
 
 /* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "디른 사람의 QR 코드를 스캔하여 대시 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
 
 /* No comment provided by engineer. */
@@ -625,6 +646,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";

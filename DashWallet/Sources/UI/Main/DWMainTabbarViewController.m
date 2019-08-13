@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
-@interface DWMainTabbarViewController () <DWTabBarViewDelegate>
+@interface DWMainTabbarViewController () <DWTabBarViewDelegate, DWPaymentsViewControllerDelegate>
 
 @property (nullable, nonatomic, copy) NSArray<UIViewController *> *viewControllers;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
@@ -69,8 +69,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     }
 
     tabBarView.userInteractionEnabled = NO;
+    [tabBarView setPaymentsButtonOpened:YES];
 
     DWPaymentsViewController *controller = [DWPaymentsViewController controller];
+    controller.delegate = self;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     self.modalController = navigationController;
@@ -87,6 +89,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     }
 
     tabBarView.userInteractionEnabled = NO;
+    [tabBarView setPaymentsButtonOpened:NO];
 
     UIViewController *controller = self.modalController;
     self.modalController = nil;
@@ -95,6 +98,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                    completion:^{
                        tabBarView.userInteractionEnabled = YES;
                    }];
+}
+
+#pragma mark - DWPaymentsViewControllerDelegate
+
+- (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {
+    [self tabBarViewDidClosePayments:self.tabBarView];
 }
 
 #pragma mark - Private

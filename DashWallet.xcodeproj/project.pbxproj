@@ -105,6 +105,14 @@
 		2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */; };
 		2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
 		2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
+		2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */; };
+		2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */; };
+		2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */; };
+		2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */; };
+		2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6422FFE43500FF8653 /* DWPayModel.m */; };
+		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
+		2A8B9E6C23029D2B00FF8653 /* DWPayInputProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */; };
+		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
@@ -613,6 +621,20 @@
 		2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWOverlapControl.m; sourceTree = "<group>"; };
 		2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWControllerCollectionView.h; sourceTree = "<group>"; };
 		2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWControllerCollectionView.m; sourceTree = "<group>"; };
+		2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayViewController.h; sourceTree = "<group>"; };
+		2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayViewController.m; sourceTree = "<group>"; };
+		2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Pay.storyboard; sourceTree = "<group>"; };
+		2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayTableViewCell.h; sourceTree = "<group>"; };
+		2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayTableViewCell.m; sourceTree = "<group>"; };
+		2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWPayTableViewCell.xib; sourceTree = "<group>"; };
+		2A8B9E6322FFE43500FF8653 /* DWPayModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModel.h; sourceTree = "<group>"; };
+		2A8B9E6422FFE43500FF8653 /* DWPayModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayModel.m; sourceTree = "<group>"; };
+		2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayOptionModel.h; sourceTree = "<group>"; };
+		2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayOptionModel.m; sourceTree = "<group>"; };
+		2A8B9E6A23029D2B00FF8653 /* DWPayInputProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayInputProcessor.h; sourceTree = "<group>"; };
+		2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayInputProcessor.m; sourceTree = "<group>"; };
+		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressObserver.m; sourceTree = "<group>"; };
+		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressObserver.h; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -1528,6 +1550,7 @@
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
 			isa = PBXGroup;
 			children = (
+				2A8B9E5722FF6F2900FF8653 /* Pay */,
 				2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */,
 				2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */,
 				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
@@ -1556,6 +1579,43 @@
 				2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */,
 			);
 			path = ControllerCollection;
+			sourceTree = "<group>";
+		};
+		2A8B9E5722FF6F2900FF8653 /* Pay */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E6923029C0D00FF8653 /* Models */,
+				2A8B9E5D22FF710A00FF8653 /* Cells */,
+				2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */,
+				2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */,
+				2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */,
+			);
+			path = Pay;
+			sourceTree = "<group>";
+		};
+		2A8B9E5D22FF710A00FF8653 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */,
+				2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */,
+				2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A8B9E6923029C0D00FF8653 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E6322FFE43500FF8653 /* DWPayModel.h */,
+				2A8B9E6422FFE43500FF8653 /* DWPayModel.m */,
+				2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */,
+				2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */,
+				2A8B9E6A23029D2B00FF8653 /* DWPayInputProcessor.h */,
+				2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */,
+				2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */,
+				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -2759,6 +2819,7 @@
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */,
+				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
 				2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
 				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
@@ -2785,6 +2846,7 @@
 				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
 				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
+				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				FBFC2EBD21137A7A00D20C57 /* Montserrat-Bold.otf in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -3205,6 +3267,7 @@
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
+				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2A9FFE782230FF4600956D5F /* DWAlertViewActionBaseView.m in Sources */,
@@ -3235,10 +3298,12 @@
 				2AB21D32221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
+				2A8B9E6C23029D2B00FF8653 /* DWPayInputProcessor.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2A9FFCD4222EA87F00956D5F /* DSTransactionDetailTableViewCell.m in Sources */,
+				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
@@ -3266,6 +3331,7 @@
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
+				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
@@ -3280,6 +3346,7 @@
 				75D5F3D2191EC270004AB296 /* DWAppDelegate.m in Sources */,
 				2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */,
 				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
+				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
 				2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */,
@@ -3302,6 +3369,7 @@
 				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
+				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A9FFE772230FF4600956D5F /* DWAlertViewActionButton.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,

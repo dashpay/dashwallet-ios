@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
+- (void)setPaymentsButtonOpened:(BOOL)opened;
+
 @end
 
 NS_ASSUME_NONNULL_END

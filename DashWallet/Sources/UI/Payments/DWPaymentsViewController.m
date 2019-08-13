@@ -18,15 +18,24 @@
 #import "DWPaymentsViewController.h"
 
 #import "DWControllerCollectionView.h"
+#import "DWPayViewController.h"
 #import "DWSegmentedControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
+    DWPaymentsViewControllerIndex_Pay,
+    DWPaymentsViewControllerIndex_Receive,
+};
+
 @interface DWPaymentsViewController () <DWControllerCollectionViewDataSource,
                                         UICollectionViewDelegateFlowLayout>
 
+@property (strong, nonatomic) IBOutlet UILabel *navigationTitleLabel;
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
+
+@property (nonatomic, strong) DWPayViewController *payViewController;
 
 @end
 
@@ -43,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+
+    self.payViewController = [DWPayViewController controller];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -58,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
+    self.navigationTitleLabel.text = NSLocalizedString(@"Payments", nil);
+
     NSArray<NSString *> *items = @[
         NSLocalizedString(@"Pay", nil),
         NSLocalizedString(@"Receive", nil),
@@ -75,6 +88,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
+- (IBAction)cancelButtonAction:(id)sender {
+    [self.delegate paymentsViewControllerDidCancel:self];
+}
+
 - (void)segmentedControlAction:(DWSegmentedControl *)sender {
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:sender.selectedSegmentIndex inSection:0];
     [self.controllerCollectionView scrollToItemAtIndexPath:indexPath
@@ -89,14 +106,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (UIViewController *)controllerCollectionView:(DWControllerCollectionView *)view controllerForIndexPath:(NSIndexPath *)indexPath {
-    UIViewController *controller = [UIViewController new];
-    if (indexPath.item == 0) {
-        controller.view.backgroundColor = [UIColor lightGrayColor];
+    if (indexPath.item == DWPaymentsViewControllerIndex_Pay) {
+        return self.payViewController;
     }
     else {
+        UIViewController *controller = [UIViewController new];
         controller.view.backgroundColor = [UIColor darkGrayColor];
+        return controller;
     }
-    return controller;
 }
 
 #pragma mark UICollectionViewDelegateFlowLayout

@@ -29,6 +29,9 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
+/* no Dash address (in clipboard) */
+"<no Dash address>" = "<no Dash address>";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
 
@@ -438,6 +441,9 @@
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";
 
 /* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "Il dispositivo NFC non ha trasmesso un indirizzo dash valido";
 
 /* No comment provided by engineer. */
@@ -506,8 +512,17 @@
 /* No comment provided by engineer. */
 "Pay" = "Paga";
 
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
+
+/* No comment provided by engineer. */
+"Pay to" = "Pay to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Pay to Address" = "Pay to Address";
+
+/* No comment provided by engineer. */
+"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -520,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "payment output" = "uscita pagamento";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "payout Address" = "Indirizzo di pagamento";
@@ -618,6 +636,9 @@
 "reset" = "resetta";
 
 /* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scansiona il codice QR di qualcun altro per vedere il suo indirizzo dash. Puoi effettuare un pagamento verso chiunque abbia un indirizzo.";
 
 /* No comment provided by engineer. */
@@ -625,6 +646,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";

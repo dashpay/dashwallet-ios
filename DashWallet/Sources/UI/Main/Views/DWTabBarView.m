@@ -151,6 +151,10 @@ static UIColor *InactiveButtonColor(void) {
                                            DW_PAYMENTS_BUTTON_SIZE.height);
 }
 
+- (void)setPaymentsButtonOpened:(BOOL)opened {
+    self.paymentsButton.opened = opened;
+}
+
 #pragma mark - Actions
 
 - (void)paymentsButtonAction:(DWPaymentsButton *)sender {
@@ -160,8 +164,6 @@ static UIColor *InactiveButtonColor(void) {
     else {
         [self.delegate tabBarViewDidClosePayments:self];
     }
-
-    sender.opened = !sender.opened;
 }
 
 @end

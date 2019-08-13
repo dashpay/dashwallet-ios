@@ -21,7 +21,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentsViewController;
+
+@protocol DWPaymentsViewControllerDelegate <NSObject>
+
+- (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
+
+@end
+
 @interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
+
+@property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
 
 + (instancetype)controller;
 

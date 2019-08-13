@@ -29,6 +29,9 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 ดัฟฟ์/ไบต์";
 
+/* no Dash address (in clipboard) */
+"<no Dash address>" = "<no Dash address>";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
@@ -438,6 +441,9 @@
 "next, write down your recovery phrase" = "ต่อไป , เขียนวลีกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
@@ -506,8 +512,17 @@
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
 
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
+
+/* No comment provided by engineer. */
+"Pay to" = "Pay to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Pay to Address" = "Pay to Address";
+
+/* No comment provided by engineer. */
+"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -520,6 +535,9 @@
 
 /* No comment provided by engineer. */
 "payment output" = "การชำระเงิน";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "payout Address" = "ที่อยู่การจ่ายเงิน:";
@@ -618,6 +636,9 @@
 "reset" = "รีเซ็ต";
 
 /* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อรับที่อยู่ dash ของพวกเขา คุณสามารถส่งการชำระเงินให้กับทุกคนที่มีที่อยู่ได้";
 
 /* No comment provided by engineer. */
@@ -625,6 +646,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
