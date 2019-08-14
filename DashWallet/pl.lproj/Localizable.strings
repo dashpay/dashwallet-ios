@@ -714,6 +714,9 @@
 "shapeshift succeeded" = "transakcja shapeshift zakończona pomyślnie";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "pokaż";
 
 /* No comment provided by engineer. */
@@ -736,6 +739,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Coś poszło nie tak";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "zużyty adres";

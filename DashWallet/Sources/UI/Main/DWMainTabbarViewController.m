@@ -17,6 +17,7 @@
 
 #import "DWMainTabbarViewController.h"
 
+#import "DWHomeModel.h"
 #import "DWHomeViewController.h"
 #import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
@@ -29,12 +30,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @interface DWMainTabbarViewController () <DWTabBarViewDelegate, DWPaymentsViewControllerDelegate>
 
-@property (nullable, nonatomic, copy) NSArray<UIViewController *> *viewControllers;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 @property (nullable, nonatomic, strong) UIViewController *modalController;
 
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
+
+@property (nullable, nonatomic, strong) DWHomeViewController *homeViewController;
 
 @end
 
@@ -71,7 +73,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:YES];
 
-    DWPaymentsViewController *controller = [DWPaymentsViewController controller];
+    DWHomeModel *homeModel = self.homeViewController.model;
+    NSParameterAssert(homeModel);
+    DWReceiveModel *receiveModel = homeModel.receiveModel;
+    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithModel:receiveModel];
     controller.delegate = self;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -136,11 +141,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)setupControllers {
-    UIViewController *homeController = [DWHomeViewController controllerEmbededInNavigation];
+    DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
+    self.homeViewController = homeController;
 
-    self.viewControllers = @[ homeController ];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:homeController];
 
-    [self displayViewController:homeController];
+    [self displayViewController:navigationController];
 }
 
 - (void)displayViewController:(UIViewController *)controller {

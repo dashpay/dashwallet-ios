@@ -90,9 +90,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
     [self stopSyncingActivityFailed:YES];
-
-    // TODO
-    // [self.receiveViewController updateAddress];
 }
 
 #pragma mark Private

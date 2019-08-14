@@ -107,7 +107,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
     _contentView = contentView;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(updateOverlaps)
+                                             selector:@selector(updateButtons)
                                                  name:UIContentSizeCategoryDidChangeNotification
                                                object:nil];
 }
@@ -139,7 +139,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
     DWOverlapControl *selectedButton = self.buttons[self.selectedSegmentIndex];
     self.selectionView.frame = selectedButton.frame;
 
-    [self updateOverlaps];
+    [self updateButtons];
 }
 
 - (void)setItems:(nullable NSArray<NSString *> *)items {
@@ -190,7 +190,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
                 CGFloat x = DWInterpolate(fromFrame.origin.x, toFrame.origin.x, progress);
                 strongSelf.selectionView.frame = CGRectMake(x, toFrame.origin.y, toFrame.size.width, toFrame.size.height);
 
-                [strongSelf updateOverlaps];
+                [strongSelf updateButtons];
             }
             completion:^(BOOL finished) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -203,7 +203,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
     }
     else {
         self.selectionView.frame = toFrame;
-        [self updateOverlaps];
+        [self updateButtons];
     }
 }
 
@@ -215,14 +215,24 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
     selectionFrame.origin.x = x;
 
     self.selectionView.frame = selectionFrame;
-    [self updateOverlaps];
+    [self updateButtons];
 }
 
 #pragma mark - Private
 
-- (void)updateOverlaps {
-    const NSUInteger extendFactor = self.buttons.count - 1;
+- (void)updateButtons {
+    const NSUInteger count = self.buttons.count;
+    if (count == 0) {
+        return;
+    }
+
+    const NSUInteger extendFactor = count - 1;
+    const NSInteger selectedIndex = MAX(0, MIN(count - 1, round(self.selectedSegmentIndexPercent)));
+    DWOverlapControl *selectedButton = self.buttons[selectedIndex];
+
     for (DWOverlapControl *button in self.buttons) {
+        button.selected = (button == selectedButton);
+
         const CGRect selectionFrame = [self.selectionView convertRect:self.selectionView.bounds toView:button];
         const CGFloat selectionWidth = CGRectGetWidth(selectionFrame);
         CGRect nonSelectionFrame = selectionFrame;
@@ -248,10 +258,6 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
 - (void)buttonAction:(DWOverlapControl *)sender {
     if (sender.selected) {
         return;
-    }
-
-    for (DWOverlapControl *button in self.buttons) {
-        button.selected = (button == sender);
     }
 
     NSUInteger selectedIndex = [self.buttons indexOfObject:sender];

@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat const TABBAR_HEIGHT = 49.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
-static CGSize const CENTER_CIRCLE_SIZE = {68.0, 68.0};
+static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
 static UIColor *ActiveButtonColor(void) {
     return [UIColor dw_dashBlueColor];
@@ -66,8 +66,12 @@ static UIColor *InactiveButtonColor(void) {
         centerCircleLayer.fillColor = self.backgroundColor.CGColor;
         centerCircleLayer.strokeColor = [UIColor dw_tabbarBorderColor].CGColor;
         centerCircleLayer.lineWidth = TABBAR_BORDER_WIDTH;
-        CGRect circleRect = CGRectMake(0.0, 0.0, CENTER_CIRCLE_SIZE.width, CENTER_CIRCLE_SIZE.height);
-        UIBezierPath *circlePath = [UIBezierPath bezierPathWithOvalInRect:circleRect];
+        const CGFloat radius = CENTER_CIRCLE_SIZE / 2.0;
+        UIBezierPath *circlePath = [UIBezierPath bezierPathWithArcCenter:CGPointMake(radius, radius)
+                                                                  radius:radius
+                                                              startAngle:0
+                                                                endAngle:M_PI
+                                                               clockwise:NO];
         centerCircleLayer.path = circlePath.CGPath;
         [self.layer addSublayer:centerCircleLayer];
         _centerCircleLayer = centerCircleLayer;
@@ -135,15 +139,18 @@ static UIColor *InactiveButtonColor(void) {
 
     self.backgroundLayer.frame = self.bounds;
 
-    self.centerCircleLayer.frame = CGRectMake((size.width - CENTER_CIRCLE_SIZE.width) / 2.0,
+    const CGSize arcSize = CGSizeMake(CENTER_CIRCLE_SIZE, CENTER_CIRCLE_SIZE / 2.0);
+    self.centerCircleLayer.frame = CGRectMake((size.width - arcSize.width) / 2.0,
                                               -DW_TABBAR_NOTCH,
-                                              CENTER_CIRCLE_SIZE.width,
-                                              CENTER_CIRCLE_SIZE.height);
+                                              arcSize.width,
+                                              arcSize.height);
 
-    self.circleOverlayLayer.frame = CGRectMake((size.width - CENTER_CIRCLE_SIZE.width) / 2.0,
+    const CGSize overlaySize = CGSizeMake(CENTER_CIRCLE_SIZE + TABBAR_BORDER_WIDTH * 2,
+                                          TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
+    self.circleOverlayLayer.frame = CGRectMake((size.width - overlaySize.width) / 2.0,
                                                TABBAR_BORDER_WIDTH,
-                                               CENTER_CIRCLE_SIZE.width,
-                                               CENTER_CIRCLE_SIZE.height - DW_TABBAR_NOTCH);
+                                               overlaySize.width,
+                                               overlaySize.height);
 
     self.paymentsButton.frame = CGRectMake((size.width - DW_PAYMENTS_BUTTON_SIZE.width) / 2.0,
                                            0.0,

@@ -714,6 +714,9 @@
 "shapeshift succeeded" = "ShapeShift выполнен успешно";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "Показать";
 
 /* No comment provided by engineer. */
@@ -736,6 +739,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Что-то пошло не так";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "Потраченный адрес";

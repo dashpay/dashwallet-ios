@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController () <DWHomeViewDelegate, DWShortcutsActionDelegate>
 
-@property (null_resettable, strong, nonatomic) DWHomeModel *model;
-
 @property (strong, nonatomic) DWHomeView *view;
 
 @end
@@ -35,14 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWHomeViewController
 
 @dynamic view;
-
-+ (UIViewController *)controllerEmbededInNavigation {
-    DWHomeViewController *controller = [[DWHomeViewController alloc] init];
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-
-    return navigationController;
-}
+@synthesize model = _model;
 
 - (void)loadView {
     CGRect frame = [UIScreen mainScreen].bounds;

@@ -113,6 +113,10 @@
 		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
 		2A8B9E6C23029D2B00FF8653 /* DWPayInputProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */; };
 		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */; };
+		2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */; };
+		2A8B9E762302E60500FF8653 /* Receive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E752302E60500FF8653 /* Receive.storyboard */; };
+		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
+		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
@@ -607,6 +611,7 @@
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
+		2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWReceiveModel+Private.h"; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
 		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
@@ -635,6 +640,13 @@
 		2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayInputProcessor.m; sourceTree = "<group>"; };
 		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressObserver.m; sourceTree = "<group>"; };
 		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressObserver.h; sourceTree = "<group>"; };
+		2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
+		2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveViewController.m; sourceTree = "<group>"; };
+		2A8B9E752302E60500FF8653 /* Receive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Receive.storyboard; sourceTree = "<group>"; };
+		2A8B9E782302E67400FF8653 /* DWReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModel.h; sourceTree = "<group>"; };
+		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
+		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
+		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -1444,6 +1456,8 @@
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */,
 				2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */,
+				2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */,
+				2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1622,8 +1636,22 @@
 		2A8B9E712302E43400FF8653 /* Receive */ = {
 			isa = PBXGroup;
 			children = (
+				2A8B9E772302E66100FF8653 /* Models */,
+				2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */,
+				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
+				2A8B9E752302E60500FF8653 /* Receive.storyboard */,
 			);
 			path = Receive;
+			sourceTree = "<group>";
+		};
+		2A8B9E772302E66100FF8653 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E782302E67400FF8653 /* DWReceiveModel.h */,
+				2A8B9E792302E67400FF8653 /* DWReceiveModel.m */,
+				2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -2844,6 +2872,7 @@
 				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2A9FFE862230FF4700956D5F /* DWPlaceholderFormTableViewCell.xib in Resources */,
+				2A8B9E762302E60500FF8653 /* Receive.storyboard in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A4431DD22D675DC009BAF7F /* PreviewSeedPhrase.storyboard in Resources */,
@@ -3208,6 +3237,7 @@
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
+				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
@@ -3222,6 +3252,7 @@
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
+				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
@@ -3253,6 +3284,7 @@
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
+				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A9FFE752230FF4600956D5F /* DWAlertPresentationAnimationController.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,

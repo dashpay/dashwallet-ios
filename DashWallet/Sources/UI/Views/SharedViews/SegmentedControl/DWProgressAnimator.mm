@@ -151,7 +151,6 @@ static double SolveBezier(struct dwblink::DWUnitBezier unitBezier, double progre
     }
 }
 
-
 @end
 
 NS_ASSUME_NONNULL_END

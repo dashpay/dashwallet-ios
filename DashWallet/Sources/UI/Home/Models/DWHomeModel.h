@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWSyncModel;
 @class DWHomeModel;
 @class DWBalanceModel;
+@class DWReceiveModel;
 
 typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
     DWHomeTxDisplayMode_All,
@@ -38,10 +39,12 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @interface DWHomeModel : NSObject
 
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
+@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
+
+@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (readonly, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 

@@ -19,9 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWHomeModel;
+
 @interface DWHomeViewController : UIViewController
 
-+ (UIViewController *)controllerEmbededInNavigation;
+@property (readonly, strong, nonatomic) DWHomeModel *model;
 
 @end
 

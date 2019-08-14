@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="udq-Vj-F5i">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Receive View Controller-->
+        <scene sceneID="JYd-pC-5KO">
+            <objects>
+                <viewController id="udq-Vj-F5i" customClass="DWReceiveViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="RrA-0o-COc">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="244" placeholderIntrinsicHeight="244" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6cw-cK-wyr" userLabel="QR Image Button">
+                                <rect key="frame" x="38" y="64" width="244" height="244"/>
+                                <color key="backgroundColor" name="BackgroundColor"/>
+                                <connections>
+                                    <action selector="qrCodeButtonAction:" destination="udq-Vj-F5i" eventType="touchUpInside" id="WYM-Xx-1su"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jAU-YC-iL6" customClass="DWButton">
+                                <rect key="frame" x="38" y="312" width="244" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="icd-5s-Ntf"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="-8" maxY="0.0"/>
+                                <state key="normal" image="icon_copy">
+                                    <color key="titleColor" name="TertiaryTextColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="addressButtonAction:" destination="udq-Vj-F5i" eventType="touchUpInside" id="T3n-uR-YgN"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qwh-VK-YWa" userLabel="Specify Amount Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="16" y="368" width="288" height="44"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="1e5-dc-Qoc"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="specifyAmountButtonAction:" destination="udq-Vj-F5i" eventType="touchUpInside" id="fhC-FB-M5B"/>
+                                </connections>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hLI-j8-Zz5" userLabel="Share Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="16" y="412" width="288" height="44"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="6J6-uK-QDG"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="shareButtonAction:" destination="udq-Vj-F5i" eventType="touchUpInside" id="3yy-B1-zwu"/>
+                                </connections>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="BackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailingMargin" secondItem="qwh-VK-YWa" secondAttribute="trailing" id="8wP-86-uEL"/>
+                            <constraint firstItem="qwh-VK-YWa" firstAttribute="leading" secondItem="RrA-0o-COc" secondAttribute="leadingMargin" id="EgQ-Jx-5Xh"/>
+                            <constraint firstItem="hLI-j8-Zz5" firstAttribute="top" secondItem="qwh-VK-YWa" secondAttribute="bottom" id="G0R-0o-dO1"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="hLI-j8-Zz5" secondAttribute="trailing" id="GUC-D0-7Iz"/>
+                            <constraint firstItem="qwh-VK-YWa" firstAttribute="top" secondItem="jAU-YC-iL6" secondAttribute="bottom" constant="12" id="JHZ-Yo-UF8"/>
+                            <constraint firstItem="6cw-cK-wyr" firstAttribute="top" secondItem="QoK-KW-4dG" secondAttribute="top" constant="44" id="Joz-Tz-ycy"/>
+                            <constraint firstItem="jAU-YC-iL6" firstAttribute="leading" secondItem="6cw-cK-wyr" secondAttribute="leading" id="PdN-06-V1Z"/>
+                            <constraint firstItem="6cw-cK-wyr" firstAttribute="centerX" secondItem="RrA-0o-COc" secondAttribute="centerX" id="b0c-9H-EU5"/>
+                            <constraint firstItem="jAU-YC-iL6" firstAttribute="top" secondItem="6cw-cK-wyr" secondAttribute="bottom" constant="4" id="hrZ-tf-2B8"/>
+                            <constraint firstItem="jAU-YC-iL6" firstAttribute="trailing" secondItem="6cw-cK-wyr" secondAttribute="trailing" id="yhY-rP-gQu"/>
+                            <constraint firstItem="hLI-j8-Zz5" firstAttribute="leading" secondItem="RrA-0o-COc" secondAttribute="leadingMargin" id="zki-aH-zsD"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="QoK-KW-4dG"/>
+                    </view>
+                    <connections>
+                        <outlet property="addressButton" destination="jAU-YC-iL6" id="sr6-dD-z06"/>
+                        <outlet property="qrCodeButton" destination="6cw-cK-wyr" id="NEC-xR-ntL"/>
+                        <outlet property="shareButton" destination="hLI-j8-Zz5" id="hue-Mj-QcR"/>
+                        <outlet property="specifyAmountButton" destination="qwh-VK-YWa" id="IjU-NV-zyf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="nfC-M4-HKr" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="49" y="202"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icon_copy" width="14" height="14"/>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TertiaryTextColor">
+            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

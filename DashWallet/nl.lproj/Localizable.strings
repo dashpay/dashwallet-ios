@@ -714,6 +714,9 @@
 "shapeshift succeeded" = "shapeshift voltooid";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "toon";
 
 /* No comment provided by engineer. */
@@ -736,6 +739,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Er is iets verkeerd gegaan";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "spent adres";

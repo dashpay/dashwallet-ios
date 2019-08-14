@@ -15,29 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWGlobalOptions.h"
+#import "DWAppGroupOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWGlobalOptions
+static NSString *const DW_APP_GROUP = @"group.org.dashfoundation.dash";
 
-@dynamic walletNeedsBackup;
-@dynamic biometricAuthConfigured;
-@dynamic biometricAuthEnabled;
-
-#pragma mark - Init
-
-- (instancetype)init {
-    NSDictionary *defaults = @{
-        @"walletNeedsBackup" : @YES,
-    };
-
-    self = [super initWithUserDefaults:nil defaults:defaults];
-    return self;
-}
+@implementation DWAppGroupOptions
 
 + (instancetype)sharedInstance {
-    static DWGlobalOptions *_sharedInstance = nil;
+    static DWAppGroupOptions *_sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [[self alloc] init];
@@ -45,10 +32,22 @@ NS_ASSUME_NONNULL_BEGIN
     return _sharedInstance;
 }
 
-#pragma mark - DSDynamicOptions
+- (instancetype)init {
+    NSUserDefaults *userDefaults = [[NSUserDefaults alloc] initWithSuiteName:DW_APP_GROUP];
+    self = [super initWithUserDefaults:userDefaults defaults:nil];
+    return self;
+}
 
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
-    return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
+    // Backwards compatibility
+    if ([propertyName isEqualToString:DW_KEYPATH(self, receiveAddress)]) {
+        return @"kBRSharedContainerDataWalletReceiveAddressKey";
+    }
+    else if ([propertyName isEqualToString:DW_KEYPATH(self, receiveRequestData)]) {
+        return @"kBRSharedContainerDataWalletRequestDataKey";
+    }
+
+    return [NSString stringWithFormat:@"DW_SHARED_%@", propertyName];
 }
 
 @end

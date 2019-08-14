@@ -25,6 +25,7 @@
 
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
+#import "DWReceiveModel+Private.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
@@ -54,7 +55,6 @@ static BOOL IsJailbroken(void) {
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-//@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 @property (nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
@@ -82,6 +82,9 @@ static BOOL IsJailbroken(void) {
         // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
                                                                       dataProvider:_dataProvider];
+
+        _receiveModel = [[DWReceiveModel alloc] init];
+        [_receiveModel updateReceivingInfo];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -267,8 +270,7 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)updateBalance {
-    // TODO: impl
-    // [self.receiveViewController updateAddress];
+    [self.receiveModel updateReceivingInfo];
 
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&

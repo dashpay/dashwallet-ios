@@ -15,26 +15,20 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWNavigationFullscreenable.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentsViewController;
-@class DWReceiveModel;
+@class UIImage;
 
-@protocol DWPaymentsViewControllerDelegate <NSObject>
+@interface DWReceiveModel : NSObject
 
-- (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
+@property (nullable, readonly, nonatomic, strong) UIImage *qrCodeImage;
+@property (nullable, readonly, nonatomic, copy) NSString *paymentAddress;
+@property (readonly, nonatomic, assign) CGSize qrCodeSize;
 
-@end
-
-@interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
-
-@property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)copyAddressToPasteboard;
+- (void)copyQRImageToPasteboard;
 
 @end
 

@@ -19,6 +19,7 @@
 
 #import "DWControllerCollectionView.h"
 #import "DWPayViewController.h"
+#import "DWReceiveViewController.h"
 #import "DWSegmentedControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,15 +36,21 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
+@property (nonatomic, strong) DWReceiveModel *receiveModel;
+
 @property (nonatomic, strong) DWPayViewController *payViewController;
+@property (nonatomic, strong) DWReceiveViewController *receiveViewController;
+
+@property (nullable, nonatomic, strong) NSIndexPath *prevIndexPathAtCenter;
 
 @end
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
+    controller.receiveModel = receiveModel;
 
     return controller;
 }
@@ -52,12 +59,24 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     [super viewDidLoad];
 
     [self setupView];
-
-    self.payViewController = [DWPayViewController controller];
+    [self setupControllers];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleDefault;
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    self.prevIndexPathAtCenter = [self currentIndexPath];
+
+    [coordinator
+        animateAlongsideTransition:nil
+        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
+            [self.controllerCollectionView.collectionViewLayout invalidateLayout];
+            [self scrollToIndexPath:self.prevIndexPathAtCenter animated:NO];
+        }];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -86,6 +105,11 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     self.controllerCollectionView.containerViewController = self;
 }
 
+- (void)setupControllers {
+    self.payViewController = [DWPayViewController controller];
+    self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
+}
+
 #pragma mark - Actions
 
 - (IBAction)cancelButtonAction:(id)sender {
@@ -94,9 +118,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 
 - (void)segmentedControlAction:(DWSegmentedControl *)sender {
     NSIndexPath *indexPath = [NSIndexPath indexPathForItem:sender.selectedSegmentIndex inSection:0];
-    [self.controllerCollectionView scrollToItemAtIndexPath:indexPath
-                                          atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
-                                                  animated:YES];
+    [self scrollToIndexPath:indexPath animated:YES];
 }
 
 #pragma mark DWControllerCollectionViewDataSource
@@ -110,9 +132,8 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
         return self.payViewController;
     }
     else {
-        UIViewController *controller = [UIViewController new];
-        controller.view.backgroundColor = [UIColor darkGrayColor];
-        return controller;
+        NSAssert(indexPath.item == DWPaymentsViewControllerIndex_Receive, @"Invalid datasource");
+        return self.receiveViewController;
     }
 }
 
@@ -120,6 +141,22 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     return collectionView.bounds.size;
+}
+
+- (CGPoint)collectionView:(UICollectionView *)collectionView targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset {
+    NSIndexPath *indexPath = self.prevIndexPathAtCenter;
+    if (!indexPath) {
+        return proposedContentOffset;
+    }
+
+    UICollectionViewLayoutAttributes *attributes =
+    [collectionView layoutAttributesForItemAtIndexPath:indexPath];
+    if (!attributes) {
+        return proposedContentOffset;
+    }
+
+    const CGPoint newOriginForOldCenter = attributes.frame.origin;
+    return newOriginForOldCenter;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -133,6 +170,26 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 
     const CGFloat percent = offset / pageWidth;
     self.segmentedControl.selectedSegmentIndexPercent = percent;
+}
+
+#pragma mark - Private
+
+- (nullable NSIndexPath *)currentIndexPath {
+    const CGPoint center = [self.view convertPoint:self.controllerCollectionView.center toView:self.controllerCollectionView];
+    NSIndexPath *indexPath = [self.controllerCollectionView indexPathForItemAtPoint:center];
+
+    return indexPath;
+}
+
+- (void)scrollToIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    NSParameterAssert(indexPath);
+    if (!indexPath) {
+        return;
+    }
+
+    [self.controllerCollectionView scrollToItemAtIndexPath:indexPath
+                                          atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
+                                                  animated:animated];
 }
 
 @end

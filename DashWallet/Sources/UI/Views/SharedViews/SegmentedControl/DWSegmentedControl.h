@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger selectedSegmentIndex;
 /**
  Allows to set selection position between the items.
- Use this propery within `scrollViewDidScroll:` to update selecetion state accordingly.
+ Use this propery within `scrollViewDidScroll:` to update selection state accordingly.
  Paging in `UIScrollView` must be enabled.
  */
 @property (nonatomic, assign) CGFloat selectedSegmentIndexPercent;

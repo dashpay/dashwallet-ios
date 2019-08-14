@@ -714,6 +714,9 @@
 "shapeshift succeeded" = "shapeshift สำเร็จ";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
@@ -736,6 +739,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "มีบางอย่างผิดพลาด";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "ที่อยู่ที่ใช้แล้ว";

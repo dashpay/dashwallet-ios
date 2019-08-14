@@ -15,26 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWNavigationFullscreenable.h"
+#import "DWReceiveModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentsViewController;
-@class DWReceiveModel;
+@interface DWReceiveModel (Private)
 
-@protocol DWPaymentsViewControllerDelegate <NSObject>
-
-- (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
-
-@end
-
-@interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
-
-@property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)updateReceivingInfo;
 
 @end
 

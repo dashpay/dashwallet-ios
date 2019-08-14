@@ -15,26 +15,17 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWNavigationFullscreenable.h"
+#import "DSDynamicOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentsViewController;
-@class DWReceiveModel;
+@interface DWAppGroupOptions : DSDynamicOptions
 
-@protocol DWPaymentsViewControllerDelegate <NSObject>
+@property (nullable, nonatomic, copy) NSString *receiveAddress;
+@property (nullable, nonatomic, strong) NSData *receiveRequestData;
+@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
 
-- (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
-
-@end
-
-@interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
-
-@property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
++ (instancetype)sharedInstance;
 
 @end
 
