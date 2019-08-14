@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
 
-@interface DWHomeHeaderView () <DWShortcutsViewDelegate>
+@interface DWHomeHeaderView () <DWBalancePayReceiveButtonsViewDelegate, DWShortcutsViewDelegate>
 
 @property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
@@ -42,6 +42,7 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     self = [super initWithFrame:frame];
     if (self) {
         DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
+        balancePayReceiveButtonsView.delegate = self;
         _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
 
         DWSyncView *syncView = [[DWSyncView alloc] initWithFrame:CGRectZero];
@@ -117,6 +118,18 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView {
     [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
+}
+
+#pragma mark - DWBalancePayReceiveButtonsViewDelegate
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                     payButtonAction:(UIButton *)sender {
+    [self.delegate homeHeaderView:self payButtonAction:sender];
+}
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                 receiveButtonAction:(UIButton *)sender {
+    [self.delegate homeHeaderView:self receiveButtonAction:sender];
 }
 
 #pragma mark - DWShortcutsViewDelegate

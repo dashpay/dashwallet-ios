@@ -24,10 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
-    DWPaymentsViewControllerIndex_Pay,
-    DWPaymentsViewControllerIndex_Receive,
-};
+static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @interface DWPaymentsViewController () <DWControllerCollectionViewDataSource,
                                         UICollectionViewDelegateFlowLayout>
@@ -55,6 +52,22 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     return controller;
 }
 
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        _currentIndex = DWPaymentsViewControllerIndex_None;
+    }
+    return self;
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        _currentIndex = DWPaymentsViewControllerIndex_None;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -73,10 +86,34 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 
     [coordinator
         animateAlongsideTransition:nil
-        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
-            [self.controllerCollectionView.collectionViewLayout invalidateLayout];
-            [self scrollToIndexPath:self.prevIndexPathAtCenter animated:NO];
+                        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
+                            [self.controllerCollectionView.collectionViewLayout invalidateLayout];
+                            [self scrollToIndexPath:self.prevIndexPathAtCenter animated:NO];
+                        }];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.controllerCollectionView reloadData];
+
+    // scroll to needed index when reloadData finishes
+    [self.controllerCollectionView
+        performBatchUpdates:^{
+        }
+        completion:^(BOOL finished) {
+            if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
+                self.currentIndex = [self previouslySelectedPageIndex];
+            }
+            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
+            [self scrollToIndexPath:indexPath animated:NO];
         }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self saveCurrentSelectedPageIndex];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -150,7 +187,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     }
 
     UICollectionViewLayoutAttributes *attributes =
-    [collectionView layoutAttributesForItemAtIndexPath:indexPath];
+        [collectionView layoutAttributesForItemAtIndexPath:indexPath];
     if (!attributes) {
         return proposedContentOffset;
     }
@@ -190,6 +227,23 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
     [self.controllerCollectionView scrollToItemAtIndexPath:indexPath
                                           atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
                                                   animated:animated];
+}
+
+- (DWPaymentsViewControllerIndex)previouslySelectedPageIndex {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *currentPageNumber = [userDefaults objectForKey:CURRENT_SELECTED_INDEX_KEY];
+    if (currentPageNumber) {
+        return currentPageNumber.integerValue;
+    }
+    else {
+        return DWPaymentsViewControllerIndex_Pay;
+    }
+}
+
+- (void)saveCurrentSelectedPageIndex {
+    const NSInteger currentIndex = self.segmentedControl.selectedSegmentIndex;
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setInteger:currentIndex forKey:CURRENT_SELECTED_INDEX_KEY];
 }
 
 @end

@@ -28,7 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
-@interface DWMainTabbarViewController () <DWTabBarViewDelegate, DWPaymentsViewControllerDelegate>
+@interface DWMainTabbarViewController () <DWTabBarViewDelegate,
+                                          DWPaymentsViewControllerDelegate,
+                                          DWHomeViewControllerDelegate>
 
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 @property (nullable, nonatomic, strong) UIViewController *modalController;
@@ -66,26 +68,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
-    if (self.modalController) {
-        return;
-    }
-
-    tabBarView.userInteractionEnabled = NO;
-    [tabBarView setPaymentsButtonOpened:YES];
-
-    DWHomeModel *homeModel = self.homeViewController.model;
-    NSParameterAssert(homeModel);
-    DWReceiveModel *receiveModel = homeModel.receiveModel;
-    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithModel:receiveModel];
-    controller.delegate = self;
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-    self.modalController = navigationController;
-
-    [self displayModalViewController:navigationController
-                          completion:^{
-                              tabBarView.userInteractionEnabled = YES;
-                          }];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None];
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
@@ -109,6 +92,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller {
     [self tabBarViewDidClosePayments:self.tabBarView];
+}
+
+#pragma mark - DWHomeViewControllerDelegate
+
+- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+}
+
+- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 
 #pragma mark - Private
@@ -140,8 +133,33 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     ]];
 }
 
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex {
+    if (self.modalController) {
+        return;
+    }
+
+    self.tabBarView.userInteractionEnabled = NO;
+    [self.tabBarView setPaymentsButtonOpened:YES];
+
+    DWHomeModel *homeModel = self.homeViewController.model;
+    NSParameterAssert(homeModel);
+    DWReceiveModel *receiveModel = homeModel.receiveModel;
+    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithModel:receiveModel];
+    controller.delegate = self;
+    controller.currentIndex = pageIndex;
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    self.modalController = navigationController;
+
+    [self displayModalViewController:navigationController
+                          completion:^{
+                              self.tabBarView.userInteractionEnabled = YES;
+                          }];
+}
+
 - (void)setupControllers {
     DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
+    homeController.delegate = self;
     self.homeViewController = homeController;
 
     DWNavigationController *navigationController =

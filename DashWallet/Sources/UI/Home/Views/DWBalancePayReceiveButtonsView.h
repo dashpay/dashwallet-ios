@@ -19,11 +19,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBalancePayReceiveButtonsView;
 @class DWHomeModel;
+
+@protocol DWBalancePayReceiveButtonsViewDelegate <NSObject>
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                     payButtonAction:(UIButton *)sender;
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                 receiveButtonAction:(UIButton *)sender;
+
+@end
 
 @interface DWBalancePayReceiveButtonsView : KVOUIView
 
 @property (nullable, nonatomic, strong) DWHomeModel *model;
+@property (nullable, nonatomic, weak) id<DWBalancePayReceiveButtonsViewDelegate> delegate;
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;
 

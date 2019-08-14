@@ -111,6 +111,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:alert animated:YES completion:nil];
 }
 
+- (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender {
+    [self.delegate homeViewController:self payButtonAction:sender];
+}
+
+- (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
+    [self.delegate homeViewController:self receiveButtonAction:sender];
+}
+
 #pragma mark - DWShortcutsActionDelegate
 
 - (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {

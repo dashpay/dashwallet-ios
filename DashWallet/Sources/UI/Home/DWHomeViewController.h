@@ -19,11 +19,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWHomeViewController;
 @class DWHomeModel;
+
+@protocol DWHomeViewControllerDelegate <NSObject>
+
+- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
+- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
+
+@end
 
 @interface DWHomeViewController : UIViewController
 
 @property (readonly, strong, nonatomic) DWHomeModel *model;
+@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate> delegate;
 
 @end
 

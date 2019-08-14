@@ -24,6 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWPaymentsViewController;
 @class DWReceiveModel;
 
+typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
+    DWPaymentsViewControllerIndex_None = -1,
+    DWPaymentsViewControllerIndex_Pay = 0,
+    DWPaymentsViewControllerIndex_Receive = 1,
+};
+
 @protocol DWPaymentsViewControllerDelegate <NSObject>
 
 - (void)paymentsViewControllerDidCancel:(DWPaymentsViewController *)controller;
@@ -33,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPaymentsViewController : UIViewController <DWNavigationFullscreenable>
 
 @property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
+@property (nonatomic, assign) DWPaymentsViewControllerIndex currentIndex;
 
 + (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
 
