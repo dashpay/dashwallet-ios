@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (CGFloat)deviceSpecificBottomPadding {
     if (IS_IPAD) {
-        return 24.0;
+        return [super deviceSpecificBottomPadding];
     }
     else {
         return 4.0;

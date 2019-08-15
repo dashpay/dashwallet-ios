@@ -15,18 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWBaseSeedViewController.h"
-#import "DWSecureWalletDelegate.h"
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPreviewSeedPhraseModel;
+@protocol DWSeedContinueButton <NSObject>
 
-@interface DWPreviewSeedPhraseViewController : DWBaseSeedViewController
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
 
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
+@end
 
-+ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model;
+@interface DWBaseSeedViewController : DWBaseViewController
+
+@property (readonly, nullable, nonatomic, strong) UIScrollView *scrollView;
+@property (readonly, nullable, nonatomic, strong) id<DWSeedContinueButton> continueButton;
+
+- (void)continueButtonAction:(id)sender;
 
 @end
 
