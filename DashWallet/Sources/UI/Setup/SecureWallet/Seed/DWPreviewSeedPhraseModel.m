@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPreviewSeedPhraseModel
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 + (BOOL)shouldVerifyPassphrase {
     return [DWGlobalOptions sharedInstance].walletNeedsBackup;
 }

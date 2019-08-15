@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWRecoverAction.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DW_WIPE;
@@ -24,6 +26,8 @@ extern NSString *const DW_WATCH;
 extern NSInteger const DW_PHRASE_LENGTH;
 
 @interface DWRecoverModel : NSObject
+
+@property (readonly, nonatomic, assign) DWRecoverAction action;
 
 - (BOOL)hasWallet;
 - (BOOL)isWalletEmpty;
@@ -42,6 +46,10 @@ extern NSInteger const DW_PHRASE_LENGTH;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
 
 - (NSString *)wipeAcceptPhrase;
+
+- (instancetype)initWithAction:(DWRecoverAction)action;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

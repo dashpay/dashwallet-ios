@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWBiometricAuthModel
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 + (BOOL)shouldEnableBiometricAuthentication {
     return ![DWGlobalOptions sharedInstance].biometricAuthConfigured;
 }

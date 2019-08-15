@@ -23,6 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSetPinModel
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 + (BOOL)shouldSetPin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     return ![authenticationManager hasPin];

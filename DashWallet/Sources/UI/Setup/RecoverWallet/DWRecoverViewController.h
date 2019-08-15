@@ -17,6 +17,8 @@
 
 #import "DWBaseSeedViewController.h"
 
+#import "DWRecoverAction.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWRecoverViewController;
@@ -30,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRecoverViewController : DWBaseSeedViewController
 
+@property (nonatomic, assign) DWRecoverAction action;
 @property (nullable, nonatomic, weak) id<DWRecoverViewControllerDelegate> delegate;
 
 @end

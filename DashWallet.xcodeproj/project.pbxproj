@@ -104,6 +104,9 @@
 		2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */; };
 		2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */; };
 		2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFD2305763F00C475EB /* DWRecoverModel.m */; };
+		2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */; };
+		2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */; };
+		2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
 		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
 		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
@@ -631,6 +634,13 @@
 		2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverTextView.m; sourceTree = "<group>"; };
 		2A74EFFC2305763F00C475EB /* DWRecoverModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverModel.h; sourceTree = "<group>"; };
 		2A74EFFD2305763F00C475EB /* DWRecoverModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverModel.m; sourceTree = "<group>"; };
+		2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWShortcuts.h"; sourceTree = "<group>"; };
+		2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWShortcuts.m"; sourceTree = "<group>"; };
+		2A74F0022305C59700C475EB /* DWHomeViewController+DWTxFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWTxFilter.h"; sourceTree = "<group>"; };
+		2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWTxFilter.m"; sourceTree = "<group>"; };
+		2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWJailbreakCheck.h"; sourceTree = "<group>"; };
+		2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWJailbreakCheck.m"; sourceTree = "<group>"; };
+		2A74F0082305F1C100C475EB /* DWRecoverAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverAction.h; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
 		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
@@ -1591,6 +1601,7 @@
 				2A74EFEC2305318000C475EB /* DWRecoverViewController.m */,
 				2A74EFFC2305763F00C475EB /* DWRecoverModel.h */,
 				2A74EFFD2305763F00C475EB /* DWRecoverModel.m */,
+				2A74F0082305F1C100C475EB /* DWRecoverAction.h */,
 			);
 			path = RecoverWallet;
 			sourceTree = "<group>";
@@ -1773,6 +1784,12 @@
 				2A307CB322E6FA7F00A18347 /* Views */,
 				2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */,
 				2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */,
+				2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */,
+				2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */,
+				2A74F0022305C59700C475EB /* DWHomeViewController+DWTxFilter.h */,
+				2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */,
+				2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */,
+				2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -3389,7 +3406,9 @@
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
+				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */,
+				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				2A9FFE722230FF4600956D5F /* DWAlertController.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
@@ -3450,6 +3469,7 @@
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
+				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */,
 				2A9FFF1E2233E56E00956D5F /* DWUpholdSelectCardModel.m in Sources */,
 				2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */,

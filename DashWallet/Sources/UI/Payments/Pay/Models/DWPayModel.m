@@ -71,6 +71,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
     NSParameterAssert(completion);
 

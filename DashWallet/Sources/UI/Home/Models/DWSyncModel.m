@@ -68,6 +68,10 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 #pragma mark Notifications
 
 - (void)transactionManagerSyncStartedNotification {

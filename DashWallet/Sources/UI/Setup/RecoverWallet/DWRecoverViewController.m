@@ -136,16 +136,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (DWRecoverModel *)model {
-    if (_model == nil) {
-        _model = [[DWRecoverModel alloc] init];
+- (void)setupView {
+    switch (self.action) {
+        case DWRecoverAction_Recover:
+            self.title = NSLocalizedString(@"Recover Wallet", nil);
+            break;
+        case DWRecoverAction_Wipe:
+            self.title = NSLocalizedString(@"Wipe Wallet", nil);
+            break;
     }
 
-    return _model;
-}
-
-- (void)setupView {
-    self.title = NSLocalizedString(@"Recover Wallet", nil);
+    self.model = [[DWRecoverModel alloc] initWithAction:self.action];
 
     self.continueButton.enabled = YES;
 

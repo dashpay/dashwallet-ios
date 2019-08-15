@@ -29,22 +29,18 @@ NSString *const DW_WIPE = @"wipe";
 NSString *const DW_WATCH = @"watch";
 NSInteger const DW_PHRASE_LENGTH = 12;
 
-@interface DWRecoverModel ()
-
-@property (readonly, nonatomic, strong) NSCharacterSet *invalidCharacterSet;
-
-@end
-
 @implementation DWRecoverModel
 
-- (instancetype)init {
+- (instancetype)initWithAction:(DWRecoverAction)action {
     self = [super init];
     if (self) {
-        NSMutableCharacterSet *set = [NSMutableCharacterSet letterCharacterSet];
-        [set formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        _invalidCharacterSet = set.invertedSet;
+        _action = action;
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (BOOL)hasWallet {

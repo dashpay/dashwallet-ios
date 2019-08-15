@@ -26,6 +26,7 @@
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWReceiveModel+Private.h"
+#import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
@@ -86,6 +87,8 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
+        _shortcutsModel = [[DWShortcutsModel alloc] init];
+
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(reachabilityDidChangeNotification)
@@ -115,6 +118,10 @@ static BOOL IsJailbroken(void) {
         [self reloadTxDataSource];
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
@@ -157,26 +164,8 @@ static BOOL IsJailbroken(void) {
     }
 }
 
-- (DWTransactionListDataSource *)receivedDataSource {
-    if (_receivedDataSource == nil) {
-        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
-                                                           forDisplayMode:DWHomeTxDisplayMode_Received];
-        _receivedDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                           dataProvider:self.dataProvider];
-    }
-
-    return _receivedDataSource;
-}
-
-- (DWTransactionListDataSource *)sentDataSource {
-    if (_sentDataSource == nil) {
-        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
-                                                           forDisplayMode:DWHomeTxDisplayMode_Sent];
-        _sentDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
-                                                                       dataProvider:self.dataProvider];
-    }
-
-    return _sentDataSource;
+- (void)reloadShortcuts {
+    [self.shortcutsModel reloadShortcuts];
 }
 
 #pragma mark - Notifications
@@ -224,6 +213,29 @@ static BOOL IsJailbroken(void) {
 }
 
 #pragma mark - Private
+
+
+- (DWTransactionListDataSource *)receivedDataSource {
+    if (_receivedDataSource == nil) {
+        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
+                                                           forDisplayMode:DWHomeTxDisplayMode_Received];
+        _receivedDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                           dataProvider:self.dataProvider];
+    }
+
+    return _receivedDataSource;
+}
+
+- (DWTransactionListDataSource *)sentDataSource {
+    if (_sentDataSource == nil) {
+        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
+                                                           forDisplayMode:DWHomeTxDisplayMode_Sent];
+        _sentDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                       dataProvider:self.dataProvider];
+    }
+
+    return _sentDataSource;
+}
 
 - (void)connectIfNeeded {
     // This method might be called from init. Don't use any instance variables

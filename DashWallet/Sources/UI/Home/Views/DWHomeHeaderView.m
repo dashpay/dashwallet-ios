@@ -106,6 +106,7 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     _model = model;
 
     self.balancePayReceiveButtonsView.model = model;
+    self.shortcutsView.model = model.shortcutsModel;
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {

@@ -17,9 +17,12 @@
 
 #import "DWShortcutsModel.h"
 
+#import "DWGlobalOptions.h"
 #import "DWShortcutAction.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
 @interface DWShortcutsModel ()
 
@@ -29,31 +32,90 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWShortcutsModel
 
++ (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+    DWShortcutsModel *obj = nil;
+    NSSet *keyPaths = @{
+        DW_KEYPATH(obj, items) : [NSSet setWithObject:DW_KEYPATH(obj, mutableItems)],
+    }[key];
+    return keyPaths ?: [super keyPathsForValuesAffectingValueForKey:key];
+}
+
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
-
-        // TODO: get from settings
-
-        for (NSUInteger i = 1; i <= 11; i++) {
-            [mutableItems addObject:[DWShortcutAction action:i]];
-        }
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_AddShortcut]];
-
-        //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-        //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
-        //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
-        //        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SyncNow]];
-
-        _mutableItems = mutableItems;
+        [self reloadShortcuts];
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (NSArray<DWShortcutAction *> *)items {
     return [self.mutableItems copy];
 }
+
+- (void)reloadShortcuts {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    NSArray<NSNumber *> *shortcutsSettings = options.shortcuts;
+
+    if (shortcutsSettings) {
+        self.mutableItems = [self.class userShortcuts];
+    }
+    else {
+        self.mutableItems = [self.class defaultShortcuts];
+    }
+}
+
+#pragma mark - Private
+
++ (NSMutableArray<DWShortcutAction *> *)defaultShortcuts {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+
+    NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
+
+    const BOOL walletNeedsBackup = options.walletNeedsBackup;
+    if (walletNeedsBackup) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
+    }
+
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_LocalCurrency]];
+
+    const BOOL canConfigureShortcuts = !walletNeedsBackup;
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_AddShortcut
+                                             enabled:canConfigureShortcuts]];
+
+    return mutableItems;
+}
+
++ (NSMutableArray<DWShortcutAction *> *)userShortcuts {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    NSAssert(options.walletNeedsBackup == NO,
+             @"User not allowed to configure shortcuts if backup is not done");
+    NSParameterAssert(options.shortcuts);
+
+    NSArray<NSNumber *> *shortcutsSettings = options.shortcuts;
+
+    NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
+
+    for (NSNumber *shortcutActionNumber in shortcutsSettings) {
+        DWShortcutActionType action = shortcutActionNumber.integerValue;
+        BOOL actionValid = (action >= DWShortcutActionType_SecureWallet &&
+                            action <= DWShortcutActionType_ReportAnIssue) ||
+                           action == DWShortcutActionType_AddShortcut;
+        NSAssert(actionValid, @"Invalid shortcut");
+        if (!actionValid) {
+            continue;
+        }
+
+        [mutableItems addObject:[DWShortcutAction action:action]];
+    }
+
+    return mutableItems;
+}
+
 
 @end
 

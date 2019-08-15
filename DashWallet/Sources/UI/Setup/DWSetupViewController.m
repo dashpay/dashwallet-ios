@@ -95,6 +95,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_Recover;
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }

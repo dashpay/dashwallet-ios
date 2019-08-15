@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
-@interface DWAppRootViewController () <DWSetupViewControllerDelegate>
+@interface DWAppRootViewController () <DWSetupViewControllerDelegate, DWMainTabbarViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DWRootModel *model;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
@@ -81,6 +81,13 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     [self performTransitionToViewController:mainController];
 }
 
+#pragma mark - DWMainTabbarViewControllerDelegate
+
+- (void)mainTabbarViewControllerDidWipeWallet:(DWMainTabbarViewController *)controller {
+    UIViewController *setupController = [self setupController];
+    [self performTransitionToViewController:setupController];
+}
+
 #pragma mark - Private
 
 - (void)showDevicePasscodeAlert {
@@ -106,6 +113,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
 - (UIViewController *)mainController {
     DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
+    controller.delegate = self;
 
     return controller;
 }

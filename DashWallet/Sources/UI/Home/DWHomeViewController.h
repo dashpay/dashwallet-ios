@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
+- (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller;
 
 @end
 

@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         phrase = [self.model normalizePhrase:phrase];
 
-        NSArray *words = CFBridgingRelease(
+        NSArray<NSString *> *words = CFBridgingRelease(
             CFStringCreateArrayBySeparatingStrings(
                 SecureAllocator(), (CFStringRef)phrase,
                 CFSTR(" ")));
@@ -194,8 +194,13 @@ NS_ASSUME_NONNULL_BEGIN
             [self wipeWithPhrase:phrase];
         }
         else {
-            [self.model recoverWalletWithPhrase:phrase];
-            [self.delegate recoverContentViewDidRecoverWallet:self];
+            if (self.model.action == DWRecoverAction_Recover) {
+                [self.model recoverWalletWithPhrase:phrase];
+                [self.delegate recoverContentViewDidRecoverWallet:self];
+            }
+            else {
+                [self wipeWithPhrase:phrase];
+            }
         }
     }
 }

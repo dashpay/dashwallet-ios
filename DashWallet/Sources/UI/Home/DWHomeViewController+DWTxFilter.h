@@ -15,28 +15,13 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DSDynamicOptions.h>
+#import "DWHomeViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- A centralized place of User Defaults shared among several parts of the app
- 
- To add a new option: add a property with UsedDefaults-supported type and mark it as @dynamic
- in the implementation
- */
-@interface DWGlobalOptions : DSDynamicOptions
+@interface DWHomeViewController (DWTxFilter)
 
-@property (nonatomic, assign) BOOL walletNeedsBackup;
-
-@property (nonatomic, assign) BOOL biometricAuthConfigured;
-@property (nonatomic, assign) BOOL biometricAuthEnabled;
-
-@property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
-
-- (void)restoreToDefaults;
-
-+ (instancetype)sharedInstance;
+- (void)showTxFilterWithSender:(UIView *)sender;
 
 @end
 

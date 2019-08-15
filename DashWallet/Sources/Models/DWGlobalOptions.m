@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic walletNeedsBackup;
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
+@dynamic shortcuts;
 
 #pragma mark - Init
 
@@ -55,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)restoreToDefaults {
     self.walletNeedsBackup = YES;
+    self.shortcuts = nil;
 }
 
 @end

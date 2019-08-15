@@ -62,6 +62,10 @@ static CGSize const HOLE_SIZE = {84.0, 84.0}; // 2 + 80(logo size) + 2
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (CGSize)qrCodeSize {
     return QRCodeSize();
 }
@@ -99,7 +103,11 @@ static CGSize const HOLE_SIZE = {84.0, 84.0}; // 2 + 80(logo size) + 2
 - (void)updateReceivingInfo {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        NSParameterAssert(account);
+        if (!account) {
+            // wallet has been wiped
+
+            return;
+        }
         NSString *paymentAddress = account.receiveAddress;
         if (self.paymentAddress && [self.paymentAddress isEqualToString:paymentAddress]) {
             return;

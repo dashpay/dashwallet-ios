@@ -89,6 +89,10 @@ static NSString *dateFormat(NSString *template) {
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 #pragma mark - DWTransactionListDataProviderProtocol
 
 - (NSString *)dateForTransaction:(DSTransaction *)transaction {

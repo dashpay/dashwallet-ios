@@ -15,27 +15,12 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIView.h>
+#ifndef DWRecoverAction_h
+#define DWRecoverAction_h
 
-#import "DWShortcutsActionDelegate.h"
+typedef NS_ENUM(NSUInteger, DWRecoverAction) {
+    DWRecoverAction_Recover,
+    DWRecoverAction_Wipe,
+};
 
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWShortcutsModel;
-@class DWShortcutsView;
-
-@protocol DWShortcutsViewDelegate <NSObject>
-
-- (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view;
-
-@end
-
-@interface DWShortcutsView : KVOUIView
-
-@property (nullable, strong, nonatomic) DWShortcutsModel *model;
-@property (nullable, nonatomic, weak) id<DWShortcutsViewDelegate> delegate;
-@property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> actionDelegate;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWRecoverAction_h */

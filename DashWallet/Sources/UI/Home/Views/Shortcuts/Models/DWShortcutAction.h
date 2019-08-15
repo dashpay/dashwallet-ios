@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Values of DWShortcutActionType are stored in NSUserDefaults
 // Be careful when adding/modifying this enum
-typedef NS_ENUM(NSUInteger, DWShortcutActionType) {
+// When adding a new action type, update the validation logic in DWShortcutsModel
+typedef NS_ENUM(NSInteger, DWShortcutActionType) {
     DWShortcutActionType_SecureWallet = 1,
     DWShortcutActionType_ScanToPay = 2,
     DWShortcutActionType_PayToAddress = 3,
@@ -39,10 +40,12 @@ typedef NS_ENUM(NSUInteger, DWShortcutActionType) {
 @interface DWShortcutAction : NSObject
 
 @property (readonly, nonatomic, assign) DWShortcutActionType type;
+@property (readonly, nonatomic, assign) BOOL enabled;
 
 + (instancetype)action:(DWShortcutActionType)type;
++ (instancetype)action:(DWShortcutActionType)type enabled:(BOOL)enabled;
 
-- (instancetype)initWithType:(DWShortcutActionType)type;
+- (instancetype)initWithType:(DWShortcutActionType)type enabled:(BOOL)enabled;
 
 - (instancetype)init NS_UNAVAILABLE;
 

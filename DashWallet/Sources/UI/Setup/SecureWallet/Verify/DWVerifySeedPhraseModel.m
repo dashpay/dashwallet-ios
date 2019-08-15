@@ -41,6 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (BOOL)allowedToSelectWord:(DWSeedWordModel *)sampleWordModel {
     if (sampleWordModel.isSelected) {
         return NO;
