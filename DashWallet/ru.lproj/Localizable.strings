@@ -210,7 +210,7 @@
 "do it later" = "Отложить на потом";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "НЕ ПОЗВОЛЯЕТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "НЕ ПОЗВОЛЯЙТЕ никому видеть Вашу фразу восстановления, иначе они смогут потратить Ваши DASH.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "НЕ ДЕЛАЙТЕ скриншот. Скриншоты видны другим приложениям и устройствам.";
@@ -261,7 +261,7 @@
 "Fee" = "Комиссия";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "Комиссия больше баланса";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Комиссия будет вычтена из указанной суммы";

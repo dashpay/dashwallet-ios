@@ -261,7 +261,7 @@
 "Fee" = "Transactiekosten";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "De transactievergoeding is hoger dan het saldo";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Transactiekosten worden van het gevraagde bedrag afgetrokken";

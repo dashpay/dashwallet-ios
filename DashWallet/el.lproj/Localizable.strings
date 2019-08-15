@@ -63,7 +63,7 @@
 "always require passcode" = "πάντα να ζητείται κωδικός πρόσβασης";
 
 /* No comment provided by engineer. */
-"Amount" = "Amount";
+"Amount" = "Ποσό";
 
 /* No comment provided by engineer. */
 "amount too small" = "το ποσό είναι πολύ μικρό";
@@ -81,7 +81,7 @@
 "Are you sure?" = "Είστε σίγουροι;";
 
 /* No comment provided by engineer. */
-"available" = "available";
+"available" = "διαθέσιμο";
 
 /* No comment provided by engineer. */
 "bad recovery phrase" = "λάθος φράση ανάκτησης";
@@ -99,7 +99,7 @@
 "Buy dash in dashwallet!" = "Αγορά dash στο dashwallet!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Με την εκκαθάριση αυτής της συσκευής δεν θα έχετε πλέον πρόσβαση στα χρήματα αυτής της συσκευής. Αυτό θα πρέπει να γίνει μόνο εάν δεν έχετε πλέον πρόσβαση στη φράση πρόσβασης και έχετε ξεχάσει και τον κωδικό PIN.";
@@ -153,7 +153,7 @@
 "confirm" = "confirm";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirm transaction";
+"Confirm transaction" = "Επιβεβαίωση συναλλαγής";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "επιβεβαιώθηκε στο μπλόκ #%d";
@@ -240,10 +240,10 @@
 "enter" = "είσοδος";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Enter the amount to transfer below";
+"Enter the amount to transfer below" = "Εισάγετε το πόσο για την μεταφορά παρακάτω";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Enter your 2FA code below";
+"Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
 
 /* No comment provided by engineer. */
 "exit" = "εξοδος";
@@ -258,13 +258,13 @@
 "Failed wallet update" = "Η ενημέρωση του πορτοφολιού απέτυχε";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Τέλη";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "Τα τέλη είναι μεγαλύτερα από το υπόλοιπο";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
+"Fee will be deducted from requested amount" = "Τα τέλη θα αφαιρεθούν από το ποσό που ζητήσατε";
 
 /* No comment provided by engineer. */
 "from:" = "από:";
@@ -273,7 +273,7 @@
 "GENERAL" = "ΓΕΝΙΚΑ";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Go to Website";
+"Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
 
 /* No comment provided by engineer. */
 "holding funds index:" = "περιεχόμενο χρημάτων:";
@@ -300,13 +300,13 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Σε μια προηγούμενη έκδοση του Dashwallet, όταν εμφανίζονταν αρχικά η φράση πρόσβασης σε αυτήν τη συσκευή, διαπιστώσαμε ότι αυτή η εφαρμογή δεν εμφάνισε σωστά όλες τις 12 λέξεις. Καταχωρίστε ξανά την πλήρη φράση πρόσβασης σας.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Insufficient Funds";
+"Insufficient Funds" = "Ανεπαρκή Χρήματα";
 
 /* No comment provided by engineer. */
 "INVALID" = "ΜΗ ΕΓΚΥΡΟ";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Invalid amount";
+"Invalid amount" = "Ανεπαρκές ποσό";
 
 /* No comment provided by engineer. */
 "IP address/port:" = "IP διεύθυνση/πόρτα:";
@@ -315,7 +315,7 @@
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Αφήστε άλλους να σαρώσουν αυτόν τον QR κωδικό για να πάρουν την διεύθυνση σας. Ο καθένας μπορεί να στείλει dash στο πορτοφόλι σας, μεταφέροντας τα στη διεύθυνσή σας.";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Link Uphold Account";
+"Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
 
 /* No comment provided by engineer. */
 "Load more" = "Φόρτωσε περισσότερα";
@@ -330,10 +330,10 @@
 "locked with InstantSend" = "κλείδωσε με InstantSend";
 
 /* No comment provided by engineer. */
-"Log Out" = "Log Out";
+"Log Out" = "Αποσύνδεση";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Log out from Uphold";
+"Log out from Uphold" = "Αποσύνδεση από το Uphold";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "διεύθυνση κατοχής masternode";
@@ -534,7 +534,7 @@
 "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Τα χρήματα σας κινδυνεύουν. Μεταφέρετε τα σε άλλο πορτοφόλι.";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "Δείτε στο Uphold";
 
 /* No comment provided by engineer. */
 "seen by %d of %d peers" = "το έχουν δει %1$d από τους %2$d κόμβους";
@@ -594,7 +594,7 @@
 "sms not currently available" = "το sms δεν είναι διαθέσιμο επί του παρόντος";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Something went wrong";
+"Something went wrong" = "Κάτι πήγε στραβά";
 
 /* No comment provided by engineer. */
 "spent address" = "διεύθυνση εξόφλησης";
@@ -612,7 +612,7 @@
 "Steps to reproduce the crash" = "Βήματα για να αναπαραχθεί η κατάρρευση";
 
 /* No comment provided by engineer. */
-"Success" = "Success";
+"Success" = "Επιτυχία ";
 
 /* No comment provided by engineer. */
 "swept!" = "σαρώθηκε!";
@@ -654,7 +654,7 @@
 "topup amount:" = "ποσό φόρτισης:";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "Σύνολο";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Όριο Touch ID ";
@@ -666,16 +666,16 @@
 "Transaction history" = "ιστορικό συναλλαγής";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Transaction id";
+"Transaction id" = "Ταυτότητα συναλλαγής";
 
 /* No comment provided by engineer. */
-"Transfer" = "Transfer";
+"Transfer" = "Μεταφορά";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "Μεταφέρετε Dash από τον Uphold λογαριασμό σας σε αυτό το πορτοφόλι";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "Μεταφορά από Uphold";
 
 /* No comment provided by engineer. */
 "trust" = "έμπιστο";
@@ -711,7 +711,7 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Uphold account";
+"Uphold account" = "Λογαριασμός Uphold";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Συναλλαγή εγγραφής Χρήστη";
@@ -777,10 +777,10 @@
 "you received dash!" = "λάβατε dash!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+"You will also need to log out from the Uphold website using your browser" = "Θα πρέπει επίσης να αποσυνδεθείτε από την ιστοσελίδα Uphold χρησιμοποιώντας το πρόγραμμα περιήγησης σας";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Η συναλλαγή σας απεστάλη και το ποσό θα πρέπει να εμφανιστεί στο πορτοφόλι σας σε λίγα λεπτά.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "Το υπόλοιπο του Uphold λογαριασμού σας σε Dash είναι";

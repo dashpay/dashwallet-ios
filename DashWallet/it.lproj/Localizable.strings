@@ -261,7 +261,7 @@
 "Fee" = "Commissione";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "La commissione è maggiore del saldo";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "La commissione verrà detratta dall'importo richiesto";

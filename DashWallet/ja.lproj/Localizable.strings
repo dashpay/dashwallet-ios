@@ -261,7 +261,7 @@
 "Fee" = "手数料";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "手数料が残高を超えています";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "手数料は請求金額から差し引かれます";
@@ -672,7 +672,7 @@
 "Transfer" = "送金";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "あなたUpholdアカウントからこのウォレットにDashを送金する";
+"Transfer Dash from your Uphold account to this wallet" = "あなたのUpholdアカウントからこのウォレットにDashを送金する";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Upholdから送金する";
