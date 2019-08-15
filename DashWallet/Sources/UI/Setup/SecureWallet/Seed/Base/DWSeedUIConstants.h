@@ -15,20 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
+extern CGFloat const DW_TOP_DEFAULT_PADDING;
+extern CGFloat const DW_TOP_COMPACT_PADDING;
+extern CGFloat const DW_BOTTOM_PADDING;
 
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
-
-- (void)restoreToDefaults;
-
-+ (instancetype)sharedInstance;
-
-@end
+extern CGFloat DWTitleSeedPhrasePadding(void);
 
 NS_ASSUME_NONNULL_END

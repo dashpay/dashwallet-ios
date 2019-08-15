@@ -15,19 +15,33 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
+extern NSString *const DW_WIPE;
+extern NSString *const DW_WATCH;
+extern NSInteger const DW_PHRASE_LENGTH;
 
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
+@interface DWRecoverModel : NSObject
 
-- (void)restoreToDefaults;
+- (BOOL)hasWallet;
+- (BOOL)isWalletEmpty;
 
-+ (instancetype)sharedInstance;
+- (NSString *)cleanupPhrase:(NSString *)phrase;
+- (nullable NSString *)normalizePhrase:(NSString *)phrase;
+
+- (BOOL)wordIsLocal:(NSString *)word;
+- (BOOL)wordIsValid:(NSString *)word;
+
+- (BOOL)phraseIsValid:(NSString *)phrase;
+
+- (void)recoverWalletWithPhrase:(NSString *)phrase;
+
+- (void)wipeWallet;
+- (BOOL)canWipeWithPhrase:(NSString *)phrase;
+
+- (NSString *)wipeAcceptPhrase;
 
 @end
 

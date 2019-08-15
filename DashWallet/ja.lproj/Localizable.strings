@@ -102,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "正しくない復元フレーズ";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "enter" = "入力する";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "下に送金額を入力してください";
@@ -606,10 +612,16 @@
 "Recovery phrase" = "復元フレーズ";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "復元フレーズが一致しません";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "復元フレーズはスペースで区切られた %d 個の単語でないといけません。";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "登録取引:";

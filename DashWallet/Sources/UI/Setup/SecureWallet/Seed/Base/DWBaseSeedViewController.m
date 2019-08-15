@@ -23,6 +23,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
+static CGFloat const SPACING = 16.0;
+static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 #pragma mark - Helper
 
@@ -110,24 +112,26 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     stackView.axis = UILayoutConstraintAxisVertical;
     stackView.alignment = UIStackViewAlignmentFill;
     stackView.distribution = UIStackViewDistributionFill;
-    stackView.spacing = 16.0;
+    stackView.spacing = SPACING;
     [self.view addSubview:stackView];
 
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
+    UILayoutGuide *safeAreaGuide = self.view.safeAreaLayoutGuide;
 
     const CGFloat bottomPadding = [self.class deviceSpecificBottomPadding];
-    self.contentBottomConstraint = [stackView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor
-                                                                          constant:bottomPadding];
+    // constraint relation is inverted so we can use positive padding values
+    self.contentBottomConstraint = [safeAreaGuide.bottomAnchor constraintEqualToAnchor:stackView.bottomAnchor
+                                                                              constant:bottomPadding];
 
     [NSLayoutConstraint activateConstraints:@[
-        [stackView.topAnchor constraintEqualToAnchor:marginsGuide.topAnchor],
+        [stackView.topAnchor constraintEqualToAnchor:safeAreaGuide.topAnchor],
         [stackView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [stackView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
         self.contentBottomConstraint,
     ]];
 
     if (bottomContinueButton) {
-        [bottomContinueButton.heightAnchor constraintEqualToConstant:54.0].active = YES;
+        [bottomContinueButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT].active = YES;
     }
 }
 

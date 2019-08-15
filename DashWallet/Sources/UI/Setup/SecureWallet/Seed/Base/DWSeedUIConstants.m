@@ -15,20 +15,23 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import "DWSeedUIConstants.h"
+
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
+CGFloat const DW_TOP_DEFAULT_PADDING = 64.0;
+CGFloat const DW_TOP_COMPACT_PADDING = 16.0;
+CGFloat const DW_BOTTOM_PADDING = 12.0;
 
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
-
-- (void)restoreToDefaults;
-
-+ (instancetype)sharedInstance;
-
-@end
+CGFloat DWTitleSeedPhrasePadding(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 12.0;
+    }
+    else {
+        return 20.0;
+    }
+}
 
 NS_ASSUME_NONNULL_END

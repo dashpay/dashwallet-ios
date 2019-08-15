@@ -15,19 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
-
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
-
-- (void)restoreToDefaults;
-
-+ (instancetype)sharedInstance;
+@interface DWIntrinsicTextView : UITextView
 
 @end
 

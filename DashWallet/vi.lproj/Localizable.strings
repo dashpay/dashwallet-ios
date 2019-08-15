@@ -102,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "cụm từ phục hồi không đúng";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "enter" = "nhập";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Hãy nhập số tiền cần chuyển vào dưới đây";
@@ -606,10 +612,16 @@
 "Recovery phrase" = "Cụm từ phục hồi";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "cụm từ phục hồi không đúng";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "cụm từ phục hồi phải có %d từ";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "mã giao dịch đăng ký:";

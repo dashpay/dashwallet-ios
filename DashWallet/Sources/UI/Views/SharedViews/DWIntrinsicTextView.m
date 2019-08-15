@@ -15,19 +15,26 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import "DWIntrinsicTextView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
+@implementation DWIntrinsicTextView
 
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
+- (void)layoutSubviews {
+    [super layoutSubviews];
 
-- (void)restoreToDefaults;
+    if (!CGSizeEqualToSize(self.bounds.size, [self intrinsicContentSize])) {
+        [self invalidateIntrinsicContentSize];
+    }
+}
 
-+ (instancetype)sharedInstance;
+- (CGSize)intrinsicContentSize {
+    CGSize intrinsicContentSize = self.contentSize;
+    intrinsicContentSize.width += (self.textContainerInset.left + self.textContainerInset.right) / 2.0;
+    intrinsicContentSize.height += (self.textContainerInset.top + self.textContainerInset.bottom) / 2.0;
+    return intrinsicContentSize;
+}
 
 @end
 

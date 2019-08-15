@@ -51,6 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
 }
 
+#pragma mark - Public
+
+- (void)restoreToDefaults {
+    self.walletNeedsBackup = YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

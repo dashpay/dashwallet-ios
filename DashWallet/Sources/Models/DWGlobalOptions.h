@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL biometricAuthConfigured;
 @property (nonatomic, assign) BOOL biometricAuthEnabled;
 
+- (void)restoreToDefaults;
+
 + (instancetype)sharedInstance;
 
 @end

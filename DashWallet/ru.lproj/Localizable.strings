@@ -102,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "Некорректная фраза восстановления";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "enter" = "Ввести";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Введите сумму для отправки ниже";
@@ -606,10 +612,16 @@
 "Recovery phrase" = "Фраза восстановления";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Фраза восстановления не подходит";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "Фраза восстановления должна состоять из %d слов";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "tx регистрации:";

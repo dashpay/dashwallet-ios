@@ -102,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "onjuiste herstelzin";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "enter" = "voer in";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Voer hieronder het bedrag in dat moet worden overgemaakt";
@@ -606,10 +612,16 @@
 "Recovery phrase" = "Herstelzin";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "de herstelzin komt niet overeen";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "de herstelzin moet %d woorden bevatten";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "Registratie tx:";

@@ -19,12 +19,9 @@
 
 #import "DWCheckbox.h"
 #import "DWSeedPhraseTitledView.h"
+#import "DWSeedUIConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGFloat const DEFAULT_PADDING = 64.0;
-static CGFloat const COMPACT_PADDING = 16.0;
-static CGFloat const BOTTOM_PADDING = 12.0;
 
 static NSTimeInterval const CONFIRMATION_SHOW_DELAY = 2.0;
 static NSTimeInterval const ANIMATION_DURATION = 0.3;
@@ -63,7 +60,7 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
         _confirmationCheckbox = confirmationCheckbox;
 
         _seedPhraseTopConstraint = [seedPhraseView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                                                            constant:COMPACT_PADDING];
+                                                                            constant:DW_TOP_COMPACT_PADDING];
 
         [NSLayoutConstraint activateConstraints:@[
             _seedPhraseTopConstraint,
@@ -77,7 +74,7 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
             [confirmationCheckbox.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
             [confirmationCheckbox.trailingAnchor constraintGreaterThanOrEqualToAnchor:self.trailingAnchor],
             [confirmationCheckbox.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
-                                                              constant:-BOTTOM_PADDING],
+                                                              constant:-DW_BOTTOM_PADDING],
         ]];
     }
     return self;
@@ -109,12 +106,12 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 - (void)setVisibleSize:(CGSize)visibleSize {
     _visibleSize = visibleSize;
 
-    const CGFloat contentHeight = COMPACT_PADDING + [self minimumContentHeightWithoutTopPadding];
-    if (visibleSize.height - contentHeight >= DEFAULT_PADDING * 2.0) {
-        self.seedPhraseTopConstraint.constant = DEFAULT_PADDING;
+    const CGFloat contentHeight = DW_TOP_COMPACT_PADDING + [self minimumContentHeightWithoutTopPadding];
+    if (visibleSize.height - contentHeight >= DW_TOP_DEFAULT_PADDING * 2.0) {
+        self.seedPhraseTopConstraint.constant = DW_TOP_DEFAULT_PADDING;
     }
     else {
-        self.seedPhraseTopConstraint.constant = COMPACT_PADDING;
+        self.seedPhraseTopConstraint.constant = DW_TOP_COMPACT_PADDING;
     }
 
     [self setNeedsLayout];
@@ -154,9 +151,9 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 
 - (CGFloat)minimumContentHeightWithoutTopPadding {
     const CGFloat contentHeight = self.seedPhraseView.intrinsicContentSize.height +
-                                  COMPACT_PADDING +
+                                  DW_TOP_COMPACT_PADDING +
                                   self.confirmationCheckbox.intrinsicContentSize.height +
-                                  BOTTOM_PADDING;
+                                  DW_BOTTOM_PADDING;
 
     return contentHeight;
 }

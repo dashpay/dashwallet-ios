@@ -23,6 +23,10 @@ static NSString *const DW_APP_GROUP = @"group.org.dashfoundation.dash";
 
 @implementation DWAppGroupOptions
 
+@dynamic receiveAddress;
+@dynamic receiveRequestData;
+@dynamic receiveQRImageData;
+
 + (instancetype)sharedInstance {
     static DWAppGroupOptions *_sharedInstance = nil;
     static dispatch_once_t onceToken;
@@ -38,6 +42,8 @@ static NSString *const DW_APP_GROUP = @"group.org.dashfoundation.dash";
     return self;
 }
 
+#pragma mark - DSDynamicOptions
+
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
     // Backwards compatibility
     if ([propertyName isEqualToString:DW_KEYPATH(self, receiveAddress)]) {
@@ -48,6 +54,14 @@ static NSString *const DW_APP_GROUP = @"group.org.dashfoundation.dash";
     }
 
     return [NSString stringWithFormat:@"DW_SHARED_%@", propertyName];
+}
+
+#pragma mark - Public
+
+- (void)restoreToDefaults {
+    self.receiveAddress = nil;
+    self.receiveRequestData = nil;
+    self.receiveQRImageData = nil;
 }
 
 @end

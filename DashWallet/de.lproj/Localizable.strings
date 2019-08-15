@@ -102,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "fehlerhafte Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "enter" = "Eingabe";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Trage den Transaktionsbetrag unten ein";
@@ -606,10 +612,16 @@
 "Recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Wiederherstellungs-Wortfolge stimmt nicht überein";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "Wiederherstellungs-Wortfolge muss %d Wörter haben";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "Registrations-TX";

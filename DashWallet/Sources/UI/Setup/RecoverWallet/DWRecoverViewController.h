@@ -15,19 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DSDynamicOptions.h"
+#import "DWBaseSeedViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppGroupOptions : DSDynamicOptions
+@class DWRecoverViewController;
 
-@property (nullable, nonatomic, copy) NSString *receiveAddress;
-@property (nullable, nonatomic, strong) NSData *receiveRequestData;
-@property (nullable, nonatomic, strong) NSData *receiveQRImageData;
+@protocol DWRecoverViewControllerDelegate <NSObject>
 
-- (void)restoreToDefaults;
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller;
+- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller;
 
-+ (instancetype)sharedInstance;
+@end
+
+@interface DWRecoverViewController : DWBaseSeedViewController
+
+@property (nullable, nonatomic, weak) id<DWRecoverViewControllerDelegate> delegate;
 
 @end
 
