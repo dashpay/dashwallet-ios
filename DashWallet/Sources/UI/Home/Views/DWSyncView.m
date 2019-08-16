@@ -25,9 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWSyncView ()
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (strong, nonatomic) IBOutlet UIView *roundedView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *percentLabel;
+@property (strong, nonatomic) IBOutlet UIButton *retryButton;
 @property (strong, nonatomic) IBOutlet DWProgressView *progressView;
 
 @end
@@ -70,22 +72,46 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setSyncState:(DWSyncModelState)state {
-    self.titleLabel.text = NSLocalizedString(@"Syncing", nil);
+    if (state == DWSyncModelState_NoConnection) {
+        self.titleLabel.textColor = [UIColor dw_lightTitleColor];
+        self.descriptionLabel.textColor = [UIColor dw_lightTitleColor];
+    }
+    else {
+        self.titleLabel.textColor = [UIColor dw_secondaryTextColor];
+        self.descriptionLabel.textColor = [UIColor dw_quaternaryTextColor];
+    }
 
     switch (state) {
         case DWSyncModelState_Syncing:
         case DWSyncModelState_SyncDone: {
+            self.roundedView.backgroundColor = [UIColor dw_backgroundColor];
+            self.percentLabel.hidden = NO;
+            self.retryButton.hidden = YES;
+            self.progressView.hidden = NO;
+            self.titleLabel.text = NSLocalizedString(@"Syncing", nil);
             self.descriptionLabel.text = NSLocalizedString(@"with Dash blockchain", nil);
 
             break;
         }
         case DWSyncModelState_SyncFailed: {
-            self.descriptionLabel.text = NSLocalizedString(@"FAILED", nil);
+            self.roundedView.backgroundColor = [UIColor dw_backgroundColor];
+            self.percentLabel.hidden = YES;
+            self.retryButton.tintColor = [UIColor dw_redColor];
+            self.retryButton.hidden = NO;
+            self.progressView.hidden = NO;
+            self.titleLabel.text = NSLocalizedString(@"Sync Failed", nil);
+            self.descriptionLabel.text = NSLocalizedString(@"Please try again", nil);
 
             break;
         }
         case DWSyncModelState_NoConnection: {
-            self.descriptionLabel.text = NSLocalizedString(@"No internet connection", nil);
+            self.roundedView.backgroundColor = [UIColor dw_redColor];
+            self.percentLabel.hidden = YES;
+            self.retryButton.tintColor = [UIColor dw_backgroundColor];
+            self.retryButton.hidden = NO;
+            self.progressView.hidden = YES;
+            self.titleLabel.text = NSLocalizedString(@"Unable to connect", nil);
+            self.descriptionLabel.text = NSLocalizedString(@"Check your connection", nil);
 
             break;
         }
@@ -95,6 +121,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setProgress:(float)progress animated:(BOOL)animated {
     self.percentLabel.text = [NSString stringWithFormat:@"%0.1f%%", progress * 100.0];
     [self.progressView setProgress:progress animated:animated];
+}
+
+#pragma mark - Actions
+
+- (IBAction)retryButtonAction:(id)sender {
+    [self.delegate syncViewRetryButtonAction:self];
 }
 
 @end

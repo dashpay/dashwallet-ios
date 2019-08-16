@@ -44,7 +44,7 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 @property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
-@property (readonly, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
 @property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 
@@ -54,6 +54,8 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
 
 - (void)reloadShortcuts;
+
+- (void)retrySyncing;
 
 @end
 

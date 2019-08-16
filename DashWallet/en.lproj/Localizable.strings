@@ -144,6 +144,9 @@
 "change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
+
+/* No comment provided by engineer. */
 "checking address balance..." = "checking address balance...";
 
 /* No comment provided by engineer. */
@@ -298,9 +301,6 @@
 
 /* No comment provided by engineer. */
 "Face ID spending limit" = "Face ID spending limit";
-
-/* No comment provided by engineer. */
-"FAILED" = "FAILED";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "Failed wallet update";
@@ -459,9 +459,6 @@
 "no exchange rate data" = "no exchange rate data";
 
 /* No comment provided by engineer. */
-"No internet connection" = "No internet connection";
-
-/* No comment provided by engineer. */
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
@@ -568,6 +565,12 @@
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+
+/* No comment provided by engineer. */
+"Please try again" = "Please try again";
+
+/* No comment provided by engineer. */
+"Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";
@@ -782,6 +785,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Testnet" = "Switch to Testnet";
 
+/* No comment provided by engineer. */
+"Sync Failed" = "Sync Failed";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "Sync Now";
 
@@ -874,6 +880,9 @@
 
 /* No comment provided by engineer. */
 "type:" = "type:";
+
+/* No comment provided by engineer. */
+"Unable to connect" = "Unable to connect";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Unable to get new qr code";

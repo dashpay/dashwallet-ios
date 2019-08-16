@@ -21,10 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSReachabilityManager;
 
-/*
- Either same as DSTransactionManagerSyncFinishedNotification or `[DWEnvironment sharedInstance].currentChainManager.syncProgress == 1`
- */
-extern NSString *const DWSyncFinishedNotification;
+extern NSString *const DWSyncStateChangedNotification;
+// `NSNumber` of previous state in notification `userInfo` dictionary
+extern NSString *const DWSyncStateChangedFromStateKey;
 
 typedef NS_ENUM(NSUInteger, DWSyncModelState) {
     DWSyncModelState_Syncing,
@@ -37,6 +36,8 @@ typedef NS_ENUM(NSUInteger, DWSyncModelState) {
 
 @property (readonly, nonatomic, assign) DWSyncModelState state;
 @property (readonly, nonatomic, assign) float progress;
+
+- (void)reachabilityStatusDidChange;
 
 - (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
 

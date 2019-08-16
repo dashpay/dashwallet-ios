@@ -100,10 +100,6 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
     [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
                   with:^(typeof(self) self, id value) {
-                      if (!value) {
-                          return;
-                      }
-
                       [self updateBalance];
                   }];
 }
@@ -137,13 +133,24 @@ static CGFloat const BalanceButtonMinHeight(void) {
 #pragma mark - Private
 
 - (void)updateBalance {
+    UIColor *balanceColor = [UIColor dw_lightTitleColor];
     DWBalanceModel *balanceModel = self.model.balanceModel;
+    if (balanceModel) {
+        UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
 
-    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
-    UIColor *tintColor = [UIColor dw_lightTitleColor];
-    self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
-                                                                        tintColor:tintColor];
-    self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
+        self.dashBalanceLabel.attributedText = [balanceModel dashAmountStringWithFont:font
+                                                                            tintColor:balanceColor];
+        self.fiatBalanceLabel.hidden = NO;
+        self.fiatBalanceLabel.text = [balanceModel fiatAmountString];
+    }
+    else {
+        // 😭 UI designes states so:
+        self.dashBalanceLabel.textColor = [balanceColor colorWithAlphaComponent:0.44];
+        self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+
+        self.dashBalanceLabel.text = NSLocalizedString(@"Please wait for the sync to complete", nil);
+        self.fiatBalanceLabel.hidden = YES;
+    }
 }
 
 @end

@@ -34,6 +34,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static float const SHOW_BALANCE_THRESHOLD = 0.90;
+
 static BOOL IsJailbroken(void) {
     struct stat s;
     BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
@@ -56,7 +58,7 @@ static BOOL IsJailbroken(void) {
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-@property (nonatomic, strong) DWBalanceModel *balanceModel;
+@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
@@ -107,8 +109,8 @@ static BOOL IsJailbroken(void) {
                                    name:DSTransactionManagerTransactionStatusDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(syncFinishedNotification)
-                                   name:DWSyncFinishedNotification
+                               selector:@selector(syncStateChangedNotification)
+                                   name:DWSyncStateChangedNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
@@ -168,6 +170,10 @@ static BOOL IsJailbroken(void) {
     [self.shortcutsModel reloadShortcuts];
 }
 
+- (void)retrySyncing {
+    [self connectIfNeeded];
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
@@ -176,12 +182,12 @@ static BOOL IsJailbroken(void) {
 
         [self connectIfNeeded];
     }
+
+    [self.syncModel reachabilityStatusDidChange];
 }
 
 - (void)walletBalanceDidChangeNotification {
-    if (self.syncModel.state != DWSyncModelState_Syncing) {
-        [self updateBalance];
-    }
+    [self updateBalance];
 
     [self reloadTxDataSource];
 }
@@ -194,7 +200,7 @@ static BOOL IsJailbroken(void) {
     [self connectIfNeeded];
 }
 
-- (void)syncFinishedNotification {
+- (void)syncStateChangedNotification {
     [self updateBalance];
     [self reloadTxDataSource];
 }
@@ -283,6 +289,13 @@ static BOOL IsJailbroken(void) {
 
 - (void)updateBalance {
     [self.receiveModel updateReceivingInfo];
+
+    if (self.syncModel.state == DWSyncModelState_Syncing &&
+        self.syncModel.progress < SHOW_BALANCE_THRESHOLD) {
+        self.balanceModel = nil;
+
+        return;
+    }
 
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&
