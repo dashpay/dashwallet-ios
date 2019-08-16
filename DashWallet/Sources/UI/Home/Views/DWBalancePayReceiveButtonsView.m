@@ -79,6 +79,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
     self.titleLabel.text = NSLocalizedString(@"Available balance", nil);
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.textColor = [UIColor dw_lightTitleColor];
 
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];

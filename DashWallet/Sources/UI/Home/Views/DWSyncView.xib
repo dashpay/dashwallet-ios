@@ -39,14 +39,13 @@
                                             <rect key="frame" x="0.0" y="0.0" width="257.5" height="14.5"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                            <color key="textColor" name="SecondaryTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Description Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VKe-Yj-7cK" userLabel="Description Label">
                                             <rect key="frame" x="0.0" y="14.5" width="257.5" height="20.5"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                            <color key="textColor" name="QuaternaryTextColor"/>
+                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -81,14 +80,13 @@
                                         <constraint firstAttribute="width" constant="44" id="QIs-GU-dY1"/>
                                         <constraint firstAttribute="height" constant="44" id="Z0b-qq-Wdu"/>
                                     </constraints>
-                                    <color key="tintColor" name="RedColor"/>
                                     <state key="normal" image="icon_reload"/>
                                     <connections>
                                         <action selector="retryButtonAction:" destination="-1" eventType="touchUpInside" id="mVh-rV-3EW"/>
                                     </connections>
                                 </button>
                             </subviews>
-                            <color key="backgroundColor" name="BackgroundColor"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstItem="pYG-Sd-FBs" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" constant="23" id="4M1-sB-uB6"/>
                                 <constraint firstAttribute="trailing" secondItem="tmC-WD-m2y" secondAttribute="trailing" constant="16" id="7Wj-Bs-xGt"/>
@@ -142,26 +140,14 @@
     </objects>
     <resources>
         <image name="icon_reload" width="26" height="29"/>
-        <namedColor name="BackgroundColor">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="ProgressBackgroundColor">
             <color red="0.85882352941176465" green="0.85882352941176465" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="QuaternaryTextColor">
-            <color red="0.60784313725490191" green="0.60784313725490191" blue="0.60784313725490191" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="RedColor">
-            <color red="0.81568627450980391" green="0.0078431372549019607" blue="0.10588235294117647" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

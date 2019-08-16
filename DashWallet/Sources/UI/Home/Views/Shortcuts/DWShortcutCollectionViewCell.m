@@ -164,6 +164,7 @@ static CGFloat AlphaForAction(DWShortcutAction *action) {
 - (void)awakeFromNib {
     [super awakeFromNib];
 
+    self.titleLabel.textColor = [UIColor dw_tertiaryTextColor];
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
 }
 

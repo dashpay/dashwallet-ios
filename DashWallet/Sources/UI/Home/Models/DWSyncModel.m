@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define DWSyncLog(frmt, ...)
 #endif /* LOG_SYNCING */
 
-static NSString *SyncStateToString(DWSyncModelState state) {
+__unused static NSString *SyncStateToString(DWSyncModelState state) {
     switch (state) {
         case DWSyncModelState_Syncing:
             return @"Syncing";
