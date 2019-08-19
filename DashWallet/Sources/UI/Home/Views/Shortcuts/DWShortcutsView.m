@@ -17,6 +17,7 @@
 
 #import "DWShortcutsView.h"
 
+#import "DWShortcutAction.h"
 #import "DWShortcutCollectionViewCell.h"
 #import "DWShortcutsModel.h"
 #import "DWUIKit.h"
@@ -50,8 +51,6 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
 @end
 
 @implementation DWShortcutsView
-
-@synthesize model = _model;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -95,14 +94,13 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
 
     UIContentSizeCategory contentSizeCategory = [UIApplication sharedApplication].preferredContentSizeCategory;
     [self updateCellSizeForContentSizeCategory:contentSizeCategory initialSetup:YES];
-}
 
-- (DWShortcutsModel *)model {
-    if (_model == nil) {
-        _model = [[DWShortcutsModel alloc] init];
-    }
+    // KVO
 
-    return _model;
+    [self mvvm_observe:DW_KEYPATH(self, model.items)
+                  with:^(typeof(self) self, NSArray *value) {
+                      [self.collectionView reloadData];
+                  }];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -128,8 +126,10 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
 
     DWShortcutAction *action = self.model.items[indexPath.item];
-    UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
-    [self.actionDelegate shortcutsView:self didSelectAction:action sender:cell];
+    if (action.enabled) {
+        UICollectionViewCell *cell = [collectionView cellForItemAtIndexPath:indexPath];
+        [self.actionDelegate shortcutsView:self didSelectAction:action sender:cell];
+    }
 }
 
 #pragma mark - Notifications

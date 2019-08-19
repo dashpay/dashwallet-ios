@@ -19,9 +19,11 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWBiometricAuthViewController.h"
+#import "DWGlobalOptions.h"
 #import "DWMainTabbarViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWRecoverViewController.h"
 #import "DWSecureWalletInfoViewController.h"
 #import "DWSetPinModel.h"
 #import "DWSetPinViewController.h"
@@ -32,7 +34,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @interface DWSetupViewController () <DWSetPinViewControllerDelegate,
                                      DWBiometricAuthViewControllerDelegate,
-                                     DWSecureWalletDelegate>
+                                     DWSecureWalletDelegate,
+                                     DWRecoverViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
 
@@ -83,13 +86,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - Actions
 
 - (IBAction)createWalletButtonAction:(id)sender {
+    [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
+
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
     NSParameterAssert(newViewController);
     [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
-    // TODO: impl
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_Recover;
+    controller.delegate = self;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - DWSetPinViewControllerDelegate
@@ -99,17 +107,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
-    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
-    NSParameterAssert(newViewController);
-    [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
+    [self continueOrCompleteWalletSetup];
 }
 
 #pragma mark - DWBiometricAuthViewControllerDelegate
 
 - (void)biometricAuthViewControllerDidFinish:(DWBiometricAuthViewController *)controller {
-    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
-    NSParameterAssert(newViewController);
-    [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
+    [self continueOrCompleteWalletSetup];
 }
 
 #pragma mark - DWSecureWalletDelegate
@@ -124,6 +128,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (void)secureWalletInfoViewControllerDidFinish:(DWSecureWalletInfoViewController *)controller {
     [self.navigationController popViewControllerAnimated:NO];
+}
+
+#pragma mark - DWRecoverViewControllerDelegate
+
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller {
+    [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
+
+    [self continueOrCompleteWalletSetup];
+}
+
+- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -172,6 +188,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     controller.delegate = self;
 
     return controller;
+}
+
+- (void)continueOrCompleteWalletSetup {
+    UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
+    if (newViewController) {
+        [self.navigationController setViewControllers:@[ self, newViewController ] animated:YES];
+    }
+    else {
+        [self completeSetup];
+    }
 }
 
 - (void)completeSetup {

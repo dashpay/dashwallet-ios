@@ -73,7 +73,6 @@
 		2A4431D522D52F67009BAF7F /* DWBackupInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431D322D52F67009BAF7F /* DWBackupInfoCell.m */; };
 		2A4431D622D52F67009BAF7F /* DWBackupInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431D422D52F67009BAF7F /* DWBackupInfoCell.xib */; };
 		2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */; };
-		2A4431DD22D675DC009BAF7F /* PreviewSeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431DC22D675DC009BAF7F /* PreviewSeedPhrase.storyboard */; };
 		2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
 		2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */; };
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
@@ -98,7 +97,35 @@
 		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
 		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
+		2A74EFE92305264200C475EB /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFE82305264200C475EB /* DWBaseSeedViewController.m */; };
+		2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFEC2305318000C475EB /* DWRecoverViewController.m */; };
+		2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF0230531DA00C475EB /* DWRecoverContentView.m */; };
+		2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF42305333000C475EB /* DWSeedUIConstants.m */; };
+		2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */; };
+		2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */; };
+		2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFD2305763F00C475EB /* DWRecoverModel.m */; };
+		2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */; };
+		2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */; };
+		2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
+		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
+		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
+		2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */; };
+		2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */; };
+		2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */; };
+		2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
+		2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */; };
+		2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */; };
+		2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */; };
+		2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */; };
+		2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6422FFE43500FF8653 /* DWPayModel.m */; };
+		2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */; };
+		2A8B9E6C23029D2B00FF8653 /* DWPayInputProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */; };
+		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */; };
+		2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */; };
+		2A8B9E762302E60500FF8653 /* Receive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E752302E60500FF8653 /* Receive.storyboard */; };
+		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
+		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
@@ -228,7 +255,7 @@
 		757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E5192C1FF70061CB20 /* DWWelcomeViewController.m */; };
 		757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 757BE7E8192D4E880061CB20 /* DWSeedViewController.m */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
-		75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWReceiveViewController.m */; };
+		75878BC1192AEC3F002505AB /* DWOLDReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */; };
 		758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 758DBD0D1980634900389E2A /* DWTxDetailViewController.m */; };
 		759816E719357D6F005060EA /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		759FBB36193290F600AB4465 /* DWRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 759FBB33193290F600AB4465 /* DWRootViewController.m */; };
@@ -548,7 +575,6 @@
 		2A4431D422D52F67009BAF7F /* DWBackupInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWBackupInfoCell.xib; sourceTree = "<group>"; };
 		2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPreviewSeedPhraseViewController.h; sourceTree = "<group>"; };
 		2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseViewController.m; sourceTree = "<group>"; };
-		2A4431DC22D675DC009BAF7F /* PreviewSeedPhrase.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PreviewSeedPhrase.storyboard; sourceTree = "<group>"; };
 		2A4431DF22D7219E009BAF7F /* DWSeedWordView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedWordView.h; sourceTree = "<group>"; };
 		2A4431E022D7219E009BAF7F /* DWSeedWordView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedWordView.m; sourceTree = "<group>"; };
 		2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseTitledView.h; sourceTree = "<group>"; };
@@ -593,8 +619,63 @@
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
 		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
+		2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWReceiveModel+Private.h"; sourceTree = "<group>"; };
+		2A74EFE72305264200C475EB /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
+		2A74EFE82305264200C475EB /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
+		2A74EFEB2305318000C475EB /* DWRecoverViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverViewController.h; sourceTree = "<group>"; };
+		2A74EFEC2305318000C475EB /* DWRecoverViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverViewController.m; sourceTree = "<group>"; };
+		2A74EFEF230531DA00C475EB /* DWRecoverContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverContentView.h; sourceTree = "<group>"; };
+		2A74EFF0230531DA00C475EB /* DWRecoverContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverContentView.m; sourceTree = "<group>"; };
+		2A74EFF32305333000C475EB /* DWSeedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedUIConstants.h; sourceTree = "<group>"; };
+		2A74EFF42305333000C475EB /* DWSeedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedUIConstants.m; sourceTree = "<group>"; };
+		2A74EFF623053ECE00C475EB /* DWIntrinsicTextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicTextView.h; sourceTree = "<group>"; };
+		2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicTextView.m; sourceTree = "<group>"; };
+		2A74EFF92305464C00C475EB /* DWRecoverTextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverTextView.h; sourceTree = "<group>"; };
+		2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverTextView.m; sourceTree = "<group>"; };
+		2A74EFFC2305763F00C475EB /* DWRecoverModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverModel.h; sourceTree = "<group>"; };
+		2A74EFFD2305763F00C475EB /* DWRecoverModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverModel.m; sourceTree = "<group>"; };
+		2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWShortcuts.h"; sourceTree = "<group>"; };
+		2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWShortcuts.m"; sourceTree = "<group>"; };
+		2A74F0022305C59700C475EB /* DWHomeViewController+DWTxFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWTxFilter.h"; sourceTree = "<group>"; };
+		2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWTxFilter.m"; sourceTree = "<group>"; };
+		2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWJailbreakCheck.h"; sourceTree = "<group>"; };
+		2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWJailbreakCheck.m"; sourceTree = "<group>"; };
+		2A74F0082305F1C100C475EB /* DWRecoverAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverAction.h; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
+		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
+		2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPaymentsViewController.m; sourceTree = "<group>"; };
+		2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Payments.storyboard; sourceTree = "<group>"; };
+		2A8B9E3E22FD75C000FF8653 /* DWSegmentedControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentedControl.h; sourceTree = "<group>"; };
+		2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentedControl.m; sourceTree = "<group>"; };
+		2A8B9E4122FD8CE700FF8653 /* DWOverlapControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWOverlapControl.h; sourceTree = "<group>"; };
+		2A8B9E4822FEBDC700FF8653 /* DWUnitBezier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUnitBezier.h; sourceTree = "<group>"; };
+		2A8B9E4B22FEBF7A00FF8653 /* DWProgressAnimator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWProgressAnimator.h; sourceTree = "<group>"; };
+		2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DWProgressAnimator.mm; sourceTree = "<group>"; };
+		2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWOverlapControl.m; sourceTree = "<group>"; };
+		2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWControllerCollectionView.h; sourceTree = "<group>"; };
+		2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWControllerCollectionView.m; sourceTree = "<group>"; };
+		2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayViewController.h; sourceTree = "<group>"; };
+		2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayViewController.m; sourceTree = "<group>"; };
+		2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Pay.storyboard; sourceTree = "<group>"; };
+		2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayTableViewCell.h; sourceTree = "<group>"; };
+		2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayTableViewCell.m; sourceTree = "<group>"; };
+		2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWPayTableViewCell.xib; sourceTree = "<group>"; };
+		2A8B9E6322FFE43500FF8653 /* DWPayModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModel.h; sourceTree = "<group>"; };
+		2A8B9E6422FFE43500FF8653 /* DWPayModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayModel.m; sourceTree = "<group>"; };
+		2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayOptionModel.h; sourceTree = "<group>"; };
+		2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayOptionModel.m; sourceTree = "<group>"; };
+		2A8B9E6A23029D2B00FF8653 /* DWPayInputProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayInputProcessor.h; sourceTree = "<group>"; };
+		2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayInputProcessor.m; sourceTree = "<group>"; };
+		2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPasteboardAddressObserver.m; sourceTree = "<group>"; };
+		2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPasteboardAddressObserver.h; sourceTree = "<group>"; };
+		2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
+		2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveViewController.m; sourceTree = "<group>"; };
+		2A8B9E752302E60500FF8653 /* Receive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Receive.storyboard; sourceTree = "<group>"; };
+		2A8B9E782302E67400FF8653 /* DWReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModel.h; sourceTree = "<group>"; };
+		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
+		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
+		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
@@ -884,13 +965,13 @@
 		757BE7E7192D4E880061CB20 /* DWSeedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSeedViewController.h; sourceTree = "<group>"; };
 		757BE7E8192D4E880061CB20 /* DWSeedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSeedViewController.m; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		75878BC0192AEC3F002505AB /* DWReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWOLDReceiveViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxHistoryViewController.h; sourceTree = "<group>"; };
 		758DBD0C1980634900389E2A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		758DBD0D1980634900389E2A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		759816E619357D6F005060EA /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
-		759FBB31193290F600AB4465 /* DWReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewController.h; sourceTree = "<group>"; };
+		759FBB31193290F600AB4465 /* DWOLDReceiveViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWOLDReceiveViewController.h; sourceTree = "<group>"; };
 		759FBB32193290F600AB4465 /* DWRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRootViewController.h; sourceTree = "<group>"; };
 		759FBB33193290F600AB4465 /* DWRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = DWRootViewController.m; sourceTree = "<group>"; };
 		759FBB34193290F600AB4465 /* DWSendViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSendViewController.h; sourceTree = "<group>"; };
@@ -1266,6 +1347,7 @@
 		2A4430E922CBB98D009BAF7F /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				2A74EFEA2305316A00C475EB /* RecoverWallet */,
 				2A9CEBA322E1C25700A50237 /* SecureWallet */,
 				2A44314422CF828E009BAF7F /* BiometricAuth */,
 				2A44312322CCC127009BAF7F /* SetPin */,
@@ -1280,6 +1362,7 @@
 			isa = PBXGroup;
 			children = (
 				2A9CEBAE22E1DF7E00A50237 /* Navigation */,
+				2A8B9E5022FED73600FF8653 /* ControllerCollection */,
 				2AD1CE6A22DA337700C99324 /* BaseController */,
 				2A44312B22CD0304009BAF7F /* SharedViews */,
 				2AD1CE6922D9E75400C99324 /* DevicesCompatibility.h */,
@@ -1335,6 +1418,7 @@
 			isa = PBXGroup;
 			children = (
 				2A9FFF3722357F6800956D5F /* Keyboard */,
+				2A8B9E4422FD8CF500FF8653 /* SegmentedControl */,
 				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
 				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
 				2AD1CEA022DFC80800C99324 /* DWCenteredScrollView.h */,
@@ -1353,6 +1437,8 @@
 				2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */,
 				2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */,
 				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
+				2A74EFF623053ECE00C475EB /* DWIntrinsicTextView.h */,
+				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
 			);
 			path = SharedViews;
 			sourceTree = "<group>";
@@ -1383,6 +1469,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2A8B9E3822FC7F3B00FF8653 /* Payments */,
 				2A9CEBB622E1FA0000A50237 /* Home */,
 				2A9CEBA522E1D58B00A50237 /* Main */,
 				2A44311B22CC9B2C009BAF7F /* RootNavigation */,
@@ -1401,6 +1488,8 @@
 				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */,
 				2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */,
+				2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */,
+				2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1453,12 +1542,12 @@
 		2A4431D822D67592009BAF7F /* Seed */ = {
 			isa = PBXGroup;
 			children = (
+				2A74EFF22305330B00C475EB /* Base */,
 				2A4431DE22D72156009BAF7F /* Views */,
 				2AD1CEA622E0C8C800C99324 /* DWPreviewSeedPhraseModel.h */,
 				2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */,
 				2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */,
 				2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */,
-				2A4431DC22D675DC009BAF7F /* PreviewSeedPhrase.storyboard */,
 			);
 			path = Seed;
 			sourceTree = "<group>";
@@ -1502,6 +1591,134 @@
 				2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A74EFEA2305316A00C475EB /* RecoverWallet */ = {
+			isa = PBXGroup;
+			children = (
+				2A74EFEE230531BC00C475EB /* Views */,
+				2A74EFEB2305318000C475EB /* DWRecoverViewController.h */,
+				2A74EFEC2305318000C475EB /* DWRecoverViewController.m */,
+				2A74EFFC2305763F00C475EB /* DWRecoverModel.h */,
+				2A74EFFD2305763F00C475EB /* DWRecoverModel.m */,
+				2A74F0082305F1C100C475EB /* DWRecoverAction.h */,
+			);
+			path = RecoverWallet;
+			sourceTree = "<group>";
+		};
+		2A74EFEE230531BC00C475EB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A74EFEF230531DA00C475EB /* DWRecoverContentView.h */,
+				2A74EFF0230531DA00C475EB /* DWRecoverContentView.m */,
+				2A74EFF92305464C00C475EB /* DWRecoverTextView.h */,
+				2A74EFFA2305464C00C475EB /* DWRecoverTextView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2A74EFF22305330B00C475EB /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				2A74EFE72305264200C475EB /* DWBaseSeedViewController.h */,
+				2A74EFE82305264200C475EB /* DWBaseSeedViewController.m */,
+				2A74EFF32305333000C475EB /* DWSeedUIConstants.h */,
+				2A74EFF42305333000C475EB /* DWSeedUIConstants.m */,
+			);
+			path = Base;
+			sourceTree = "<group>";
+		};
+		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E712302E43400FF8653 /* Receive */,
+				2A8B9E5722FF6F2900FF8653 /* Pay */,
+				2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */,
+				2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */,
+				2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */,
+			);
+			path = Payments;
+			sourceTree = "<group>";
+		};
+		2A8B9E4422FD8CF500FF8653 /* SegmentedControl */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E4122FD8CE700FF8653 /* DWOverlapControl.h */,
+				2A8B9E4E22FED47E00FF8653 /* DWOverlapControl.m */,
+				2A8B9E4B22FEBF7A00FF8653 /* DWProgressAnimator.h */,
+				2A8B9E4C22FEBF7A00FF8653 /* DWProgressAnimator.mm */,
+				2A8B9E3E22FD75C000FF8653 /* DWSegmentedControl.h */,
+				2A8B9E3F22FD75C000FF8653 /* DWSegmentedControl.m */,
+				2A8B9E4822FEBDC700FF8653 /* DWUnitBezier.h */,
+			);
+			path = SegmentedControl;
+			sourceTree = "<group>";
+		};
+		2A8B9E5022FED73600FF8653 /* ControllerCollection */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E5422FEDF2900FF8653 /* DWControllerCollectionView.h */,
+				2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */,
+			);
+			path = ControllerCollection;
+			sourceTree = "<group>";
+		};
+		2A8B9E5722FF6F2900FF8653 /* Pay */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E6923029C0D00FF8653 /* Models */,
+				2A8B9E5D22FF710A00FF8653 /* Cells */,
+				2A8B9E5822FF6FBD00FF8653 /* DWPayViewController.h */,
+				2A8B9E5922FF6FBD00FF8653 /* DWPayViewController.m */,
+				2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */,
+			);
+			path = Pay;
+			sourceTree = "<group>";
+		};
+		2A8B9E5D22FF710A00FF8653 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E5E22FF712000FF8653 /* DWPayTableViewCell.h */,
+				2A8B9E5F22FF712000FF8653 /* DWPayTableViewCell.m */,
+				2A8B9E6022FF712000FF8653 /* DWPayTableViewCell.xib */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A8B9E6923029C0D00FF8653 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E6322FFE43500FF8653 /* DWPayModel.h */,
+				2A8B9E6422FFE43500FF8653 /* DWPayModel.m */,
+				2A8B9E6622FFE4CC00FF8653 /* DWPayOptionModel.h */,
+				2A8B9E6722FFE4CC00FF8653 /* DWPayOptionModel.m */,
+				2A8B9E6A23029D2B00FF8653 /* DWPayInputProcessor.h */,
+				2A8B9E6B23029D2B00FF8653 /* DWPayInputProcessor.m */,
+				2A8B9E702302AFDD00FF8653 /* DWPasteboardAddressObserver.h */,
+				2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressObserver.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		2A8B9E712302E43400FF8653 /* Receive */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E772302E66100FF8653 /* Models */,
+				2A8B9E722302E5ED00FF8653 /* DWReceiveViewController.h */,
+				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
+				2A8B9E752302E60500FF8653 /* Receive.storyboard */,
+			);
+			path = Receive;
+			sourceTree = "<group>";
+		};
+		2A8B9E772302E66100FF8653 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A8B9E782302E67400FF8653 /* DWReceiveModel.h */,
+				2A8B9E792302E67400FF8653 /* DWReceiveModel.m */,
+				2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -1567,6 +1784,12 @@
 				2A307CB322E6FA7F00A18347 /* Views */,
 				2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */,
 				2A9CEBB822E1FA1000A50237 /* DWHomeViewController.m */,
+				2A74EFFF2305C40F00C475EB /* DWHomeViewController+DWShortcuts.h */,
+				2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */,
+				2A74F0022305C59700C475EB /* DWHomeViewController+DWTxFilter.h */,
+				2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */,
+				2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */,
+				2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -2108,8 +2331,8 @@
 				759FBB33193290F600AB4465 /* DWRootViewController.m */,
 				759FBB34193290F600AB4465 /* DWSendViewController.h */,
 				759FBB35193290F600AB4465 /* DWSendViewController.m */,
-				759FBB31193290F600AB4465 /* DWReceiveViewController.h */,
-				75878BC0192AEC3F002505AB /* DWReceiveViewController.m */,
+				759FBB31193290F600AB4465 /* DWOLDReceiveViewController.h */,
+				75878BC0192AEC3F002505AB /* DWOLDReceiveViewController.m */,
 				84F68C881975E9E2002FC300 /* DWScanViewController.h */,
 				84F68C891975E9E2002FC300 /* DWScanViewController.m */,
 				75878BC4192B1AF0002505AB /* DWTxHistoryViewController.h */,
@@ -2688,6 +2911,7 @@
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
 				FBFC2EED21137A7A00D20C57 /* Montserrat-Thin.otf in Resources */,
+				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
 				FBFC2ED121137A7A00D20C57 /* Montserrat-SemiBoldItalic.otf in Resources */,
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
 				2A9FFE982230FF4700956D5F /* UpholdRequestTransferStoryboard.storyboard in Resources */,
@@ -2704,6 +2928,7 @@
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */,
+				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
 				2A8F422121BF028500858B91 /* AboutStoryboard.storyboard in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
 				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
@@ -2720,9 +2945,9 @@
 				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2A9FFE862230FF4700956D5F /* DWPlaceholderFormTableViewCell.xib in Resources */,
+				2A8B9E762302E60500FF8653 /* Receive.storyboard in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
-				2A4431DD22D675DC009BAF7F /* PreviewSeedPhrase.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FBFC2EE921137A7A00D20C57 /* Montserrat-MediumItalic.otf in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
@@ -2730,6 +2955,7 @@
 				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
 				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
+				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				FBFC2EBD21137A7A00D20C57 /* Montserrat-Bold.otf in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -3079,10 +3305,13 @@
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
+				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
 				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
+				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
+				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
 				2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */,
@@ -3097,10 +3326,12 @@
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
+				2A8B9E742302E5ED00FF8653 /* DWReceiveViewController.m in Sources */,
 				2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
 				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
 				758DBD0E1980634900389E2A /* DWTxDetailViewController.m in Sources */,
+				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */,
@@ -3111,6 +3342,7 @@
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
 				2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
+				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
 				2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
@@ -3127,6 +3359,7 @@
 				2A9FFE832230FF4700956D5F /* DWSwitcherFormTableViewCell.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
+				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A9FFE752230FF4600956D5F /* DWAlertPresentationAnimationController.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
@@ -3135,6 +3368,7 @@
 				2A9FFE7B2230FF4600956D5F /* DWAlertView.m in Sources */,
 				BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */,
 				2A9FFF1A2233E56E00956D5F /* DWUpholdCardTableViewCell.m in Sources */,
+				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				FB43BC72211B8A5E00BC9879 /* DWActionTableViewCell.m in Sources */,
@@ -3148,6 +3382,7 @@
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
 				2AD1CE9D22DFBA6200C99324 /* DWVerifiedSuccessfullyViewController.m in Sources */,
+				2A8B9E5A22FF6FBD00FF8653 /* DWPayViewController.m in Sources */,
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2A9FFE782230FF4600956D5F /* DWAlertViewActionBaseView.m in Sources */,
@@ -3155,7 +3390,7 @@
 				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
 				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
-				75878BC1192AEC3F002505AB /* DWReceiveViewController.m in Sources */,
+				75878BC1192AEC3F002505AB /* DWOLDReceiveViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A9FFF202233E56E00956D5F /* DWUpholdBuyInputViewController.m in Sources */,
@@ -3171,17 +3406,21 @@
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
 				2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */,
+				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */,
+				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
 				757BE7E9192D4E880061CB20 /* DWSeedViewController.m in Sources */,
 				2A9FFE722230FF4600956D5F /* DWAlertController.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2AB21D32221176E600615700 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
 				FB43BC75211CC68E00BC9879 /* DWNumberButton.m in Sources */,
 				2A4431CC22D5279A009BAF7F /* DWBackupInfoHeaderView.m in Sources */,
+				2A8B9E6C23029D2B00FF8653 /* DWPayInputProcessor.m in Sources */,
 				2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */,
 				2A9FFE802230FF4600956D5F /* DWSelectorFormTableViewCell.m in Sources */,
 				2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */,
 				2A9FFCD4222EA87F00956D5F /* DSTransactionDetailTableViewCell.m in Sources */,
+				2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressObserver.m in Sources */,
 				FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */,
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
@@ -3197,6 +3436,7 @@
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
 				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				2A9FFE7A2230FF4600956D5F /* DWAnimatableShapeLayer.m in Sources */,
+				2A74EFE92305264200C475EB /* DWBaseSeedViewController.m in Sources */,
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				FB021E5B1E4DEFE800D17638 /* MBProgressHUD.m in Sources */,
 				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
@@ -3204,26 +3444,32 @@
 				2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
+				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
+				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
 				2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */,
+				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
 				2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */,
 				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
+				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
 				2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */,
 				75D5F3D2191EC270004AB296 /* DWAppDelegate.m in Sources */,
 				2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */,
 				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
+				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
+				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
 				2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */,
 				2A9FFF1E2233E56E00956D5F /* DWUpholdSelectCardModel.m in Sources */,
 				2A9FFCD7222EA87F00956D5F /* DSTransactionAmountTableViewCell.m in Sources */,
@@ -3232,19 +3478,23 @@
 				2A9FFE822230FF4700956D5F /* DWSwitcherFormCellModel.m in Sources */,
 				2A9FFDF32230FF1A00956D5F /* UIViewController+DWChildControllers.m in Sources */,
 				2A9FFE7D2230FF4600956D5F /* DWAlertPresentationController.m in Sources */,
+				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,
+				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
+				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A9FFE772230FF4600956D5F /* DWAlertViewActionButton.m in Sources */,
+				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWBackupInfoCell.m in Sources */,

@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWSyncModel;
 @class DWHomeModel;
 @class DWBalanceModel;
+@class DWReceiveModel;
+@class DWShortcutsModel;
 
 typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
     DWHomeTxDisplayMode_All,
@@ -38,15 +40,22 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @interface DWHomeModel : NSObject
 
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
-@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
-@property (readonly, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
+
+@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
+@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
+@property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
 @property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
 @property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
+
+- (void)reloadShortcuts;
+
+- (void)retrySyncing;
 
 @end
 

@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 #import "DWShortcutsActionDelegate.h"
 
@@ -30,9 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DWShortcutsView : UIView
+@interface DWShortcutsView : KVOUIView
 
-@property (readonly, strong, nonatomic) DWShortcutsModel *model;
+@property (nullable, strong, nonatomic) DWShortcutsModel *model;
 @property (nullable, nonatomic, weak) id<DWShortcutsViewDelegate> delegate;
 @property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> actionDelegate;
 

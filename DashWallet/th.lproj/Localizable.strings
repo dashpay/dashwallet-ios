@@ -29,6 +29,9 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 ดัฟฟ์/ไบต์";
 
+/* no Dash address (in clipboard) */
+"<no Dash address>" = "<no Dash address>";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
@@ -99,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
@@ -136,6 +142,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "เปลี่ยนแปลงยอดชำระ";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
 "checking address balance..." = "ตรวจสอบที่อยู่";
@@ -276,6 +285,9 @@
 "enter" = "เข้าสู่";
 
 /* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
+
+/* No comment provided by engineer. */
 "Enter the amount to transfer below" = "ป้อนจำนวนเงินที่ต้องการโอนด้านล่าง";
 
 /* No comment provided by engineer. */
@@ -289,9 +301,6 @@
 
 /* No comment provided by engineer. */
 "Face ID spending limit" = "จำกัดใช้ Face ID";
-
-/* No comment provided by engineer. */
-"FAILED" = "FAILED";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "อัปเดต wallet ล้มเหลว";
@@ -438,6 +447,9 @@
 "next, write down your recovery phrase" = "ต่อไป , เขียนวลีกู้คืนของคุณ";
 
 /* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
@@ -445,9 +457,6 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
-
-/* No comment provided by engineer. */
-"No internet connection" = "No internet connection";
 
 /* No comment provided by engineer. */
 "node ip" = "node ip";
@@ -506,8 +515,17 @@
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
 
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
+
+/* No comment provided by engineer. */
+"Pay to" = "Pay to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Pay to Address" = "Pay to Address";
+
+/* No comment provided by engineer. */
+"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -520,6 +538,9 @@
 
 /* No comment provided by engineer. */
 "payment output" = "การชำระเงิน";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "payout Address" = "ที่อยู่การจ่ายเงิน:";
@@ -544,6 +565,12 @@
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+
+/* No comment provided by engineer. */
+"Please try again" = "Please try again";
+
+/* No comment provided by engineer. */
+"Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";
@@ -588,10 +615,16 @@
 "Recovery phrase" = "วลีกู้คืน";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "วลีกู้คืนต้องมี คำ %d";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "ลงทะเบียน tx:";
@@ -618,6 +651,9 @@
 "reset" = "รีเซ็ต";
 
 /* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อรับที่อยู่ dash ของพวกเขา คุณสามารถส่งการชำระเงินให้กับทุกคนที่มีที่อยู่ได้";
 
 /* No comment provided by engineer. */
@@ -625,6 +661,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
@@ -690,6 +729,9 @@
 "shapeshift succeeded" = "shapeshift สำเร็จ";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
@@ -712,6 +754,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "มีบางอย่างผิดพลาด";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "ที่อยู่ที่ใช้แล้ว";
@@ -739,6 +784,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Testnet" = "Switch to Testnet";
+
+/* No comment provided by engineer. */
+"Sync Failed" = "Sync Failed";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "Sync Now";
@@ -834,6 +882,9 @@
 "type:" = "ชนิด:";
 
 /* No comment provided by engineer. */
+"Unable to connect" = "Unable to connect";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "ไม่สามารถรับโค้ด QR ใหม่";
 
 /* No comment provided by engineer. */
@@ -916,6 +967,9 @@
 
 /* No comment provided by engineer. */
 "wipe" = "ลบล้าง";
+
+/* No comment provided by engineer. */
+"Wipe Wallet" = "Wipe Wallet";
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "with Dash blockchain";

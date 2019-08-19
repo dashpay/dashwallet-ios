@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSString *string = [priceManager stringForDashAmount:self.value];

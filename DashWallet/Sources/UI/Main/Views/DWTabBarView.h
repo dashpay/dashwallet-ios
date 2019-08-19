@@ -19,9 +19,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWTabBarView;
+
+@protocol DWTabBarViewDelegate <NSObject>
+
+- (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView;
+- (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView;
+
+@end
+
 @interface DWTabBarView : UIView
 
+@property (nullable, nonatomic, weak) id<DWTabBarViewDelegate> delegate;
+
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+
+- (void)setPaymentsButtonOpened:(BOOL)opened;
 
 @end
 

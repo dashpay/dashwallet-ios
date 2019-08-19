@@ -21,7 +21,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWSyncView;
+
+@protocol DWSyncViewDelegate <NSObject>
+
+- (void)syncViewRetryButtonAction:(DWSyncView *)view;
+
+@end
+
 @interface DWSyncView : UIView
+
+@property (nullable, nonatomic, weak) id<DWSyncViewDelegate> delegate;
 
 - (void)setSyncState:(DWSyncModelState)state;
 - (void)setProgress:(float)progress animated:(BOOL)animated;

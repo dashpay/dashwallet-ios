@@ -22,13 +22,18 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWShortcutAction
 
 + (instancetype)action:(DWShortcutActionType)type {
-    return [[self alloc] initWithType:type];
+    return [[self alloc] initWithType:type enabled:YES];
 }
 
-- (instancetype)initWithType:(DWShortcutActionType)type {
++ (instancetype)action:(DWShortcutActionType)type enabled:(BOOL)enabled {
+    return [[self alloc] initWithType:type enabled:enabled];
+}
+
+- (instancetype)initWithType:(DWShortcutActionType)type enabled:(BOOL)enabled {
     self = [super init];
     if (self) {
         _type = type;
+        _enabled = enabled;
     }
     return self;
 }

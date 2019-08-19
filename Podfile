@@ -5,6 +5,7 @@ target 'dashwallet' do
   
   pod 'KVO-MVVM', '0.5.1'
   pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash', :commit => '41a46e6', :inhibit_warnings => true
+  pod 'UIViewController-KeyboardAdditions', '1.2.1'
 
   # Pods for dashwallet
   

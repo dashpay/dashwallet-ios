@@ -19,7 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWMainTabbarViewController;
+
+@protocol DWMainTabbarViewControllerDelegate <NSObject>
+
+- (void)mainTabbarViewControllerDidWipeWallet:(DWMainTabbarViewController *)controller;
+
+@end
+
 @interface DWMainTabbarViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWMainTabbarViewControllerDelegate> delegate;
 
 + (instancetype)controller;
 

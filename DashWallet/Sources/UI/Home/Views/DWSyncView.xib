@@ -16,6 +16,8 @@
                 <outlet property="descriptionLabel" destination="VKe-Yj-7cK" id="608-yO-gvO"/>
                 <outlet property="percentLabel" destination="tmC-WD-m2y" id="ob9-ve-Rnb"/>
                 <outlet property="progressView" destination="XDT-qQ-rV0" id="1Uw-JW-2de"/>
+                <outlet property="retryButton" destination="UQ0-IA-BOa" id="geq-NA-Fbs"/>
+                <outlet property="roundedView" destination="84Y-h0-Lak" id="3Lv-hr-E0S"/>
                 <outlet property="titleLabel" destination="R4b-Le-Xyn" id="M7D-dK-VG7"/>
             </connections>
         </placeholder>
@@ -35,20 +37,19 @@
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R4b-Le-Xyn" userLabel="Title Label">
                                             <rect key="frame" x="0.0" y="0.0" width="257.5" height="14.5"/>
-                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                            <color key="textColor" name="SecondaryTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Description Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VKe-Yj-7cK" userLabel="Description Label">
                                             <rect key="frame" x="0.0" y="14.5" width="257.5" height="20.5"/>
-                                            <color key="backgroundColor" name="BackgroundColor"/>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                            <color key="textColor" name="QuaternaryTextColor"/>
+                                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
-                                    <color key="backgroundColor" name="BackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="VKe-Yj-7cK" secondAttribute="trailing" id="Lz0-oj-dRN"/>
                                         <constraint firstItem="VKe-Yj-7cK" firstAttribute="top" secondItem="R4b-Le-Xyn" secondAttribute="bottom" id="NBO-pq-Sey"/>
@@ -61,7 +62,7 @@
                                 </view>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="270" verticalHuggingPriority="252" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tmC-WD-m2y" userLabel="Percent Label">
                                     <rect key="frame" x="296.5" y="5" width="61.5" height="60"/>
-                                    <color key="backgroundColor" name="BackgroundColor"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
                                     <color key="textColor" name="DashBlueColor"/>
                                     <nil key="highlightedColor"/>
@@ -73,20 +74,34 @@
                                         <constraint firstAttribute="height" constant="5" id="29r-qc-OFs"/>
                                     </constraints>
                                 </view>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UQ0-IA-BOa">
+                                    <rect key="frame" x="314" y="13" width="44" height="44"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" constant="44" id="QIs-GU-dY1"/>
+                                        <constraint firstAttribute="height" constant="44" id="Z0b-qq-Wdu"/>
+                                    </constraints>
+                                    <state key="normal" image="icon_reload"/>
+                                    <connections>
+                                        <action selector="retryButtonAction:" destination="-1" eventType="touchUpInside" id="mVh-rV-3EW"/>
+                                    </connections>
+                                </button>
                             </subviews>
-                            <color key="backgroundColor" name="BackgroundColor"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstItem="pYG-Sd-FBs" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" constant="23" id="4M1-sB-uB6"/>
                                 <constraint firstAttribute="trailing" secondItem="tmC-WD-m2y" secondAttribute="trailing" constant="16" id="7Wj-Bs-xGt"/>
                                 <constraint firstItem="pYG-Sd-FBs" firstAttribute="top" relation="greaterThanOrEqual" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="DBl-90-CUb"/>
+                                <constraint firstItem="UQ0-IA-BOa" firstAttribute="centerY" secondItem="84Y-h0-Lak" secondAttribute="centerY" id="DZU-Z2-XxN"/>
                                 <constraint firstItem="XDT-qQ-rV0" firstAttribute="leading" secondItem="84Y-h0-Lak" secondAttribute="leading" id="F8P-RE-A1S"/>
                                 <constraint firstItem="pYG-Sd-FBs" firstAttribute="centerY" secondItem="84Y-h0-Lak" secondAttribute="centerY" id="Jjf-sd-b8L"/>
                                 <constraint firstItem="tmC-WD-m2y" firstAttribute="leading" secondItem="pYG-Sd-FBs" secondAttribute="trailing" constant="16" id="NVU-zY-g4B"/>
                                 <constraint firstItem="tmC-WD-m2y" firstAttribute="top" secondItem="84Y-h0-Lak" secondAttribute="top" constant="5" id="RJd-zp-REO"/>
+                                <constraint firstItem="UQ0-IA-BOa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pYG-Sd-FBs" secondAttribute="trailing" constant="16" id="TBS-de-ZKo"/>
                                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="pYG-Sd-FBs" secondAttribute="bottom" constant="5" id="WBu-hy-fI4"/>
                                 <constraint firstAttribute="bottom" secondItem="XDT-qQ-rV0" secondAttribute="bottom" id="Wvk-ep-LdK"/>
                                 <constraint firstAttribute="bottom" secondItem="tmC-WD-m2y" secondAttribute="bottom" constant="5" id="Ye4-7i-91M"/>
                                 <constraint firstAttribute="trailing" secondItem="XDT-qQ-rV0" secondAttribute="trailing" id="aCI-Dp-lwd"/>
+                                <constraint firstAttribute="trailing" secondItem="UQ0-IA-BOa" secondAttribute="trailing" constant="16" id="gpT-m2-rwY"/>
                             </constraints>
                             <userDefinedRuntimeAttributes>
                                 <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -124,23 +139,15 @@
         </view>
     </objects>
     <resources>
-        <namedColor name="BackgroundColor">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
+        <image name="icon_reload" width="26" height="29"/>
         <namedColor name="DashBlueColor">
             <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="ProgressBackgroundColor">
             <color red="0.85882352941176465" green="0.85882352941176465" blue="0.85882352941176465" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <namedColor name="QuaternaryTextColor">
-            <color red="0.60784313725490191" green="0.60784313725490191" blue="0.60784313725490191" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

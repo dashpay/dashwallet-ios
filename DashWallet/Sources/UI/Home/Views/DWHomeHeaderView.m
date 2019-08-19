@@ -25,9 +25,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
+static NSTimeInterval const SYNCVIEW_SHOW_DELAY = 1.0;
 
-@interface DWHomeHeaderView () <DWShortcutsViewDelegate>
+@interface DWHomeHeaderView () <DWBalancePayReceiveButtonsViewDelegate,
+                                DWShortcutsViewDelegate,
+                                DWSyncViewDelegate>
 
 @property (readonly, nonatomic, strong) DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView;
 @property (readonly, nonatomic, strong) DWSyncView *syncView;
@@ -42,9 +44,11 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     self = [super initWithFrame:frame];
     if (self) {
         DWBalancePayReceiveButtonsView *balancePayReceiveButtonsView = [[DWBalancePayReceiveButtonsView alloc] initWithFrame:CGRectZero];
+        balancePayReceiveButtonsView.delegate = self;
         _balancePayReceiveButtonsView = balancePayReceiveButtonsView;
 
         DWSyncView *syncView = [[DWSyncView alloc] initWithFrame:CGRectZero];
+        syncView.delegate = self;
         _syncView = syncView;
 
         DWShortcutsView *shortcutsView = [[DWShortcutsView alloc] initWithFrame:CGRectZero];
@@ -78,14 +82,18 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
                           [self.syncView setSyncState:state];
 
                           if (state == DWSyncModelState_SyncDone) {
-                              [self performSelector:@selector(hideSyncView)
-                                         withObject:nil
-                                         afterDelay:SYNCVIEW_HIDE_DELAY];
+                              [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                                       selector:@selector(showSyncView)
+                                                                         object:nil];
+
+                              [self hideSyncView];
                           }
                           else {
-                              [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                                                       selector:@selector(hideSyncView)
-                                                                         object:nil];
+                              if (self.syncView.hidden) {
+                                  [self performSelector:@selector(showSyncView)
+                                             withObject:nil
+                                             afterDelay:SYNCVIEW_SHOW_DELAY];
+                              }
                           }
                       }];
 
@@ -105,6 +113,7 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     _model = model;
 
     self.balancePayReceiveButtonsView.model = model;
+    self.shortcutsView.model = model.shortcutsModel;
 }
 
 - (nullable id<DWShortcutsActionDelegate>)shortcutsDelegate {
@@ -119,16 +128,40 @@ static NSTimeInterval const SYNCVIEW_HIDE_DELAY = 2.0;
     [self.balancePayReceiveButtonsView parentScrollViewDidScroll:scrollView];
 }
 
+#pragma mark - DWBalancePayReceiveButtonsViewDelegate
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                     payButtonAction:(UIButton *)sender {
+    [self.delegate homeHeaderView:self payButtonAction:sender];
+}
+
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                 receiveButtonAction:(UIButton *)sender {
+    [self.delegate homeHeaderView:self receiveButtonAction:sender];
+}
+
 #pragma mark - DWShortcutsViewDelegate
 
 - (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view {
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }
 
+#pragma mark - DWSyncViewDelegate
+
+- (void)syncViewRetryButtonAction:(DWSyncView *)view {
+    [self.model retrySyncing];
+}
+
 #pragma mark - Private
 
 - (void)hideSyncView {
     self.syncView.hidden = YES;
+
+    [self.delegate homeHeaderViewDidUpdateContents:self];
+}
+
+- (void)showSyncView {
+    self.syncView.hidden = NO;
 
     [self.delegate homeHeaderViewDidUpdateContents:self];
 }

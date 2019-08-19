@@ -146,6 +146,10 @@ static UIColor *BackgroundColorForAction(DWShortcutAction *action) {
     }
 }
 
+static CGFloat AlphaForAction(DWShortcutAction *action) {
+    return (action.enabled ? 1.0 : 0.4);
+}
+
 @interface DWShortcutCollectionViewCell ()
 
 @property (strong, nonatomic) IBOutlet UIView *roundedView;
@@ -160,6 +164,7 @@ static UIColor *BackgroundColorForAction(DWShortcutAction *action) {
 - (void)awakeFromNib {
     [super awakeFromNib];
 
+    self.titleLabel.textColor = [UIColor dw_tertiaryTextColor];
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
 }
 
@@ -171,12 +176,17 @@ static UIColor *BackgroundColorForAction(DWShortcutAction *action) {
     self.centeredView.backgroundColor = backgroundColor;
     self.titleLabel.text = TitleForAction(model);
     self.iconImageView.image = IconForAction(model);
+    const CGFloat alpha = AlphaForAction(model);
+    self.titleLabel.alpha = alpha;
+    self.iconImageView.alpha = alpha;
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
 
-    [self dw_pressedAnimation:DWPressedAnimationStrength_Heavy pressed:highlighted];
+    if (self.model.enabled) {
+        [self dw_pressedAnimation:DWPressedAnimationStrength_Heavy pressed:highlighted];
+    }
 }
 
 @end
