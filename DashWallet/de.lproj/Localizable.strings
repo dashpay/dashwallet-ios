@@ -261,7 +261,7 @@
 "Fee" = "Gebühr";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "Die Gebühr ist höher als das Gesamtguthaben";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Gebühr wird vom angefragten Betrag abgezogen";
