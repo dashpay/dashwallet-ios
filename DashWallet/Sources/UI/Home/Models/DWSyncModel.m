@@ -22,11 +22,32 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString *const DWSyncFinishedNotification = @"DWSyncFinishedNotification";
+#define LOG_SYNCING 0
+
+#if LOG_SYNCING
+#define DWSyncLog(frmt, ...) DSLogVerbose(frmt, ##__VA_ARGS__)
+#else
+#define DWSyncLog(frmt, ...)
+#endif /* LOG_SYNCING */
+
+__unused static NSString *SyncStateToString(DWSyncModelState state) {
+    switch (state) {
+        case DWSyncModelState_Syncing:
+            return @"Syncing";
+        case DWSyncModelState_SyncDone:
+            return @"Done";
+        case DWSyncModelState_SyncFailed:
+            return @"Failed";
+        case DWSyncModelState_NoConnection:
+            return @"NoConnection";
+    }
+}
+
+NSString *const DWSyncStateChangedNotification = @"DWSyncStateChangedNotification";
+NSString *const DWSyncStateChangedFromStateKey = @"DWSyncStateChangedFromStateKey";
 
 static NSTimeInterval const SYNC_LOOP_INTERVAL = 0.2;
-static NSUInteger const MAX_REACHABILITY_CHECKS_FAILURES = 3;
-static double const SYNCING_COMPLETED_PROGRESS = 0.995;
+static float const SYNCING_COMPLETED_PROGRESS = 0.995;
 
 @interface DWSyncModel ()
 
@@ -36,7 +57,6 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 @property (nonatomic, assign) float progress;
 
 @property (nonatomic, assign, getter=isSyncing) BOOL syncing;
-@property (nonatomic, assign) NSUInteger numberOfFailedReachabilityChecks;
 
 @end
 
@@ -60,6 +80,10 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                                selector:@selector(transactionManagerSyncFailedNotification)
                                    name:DSTransactionManagerSyncFailedNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(chainBlocksDidChangeNotification)
+                                   name:DSChainBlocksDidChangeNotification
+                                 object:nil];
 
         if ([DWEnvironment sharedInstance].currentChainManager.peerManager.connected) {
             [self startSyncingActivity];
@@ -68,16 +92,29 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
+- (void)reachabilityStatusDidChange {
+    DWSyncLog(@"[DW Sync] reachabilityStatusDidChange");
+
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncLoop) object:nil];
+    [self syncLoop];
+}
+
 #pragma mark Notifications
 
 - (void)transactionManagerSyncStartedNotification {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    DWSyncLog(@"[DW Sync] transactionManagerSyncStartedNotification");
 
     [self startSyncingActivity];
 }
 
 - (void)transactionManagerSyncFinishedNotification {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    DWSyncLog(@"[DW Sync] transactionManagerSyncFinishedNotification");
 
     if (![self shouldStopSyncing]) {
         return;
@@ -88,19 +125,35 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 
 - (void)transactionManagerSyncFailedNotification {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    DWSyncLog(@"[DW Sync] transactionManagerSyncFailedNotification");
 
     [self stopSyncingActivityFailed:YES];
+}
 
-    // TODO
-    // [self.receiveViewController updateAddress];
+- (void)chainBlocksDidChangeNotification {
+    // Fallback to show active syncing progress
+    if (self.syncing) {
+        return;
+    }
+
+    DWSyncLog(@"[DW Sync] chainBlocksDidChangeNotification");
+
+    const double progress = [self chainSyncProgress];
+    if (progress < SYNCING_COMPLETED_PROGRESS) {
+        [self startSyncingActivity];
+    }
 }
 
 #pragma mark Private
 
 - (void)setSyncing:(BOOL)syncing {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
     if (_syncing == syncing) {
         return;
     }
+
+    DWSyncLog(@"[DW Sync] setSyncing: %@", syncing ? @"YES" : @"NO");
 
     _syncing = syncing;
 
@@ -114,13 +167,33 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
 }
 
+- (void)setState:(DWSyncModelState)state {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (_state == state) {
+        return;
+    }
+
+    DWSyncModelState previousState = _state;
+    _state = state;
+
+    DWSyncLog(@"[DW Sync] Sync state: %@ -> %@", SyncStateToString(previousState), SyncStateToString(state));
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWSyncStateChangedNotification
+                                                        object:nil
+                                                      userInfo:@{
+                                                          DWSyncStateChangedFromStateKey : @(previousState)
+                                                      }];
+}
+
 - (void)startSyncingActivity {
     if (self.syncing) {
         return;
     }
 
+    DWSyncLog(@"[DW Sync] startSyncingActivity");
+
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncLoop) object:nil];
-    self.numberOfFailedReachabilityChecks = 0;
     [self syncLoop];
 }
 
@@ -128,6 +201,8 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     if (!self.syncing) {
         return;
     }
+
+    DWSyncLog(@"[DW Sync] stopSyncingActivityFailed: %@", failed ? @"Failed" : @"Not Failed");
 
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncLoop) object:nil];
 
@@ -138,38 +213,33 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     }
     else {
         self.state = DWSyncModelState_SyncDone;
-
-        [[NSNotificationCenter defaultCenter] postNotificationName:DWSyncFinishedNotification object:nil];
     }
 }
 
 - (void)syncLoop {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
-        if (self.numberOfFailedReachabilityChecks == MAX_REACHABILITY_CHECKS_FAILURES) {
-            self.state = DWSyncModelState_NoConnection;
+        DWSyncLog(@"[DW Sync] Reachability: No Connection");
 
-            return;
-        }
-        else {
-            self.numberOfFailedReachabilityChecks += 1;
-        }
-    }
-    else {
-        self.numberOfFailedReachabilityChecks = 0;
+        self.state = DWSyncModelState_NoConnection;
+
+        return;
     }
 
     const double progress = [self chainSyncProgress];
+
+    DWSyncLog(@"[DW Sync] >>> %0.3f", progress);
+
     if (progress < SYNCING_COMPLETED_PROGRESS) {
         self.syncing = YES;
 
-        self.state = DWSyncModelState_Syncing;
         self.progress = progress;
+        self.state = DWSyncModelState_Syncing;
 
         [self performSelector:@selector(syncLoop) withObject:nil afterDelay:SYNC_LOOP_INTERVAL];
     }
     else {
-        self.state = DWSyncModelState_SyncDone;
         self.progress = 1.0;
+        self.state = DWSyncModelState_SyncDone;
 
         [self stopSyncingActivityFailed:NO];
     }

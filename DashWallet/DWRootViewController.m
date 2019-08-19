@@ -25,7 +25,7 @@
 //  THE SOFTWARE.
 
 #import "DWRootViewController.h"
-#import "DWReceiveViewController.h"
+#import "DWOLDReceiveViewController.h"
 #import "DWSendViewController.h"
 #import "DWTxHistoryViewController.h"
 #import "DWRestoreViewController.h"

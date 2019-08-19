@@ -18,18 +18,10 @@
 #import "DWSeedPhraseTitledView.h"
 
 #import "DWSeedPhraseView.h"
+#import "DWSeedUIConstants.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGFloat TitleSeedPhrasePadding(void) {
-    if (IS_IPHONE_5_OR_LESS) {
-        return 12.0;
-    }
-    else {
-        return 20.0;
-    }
-}
 
 static UIColor *TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle titleStyle) {
     switch (titleStyle) {
@@ -76,7 +68,7 @@ static UIColor *TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle titleStyle) 
             [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
             [seedPhraseView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                                     constant:TitleSeedPhrasePadding()],
+                                                     constant:DWTitleSeedPhrasePadding()],
             [seedPhraseView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [seedPhraseView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
             [seedPhraseView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
@@ -94,10 +86,10 @@ static UIColor *TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle titleStyle) 
 }
 
 - (CGSize)intrinsicContentSize {
-    CGFloat width = self.bounds.size.width;
-    CGFloat height = self.titleLabel.intrinsicContentSize.height +
-                     TitleSeedPhrasePadding() +
-                     self.seedPhraseView.intrinsicContentSize.height;
+    const CGFloat width = self.bounds.size.width;
+    const CGFloat height = self.titleLabel.intrinsicContentSize.height +
+                           DWTitleSeedPhrasePadding() +
+                           self.seedPhraseView.intrinsicContentSize.height;
     return CGSizeMake(width, height);
 }
 

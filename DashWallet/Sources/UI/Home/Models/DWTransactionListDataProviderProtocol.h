@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// to (sent) / from (received)
 @property (readonly, nonatomic, copy) NSString *address;
 @property (readonly, nonatomic, assign) uint64_t dashAmount;
+@property (readonly, nonatomic, assign, getter=isSent) BOOL sent;
 @property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
 @property (readonly, nonatomic, copy) NSString *fiatAmount;
 

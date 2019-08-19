@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, copy, nonatomic) NSArray<DWShortcutAction *> *items;
 
+- (void)reloadShortcuts;
+
 @end
 
 NS_ASSUME_NONNULL_END

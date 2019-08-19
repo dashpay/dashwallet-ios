@@ -27,25 +27,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPreviewSeedPhraseModel
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 + (BOOL)shouldVerifyPassphrase {
-    // during setup always suggest to verify the wallet
-    return YES;
+    return [DWGlobalOptions sharedInstance].walletNeedsBackup;
 }
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {
     BOOL hasAWallet = [DWEnvironment sharedInstance].currentWallet != nil;
     if (!hasAWallet) {
-        NSString *my = @"crumble hunt thunder yard marine alone original pony ski shine fantasy father";
-
-        [DSWallet standardWalletWithSeedPhrase:my setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME forChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
-
-        //        [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
+        [DSWallet standardWalletWithRandomSeedPhraseForChain:[DWEnvironment sharedInstance].currentChain storeSeedPhrase:YES isTransient:NO];
 
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-
-        // START_SYNC_ENTRY_POINT
-        [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
     }
+
+    // START_SYNC_ENTRY_POINT
+    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
     NSString *seedPhrase = wallet.seedPhraseIfAuthenticated;

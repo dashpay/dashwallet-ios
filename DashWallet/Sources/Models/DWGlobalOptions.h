@@ -32,6 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL biometricAuthConfigured;
 @property (nonatomic, assign) BOOL biometricAuthEnabled;
 
+@property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
+
+- (void)restoreToDefaults;
+
 + (instancetype)sharedInstance;
 
 @end

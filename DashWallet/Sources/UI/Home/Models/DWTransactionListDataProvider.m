@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *dateFormat(NSString *template) {
+static NSString *TxDateFormat(NSString *template) {
     NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
 
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
@@ -47,6 +47,7 @@ static NSString *dateFormat(NSString *template) {
 
 @property (nonatomic, copy) NSString *address;
 @property (nonatomic, assign) uint64_t dashAmount;
+@property (nonatomic, assign, getter=isSent) BOOL sent;
 @property (nonatomic, strong) UIColor *dashAmountTintColor;
 @property (nonatomic, copy) NSString *fiatAmount;
 
@@ -64,9 +65,6 @@ static NSString *dateFormat(NSString *template) {
 @property (nonatomic, strong) NSDateFormatter *monthDayHourFormatter;
 @property (nonatomic, strong) NSDateFormatter *yearMonthDayHourFormatter;
 
-@property (nonatomic, strong) NSNumberFormatter *dashNumberFormatter;
-
-
 @end
 
 @implementation DWTransactionListDataProvider
@@ -77,16 +75,15 @@ static NSString *dateFormat(NSString *template) {
         _txDates = [NSMutableDictionary dictionary];
 
         _monthDayHourFormatter = [NSDateFormatter new];
-        _monthDayHourFormatter.dateFormat = dateFormat(@"Mdjmma");
+        _monthDayHourFormatter.dateFormat = TxDateFormat(@"Mdjmma");
         _yearMonthDayHourFormatter = [NSDateFormatter new];
-        _yearMonthDayHourFormatter.dateFormat = dateFormat(@"yyMdja");
-
-        _dashNumberFormatter = [[DSPriceManager sharedInstance].dashFormat copy];
-        _dashNumberFormatter.positiveFormat = [_dashNumberFormatter.positiveFormat
-            stringByReplacingCharactersInRange:[_dashNumberFormatter.positiveFormat rangeOfString:@"#"]
-                                    withString:@"+#"];
+        _yearMonthDayHourFormatter.dateFormat = TxDateFormat(@"yyMdja");
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 #pragma mark - DWTransactionListDataProviderProtocol
@@ -161,6 +158,7 @@ static NSString *dateFormat(NSString *template) {
     }
 
     dataItem.dashAmount = dashAmount;
+    dataItem.sent = treatAsSent;
     dataItem.dashAmountTintColor = tintColor;
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dashAmount];
 
@@ -172,9 +170,18 @@ static NSString *dateFormat(NSString *template) {
     const uint64_t dashAmount = transactionData.dashAmount;
     UIColor *tintColor = transactionData.dashAmountTintColor;
 
+    NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
+
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
-        decimalNumberByMultiplyingByPowerOf10:-self.dashNumberFormatter.maximumFractionDigits];
-    NSString *string = [self.dashNumberFormatter stringFromNumber:number];
+        decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
+    NSString *formattedNumber = [numberFormatter stringFromNumber:number];
+    NSString *string = nil;
+    if (transactionData.isSent) {
+        string = formattedNumber;
+    }
+    else {
+        string = [@"+" stringByAppendingString:formattedNumber];
+    }
 
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
 

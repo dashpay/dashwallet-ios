@@ -25,12 +25,16 @@
 
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
+#import "DWReceiveModel+Private.h"
+#import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
 #import "UIDevice+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static float const SHOW_BALANCE_THRESHOLD = 0.90;
 
 static BOOL IsJailbroken(void) {
     struct stat s;
@@ -54,8 +58,7 @@ static BOOL IsJailbroken(void) {
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
-//@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
-@property (nonatomic, strong) DWBalanceModel *balanceModel;
+@property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
@@ -83,6 +86,11 @@ static BOOL IsJailbroken(void) {
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
                                                                       dataProvider:_dataProvider];
 
+        _receiveModel = [[DWReceiveModel alloc] init];
+        [_receiveModel updateReceivingInfo];
+
+        _shortcutsModel = [[DWShortcutsModel alloc] init];
+
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(reachabilityDidChangeNotification)
@@ -101,8 +109,8 @@ static BOOL IsJailbroken(void) {
                                    name:DSTransactionManagerTransactionStatusDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(syncFinishedNotification)
-                                   name:DWSyncFinishedNotification
+                               selector:@selector(syncStateChangedNotification)
+                                   name:DWSyncStateChangedNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(chainWalletsDidChangeNotification:)
@@ -112,6 +120,10 @@ static BOOL IsJailbroken(void) {
         [self reloadTxDataSource];
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
@@ -154,6 +166,61 @@ static BOOL IsJailbroken(void) {
     }
 }
 
+- (void)reloadShortcuts {
+    [self.shortcutsModel reloadShortcuts];
+}
+
+- (void)retrySyncing {
+    [self connectIfNeeded];
+}
+
+#pragma mark - Notifications
+
+- (void)reachabilityDidChangeNotification {
+    if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
+        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+
+        [self connectIfNeeded];
+    }
+
+    [self.syncModel reachabilityStatusDidChange];
+}
+
+- (void)walletBalanceDidChangeNotification {
+    [self updateBalance];
+
+    [self reloadTxDataSource];
+}
+
+- (void)transactionManagerTransactionStatusDidChangeNotification {
+    [self reloadTxDataSource];
+}
+
+- (void)applicationWillEnterForegroundNotification {
+    [self connectIfNeeded];
+}
+
+- (void)syncStateChangedNotification {
+    [self updateBalance];
+    [self reloadTxDataSource];
+}
+
+- (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSChain *notificationChain = notification.userInfo[DSChainManagerNotificationChainKey];
+    if (notificationChain && notificationChain == chain) {
+        [self updateBalance];
+
+        // TODO: impl (perhaps, not here)
+        //        if (chain.wallets.count == 0) { //a wallet was deleted, we need to go back to wallet nav
+        //            [self showNewWalletController];
+        //        }
+    }
+}
+
+#pragma mark - Private
+
+
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
@@ -175,52 +242,6 @@ static BOOL IsJailbroken(void) {
 
     return _sentDataSource;
 }
-
-#pragma mark - Notifications
-
-- (void)reachabilityDidChangeNotification {
-    if (self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-
-        [self connectIfNeeded];
-    }
-}
-
-- (void)walletBalanceDidChangeNotification {
-    if (self.syncModel.state != DWSyncModelState_Syncing) {
-        [self updateBalance];
-    }
-
-    [self reloadTxDataSource];
-}
-
-- (void)transactionManagerTransactionStatusDidChangeNotification {
-    [self reloadTxDataSource];
-}
-
-- (void)applicationWillEnterForegroundNotification {
-    [self connectIfNeeded];
-}
-
-- (void)syncFinishedNotification {
-    [self updateBalance];
-    [self reloadTxDataSource];
-}
-
-- (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSChain *notificationChain = notification.userInfo[DSChainManagerNotificationChainKey];
-    if (notificationChain && notificationChain == chain) {
-        [self updateBalance];
-
-        // TODO: impl (perhaps, not here)
-        //        if (chain.wallets.count == 0) { //a wallet was deleted, we need to go back to wallet nav
-        //            [self showNewWalletController];
-        //        }
-    }
-}
-
-#pragma mark - Private
 
 - (void)connectIfNeeded {
     // This method might be called from init. Don't use any instance variables
@@ -267,8 +288,14 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)updateBalance {
-    // TODO: impl
-    // [self.receiveViewController updateAddress];
+    [self.receiveModel updateReceivingInfo];
+
+    if (self.syncModel.state == DWSyncModelState_Syncing &&
+        self.syncModel.progress < SHOW_BALANCE_THRESHOLD) {
+        self.balanceModel = nil;
+
+        return;
+    }
 
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&

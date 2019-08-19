@@ -29,6 +29,9 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
+/* no Dash address (in clipboard) */
+"<no Dash address>" = "<no Dash address>";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
 
@@ -99,6 +102,9 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
 "bad recovery phrase" = "frase di sicurezza errata";
 
 /* No comment provided by engineer. */
@@ -136,6 +142,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "cambiare l'ammontare del pagamento?";
+
+/* No comment provided by engineer. */
+"Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
 "checking address balance..." = "verificando il saldo del indirizzo...";
@@ -276,6 +285,9 @@
 "enter" = "immetti";
 
 /* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
+
+/* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Inserisci l'importo da trasferire di seguito";
 
 /* No comment provided by engineer. */
@@ -289,9 +301,6 @@
 
 /* No comment provided by engineer. */
 "Face ID spending limit" = "Limite di spesa Face ID";
-
-/* No comment provided by engineer. */
-"FAILED" = "FAILED";
 
 /* No comment provided by engineer. */
 "Failed wallet update" = "\nAggiornamento del portafoglio fallito";
@@ -438,6 +447,9 @@
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";
 
 /* No comment provided by engineer. */
+"NFC device" = "NFC device";
+
+/* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "Il dispositivo NFC non ha trasmesso un indirizzo dash valido";
 
 /* No comment provided by engineer. */
@@ -445,9 +457,6 @@
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "nessun dato del tasso di cambio";
-
-/* No comment provided by engineer. */
-"No internet connection" = "No internet connection";
 
 /* No comment provided by engineer. */
 "node ip" = "\"ip\" del nodo";
@@ -506,8 +515,17 @@
 /* No comment provided by engineer. */
 "Pay" = "Paga";
 
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
+
+/* No comment provided by engineer. */
+"Pay to" = "Pay to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Pay to Address" = "Pay to Address";
+
+/* No comment provided by engineer. */
+"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -520,6 +538,9 @@
 
 /* No comment provided by engineer. */
 "payment output" = "uscita pagamento";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
 
 /* No comment provided by engineer. */
 "payout Address" = "Indirizzo di pagamento";
@@ -544,6 +565,12 @@
 
 /* No comment provided by engineer. */
 "Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+
+/* No comment provided by engineer. */
+"Please try again" = "Please try again";
+
+/* No comment provided by engineer. */
+"Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";
@@ -588,10 +615,16 @@
 "Recovery phrase" = "Frase di recupero";
 
 /* No comment provided by engineer. */
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
 "recovery phrase doesn't match" = "la frase di recupero non coincide";
 
 /* No comment provided by engineer. */
 "recovery phrase must have %d words" = "la frase di recupero deve avere %d parole";
+
+/* No comment provided by engineer. */
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
 "registration tx:" = "registrazione tx:";
@@ -618,6 +651,9 @@
 "reset" = "resetta";
 
 /* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scansiona il codice QR di qualcun altro per vedere il suo indirizzo dash. Puoi effettuare un pagamento verso chiunque abbia un indirizzo.";
 
 /* No comment provided by engineer. */
@@ -625,6 +661,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
@@ -690,6 +729,9 @@
 "shapeshift succeeded" = "shapeshift avvenuto con successo";
 
 /* No comment provided by engineer. */
+"Share" = "Share";
+
+/* No comment provided by engineer. */
 "show" = "mostra";
 
 /* No comment provided by engineer. */
@@ -712,6 +754,9 @@
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Qualcosa è andato storto";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
 "spent address" = "indirizzo speso";
@@ -739,6 +784,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Testnet" = "Switch to Testnet";
+
+/* No comment provided by engineer. */
+"Sync Failed" = "Sync Failed";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Sync Now" = "Sync Now";
@@ -834,6 +882,9 @@
 "type:" = "genere:";
 
 /* No comment provided by engineer. */
+"Unable to connect" = "Unable to connect";
+
+/* No comment provided by engineer. */
 "Unable to get new qr code" = "Impossibile ottenere un nuovo codice QR";
 
 /* No comment provided by engineer. */
@@ -916,6 +967,9 @@
 
 /* No comment provided by engineer. */
 "wipe" = "eliminare";
+
+/* No comment provided by engineer. */
+"Wipe Wallet" = "Wipe Wallet";
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "with Dash blockchain";

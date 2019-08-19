@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWHomeViewDelegate <NSObject>
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender;
+- (void)homeView:(DWHomeView *)homeView payButtonAction:(UIButton *)sender;
+- (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender;
 
 @end
 

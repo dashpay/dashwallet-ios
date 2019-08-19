@@ -50,6 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
+}
+
 - (instancetype)initByShufflingSeedPhrase:(DWSeedPhraseModel *)seedPhrase {
     self = [super init];
     if (self) {

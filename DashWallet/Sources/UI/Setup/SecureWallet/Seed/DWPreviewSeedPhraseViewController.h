@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import "DWBaseSeedViewController.h"
 #import "DWSecureWalletDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPreviewSeedPhraseModel;
 
-@interface DWPreviewSeedPhraseViewController : DWBaseViewController
+@interface DWPreviewSeedPhraseViewController : DWBaseSeedViewController
 
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 

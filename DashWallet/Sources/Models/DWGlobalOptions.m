@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @dynamic walletNeedsBackup;
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
+@dynamic shortcuts;
 
 #pragma mark - Init
 
@@ -32,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
         @"walletNeedsBackup" : @YES,
     };
 
-    self = [super initWithDefaults:defaults];
+    self = [super initWithUserDefaults:nil defaults:defaults];
     return self;
 }
 
@@ -49,6 +50,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
+}
+
+#pragma mark - Public
+
+- (void)restoreToDefaults {
+    self.walletNeedsBackup = YES;
+    self.shortcuts = nil;
 }
 
 @end
