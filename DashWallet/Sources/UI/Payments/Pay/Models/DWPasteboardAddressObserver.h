@@ -25,6 +25,9 @@ extern NSString *DWPasteboardObserverNotification;
 
 @property (readonly, copy, nonatomic) NSArray<NSString *> *contents;
 
+- (void)startIntervalObserving;
+- (void)stopIntervalObserving;
+
 @end
 
 NS_ASSUME_NONNULL_END

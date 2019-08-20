@@ -52,6 +52,14 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidAppear:animated];
 
     [self.tableView flashScrollIndicators];
+
+    [self.model startPasteboardIntervalObserving];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+
+    [self.model stopPasteboardIntervalObserving];
 }
 
 #pragma mark - UITableViewDataSource

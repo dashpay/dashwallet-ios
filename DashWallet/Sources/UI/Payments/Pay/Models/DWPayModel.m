@@ -88,6 +88,14 @@ NS_ASSUME_NONNULL_BEGIN
     [session beginSession];
 }
 
+- (void)startPasteboardIntervalObserving {
+    [self.pasteboardObserver startIntervalObserving];
+}
+
+- (void)stopPasteboardIntervalObserving {
+    [self.pasteboardObserver stopIntervalObserving];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {
