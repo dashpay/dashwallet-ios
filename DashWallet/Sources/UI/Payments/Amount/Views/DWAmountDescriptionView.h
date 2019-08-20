@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountNavigationController : UINavigationController
+@interface DWAmountDescriptionView : UIView
+
+@property (nullable, nonatomic, copy) NSString *text;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

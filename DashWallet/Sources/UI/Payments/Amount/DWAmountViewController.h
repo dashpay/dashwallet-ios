@@ -15,32 +15,24 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIViewController.h>
+#import "DWBaseActionButtonViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWAmountViewController;
-@class DSPaymentProtocolDetails;
+@class DWAmountModel;
 
-@protocol DWAmountViewControllerDelegate <NSObject>
+@interface DWAmountViewController : DWBaseActionButtonViewController
 
-- (void)amountViewControllerDidCancel:(DWAmountViewController *)controller;
+@property (readonly, strong, nonatomic) DWAmountModel *model;
 
-@optional
-- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount;
-- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount wasProposedToUseInstantSend:(BOOL)wasProposedInstantSend usedInstantSend:(BOOL)usedInstantSend;
+- (BOOL)validateInputAmount;
 
-@end
+- (instancetype)initWithModel:(DWAmountModel *)model NS_DESIGNATED_INITIALIZER;
 
-@interface DWAmountViewController : KVOUIViewController
-
-@property (nullable, weak, nonatomic) id<DWAmountViewControllerDelegate> delegate;
-
-+ (instancetype)requestController;
-+ (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
-                               paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
-
-- (void)setInstantSendEnabled;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
+                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

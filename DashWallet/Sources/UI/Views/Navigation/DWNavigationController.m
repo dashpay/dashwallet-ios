@@ -22,13 +22,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWNavigationController () <UINavigationControllerDelegate>
+
+@property (nullable, weak, nonatomic) id<UINavigationControllerDelegate> realDelegate;
+
+@end
+
 @implementation DWNavigationController
+
+- (void)dealloc {
+    self.delegate = nil;
+}
+
+- (void)setDelegate:(nullable id<UINavigationControllerDelegate>)delegate {
+    [super setDelegate:nil];
+    self.realDelegate = delegate != self ? delegate : nil;
+    [super setDelegate:delegate ? self : nil];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.delegate = self;
-    [self setupView];
+    [super setDelegate:self];
+    [self dwNavigationControllerSetup];
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
@@ -54,11 +70,36 @@ NS_ASSUME_NONNULL_BEGIN
                                                             target:nil
                                                             action:nil];
     viewController.navigationItem.backBarButtonItem = item;
+
+    id<UINavigationControllerDelegate> delegate = self.realDelegate;
+    if ([delegate respondsToSelector:_cmd]) {
+        [delegate navigationController:navigationController
+                willShowViewController:viewController
+                              animated:animated];
+    }
+
+    // https://stackoverflow.com/questions/23484310/canceling-interactive-uinavigationcontroller-pop-gesture-does-not-call-uinavigat
+    [navigationController.transitionCoordinator
+        notifyWhenInteractionChangesUsingBlock:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            if (context.cancelled &&
+                [self.realDelegate
+                    respondsToSelector:@selector(navigationController:didShowViewController:animated:)]) {
+                UIViewController *fromViewController =
+                    [context viewControllerForKey:UITransitionContextFromViewControllerKey];
+
+                NSTimeInterval animationCompletion =
+                    context.transitionDuration * context.percentComplete + 0.05;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(animationCompletion * NSEC_PER_SEC)),
+                               dispatch_get_main_queue(), ^{
+                                   [self.realDelegate navigationController:navigationController didShowViewController:fromViewController animated:animated];
+                               });
+            }
+        }];
 }
 
 #pragma mark - Private
 
-- (void)setupView {
+- (void)dwNavigationControllerSetup {
     self.navigationBar.barStyle = UIBarStyleDefault;
     self.navigationBar.barTintColor = [UIColor dw_dashBlueColor];
     self.navigationBar.tintColor = [UIColor dw_tintColor];
@@ -71,6 +112,26 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
     self.navigationBar.shadowImage = [[UIImage alloc] init];
+}
+
+#pragma mark - Delegate Forwarder
+
+// https://github.com/steipete/PSPDFTextView/blob/master/PSPDFTextView/PSPDFTextView.m
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    return [super respondsToSelector:aSelector] ||
+           [self.realDelegate respondsToSelector:aSelector];
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    id delegate = self.realDelegate;
+
+    if ([delegate respondsToSelector:aSelector]) {
+        return delegate;
+    }
+    else {
+        return [super forwardingTargetForSelector:aSelector];
+    }
 }
 
 @end

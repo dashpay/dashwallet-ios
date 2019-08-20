@@ -18,13 +18,14 @@
 #import "DWAmountObject.h"
 
 #import "DWAmountInputValidator.h"
+#import "UIColor+DWStyle.h"
 #import <DashSync/DSPriceManager.h>
 #import <DashSync/NSString+Dash.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGSize const DashSymbolBigSize = {24.07, 19.0};
-static CGSize const DashSymbolSmallSize = {12.67, 10.0};
+static CGSize const DashSymbolBigSize = {35.0, 27.0};
+static CGSize const DashSymbolSmallSize = {14.0, 11.0};
 
 @implementation DWAmountObject
 
@@ -54,7 +55,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
                                                     numberFormatter:priceManager.dashFormat];
         _localCurrencyFormatted = [priceManager localCurrencyStringForDashAmount:plainAmount];
 
-        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolBigSize];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor dw_darkTitleColor] dashSymbolSize:DashSymbolBigSize];
         _localCurrencyAttributedString = [self.class attributedStringForLocalCurrencyFormatted:_localCurrencyFormatted];
     }
     return self;
@@ -85,7 +86,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
         _localCurrencyFormatted = [self.class formattedAmountWithInputString:localAmountString
                                                              formattedString:localCurrencyFormatted
                                                              numberFormatter:priceManager.localFormat];
-        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolSmallSize];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor dw_darkTitleColor] dashSymbolSize:DashSymbolSmallSize];
         _localCurrencyAttributedString = [self.class attributedStringForLocalCurrencyFormatted:_localCurrencyFormatted];
     }
     return self;
@@ -104,7 +105,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
         _amountInternalRepresentation = rawAmount;
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
-        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolSmallSize];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor dw_darkTitleColor] dashSymbolSize:DashSymbolSmallSize];
         _localCurrencyAttributedString = previousAmount.localCurrencyAttributedString;
     }
     return self;
@@ -123,7 +124,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
         _amountInternalRepresentation = rawAmount;
         _dashFormatted = [previousAmount.dashFormatted copy];
         _localCurrencyFormatted = [previousAmount.localCurrencyFormatted copy];
-        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:DashSymbolBigSize];
+        _dashAttributedString = [_dashFormatted attributedStringForDashSymbolWithTintColor:[UIColor dw_darkTitleColor] dashSymbolSize:DashSymbolBigSize];
         _localCurrencyAttributedString = previousAmount.localCurrencyAttributedString;
     }
     return self;
@@ -171,7 +172,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
 #pragma mark - Private
 
 + (NSAttributedString *)attributedStringForLocalCurrencyFormatted:(NSString *)localCurrencyFormatted {
-    return [self attributedStringForLocalCurrencyFormatted:localCurrencyFormatted textColor:[UIColor whiteColor]];
+    return [self attributedStringForLocalCurrencyFormatted:localCurrencyFormatted textColor:[UIColor dw_darkTitleColor]];
 }
 
 + (nullable NSString *)rawAmountStringFromFormattedString:(NSString *)formattedString

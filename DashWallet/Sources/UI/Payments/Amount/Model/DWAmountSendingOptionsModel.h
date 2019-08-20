@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, DWAmountSendOptionsModelState) {
 
 @property (readonly, copy, nonatomic) NSString *sendingDestination;
 @property (readonly, assign, nonatomic) DWAmountSendOptionsModelState state;
-@property (assign, nonatomic) BOOL useInstantSend;
+@property (readonly, assign, nonatomic) BOOL useInstantSend;
 @property (nullable, readonly, copy, nonatomic) NSString *instantSendFee;
 
 - (instancetype)initWithSendingDestination:(NSString *)sendingDestination paymentDetails:(DSPaymentProtocolDetails *)paymentDetails;

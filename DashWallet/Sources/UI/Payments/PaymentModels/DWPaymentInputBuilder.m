@@ -15,46 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWPayInputProcessor.h"
+#import "DWPaymentInputBuilder.h"
 
 #import "DWEnvironment.h"
-#import <DashSync/DashSync.h>
+#import "DWPaymentInput+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPaymentInput ()
+@implementation DWPaymentInputBuilder
 
-@property (nullable, nonatomic, strong) DSPaymentRequest *request;
-@property (nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
-
-@end
-
-@implementation DWPaymentInput
-
-- (instancetype)initWithSource:(DWPaymentInputSource)source {
-    self = [super init];
-    if (self) {
-        _source = source;
-    }
-    return self;
+- (DWPaymentInput *)emptyPaymentInputWithSource:(DWPaymentInputSource)source {
+    return [[DWPaymentInput alloc] initWithSource:source];
 }
-
-- (nullable NSString *)userDetails {
-    if (self.request) {
-        return self.request.string;
-    }
-    else if (self.protocolRequest) {
-        return (self.protocolRequest.details.memo ?: self.protocolRequest.details.paymentURL) ?: @"<?>";
-    }
-
-    return nil;
-}
-
-@end
-
-#pragma mark - Processor
-
-@implementation DWPayInputProcessor
 
 - (void)payFirstFromArray:(NSArray<NSString *> *)array
                    source:(DWPaymentInputSource)source

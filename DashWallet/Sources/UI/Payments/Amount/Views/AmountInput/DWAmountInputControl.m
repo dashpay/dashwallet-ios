@@ -17,33 +17,36 @@
 
 #import "DWAmountInputControl.h"
 
+#import "DWUIKit.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const BigAmountTextAlpha = 1.0;
-static CGFloat const SmallAmountTextAlpha = 0.43;
+static CGFloat const SmallAmountTextAlpha = 0.47; // same as #787878
 
 static CGFloat const ViewHeight(BOOL small) {
-    return small ? 82.0 : 106.0;
+    // 118 = ConvertImageTopPadding + ConvertImageBottomPadding + AmountHeight * 2
+    return small ? 82.0 : 118.0;
 }
 
 static CGFloat const ConvertImageTopPadding(BOOL small) {
-    return small ? 13.0 : 18.0;
+    return small ? 13.0 : 14.0;
 }
 
 static CGFloat const ConvertImageBottomPadding(BOOL small) {
-    return small ? 7.0 : 10.0;
+    return small ? 7.0 : 16.0;
 }
 
 static CGFloat MainAmountFontSize(BOOL small) {
-    return small ? 20.0 : 26.0;
+    return small ? 20.0 : 36.0;
 }
 
 static CGFloat SupplementaryAmountFontSize(BOOL small) {
-    return small ? 11.0 : 14.0;
+    return small ? 11.0 : 18.0;
 }
 
 static CGFloat AmountHeight(BOOL small) {
-    return small ? 24.0 : 32.0;
+    return small ? 24.0 : 44.0;
 }
 
 @interface DWAmountInputControl ()
@@ -96,6 +99,8 @@ static CGFloat AmountHeight(BOOL small) {
     ]];
 
     [self.contentView addTarget:self action:@selector(switchAmountCurrencyAction:) forControlEvents:UIControlEventTouchUpInside];
+
+    self.smallSize = NO;
 }
 
 - (void)setSource:(id<DWAmountInputControlSource>)source {
@@ -109,8 +114,8 @@ static CGFloat AmountHeight(BOOL small) {
     _smallSize = smallSize;
 
     self.contentViewHeightConstraint.constant = ViewHeight(smallSize);
-    self.mainAmountLabel.font = [UIFont systemFontOfSize:MainAmountFontSize(smallSize)];
-    self.supplementaryAmountLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize(smallSize)];
+    self.mainAmountLabel.font = [UIFont dw_lightFontOfSize:MainAmountFontSize(smallSize)];
+    self.supplementaryAmountLabel.font = [UIFont dw_lightFontOfSize:SupplementaryAmountFontSize(smallSize)];
     self.mainAlignmentViewHeightConstraint.constant = AmountHeight(smallSize);
     self.mainAmountLabelHeightConstraint.constant = AmountHeight(smallSize);
     self.supplementaryAlignmentViewHeightConstraint.constant = AmountHeight(smallSize);
@@ -128,7 +133,8 @@ static CGFloat AmountHeight(BOOL small) {
 }
 
 - (void)setActiveTypeAnimated:(DWAmountType)activeType completion:(void (^)(void))completion {
-    BOOL wasSwapped = activeType != DWAmountTypeSupplementary;
+    const BOOL wasSwapped = activeType != DWAmountTypeSupplementary;
+    const BOOL smallSize = self.smallSize;
     UILabel *bigLabel = nil;
     UILabel *smallLabel = nil;
     if (wasSwapped) {
@@ -139,10 +145,10 @@ static CGFloat AmountHeight(BOOL small) {
         bigLabel = self.mainAmountLabel;
         smallLabel = self.supplementaryAmountLabel;
     }
-    CGFloat scale = SupplementaryAmountFontSize(self.smallSize) / MainAmountFontSize(self.smallSize);
-    bigLabel.font = [UIFont systemFontOfSize:SupplementaryAmountFontSize(self.smallSize)];
+    const CGFloat scale = SupplementaryAmountFontSize(smallSize) / MainAmountFontSize(smallSize);
+    bigLabel.font = [UIFont dw_lightFontOfSize:SupplementaryAmountFontSize(smallSize)];
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
-    smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize(self.smallSize)];
+    smallLabel.font = [UIFont dw_lightFontOfSize:MainAmountFontSize(smallSize)];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
 
     [UIView animateWithDuration:0.1
@@ -155,9 +161,9 @@ static CGFloat AmountHeight(BOOL small) {
             smallLabel.transform = CGAffineTransformIdentity;
         }
         completion:^(BOOL finished) {
-            CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
-            CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
-            CGFloat translation = maxY - labelHeight;
+            const CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
+            const CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
+            const CGFloat translation = maxY - labelHeight;
             self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
             self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
             [UIView animateWithDuration:0.7

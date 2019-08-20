@@ -34,9 +34,9 @@ typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
 @property (readonly, assign, nonatomic, getter=isLocked) BOOL locked;
-@property (nullable, readonly, copy, nonatomic) NSAttributedString *balanceString;
 @property (readonly, copy, nonatomic) NSString *actionButtonTitle;
 @property (nullable, readonly, strong, nonatomic) DWAmountSendingOptionsModel *sendingOptions;
+@property (nonatomic, assign) BOOL allFundsSelected;
 
 - (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
                  sendingDestination:(nullable NSString *)sendingDestination

@@ -78,6 +78,9 @@
 "Amount" = "Jumlah";
 
 /* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
 "amount too small" = "jumlah terlalu kecil";
 
 /* No comment provided by engineer. */
@@ -135,6 +138,9 @@
 "Cancel" = "Batalkan";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "ganti";
 
 /* No comment provided by engineer. */
@@ -142,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ubah jumlah pembayaran?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -216,10 +225,16 @@
 "couldn't make payment" = "tidak dapat melakukan pembayaran";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "tidak dapat membersihkan saldo";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "tidak dapat mengirim pembayaran ke jaringan dash";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -238,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "pembayaran dash tidak boleh kurang dari %@";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri dash Anda).";
@@ -428,6 +446,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Transaksi Layanan Pembaruan Masternode";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "lebih...";
 
@@ -472,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "bukan alamat dash yang valid";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "bukan alamat dash atau bitcoin yang valid";
@@ -892,6 +916,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "dokumen yang tidak didukung atau rusak";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "url tidak didukung";

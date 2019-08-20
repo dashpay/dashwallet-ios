@@ -78,6 +78,9 @@
 "Amount" = "Số tiền";
 
 /* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
 "amount too small" = "số lượng quá nhỏ";
 
 /* No comment provided by engineer. */
@@ -135,6 +138,9 @@
 "Cancel" = "Huỷ bỏ";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "thay đổi";
 
 /* No comment provided by engineer. */
@@ -142,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "thay đổi số lượng cần chi?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -216,10 +225,16 @@
 "couldn't make payment" = "không thể thực hiện thanh toán";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "không thể quét số dư";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "không thể gửi thanh toán đến mạng lưới dash";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -238,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "số dash thanh toán không thể nhỏ hơn %@";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "AN NINH THIẾT BỊ BỊ  TỔN HẠI\nBất kỳ ứng dụng 'jailbreak' hay 'phá khoá' nào đều có thể truy cập vào dữ liệu chìa khoá của ứng dụng (và đánh cắp dash của bạn).";
@@ -428,6 +446,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Giao dịch cập nhật dịch vụ Masternode";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "tiếp...";
 
@@ -472,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "không phải một địa chỉ dash hợp lệ";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "không phải địa chỉ hợp lệ của dash hay bitcoin";
@@ -892,6 +916,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "không được hỗ trợ hoặc thông tin bị lỗi";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "địa chỉ url không được hỗ trợ";

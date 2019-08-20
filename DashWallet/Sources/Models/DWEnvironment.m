@@ -36,6 +36,8 @@
     if (!(self = [super init]))
         return nil;
 
+    [NSString setDashCurrencySymbolAssetName:@"icon_dash_currency"];
+
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];

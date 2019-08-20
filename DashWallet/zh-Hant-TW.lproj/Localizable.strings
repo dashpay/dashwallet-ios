@@ -78,6 +78,9 @@
 "Amount" = "Amount";
 
 /* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
 "amount too small" = "金額太小";
 
 /* No comment provided by engineer. */
@@ -135,6 +138,9 @@
 "Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "變更";
 
 /* No comment provided by engineer. */
@@ -142,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "變更付款金額?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -216,10 +225,16 @@
 "couldn't make payment" = "無法進行支付";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "無法清除餘額";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "無法將交易傳送到達世幣網絡";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -238,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "達世幣付款不能低於 %@";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "設備的安全性已經受到損害\n任何'越獄'的應用程序可以訪問任何其他應用程序的數據鑰匙扣 (和竊取你的達世幣的)。";
@@ -428,6 +446,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "更多...";
 
@@ -472,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "不是一個有效的達世幣位址";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
@@ -892,6 +916,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "不支援的或損毀的文件";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "不支援的URL";

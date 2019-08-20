@@ -21,8 +21,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// This control doesn't support Dynamic Type because it has already really large fonts in use
+
 @interface DWAmountInputControl : UIControl
 
+/**
+ Small size is used in Uphold transfer UI
+ */
 @property (assign, nonatomic) IBInspectable BOOL smallSize;
 @property (strong, nonatomic) IBInspectable UIColor *controlColor;
 

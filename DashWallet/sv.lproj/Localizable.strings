@@ -78,6 +78,9 @@
 "Amount" = "Amount";
 
 /* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
 "amount too small" = "beloppet är för litet";
 
 /* No comment provided by engineer. */
@@ -135,6 +138,9 @@
 "Cancel" = "Ångra";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "ändra";
 
 /* No comment provided by engineer. */
@@ -142,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "ändra belopp?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -216,10 +225,16 @@
 "couldn't make payment" = "kunde inte genomföra betalning";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "kunde inte importera saldo";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "kunde inte skicka betalningen till dash-nätverket";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -238,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "betalningar kan inte vara mindre än %@";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina dash).";
@@ -428,6 +446,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "mer...";
 
@@ -472,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "inte en giltig dash adress";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "inte en giltig dash eller bitcoin adress";
@@ -892,6 +916,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "okänd dokumenttyp eller skadat dokument";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "stöd saknas för URL:en";

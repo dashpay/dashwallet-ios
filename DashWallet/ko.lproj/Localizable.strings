@@ -78,6 +78,9 @@
 "Amount" = "금액";
 
 /* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
 "amount too small" = "금액이 너무 적습니다";
 
 /* No comment provided by engineer. */
@@ -135,6 +138,9 @@
 "Cancel" = "취소";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "변경";
 
 /* No comment provided by engineer. */
@@ -142,6 +148,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "지불 금액을 변경하시겠습니까?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -216,10 +225,16 @@
 "couldn't make payment" = "지불에 실패하였습니다";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "잔액을 지갑으로 옮기지 못했습니다";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "지불 내용을 대시 네트워크에 전송할 수 없었습니다";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -238,6 +253,9 @@
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다.";
+
+/* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "장치 보안이 손상된 상태입니다\n\n단말기가 탈옥 돼 있으면 어떤 '탈옥' 어플이든 다른 어플의 키체인 데이터에 접근할 수 있습니다 (당신의 대시가 도난당할 수 있습니다).";
@@ -428,6 +446,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "마스터노드 업데이트 서비스 거래";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "더 보기...";
 
@@ -472,6 +493,9 @@
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "유효한 대시 주소가 아닙니다";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "유효한 대시 혹은 비트코인 주소가 아닙니다";
@@ -892,6 +916,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "지원되지 않거나 손상된 문서";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "지원되지 않는 URL";

@@ -98,16 +98,19 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     [self.controllerCollectionView reloadData];
 
     // scroll to needed index when reloadData finishes
-    [self.controllerCollectionView
-        performBatchUpdates:^{
-        }
-        completion:^(BOOL finished) {
-            if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
-                self.currentIndex = [self previouslySelectedPageIndex];
+    DWPaymentsViewControllerIndex previouslySelectedPageIndex = [self previouslySelectedPageIndex];
+    if (self.currentIndex != previouslySelectedPageIndex) {
+        [self.controllerCollectionView
+            performBatchUpdates:^{
             }
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
-            [self scrollToIndexPath:indexPath animated:NO];
-        }];
+            completion:^(BOOL finished) {
+                if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
+                    self.currentIndex = previouslySelectedPageIndex;
+                }
+                NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
+                [self scrollToIndexPath:indexPath animated:NO];
+            }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

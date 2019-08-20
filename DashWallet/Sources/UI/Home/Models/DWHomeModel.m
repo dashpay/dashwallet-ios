@@ -20,7 +20,6 @@
 #import <mach-o/dyld.h>
 #import <sys/stat.h>
 
-#import <DashSync/DashSync.h>
 #import <UIKit/UIApplication.h>
 
 #import "DWBalanceModel.h"

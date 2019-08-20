@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) DWAmountType activeType;
 @property (strong, nonatomic) DWAmountObject *amount;
 @property (assign, nonatomic, getter=isLocked) BOOL locked;
-@property (nullable, copy, nonatomic) NSAttributedString *balanceString;
 
 @property (strong, nonatomic) DWAmountInputValidator *dashValidator;
 @property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
@@ -63,8 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
             case DWAmountInputIntentSend: {
                 NSParameterAssert(sendingDestination);
                 _actionButtonTitle = NSLocalizedString(@"Pay", nil);
-                _sendingOptions = [[DWAmountSendingOptionsModel alloc] initWithSendingDestination:sendingDestination
-                                                                                   paymentDetails:paymentDetails];
+                _sendingOptions = [[DWAmountSendingOptionsModel alloc]
+                    initWithSendingDestination:sendingDestination
+                                paymentDetails:paymentDetails];
 
                 break;
             }
@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                      name:UIApplicationDidEnterBackgroundNotification
                                                    object:nil];
 
-        [self updateBalanceString];
+        [self updateCurrentAmount];
     }
     return self;
 }
@@ -111,6 +111,18 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateCurrentAmount];
 
     [DSEventManager saveEvent:@"amount:swap_currency"];
+}
+
+- (void)setAllFundsSelected:(BOOL)allFundsSelected {
+    _allFundsSelected = allFundsSelected;
+
+    if (!allFundsSelected) {
+        // reset amount
+        DWAmountObject *amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"];
+        _amountEnteredInDash = amount;
+
+        [self updateCurrentAmount];
+    }
 }
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
@@ -204,29 +216,13 @@ NS_ASSUME_NONNULL_BEGIN
         NSParameterAssert(self.sendingOptions);
         [self.sendingOptions updateWithAmount:self.amount.plainAmount];
     }
-}
 
-- (void)updateBalanceString {
-    if ([DWEnvironment sharedInstance].currentChainManager.syncProgress < 1.0) {
-        self.balanceString = nil;
-
-        return;
+    if (self.allFundsSelected) {
+        self.allFundsSelected = NO;
     }
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    NSMutableAttributedString *attributedString = [[priceManager attributedStringForDashAmount:wallet.balance
-                                                                                 withTintColor:[UIColor whiteColor]
-                                                                          useSignificantDigits:YES] mutableCopy];
-    NSString *titleString = [NSString stringWithFormat:@" (%@)",
-                                                       [priceManager localCurrencyStringForDashAmount:wallet.balance]];
-    [attributedString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}]];
-    self.balanceString = attributedString;
 }
 
 - (void)walletBalanceDidChangeNotification:(NSNotification *)n {
-    [self updateBalanceString];
-
     self.locked = ![[DSAuthenticationManager sharedInstance] didAuthenticate];
 }
 

@@ -17,8 +17,6 @@
 
 #import "DWPreviewSeedPhraseModel.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWSeedPhraseModel.h"

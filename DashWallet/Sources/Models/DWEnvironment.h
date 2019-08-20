@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import <DashSync/DashSync.h>
+
 // TODO: rm after redesign
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 

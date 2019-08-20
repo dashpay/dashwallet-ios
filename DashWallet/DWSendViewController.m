@@ -27,14 +27,13 @@
 #import "DWSendViewController.h"
 #import "DWRootViewController.h"
 #import "DWSettingsViewController.h"
-#import "DWAmountViewController.h"
+#import "DWOLDAmountViewController.h"
 #import "BRBubbleView.h"
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"
 #import "DWQRScanViewController.h"
 #import "DWQRScanViewModel.h"
 #import "DWAmountViewController.h"
-#import "DWAmountNavigationController.h"
 
 #define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
 "You can send a payment to anyone with an address.", nil)
@@ -58,7 +57,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface DWSendViewController () <DWQRScanViewModelDelegate, DWAmountViewControllerDelegate>
+@interface DWSendViewController () <DWQRScanViewModelDelegate, DWOLDAmountViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) DSPaymentProtocolRequest *request;
@@ -423,12 +422,12 @@ static NSString *sanitizeString(NSString *s)
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     UIViewController * viewControllerToShowAlert = self;
-    DWAmountViewController *amountController = nil;
+    DWOLDAmountViewController *amountController = nil;
     if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
         UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
         viewControllerToShowAlert = presentedController.topViewController;
-        if ([viewControllerToShowAlert isKindOfClass:DWAmountViewController.class]) {
-            amountController = (DWAmountViewController *)viewControllerToShowAlert;
+        if ([viewControllerToShowAlert isKindOfClass:DWOLDAmountViewController.class]) {
+            amountController = (DWOLDAmountViewController *)viewControllerToShowAlert;
         }
     }
     
@@ -485,7 +484,7 @@ static NSString *sanitizeString(NSString *s)
             [alert addAction:okButton];
             [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
         } else {
-            if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWAmountViewController class]]) {
+            if (self.navigationController.presentedViewController && [self.navigationController.presentedViewController isKindOfClass:[UINavigationController class]] && ((UINavigationController*)self.navigationController.presentedViewController).topViewController && [((UINavigationController*)self.navigationController.presentedViewController).topViewController isKindOfClass:[DWOLDAmountViewController class]]) {
                 [self.navigationController.presentedViewController dismissViewControllerAnimated:TRUE completion:^{
                     
                 }];
@@ -574,10 +573,10 @@ static NSString *sanitizeString(NSString *s)
         sendingDestination = [NSString addressWithScriptPubKey:self.request.details.outputScripts.firstObject onChain:[DWEnvironment sharedInstance].currentChain];
     }
     
-    DWAmountViewController *amountController = [DWAmountViewController sendControllerWithDestination:sendingDestination
+    DWOLDAmountViewController *amountController = [DWOLDAmountViewController sendControllerWithDestination:sendingDestination
                                                                                             paymentDetails:self.request.details];
     amountController.delegate = self;
-    DWAmountNavigationController *amountNavigationController = [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
+    UINavigationController *amountNavigationController = [[UINavigationController alloc] initWithRootViewController:amountController];
     [self.navigationController presentViewController:amountNavigationController animated:YES completion:nil];
 }
 
@@ -1100,11 +1099,11 @@ static NSString *sanitizeString(NSString *s)
 
 // MARK: - DWAmountViewControllerDelegate
 
-- (void)amountViewControllerDidCancel:(DWAmountViewController *)controller {
+- (void)amountViewControllerDidCancel:(DWOLDAmountViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount wasProposedToUseInstantSend:(BOOL)wasProposedInstantSend usedInstantSend:(BOOL)usedInstantSend {
+- (void)amountViewController:(DWOLDAmountViewController *)controller didInputAmount:(uint64_t)amount wasProposedToUseInstantSend:(BOOL)wasProposedInstantSend usedInstantSend:(BOOL)usedInstantSend {
     self.amount = amount;
     if (wasProposedInstantSend) {
         self.sendInstantly = usedInstantSend;

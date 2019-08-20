@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const TABBAR_HEIGHT = 49.0;
+CGFloat const DW_TABBAR_HEIGHT = 49.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
@@ -128,7 +128,7 @@ static UIColor *InactiveButtonColor(void) {
 
 - (CGSize)intrinsicContentSize {
     return CGSizeMake(UIViewNoIntrinsicMetric,
-                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : TABBAR_HEIGHT);
+                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : DW_TABBAR_HEIGHT);
 }
 
 - (void)layoutSubviews {
@@ -141,7 +141,7 @@ static UIColor *InactiveButtonColor(void) {
     CGFloat x = 0.0;
     for (UIButton *button in self.buttons) {
         if (button != self.paymentsButton) {
-            button.frame = CGRectMake(x, 0.0, buttonWidth, MIN(TABBAR_HEIGHT, size.height));
+            button.frame = CGRectMake(x, 0.0, buttonWidth, MIN(DW_TABBAR_HEIGHT, size.height));
         }
 
         x += buttonWidth;
@@ -156,7 +156,7 @@ static UIColor *InactiveButtonColor(void) {
                                               arcSize.height);
 
     const CGSize overlaySize = CGSizeMake(CENTER_CIRCLE_SIZE + TABBAR_BORDER_WIDTH * 2,
-                                          TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
+                                          DW_TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
     self.circleOverlayLayer.frame = CGRectMake((size.width - overlaySize.width) / 2.0,
                                                TABBAR_BORDER_WIDTH,
                                                overlaySize.width,

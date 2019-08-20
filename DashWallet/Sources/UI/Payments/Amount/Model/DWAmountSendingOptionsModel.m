@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DSPaymentProtocolDetails *paymentDetails;
 @property (assign, nonatomic) DWAmountSendOptionsModelState state;
+@property (assign, nonatomic) BOOL useInstantSend;
 @property (nullable, copy, nonatomic) NSString *instantSendFee;
 
 @end
@@ -104,6 +105,9 @@ NS_ASSUME_NONNULL_BEGIN
 
         self.instantSendFee = [priceManager localCurrencyStringForDashAmount:instantSendExtraFee];
         self.state = DWAmountSendOptionsModelState_ProposeInstantSend;
+
+        // Set to be InstantSend by default
+        self.useInstantSend = YES;
 
         return;
     }

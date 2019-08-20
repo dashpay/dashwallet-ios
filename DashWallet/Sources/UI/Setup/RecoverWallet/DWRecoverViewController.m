@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
-- (void)continueButtonAction:(id)sender {
+- (void)actionButtonAction:(id)sender {
     [self.contentView continueAction];
 }
 

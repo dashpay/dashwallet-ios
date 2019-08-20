@@ -35,16 +35,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 
 @property (nullable, readonly, nonatomic) NSString *userDetails;
 
-- (instancetype)initWithSource:(DWPaymentInputSource)source;
 - (instancetype)init NS_UNAVAILABLE;
-
-@end
-
-@interface DWPayInputProcessor : NSObject
-
-- (void)payFirstFromArray:(NSArray<NSString *> *)array
-                   source:(DWPaymentInputSource)source
-               completion:(void (^)(DWPaymentInput *paymentInput))completion;
 
 @end
 

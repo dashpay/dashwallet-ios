@@ -15,22 +15,31 @@
 //  limitations under the License.
 //
 
-#import "DWAmountNavigationController.h"
+#import "DWPaymentInput+Private.h"
+
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWAmountNavigationController
+@implementation DWPaymentInput
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.topViewController.preferredStatusBarStyle;
+- (instancetype)initWithSource:(DWPaymentInputSource)source {
+    self = [super init];
+    if (self) {
+        _source = source;
+    }
+    return self;
 }
 
-- (BOOL)prefersStatusBarHidden {
-    return self.topViewController.prefersStatusBarHidden;
-}
+- (nullable NSString *)userDetails {
+    if (self.request) {
+        return self.request.string;
+    }
+    else if (self.protocolRequest) {
+        return (self.protocolRequest.details.memo ?: self.protocolRequest.details.paymentURL) ?: @"<?>";
+    }
 
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return self.topViewController.supportedInterfaceOrientations;
+    return nil;
 }
 
 @end
