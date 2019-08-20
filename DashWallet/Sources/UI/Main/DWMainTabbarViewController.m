@@ -67,6 +67,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 #pragma mark - DWTabBarViewDelegate
 
+- (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {
+}
+
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
     [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None];
 }

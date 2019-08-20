@@ -43,7 +43,9 @@ static UIColor *InactiveButtonColor(void) {
 @property (nonatomic, strong) CALayer *circleOverlayLayer;
 
 @property (nonatomic, copy) NSArray<UIButton *> *buttons;
+@property (nonatomic, strong) UIButton *homeButton;
 @property (nonatomic, strong) DWPaymentsButton *paymentsButton;
+@property (nonatomic, strong) UIButton *othersButton;
 
 @end
 
@@ -88,8 +90,12 @@ static UIColor *InactiveButtonColor(void) {
             UIImage *image = [UIImage imageNamed:@"tabbar_home_icon"];
             [button setImage:image forState:UIControlStateNormal];
             button.tintColor = ActiveButtonColor();
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
             [self addSubview:button];
             [buttons addObject:button];
+            _homeButton = button;
         }
 
         {
@@ -107,8 +113,12 @@ static UIColor *InactiveButtonColor(void) {
             UIImage *image = [UIImage imageNamed:@"tabbar_other_icon"];
             [button setImage:image forState:UIControlStateNormal];
             button.tintColor = InactiveButtonColor();
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
             [self addSubview:button];
             [buttons addObject:button];
+            _othersButton = button;
         }
 
         _buttons = [buttons copy];
@@ -170,6 +180,23 @@ static UIColor *InactiveButtonColor(void) {
     }
     else {
         [self.delegate tabBarViewDidClosePayments:self];
+    }
+}
+
+- (void)tabBarButtonAction:(UIButton *)sender {
+    if (self.paymentsButton.opened) {
+        [self.delegate tabBarViewDidClosePayments:self];
+    }
+    else {
+        if (sender == self.homeButton) {
+            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Home];
+        }
+        else if (sender == self.othersButton) {
+            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Others];
+        }
+        else {
+            NSAssert(NO, @"Invalid sender");
+        }
     }
 }
 
