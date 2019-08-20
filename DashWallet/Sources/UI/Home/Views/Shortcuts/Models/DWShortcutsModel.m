@@ -81,11 +81,13 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
     }
 
     [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ScanToPay]];
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_LocalCurrency]];
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_PayToAddress]];
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_BuySellDash]];
 
     const BOOL canConfigureShortcuts = !walletNeedsBackup;
-    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_AddShortcut
-                                             enabled:canConfigureShortcuts]];
+    if (canConfigureShortcuts) {
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_AddShortcut]];
+    }
 
     return mutableItems;
 }
