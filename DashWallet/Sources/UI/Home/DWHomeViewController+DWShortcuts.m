@@ -25,6 +25,7 @@
 #import "DWBackupInfoViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWUpholdViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,12 +43,14 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ScanToPay: {
+            [self debug_wipeWallet];
             break;
         }
         case DWShortcutActionType_PayToAddress: {
             break;
         }
         case DWShortcutActionType_BuySellDash: {
+            [self buySellDashAction];
             break;
         }
         case DWShortcutActionType_SyncNow: {
@@ -57,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_LocalCurrency: {
-            [self debug_wipeWallet];
+
             break;
         }
         case DWShortcutActionType_ImportPrivateKey: {
@@ -107,6 +110,25 @@ NS_ASSUME_NONNULL_BEGIN
                                                       action:@selector(secureWalletCancelButtonAction:)];
     controller.navigationItem.leftBarButtonItem = cancelButton;
 
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)buySellDashAction {
+    [[DSAuthenticationManager sharedInstance]
+        authenticateWithPrompt:nil
+                    andTouchId:YES
+                alertIfLockout:YES
+                    completion:^(BOOL authenticated, BOOL cancelled) {
+                        if (authenticated) {
+                            [self buySellDashActionAuthenticated];
+                        }
+                    }];
+}
+
+- (void)buySellDashActionAuthenticated {
+    UIViewController *controller = [DWUpholdViewController controller];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];

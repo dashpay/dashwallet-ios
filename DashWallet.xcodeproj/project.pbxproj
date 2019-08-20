@@ -1361,6 +1361,7 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A9FFE082230FF4600956D5F /* CustomAlert */,
 				2A9CEBAE22E1DF7E00A50237 /* Navigation */,
 				2A8B9E5022FED73600FF8653 /* ControllerCollection */,
 				2AD1CE6A22DA337700C99324 /* BaseController */,
@@ -1469,6 +1470,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2A9FFE462230FF4600956D5F /* Uphold */,
 				2A8B9E3822FC7F3B00FF8653 /* Payments */,
 				2A9CEBB622E1FA0000A50237 /* Home */,
 				2A9CEBA522E1D58B00A50237 /* Main */,
@@ -2319,9 +2321,7 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				2A9FFE082230FF4600956D5F /* CustomAlert */,
 				2A9FFE242230FF4600956D5F /* Settings */,
-				2A9FFE462230FF4600956D5F /* Uphold */,
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8F420A21BEE69E00858B91 /* About */,
