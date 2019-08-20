@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,15 +15,11 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWInputValidator.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDecimalInputValidator : NSObject <DWInputValidator>
-
-- (instancetype)initWithLocale:(nullable NSLocale *)locale NS_DESIGNATED_INITIALIZER;
+@interface DWAmountNavigationController : UINavigationController
 
 @end
 

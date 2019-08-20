@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,11 +15,25 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountNavigationController : UINavigationController
+@protocol DWActionButtonProtocol <NSObject>
+
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
+
+@end
+
+@interface DWBaseActionButtonViewController : DWBaseViewController
+
+@property (readonly, nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
+
++ (NSString *)actionButtonTitle;
+
+- (void)setupContentView:(UIView *)contentView;
+
+- (void)actionButtonAction:(id)sender;
 
 @end
 

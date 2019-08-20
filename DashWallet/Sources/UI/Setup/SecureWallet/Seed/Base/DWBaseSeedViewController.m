@@ -17,39 +17,21 @@
 
 #import "DWBaseSeedViewController.h"
 
-#import "DWBlueActionButton.h"
-#import "DWUIKit.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
-static CGFloat const SPACING = 16.0;
-static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
-
-#pragma mark - Helper
-
-@interface UIButton (DWSeedContinueButton_UIButton) <DWSeedContinueButton>
-@end
-@implementation UIButton (DWSeedContinueButton_UIButton)
-@end
-
-@interface UIBarButtonItem (DWSeedContinueButton_UIBarButtonItem) <DWSeedContinueButton>
-@end
-@implementation UIBarButtonItem (DWSeedContinueButton_UIBarButtonItem)
-@end
-
-#pragma mark - Controller
 
 @interface DWBaseSeedViewController ()
 
 @property (nullable, nonatomic, strong) UIScrollView *scrollView;
-@property (nullable, nonatomic, strong) id<DWSeedContinueButton> continueButton;
-
-@property (nullable, strong, nonatomic) NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
 @implementation DWBaseSeedViewController
+
++ (NSString *)actionButtonTitle {
+    return NSLocalizedString(@"Continue", nil);
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -63,87 +45,16 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     [self.scrollView flashScrollIndicators];
 }
 
-#pragma mark - Actions
-
-- (void)continueButtonAction:(id)sender {
-    // NOP
-}
-
 #pragma mark - Private
 
 - (void)baseSeedView_setup {
-    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-    NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
-
     UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
     scrollView.translatesAutoresizingMaskIntoConstraints = NO;
     scrollView.backgroundColor = self.view.backgroundColor;
     scrollView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
     self.scrollView = scrollView;
-    [arrangedSubviews addObject:scrollView];
 
-    NSString *continueButtonTitle = NSLocalizedString(@"Continue", nil);
-    DWBlueActionButton *bottomContinueButton = nil;
-    if (IS_IPHONE_5_OR_LESS) {
-        UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc]
-            initWithTitle:continueButtonTitle
-                    style:UIBarButtonItemStylePlain
-                   target:self
-                   action:@selector(continueButtonAction:)];
-        self.navigationItem.rightBarButtonItem = barButtonItem;
-        self.continueButton = barButtonItem;
-    }
-    else {
-        bottomContinueButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
-        bottomContinueButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [bottomContinueButton setTitle:continueButtonTitle forState:UIControlStateNormal];
-        [bottomContinueButton addTarget:self
-                                 action:@selector(continueButtonAction:)
-                       forControlEvents:UIControlEventTouchUpInside];
-        self.continueButton = bottomContinueButton;
-        [arrangedSubviews addObject:bottomContinueButton];
-    }
-
-    self.continueButton.enabled = NO;
-
-    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:arrangedSubviews];
-    stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    stackView.axis = UILayoutConstraintAxisVertical;
-    stackView.alignment = UIStackViewAlignmentFill;
-    stackView.distribution = UIStackViewDistributionFill;
-    stackView.spacing = SPACING;
-    [self.view addSubview:stackView];
-
-    UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
-    UILayoutGuide *safeAreaGuide = self.view.safeAreaLayoutGuide;
-
-    const CGFloat bottomPadding = [self.class deviceSpecificBottomPadding];
-    // constraint relation is inverted so we can use positive padding values
-    self.contentBottomConstraint = [safeAreaGuide.bottomAnchor constraintEqualToAnchor:stackView.bottomAnchor
-                                                                              constant:bottomPadding];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [stackView.topAnchor constraintEqualToAnchor:safeAreaGuide.topAnchor],
-        [stackView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
-        [stackView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
-        self.contentBottomConstraint,
-    ]];
-
-    if (bottomContinueButton) {
-        [bottomContinueButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT].active = YES;
-    }
-}
-
-#pragma mark - Configuration
-
-+ (CGFloat)deviceSpecificBottomPadding {
-    if (IS_IPHONE_5_OR_LESS) {
-        return 0.0;
-    }
-    else {
-        return [super deviceSpecificBottomPadding];
-    }
+    [self setupContentView:scrollView];
 }
 
 @end

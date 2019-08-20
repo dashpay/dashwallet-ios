@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSLocale *locale_ = locale ?: [NSLocale currentLocale];
         NSString *decimalSeparator = locale_.decimalSeparator;
         _decimalSeparator = decimalSeparator;
-        
+
         NSMutableCharacterSet *mutableCharacterSet = [NSMutableCharacterSet decimalDigitCharacterSet];
         [mutableCharacterSet addCharactersInString:decimalSeparator];
         _validCharacterSet = [mutableCharacterSet copy];
@@ -51,18 +51,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString range:(NSRange)range replacementString:(NSString *)string {
     NSParameterAssert(lastInputString);
     NSParameterAssert(string);
-    
+
     BOOL isRemoving = string.length == 0;
-    
+
     if (isRemoving && lastInputString.length < range.location + range.length) {
         return nil;
     }
-    
+
     NSString *resultText = [lastInputString stringByReplacingCharactersInRange:range withString:string];
     if (isRemoving) {
         return resultText;
     }
-    
+
     NSString *decimalSeparator = self.decimalSeparator;
     if ([string containsString:decimalSeparator] && [lastInputString containsString:decimalSeparator]) {
         return nil;
@@ -73,15 +73,15 @@ NS_ASSUME_NONNULL_BEGIN
     if (!stringIsValid) {
         return nil;
     }
-    
+
     while (resultText.length > 1 && [resultText hasPrefix:@"0"]) {
         resultText = [resultText substringFromIndex:1];
     }
-    
+
     if ([resultText hasPrefix:decimalSeparator]) {
         resultText = [@"0" stringByAppendingString:resultText];
     }
-    
+
     return resultText;
 }
 

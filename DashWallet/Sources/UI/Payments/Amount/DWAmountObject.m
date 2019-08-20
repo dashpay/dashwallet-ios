@@ -28,8 +28,8 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
 
 @implementation DWAmountObject
 
-@synthesize dashAttributedString=_dashAttributedString;
-@synthesize localCurrencyAttributedString=_localCurrencyAttributedString;
+@synthesize dashAttributedString = _dashAttributedString;
+@synthesize localCurrencyAttributedString = _localCurrencyAttributedString;
 
 - (instancetype)initWithDashAmountString:(NSString *)dashAmountString {
     self = [super init];
@@ -151,7 +151,7 @@ static CGSize const DashSymbolSmallSize = {12.67, 10.0};
             NSRange beforeFractionRange = NSMakeRange(0, insufficientFractionDigitsRange.location);
             [attributedString setAttributes:defaultAttributes range:beforeFractionRange];
         }
-        [attributedString setAttributes:@{ NSForegroundColorAttributeName : [textColor colorWithAlphaComponent:0.5] }
+        [attributedString setAttributes:@{NSForegroundColorAttributeName : [textColor colorWithAlphaComponent:0.5]}
                                   range:insufficientFractionDigitsRange];
         NSUInteger afterFractionIndex = insufficientFractionDigitsRange.location + insufficientFractionDigitsRange.length;
         if (afterFractionIndex < localCurrencyFormatted.length) {

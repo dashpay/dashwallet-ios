@@ -15,13 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
+#import <Foundation/Foundation.h>
+
+#import "DWInputValidator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseSeedViewController : DWBaseActionButtonViewController
+@interface DWDecimalInputValidator : NSObject <DWInputValidator>
 
-@property (readonly, nullable, nonatomic, strong) UIScrollView *scrollView;
+- (instancetype)initWithLocale:(nullable NSLocale *)locale NS_DESIGNATED_INITIALIZER;
 
 @end
 

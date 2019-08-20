@@ -148,7 +148,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.model = [[DWRecoverModel alloc] initWithAction:self.action];
 
-    self.continueButton.enabled = YES;
+    self.actionButton.enabled = YES;
 
     DWRecoverContentView *contentView = [[DWRecoverContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;

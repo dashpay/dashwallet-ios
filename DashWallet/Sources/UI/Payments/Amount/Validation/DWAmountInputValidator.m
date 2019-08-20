@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _type = type;
-        
+
         _decimalValidator = [[DWDecimalInputValidator alloc] initWithLocale:locale];
 
         NSLocale *locale_ = locale ?: [NSLocale currentLocale];

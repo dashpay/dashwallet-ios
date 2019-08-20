@@ -18,9 +18,9 @@
 #import "DWAmountViewController.h"
 
 #import "DWAmountInputControl.h"
+#import "DWAmountModel.h"
 #import "DWNumberKeyboard.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
-#import "DWAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -92,67 +92,73 @@ static CGFloat HorizontalPadding() {
 
     [self setupView];
 
-    [self mvvm_observe:@"model.locked" with:^(__typeof(self) self, NSNumber * value) {
-        if (self.model.locked) {
-            self.navigationItem.titleView = self.logoImageView;
-            self.navigationItem.rightBarButtonItem = self.actionBarButton;
-        }
-        else {
-            BOOL hasBalance = self.model.balanceString != nil;
-            self.navigationItem.titleView = hasBalance ? self.balanceButton : self.logoImageView;
-            self.navigationItem.rightBarButtonItem = self.actionBarButton;
-        }
-    }];
+    [self mvvm_observe:@"model.locked"
+                  with:^(__typeof(self) self, NSNumber *value) {
+                      if (self.model.locked) {
+                          self.navigationItem.titleView = self.logoImageView;
+                          self.navigationItem.rightBarButtonItem = self.actionBarButton;
+                      }
+                      else {
+                          BOOL hasBalance = self.model.balanceString != nil;
+                          self.navigationItem.titleView = hasBalance ? self.balanceButton : self.logoImageView;
+                          self.navigationItem.rightBarButtonItem = self.actionBarButton;
+                      }
+                  }];
 
-    [self mvvm_observe:@"model.balanceString" with:^(__typeof(self) self, NSAttributedString * value) {
-        [self.balanceButton setAttributedTitle:value forState:UIControlStateNormal];
-        [self.balanceButton sizeToFit];
-    }];
+    [self mvvm_observe:@"model.balanceString"
+                  with:^(__typeof(self) self, NSAttributedString *value) {
+                      [self.balanceButton setAttributedTitle:value forState:UIControlStateNormal];
+                      [self.balanceButton sizeToFit];
+                  }];
 
-    [self mvvm_observe:@"model.amount" with:^(__typeof(self) self, DWAmountObject * value) {
-        self.textField.text = value.amountInternalRepresentation;
-        self.inputControl.source = value;
-        self.actionBarButton.enabled = value.plainAmount > 0;
-    }];
+    [self mvvm_observe:@"model.amount"
+                  with:^(__typeof(self) self, DWAmountObject *value) {
+                      self.textField.text = value.amountInternalRepresentation;
+                      self.inputControl.source = value;
+                      self.actionBarButton.enabled = value.plainAmount > 0;
+                  }];
 
     if (self.model.inputIntent == DWAmountInputIntentSend) {
-        [self mvvm_observe:@"model.sendingOptions.state" with:^(__typeof(self) self, NSNumber * value) {
-            DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
-            switch (state) {
-                case DWAmountSendOptionsModelState_None: {
-                    break;
-                }
-                case DWAmountSendOptionsModelState_Regular: {
-                    self.instantSendSwitch.hidden = YES;
-                    self.infoLabel.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
+        [self mvvm_observe:@"model.sendingOptions.state"
+                      with:^(__typeof(self) self, NSNumber *value) {
+                          DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
+                          switch (state) {
+                              case DWAmountSendOptionsModelState_None: {
+                                  break;
+                              }
+                              case DWAmountSendOptionsModelState_Regular: {
+                                  self.instantSendSwitch.hidden = YES;
+                                  self.infoLabel.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
 
-                    break;
-                }
-                case DWAmountSendOptionsModelState_ProposeInstantSend: {
-                    self.instantSendSwitch.hidden = NO;
-                    NSString *instantSendFee = self.model.sendingOptions.instantSendFee;
-                    NSParameterAssert(instantSendFee);
-                    self.infoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"This transaction may take several minutes to settle. Complete instantly for an extra %@?", nil), instantSendFee];
+                                  break;
+                              }
+                              case DWAmountSendOptionsModelState_ProposeInstantSend: {
+                                  self.instantSendSwitch.hidden = NO;
+                                  NSString *instantSendFee = self.model.sendingOptions.instantSendFee;
+                                  NSParameterAssert(instantSendFee);
+                                  self.infoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"This transaction may take several minutes to settle. Complete instantly for an extra %@?", nil), instantSendFee];
 
-                    break;
-                }
-                case DWAmountSendOptionsModelState_AutoLocks: {
-                    self.instantSendSwitch.hidden = YES;
-                    self.infoLabel.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
+                                  break;
+                              }
+                              case DWAmountSendOptionsModelState_AutoLocks: {
+                                  self.instantSendSwitch.hidden = YES;
+                                  self.infoLabel.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
 
-                    break;
-                }
-            }
+                                  break;
+                              }
+                          }
 
-            [UIView animateWithDuration:0.15 animations:^{
-                CGFloat alpha = state == DWAmountSendOptionsModelState_None ? 0.0 : 1.0;
-                self.infoStackView.alpha = alpha;
-            }];
-        }];
+                          [UIView animateWithDuration:0.15
+                                           animations:^{
+                                               CGFloat alpha = state == DWAmountSendOptionsModelState_None ? 0.0 : 1.0;
+                                               self.infoStackView.alpha = alpha;
+                                           }];
+                      }];
 
-        [self mvvm_observe:@"model.sendingOptions.useInstantSend" with:^(__typeof(self) self, NSNumber * value) {
-            self.instantSendSwitch.on = self.model.sendingOptions.useInstantSend;
-        }];
+        [self mvvm_observe:@"model.sendingOptions.useInstantSend"
+                      with:^(__typeof(self) self, NSNumber *value) {
+                          self.instantSendSwitch.on = self.model.sendingOptions.useInstantSend;
+                      }];
     }
 }
 
@@ -186,14 +192,15 @@ static CGFloat HorizontalPadding() {
 
     [self.model swapActiveAmountType];
     __weak typeof(self) weakSelf = self;
-    [self.inputControl setActiveTypeAnimated:self.model.activeType completion:^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    [self.inputControl setActiveTypeAnimated:self.model.activeType
+                                  completion:^{
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
 
-        [strongSelf resetTextFieldPosition];
-    }];
+                                      [strongSelf resetTextFieldPosition];
+                                  }];
 }
 
 - (void)actionButtonAction:(id)sender {
@@ -237,7 +244,8 @@ static CGFloat HorizontalPadding() {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.delegate amountViewController:self
                                      didInputAmount:self.model.amount.plainAmount
-                 wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)  usedInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend) && self.model.sendingOptions.useInstantSend];
+                        wasProposedToUseInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend)
+                                    usedInstantSend:(self.model.sendingOptions.state == DWAmountSendOptionsModelState_ProposeInstantSend) && self.model.sendingOptions.useInstantSend];
 
                 self.view.userInteractionEnabled = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;

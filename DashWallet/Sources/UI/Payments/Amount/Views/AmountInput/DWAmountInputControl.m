@@ -145,27 +145,34 @@ static CGFloat AmountHeight(BOOL small) {
     smallLabel.font = [UIFont systemFontOfSize:MainAmountFontSize(self.smallSize)];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
 
-    [UIView animateWithDuration:0.1 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        bigLabel.alpha = SmallAmountTextAlpha;
-        smallLabel.alpha = BigAmountTextAlpha;
-        bigLabel.transform = CGAffineTransformIdentity;
-        smallLabel.transform = CGAffineTransformIdentity;
-    }
+    [UIView animateWithDuration:0.1
+        delay:0.0
+        options:UIViewAnimationOptionCurveEaseOut
+        animations:^{
+            bigLabel.alpha = SmallAmountTextAlpha;
+            smallLabel.alpha = BigAmountTextAlpha;
+            bigLabel.transform = CGAffineTransformIdentity;
+            smallLabel.transform = CGAffineTransformIdentity;
+        }
         completion:^(BOOL finished) {
             CGFloat labelHeight = CGRectGetHeight(bigLabel.bounds);
             CGFloat maxY = MAX(CGRectGetMaxY(bigLabel.frame), CGRectGetMaxY(smallLabel.frame));
             CGFloat translation = maxY - labelHeight;
             self.mainAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : translation;
             self.supplementaryAmountLabelCenterYConstraint.constant = wasSwapped ? 0.0 : -translation;
-            [UIView animateWithDuration:0.7 delay:0.0 usingSpringWithDamping:0.5 initialSpringVelocity:1.0
+            [UIView animateWithDuration:0.7
+                                  delay:0.0
+                 usingSpringWithDamping:0.5
+                  initialSpringVelocity:1.0
                                 options:UIViewAnimationOptionCurveEaseOut
                              animations:^{
                                  [self layoutIfNeeded];
                              }
                              completion:nil];
-            [UIView animateWithDuration:0.4 animations:^{
-                self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
-            }
+            [UIView animateWithDuration:0.4
+                animations:^{
+                    self.convertAmountImageView.transform = (wasSwapped ? CGAffineTransformIdentity : CGAffineTransformMakeRotation(0.9999 * M_PI));
+                }
                 completion:^(BOOL finished) {
                     if (completion) {
                         completion();
