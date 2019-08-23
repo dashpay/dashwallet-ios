@@ -149,11 +149,11 @@
                 if (![[DWEnvironment sharedInstance].currentChain isMainnet]) {
                     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isBIP43Based] && [derivationPath purpose] == 44) {
-                        [detail addObject:@"wallet address (BIP44)"];
+                        [detail addObject:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"wallet address", nil), @"(BIP44)"]];
                     } else if ([derivationPath isBIP32Only]) {
-                        [detail addObject:@"wallet address (BIP32)"];
+                        [detail addObject:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"wallet address", nil), @"(BIP32)"]];
                     } else {
-                        [detail addObject:[NSString stringWithFormat:@"wallet address (%@)",[derivationPath stringRepresentation]]];
+                        [detail addObject:[NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"wallet address", nil), [derivationPath stringRepresentation]]];
                     }
                 } else {
                     [detail addObject:NSLocalizedString(@"wallet address", nil)];

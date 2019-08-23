@@ -1,8 +1,12 @@
 PODS:
   - bls-signatures-pod (0.2.9)
+  - CocoaLumberjack (3.5.3):
+    - CocoaLumberjack/Core (= 3.5.3)
+  - CocoaLumberjack/Core (3.5.3)
   - Dash-PLCrashReporter (1.4.0)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
+    - CocoaLumberjack (= 3.5.3)
     - secp256k1_dash (= 0.1.2)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
@@ -17,6 +21,7 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
+    - CocoaLumberjack
     - KVO-MVVM
     - secp256k1_dash
     - SimulatorStatusMagic
@@ -36,12 +41,13 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
+  CocoaLumberjack: 2f44e60eb91c176d471fdba43b9e3eae6a721947
   Dash-PLCrashReporter: 48274f97b50745ea7b627d0fca3a17fb2ee5b4d0
-  DashSync: 04d9aab4ff9ae446993e943b716e296a6f57ceea
+  DashSync: 2188f146abb87d32f1b7c76a5d050716a11e5e57
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
   SimulatorStatusMagic: 28d4a9d1a500ac7cea0b2b5a43c1c6ddb40ba56c
 
-PODFILE CHECKSUM: 39ea70bc2be80ce895aed21982a5429ccd22e571
+PODFILE CHECKSUM: 4b9eebd49216560a7798b52137ddd780f4367d7e
 
 COCOAPODS: 1.7.2

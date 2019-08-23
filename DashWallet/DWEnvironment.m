@@ -81,9 +81,9 @@
 - (void)clearAllWallets {
     [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
     for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
         [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
         [chain unregisterAllWallets];
     }
     [[DSAuthenticationManager sharedInstance] removePin]; //this can only work if there are no wallets

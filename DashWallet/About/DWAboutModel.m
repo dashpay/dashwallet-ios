@@ -18,7 +18,6 @@
 #import "DWAboutModel.h"
 
 #import <arpa/inet.h>
-#import <asl.h>
 #import <netdb.h>
 #import <sys/socket.h>
 
@@ -65,9 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
+    DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
+    DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
+    
     
     return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
-                                                        "connected peers: %d\ndl peer: %@",
+                                                        "connected peers: %d\ndl peer: %@\nquorums validated: %d/%d",
                                                         NULL),
             [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
             [priceManager stringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],
@@ -75,38 +77,13 @@ NS_ASSUME_NONNULL_BEGIN
             chain.lastBlockHeight,
             chain.estimatedBlockHeight,
             peerManager.connectedPeerCount,
-            peerManager.downloadPeerName?peerManager.downloadPeerName:@"-"];
+            peerManager.downloadPeerName?peerManager.downloadPeerName:@"-",
+            [currentMasternodeList validQuorumsCountOfType:DSLLMQType_50_60],
+            [currentMasternodeList quorumsCountOfType:DSLLMQType_50_60]];
 }
 
-- (void)performCopyLogs {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    
-    [DSEventManager saveEvent:@"settings:copy_logs"];
-    aslmsg q = asl_new(ASL_TYPE_QUERY), m;
-    aslresponse r = asl_search(NULL, q);
-    NSMutableString *s = [NSMutableString string];
-    time_t t;
-    struct tm tm;
-    
-    while ((m = asl_next(r))) {
-        t = strtol(asl_get(m, ASL_KEY_TIME), NULL, 10);
-        localtime_r(&t, &tm);
-        [s appendFormat:@"%d-%02d-%02d %02d:%02d:%02d %s: %s\n",
-         tm.tm_year + 1900,
-         tm.tm_mon,
-         tm.tm_mday,
-         tm.tm_hour,
-         tm.tm_min,
-         tm.tm_sec,
-         asl_get(m, ASL_KEY_SENDER),
-         asl_get(m, ASL_KEY_MSG)];
-    }
-    
-    asl_free(r);
-    [UIPasteboard generalPasteboard].string = (s.length < 8000000) ? s : [s substringFromIndex:s.length - 8000000];
-    
-#pragma GCC diagnostic pop
+- (NSArray <NSURL *> *)logFiles {
+    return [[DSLogger sharedInstance] logFiles];
 }
 
 - (void)setFixedPeer:(NSString *)fixedPeer {

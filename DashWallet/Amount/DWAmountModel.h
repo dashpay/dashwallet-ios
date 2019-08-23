@@ -17,6 +17,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWAmountInputControlSource.h"
 #import "DWAmountObject.h"
 #import "DWAmountSendingOptionsModel.h"
 
@@ -25,13 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
     DWAmountInputIntentRequest,
     DWAmountInputIntentSend,
-};
-
-typedef NS_ENUM(NSUInteger, DWAmountType) {
-    // Amount in Dash
-    DWAmountTypeMain,
-    // Amount in local currency
-    DWAmountTypeSupplementary,
 };
 
 @interface DWAmountModel : NSObject
