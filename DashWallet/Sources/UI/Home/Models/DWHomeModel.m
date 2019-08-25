@@ -170,6 +170,11 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)retrySyncing {
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+        [self.reachability stopMonitoring];
+        [self.reachability startMonitoring];
+    }
+
     [self connectIfNeeded];
 }
 
