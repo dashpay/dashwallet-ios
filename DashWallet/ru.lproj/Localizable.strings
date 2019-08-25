@@ -171,6 +171,9 @@
 "clear trusted node?" = "Удалить доверенный узел?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "буфер обмена не содержит действительный dash адрес";
 
 /* No comment provided by engineer. */

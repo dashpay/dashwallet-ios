@@ -42,7 +42,7 @@ static NSTimeInterval const TIMER_INTERVAL = 1.0;
         _changeCount = NSNotFound;
         _queue = dispatch_queue_create("DWPasteboardAddressObserver.queue", DISPATCH_QUEUE_SERIAL);
 
-        [self checkPasteboardContents];
+        [self checkPasteboardContentsCompletion:nil];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidBecomeActiveNotification)
@@ -65,7 +65,7 @@ static NSTimeInterval const TIMER_INTERVAL = 1.0;
     // tolerance is of 10 percent: NSEC_PER_SEC / 10
     dispatch_source_set_timer(timer, DISPATCH_TIME_NOW, TIMER_INTERVAL * NSEC_PER_SEC, NSEC_PER_SEC / 10);
     dispatch_source_set_event_handler(timer, ^{
-        [self checkPasteboardContentsInternal];
+        [self checkPasteboardContentsInternalCompletion:nil];
     });
     dispatch_resume(timer);
 
@@ -82,24 +82,28 @@ static NSTimeInterval const TIMER_INTERVAL = 1.0;
     self.timer = nil;
 }
 
+- (void)checkPasteboardContentsCompletion:(nullable void (^)(void))completion {
+    dispatch_async(self.queue, ^{
+        [self checkPasteboardContentsInternalCompletion:completion];
+    });
+}
+
 #pragma mark Notifications
 
 - (void)applicationDidBecomeActiveNotification {
-    [self checkPasteboardContents];
+    [self checkPasteboardContentsCompletion:nil];
 }
 
 #pragma mark Private
 
-- (void)checkPasteboardContents {
-    dispatch_async(self.queue, ^{
-        [self checkPasteboardContentsInternal];
-    });
-}
-
-- (void)checkPasteboardContentsInternal {
+- (void)checkPasteboardContentsInternalCompletion:(nullable void (^)(void))completion {
     NSAssert(![NSThread isMainThread], @"Should run on background thread");
 
     if (self.changeCount == [UIPasteboard generalPasteboard].changeCount) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), completion);
+        }
+
         return;
     }
 
@@ -149,6 +153,10 @@ static NSTimeInterval const TIMER_INTERVAL = 1.0;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         self.contents = resultSet.array;
+
+        if (completion) {
+            completion();
+        }
 
         [[NSNotificationCenter defaultCenter] postNotificationName:DWPasteboardObserverNotification
                                                             object:nil];

@@ -73,7 +73,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None
+                                     payAction:DWPaymentsViewControllerPayAction_None];
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
@@ -102,11 +103,18 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWHomeViewControllerDelegate
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_None];
 }
 
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive
+                                     payAction:DWPaymentsViewControllerPayAction_None];
+}
+
+- (void)homeViewController:(DWHomeViewController *)controller payToAddressButtonAction:(UIView *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_PayToPasteboard];
 }
 
 - (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller {
@@ -158,7 +166,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     ]];
 }
 
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex {
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex
+                                   payAction:(DWPaymentsViewControllerPayAction)payAction {
     if (self.modalController) {
         return;
     }
@@ -169,9 +178,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     DWHomeModel *homeModel = self.homeViewController.model;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
-    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithModel:receiveModel];
+    DWPayModel *payModel = homeModel.payModel;
+    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
+                                                                                       payModel:payModel];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
+    controller.payAction = payAction;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;

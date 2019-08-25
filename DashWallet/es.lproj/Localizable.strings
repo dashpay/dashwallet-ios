@@ -171,6 +171,9 @@
 "clear trusted node?" = "quitar nodo de confianza?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "el portapapeles no contiene una dirección dash válida";
 
 /* No comment provided by engineer. */

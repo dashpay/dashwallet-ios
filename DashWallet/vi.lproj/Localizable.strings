@@ -171,6 +171,9 @@
 "clear trusted node?" = "xoá các nút đã tin cậy?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "bộ đệm không chứa địa chỉ hợp lệ của dash";
 
 /* No comment provided by engineer. */

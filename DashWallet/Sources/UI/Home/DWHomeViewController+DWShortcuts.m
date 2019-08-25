@@ -19,12 +19,12 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWHomeModel.h"
-#import "DWShortcutAction.h"
-
 #import "DWBackupInfoViewController.h"
+#import "DWHomeModel.h"
 #import "DWNavigationController.h"
+#import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_PayToAddress: {
+            [self payToAddressAction:sender];
             break;
         }
         case DWShortcutActionType_BuySellDash: {
@@ -132,6 +133,33 @@ NS_ASSUME_NONNULL_BEGIN
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)payToAddressAction:(UIView *)sender {
+    DWPayModel *payModel = self.model.payModel;
+    __weak typeof(self) weakSelf = self;
+    [payModel checkIfPayToAddressFromPasteboardAvailable:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success) {
+            [strongSelf.delegate homeViewController:strongSelf payToAddressButtonAction:sender];
+        }
+        else {
+            NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil);
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                           message:message
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:nil];
+            [alert addAction:okAction];
+
+            [strongSelf presentViewController:alert animated:YES completion:nil];
+        }
+    }];
 }
 
 - (void)debug_wipeWallet {

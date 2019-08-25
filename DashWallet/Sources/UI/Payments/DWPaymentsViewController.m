@@ -34,6 +34,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
 @property (nonatomic, strong) DWReceiveModel *receiveModel;
+@property (nonatomic, strong) DWPayModel *payModel;
 
 @property (nonatomic, strong) DWPayViewController *payViewController;
 @property (nonatomic, strong) DWReceiveViewController *receiveViewController;
@@ -44,10 +45,11 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel {
++ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel payModel:(DWPayModel *)payModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
     controller.receiveModel = receiveModel;
+    controller.payModel = payModel;
 
     return controller;
 }
@@ -73,6 +75,24 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     [self setupView];
     [self setupControllers];
+
+    if (self.currentIndex == DWPaymentsViewControllerIndex_Pay) {
+        switch (self.payAction) {
+            case DWPaymentsViewControllerPayAction_None: {
+                break;
+            }
+            case DWPaymentsViewControllerPayAction_ScanToPay: {
+                [self.payViewController scanQRCode];
+                break;
+            }
+            case DWPaymentsViewControllerPayAction_PayToPasteboard: {
+                [self.payViewController payToPasteboard];
+                break;
+            }
+        }
+
+        self.payAction = DWPaymentsViewControllerPayAction_None;
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -146,7 +166,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 }
 
 - (void)setupControllers {
-    self.payViewController = [DWPayViewController controller];
+    self.payViewController = [DWPayViewController controllerWithModel:self.payModel];
     self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
 }
 

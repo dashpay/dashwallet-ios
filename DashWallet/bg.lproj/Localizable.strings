@@ -171,6 +171,9 @@
 "clear trusted node?" = "изчистване на познатите нодове?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "клипборда на съдържа валиден Dash адрес";
 
 /* No comment provided by engineer. */

@@ -96,26 +96,22 @@ NS_ASSUME_NONNULL_BEGIN
     [self.pasteboardObserver stopIntervalObserving];
 }
 
+- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
+    __weak typeof(self) weakSelf = self;
+    [self.pasteboardObserver checkPasteboardContentsCompletion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        [strongSelf processPasteboardContentsWithCompletion:completion];
+    }];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {
-    NSArray<NSString *> *contents = self.pasteboardObserver.contents;
-    if (contents.count == 0) {
-        self.pasteboardPaymentInput = nil;
-    }
-    else {
-        __weak typeof(self) weakSelf = self;
-        [self.inputBuilder payFirstFromArray:contents
-                                      source:DWPaymentInputSource_Pasteboard
-                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
-                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
-
-                                      strongSelf.pasteboardPaymentInput = paymentInput;
-                                  }];
-    }
+    [self processPasteboardContentsWithCompletion:nil];
 }
 
 #pragma mark - NFCNDEFReaderSessionDelegate
@@ -167,6 +163,37 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (void)processPasteboardContentsWithCompletion:(nullable void (^)(BOOL success))completion {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    NSArray<NSString *> *contents = self.pasteboardObserver.contents;
+    if (contents.count == 0) {
+        self.pasteboardPaymentInput = nil;
+
+        if (completion) {
+            completion(NO);
+        }
+    }
+    else {
+        __weak typeof(self) weakSelf = self;
+        [self.inputBuilder payFirstFromArray:contents
+                                      source:DWPaymentInputSource_Pasteboard
+                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
+
+                                      strongSelf.pasteboardPaymentInput = paymentInput;
+
+                                      if (completion) {
+                                          BOOL success = paymentInput.request || paymentInput.protocolRequest;
+                                          completion(success);
+                                      }
+                                  }];
+    }
+}
 
 - (void)setPasteboardPaymentInput:(nullable DWPaymentInput *)pasteboardPaymentInput {
     _pasteboardPaymentInput = pasteboardPaymentInput;

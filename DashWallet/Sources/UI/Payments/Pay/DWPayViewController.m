@@ -28,6 +28,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
+    DWPayControllerInitialAction_None,
+    DWPayControllerInitialAction_ScanQR,
+    DWPayControllerInitialAction_PayToPasteboard,
+};
+
 @interface DWPayViewController () <UITableViewDataSource,
                                    DWPayTableViewCellDelegate,
                                    DWPaymentInputProcessorDelegate,
@@ -35,18 +41,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
-@property (strong, nonatomic) DWPayModel *model;
+@property (nonatomic, assign) DWPayControllerInitialAction initialAction;
+@property (nonatomic, assign) BOOL initialActionDone;
+
+@property (nonatomic, strong) DWPayModel *model;
 @property (nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
 @end
 
 @implementation DWPayViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWPayModel *)payModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWPayModel alloc] init];
-    controller.paymentProcessor = [[DWPaymentProcessor alloc] init];
+    controller.model = payModel;
+    DWPaymentProcessor *paymentProcessor = [[DWPaymentProcessor alloc] init];
+    paymentProcessor.delegate = controller;
+    controller.paymentProcessor = paymentProcessor;
 
     return controller;
 }
@@ -63,12 +74,40 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView flashScrollIndicators];
 
     [self.model startPasteboardIntervalObserving];
+
+    if (self.initialActionDone == NO && self.initialAction != DWPayControllerInitialAction_None) {
+        self.initialActionDone = YES;
+
+        switch (self.initialAction) {
+            case DWPayControllerInitialAction_None: {
+                break;
+            }
+            case DWPayControllerInitialAction_ScanQR: {
+                [self performScanQRCodeAction];
+
+                break;
+            }
+            case DWPayControllerInitialAction_PayToPasteboard: {
+                [self performPayToPasteboardAction];
+
+                break;
+            }
+        }
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
 
     [self.model stopPasteboardIntervalObserving];
+}
+
+- (void)scanQRCode {
+    self.initialAction = DWPayControllerInitialAction_ScanQR;
+}
+
+- (void)payToPasteboard {
+    self.initialAction = DWPayControllerInitialAction_PayToPasteboard;
 }
 
 #pragma mark - UITableViewDataSource
@@ -99,13 +138,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     switch (payOption.type) {
         case DWPayOptionModelType_ScanQR: {
-            // TODO: show qr screen
+            [self performScanQRCodeAction];
+
             break;
         }
         case DWPayOptionModelType_Pasteboard: {
-            DWPaymentInput *paymentInput = self.model.pasteboardPaymentInput;
-            NSParameterAssert(paymentInput);
-            [self.paymentProcessor processPaymentInput:paymentInput];
+            [self performPayToPasteboardAction];
 
             break;
         }
@@ -136,7 +174,8 @@ NS_ASSUME_NONNULL_BEGIN
         [DWSendAmountViewController sendControllerWithDestination:sendingDestination
                                                    paymentDetails:nil];
     controller.delegate = self;
-    [self.navigationController pushViewController:controller animated:YES];
+    const BOOL animated = self.initialAction == DWPayControllerInitialAction_PayToPasteboard ? NO : YES;
+    [self.navigationController pushViewController:controller animated:animated];
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
@@ -214,7 +253,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     displayFileProcessResult:(NSString *)result {
-    NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:result
                          message:nil
@@ -260,6 +298,20 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
 
     self.tableView.tableFooterView = [[UIView alloc] init];
+}
+
+- (void)performScanQRCodeAction {
+    // TODO: impl
+}
+
+- (void)performPayToPasteboardAction {
+    DWPaymentInput *paymentInput = self.model.pasteboardPaymentInput;
+    NSParameterAssert(paymentInput);
+    if (!paymentInput) {
+        return;
+    }
+
+    [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
 @end

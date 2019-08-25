@@ -171,6 +171,9 @@
 "clear trusted node?" = "usunąć zaufany węzeł?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "schowek nie zawiera prawidłowego adresu dash";
 
 /* No comment provided by engineer. */

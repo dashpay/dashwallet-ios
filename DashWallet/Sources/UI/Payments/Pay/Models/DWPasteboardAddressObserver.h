@@ -28,6 +28,8 @@ extern NSString *DWPasteboardObserverNotification;
 - (void)startIntervalObserving;
 - (void)stopIntervalObserving;
 
+- (void)checkPasteboardContentsCompletion:(nullable void (^)(void))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

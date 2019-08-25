@@ -171,6 +171,9 @@
 "clear trusted node?" = "신뢰할 수 있는 노드를 삭제하시겠습니까?";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "클립 보드 내 지갑 주소가 유효하지 않음";
 
 /* No comment provided by engineer. */

@@ -171,6 +171,9 @@
 "clear trusted node?" = "信頼されているノードを消去しますか？";
 
 /* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "クリップボードに有効なDashアドレスが含まれていません";
 
 /* No comment provided by engineer. */
