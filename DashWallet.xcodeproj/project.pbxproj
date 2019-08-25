@@ -22,6 +22,7 @@
 		2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69A523114BA7001B8C90 /* DWSendAmountViewController.m */; };
 		2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */; };
 		2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */; };
+		2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69B22312E8A0001B8C90 /* DWWindow.m */; };
 		2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */; };
 		2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58321947CBE00E7B563 /* BRPeerEntity.m */; };
 		2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */; };
@@ -492,6 +493,8 @@
 		2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWHUD.m"; sourceTree = "<group>"; };
 		2A0C69AE2312DD67001B8C90 /* DWSpecifyAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSpecifyAmountViewController.h; sourceTree = "<group>"; };
 		2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSpecifyAmountViewController.m; sourceTree = "<group>"; };
+		2A0C69B12312E8A0001B8C90 /* DWWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWindow.h; sourceTree = "<group>"; };
+		2A0C69B22312E8A0001B8C90 /* DWWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWindow.m; sourceTree = "<group>"; };
 		2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
 		2A11F58321947CBE00E7B563 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		2A11F58521947CBE00E7B563 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
@@ -1494,6 +1497,8 @@
 				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
 				2A74EFF623053ECE00C475EB /* DWIntrinsicTextView.h */,
 				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
+				2A0C69B12312E8A0001B8C90 /* DWWindow.h */,
+				2A0C69B22312E8A0001B8C90 /* DWWindow.m */,
 			);
 			path = SharedViews;
 			sourceTree = "<group>";
@@ -3511,6 +3516,7 @@
 				751B2B5C1B68911700EA87FB /* DWTxHistoryViewController.m in Sources */,
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */,
+				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,

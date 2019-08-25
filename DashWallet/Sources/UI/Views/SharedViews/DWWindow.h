@@ -15,17 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWHomeViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWShortcutAction;
+extern NSString *const DWDeviceDidShakeNotification;
 
-@interface DWHomeViewController (DWShortcuts)
-
-- (void)performActionForShortcut:(DWShortcutAction *)action sender:(UIView *)sender;
-
-- (void)debug_wipeWallet;
+@interface DWWindow : UIWindow
 
 @end
 

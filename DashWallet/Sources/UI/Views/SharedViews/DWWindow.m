@@ -15,17 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWHomeViewController.h"
+#import "DWWindow.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWShortcutAction;
+NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
 
-@interface DWHomeViewController (DWShortcuts)
+@implementation DWWindow
 
-- (void)performActionForShortcut:(DWShortcutAction *)action sender:(UIView *)sender;
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event {
+    [super motionEnded:motion withEvent:event];
 
-- (void)debug_wipeWallet;
+    if (event.type == UIEventTypeMotion && event.subtype == UIEventSubtypeMotionShake) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWDeviceDidShakeNotification
+                                                            object:nil];
+    }
+}
 
 @end
 
