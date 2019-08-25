@@ -23,6 +23,7 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWHomeViewController+DWTxFilter.h"
 #import "DWNavigationController.h"
+#import "DWShortcutAction.h"
 #import "DWWindow.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -81,6 +82,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
     [self.delegate homeViewController:self receiveButtonAction:sender];
+}
+
+- (void)homeView:(DWHomeView *)homeView balanceButtonAction:(UIControl *)sender {
+    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
+    [self performActionForShortcut:action sender:sender];
 }
 
 #pragma mark - DWShortcutsActionDelegate

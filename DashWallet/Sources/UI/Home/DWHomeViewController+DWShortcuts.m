@@ -27,6 +27,9 @@
 #import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
 
+// TODO: rm
+#import "UIView+DWHUD.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController (DWShortcuts_Internal) <DWSecureWalletDelegate>
@@ -61,6 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_LocalCurrency: {
+            // TODO: rm
+            [self.view dw_showInfoHUDWithText:@"The Local Currency screen will be opened here as soon as it is implemented 😉"];
 
             break;
         }

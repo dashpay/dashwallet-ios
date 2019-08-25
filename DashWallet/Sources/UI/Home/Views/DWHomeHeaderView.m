@@ -140,6 +140,11 @@ static NSTimeInterval const SYNCVIEW_SHOW_DELAY = 1.0;
     [self.delegate homeHeaderView:self receiveButtonAction:sender];
 }
 
+- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
+                 balanceButtonAction:(UIControl *)sender {
+    [self.delegate homeHeaderView:self balanceButtonAction:sender];
+}
+
 #pragma mark - DWShortcutsViewDelegate
 
 - (void)shortcutsViewDidUpdateContentSize:(DWShortcutsView *)view {

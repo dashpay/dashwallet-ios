@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 2.5;
+static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 3.5;
 
 @implementation UIView (DWHUD)
 
@@ -34,6 +34,7 @@ static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 2.5;
         hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
         hud.label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
         hud.label.adjustsFontForContentSizeCategory = YES;
+        hud.label.numberOfLines = 0;
     }
     hud.label.text = message;
 }
@@ -48,6 +49,7 @@ static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 2.5;
     hud.mode = MBProgressHUDModeText;
     hud.label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     hud.label.adjustsFontForContentSizeCategory = YES;
+    hud.label.numberOfLines = 0;
     hud.label.text = text;
     __weak typeof(self) weakSelf = self;
     hud.completionBlock = ^{
