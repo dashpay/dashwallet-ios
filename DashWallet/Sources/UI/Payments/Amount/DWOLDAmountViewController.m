@@ -63,7 +63,7 @@ static CGFloat HorizontalPadding() {
 + (instancetype)requestController {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
     DWOLDAmountViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntentRequest
+    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Request
                                                sendingDestination:nil
                                                    paymentDetails:nil];
     return controller;
@@ -73,7 +73,7 @@ static CGFloat HorizontalPadding() {
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AmountStoryboard" bundle:nil];
     DWOLDAmountViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntentSend
+    controller.model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Send
                                                sendingDestination:sendingDestination
                                                    paymentDetails:paymentDetails];
     return controller;
@@ -118,7 +118,7 @@ static CGFloat HorizontalPadding() {
                       self.actionBarButton.enabled = value.plainAmount > 0;
                   }];
 
-    if (self.model.inputIntent == DWAmountInputIntentSend) {
+    if (self.model.inputIntent == DWAmountInputIntent_Send) {
         [self mvvm_observe:@"model.sendingOptions.state"
                       with:^(__typeof(self) self, NSNumber *value) {
                           DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
@@ -220,7 +220,7 @@ static CGFloat HorizontalPadding() {
     }
 
     switch (self.model.inputIntent) {
-        case DWAmountInputIntentRequest: {
+        case DWAmountInputIntent_Request: {
             NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:)],
                      @"Amount view controller's delegate should respond to amountViewController:didInputAmount:");
 
@@ -228,7 +228,7 @@ static CGFloat HorizontalPadding() {
 
             break;
         }
-        case DWAmountInputIntentSend: {
+        case DWAmountInputIntent_Send: {
             NSAssert([self.delegate respondsToSelector:@selector(amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:)],
                      @"Amount view controller's delegate should respond to amountViewController:didInputAmount:wasProposedToUseInstantSend:usedInstantSend:");
 
@@ -303,13 +303,13 @@ static CGFloat HorizontalPadding() {
     self.amountKeyboard.textInput = self.textField;
 
     switch (self.model.inputIntent) {
-        case DWAmountInputIntentRequest: {
+        case DWAmountInputIntent_Request: {
             self.infoStackView.hidden = YES;
             self.addressLabel.text = nil;
 
             break;
         }
-        case DWAmountInputIntentSend: {
+        case DWAmountInputIntent_Send: {
             self.infoStackView.hidden = NO;
             DWAmountSendingOptionsModel *sendingOptions = self.model.sendingOptions;
             NSParameterAssert(sendingOptions);

@@ -51,11 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
         [self.layer addSublayer:previewLayer];
         _previewLayer = previewLayer;
 
-        UIView *overlayView = [[UIView alloc] initWithFrame:CGRectZero];
-        overlayView.translatesAutoresizingMaskIntoConstraints = NO;
-        overlayView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.25];
-        [self addSubview:overlayView];
-
         UIImageView *frameImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"qr_frame"]];
         frameImageView.translatesAutoresizingMaskIntoConstraints = NO;
         [self addSubview:frameImageView];
@@ -96,11 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
         // Layout
 
         [NSLayoutConstraint activateConstraints:@[
-            [overlayView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [overlayView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-            [overlayView.topAnchor constraintEqualToAnchor:toolbar.topAnchor],
-            [overlayView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-
             [frameImageView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
             [frameImageView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
 

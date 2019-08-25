@@ -33,7 +33,6 @@ static CALayer *SeparatorLineLayer(void) {
 @interface DWAmountDescriptionView ()
 
 @property (nonatomic, strong) CALayer *topLineLayer;
-@property (nonatomic, strong) CALayer *bottomLineLayer;
 @property (nonatomic, strong) UILabel *descriptionLabel;
 
 @end
@@ -47,9 +46,6 @@ static CALayer *SeparatorLineLayer(void) {
 
         _topLineLayer = SeparatorLineLayer();
         [self.layer addSublayer:_topLineLayer];
-
-        _bottomLineLayer = SeparatorLineLayer();
-        [self.layer addSublayer:_bottomLineLayer];
 
         UILabel *descriptionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -81,7 +77,6 @@ static CALayer *SeparatorLineLayer(void) {
 
     const CGSize size = self.bounds.size;
     self.topLineLayer.frame = CGRectMake(0.0, 0.0, size.width, SEPARATOR_HEIGHT);
-    self.bottomLineLayer.frame = CGRectMake(0.0, size.height - SEPARATOR_HEIGHT, size.width, SEPARATOR_HEIGHT);
 }
 
 - (nullable NSString *)text {

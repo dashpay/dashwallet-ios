@@ -24,8 +24,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
-    DWAmountInputIntentRequest,
-    DWAmountInputIntentSend,
+    DWAmountInputIntent_Request,
+    DWAmountInputIntent_Send,
 };
 
 @interface DWAmountModel : NSObject

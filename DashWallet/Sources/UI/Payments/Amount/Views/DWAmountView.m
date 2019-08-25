@@ -28,6 +28,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const KEYBOARD_HEIGHT = 215.0;
+static CGFloat const SEPARATOR_HEIGHT = 1.0;
 static CGFloat const DESC_KEYBOARD_PADDING = 8.0;
 static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
@@ -63,7 +64,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
         DWMaxButton *maxButton = [[DWMaxButton alloc] initWithFrame:CGRectZero];
         maxButton.translatesAutoresizingMaskIntoConstraints = NO;
-        maxButton.hidden = model.inputIntent == DWAmountInputIntentRequest;
+        maxButton.hidden = model.inputIntent == DWAmountInputIntent_Request;
         [maxButton addTarget:self
                       action:@selector(maxButtonAction:)
             forControlEvents:UIControlEventTouchUpInside];
@@ -81,7 +82,6 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         alignmentStackView.translatesAutoresizingMaskIntoConstraints = NO;
         alignmentStackView.axis = UILayoutConstraintAxisHorizontal;
         alignmentStackView.alignment = UIStackViewAlignmentCenter;
-        [self addSubview:alignmentStackView];
 
         CGRect textFieldRect = CGRectMake(0.0, -500.0, 320, 44); // hides supplementary text field
         UITextField *textField = [[UITextField alloc] initWithFrame:textFieldRect];
@@ -99,8 +99,20 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
         DWAmountDescriptionView *descriptionView = [[DWAmountDescriptionView alloc] initWithFrame:CGRectZero];
         descriptionView.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:descriptionView];
         _descriptionView = descriptionView;
+
+        UIStackView *contentStackView = [[UIStackView alloc]
+            initWithArrangedSubviews:@[ alignmentStackView, descriptionView ]];
+        contentStackView.translatesAutoresizingMaskIntoConstraints = NO;
+        contentStackView.axis = UILayoutConstraintAxisVertical;
+        contentStackView.alignment = UIStackViewAlignmentCenter;
+        contentStackView.spacing = 0.0;
+        [self addSubview:contentStackView];
+
+        UIView *separatorLineView = [[UIView alloc] init];
+        separatorLineView.translatesAutoresizingMaskIntoConstraints = NO;
+        separatorLineView.backgroundColor = [UIColor dw_separatorLineColor];
+        [self addSubview:separatorLineView];
 
         DWNumberKeyboard *numberKeyboard = [[DWNumberKeyboard alloc] initWithFrame:CGRectZero];
         numberKeyboard.translatesAutoresizingMaskIntoConstraints = NO;
@@ -114,16 +126,16 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                            forAxis:UILayoutConstraintAxisVertical];
 
         [NSLayoutConstraint activateConstraints:@[
-            [alignmentStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
-            [alignmentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [alignmentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [contentStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
+            [contentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [contentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
+            [separatorLineView.topAnchor constraintEqualToAnchor:contentStackView.bottomAnchor],
+            [separatorLineView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [separatorLineView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [separatorLineView.heightAnchor constraintEqualToConstant:SEPARATOR_HEIGHT],
 
-            [descriptionView.topAnchor constraintEqualToAnchor:alignmentStackView.bottomAnchor],
-            [descriptionView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-            [descriptionView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-
-            [numberKeyboard.topAnchor constraintEqualToAnchor:descriptionView.bottomAnchor
+            [numberKeyboard.topAnchor constraintEqualToAnchor:separatorLineView.bottomAnchor
                                                      constant:DESC_KEYBOARD_PADDING],
             [numberKeyboard.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [numberKeyboard.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
@@ -141,7 +153,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       }];
 
 
-        if (_model.inputIntent == DWAmountInputIntentSend) {
+        if (_model.inputIntent == DWAmountInputIntent_Send) {
             [self mvvm_observe:DW_KEYPATH(self, model.sendingOptions.state)
                           with:^(__typeof(self) self, NSNumber *value) {
                               DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
@@ -169,6 +181,9 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                               self.maxButton.selected = allFundsSelected;
                               self.inputControl.hidden = allFundsSelected;
                           }];
+        }
+        else {
+            _descriptionView.hidden = YES;
         }
     }
     return self;

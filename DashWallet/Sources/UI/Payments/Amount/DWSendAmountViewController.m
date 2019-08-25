@@ -21,15 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSendAmountViewController ()
-
-@end
-
 @implementation DWSendAmountViewController
 
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
-    DWAmountModel *model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntentSend
+    DWAmountModel *model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Send
                                                    sendingDestination:sendingDestination
                                                        paymentDetails:paymentDetails];
 
@@ -56,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSAssert(self.model.inputIntent == DWAmountInputIntentSend, @"Inconsistent state");
+    NSAssert(self.model.inputIntent == DWAmountInputIntent_Send, @"Inconsistent state");
 
     // TODO: fix me
     // Workaround:

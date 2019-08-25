@@ -54,12 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
         _locked = ![DSAuthenticationManager sharedInstance].didAuthenticate;
 
         switch (inputIntent) {
-            case DWAmountInputIntentRequest: {
+            case DWAmountInputIntent_Request: {
                 _actionButtonTitle = NSLocalizedString(@"Request", nil);
 
                 break;
             }
-            case DWAmountInputIntentSend: {
+            case DWAmountInputIntent_Send: {
                 NSParameterAssert(sendingDestination);
                 _actionButtonTitle = NSLocalizedString(@"Pay", nil);
                 _sendingOptions = [[DWAmountSendingOptionsModel alloc]
@@ -205,7 +205,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.amount = self.amountEnteredInLocalCurrency;
     }
 
-    if (self.inputIntent == DWAmountInputIntentSend) {
+    if (self.inputIntent == DWAmountInputIntent_Send) {
         NSParameterAssert(self.sendingOptions);
         [self.sendingOptions updateWithAmount:self.amount.plainAmount];
     }
