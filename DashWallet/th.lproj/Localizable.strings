@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "จำเป็นต้องใช้รหัสตลอด";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "จ่ายเงินสองเท่า";
@@ -486,13 +492,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "ไม่ใช่ โค้ด QR ของ dash  หรือ  bitcoin";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "ไม่ใช่โค้ด QR ของ dash ";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "ไม่ใช่ที่อยู่ bitcoin address ที่ถูกต้อง";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";

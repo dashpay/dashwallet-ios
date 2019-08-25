@@ -23,15 +23,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWQRScanViewModel;
+@class DWQRScanModel;
 
-@interface DWQRScanView : UIView
+@interface DWQRScanView : KVOUIView
 
-@property (strong, nonatomic) DWQRScanViewModel *viewModel;
+@property (strong, nonatomic) DWQRScanModel *model;
+
+- (void)viewWillAppear;
+- (void)viewDidDisappear;
 
 @end
 

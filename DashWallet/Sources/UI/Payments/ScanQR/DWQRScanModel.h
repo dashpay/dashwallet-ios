@@ -29,8 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AVCaptureSession;
 @class AVMetadataMachineReadableCodeObject;
-@class DSPaymentRequest;
-@class DSPaymentProtocolRequest;
+@class DWPaymentInput;
 
 typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
     QRCodeObjectTypeProcessing,
@@ -50,13 +49,13 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 
 //
 
-@protocol DWQRScanViewModelDelegate;
+@protocol DWQRScanModelDelegate;
 
-@interface DWQRScanViewModel : NSObject
+@interface DWQRScanModel : NSObject
 
 @property (readonly, class, getter=isTorchAvailable) BOOL torchAvailable;
 
-@property (weak, nonatomic) id<DWQRScanViewModelDelegate> delegate;
+@property (weak, nonatomic) id<DWQRScanModelDelegate> delegate;
 
 @property (readonly, strong, nonatomic) AVCaptureSession *captureSession;
 @property (readonly, assign, nonatomic, getter=isCameraDeniedOrRestricted) BOOL cameraDeniedOrRestricted;
@@ -71,20 +70,15 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 
 @end
 
-@protocol DWQRScanViewModelDelegate <NSObject>
+@protocol DWQRScanModelDelegate <NSObject>
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
-didScanStandardNonPaymentRequest:(DSPaymentRequest *)request;
+- (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput;
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
-  didScanPaymentRequest:(DSPaymentRequest *)request
-        protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
-                  error:(NSError *_Nullable)error;
+- (void)qrScanModel:(DWQRScanModel *)viewModel
+     showErrorTitle:(nullable NSString *)title
+            message:(nullable NSString *)message;
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
-didScanBIP73PaymentProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest;
-
-- (void)qrScanViewModelDidCancel:(DWQRScanViewModel *)viewModel;
+- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel;
 
 @end
 

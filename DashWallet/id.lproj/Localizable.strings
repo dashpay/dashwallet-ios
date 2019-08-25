@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "selalu membutuhkan kode sandi";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Selesai";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "pengiriman ganda";
@@ -486,13 +492,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "bukan kode QR dash atau bitcoin";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "bukan kode QR dash";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "bukan alamat bitcoin yang valid";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "bukan alamat dash yang valid";

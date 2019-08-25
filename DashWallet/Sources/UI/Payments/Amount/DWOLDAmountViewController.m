@@ -181,7 +181,6 @@ static CGFloat HorizontalPadding() {
 #pragma mark - Actions
 
 - (void)cancelButtonAction:(id)sender {
-    [DSEventManager saveEvent:@"amount:dismiss"];
     [self.delegate amountViewControllerDidCancel:self];
 }
 
@@ -216,8 +215,6 @@ static CGFloat HorizontalPadding() {
                     handler:nil];
         [alert addAction:okAction];
         [self presentViewController:alert animated:YES completion:nil];
-
-        [DSEventManager saveEvent:@"amount:amount_too_small"];
 
         return;
     }
@@ -254,8 +251,6 @@ static CGFloat HorizontalPadding() {
             break;
         }
     }
-
-    [DSEventManager saveEvent:@"amount:pay"];
 }
 
 - (void)balanceButtonAction:(id)sender {

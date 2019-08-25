@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "يتطلب دائما الرقم السري";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "تم";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "ضعف الانفاق";
@@ -486,13 +492,7 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "لا يوجد QR لداش ";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "لا يوجد رمز الاستجابة السريعة داش";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "عنوان داش غير صالح";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "عنوان داش غير صالح";

@@ -109,8 +109,6 @@ NS_ASSUME_NONNULL_BEGIN
         self.activeType = DWAmountTypeMain;
     }
     [self updateCurrentAmount];
-
-    [DSEventManager saveEvent:@"amount:swap_currency"];
 }
 
 - (void)setAllFundsSelected:(BOOL)allFundsSelected {
@@ -149,16 +147,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)unlock {
-    [DSEventManager saveEvent:@"amount:unlock"];
-
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager authenticateWithPrompt:nil
                                        andTouchId:YES
                                    alertIfLockout:YES
                                        completion:^(BOOL authenticated, BOOL cancelled) {
-                                           if (authenticated) {
-                                               [DSEventManager saveEvent:@"amount:successful_unlock"];
-                                           }
                                            self.locked = !authenticated;
                                        }];
 }

@@ -22,6 +22,8 @@
 #import "DWPayTableViewCell.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
+#import "DWQRScanModel.h"
+#import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
@@ -36,8 +38,9 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 
 @interface DWPayViewController () <UITableViewDataSource,
                                    DWPayTableViewCellDelegate,
-                                   DWPaymentInputProcessorDelegate,
-                                   DWSendAmountViewControllerDelegate>
+                                   DWPaymentProcessorDelegate,
+                                   DWSendAmountViewControllerDelegate,
+                                   DWQRScanModelDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
@@ -163,7 +166,7 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
     }
 }
 
-#pragma mark - DWPaymentInputProcessorDelegate
+#pragma mark - DWPaymentProcessorDelegate
 
 // User Actions
 
@@ -216,25 +219,16 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 
 // Result
 
-- (void)paymentInputProcessorHideAmountControllerIfNeeded:(nonnull DWPaymentProcessor *)processor {
+- (void)paymentProcessorHideAmountControllerIfNeeded:(nonnull DWPaymentProcessor *)processor {
     if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
         [self.navigationController popViewControllerAnimated:YES];
     }
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-       didFailWithReason:(nullable NSString *)reason
-             description:(nullable NSString *)description {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:reason
-                         message:description
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"OK", nil)
-                  style:UIAlertActionStyleCancel
-                handler:nil];
-    [alert addAction:okAction];
-    [self.navigationController presentViewController:alert animated:YES completion:nil];
+        didFailWithTitle:(nullable NSString *)title
+                 message:(nullable NSString *)message {
+    [self showAlertWithTitle:title message:message];
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
@@ -251,21 +245,11 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 
 // Handle File
 
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    displayFileProcessResult:(NSString *)result {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:result
-                         message:nil
-                  preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *okAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"OK", nil)
-                  style:UIAlertActionStyleCancel
-                handler:nil];
-    [alert addAction:okAction];
-    [self.navigationController presentViewController:alert animated:YES completion:nil];
+- (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result {
+    [self showAlertWithTitle:result message:nil];
 }
 
-- (void)paymentInputProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor {
+- (void)paymentProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor {
     // NOP
 }
 
@@ -289,6 +273,25 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
     [self.paymentProcessor provideAmount:amount usedInstantSend:usedInstantSend];
 }
 
+#pragma mark -  DWQRScanModelDelegate
+
+- (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.paymentProcessor processPaymentInput:paymentInput];
+                             }];
+}
+
+- (void)qrScanModel:(DWQRScanModel *)viewModel
+     showErrorTitle:(nullable NSString *)title
+            message:(nullable NSString *)message {
+    [self showAlertWithTitle:title message:message];
+}
+
+- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 #pragma mark - Private
 
 - (void)setupView {
@@ -301,7 +304,9 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 }
 
 - (void)performScanQRCodeAction {
-    // TODO: impl
+    DWQRScanViewController *controller = [[DWQRScanViewController alloc] init];
+    controller.model.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)performPayToPasteboardAction {
@@ -312,6 +317,19 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
     }
 
     [self.paymentProcessor processPaymentInput:paymentInput];
+}
+
+- (void)showAlertWithTitle:(NSString *_Nullable)title message:(NSString *_Nullable)message {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"OK", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [alert addAction:okAction];
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
 @end

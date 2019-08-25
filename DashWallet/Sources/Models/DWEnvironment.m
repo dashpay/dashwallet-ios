@@ -97,14 +97,12 @@
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain mainnet]) {
-        [DSEventManager saveEvent:@"settings:change_network_mainnet"];
         [self switchToNetwork:DSChainType_MainNet withCompletion:completion];
     }
 }
 
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain testnet]) {
-        [DSEventManager saveEvent:@"settings:change_network_testnet"];
         [self switchToNetwork:DSChainType_TestNet withCompletion:completion];
     }
 }

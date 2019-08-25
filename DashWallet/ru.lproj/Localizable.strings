@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "Всегда требовать код доступа";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Готово";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "Двойное расходование";
@@ -486,13 +492,7 @@
 "node ip" = "ip узла";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "Не является QR-кодом для Dash или Bitcoin";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "Не является QR-кодом для Dash";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "Некорректный адрес Bitcoin";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "Некорректный адрес Dash";

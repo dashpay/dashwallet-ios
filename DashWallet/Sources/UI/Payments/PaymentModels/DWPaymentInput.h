@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
     DWPaymentInputSource_Pasteboard,
+    DWPaymentInputSource_ScanQR,
     DWPaymentInputSource_NFC,
 };
 
@@ -32,6 +33,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 @property (readonly, nonatomic, assign) DWPaymentInputSource source;
 @property (nullable, readonly, nonatomic, strong) DSPaymentRequest *request;
 @property (nullable, readonly, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
+@property (nonatomic, assign) BOOL canChangeAmount;
 
 @property (nullable, readonly, nonatomic) NSString *userDetails;
 

@@ -27,11 +27,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWQRScanViewModel;
+@class DWQRScanModel;
 
 @interface DWQRScanViewController : UIViewController
 
-@property (readonly, strong, nonatomic) DWQRScanViewModel *viewModel;
+@property (readonly, strong, nonatomic) DWQRScanModel *model;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

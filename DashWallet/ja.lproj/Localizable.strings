@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "完了";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "２重支払い";
@@ -486,13 +492,7 @@
 "node ip" = "ノードのIP";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "DashまたはビットコインのQRコードではありません";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "DashのQRコードではありません";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "有効なビットコインアドレスではありません";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "有効なDashアドレスではありません";

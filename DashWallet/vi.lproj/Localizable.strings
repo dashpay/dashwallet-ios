@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "luôn cần mật khẩu";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Xong";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "tiêu lặp";
@@ -486,13 +492,7 @@
 "node ip" = "địa chỉ ip của nút";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "đây phải là mã QR của địa chỉ dash hay bitcoin";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "không phải dash mã QR";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "không phải địa chỉ bitcoin hợp lệ";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "không phải một địa chỉ dash hợp lệ";

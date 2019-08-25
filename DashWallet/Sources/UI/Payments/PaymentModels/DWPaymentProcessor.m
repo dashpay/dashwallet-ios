@@ -38,6 +38,7 @@ static NSString *sanitizeString(NSString *s) {
 @property (readonly, nullable, nonatomic, strong) DWPaymentInput *paymentInput;
 
 @property (nonatomic, assign) uint64_t amount;
+@property (nonatomic, assign) BOOL canChangeAmount;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *request;
 
 @end
@@ -48,9 +49,11 @@ static NSString *sanitizeString(NSString *s) {
     NSParameterAssert(self.delegate);
 
     if (paymentInput.request) {
+        self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmRequest:paymentInput.request];
     }
     else if (paymentInput.protocolRequest) {
+        self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmProtocolRequest:paymentInput.protocolRequest];
     }
 }
@@ -81,7 +84,7 @@ static NSString *sanitizeString(NSString *s) {
             [self confirmSweep:request];
         }
         else {
-            [self failedWithReason:NSLocalizedString(@"Not a valid dash address", nil) description:nil];
+            [self failedWithTitle:NSLocalizedString(@"Not a valid dash address", nil) message:nil];
         }
     }
     else if (request.r.length > 0) { // payment protocol over HTTP
@@ -99,8 +102,8 @@ static NSString *sanitizeString(NSString *s) {
                     }
 
                     if (error && !([request.paymentAddress isValidDashAddressOnChain:chain])) {
-                        [strongSelf failedWithReason:NSLocalizedString(@"Couldn't make payment", nil)
-                                         description:error.localizedDescription];
+                        [strongSelf failedWithTitle:NSLocalizedString(@"Couldn't make payment", nil)
+                                            message:error.localizedDescription];
                     }
                     else {
                         [strongSelf confirmProtocolRequest:error ? request.protocolRequest : protocolRequest];
@@ -154,10 +157,10 @@ static NSString *sanitizeString(NSString *s) {
                 [self cancelOrChangeAmount];
             }
             else if (error) {
-                [self failedWithReason:NSLocalizedString(@"Couldn't make payment", nil) description:error.localizedDescription];
+                [self failedWithTitle:NSLocalizedString(@"Couldn't make payment", nil) message:error.localizedDescription];
             }
             else {
-                [self.delegate paymentInputProcessorHideAmountControllerIfNeeded:self];
+                [self.delegate paymentProcessorHideAmountControllerIfNeeded:self];
             }
             return YES;
         }
@@ -185,7 +188,7 @@ static NSString *sanitizeString(NSString *s) {
         }
         errorNotificationBlock:^(NSString *_Nonnull errorTitle, NSString *_Nonnull errorMessage, BOOL shouldCancel) {
             if (errorTitle || errorMessage) {
-                [self failedWithReason:errorTitle description:errorMessage];
+                [self failedWithTitle:errorTitle message:errorMessage];
             }
         }];
 }
@@ -262,11 +265,11 @@ static NSString *sanitizeString(NSString *s) {
                     [errors valueForKeyPath:@"@distinctUnionOfObjects.localizedDescription"];
                 NSString *description = [errorsDescription componentsJoinedByString:@"\n"];
 
-                [self failedWithReason:NSLocalizedString(@"Couldn't transmit payment to dash network", nil)
-                           description:description];
+                [self failedWithTitle:NSLocalizedString(@"Couldn't transmit payment to dash network", nil)
+                              message:description];
             }
 
-            [self.delegate paymentInputProcessorDidFinishProcessingFile:self];
+            [self.delegate paymentProcessorDidFinishProcessingFile:self];
         });
 
         return;
@@ -278,14 +281,14 @@ static NSString *sanitizeString(NSString *s) {
             [self.delegate paymentProcessor:self displayFileProcessResult:ack.memo];
         }
 
-        [self.delegate paymentInputProcessorDidFinishProcessingFile:self];
+        [self.delegate paymentProcessorDidFinishProcessingFile:self];
 
         return;
     }
 
-    [self failedWithReason:NSLocalizedString(@"Unsupported or corrupted document", nil) description:nil];
+    [self failedWithTitle:NSLocalizedString(@"Unsupported or corrupted document", nil) message:nil];
 
-    [self.delegate paymentInputProcessorDidFinishProcessingFile:self];
+    [self.delegate paymentProcessorDidFinishProcessingFile:self];
 }
 
 #pragma mark - Handlers
@@ -360,8 +363,8 @@ static NSString *sanitizeString(NSString *s) {
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
 
     if (error) {
-        [self failedWithReason:NSLocalizedString(@"couldn't sweep balance", nil)
-                   description:error.localizedDescription];
+        [self failedWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+                      message:error.localizedDescription];
     }
     else if (tx) {
         uint64_t amount = fee;
@@ -393,8 +396,8 @@ static NSString *sanitizeString(NSString *s) {
                     publishTransaction:tx
                             completion:^(NSError *error) {
                                 if (error) {
-                                    [self failedWithReason:NSLocalizedString(@"couldn't sweep balance", nil)
-                                               description:error.localizedDescription];
+                                    [self failedWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+                                                  message:error.localizedDescription];
                                 }
                                 else {
                                     [self.delegate paymentProcessor:self
@@ -433,8 +436,8 @@ static NSString *sanitizeString(NSString *s) {
     [self cancel];
 }
 
-- (void)failedWithReason:(nullable NSString *)reason description:(nullable NSString *)description {
-    [self.delegate paymentProcessor:self didFailWithReason:reason description:description];
+- (void)failedWithTitle:(nullable NSString *)title message:(nullable NSString *)message {
+    [self.delegate paymentProcessor:self didFailWithTitle:title message:message];
     [self cancel];
 }
 

@@ -32,7 +32,7 @@
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"
 #import "DWQRScanViewController.h"
-#import "DWQRScanViewModel.h"
+#import "DWQRScanModel.h"
 #import "DWAmountViewController.h"
 
 #define SCAN_TIP_WITH_SHAPESHIFT      NSLocalizedString(@"Scan someone else's QR code to get their dash or bitcoin address. "\
@@ -57,7 +57,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
-@interface DWSendViewController () <DWQRScanViewModelDelegate, DWOLDAmountViewControllerDelegate>
+@interface DWSendViewController () <DWQRScanModelDelegate, DWOLDAmountViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
 @property (nonatomic, strong) DSPaymentProtocolRequest *request;
@@ -983,7 +983,7 @@ static NSString *sanitizeString(NSString *s)
     [sender setEnabled:NO];
     
     DWQRScanViewController *qrScanViewController = [[DWQRScanViewController alloc] init];
-    qrScanViewController.viewModel.delegate = self;
+    qrScanViewController.model.delegate = self;
     [self presentViewController:qrScanViewController animated:YES completion:nil];
 }
 
@@ -1113,64 +1113,70 @@ static NSString *sanitizeString(NSString *s)
     [self confirmProtocolRequest:self.request];
 }
 
-// MARK: - DWQRScanViewModelDelegate
+// MARK: - DWQRScanModelDelegate
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanStandardNonPaymentRequest:(DSPaymentRequest *)request {
-    [self dismissViewControllerAnimated:YES completion:^{
-        if (request.amount > 0) self.canChangeAmount = YES;
-        if (request.isValid && self.showBalance) {
-            [self showBalance:request.paymentAddress];
-            [self cancel:nil];
-        }
-        else {
-            [self confirmRequest:request];
-        }
-    }];
-}
+//- (void)qrScanModel:(DWQRScanModel *)viewModel didScanStandardNonPaymentRequest:(DSPaymentRequest *)request {
+//    [self dismissViewControllerAnimated:YES completion:^{
+//        if (request.amount > 0) self.canChangeAmount = YES;
+//        if (request.isValid && self.showBalance) {
+//            [self showBalance:request.paymentAddress];
+//            [self cancel:nil];
+//        }
+//        else {
+//            [self confirmRequest:request];
+//        }
+//    }];
+//}
+//
+//- (void)qrScanModel:(DWQRScanModel *)viewModel
+//  didScanPaymentRequest:(DSPaymentRequest *)request
+//        protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+//                  error:(NSError *_Nullable)error {
+//    [self dismissViewControllerAnimated:YES completion:^{
+//        if (error) {
+//            request.r = nil;
+//        }
+//
+//        if (error && !request.isValid) {
+//            UIAlertController *alert = [UIAlertController
+//                                        alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+//                                        message:error.localizedDescription
+//                                        preferredStyle:UIAlertControllerStyleAlert];
+//            UIAlertAction* okButton = [UIAlertAction
+//                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+//                                       style:UIAlertActionStyleCancel
+//                                       handler:nil];
+//            [alert addAction:okButton];
+//            [self presentViewController:alert animated:YES completion:nil];
+//
+//            [DSEventManager saveEvent:@"send:cancel"];
+//        }
+//
+//        if (error) {
+//            [DSEventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
+//            [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
+//        }
+//        else {
+//            [DSEventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
+//            [self confirmProtocolRequest:protocolRequest];
+//        }
+//    }];
+//}
+//
+//- (void)qrScanModel:(DWQRScanModel *)viewModel didScanBIP73PaymentProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {
+//    [self dismissViewControllerAnimated:YES completion:^{
+//        [DSEventManager saveEvent:@"send:successful_bip73"];
+//        [self confirmProtocolRequest:protocolRequest];
+//    }];
+//}
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel
-  didScanPaymentRequest:(DSPaymentRequest *)request
-        protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
-                  error:(NSError *_Nullable)error {
-    [self dismissViewControllerAnimated:YES completion:^{
-        if (error) {
-            request.r = nil;
-        }
-        
-        if (error && !request.isValid) {
-            UIAlertController *alert = [UIAlertController
-                                        alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
-                                        message:error.localizedDescription
-                                        preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:nil];
-            [alert addAction:okButton];
-            [self presentViewController:alert animated:YES completion:nil];
-            
-            [DSEventManager saveEvent:@"send:cancel"];
-        }
-        
-        if (error) {
-            [DSEventManager saveEvent:@"send:unsuccessful_qr_payment_protocol_fetch"];
-            [self confirmRequest:request]; // payment protocol fetch failed, so use standard request
-        }
-        else {
-            [DSEventManager saveEvent:@"send:successful_qr_payment_protocol_fetch"];
-            [self confirmProtocolRequest:protocolRequest];
-        }
-    }];
-}
+- (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {}
 
-- (void)qrScanViewModel:(DWQRScanViewModel *)viewModel didScanBIP73PaymentProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {
-    [self dismissViewControllerAnimated:YES completion:^{
-        [DSEventManager saveEvent:@"send:successful_bip73"];
-        [self confirmProtocolRequest:protocolRequest];
-    }];
-}
+- (void)qrScanModel:(DWQRScanModel *)viewModel
+     showErrorTitle:(nullable NSString *)title
+            message:(nullable NSString *)message {}
 
-- (void)qrScanViewModelDidCancel:(DWQRScanViewModel *)viewModel {
+- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

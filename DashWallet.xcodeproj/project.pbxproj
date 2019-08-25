@@ -225,7 +225,7 @@
 		2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE3220DCA7D00A3D1DB /* DWNumberKeyboard.m */; };
 		2AC92C841FEB0A6D008CAEE0 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		2AC92C871FEB0AE8008CAEE0 /* DWQRScanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */; };
-		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */; };
+		2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */; };
 		2ACC989F227B076C000336B3 /* DWStubTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACC989E227B076C000336B3 /* DWStubTransaction.m */; };
 		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
@@ -901,8 +901,8 @@
 		2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewController.m; sourceTree = "<group>"; };
 		2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanView.h; sourceTree = "<group>"; };
 		2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanView.m; sourceTree = "<group>"; };
-		2AC92C881FEB0B8B008CAEE0 /* DWQRScanViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanViewModel.h; sourceTree = "<group>"; };
-		2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanViewModel.m; sourceTree = "<group>"; };
+		2AC92C881FEB0B8B008CAEE0 /* DWQRScanModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQRScanModel.h; sourceTree = "<group>"; };
+		2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQRScanModel.m; sourceTree = "<group>"; };
 		2ACC989D227B076C000336B3 /* DWStubTransaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStubTransaction.h; sourceTree = "<group>"; };
 		2ACC989E227B076C000336B3 /* DWStubTransaction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStubTransaction.m; sourceTree = "<group>"; };
 		2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCrashReporter.h; sourceTree = "<group>"; };
@@ -1282,6 +1282,19 @@
 				2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */,
 			);
 			path = PaymentModels;
+			sourceTree = "<group>";
+		};
+		2A0C69AD2312C666001B8C90 /* ScanQR */ = {
+			isa = PBXGroup;
+			children = (
+				2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */,
+				2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */,
+				2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */,
+				2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */,
+				2AC92C881FEB0B8B008CAEE0 /* DWQRScanModel.h */,
+				2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */,
+			);
+			path = ScanQR;
 			sourceTree = "<group>";
 		};
 		2A11F58021947CBE00E7B563 /* DataMigration */ = {
@@ -1671,6 +1684,7 @@
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
 			isa = PBXGroup;
 			children = (
+				2A0C69AD2312C666001B8C90 /* ScanQR */,
 				2A0C69A023104798001B8C90 /* PaymentModels */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8B9E712302E43400FF8653 /* Receive */,
@@ -2220,12 +2234,6 @@
 		2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */ = {
 			isa = PBXGroup;
 			children = (
-				2AC92C821FEB0A6D008CAEE0 /* DWQRScanViewController.h */,
-				2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */,
-				2AC92C851FEB0AE8008CAEE0 /* DWQRScanView.h */,
-				2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */,
-				2AC92C881FEB0B8B008CAEE0 /* DWQRScanViewModel.h */,
-				2AC92C891FEB0B8B008CAEE0 /* DWQRScanViewModel.m */,
 			);
 			name = "QR Code Scanner";
 			sourceTree = "<group>";
@@ -3386,7 +3394,7 @@
 				2A9FFE742230FF4600956D5F /* DWAlertDismissalAnimationController.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
-				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanViewModel.m in Sources */,
+				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A9FFCD6222EA87F00956D5F /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,

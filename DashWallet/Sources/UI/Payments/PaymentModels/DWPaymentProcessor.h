@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWPaymentProcessor;
 @class DSPaymentProtocolDetails;
 
-@protocol DWPaymentInputProcessorDelegate <NSObject>
+@protocol DWPaymentProcessorDelegate <NSObject>
 
 // User Actions
 
@@ -40,11 +40,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Result
 
-- (void)paymentInputProcessorHideAmountControllerIfNeeded:(DWPaymentProcessor *)processor;
+- (void)paymentProcessorHideAmountControllerIfNeeded:(DWPaymentProcessor *)processor;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-       didFailWithReason:(nullable NSString *)reason
-             description:(nullable NSString *)description;
+        didFailWithTitle:(nullable NSString *)title
+                 message:(nullable NSString *)message;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
@@ -56,9 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Handle File
 
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    displayFileProcessResult:(NSString *)result;
-- (void)paymentInputProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor;
+- (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result;
+- (void)paymentProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor;
 
 // Progress HUD
 
@@ -72,10 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPaymentProcessor : NSObject
 
-// IN:
-@property (nonatomic, assign) BOOL canChangeAmount;
-
-@property (nullable, nonatomic, weak) id<DWPaymentInputProcessorDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput;
 - (void)processFile:(NSData *)file;

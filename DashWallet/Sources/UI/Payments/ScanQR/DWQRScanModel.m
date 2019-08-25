@@ -25,7 +25,12 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import "DWQRScanViewModel.h"
+#import <DashSync/DashSync.h>
+
+#import "DWPaymentInput+Private.h"
+#import "DWQRScanModel.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const kReqeustTimeout = 5.0;
 static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
@@ -35,7 +40,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 @interface QRCodeObject ()
 
 @property (assign, nonatomic) QRCodeObjectType type;
-@property (copy, nonatomic) NSString *errorMessage;
+@property (nullable, copy, nonatomic) NSString *errorMessage;
 
 @end
 
@@ -63,17 +68,17 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 
 #pragma mark - View Model
 
-@interface DWQRScanViewModel () <AVCaptureMetadataOutputObjectsDelegate>
+@interface DWQRScanModel () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (strong, nonatomic) dispatch_queue_t sessionQueue;
 @property (strong, nonatomic) dispatch_queue_t metadataQueue;
 @property (assign, nonatomic, getter=isCaptureSessionConfigured) BOOL captureSessionConfigured;
 @property (assign, atomic) BOOL paused;
-@property (strong, nonatomic) QRCodeObject *qrCodeObject;
+@property (nullable, strong, nonatomic) QRCodeObject *qrCodeObject;
 
 @end
 
-@implementation DWQRScanViewModel
+@implementation DWQRScanModel
 
 - (instancetype)init {
     self = [super init];
@@ -81,6 +86,10 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         _captureSession = [[AVCaptureSession alloc] init];
     }
     return self;
+}
+
+- (void)dealloc {
+    DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 + (BOOL)isTorchAvailable {
@@ -98,14 +107,14 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 #if !TARGET_OS_SIMULATOR
         [self setupCaptureSessionIfNeeded];
 #endif /* TARGET_OS_SIMULATOR */
-        
+
         dispatch_async(self.sessionQueue, ^{
             if (!self.captureSession.isRunning) {
                 [self.captureSession startRunning];
             }
         });
     };
-    
+
     switch ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo]) {
         case AVAuthorizationStatusNotDetermined: {
             [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
@@ -116,12 +125,12 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
                                      }];
             break;
         }
-            
+
         case AVAuthorizationStatusRestricted:
         case AVAuthorizationStatusDenied: {
             break;
         }
-            
+
         case AVAuthorizationStatusAuthorized: {
             doStartPreview();
             break;
@@ -141,29 +150,27 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     if (![[self class] isTorchAvailable]) {
         return;
     }
-    
+
     if (!self.captureSession.isRunning) {
         return;
     }
-    
+
     dispatch_async(self.sessionQueue, ^{
         NSError *error = nil;
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        
+
         if ([device lockForConfiguration:&error]) {
             device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
             [device unlockForConfiguration];
         }
         else {
-#ifdef DEBUG
-            NSLog(@"DWQRScanViewModel: %@", error);
-#endif /* DEBUG */
+            DSLogInfo(@"DWQRScanModel: %@", error);
         }
     });
 }
 
 - (void)cancel {
-    [self.delegate qrScanViewModelDidCancel:self];
+    [self.delegate qrScanModelDidCancel:self];
 }
 
 #pragma mark Private
@@ -187,48 +194,44 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
         return;
     }
     self.captureSessionConfigured = YES;
-    
+
     dispatch_async(self.sessionQueue, ^{
         NSError *error = nil;
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
         AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
         if (error) {
-#ifdef DEBUG
-            NSLog(@"DWQRScanViewModel: %@", error);
-#endif /* DEBUG */
+            DSLogInfo(@"DWQRScanModel: %@", error);
         }
         if ([device lockForConfiguration:&error]) {
             if (device.isAutoFocusRangeRestrictionSupported) {
                 device.autoFocusRangeRestriction = AVCaptureAutoFocusRangeRestrictionNear;
             }
-            
+
             if ([device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
                 device.focusMode = AVCaptureFocusModeContinuousAutoFocus;
             }
-            
+
             [device unlockForConfiguration];
         }
         else {
-#ifdef DEBUG
-            NSLog(@"DWQRScanViewModel: %@", error);
-#endif /* DEBUG */
+            DSLogInfo(@"DWQRScanModel: %@", error);
         }
-        
+
         [self.captureSession beginConfiguration];
-        
+
         if (input && [self.captureSession canAddInput:input]) {
             [self.captureSession addInput:input];
         }
-        
+
         AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
         if ([self.captureSession canAddOutput:output]) {
             [self.captureSession addOutput:output];
         }
         [output setMetadataObjectsDelegate:self queue:self.metadataQueue];
         if ([output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
-            output.metadataObjectTypes = @[AVMetadataObjectTypeQRCode];
+            output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
         }
-        
+
         [self.captureSession commitConfiguration];
     });
 }
@@ -249,90 +252,116 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     if (self.paused) {
         return;
     }
-    
-    NSUInteger index = [metadataObjects indexOfObjectPassingTest:^BOOL(__kindof AVMetadataObject * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+
+    NSUInteger index = [metadataObjects indexOfObjectPassingTest:^BOOL(__kindof AVMetadataObject *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
         return [obj.type isEqual:AVMetadataObjectTypeQRCode];
     }];
     if (index == NSNotFound) {
         return;
     }
-    
+
     [self pauseQRCodeSearch];
-    
-    [DSEventManager saveEvent:@"send:scanned_qr"];
-    
+
     AVMetadataMachineReadableCodeObject *codeObject = metadataObjects[index];
-    
+
     NSAssert(![NSThread isMainThread], nil);
     dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
         self.qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
     });
-    
+
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:[DWEnvironment sharedInstance].currentChain];
     if (request.isValid || [addr isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
         });
-        
-        [DSEventManager saveEvent:@"send:valid_qr_scan"];
-        
+
         if (request.r.length > 0) { // start fetching payment protocol request right away
-            __weak __typeof__(self) weakSelf = self;
-            [DSPaymentRequest fetch:request.r scheme:request.scheme onChain:[DWEnvironment sharedInstance].currentChain timeout:kReqeustTimeout
-                         completion:^(DSPaymentProtocolRequest *req, NSError *error) {
-                             dispatch_async(dispatch_get_main_queue(), ^{
-                                 __strong __typeof__(weakSelf) strongSelf = weakSelf;
-                                 [strongSelf.delegate qrScanViewModel:strongSelf
-                                                didScanPaymentRequest:request
-                                                      protocolRequest:req
-                                                                error:error];
-                             });
-                         }];
+            __weak typeof(self) weakSelf = self;
+            [DSPaymentRequest
+                     fetch:request.r
+                    scheme:request.scheme
+                   onChain:[DWEnvironment sharedInstance].currentChain
+                   timeout:kReqeustTimeout
+                completion:^(DSPaymentProtocolRequest *protocolRequest, NSError *error) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
+                        }
+
+                        if (error) {
+                            request.r = nil;
+                        }
+
+                        if (error && !request.isValid) {
+                            NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                            [strongSelf.delegate qrScanModel:strongSelf
+                                              showErrorTitle:title
+                                                     message:error.localizedDescription];
+                        }
+
+                        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+
+                        if (error) {
+                            // payment protocol fetch failed, so use standard request
+                            paymentInput.request = request;
+                        }
+                        else {
+                            paymentInput.protocolRequest = protocolRequest;
+                        }
+
+                        [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
+                    });
+                }];
         }
         else { // standard non payment protocol request
-            [self.delegate qrScanViewModel:self didScanStandardNonPaymentRequest:request];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+                paymentInput.request = request;
+                paymentInput.canChangeAmount = request.amount > 0;
+                [self.delegate qrScanModel:self didScanPaymentInput:paymentInput];
+            });
         }
-    } else {
+    }
+    else {
         __weak __typeof__(self) weakSelf = self;
-        [DSPaymentRequest fetch:request.r scheme:request.scheme onChain:[DWEnvironment sharedInstance].currentChain timeout:kReqeustTimeout
-                     completion:^(DSPaymentProtocolRequest *req, NSError *error) { // check to see if it's a BIP73 url
-                         dispatch_async(dispatch_get_main_queue(), ^{
-                             __strong __typeof__(weakSelf) strongSelf = weakSelf;
-                             
-                             if (req) {
-                                 [strongSelf.qrCodeObject setValid];
-                                 [strongSelf.delegate qrScanViewModel:strongSelf didScanBIP73PaymentProtocolRequest:req];
-                             }
-                             else {
-                                 NSString *errorMessage = nil;
-                                 if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
-                                     [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
-                                     errorMessage = [NSString stringWithFormat:@"%@:\n%@",
-                                                     NSLocalizedString(@"not a valid dash address", nil),
-                                                     request.paymentAddress];
-                                     //disabled for now --shapeshift
-                                     //                                 } else if (([request.scheme isEqual:@"bitcoin"] && request.paymentAddress.length > 1) ||
-                                     //                                            [request.paymentAddress hasPrefix:@"1"] || [request.paymentAddress hasPrefix:@"3"]) {
-                                     //                                     errorMessage = [NSString stringWithFormat:@"%@:\n%@",
-                                     //                                                     NSLocalizedString(@"not a valid bitcoin address", nil),
-                                     //                                                     request.paymentAddress];
-                                 }
-                                 else {
-                                     if (FALSE) {
-                                         errorMessage = NSLocalizedString(@"not a dash or bitcoin QR code", nil); //this is kept here on purpose to keep the string in our localization script
-                                     }
-                                     errorMessage = NSLocalizedString(@"not a dash QR code", nil);
-                                 }
-                                 [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
-                                 
-                                 [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
-                                 
-                                 [DSEventManager saveEvent:@"send:unsuccessful_bip73"];
-                             }
-                         });
-                     }];
+        [DSPaymentRequest
+                 fetch:request.r
+                scheme:request.scheme
+               onChain:[DWEnvironment sharedInstance].currentChain
+               timeout:kReqeustTimeout
+            completion:^(DSPaymentProtocolRequest *protocolRequest, NSError *error) { // check to see if it's a BIP73 url
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    __strong __typeof__(weakSelf) strongSelf = weakSelf;
+
+                    if (protocolRequest) {
+                        [strongSelf.qrCodeObject setValid];
+                        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+                        paymentInput.protocolRequest = protocolRequest;
+                        [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
+                    }
+                    else {
+                        NSString *errorMessage = nil;
+                        if (([request.scheme isEqual:@"dash"] && request.paymentAddress.length > 1) ||
+                            [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
+                            errorMessage =
+                                [NSString stringWithFormat:@"%@:\n%@",
+                                                           NSLocalizedString(@"Not a valid Dash address", nil),
+                                                           request.paymentAddress];
+                        }
+                        else {
+                            errorMessage = NSLocalizedString(@"Dot a Dash QR code", nil);
+                        }
+                        [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
+
+                        [strongSelf performSelector:@selector(resumeQRCodeSearch) withObject:nil afterDelay:kResumeSearchTimeInterval];
+                    }
+                });
+            }];
     }
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

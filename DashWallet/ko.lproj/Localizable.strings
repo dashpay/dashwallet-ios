@@ -72,6 +72,9 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "항상 비밀번호 필요";
 
 /* No comment provided by engineer. */
@@ -277,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "완료";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "이중지불";
@@ -486,13 +492,7 @@
 "node ip" = "노드 IP";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "대시 혹은 비트코인 QR 코드가 아닙니다";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "대시 QR 코드가 아닙니다";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "유효한 비트코인 주소가 아닙니다";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "유효한 대시 주소가 아닙니다";
