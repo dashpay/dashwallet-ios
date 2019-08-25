@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ScanToPay: {
-            [self debug_wipeWallet];
+            [self scanQRAction:sender];
             break;
         }
         case DWShortcutActionType_PayToAddress: {
@@ -160,6 +160,10 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf presentViewController:alert animated:YES completion:nil];
         }
     }];
+}
+
+- (void)scanQRAction:(UIView *)sender {
+    [self.delegate homeViewController:self scanQRAction:sender];
 }
 
 - (void)debug_wipeWallet {

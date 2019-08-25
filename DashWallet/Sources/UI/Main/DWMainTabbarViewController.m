@@ -117,6 +117,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                      payAction:DWPaymentsViewControllerPayAction_PayToPasteboard];
 }
 
+- (void)homeViewController:(DWHomeViewController *)controller scanQRAction:(UIView *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_ScanToPay];
+}
+
 - (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller {
     [self.delegate mainTabbarViewControllerDidWipeWallet:self];
 }
