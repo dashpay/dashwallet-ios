@@ -18,7 +18,6 @@
 #import "DWRootModel.h"
 
 #import "DWEnvironment.h"
-#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

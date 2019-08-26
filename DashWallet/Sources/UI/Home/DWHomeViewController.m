@@ -23,6 +23,8 @@
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWHomeViewController+DWTxFilter.h"
 #import "DWNavigationController.h"
+#import "DWShortcutAction.h"
+#import "DWWindow.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,6 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
     [self performJailbreakCheck];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(deviceDidShakeNotification)
+                                                 name:DWDeviceDidShakeNotification
+                                               object:nil];
+
     // TODO: impl migration stuff from protectedViewDidAppear of DWRootViewController
     // TODO: check if wallet is watchOnly and show info about it
 }
@@ -77,10 +84,22 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeViewController:self receiveButtonAction:sender];
 }
 
+- (void)homeView:(DWHomeView *)homeView balanceButtonAction:(UIControl *)sender {
+    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
+    [self performActionForShortcut:action sender:sender];
+}
+
 #pragma mark - DWShortcutsActionDelegate
 
 - (void)shortcutsView:(UIView *)view didSelectAction:(DWShortcutAction *)action sender:(UIView *)sender {
     [self performActionForShortcut:action sender:sender];
+}
+
+#pragma mark - Notifications
+
+- (void)deviceDidShakeNotification {
+#warning Disable debug feature in Release
+    [self debug_wipeWallet];
 }
 
 #pragma mark - Private

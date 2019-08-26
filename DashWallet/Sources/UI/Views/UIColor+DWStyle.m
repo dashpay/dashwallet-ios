@@ -153,6 +153,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_separatorLineColor {
+    UIColor *color = [UIColor colorNamed:@"SeparatorLineColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
-- (void)continueButtonAction:(id)sender {
+- (void)actionButtonAction:(id)sender {
     DWSeedPhraseModel *seedPhrase = self.contentView.model;
 
     DWVerifySeedPhraseViewController *controller = [DWVerifySeedPhraseViewController
@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)previewSeedPhraseContentView:(DWPreviewSeedPhraseContentView *)view
                didChangeConfirmation:(BOOL)confirmed {
-    self.continueButton.enabled = confirmed;
+    self.actionButton.enabled = confirmed;
 }
 
 #pragma mark - Notifications
@@ -152,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
                     [self.contentView updateSeedPhraseModelAnimated:seedPhrase];
                     [self.contentView showScreenshotDetectedErrorMessage];
 
-                    self.continueButton.enabled = NO;
+                    self.actionButton.enabled = NO;
                 }];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];

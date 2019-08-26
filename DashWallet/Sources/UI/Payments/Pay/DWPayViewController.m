@@ -20,24 +20,47 @@
 #import "DWPayModel.h"
 #import "DWPayOptionModel.h"
 #import "DWPayTableViewCell.h"
+#import "DWPaymentInputBuilder.h"
+#import "DWPaymentProcessor.h"
+#import "DWQRScanModel.h"
+#import "DWQRScanViewController.h"
+#import "DWSendAmountViewController.h"
 #import "DWUIKit.h"
+#import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPayViewController () <UITableViewDataSource, DWPayTableViewCellDelegate>
+typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
+    DWPayControllerInitialAction_None,
+    DWPayControllerInitialAction_ScanQR,
+    DWPayControllerInitialAction_PayToPasteboard,
+};
+
+@interface DWPayViewController () <UITableViewDataSource,
+                                   DWPayTableViewCellDelegate,
+                                   DWPaymentProcessorDelegate,
+                                   DWSendAmountViewControllerDelegate,
+                                   DWQRScanModelDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
-@property (strong, nonatomic) DWPayModel *model;
+@property (nonatomic, assign) DWPayControllerInitialAction initialAction;
+@property (nonatomic, assign) BOOL initialActionDone;
+
+@property (nonatomic, strong) DWPayModel *model;
+@property (nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
 @end
 
 @implementation DWPayViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithModel:(DWPayModel *)payModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];
-    controller.model = [[DWPayModel alloc] init];
+    controller.model = payModel;
+    DWPaymentProcessor *paymentProcessor = [[DWPaymentProcessor alloc] init];
+    paymentProcessor.delegate = controller;
+    controller.paymentProcessor = paymentProcessor;
 
     return controller;
 }
@@ -52,6 +75,42 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidAppear:animated];
 
     [self.tableView flashScrollIndicators];
+
+    [self.model startPasteboardIntervalObserving];
+
+    if (self.initialActionDone == NO && self.initialAction != DWPayControllerInitialAction_None) {
+        self.initialActionDone = YES;
+
+        switch (self.initialAction) {
+            case DWPayControllerInitialAction_None: {
+                break;
+            }
+            case DWPayControllerInitialAction_ScanQR: {
+                [self performScanQRCodeAction];
+
+                break;
+            }
+            case DWPayControllerInitialAction_PayToPasteboard: {
+                [self performPayToPasteboardAction];
+
+                break;
+            }
+        }
+    }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+
+    [self.model stopPasteboardIntervalObserving];
+}
+
+- (void)scanQRCode {
+    self.initialAction = DWPayControllerInitialAction_ScanQR;
+}
+
+- (void)payToPasteboard {
+    self.initialAction = DWPayControllerInitialAction_PayToPasteboard;
 }
 
 #pragma mark - UITableViewDataSource
@@ -82,14 +141,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     switch (payOption.type) {
         case DWPayOptionModelType_ScanQR: {
-            // TODO: show qr screen
+            [self performScanQRCodeAction];
+
             break;
         }
         case DWPayOptionModelType_Pasteboard: {
-            NSParameterAssert(self.model.pasteboardPaymentInput);
-            // TODO: impl logic from DWSendViewController
-            // - (void)confirmRequest:(DSPaymentRequest *)request
-            // - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq
+            [self performPayToPasteboardAction];
 
             break;
         }
@@ -101,14 +158,138 @@ NS_ASSUME_NONNULL_BEGIN
                     return;
                 }
 
-                // TODO: impl logic from DWSendViewController
-                // - (void)confirmRequest:(DSPaymentRequest *)request
-                // - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq
+                [strongSelf.paymentProcessor processPaymentInput:paymentInput];
             }];
 
             break;
         }
     }
+}
+
+#pragma mark - DWPaymentProcessorDelegate
+
+// User Actions
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    requestAmountWithDestination:(NSString *)sendingDestination
+                         details:(nullable DSPaymentProtocolDetails *)details {
+    DWSendAmountViewController *controller =
+        [DWSendAmountViewController sendControllerWithDestination:sendingDestination
+                                                   paymentDetails:nil];
+    controller.delegate = self;
+    const BOOL animated = self.initialAction == DWPayControllerInitialAction_PayToPasteboard ? NO : YES;
+    [self.navigationController pushViewController:controller animated:animated];
+}
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    requestUserActionTitle:(nullable NSString *)title
+                   message:(nullable NSString *)message
+               actionTitle:(NSString *)actionTitle
+               cancelBlock:(void (^)(void))cancelBlock
+               actionBlock:(void (^)(void))actionBlock {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *cancelAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:^(UIAlertAction *action) {
+                    NSParameterAssert(cancelBlock);
+                    if (cancelBlock) {
+                        cancelBlock();
+                    }
+                }];
+    [alert addAction:cancelAction];
+
+    UIAlertAction *actionAction = [UIAlertAction
+        actionWithTitle:actionTitle
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    NSParameterAssert(actionBlock);
+                    if (actionBlock) {
+                        actionBlock();
+                    }
+                }];
+    [alert addAction:actionAction];
+
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
+}
+
+// Result
+
+- (void)paymentProcessorHideAmountControllerIfNeeded:(nonnull DWPaymentProcessor *)processor {
+    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+}
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+        didFailWithTitle:(nullable NSString *)title
+                 message:(nullable NSString *)message {
+    [self showAlertWithTitle:title message:message];
+}
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+          didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
+             transaction:(DSTransaction *)transaction {
+    NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
+}
+
+- (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
+         didSweepRequest:(nonnull DSPaymentRequest *)protocolRequest
+             transaction:(nonnull DSTransaction *)transaction {
+    NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
+}
+
+// Handle File
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result {
+    [self showAlertWithTitle:result message:nil];
+}
+
+- (void)paymentProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor {
+    // NOP
+}
+
+// Progress HUD
+
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    showProgressHUDWithMessage:(nullable NSString *)message {
+    [self.navigationController.view dw_showProgressHUDWithMessage:message];
+}
+
+- (void)paymentInputProcessorHideProgressHUD:(DWPaymentProcessor *)processor {
+    [self.navigationController.view dw_hideProgressHUD];
+}
+
+#pragma mark - DWSendAmountViewControllerDelegate
+
+- (void)sendAmountViewController:(DWSendAmountViewController *)controller
+                  didInputAmount:(uint64_t)amount
+                 usedInstantSend:(BOOL)usedInstantSend {
+    NSParameterAssert(self.paymentProcessor);
+    [self.paymentProcessor provideAmount:amount usedInstantSend:usedInstantSend];
+}
+
+#pragma mark -  DWQRScanModelDelegate
+
+- (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.paymentProcessor processPaymentInput:paymentInput];
+                             }];
+}
+
+- (void)qrScanModel:(DWQRScanModel *)viewModel
+     showErrorTitle:(nullable NSString *)title
+            message:(nullable NSString *)message {
+    [self showAlertWithTitle:title message:message];
+}
+
+- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private
@@ -120,6 +301,35 @@ NS_ASSUME_NONNULL_BEGIN
     [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
 
     self.tableView.tableFooterView = [[UIView alloc] init];
+}
+
+- (void)performScanQRCodeAction {
+    DWQRScanViewController *controller = [[DWQRScanViewController alloc] init];
+    controller.model.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)performPayToPasteboardAction {
+    DWPaymentInput *paymentInput = self.model.pasteboardPaymentInput;
+    NSParameterAssert(paymentInput);
+    if (!paymentInput) {
+        return;
+    }
+
+    [self.paymentProcessor processPaymentInput:paymentInput];
+}
+
+- (void)showAlertWithTitle:(NSString *_Nullable)title message:(NSString *_Nullable)message {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:title
+                         message:message
+                  preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"OK", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [alert addAction:okAction];
+    [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
 @end

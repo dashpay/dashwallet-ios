@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  Styled UINavigationController that supports `DWNavigationFullscreenable` protocol
  and hides back button title
  */
-@interface DWNavigationController : UINavigationController <UINavigationControllerDelegate>
+@interface DWNavigationController : UINavigationController
 
 @end
 

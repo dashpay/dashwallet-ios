@@ -36,6 +36,8 @@
     if (!(self = [super init]))
         return nil;
 
+    [NSString setDashCurrencySymbolAssetName:@"icon_dash_currency"];
+
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         [userDefaults setInteger:DSChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
@@ -95,14 +97,12 @@
 
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain mainnet]) {
-        [DSEventManager saveEvent:@"settings:change_network_mainnet"];
         [self switchToNetwork:DSChainType_MainNet withCompletion:completion];
     }
 }
 
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     if (self.currentChain != [DSChain testnet]) {
-        [DSEventManager saveEvent:@"settings:change_network_testnet"];
         [self switchToNetwork:DSChainType_TestNet withCompletion:completion];
     }
 }

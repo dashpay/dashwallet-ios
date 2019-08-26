@@ -72,10 +72,16 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "винаги изисквайте парола";
 
 /* No comment provided by engineer. */
 "Amount" = "Количество";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
 "amount too small" = "твърде малко количество";
@@ -135,6 +141,9 @@
 "Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "промяна";
 
 /* No comment provided by engineer. */
@@ -142,6 +151,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "промяна сумата на плащането?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -160,6 +172,9 @@
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "изчистване на познатите нодове?";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "клипборда на съдържа валиден Dash адрес";
@@ -216,10 +231,16 @@
 "couldn't make payment" = "не може да се направи плащане";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "не може да изчисти баланса";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "плащането не може да бъде предадено към мрежата на dash";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -240,6 +261,9 @@
 "dash payments can't be less than %@" = "dash плащането не може да бъде по-малко от %@";
 
 /* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "СЕКРЕТНОТО УСТРОЙСТВО Е КОМПРОМЕТИРАНО\nВсяко 'jailbreak' приложение може да достъпи всяко друго приложение с важна информация (и да открадне вашите dash).";
 
 /* No comment provided by engineer. */
@@ -256,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Завършено";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "двойно похарчени";
@@ -428,6 +455,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode актуализира обслужващата транзакция";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "още...";
 
@@ -462,16 +492,13 @@
 "node ip" = "нод ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "не е Dash или Bitcoin QR код";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "не е Dash QR код";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "не е валиден Bitcoin адрес";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "не е валиден Dash адрес";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "не е валиден Dash или Bitcoin адрес";
@@ -892,6 +919,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "неподдържан или повреден документ";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "неподдържан url";

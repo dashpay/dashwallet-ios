@@ -17,8 +17,6 @@
 
 #import "DWRecoverModel.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"

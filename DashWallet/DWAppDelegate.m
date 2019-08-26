@@ -52,6 +52,7 @@
 
 @interface DWAppDelegate () <DWStartViewControllerDelegate>
 
+
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
 

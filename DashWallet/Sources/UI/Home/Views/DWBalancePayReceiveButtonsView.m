@@ -125,6 +125,10 @@ static CGFloat const BalanceButtonMinHeight(void) {
     [self.delegate balancePayReceiveButtonsView:self receiveButtonAction:sender];
 }
 
+- (IBAction)balanceButtonAction:(UIControl *)sender {
+    [self.delegate balancePayReceiveButtonsView:self balanceButtonAction:sender];
+}
+
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
