@@ -23,6 +23,15 @@
 		2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AB23125074001B8C90 /* UIView+DWHUD.m */; };
 		2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */; };
 		2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69B22312E8A0001B8C90 /* DWWindow.m */; };
+		2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69BC23140779001B8C90 /* DWModalInteractiveTransition.m */; };
+		2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69C22314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m */; };
+		2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69C523142AA4001B8C90 /* DWModalPresentationController.m */; };
+		2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69C923142E11001B8C90 /* DWModalBaseAnimation.m */; };
+		2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69CC23142F90001B8C90 /* DWModalPresentationAnimation.m */; };
+		2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69CF23143435001B8C90 /* DWModalDismissalAnimation.m */; };
+		2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D223143568001B8C90 /* DWModalTransition.m */; };
+		2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */; };
+		2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */; };
 		2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */; };
 		2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58321947CBE00E7B563 /* BRPeerEntity.m */; };
 		2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */; };
@@ -495,6 +504,24 @@
 		2A0C69AF2312DD67001B8C90 /* DWSpecifyAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSpecifyAmountViewController.m; sourceTree = "<group>"; };
 		2A0C69B12312E8A0001B8C90 /* DWWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWindow.h; sourceTree = "<group>"; };
 		2A0C69B22312E8A0001B8C90 /* DWWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWindow.m; sourceTree = "<group>"; };
+		2A0C69BB23140779001B8C90 /* DWModalInteractiveTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalInteractiveTransition.h; sourceTree = "<group>"; };
+		2A0C69BC23140779001B8C90 /* DWModalInteractiveTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalInteractiveTransition.m; sourceTree = "<group>"; };
+		2A0C69C12314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIPanGestureRecognizer+DWProjected.h"; sourceTree = "<group>"; };
+		2A0C69C22314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIPanGestureRecognizer+DWProjected.m"; sourceTree = "<group>"; };
+		2A0C69C423142AA3001B8C90 /* DWModalPresentationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWModalPresentationController.h; sourceTree = "<group>"; };
+		2A0C69C523142AA4001B8C90 /* DWModalPresentationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWModalPresentationController.m; sourceTree = "<group>"; };
+		2A0C69C823142E11001B8C90 /* DWModalBaseAnimation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalBaseAnimation.h; sourceTree = "<group>"; };
+		2A0C69C923142E11001B8C90 /* DWModalBaseAnimation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalBaseAnimation.m; sourceTree = "<group>"; };
+		2A0C69CB23142F90001B8C90 /* DWModalPresentationAnimation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPresentationAnimation.h; sourceTree = "<group>"; };
+		2A0C69CC23142F90001B8C90 /* DWModalPresentationAnimation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPresentationAnimation.m; sourceTree = "<group>"; };
+		2A0C69CE23143435001B8C90 /* DWModalDismissalAnimation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalDismissalAnimation.h; sourceTree = "<group>"; };
+		2A0C69CF23143435001B8C90 /* DWModalDismissalAnimation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalDismissalAnimation.m; sourceTree = "<group>"; };
+		2A0C69D123143568001B8C90 /* DWModalTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalTransition.h; sourceTree = "<group>"; };
+		2A0C69D223143568001B8C90 /* DWModalTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalTransition.m; sourceTree = "<group>"; };
+		2A0C69D523143B2F001B8C90 /* DWBaseModalViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseModalViewController.h; sourceTree = "<group>"; };
+		2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseModalViewController.m; sourceTree = "<group>"; };
+		2A0C69D82314727F001B8C90 /* UISpringTimingParameters+DWInit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISpringTimingParameters+DWInit.h"; sourceTree = "<group>"; };
+		2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISpringTimingParameters+DWInit.m"; sourceTree = "<group>"; };
 		2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
 		2A11F58321947CBE00E7B563 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		2A11F58521947CBE00E7B563 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
@@ -1303,6 +1330,46 @@
 			path = ScanQR;
 			sourceTree = "<group>";
 		};
+		2A0C69B62313EB4A001B8C90 /* Transition */ = {
+			isa = PBXGroup;
+			children = (
+				2A0C69C723142DF1001B8C90 /* Animations */,
+				2A0C69D123143568001B8C90 /* DWModalTransition.h */,
+				2A0C69D223143568001B8C90 /* DWModalTransition.m */,
+				2A0C69C423142AA3001B8C90 /* DWModalPresentationController.h */,
+				2A0C69C523142AA4001B8C90 /* DWModalPresentationController.m */,
+				2A0C69BB23140779001B8C90 /* DWModalInteractiveTransition.h */,
+				2A0C69BC23140779001B8C90 /* DWModalInteractiveTransition.m */,
+				2A0C69C12314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.h */,
+				2A0C69C22314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m */,
+				2A0C69D82314727F001B8C90 /* UISpringTimingParameters+DWInit.h */,
+				2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */,
+			);
+			path = Transition;
+			sourceTree = "<group>";
+		};
+		2A0C69C723142DF1001B8C90 /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				2A0C69C823142E11001B8C90 /* DWModalBaseAnimation.h */,
+				2A0C69C923142E11001B8C90 /* DWModalBaseAnimation.m */,
+				2A0C69CE23143435001B8C90 /* DWModalDismissalAnimation.h */,
+				2A0C69CF23143435001B8C90 /* DWModalDismissalAnimation.m */,
+				2A0C69CB23142F90001B8C90 /* DWModalPresentationAnimation.h */,
+				2A0C69CC23142F90001B8C90 /* DWModalPresentationAnimation.m */,
+			);
+			path = Animations;
+			sourceTree = "<group>";
+		};
+		2A0C69D423143B17001B8C90 /* ModalController */ = {
+			isa = PBXGroup;
+			children = (
+				2A0C69D523143B2F001B8C90 /* DWBaseModalViewController.h */,
+				2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */,
+			);
+			path = ModalController;
+			sourceTree = "<group>";
+		};
 		2A11F58021947CBE00E7B563 /* DataMigration */ = {
 			isa = PBXGroup;
 			children = (
@@ -1416,6 +1483,8 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A0C69D423143B17001B8C90 /* ModalController */,
+				2A0C69B62313EB4A001B8C90 /* Transition */,
 				2A9FFE082230FF4600956D5F /* CustomAlert */,
 				2A9CEBAE22E1DF7E00A50237 /* Navigation */,
 				2A8B9E5022FED73600FF8653 /* ControllerCollection */,
@@ -3364,6 +3433,7 @@
 				2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */,
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
 				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
+				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
@@ -3375,6 +3445,7 @@
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
 				2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */,
+				2A0C69CD23142F90001B8C90 /* DWModalPresentationAnimation.m in Sources */,
 				2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
@@ -3388,6 +3459,7 @@
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
 				2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
+				2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */,
 				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
@@ -3418,6 +3490,7 @@
 				2A2CD72222F9B571008C7BC9 /* DWIntrinsicCollectionView.m in Sources */,
 				2A2120F022147A40009906DC /* DWAmountObject.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
+				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2A9FFE8C2230FF4700956D5F /* DWSettingsControllerModel.m in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				FB43BC78211CD15500BC9879 /* DWBlueActionButton.m in Sources */,
@@ -3447,6 +3520,7 @@
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A9FFE732230FF4600956D5F /* DWAlertAction.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
+				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
 				2A9FFCD5222EA87F00956D5F /* DSTransactionStatusTableViewCell.m in Sources */,
 				7525B619192453840041C0F2 /* BRNavigationBar.m in Sources */,
 				2A44311722CBF0B2009BAF7F /* UIFont+DWFont.m in Sources */,
@@ -3456,6 +3530,7 @@
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2A9FFE782230FF4600956D5F /* DWAlertViewActionBaseView.m in Sources */,
 				2A9FFE8D2230FF4700956D5F /* DWSettingsViewController.m in Sources */,
+				2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */,
 				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
 				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
@@ -3469,6 +3544,7 @@
 				757BE7E3192C0E9D0061CB20 /* DWRestoreViewController.m in Sources */,
 				757BE7E6192C1FF70061CB20 /* DWWelcomeViewController.m in Sources */,
 				2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */,
+				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */,
@@ -3552,6 +3628,7 @@
 				2A9FFE7D2230FF4600956D5F /* DWAlertPresentationController.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
+				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
@@ -3574,6 +3651,7 @@
 				2A44312E22CD0324009BAF7F /* DWPinField.m in Sources */,
 				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,
 				2A9FFE8A2230FF4700956D5F /* DWSelectorViewController.m in Sources */,
+				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWTxListHeaderView.m in Sources */,

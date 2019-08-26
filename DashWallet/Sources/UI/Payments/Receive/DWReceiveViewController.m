@@ -21,6 +21,8 @@
 #import "DWSpecifyAmountViewController.h"
 #import "DWUIKit.h"
 
+#import "DWBaseModalViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWReceiveViewController () <DWSpecifyAmountViewControllerDelegate>
@@ -111,7 +113,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
                      didInputAmount:(uint64_t)amount {
-    // TODO: impl
+
+
+    DWBaseModalViewController *c = [[DWBaseModalViewController alloc] init];
+    c.view.backgroundColor = [UIColor dw_dashBlueColor];
+
+    [self presentViewController:c animated:YES completion:nil];
 }
 
 #pragma mark - Private
