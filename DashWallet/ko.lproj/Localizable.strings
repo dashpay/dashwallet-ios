@@ -330,14 +330,10 @@
 "locked with InstantSend" = "인스턴트샌드로 잠김";
 
 /* No comment provided by engineer. */
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "Log Out" = "로그아웃";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "업홀드에서 로그아웃";
->>>>>>> master
 
 /* No comment provided by engineer. */
 "masternode holding address" = "마스터노드 보유 주소";
@@ -593,6 +589,9 @@
 
 /* No comment provided by engineer. */
 "show" = "보기";
+
+/* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
 
 /* No comment provided by engineer. */
 "show phrase" = "문구 보기";

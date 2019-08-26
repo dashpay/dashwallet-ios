@@ -330,9 +330,6 @@
 "locked with InstantSend" = "ล็อคด้วย InstantSend";
 
 /* No comment provided by engineer. */
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "Log Out" = "ออกจากระบบ";
 
 /* No comment provided by engineer. */
@@ -594,6 +591,9 @@
 "show" = "แสดง";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "แสดงวลี";
 
 /* No comment provided by engineer. */
@@ -720,14 +720,13 @@
 "Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"Used" = "Used";
-=======
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
 "Uphold account" = "บัญชี Uphold";
->>>>>>> master
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ธุรกรรมการลงทะเบียนผู้ใช้";

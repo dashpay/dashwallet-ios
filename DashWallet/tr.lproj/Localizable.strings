@@ -330,9 +330,6 @@
 "locked with InstantSend" = "AnındaGönder ile kilitli";
 
 /* No comment provided by engineer. */
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "Log Out" = "Çıkış Yap";
 
 /* No comment provided by engineer. */
@@ -592,6 +589,9 @@
 
 /* No comment provided by engineer. */
 "show" = "göster";
+
+/* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
 
 /* No comment provided by engineer. */
 "show phrase" = "metni göster";

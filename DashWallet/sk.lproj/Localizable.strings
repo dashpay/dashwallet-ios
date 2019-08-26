@@ -348,10 +348,16 @@
 "Masternode Update Service Transaction" = "Servisná transakcia aktualizácie Masternódu";
 
 /* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
+
+/* No comment provided by engineer. */
 "more..." = "viac...";
 
 /* No comment provided by engineer. */
 "Moved" = "Presunuté";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Sieť";
@@ -397,6 +403,9 @@
 
 /* No comment provided by engineer. */
 "not owner" = "nie je vlastník";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "nehlasuje";
@@ -588,6 +597,9 @@
 "show phrase" = "ukázať frázu";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "size:" = "veľkosť:";
 
 /* No comment provided by engineer. */
@@ -712,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "Uphold account" = "Účet na Upholde";
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "Používateľove registračné transakcie";

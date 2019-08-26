@@ -330,9 +330,6 @@
 "locked with InstantSend" = "reservado para EnvioInstantâneo";
 
 /* No comment provided by engineer. */
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "Log Out" = "Sair";
 
 /* No comment provided by engineer. */
@@ -592,6 +589,9 @@
 
 /* No comment provided by engineer. */
 "show" = "mostrar";
+
+/* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
 
 /* No comment provided by engineer. */
 "show phrase" = "mostrar a frase";

@@ -330,14 +330,10 @@
 "locked with InstantSend" = "locked with InstantSend";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"Masternode control" = "Masternode control";
-=======
 "Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
 "Log out from Uphold" = "Log out from Uphold";
->>>>>>> master
 
 /* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
@@ -595,6 +591,9 @@
 "show" = "visa";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "visa fras";
 
 /* No comment provided by engineer. */
@@ -721,14 +720,13 @@
 "Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"Used" = "Used";
-=======
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
 "Uphold account" = "Uphold account";
->>>>>>> master
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";

@@ -330,9 +330,6 @@
 "locked with InstantSend" = "locked with InstantSend";
 
 /* No comment provided by engineer. */
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
@@ -594,6 +591,9 @@
 "show" = "顯示";
 
 /* No comment provided by engineer. */
+"Show masternode keys" = "Show masternode keys";
+
+/* No comment provided by engineer. */
 "show phrase" = "顯示詞組";
 
 /* No comment provided by engineer. */
@@ -720,14 +720,13 @@
 "Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"Used" = "Used";
-=======
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
 "Uphold account" = "Uphold account";
->>>>>>> master
+
+/* No comment provided by engineer. */
+"Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";

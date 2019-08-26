@@ -336,14 +336,7 @@
 "Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"Masternode control" = "Masternode control";
-
-/* No comment provided by engineer. */
 "masternode holding address" = "masternode holding address";
-=======
-"masternode holding address" = "διεύθυνση κατοχής masternode";
->>>>>>> master
 
 /* No comment provided by engineer. */
 "Masternode Registration Transaction" = "Συναλλαγή εγγραφής Masternode";
@@ -364,14 +357,10 @@
 "Moved" = "Μετακινήθηκε";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
 "My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
-=======
-"Network" = "Δίκτυο";
->>>>>>> master
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ΠΟΤΕ ΜΗΝ πληκτρολογείτε τη φράση ανάκτησης σας σε εφαρμογές διαχείρισης κωδικών ή αλλού. Άλλες συσκευές ενδέχεται να έχουν μολυνθεί.";
@@ -416,14 +405,10 @@
 "not owner" = "δεν είναι κάτοχος";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
 "Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "not voter" = "not voter";
-=======
-"not voter" = "δεν είναι ψηφοφόρος";
->>>>>>> master
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -606,11 +591,10 @@
 "show" = "εμφάνιση";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
-"show phrase" = "εμφάνιση φράσης";
-=======
 "Show masternode keys" = "Δείξε τα κλειδιά του Masternode";
->>>>>>> master
+
+/* No comment provided by engineer. */
+"show phrase" = "εμφάνιση φράσης";
 
 /* No comment provided by engineer. */
 "Sign Message" = "Sign Message";
@@ -739,17 +723,13 @@
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-<<<<<<< HEAD
+"Uphold account" = "Uphold account";
+
+/* No comment provided by engineer. */
 "Used" = "Used";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "User Registration Transaction";
-=======
-"Uphold account" = "Uphold account";
->>>>>>> master
-
-/* No comment provided by engineer. */
-"User Registration Transaction" = "Συναλλαγή εγγραφής Χρήστη";
 
 /* No comment provided by engineer. */
 "User Reset Transaction" = "Συναλλαγή επαναφοράς του Χρήστη";
