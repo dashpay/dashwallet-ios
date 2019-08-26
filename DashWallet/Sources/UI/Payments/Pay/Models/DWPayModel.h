@@ -30,6 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
 
+- (void)startPasteboardIntervalObserving;
+- (void)stopPasteboardIntervalObserving;
+
+- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -20,11 +20,11 @@
 #import <mach-o/dyld.h>
 #import <sys/stat.h>
 
-#import <DashSync/DashSync.h>
 #import <UIKit/UIApplication.h>
 
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
+#import "DWPayModel.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
@@ -90,6 +90,8 @@ static BOOL IsJailbroken(void) {
         [_receiveModel updateReceivingInfo];
 
         _shortcutsModel = [[DWShortcutsModel alloc] init];
+
+        _payModel = [[DWPayModel alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -171,6 +173,11 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)retrySyncing {
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
+        [self.reachability stopMonitoring];
+        [self.reachability startMonitoring];
+    }
+
     [self connectIfNeeded];
 }
 

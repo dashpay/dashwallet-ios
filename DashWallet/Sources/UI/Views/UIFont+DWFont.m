@@ -123,7 +123,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (UIFont *)dw_navigationBarTitleFont {
-    return [UIFont fontWithName:@"Montserrat-Medium" size:18.0];
+    return [UIFont dw_mediumFontOfSize:18.0];
+}
+
++ (UIFont *)dw_regularFontOfSize:(CGFloat)fontSize {
+    return [UIFont fontWithName:@"Montserrat-Regular" size:fontSize];
+}
+
++ (UIFont *)dw_mediumFontOfSize:(CGFloat)fontSize {
+    return [UIFont fontWithName:@"Montserrat-Medium" size:fontSize];
+}
+
++ (UIFont *)dw_boldFontOfSize:(CGFloat)fontSize {
+    return [UIFont fontWithName:@"Montserrat-Bold" size:fontSize];
+}
+
++ (UIFont *)dw_lightFontOfSize:(CGFloat)fontSize {
+    return [UIFont fontWithName:@"Montserrat-Light" size:fontSize];
 }
 
 @end

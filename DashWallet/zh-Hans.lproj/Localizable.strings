@@ -72,10 +72,16 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "总是要求密码";
 
 /* No comment provided by engineer. */
 "Amount" = "Amount";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
 "amount too small" = "金额过小";
@@ -135,6 +141,9 @@
 "Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "改变";
 
 /* No comment provided by engineer. */
@@ -142,6 +151,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "更改付款金额？";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -160,6 +172,9 @@
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "清除信任节点？";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
@@ -216,10 +231,16 @@
 "couldn't make payment" = "无法付款";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "无法清除余额";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "无法将交易发送到达世币网络";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -240,6 +261,9 @@
 "dash payments can't be less than %@" = "达世币付款不能低于%@";
 
 /* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "该设备的安全性受到威胁\n任何'越狱'的应用程序都可以访问任何其他应用程序的钥匙链数据(并窃取你的达世币)。";
 
 /* No comment provided by engineer. */
@@ -256,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "完成";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "双重花费";
@@ -428,6 +455,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "更多...";
 
@@ -462,16 +492,13 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "不是一个有效的比特币地址";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "不是一个有效的达世币地址";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
@@ -892,6 +919,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "不支持或损坏的文件";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "不支持的链接";

@@ -19,10 +19,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWTabBarViewButtonType) {
+    DWTabBarViewButtonType_Home,
+    DWTabBarViewButtonType_Others,
+};
+
+extern CGFloat const DW_TABBAR_HEIGHT;
+
 @class DWTabBarView;
 
 @protocol DWTabBarViewDelegate <NSObject>
 
+- (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType;
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView;
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView;
 

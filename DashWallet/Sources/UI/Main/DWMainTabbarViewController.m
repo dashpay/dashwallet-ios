@@ -30,13 +30,15 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @interface DWMainTabbarViewController () <DWTabBarViewDelegate,
                                           DWPaymentsViewControllerDelegate,
-                                          DWHomeViewControllerDelegate>
+                                          DWHomeViewControllerDelegate,
+                                          UINavigationControllerDelegate>
 
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 @property (nullable, nonatomic, strong) UIViewController *modalController;
 
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
+@property (nullable, nonatomic, strong) NSLayoutConstraint *tabBarBottomConstraint;
 
 @property (nullable, nonatomic, strong) DWHomeViewController *homeViewController;
 
@@ -67,8 +69,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 #pragma mark - DWTabBarViewDelegate
 
+- (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {
+}
+
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None
+                                     payAction:DWPaymentsViewControllerPayAction_None];
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
@@ -97,15 +103,41 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWHomeViewControllerDelegate
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_None];
 }
 
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive
+                                     payAction:DWPaymentsViewControllerPayAction_None];
+}
+
+- (void)homeViewController:(DWHomeViewController *)controller payToAddressButtonAction:(UIView *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_PayToPasteboard];
+}
+
+- (void)homeViewController:(DWHomeViewController *)controller scanQRAction:(UIView *)sender {
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
+                                     payAction:DWPaymentsViewControllerPayAction_ScanToPay];
 }
 
 - (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller {
     [self.delegate mainTabbarViewControllerDidWipeWallet:self];
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController
+      willShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated {
+    [self setTabBarHiddenAnimated:viewController.hidesBottomBarWhenPushed animated:YES];
+}
+
+- (void)navigationController:(UINavigationController *)navigationController
+       didShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated {
+    [self setTabBarHiddenAnimated:viewController.hidesBottomBarWhenPushed animated:NO];
 }
 
 #pragma mark - Private
@@ -125,6 +157,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self.view addSubview:tabBarView];
     self.tabBarView = tabBarView;
 
+    self.tabBarBottomConstraint = [tabBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+
     [NSLayoutConstraint activateConstraints:@[
         [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
@@ -133,11 +167,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         [tabBarView.topAnchor constraintEqualToAnchor:contentView.bottomAnchor],
         [tabBarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [tabBarView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [tabBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        self.tabBarBottomConstraint,
     ]];
 }
 
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex {
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex
+                                   payAction:(DWPaymentsViewControllerPayAction)payAction {
     if (self.modalController) {
         return;
     }
@@ -148,11 +183,15 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     DWHomeModel *homeModel = self.homeViewController.model;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
-    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithModel:receiveModel];
+    DWPayModel *payModel = homeModel.payModel;
+    DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
+                                                                                       payModel:payModel];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
+    controller.payAction = payAction;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.delegate = self;
     self.modalController = navigationController;
 
     [self displayModalViewController:navigationController
@@ -268,6 +307,19 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 completion();
             }
         }];
+}
+
+- (void)setTabBarHiddenAnimated:(BOOL)hidden animated:(BOOL)animated {
+    const CGFloat constant = hidden ? DW_TABBAR_HEIGHT : 0.0;
+    const CGFloat alpha = hidden ? 0.0 : 1.0;
+
+    self.tabBarBottomConstraint.constant = constant;
+
+    [UIView animateWithDuration:animated ? ANIMATION_DURATION : 0.0
+                     animations:^{
+                         [self.view layoutIfNeeded];
+                         self.tabBarView.alpha = alpha;
+                     }];
 }
 
 @end

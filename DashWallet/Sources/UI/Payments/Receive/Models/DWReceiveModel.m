@@ -17,7 +17,6 @@
 
 #import "DWReceiveModel.h"
 
-#import <DashSync/DashSync.h>
 #import <UIKit/UIPasteboard.h>
 
 #import "DWAppGroupOptions.h"

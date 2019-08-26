@@ -15,22 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import "DWBaseActionButtonViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWSeedContinueButton <NSObject>
-
-@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
-
-@end
-
-@interface DWBaseSeedViewController : DWBaseViewController
+@interface DWBaseSeedViewController : DWBaseActionButtonViewController
 
 @property (readonly, nullable, nonatomic, strong) UIScrollView *scrollView;
-@property (readonly, nullable, nonatomic, strong) id<DWSeedContinueButton> continueButton;
-
-- (void)continueButtonAction:(id)sender;
 
 @end
 

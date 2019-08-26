@@ -34,20 +34,23 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
 @property (nonatomic, strong) DWReceiveModel *receiveModel;
+@property (nonatomic, strong) DWPayModel *payModel;
 
 @property (nonatomic, strong) DWPayViewController *payViewController;
 @property (nonatomic, strong) DWReceiveViewController *receiveViewController;
 
+@property (nonatomic, assign) BOOL didPerformInitialPageOpen;
 @property (nullable, nonatomic, strong) NSIndexPath *prevIndexPathAtCenter;
 
 @end
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel {
++ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel payModel:(DWPayModel *)payModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
     controller.receiveModel = receiveModel;
+    controller.payModel = payModel;
 
     return controller;
 }
@@ -73,6 +76,24 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     [self setupView];
     [self setupControllers];
+
+    if (self.currentIndex == DWPaymentsViewControllerIndex_Pay) {
+        switch (self.payAction) {
+            case DWPaymentsViewControllerPayAction_None: {
+                break;
+            }
+            case DWPaymentsViewControllerPayAction_ScanToPay: {
+                [self.payViewController scanQRCode];
+                break;
+            }
+            case DWPaymentsViewControllerPayAction_PayToPasteboard: {
+                [self.payViewController payToPasteboard];
+                break;
+            }
+        }
+
+        self.payAction = DWPaymentsViewControllerPayAction_None;
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -97,17 +118,24 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     [self.controllerCollectionView reloadData];
 
-    // scroll to needed index when reloadData finishes
-    [self.controllerCollectionView
-        performBatchUpdates:^{
+    if (!self.didPerformInitialPageOpen) {
+        self.didPerformInitialPageOpen = YES;
+
+        // scroll to needed index when reloadData finishes
+        DWPaymentsViewControllerIndex previouslySelectedPageIndex = [self previouslySelectedPageIndex];
+        if (self.currentIndex != previouslySelectedPageIndex) {
+            [self.controllerCollectionView
+                performBatchUpdates:^{
+                }
+                completion:^(BOOL finished) {
+                    if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
+                        self.currentIndex = previouslySelectedPageIndex;
+                    }
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
+                    [self scrollToIndexPath:indexPath animated:NO];
+                }];
         }
-        completion:^(BOOL finished) {
-            if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
-                self.currentIndex = [self previouslySelectedPageIndex];
-            }
-            NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
-            [self scrollToIndexPath:indexPath animated:NO];
-        }];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -143,7 +171,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 }
 
 - (void)setupControllers {
-    self.payViewController = [DWPayViewController controller];
+    self.payViewController = [DWPayViewController controllerWithModel:self.payModel];
     self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
 }
 

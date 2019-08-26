@@ -72,10 +72,16 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "zawsze wymagaj hasła";
 
 /* No comment provided by engineer. */
 "Amount" = "Kwota";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
 "amount too small" = "zbyt mała kwota";
@@ -135,6 +141,9 @@
 "Cancel" = "Anuluj";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "zmień";
 
 /* No comment provided by engineer. */
@@ -142,6 +151,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "zmienić kwotę płatności?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -160,6 +172,9 @@
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "usunąć zaufany węzeł?";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "schowek nie zawiera prawidłowego adresu dash";
@@ -216,10 +231,16 @@
 "couldn't make payment" = "płatność nieudana";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "nie można wmieść saldo";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "nie można przekazać płatności do sieci dash";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -240,6 +261,9 @@
 "dash payments can't be less than %@" = "płatności dash nie mogą być mniejsze niż %@";
 
 /* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "BEZPIECZEŃSTWO URZĄDZENIA ZŁAMANE\nKażda aplikacja \"jailbreak\" ma dostęp do danych twoich kluczy w innych aplikacjach (i może ukraść twoje dashe).";
 
 /* No comment provided by engineer. */
@@ -256,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Zrobione";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "podwójny wydatek";
@@ -428,6 +455,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Transakcja Aktualizacji Serwisu Masternoda";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "więcej...";
 
@@ -462,16 +492,13 @@
 "node ip" = "IP węzła";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "nieprawidłowy kod QR";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "nieprawidłowy kod QR";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "nieprawidłowy adres bitoin";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "nieprawidłowy adres dash";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "nieprawidłowy adres dash lub bitcoin";
@@ -892,6 +919,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "nieobsługiwany lub uszkodzony dokument";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "nieobsługiwany url";

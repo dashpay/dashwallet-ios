@@ -31,8 +31,7 @@
 #import "UIImage+Utils.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <DashSync/DashSync.h>
-#import "DWAmountNavigationController.h"
-#import "DWAmountViewController.h"
+#import "DWOLDAmountViewController.h"
 
 #define QR_TIP      NSLocalizedString(@"Let others scan this QR code to get your dash address. Anyone can send "\
                     "dash to your wallet by transferring them to your address.", nil)
@@ -42,7 +41,7 @@
 //#define QR_IMAGE_FILE [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject\
 //                       stringByAppendingPathComponent:@"qr.png"]
 
-@interface DWOLDReceiveViewController () <DWAmountViewControllerDelegate>
+@interface DWOLDReceiveViewController () <DWOLDAmountViewControllerDelegate>
 
 @property (nonatomic, strong) UIImage *qrImage;
 @property (nonatomic, strong) BRBubbleView *tipView;
@@ -393,9 +392,9 @@
 
     if (! req) {
         [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"request an amount", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            DWAmountViewController *amountController = [DWAmountViewController requestController];
+            DWOLDAmountViewController *amountController = [DWOLDAmountViewController requestController];
             amountController.delegate = self;
-            DWAmountNavigationController *amountNavigationController = [[DWAmountNavigationController alloc] initWithRootViewController:amountController];
+            UINavigationController *amountNavigationController = [[UINavigationController alloc] initWithRootViewController:amountController];
             [self.navigationController presentViewController:amountNavigationController animated:YES completion:nil];
             [DSEventManager saveEvent:@"receive:request_amount"];
         }]];
@@ -433,11 +432,11 @@ error:(NSError *)error
 
 // MARK: - DWAmountViewControllerDelegate
 
-- (void)amountViewControllerDidCancel:(DWAmountViewController *)controller {
+- (void)amountViewControllerDidCancel:(DWOLDAmountViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)amountViewController:(DWAmountViewController *)controller didInputAmount:(uint64_t)amount {
+- (void)amountViewController:(DWOLDAmountViewController *)controller didInputAmount:(uint64_t)amount {
     [DSEventManager saveEvent:@"receive:show_request"];
     UINavigationController *navController = (UINavigationController *)self.navigationController.presentedViewController;
     DWOLDReceiveViewController *receiveController = [self.storyboard

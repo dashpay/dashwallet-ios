@@ -34,7 +34,7 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hLW-nv-HXU" userLabel="Balance View">
                     <rect key="frame" x="20" y="8" width="374" height="121"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eje-aF-LFe" userLabel="Centered View">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eje-aF-LFe" userLabel="Centered Balance Control" customClass="UIControl">
                             <rect key="frame" x="0.0" y="22" width="374" height="77"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="chD-8m-nbL" userLabel="Title Label">
@@ -72,6 +72,9 @@
                                 <constraint firstItem="chD-8m-nbL" firstAttribute="top" secondItem="Eje-aF-LFe" secondAttribute="top" id="wdQ-OK-CE3"/>
                                 <constraint firstItem="QGt-Lq-fJB" firstAttribute="top" secondItem="hzD-1y-Vru" secondAttribute="bottom" id="zcb-St-6mA"/>
                             </constraints>
+                            <connections>
+                                <action selector="balanceButtonAction:" destination="-1" eventType="touchUpInside" id="Rbl-je-DpX"/>
+                            </connections>
                         </view>
                     </subviews>
                     <color key="backgroundColor" name="DashBlueColor"/>

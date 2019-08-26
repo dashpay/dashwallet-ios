@@ -19,12 +19,16 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWHomeModel.h"
-#import "DWShortcutAction.h"
-
 #import "DWBackupInfoViewController.h"
+#import "DWHomeModel.h"
 #import "DWNavigationController.h"
+#import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWShortcutAction.h"
+#import "DWUpholdViewController.h"
+
+// TODO: rm
+#import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,12 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ScanToPay: {
+            [self scanQRAction:sender];
             break;
         }
         case DWShortcutActionType_PayToAddress: {
+            [self payToAddressAction:sender];
             break;
         }
         case DWShortcutActionType_BuySellDash: {
+            [self buySellDashAction];
             break;
         }
         case DWShortcutActionType_SyncNow: {
@@ -57,7 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_LocalCurrency: {
-            [self debug_wipeWallet];
+            // TODO: rm
+            [self.view dw_showInfoHUDWithText:@"The Local Currency screen will be opened here as soon as it is implemented 😉"];
+
             break;
         }
         case DWShortcutActionType_ImportPrivateKey: {
@@ -110,6 +119,56 @@ NS_ASSUME_NONNULL_BEGIN
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)buySellDashAction {
+    [[DSAuthenticationManager sharedInstance]
+        authenticateWithPrompt:nil
+                    andTouchId:YES
+                alertIfLockout:YES
+                    completion:^(BOOL authenticated, BOOL cancelled) {
+                        if (authenticated) {
+                            [self buySellDashActionAuthenticated];
+                        }
+                    }];
+}
+
+- (void)buySellDashActionAuthenticated {
+    UIViewController *controller = [DWUpholdViewController controller];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)payToAddressAction:(UIView *)sender {
+    DWPayModel *payModel = self.model.payModel;
+    __weak typeof(self) weakSelf = self;
+    [payModel checkIfPayToAddressFromPasteboardAvailable:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (success) {
+            [strongSelf.delegate homeViewController:strongSelf payToAddressButtonAction:sender];
+        }
+        else {
+            NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil);
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                           message:message
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:nil];
+            [alert addAction:okAction];
+
+            [strongSelf presentViewController:alert animated:YES completion:nil];
+        }
+    }];
+}
+
+- (void)scanQRAction:(UIView *)sender {
+    [self.delegate homeViewController:self scanQRAction:sender];
 }
 
 - (void)debug_wipeWallet {

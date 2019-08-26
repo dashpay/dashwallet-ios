@@ -18,11 +18,12 @@
 #import "DWReceiveViewController.h"
 
 #import "DWReceiveModel.h"
+#import "DWSpecifyAmountViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWReceiveViewController ()
+@interface DWReceiveViewController () <DWSpecifyAmountViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
 @property (strong, nonatomic) IBOutlet UIButton *addressButton;
@@ -75,7 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)specifyAmountButtonAction:(id)sender {
-    // TODO: impl
+    DWSpecifyAmountViewController *controller = [DWSpecifyAmountViewController controller];
+    controller.delegate = self;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)shareButtonAction:(UIButton *)sender {
@@ -102,6 +105,13 @@ NS_ASSUME_NONNULL_BEGIN
         activityViewController.popoverPresentationController.sourceRect = sender.bounds;
     }
     [self presentViewController:activityViewController animated:YES completion:nil];
+}
+
+#pragma mark - DWSpecifyAmountViewControllerDelegate
+
+- (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
+                     didInputAmount:(uint64_t)amount {
+    // TODO: impl
 }
 
 #pragma mark - Private

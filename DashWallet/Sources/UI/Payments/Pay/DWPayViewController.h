@@ -19,9 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPayModel;
+
 @interface DWPayViewController : UIViewController
 
-+ (instancetype)controller;
+- (void)scanQRCode;
+- (void)payToPasteboard;
+
++ (instancetype)controllerWithModel:(DWPayModel *)payModel;
 
 @end
 

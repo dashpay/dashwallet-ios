@@ -20,14 +20,14 @@
 #import <CoreNFC/CoreNFC.h>
 
 #import "DWPasteboardAddressObserver.h"
-#import "DWPayInputProcessor.h"
 #import "DWPayOptionModel.h"
+#import "DWPaymentInputBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayModel () <NFCNDEFReaderSessionDelegate>
 
-@property (readonly, nonatomic, strong) DWPayInputProcessor *inputProcessor;
+@property (readonly, nonatomic, strong) DWPaymentInputBuilder *inputBuilder;
 @property (readonly, nonatomic, strong) DWPasteboardAddressObserver *pasteboardObserver;
 @property (readonly, nonatomic, strong) DWPayOptionModel *pasteboardOption;
 
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _inputProcessor = [[DWPayInputProcessor alloc] init];
+        _inputBuilder = [[DWPaymentInputBuilder alloc] init];
         _pasteboardObserver = [[DWPasteboardAddressObserver alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -88,26 +88,30 @@ NS_ASSUME_NONNULL_BEGIN
     [session beginSession];
 }
 
+- (void)startPasteboardIntervalObserving {
+    [self.pasteboardObserver startIntervalObserving];
+}
+
+- (void)stopPasteboardIntervalObserving {
+    [self.pasteboardObserver stopIntervalObserving];
+}
+
+- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion {
+    __weak typeof(self) weakSelf = self;
+    [self.pasteboardObserver checkPasteboardContentsCompletion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        [strongSelf processPasteboardContentsWithCompletion:completion];
+    }];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {
-    NSArray<NSString *> *contents = self.pasteboardObserver.contents;
-    if (contents.count == 0) {
-        self.pasteboardPaymentInput = nil;
-    }
-    else {
-        __weak typeof(self) weakSelf = self;
-        [self.inputProcessor payFirstFromArray:contents
-                                        source:DWPaymentInputSource_Pasteboard
-                                    completion:^(DWPaymentInput *_Nonnull paymentInput) {
-                                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                                        if (!strongSelf) {
-                                            return;
-                                        }
-
-                                        strongSelf.pasteboardPaymentInput = paymentInput;
-                                    }];
-    }
+    [self processPasteboardContentsWithCompletion:nil];
 }
 
 #pragma mark - NFCNDEFReaderSessionDelegate
@@ -129,14 +133,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.inputProcessor payFirstFromArray:array
-                                        source:DWPaymentInputSource_NFC
-                                    completion:^(DWPaymentInput *_Nonnull paymentInput) {
-                                        if (self.nfcReadingCompletion) {
-                                            self.nfcReadingCompletion(paymentInput);
-                                        }
-                                        self.nfcReadingCompletion = nil;
-                                    }];
+        [self.inputBuilder payFirstFromArray:array
+                                      source:DWPaymentInputSource_NFC
+                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
+                                      if (self.nfcReadingCompletion) {
+                                          self.nfcReadingCompletion(paymentInput);
+                                      }
+                                      self.nfcReadingCompletion = nil;
+                                  }];
     });
 
     [session invalidateSession];
@@ -151,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
     if (self.nfcReadingCompletion) {
-        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_NFC];
+        DWPaymentInput *paymentInput = [self.inputBuilder emptyPaymentInputWithSource:DWPaymentInputSource_NFC];
         self.nfcReadingCompletion(paymentInput);
     }
 
@@ -159,6 +163,37 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (void)processPasteboardContentsWithCompletion:(nullable void (^)(BOOL success))completion {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    NSArray<NSString *> *contents = self.pasteboardObserver.contents;
+    if (contents.count == 0) {
+        self.pasteboardPaymentInput = nil;
+
+        if (completion) {
+            completion(NO);
+        }
+    }
+    else {
+        __weak typeof(self) weakSelf = self;
+        [self.inputBuilder payFirstFromArray:contents
+                                      source:DWPaymentInputSource_Pasteboard
+                                  completion:^(DWPaymentInput *_Nonnull paymentInput) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
+
+                                      strongSelf.pasteboardPaymentInput = paymentInput;
+
+                                      if (completion) {
+                                          BOOL success = paymentInput.request || paymentInput.protocolRequest;
+                                          completion(success);
+                                      }
+                                  }];
+    }
+}
 
 - (void)setPasteboardPaymentInput:(nullable DWPaymentInput *)pasteboardPaymentInput {
     _pasteboardPaymentInput = pasteboardPaymentInput;

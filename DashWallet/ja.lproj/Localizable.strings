@@ -72,10 +72,16 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
 "Amount" = "金額";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
 "amount too small" = "金額が小さすぎます";
@@ -135,6 +141,9 @@
 "Cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "変更";
 
 /* No comment provided by engineer. */
@@ -142,6 +151,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "送金額だけ変更しますか？";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -160,6 +172,9 @@
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "信頼されているノードを消去しますか？";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "クリップボードに有効なDashアドレスが含まれていません";
@@ -216,10 +231,16 @@
 "couldn't make payment" = "支払いを完了できませんでした";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "全残高送金ができませんでした";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "取引をDashネットワークへ送信できませんでした";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -240,6 +261,9 @@
 "dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
 
 /* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "端末が危険な状態です！！！\n端末を脱獄してしまうと、どの脱獄アプリでも他の全てのアプリのキーチェーンのデータへアクセスできます（つまり、あなたのDashを簡単に盗めます）。";
 
 /* No comment provided by engineer. */
@@ -256,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "完了";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "２重支払い";
@@ -428,6 +455,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "マスターノードのサービス取引のアップデート";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "さらに…";
 
@@ -462,16 +492,13 @@
 "node ip" = "ノードのIP";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "DashまたはビットコインのQRコードではありません";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "DashのQRコードではありません";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "有効なビットコインアドレスではありません";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "有効なDashアドレスではありません";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "Dashまたはビットコインのアドレスとして有効ではありません";
@@ -892,6 +919,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "サポートされていないか破損しているドキュメント";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "サポートされていないURL";

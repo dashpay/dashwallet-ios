@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const TABBAR_HEIGHT = 49.0;
+CGFloat const DW_TABBAR_HEIGHT = 49.0;
 static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
@@ -43,7 +43,9 @@ static UIColor *InactiveButtonColor(void) {
 @property (nonatomic, strong) CALayer *circleOverlayLayer;
 
 @property (nonatomic, copy) NSArray<UIButton *> *buttons;
+@property (nonatomic, strong) UIButton *homeButton;
 @property (nonatomic, strong) DWPaymentsButton *paymentsButton;
+@property (nonatomic, strong) UIButton *othersButton;
 
 @end
 
@@ -88,8 +90,12 @@ static UIColor *InactiveButtonColor(void) {
             UIImage *image = [UIImage imageNamed:@"tabbar_home_icon"];
             [button setImage:image forState:UIControlStateNormal];
             button.tintColor = ActiveButtonColor();
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
             [self addSubview:button];
             [buttons addObject:button];
+            _homeButton = button;
         }
 
         {
@@ -107,8 +113,12 @@ static UIColor *InactiveButtonColor(void) {
             UIImage *image = [UIImage imageNamed:@"tabbar_other_icon"];
             [button setImage:image forState:UIControlStateNormal];
             button.tintColor = InactiveButtonColor();
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
             [self addSubview:button];
             [buttons addObject:button];
+            _othersButton = button;
         }
 
         _buttons = [buttons copy];
@@ -118,7 +128,7 @@ static UIColor *InactiveButtonColor(void) {
 
 - (CGSize)intrinsicContentSize {
     return CGSizeMake(UIViewNoIntrinsicMetric,
-                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : TABBAR_HEIGHT);
+                      DEVICE_HAS_HOME_INDICATOR ? TABBAR_HEIGHT_LARGE : DW_TABBAR_HEIGHT);
 }
 
 - (void)layoutSubviews {
@@ -131,7 +141,7 @@ static UIColor *InactiveButtonColor(void) {
     CGFloat x = 0.0;
     for (UIButton *button in self.buttons) {
         if (button != self.paymentsButton) {
-            button.frame = CGRectMake(x, 0.0, buttonWidth, MIN(TABBAR_HEIGHT, size.height));
+            button.frame = CGRectMake(x, 0.0, buttonWidth, MIN(DW_TABBAR_HEIGHT, size.height));
         }
 
         x += buttonWidth;
@@ -146,7 +156,7 @@ static UIColor *InactiveButtonColor(void) {
                                               arcSize.height);
 
     const CGSize overlaySize = CGSizeMake(CENTER_CIRCLE_SIZE + TABBAR_BORDER_WIDTH * 2,
-                                          TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
+                                          DW_TABBAR_HEIGHT - TABBAR_BORDER_WIDTH * 2);
     self.circleOverlayLayer.frame = CGRectMake((size.width - overlaySize.width) / 2.0,
                                                TABBAR_BORDER_WIDTH,
                                                overlaySize.width,
@@ -170,6 +180,23 @@ static UIColor *InactiveButtonColor(void) {
     }
     else {
         [self.delegate tabBarViewDidClosePayments:self];
+    }
+}
+
+- (void)tabBarButtonAction:(UIButton *)sender {
+    if (self.paymentsButton.opened) {
+        [self.delegate tabBarViewDidClosePayments:self];
+    }
+    else {
+        if (sender == self.homeButton) {
+            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Home];
+        }
+        else if (sender == self.othersButton) {
+            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Others];
+        }
+        else {
+            NSAssert(NO, @"Invalid sender");
+        }
     }
 }
 

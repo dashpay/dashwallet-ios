@@ -72,10 +72,16 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+
+/* No comment provided by engineer. */
 "always require passcode" = "πάντα να ζητείται κωδικός πρόσβασης";
 
 /* No comment provided by engineer. */
 "Amount" = "Amount";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
 "amount too small" = "το ποσό είναι πολύ μικρό";
@@ -135,6 +141,9 @@
 "Cancel" = "Ακύρωση";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "change" = "αλλαγή";
 
 /* No comment provided by engineer. */
@@ -142,6 +151,9 @@
 
 /* No comment provided by engineer. */
 "change payment amount?" = "αλλαγή του ποσού πληρωμής?";
+
+/* No comment provided by engineer. */
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -160,6 +172,9 @@
 
 /* No comment provided by engineer. */
 "clear trusted node?" = "clear trusted node?";
+
+/* No comment provided by engineer. */
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
@@ -216,10 +231,16 @@
 "couldn't make payment" = "δεν μπορούσα να προβώ σε πληρωμή";
 
 /* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
 "couldn't sweep balance" = "δεν μπορούσα να σαρώσω τα χρήματα";
 
 /* No comment provided by engineer. */
 "couldn't transmit payment to dash network" = "δεν μπορούσα να μεταδώσω την πληρωμή στο δίκτυο dash";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -240,6 +261,9 @@
 "dash payments can't be less than %@" = "Οι πληρωμές Bitcoin δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα dash σας).";
 
 /* No comment provided by engineer. */
@@ -256,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Done";
+
+/* No comment provided by engineer. */
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
 "double spend" = "διπλό ξόδεμα";
@@ -428,6 +455,9 @@
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
 
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
 /* No comment provided by engineer. */
 "more..." = "περισσότερα...";
 
@@ -462,16 +492,13 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "δεν είναι κωδικός QR για dash ή το bitcoin";
-
-/* No comment provided by engineer. */
-"not a dash QR code" = "not a dash QR code";
-
-/* No comment provided by engineer. */
-"not a valid bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση bitcoin";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash address" = "δεν είναι μια έγκυρη διεύθυνση dash";
+
+/* No comment provided by engineer. */
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση dash ή το bitcoin";
@@ -892,6 +919,9 @@
 
 /* No comment provided by engineer. */
 "unsupported or corrupted document" = "μη υποστηριζόμενο ή κατεστραμμένο έγγραφο";
+
+/* No comment provided by engineer. */
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "unsupported url" = "μη υποστηριζόμενο url";
