@@ -134,14 +134,20 @@ static CGFloat const CORNER_RADIUS = 8.0;
 - (void)setHighlighted:(BOOL)highlighted {
     _highlighted = highlighted;
 
-    if (highlighted) {
-        self.backgroundColor = BackgroundHighlightedColor();
-        self.titleLabel.textColor = TextHighlightedColor();
-    }
-    else {
-        self.backgroundColor = BackgroundColor();
-        self.titleLabel.textColor = TextColor();
-    }
+    [UIView animateWithDuration:0.075
+                          delay:0.0
+                        options:UIViewAnimationCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
+                     animations:^{
+                         if (highlighted) {
+                             self.backgroundColor = BackgroundHighlightedColor();
+                             self.titleLabel.textColor = TextHighlightedColor();
+                         }
+                         else {
+                             self.backgroundColor = BackgroundColor();
+                             self.titleLabel.textColor = TextColor();
+                         }
+                     }
+                     completion:nil];
 }
 
 - (void)configureAsCustomTypeWithTitle:(NSString *)title {
