@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
         UISpringTimingParameters *timingParameters =
             [[UISpringTimingParameters alloc] initWithDamping:0.8
                                                      response:0.4];
+
         UIViewPropertyAnimator *animator =
             [[UIViewPropertyAnimator alloc] initWithDuration:0.0
                                             timingParameters:timingParameters];

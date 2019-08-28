@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWModalTransition ()
 
-@property (nonatomic, strong) DWModalInteractiveTransition *interactiveTransition;
+@property (readonly, nonatomic, strong) DWModalInteractiveTransition *interactiveTransition;
 
 @end
 
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable UIPresentationController *)presentationControllerForPresentedViewController:(UIViewController *)presented presentingViewController:(nullable UIViewController *)presenting sourceViewController:(UIViewController *)source {
-    self.interactiveTransition.presentedController = presented;
+    self.interactiveTransition.presentedController = (id)presented;
 
     DWModalPresentationController *presentationController =
         [[DWModalPresentationController alloc] initWithPresentedViewController:presented

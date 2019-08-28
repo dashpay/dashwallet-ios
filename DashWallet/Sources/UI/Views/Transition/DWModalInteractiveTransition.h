@@ -17,12 +17,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWModalInteractiveTransitionProgressHandler.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWModalInteractiveTransition : UIPercentDrivenInteractiveTransition
 
 @property (nonatomic, assign, getter=isPresenting) BOOL presenting;
-@property (nullable, weak, nonatomic) UIViewController *presentedController;
+@property (nullable, weak, nonatomic) UIViewController<DWModalInteractiveTransitionProgressHandler> *presentedController;
 
 @end
 

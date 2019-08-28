@@ -15,18 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
-#import "DWModalInteractiveTransitionProgressHandler.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseModalViewController : DWBaseActionButtonViewController <DWModalInteractiveTransitionProgressHandler>
+@interface DWModalChevronView : UIView
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
+@property (nonatomic, assign) BOOL flattened;
 
 @end
 

@@ -15,18 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
-#import "DWModalInteractiveTransitionProgressHandler.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseModalViewController : DWBaseActionButtonViewController <DWModalInteractiveTransitionProgressHandler>
+@protocol DWModalInteractiveTransitionProgressHandler <NSObject>
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
+@optional
+- (void)interactiveTransitionDidUpdateProgress:(CGFloat)progress;
 
 @end
 

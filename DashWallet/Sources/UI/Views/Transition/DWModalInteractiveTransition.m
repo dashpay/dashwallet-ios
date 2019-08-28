@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)setPresentedController:(nullable UIViewController *)controller {
+- (void)setPresentedController:(nullable UIViewController<DWModalInteractiveTransitionProgressHandler> *)controller {
     _presentedController = controller;
 
     self.panGestureRecognizer = [[UIPanGestureRecognizer alloc]
@@ -94,18 +94,24 @@ NS_ASSUME_NONNULL_BEGIN
                 currentPercent *= -1;
             }
 
-            [self updateInteractiveTransition:self.percentComplete + currentPercent];
+            const CGFloat percent = self.percentComplete + currentPercent;
+            [self updateInteractiveTransition:percent];
+
+            [self didUpdateProgress:percent];
 
             break;
         }
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
+            self.timingCurve = nil;
             const CGFloat velocity = [sender dw_projectedVelocity:UIScrollViewDecelerationRateNormal].y;
-            if (velocity != 0) {
+            if (velocity > 0) {
                 const CGFloat height = CGRectGetHeight(sender.view.bounds);
                 const CGFloat distanceRemaining = height - self.percentComplete * height;
                 if (distanceRemaining > 0) {
-                    const CGFloat relativeVelocity = MIN(ABS(velocity) / distanceRemaining, 30);
+                    const CGFloat minVelocity = 0.001;
+                    const CGFloat maxVelocity = 30.0;
+                    const CGFloat relativeVelocity = MIN(MAX(ABS(velocity) / distanceRemaining, minVelocity), maxVelocity);
                     self.timingCurve =
                         [[UISpringTimingParameters alloc] initWithDamping:0.8
                                                                  response:0.3
@@ -113,21 +119,22 @@ NS_ASSUME_NONNULL_BEGIN
                 }
             }
 
-            if (velocity > 0.0) {
-                if (self.isPresenting) {
-                    [self cancelInteractiveTransition];
-                }
-                else {
-                    [self finishInteractiveTransition];
-                }
+            const BOOL hasVelocity = velocity > 0.0;
+            BOOL finished;
+            if (self.isPresenting) {
+                finished = !hasVelocity;
             }
             else {
-                if (self.isPresenting) {
-                    [self finishInteractiveTransition];
-                }
-                else {
-                    [self cancelInteractiveTransition];
-                }
+                finished = hasVelocity;
+            }
+
+            if (finished) {
+                [self finishInteractiveTransition];
+                [self didUpdateProgress:1.0];
+            }
+            else {
+                [self cancelInteractiveTransition];
+                [self didUpdateProgress:0.0];
             }
 
             break;
@@ -135,10 +142,20 @@ NS_ASSUME_NONNULL_BEGIN
         case UIGestureRecognizerStateFailed: {
             [self cancelInteractiveTransition];
 
+            [self didUpdateProgress:0.0];
+
             break;
         }
         default:
             break;
+    }
+}
+
+#pragma mark - Private
+
+- (void)didUpdateProgress:(CGFloat)progress {
+    if ([self.presentedController respondsToSelector:@selector(interactiveTransitionDidUpdateProgress:)]) {
+        [self.presentedController interactiveTransitionDidUpdateProgress:progress];
     }
 }
 

@@ -17,13 +17,18 @@
 
 #import "DWBaseModalViewController.h"
 
+#import "DWModalContentView.h"
 #import "DWModalTransition.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static CGFloat const CORNER_RADIUS = 8.0;
 
 @interface DWBaseModalViewController ()
 
 @property (nonatomic, strong) DWModalTransition *modalTransition;
+@property (nonatomic, strong) DWModalContentView *contentView;
 
 @end
 
@@ -38,6 +43,53 @@ NS_ASSUME_NONNULL_BEGIN
         self.modalPresentationStyle = UIModalPresentationCustom;
     }
     return self;
+}
+
++ (NSString *)actionButtonTitle {
+    return @"Pay";
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self setupBaseModalView];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.contentView setChevronViewFlattened:NO];
+}
+
+- (void)actionButtonAction:(id)sender {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWModalInteractiveTransitionProgressHandler
+
+- (void)interactiveTransitionDidUpdateProgress:(CGFloat)progress {
+    const BOOL flattened = progress > 0.0 && progress < 1.0;
+    [self.contentView setChevronViewFlattened:flattened];
+}
+
+#pragma mark - Private
+
+- (void)setupBaseModalView {
+    self.view.backgroundColor = [UIColor dw_backgroundColor];
+    self.view.clipsToBounds = YES;
+    self.view.layer.cornerRadius = CORNER_RADIUS;
+    self.view.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
+
+    self.actionButton.enabled = YES;
+
+    DWModalContentView *contentView = [[DWModalContentView alloc] initWithFrame:CGRectZero];
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView setChevronViewFlattened:YES];
+    self.contentView = contentView;
+
+    [self setupContentView:contentView];
+
+    contentView.title = @"Confirm";
 }
 
 @end

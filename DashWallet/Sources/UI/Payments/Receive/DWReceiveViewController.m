@@ -113,11 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
                      didInputAmount:(uint64_t)amount {
-
-
     DWBaseModalViewController *c = [[DWBaseModalViewController alloc] init];
-    c.view.backgroundColor = [UIColor dw_dashBlueColor];
-
     [self presentViewController:c animated:YES completion:nil];
 }
 

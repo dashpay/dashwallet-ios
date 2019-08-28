@@ -32,6 +32,8 @@
 		2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D223143568001B8C90 /* DWModalTransition.m */; };
 		2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */; };
 		2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */; };
+		2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69DF231556D6001B8C90 /* DWModalChevronView.m */; };
+		2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69E223155A0E001B8C90 /* DWModalContentView.m */; };
 		2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */; };
 		2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58321947CBE00E7B563 /* BRPeerEntity.m */; };
 		2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */; };
@@ -522,6 +524,11 @@
 		2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseModalViewController.m; sourceTree = "<group>"; };
 		2A0C69D82314727F001B8C90 /* UISpringTimingParameters+DWInit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISpringTimingParameters+DWInit.h"; sourceTree = "<group>"; };
 		2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISpringTimingParameters+DWInit.m"; sourceTree = "<group>"; };
+		2A0C69DE231556D6001B8C90 /* DWModalChevronView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalChevronView.h; sourceTree = "<group>"; };
+		2A0C69DF231556D6001B8C90 /* DWModalChevronView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalChevronView.m; sourceTree = "<group>"; };
+		2A0C69E123155A0E001B8C90 /* DWModalContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalContentView.h; sourceTree = "<group>"; };
+		2A0C69E223155A0E001B8C90 /* DWModalContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalContentView.m; sourceTree = "<group>"; };
+		2A0C69E723157858001B8C90 /* DWModalInteractiveTransitionProgressHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalInteractiveTransitionProgressHandler.h; sourceTree = "<group>"; };
 		2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
 		2A11F58321947CBE00E7B563 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		2A11F58521947CBE00E7B563 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
@@ -1344,6 +1351,7 @@
 				2A0C69C22314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m */,
 				2A0C69D82314727F001B8C90 /* UISpringTimingParameters+DWInit.h */,
 				2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */,
+				2A0C69E723157858001B8C90 /* DWModalInteractiveTransitionProgressHandler.h */,
 			);
 			path = Transition;
 			sourceTree = "<group>";
@@ -1364,10 +1372,22 @@
 		2A0C69D423143B17001B8C90 /* ModalController */ = {
 			isa = PBXGroup;
 			children = (
+				2A0C69DD231556BD001B8C90 /* Views */,
 				2A0C69D523143B2F001B8C90 /* DWBaseModalViewController.h */,
 				2A0C69D623143B2F001B8C90 /* DWBaseModalViewController.m */,
 			);
 			path = ModalController;
+			sourceTree = "<group>";
+		};
+		2A0C69DD231556BD001B8C90 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A0C69DE231556D6001B8C90 /* DWModalChevronView.h */,
+				2A0C69DF231556D6001B8C90 /* DWModalChevronView.m */,
+				2A0C69E123155A0E001B8C90 /* DWModalContentView.h */,
+				2A0C69E223155A0E001B8C90 /* DWModalContentView.m */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2A11F58021947CBE00E7B563 /* DataMigration */ = {
@@ -3595,6 +3615,7 @@
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */,
 				2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */,
+				2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */,
 				2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */,
 				2A44311E22CC9B5A009BAF7F /* DWNavigationController.m in Sources */,
 				2A8B9E6122FF712000FF8653 /* DWPayTableViewCell.m in Sources */,
@@ -3638,6 +3659,7 @@
 				2A8B9E4022FD75C000FF8653 /* DWSegmentedControl.m in Sources */,
 				2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */,
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
+				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
 				2A44313222CD37FA009BAF7F /* DWPinInputStepView.m in Sources */,
 				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,

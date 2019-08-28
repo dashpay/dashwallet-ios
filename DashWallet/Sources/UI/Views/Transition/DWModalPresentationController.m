@@ -101,9 +101,18 @@ static CGFloat const PRESENTED_HEIGHT_PERCENT = 2.0 / 3.0;
         dimmingView.backgroundColor = [UIColor dw_modalDimmingColor];
         dimmingView.alpha = 0.0;
 
+        UITapGestureRecognizer *tapGestureRecognizer =
+            [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                    action:@selector(tapGestureRecognizerAction:)];
+        [dimmingView addGestureRecognizer:tapGestureRecognizer];
+
         _dimmingView = dimmingView;
     }
     return _dimmingView;
+}
+
+- (void)tapGestureRecognizerAction:(id)sender {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)performBlockAnimatedIfPossible:(void (^)(void))block {
