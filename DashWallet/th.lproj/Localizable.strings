@@ -468,6 +468,9 @@
 "Network" = "เครือข่าย";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
 
 /* No comment provided by engineer. */

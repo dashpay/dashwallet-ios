@@ -45,10 +45,6 @@ static CGFloat const CORNER_RADIUS = 8.0;
     return self;
 }
 
-+ (NSString *)actionButtonTitle {
-    return @"Pay";
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -63,6 +59,23 @@ static CGFloat const CORNER_RADIUS = 8.0;
 
 - (void)actionButtonAction:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)setModalTitle:(NSString *)title {
+    self.contentView.title = title;
+}
+
+- (void)setupModalContentView:(UIView *)view {
+    UIView *parentView = self.contentView.contentView;
+    view.translatesAutoresizingMaskIntoConstraints = NO;
+    [parentView addSubview:view];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [view.topAnchor constraintEqualToAnchor:parentView.topAnchor],
+        [view.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
+        [view.bottomAnchor constraintEqualToAnchor:parentView.bottomAnchor],
+        [view.trailingAnchor constraintEqualToAnchor:parentView.trailingAnchor],
+    ]];
 }
 
 #pragma mark - DWModalInteractiveTransitionProgressHandler
@@ -88,8 +101,6 @@ static CGFloat const CORNER_RADIUS = 8.0;
     self.contentView = contentView;
 
     [self setupContentView:contentView];
-
-    contentView.title = @"Confirm";
 }
 
 @end

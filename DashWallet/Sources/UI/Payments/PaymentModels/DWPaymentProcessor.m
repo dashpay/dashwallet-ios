@@ -149,7 +149,7 @@ static NSString *sanitizeString(NSString *s) {
                              cancelBlock:cancelBlock
                              actionBlock:actionBlock];
         }
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount) {
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *localCurrency) {
             return YES; //just continue and let Dash Sync do it's thing
         }
         signedCompletion:^BOOL(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL cancelled) {

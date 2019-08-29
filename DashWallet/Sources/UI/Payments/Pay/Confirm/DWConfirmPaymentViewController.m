@@ -15,21 +15,36 @@
 //  limitations under the License.
 //
 
-#import "DWBaseActionButtonViewController.h"
-#import "DWModalInteractiveTransitionProgressHandler.h"
+#import "DWConfirmPaymentViewController.h"
+
+#import "DWConfirmPaymentContentView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseModalViewController : DWBaseActionButtonViewController <DWModalInteractiveTransitionProgressHandler>
+@interface DWConfirmPaymentViewController ()
 
-- (void)setModalTitle:(NSString *)title;
-- (void)setupModalContentView:(UIView *)view;
+@property (nonatomic, strong) DWConfirmPaymentContentView *confirmPaymentView;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@end
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
+@implementation DWConfirmPaymentViewController
+
++ (NSString *)actionButtonTitle {
+    return NSLocalizedString(@"Pay", nil);
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self setupView];
+}
+
+- (void)setupView {
+    [self setModalTitle:NSLocalizedString(@"Confirm", nil)];
+
+    DWConfirmPaymentContentView *confirmPaymentView = [[DWConfirmPaymentContentView alloc] initWithFrame:CGRectZero];
+    [self setupModalContentView:confirmPaymentView];
+}
 
 @end
 

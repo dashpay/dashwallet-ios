@@ -21,7 +21,7 @@
 #import "DWSpecifyAmountViewController.h"
 #import "DWUIKit.h"
 
-#import "DWBaseModalViewController.h"
+#import "DWConfirmPaymentViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
                      didInputAmount:(uint64_t)amount {
-    DWBaseModalViewController *c = [[DWBaseModalViewController alloc] init];
+    DWConfirmPaymentViewController *c = [[DWConfirmPaymentViewController alloc] init];
     [self presentViewController:c animated:YES completion:nil];
 }
 

@@ -468,6 +468,9 @@
 "Network" = "네트워크";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "복구 문구를 암호 관리자나 다른 곳에 절대로 입력하지 마십시오.\n다른 장치가 감염되었을 수 있습니다.";
 
 /* No comment provided by engineer. */

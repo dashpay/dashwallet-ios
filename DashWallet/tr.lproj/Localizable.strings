@@ -468,6 +468,9 @@
 "Network" = "Ağ";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Kurtarma cümlenizi ASLA parola yöneticilerine veya başka bir yere yazmayın. Diğer cihazlarda açık olabilir.";
 
 /* No comment provided by engineer. */
