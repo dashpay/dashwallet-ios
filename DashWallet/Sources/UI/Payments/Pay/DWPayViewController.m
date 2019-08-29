@@ -217,13 +217,11 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
     [self.navigationController presentViewController:alert animated:YES completion:nil];
 }
 
-// Result
-
-- (void)paymentProcessorHideAmountControllerIfNeeded:(nonnull DWPaymentProcessor *)processor {
-    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-        [self.navigationController popViewControllerAnimated:YES];
-    }
+- (void)paymentProcessor:(DWPaymentProcessor *)processor
+    confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
 }
+
+// Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
         didFailWithTitle:(nullable NSString *)title
@@ -234,6 +232,11 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
              transaction:(DSTransaction *)transaction {
+
+    //    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+    //        [self.navigationController popViewControllerAnimated:YES];
+    //    }
+
     NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
 }
 

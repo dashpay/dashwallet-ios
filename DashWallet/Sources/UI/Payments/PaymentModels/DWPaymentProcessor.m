@@ -19,6 +19,7 @@
 
 #import "DWEnvironment.h"
 #import "DWPaymentInput.h"
+#import "DWPaymentOutput+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,9 +42,56 @@ static NSString *sanitizeString(NSString *s) {
 @property (nonatomic, assign) BOOL canChangeAmount;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *request;
 
+// Tx Manager blocks
+@property (nonatomic, assign) BOOL didSendRequestDelegateNotified;
+@property (nonatomic, copy) DSTransactionChallengeBlock challengeBlock;
+@property (nonatomic, copy) DSTransactionSigningCompletionBlock signedCompletionBlock;
+@property (nonatomic, copy) DSTransactionErrorNotificationBlock errorNotificationBlock;
+
 @end
 
 @implementation DWPaymentProcessor
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        __weak typeof(self) weakSelf = self;
+
+        _challengeBlock = ^(NSString *_Nonnull challengeTitle, NSString *_Nonnull challengeMessage, NSString *_Nonnull actionTitle, void (^_Nonnull actionBlock)(void), void (^_Nonnull cancelBlock)(void)) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf requestUserActionTitle:challengeTitle
+                                       message:challengeMessage
+                                   actionTitle:actionTitle
+                                   cancelBlock:cancelBlock
+                                   actionBlock:actionBlock];
+        };
+
+        _signedCompletionBlock = ^BOOL(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL cancelled) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return NO;
+            }
+
+            return [strongSelf txManagerSignedCompletion:cancelled error:error];
+        };
+
+        _errorNotificationBlock = ^(NSString *_Nonnull errorTitle, NSString *_Nonnull errorMessage, BOOL shouldCancel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            if (errorTitle || errorMessage) {
+                [strongSelf failedWithTitle:errorTitle message:errorMessage];
+            }
+        };
+    }
+    return self;
+}
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
@@ -72,6 +120,54 @@ static NSString *sanitizeString(NSString *s) {
     [self.request updateForRequestsInstantSend:usedInstantSend
                            requiresInstantSend:self.request.requiresInstantSend];
     [self confirmProtocolRequest:self.request];
+}
+
+- (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    NSString *address = paymentOutput.address;
+    DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
+
+    self.didSendRequestDelegateNotified = NO;
+
+    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+    [chainManager.transactionManager
+        signAndPublishTransaction:paymentOutput.tx
+        createdFromProtocolRequest:protocolRequest
+        fromAccount:account
+        toAddress:address
+        withPrompt:@""
+        forAmount:paymentOutput.amount
+        requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+            [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
+                                    protocolRequest:protocolRequest];
+        }
+        presentChallenge:self.challengeBlock
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *_Nullable localCurrency) {
+            [self txManagerConfirmTx:tx
+                     protocolRequest:protocolRequest
+                              amount:amount
+                                 fee:fee
+                             address:address
+                                name:name
+                                memo:memo
+                            isSecure:isSecure
+                       localCurrency:localCurrency];
+            // don't sign tx automatically
+            return NO;
+        }
+        signedCompletion:self.signedCompletionBlock
+        publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
+            [self txManagerPublishedCompletion:address
+                                          sent:sent
+                                            tx:tx];
+        }
+        requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
+            [self txManagerRequestRelayCompletion:address
+                                  protocolRequest:protocolRequest
+                                  relayedToServer:relayedToServer
+                                               tx:tx];
+        }
+        errorNotificationBlock:self.errorNotificationBlock];
 }
 
 #pragma mark - Private
@@ -125,7 +221,7 @@ static NSString *sanitizeString(NSString *s) {
                                                   onChain:chain];
     const BOOL addressIsFromPasteboard = self.paymentInput.source == DWPaymentInputSource_Pasteboard;
 
-    __block BOOL didSendRequestDelegateNotified = NO;
+    self.didSendRequestDelegateNotified = NO;
 
     [chainManager.transactionManager
         confirmProtocolRequest:protocolRequest
@@ -135,62 +231,36 @@ static NSString *sanitizeString(NSString *s) {
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
-            if (additionalInfoRequestType == DSRequestingAdditionalInfo_Amount) {
-                [self reqeustAmountForProtocolRequest:protocolRequest];
-            }
-            else if (additionalInfoRequestType == DSRequestingAdditionalInfo_CancelOrChangeAmount) {
-                [self cancelOrChangeAmount];
-            }
+            [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
+                                    protocolRequest:protocolRequest];
         }
-        presentChallenge:^(NSString *_Nonnull challengeTitle, NSString *_Nonnull challengeMessage, NSString *_Nonnull actionTitle, void (^_Nonnull actionBlock)(void), void (^_Nonnull cancelBlock)(void)) {
-            [self requestUserActionTitle:challengeTitle
-                                 message:challengeMessage
-                             actionTitle:actionTitle
-                             cancelBlock:cancelBlock
-                             actionBlock:actionBlock];
+        presentChallenge:self.challengeBlock
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *_Nullable localCurrency) {
+            [self txManagerConfirmTx:tx
+                     protocolRequest:protocolRequest
+                              amount:amount
+                                 fee:fee
+                             address:address
+                                name:name
+                                memo:memo
+                            isSecure:isSecure
+                       localCurrency:localCurrency];
+            // don't sign tx automatically
+            return NO;
         }
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *localCurrency) {
-            return YES; //just continue and let Dash Sync do it's thing
-        }
-        signedCompletion:^BOOL(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL cancelled) {
-            if (cancelled) {
-                [self cancelOrChangeAmount];
-            }
-            else if (error) {
-                [self failedWithTitle:NSLocalizedString(@"Couldn't make payment", nil) message:error.localizedDescription];
-            }
-            else {
-                [self.delegate paymentProcessorHideAmountControllerIfNeeded:self];
-            }
-            return YES;
-        }
+        signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
-            if (sent) {
-                [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx];
-
-                didSendRequestDelegateNotified = YES;
-
-                [self handleCallbackSchemeIfNeeded:self.request address:address tx:tx];
-
-                [self reset];
-            }
+            [self txManagerPublishedCompletion:address
+                                          sent:sent
+                                            tx:tx];
         }
         requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
-            if (relayedToServer) {
-                if (!didSendRequestDelegateNotified) {
-                    [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx];
-                }
-
-                [self handleCallbackSchemeIfNeeded:protocolRequest address:address tx:tx];
-            }
-
-            [self reset];
+            [self txManagerRequestRelayCompletion:address
+                                  protocolRequest:protocolRequest
+                                  relayedToServer:relayedToServer
+                                               tx:tx];
         }
-        errorNotificationBlock:^(NSString *_Nonnull errorTitle, NSString *_Nonnull errorMessage, BOOL shouldCancel) {
-            if (errorTitle || errorMessage) {
-                [self failedWithTitle:errorTitle message:errorMessage];
-            }
-        }];
+        errorNotificationBlock:self.errorNotificationBlock];
 }
 
 - (void)confirmSweep:(DSPaymentRequest *)request {
@@ -289,6 +359,82 @@ static NSString *sanitizeString(NSString *s) {
     [self failedWithTitle:NSLocalizedString(@"Unsupported or corrupted document", nil) message:nil];
 
     [self.delegate paymentProcessorDidFinishProcessingFile:self];
+}
+
+#pragma mark - Transaction Manager Callbacks
+
+- (void)txManagerRequestingAdditionalInfo:(DSRequestingAdditionalInfo)additionalInfoRequestType
+                          protocolRequest:(DSPaymentProtocolRequest *)protocolRequest {
+    if (additionalInfoRequestType == DSRequestingAdditionalInfo_Amount) {
+        [self reqeustAmountForProtocolRequest:protocolRequest];
+    }
+    else if (additionalInfoRequestType == DSRequestingAdditionalInfo_CancelOrChangeAmount) {
+        [self cancelOrChangeAmount];
+    }
+}
+
+- (BOOL)txManagerSignedCompletion:(BOOL)cancelled error:(NSError *_Nullable)error {
+    if (cancelled) {
+        [self cancelOrChangeAmount];
+    }
+    else if (error) {
+        [self failedWithTitle:NSLocalizedString(@"Couldn't make payment", nil) message:error.localizedDescription];
+    }
+    else {
+        // NOP
+        // Previous app version hid amount screen here
+    }
+    return YES;
+}
+
+- (void)txManagerPublishedCompletion:(NSString *)address
+                                sent:(BOOL)sent
+                                  tx:(DSTransaction *_Nonnull)tx {
+    if (sent) {
+        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx];
+
+        self.didSendRequestDelegateNotified = YES;
+
+        [self handleCallbackSchemeIfNeeded:self.request address:address tx:tx];
+
+        [self reset];
+    }
+}
+
+- (void)txManagerRequestRelayCompletion:(NSString *)address
+                        protocolRequest:(DSPaymentProtocolRequest *_Nonnull)protocolRequest
+                        relayedToServer:(BOOL)relayedToServer
+                                     tx:(DSTransaction *_Nonnull)tx {
+    if (relayedToServer) {
+        if (!self.didSendRequestDelegateNotified) {
+            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx];
+        }
+
+        [self handleCallbackSchemeIfNeeded:protocolRequest address:address tx:tx];
+    }
+
+    [self reset];
+}
+
+- (void)txManagerConfirmTx:(DSTransaction *)tx
+           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                    amount:(uint64_t)amount
+                       fee:(uint64_t)fee
+                   address:(NSString *)address
+                      name:(NSString *_Nullable)name
+                      memo:(NSString *_Nullable)memo
+                  isSecure:(BOOL)isSecure
+             localCurrency:(NSString *_Nullable)localCurrency {
+    DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc] initWithTx:tx
+                                                         protocolRequest:protocolRequest
+                                                                  amount:amount
+                                                                     fee:fee
+                                                                 address:address
+                                                                    name:name
+                                                                    memo:memo
+                                                                isSecure:isSecure
+                                                           localCurrency:localCurrency];
+    [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
 }
 
 #pragma mark - Handlers
