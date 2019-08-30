@@ -19,11 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@interface NSAttributedString (DWDashAmountDisplay)
 
-@interface DWReceiveViewController : UIViewController
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
++ (NSAttributedString *)dashAttributedStringForAmount:(uint64_t)amount
+                                                color:(UIColor *)color
+                                           symbolSize:(CGSize)symbolSize;
 
 @end
 

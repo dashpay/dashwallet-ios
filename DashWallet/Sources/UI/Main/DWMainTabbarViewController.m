@@ -67,6 +67,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     return self.modalController ?: self.currentController;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    // Set home's navigation delegate here to prevent unpleasant animation during very first show of the screen
+    if ([self.currentController isKindOfClass:DWNavigationController.class]) {
+        DWNavigationController *navigationController = (DWNavigationController *)self.currentController;
+        navigationController.delegate = self;
+    }
+}
+
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {
@@ -192,7 +202,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:homeController];
-    navigationController.delegate = self;
 
     [self displayViewController:navigationController];
 }

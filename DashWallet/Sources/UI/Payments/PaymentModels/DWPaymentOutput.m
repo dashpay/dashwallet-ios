@@ -17,13 +17,12 @@
 
 #import "DWPaymentOutput+Private.h"
 
+#import "NSAttributedString+DWDashAmountDisplay.h"
 #import "UIColor+DWStyle.h"
 #import <DashSync/DashSync.h>
-#import <DashSync/NSString+Dash.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGSize const DashSymbolMainSize = {35.0, 27.0};
 static CGSize const DashSymbolInRowSize = {11.0, 8.0};
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
@@ -60,17 +59,8 @@ static NSString *sanitizeString(NSString *s) {
     return self;
 }
 
-- (NSAttributedString *)mainAmountAttributedString {
-    return [self dashAttributedStringForAmount:self.amount - self.fee
-                                         color:[UIColor dw_darkTitleColor]
-                                    symbolSize:DashSymbolMainSize];
-}
-
-- (NSString *)supplementaryAmountString {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *supplementaryAmount = [priceManager localCurrencyStringForDashAmount:self.amount - self.fee];
-
-    return supplementaryAmount;
+- (uint64_t)amountToDisplay {
+    return self.amount - self.fee;
 }
 
 - (nullable NSString *)generalInfoString {
@@ -103,9 +93,9 @@ static NSString *sanitizeString(NSString *s) {
 
 - (nullable NSAttributedString *)networkFeeAttributedString {
     if (self.fee > 0) {
-        return [self dashAttributedStringForAmount:self.fee
-                                             color:[UIColor dw_secondaryTextColor]
-                                        symbolSize:DashSymbolInRowSize];
+        return [NSAttributedString dashAttributedStringForAmount:self.fee
+                                                           color:[UIColor dw_secondaryTextColor]
+                                                      symbolSize:DashSymbolInRowSize];
     }
     else {
         return nil;
@@ -113,23 +103,9 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (NSAttributedString *)totalAttributedString {
-    return [self dashAttributedStringForAmount:self.amount
-                                         color:[UIColor dw_secondaryTextColor]
-                                    symbolSize:DashSymbolInRowSize];
-}
-
-#pragma mark - Private
-
-- (NSAttributedString *)dashAttributedStringForAmount:(uint64_t)amount
-                                                color:(UIColor *)color
-                                           symbolSize:(CGSize)symbolSize {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *dashAmount = [priceManager stringForDashAmount:amount];
-    NSAttributedString *result = [dashAmount
-        attributedStringForDashSymbolWithTintColor:color
-                                    dashSymbolSize:symbolSize];
-
-    return result;
+    return [NSAttributedString dashAttributedStringForAmount:self.amount
+                                                       color:[UIColor dw_secondaryTextColor]
+                                                  symbolSize:DashSymbolInRowSize];
 }
 
 @end

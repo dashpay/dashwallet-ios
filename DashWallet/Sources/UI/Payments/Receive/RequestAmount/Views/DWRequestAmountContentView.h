@@ -20,10 +20,24 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
+@class DWRequestAmountContentView;
 
-@interface DWReceiveViewController : UIViewController
+@protocol DWRequestAmountContentViewDelegate <NSObject>
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)requestAmountContentView:(DWRequestAmountContentView *)view shareButtonAction:(UIButton *)sender;
+
+@end
+
+@interface DWRequestAmountContentView : UIView
+
+@property (nullable, nonatomic, weak) id<DWRequestAmountContentViewDelegate> delegate;
+
+- (void)viewDidAppear;
+
+- (instancetype)initWithModel:(DWReceiveModel *)model;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

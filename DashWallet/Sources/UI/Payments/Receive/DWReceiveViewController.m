@@ -17,22 +17,23 @@
 
 #import "DWReceiveViewController.h"
 
+#import "DWReceiveContentView.h"
 #import "DWReceiveModel.h"
+#import "DWRequestAmountViewController.h"
 #import "DWSpecifyAmountViewController.h"
 #import "DWUIKit.h"
-
-#import "DWConfirmPaymentViewController.h"
+#import "UIView+DWHUD.h"
+#import "UIViewController+DWShareReceiveInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWReceiveViewController () <DWSpecifyAmountViewControllerDelegate>
+static CGFloat const TOP_PADDING = 44.0;
 
-@property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
-@property (strong, nonatomic) IBOutlet UIButton *addressButton;
-@property (strong, nonatomic) IBOutlet UIButton *specifyAmountButton;
-@property (strong, nonatomic) IBOutlet UIButton *shareButton;
+@interface DWReceiveViewController () <DWReceiveContentViewDelegate,
+                                       DWSpecifyAmountViewControllerDelegate,
+                                       DWRequestAmountViewControllerDelegate>
 
-@property (nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
+@property (nonatomic, strong) DWReceiveContentView *contentView;
 
 @property (nonatomic, strong) DWReceiveModel *model;
 
@@ -41,8 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWReceiveViewController
 
 + (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Receive" bundle:nil];
-    DWReceiveViewController *controller = [storyboard instantiateInitialViewController];
+    DWReceiveViewController *controller = [[DWReceiveViewController alloc] init];
     controller.model = receiveModel;
 
     return controller;
@@ -54,102 +54,68 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(self.model, @"Use controllerWithModel: method to init the class");
 
     [self setupView];
-    [self setupObserving];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self.feedbackGenerator prepare];
+    [self.contentView viewDidAppear];
 }
 
-#pragma mark - Actions
+#pragma mark - DWReceiveContentViewDelegate
 
-- (IBAction)qrCodeButtonAction:(id)sender {
-    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
-
-    [self.model copyQRImageToPasteboard];
-}
-
-- (IBAction)addressButtonAction:(id)sender {
-    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
-
-    [self.model copyAddressToPasteboard];
-}
-
-- (IBAction)specifyAmountButtonAction:(id)sender {
+- (void)receiveContentView:(DWReceiveContentView *)view specifyAmountButtonAction:(UIButton *)sender {
     DWSpecifyAmountViewController *controller = [DWSpecifyAmountViewController controller];
     controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
-- (IBAction)shareButtonAction:(UIButton *)sender {
-    NSMutableArray *activityItems = [NSMutableArray array];
-
-    if (self.model.paymentAddress) {
-        [activityItems addObject:self.model.paymentAddress];
-    }
-
-    if (self.model.qrCodeImage) {
-        [activityItems addObject:self.model.qrCodeImage];
-    }
-
-    NSAssert(activityItems.count > 0, @"Invalid state");
-    if (activityItems.count == 0) {
-        return;
-    }
-
-    UIActivityViewController *activityViewController =
-        [[UIActivityViewController alloc] initWithActivityItems:activityItems
-                                          applicationActivities:nil];
-    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-        activityViewController.popoverPresentationController.sourceView = sender;
-        activityViewController.popoverPresentationController.sourceRect = sender.bounds;
-    }
-    [self presentViewController:activityViewController animated:YES completion:nil];
+- (void)receiveContentView:(DWReceiveContentView *)view shareButtonAction:(UIButton *)sender {
+    [self dw_shareReceiveInfo:self.model sender:sender];
 }
 
 #pragma mark - DWSpecifyAmountViewControllerDelegate
 
 - (void)specifyAmountViewController:(DWSpecifyAmountViewController *)controller
                      didInputAmount:(uint64_t)amount {
-    DWConfirmPaymentViewController *c = [[DWConfirmPaymentViewController alloc] init];
-    [self presentViewController:c animated:YES completion:nil];
+    DWReceiveModel *requestModel = [[DWReceiveModel alloc] initWithAmount:amount];
+    DWRequestAmountViewController *requestController =
+        [DWRequestAmountViewController controllerWithModel:requestModel];
+    requestController.delegate = self;
+    [self presentViewController:requestController animated:YES completion:nil];
+}
+
+#pragma mark - DWRequestAmountViewControllerDelegate
+
+- (void)requestAmountViewController:(DWRequestAmountViewController *)controller
+           didReceiveAmountWithInfo:(NSString *)info {
+    [controller dismissViewControllerAnimated:YES
+                                   completion:^{
+                                       [self.navigationController popViewControllerAnimated:YES];
+
+                                       const NSTimeInterval popAnimationDuration = 0.3;
+                                       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(popAnimationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                           [self.navigationController.view dw_showInfoHUDWithText:info];
+                                       });
+                                   }];
 }
 
 #pragma mark - Private
 
 - (void)setupView {
-    const CGSize qrSize = self.model.qrCodeSize;
+    DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:self.model];
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    contentView.delegate = self;
+    [self.view addSubview:contentView];
+    self.contentView = contentView;
+
+    UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     [NSLayoutConstraint activateConstraints:@[
-        [self.qrCodeButton.widthAnchor constraintEqualToConstant:qrSize.width],
-        [self.qrCodeButton.heightAnchor constraintEqualToConstant:qrSize.height],
+        [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor
+                                              constant:TOP_PADDING],
+        [contentView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
+        [contentView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
     ]];
-
-    self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
-
-    [self.specifyAmountButton setTitle:NSLocalizedString(@"Specify Amount", nil) forState:UIControlStateNormal];
-    [self.shareButton setTitle:NSLocalizedString(@"Share", nil) forState:UIControlStateNormal];
-
-    self.feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
-}
-
-- (void)setupObserving {
-    [self mvvm_observe:DW_KEYPATH(self, model.paymentAddress)
-                  with:^(typeof(self) self, NSString *value) {
-                      [self.addressButton setTitle:value forState:UIControlStateNormal];
-
-                      BOOL hasValue = !!value;
-                      self.addressButton.hidden = !hasValue;
-                      self.specifyAmountButton.enabled = hasValue;
-                      self.shareButton.enabled = hasValue;
-                  }];
-
-    [self mvvm_observe:DW_KEYPATH(self, model.qrCodeImage)
-                  with:^(typeof(self) self, UIImage *value) {
-                      [self.qrCodeButton setImage:value forState:UIControlStateNormal];
-                      self.qrCodeButton.hidden = (value == nil);
-                  }];
 }
 
 @end

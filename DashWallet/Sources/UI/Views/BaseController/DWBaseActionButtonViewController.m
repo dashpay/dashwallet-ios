@@ -56,6 +56,10 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     return nil;
 }
 
++ (BOOL)showsActionButton {
+    return YES;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -82,30 +86,33 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
     NSMutableArray<__kindof UIView *> *arrangedSubviews = [NSMutableArray array];
 
-    NSString *actionButtonTitle = [self.class actionButtonTitle];
-    NSParameterAssert(actionButtonTitle);
     DWBlueActionButton *bottomActionButton = nil;
-    if (IS_IPHONE_5_OR_LESS) {
-        UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc]
-            initWithTitle:actionButtonTitle
-                    style:UIBarButtonItemStylePlain
-                   target:self
-                   action:@selector(actionButtonAction:)];
-        self.navigationItem.rightBarButtonItem = barButtonItem;
-        self.actionButton = barButtonItem;
-    }
-    else {
-        bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
-        bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
-        [bottomActionButton addTarget:self
-                               action:@selector(actionButtonAction:)
-                     forControlEvents:UIControlEventTouchUpInside];
-        self.actionButton = bottomActionButton;
-        [arrangedSubviews addObject:bottomActionButton];
-    }
+    if ([self.class showsActionButton]) {
+        NSString *actionButtonTitle = [self.class actionButtonTitle];
+        NSParameterAssert(actionButtonTitle);
 
-    self.actionButton.enabled = NO;
+        if (IS_IPHONE_5_OR_LESS) {
+            UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc]
+                initWithTitle:actionButtonTitle
+                        style:UIBarButtonItemStylePlain
+                       target:self
+                       action:@selector(actionButtonAction:)];
+            self.navigationItem.rightBarButtonItem = barButtonItem;
+            self.actionButton = barButtonItem;
+        }
+        else {
+            bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+            bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
+            [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+            [bottomActionButton addTarget:self
+                                   action:@selector(actionButtonAction:)
+                         forControlEvents:UIControlEventTouchUpInside];
+            self.actionButton = bottomActionButton;
+            [arrangedSubviews addObject:bottomActionButton];
+        }
+
+        self.actionButton.enabled = NO;
+    }
 
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:arrangedSubviews];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;

@@ -15,15 +15,31 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUIView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
+@class DWReceiveContentView;
 
-@interface DWReceiveViewController : UIViewController
+@protocol DWReceiveContentViewDelegate <NSObject>
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)receiveContentView:(DWReceiveContentView *)view specifyAmountButtonAction:(UIButton *)sender;
+- (void)receiveContentView:(DWReceiveContentView *)view shareButtonAction:(UIButton *)sender;
+
+@end
+
+@interface DWReceiveContentView : KVOUIView
+
+@property (nullable, nonatomic, weak) id<DWReceiveContentViewDelegate> delegate;
+
+- (void)viewDidAppear;
+- (void)setSpecifyAmountButtonHidden:(BOOL)hidden;
+
+- (instancetype)initWithModel:(DWReceiveModel *)model;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

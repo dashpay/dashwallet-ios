@@ -13,11 +13,10 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWConfirmPaymentContentView">
             <connections>
                 <outlet property="addressRowView" destination="3he-Ax-20F" id="tqI-B3-1ha"/>
+                <outlet property="amountView" destination="qfu-0f-ohJ" id="Lxf-f0-50A"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="2Dp-wu-bkr"/>
                 <outlet property="feeRowView" destination="Buz-l8-KN2" id="XV9-iW-vox"/>
                 <outlet property="infoRowView" destination="Ecg-yC-KJa" id="MbH-Nt-hu5"/>
-                <outlet property="mainAmountLabel" destination="dQH-MC-bfv" id="eqz-s7-FDh"/>
-                <outlet property="supplementaryAmountLabel" destination="ee7-e9-plk" id="rn5-l0-FfH"/>
                 <outlet property="totalRowView" destination="3l3-Jl-KzQ" id="o1b-RH-bJh"/>
             </connections>
         </placeholder>
@@ -26,35 +25,10 @@
             <rect key="frame" x="0.0" y="0.0" width="375" height="300"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gMM-Cw-u0W">
+                <view contentMode="scaleToFill" placeholderIntrinsicWidth="375" placeholderIntrinsicHeight="76" translatesAutoresizingMaskIntoConstraints="NO" id="qfu-0f-ohJ" customClass="DWAmountPreviewView">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="76"/>
-                    <subviews>
-                        <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="mC6-74-Ha9">
-                            <rect key="frame" x="0.0" y="5.5" width="375" height="65"/>
-                            <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="760" text="Main Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="dQH-MC-bfv" userLabel="Main Amount">
-                                    <rect key="frame" x="113" y="0.0" width="149" height="44"/>
-                                    <constraints>
-                                        <constraint firstAttribute="height" constant="44" id="IWr-ym-MGt"/>
-                                    </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="26"/>
-                                    <nil key="highlightedColor"/>
-                                    <attributedString key="userComments">
-                                        <fragment content="#bc-ignore!"/>
-                                    </attributedString>
-                                </label>
-                                <label opaque="NO" userInteractionEnabled="NO" alpha="0.43000000715255737" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="260" text="Supplementary Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="ee7-e9-plk" userLabel="Supplementary Amount">
-                                    <rect key="frame" x="111.5" y="48" width="152.5" height="17"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <nil key="highlightedColor"/>
-                                    <attributedString key="userComments">
-                                        <fragment content="#bc-ignore!"/>
-                                    </attributedString>
-                                </label>
-                            </subviews>
-                        </stackView>
-                    </subviews>
-                </stackView>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="yo5-Z5-Odv">
                     <rect key="frame" x="0.0" y="92" width="375" height="208"/>
                     <subviews>
@@ -91,13 +65,13 @@
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="gMM-Cw-u0W" secondAttribute="trailing" id="D6L-kQ-hbh"/>
                 <constraint firstAttribute="bottom" secondItem="yo5-Z5-Odv" secondAttribute="bottom" id="HLz-QX-JUz"/>
-                <constraint firstItem="gMM-Cw-u0W" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="Kez-bK-ZWp"/>
-                <constraint firstItem="yo5-Z5-Odv" firstAttribute="top" secondItem="gMM-Cw-u0W" secondAttribute="bottom" constant="16" id="bou-PX-GZE"/>
+                <constraint firstItem="qfu-0f-ohJ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="Ps6-nw-0ez"/>
+                <constraint firstAttribute="trailing" secondItem="qfu-0f-ohJ" secondAttribute="trailing" id="REA-9Z-BYT"/>
                 <constraint firstItem="yo5-Z5-Odv" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="e4l-sV-eEU"/>
-                <constraint firstItem="gMM-Cw-u0W" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="kti-hq-nrw"/>
+                <constraint firstItem="yo5-Z5-Odv" firstAttribute="top" secondItem="qfu-0f-ohJ" secondAttribute="bottom" constant="16" id="jtF-jE-JKF"/>
                 <constraint firstAttribute="trailing" secondItem="yo5-Z5-Odv" secondAttribute="trailing" id="qRZ-pa-gm3"/>
+                <constraint firstItem="qfu-0f-ohJ" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="sSm-ha-IPF"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>

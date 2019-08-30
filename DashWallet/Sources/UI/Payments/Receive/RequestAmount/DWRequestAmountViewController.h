@@ -15,15 +15,25 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseModalViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
+@class DWRequestAmountViewController;
 
-@interface DWReceiveViewController : UIViewController
+@protocol DWRequestAmountViewControllerDelegate <NSObject>
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)requestAmountViewController:(DWRequestAmountViewController *)controller
+           didReceiveAmountWithInfo:(NSString *)info;
+
+@end
+
+@interface DWRequestAmountViewController : DWBaseModalViewController
+
+@property (nullable, nonatomic, weak) id<DWRequestAmountViewControllerDelegate> delegate;
+
++ (instancetype)controllerWithModel:(DWReceiveModel *)model;
 
 @end
 

@@ -15,27 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWConfirmPaymentContentView.h"
-
 #import "DWAmountPreviewView.h"
-#import "DWConfirmPaymentRowView.h"
-#import "DWPaymentOutput.h"
+
 #import "DWUIKit.h"
+#import "NSAttributedString+DWDashAmountDisplay.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWConfirmPaymentContentView ()
+static CGSize const DashSymbolMainSize = {35.0, 27.0};
+
+@interface DWAmountPreviewView ()
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
-@property (strong, nonatomic) IBOutlet DWAmountPreviewView *amountView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *infoRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *addressRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *feeRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *totalRowView;
+@property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *supplementaryAmountLabel;
 
 @end
 
-@implementation DWConfirmPaymentContentView
+@implementation DWAmountPreviewView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -67,31 +64,29 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    self.infoRowView.titleLabel.hidden = YES;
-
-    self.addressRowView.titleLabel.text = NSLocalizedString(@"Pay to", nil);
-    self.feeRowView.titleLabel.text = NSLocalizedString(@"Network fee", nil);
-    self.totalRowView.titleLabel.text = NSLocalizedString(@"Total", nil);
-
-    self.addressRowView.detailLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-    self.addressRowView.detailLabel.numberOfLines = 1;
-    self.addressRowView.detailLabel.adjustsFontSizeToFitWidth = NO;
+    // These two labels doesn't support Dynamic Type and have same hardcoded values as in DWAmountInputControl
+    self.mainAmountLabel.font = [UIFont dw_lightFontOfSize:44.0];
+    self.supplementaryAmountLabel.font = [UIFont dw_lightFontOfSize:18.0];
 }
 
-- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
-    [self.amountView setAmount:[paymentOutput amountToDisplay]];
+- (void)setAmount:(uint64_t)amount {
+    self.mainAmountLabel.attributedText = [self mainAmountAttributedStringForAmount:amount];
+    self.supplementaryAmountLabel.text = [self supplementaryAmountStringForAmount:amount];
+}
 
-    NSString *_Nullable info = [paymentOutput generalInfoString];
-    self.infoRowView.detailLabel.text = info;
-    self.infoRowView.hidden = (info == nil);
+#pragma mark - Private
 
-    self.addressRowView.detailLabel.text = paymentOutput.address;
+- (NSAttributedString *)mainAmountAttributedStringForAmount:(uint64_t)amount {
+    return [NSAttributedString dashAttributedStringForAmount:amount
+                                                       color:[UIColor dw_darkTitleColor]
+                                                  symbolSize:DashSymbolMainSize];
+}
 
-    NSAttributedString *_Nullable fee = [paymentOutput networkFeeAttributedString];
-    self.feeRowView.detailLabel.attributedText = fee;
-    self.feeRowView.hidden = (fee == nil);
+- (NSString *)supplementaryAmountStringForAmount:(uint64_t)amount {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    NSString *supplementaryAmount = [priceManager localCurrencyStringForDashAmount:amount];
 
-    self.totalRowView.detailLabel.attributedText = [paymentOutput totalAttributedString];
+    return supplementaryAmount;
 }
 
 @end

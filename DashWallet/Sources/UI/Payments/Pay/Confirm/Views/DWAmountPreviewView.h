@@ -19,11 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@interface DWAmountPreviewView : UIView
 
-@interface DWReceiveViewController : UIViewController
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+- (void)setAmount:(uint64_t)amount;
 
 @end
 
