@@ -25,6 +25,8 @@ extern NSString *const DWSyncStateChangedNotification;
 // `NSNumber` of previous state in notification `userInfo` dictionary
 extern NSString *const DWSyncStateChangedFromStateKey;
 
+extern float const DW_SYNCING_COMPLETED_PROGRESS;
+
 typedef NS_ENUM(NSUInteger, DWSyncModelState) {
     DWSyncModelState_Syncing,
     DWSyncModelState_SyncDone,

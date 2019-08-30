@@ -34,8 +34,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static float const SHOW_BALANCE_THRESHOLD = 0.90;
-
 static BOOL IsJailbroken(void) {
     struct stat s;
     BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
@@ -298,7 +296,7 @@ static BOOL IsJailbroken(void) {
     [self.receiveModel updateReceivingInfo];
 
     if (self.syncModel.state == DWSyncModelState_Syncing &&
-        self.syncModel.progress < SHOW_BALANCE_THRESHOLD) {
+        self.syncModel.progress < DW_SYNCING_COMPLETED_PROGRESS) {
         self.balanceModel = nil;
 
         return;
