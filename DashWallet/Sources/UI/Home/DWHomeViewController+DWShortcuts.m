@@ -150,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         if (success) {
-            [strongSelf.delegate homeViewController:strongSelf payToAddressButtonAction:sender];
+            [strongSelf performPayToPasteboardAction];
         }
         else {
             NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil);
@@ -168,7 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)scanQRAction:(UIView *)sender {
-    [self.delegate homeViewController:self scanQRAction:sender];
+    [self performScanQRCodeAction];
 }
 
 - (void)debug_wipeWallet {

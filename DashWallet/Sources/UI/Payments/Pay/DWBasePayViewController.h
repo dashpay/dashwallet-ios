@@ -15,25 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeViewController;
-@class DWHomeModel;
+@class DWPayModel;
+@class DWPaymentProcessor;
 
-@protocol DWHomeViewControllerDelegate <NSObject>
+@interface DWBasePayViewController : UIViewController
 
-- (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
-- (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
-- (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller;
+@property (nonatomic, strong) DWPayModel *payModel;
+@property (null_resettable, nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
-@end
-
-@interface DWHomeViewController : DWBasePayViewController
-
-@property (readonly, strong, nonatomic) DWHomeModel *model;
-@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate> delegate;
+- (void)performScanQRCodeAction;
+- (void)performPayToPasteboardAction;
 
 @end
 

@@ -112,6 +112,10 @@ NS_ASSUME_NONNULL_BEGIN
     return _model;
 }
 
+- (DWPayModel *)payModel {
+    return self.model.payModel;
+}
+
 - (void)setupView {
     UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
     NSParameterAssert(logoImage);

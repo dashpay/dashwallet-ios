@@ -73,8 +73,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None
-                                     payAction:DWPaymentsViewControllerPayAction_None];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_None];
 }
 
 - (void)tabBarViewDidClosePayments:(DWTabBarView *)tabBarView {
@@ -103,23 +102,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWHomeViewControllerDelegate
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
-                                     payAction:DWPaymentsViewControllerPayAction_None];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
 }
 
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive
-                                     payAction:DWPaymentsViewControllerPayAction_None];
-}
-
-- (void)homeViewController:(DWHomeViewController *)controller payToAddressButtonAction:(UIView *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
-                                     payAction:DWPaymentsViewControllerPayAction_PayToPasteboard];
-}
-
-- (void)homeViewController:(DWHomeViewController *)controller scanQRAction:(UIView *)sender {
-    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay
-                                     payAction:DWPaymentsViewControllerPayAction_ScanToPay];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 
 - (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller {
@@ -171,8 +158,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     ]];
 }
 
-- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex
-                                   payAction:(DWPaymentsViewControllerPayAction)payAction {
+- (void)showPaymentsControllerWithActivePage:(DWPaymentsViewControllerIndex)pageIndex {
     if (self.modalController) {
         return;
     }
@@ -188,7 +174,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                                                                        payModel:payModel];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
-    controller.payAction = payAction;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
@@ -207,6 +192,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:homeController];
+    navigationController.delegate = self;
 
     [self displayViewController:navigationController];
 }

@@ -36,6 +36,8 @@ static NSString *sanitizeString(NSString *s) {
 
 @interface DWPaymentProcessor ()
 
+@property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
+
 @property (readonly, nullable, nonatomic, strong) DWPaymentInput *paymentInput;
 
 @property (nonatomic, assign) uint64_t amount;
@@ -53,9 +55,11 @@ static NSString *sanitizeString(NSString *s) {
 
 @implementation DWPaymentProcessor
 
-- (instancetype)init {
+- (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate {
     self = [super init];
     if (self) {
+        _delegate = delegate;
+
         __weak typeof(self) weakSelf = self;
 
         _challengeBlock = ^(NSString *_Nonnull challengeTitle, NSString *_Nonnull challengeMessage, NSString *_Nonnull actionTitle, void (^_Nonnull actionBlock)(void), void (^_Nonnull cancelBlock)(void)) {

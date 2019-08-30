@@ -76,24 +76,6 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     [self setupView];
     [self setupControllers];
-
-    if (self.currentIndex == DWPaymentsViewControllerIndex_Pay) {
-        switch (self.payAction) {
-            case DWPaymentsViewControllerPayAction_None: {
-                break;
-            }
-            case DWPaymentsViewControllerPayAction_ScanToPay: {
-                [self.payViewController scanQRCode];
-                break;
-            }
-            case DWPaymentsViewControllerPayAction_PayToPasteboard: {
-                [self.payViewController payToPasteboard];
-                break;
-            }
-        }
-
-        self.payAction = DWPaymentsViewControllerPayAction_None;
-    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

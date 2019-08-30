@@ -75,14 +75,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPaymentProcessor : NSObject
 
-@property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
-
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput;
 - (void)processFile:(NSData *)file;
 
 - (void)provideAmount:(uint64_t)amount usedInstantSend:(BOOL)usedInstantSend;
 
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
+
+- (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 
