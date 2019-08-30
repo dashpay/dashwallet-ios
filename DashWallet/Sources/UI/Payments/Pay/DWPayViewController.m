@@ -17,6 +17,7 @@
 
 #import "DWPayViewController.h"
 
+#import "DWConfirmPaymentViewController.h"
 #import "DWPayModel.h"
 #import "DWPayOptionModel.h"
 #import "DWPayTableViewCell.h"
@@ -40,7 +41,8 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
                                    DWPayTableViewCellDelegate,
                                    DWPaymentProcessorDelegate,
                                    DWSendAmountViewControllerDelegate,
-                                   DWQRScanModelDelegate>
+                                   DWQRScanModelDelegate,
+                                   DWConfirmPaymentViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
@@ -49,6 +51,8 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 
 @property (nonatomic, strong) DWPayModel *model;
 @property (nonatomic, strong) DWPaymentProcessor *paymentProcessor;
+
+@property (nullable, nonatomic, weak) DWConfirmPaymentViewController *confirmViewController;
 
 @end
 
@@ -177,7 +181,11 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
         [DWSendAmountViewController sendControllerWithDestination:sendingDestination
                                                    paymentDetails:nil];
     controller.delegate = self;
-    const BOOL animated = self.initialAction == DWPayControllerInitialAction_PayToPasteboard ? NO : YES;
+    BOOL animated = YES;
+    if (self.initialAction == DWPayControllerInitialAction_PayToPasteboard) {
+        self.initialAction = DWPayControllerInitialAction_None;
+        animated = NO;
+    }
     [self.navigationController pushViewController:controller animated:animated];
 }
 
@@ -187,6 +195,9 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
                actionTitle:(NSString *)actionTitle
                cancelBlock:(void (^)(void))cancelBlock
                actionBlock:(void (^)(void))actionBlock {
+    // reset initial action
+    self.initialAction = DWPayControllerInitialAction_None;
+
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:title
                          message:message
@@ -214,11 +225,24 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
                 }];
     [alert addAction:actionAction];
 
-    [self.navigationController presentViewController:alert animated:YES completion:nil];
+    [self showModalController:alert];
 }
+
+// Confirmation
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     confirmPaymentOutput:(DWPaymentOutput *)paymentOutput {
+    if (self.confirmViewController) {
+        self.confirmViewController.paymentOutput = paymentOutput;
+    }
+    else {
+        DWConfirmPaymentViewController *controller = [[DWConfirmPaymentViewController alloc] init];
+        controller.paymentOutput = paymentOutput;
+        controller.delegate = self;
+        [self presentViewController:controller animated:YES completion:nil];
+
+        self.confirmViewController = controller;
+    }
 }
 
 // Result
@@ -226,24 +250,40 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
         didFailWithTitle:(nullable NSString *)title
                  message:(nullable NSString *)message {
+    [self.navigationController.view dw_hideProgressHUD];
     [self showAlertWithTitle:title message:message];
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
           didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
              transaction:(DSTransaction *)transaction {
+    [self.navigationController.view dw_hideProgressHUD];
 
-    //    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
-    //        [self.navigationController popViewControllerAnimated:YES];
-    //    }
+    if (self.confirmViewController) {
+        [self dismissViewControllerAnimated:YES
+                                 completion:^{
+                                     if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+                                         [self.navigationController popViewControllerAnimated:YES];
+                                     }
+                                 }];
+    }
+    else {
+        if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+    }
 
-    NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
+    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"sent!", nil)];
 }
 
 - (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
          didSweepRequest:(nonnull DSPaymentRequest *)protocolRequest
              transaction:(nonnull DSTransaction *)transaction {
-    NSLog(@">>>> ### %@", NSStringFromSelector(_cmd));
+    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"swept!", nil)];
+
+    if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
 
 // Handle File
@@ -274,6 +314,13 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
                  usedInstantSend:(BOOL)usedInstantSend {
     NSParameterAssert(self.paymentProcessor);
     [self.paymentProcessor provideAmount:amount usedInstantSend:usedInstantSend];
+}
+
+#pragma mark - DWConfirmPaymentViewControllerDelegate
+
+- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller {
+    [self.navigationController.view dw_showProgressHUDWithMessage:nil];
+    [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
 }
 
 #pragma mark -  DWQRScanModelDelegate
@@ -332,7 +379,12 @@ typedef NS_ENUM(NSUInteger, DWPayControllerInitialAction) {
                   style:UIAlertActionStyleCancel
                 handler:nil];
     [alert addAction:okAction];
-    [self.navigationController presentViewController:alert animated:YES completion:nil];
+    [self showModalController:alert];
+}
+
+- (void)showModalController:(UIViewController *)controller {
+    UIViewController *presentingViewController = self.confirmViewController ?: self.navigationController;
+    [presentingViewController presentViewController:controller animated:YES completion:nil];
 }
 
 @end

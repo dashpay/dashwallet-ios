@@ -426,6 +426,9 @@
 "Local currency" = "lokale valuta";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Vergrendeld";
 
 /* No comment provided by engineer. */

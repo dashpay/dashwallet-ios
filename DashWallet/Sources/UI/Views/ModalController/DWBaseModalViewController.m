@@ -57,10 +57,6 @@ static CGFloat const CORNER_RADIUS = 8.0;
     [self.contentView setChevronViewFlattened:NO];
 }
 
-- (void)actionButtonAction:(id)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
 - (void)setModalTitle:(NSString *)title {
     self.contentView.title = title;
 }

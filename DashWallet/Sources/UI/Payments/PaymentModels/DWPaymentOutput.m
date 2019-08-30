@@ -17,7 +17,22 @@
 
 #import "DWPaymentOutput+Private.h"
 
+#import "UIColor+DWStyle.h"
+#import <DashSync/DashSync.h>
+#import <DashSync/NSString+Dash.h>
+
 NS_ASSUME_NONNULL_BEGIN
+
+static CGSize const DashSymbolMainSize = {35.0, 27.0};
+static CGSize const DashSymbolInRowSize = {11.0, 8.0};
+
+#define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
+
+static NSString *sanitizeString(NSString *s) {
+    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
+    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
+    return sane;
+}
 
 @implementation DWPaymentOutput
 
@@ -43,6 +58,78 @@ NS_ASSUME_NONNULL_BEGIN
         _localCurrency = localCurrency;
     }
     return self;
+}
+
+- (NSAttributedString *)mainAmountAttributedString {
+    return [self dashAttributedStringForAmount:self.amount - self.fee
+                                         color:[UIColor dw_darkTitleColor]
+                                    symbolSize:DashSymbolMainSize];
+}
+
+- (NSString *)supplementaryAmountString {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    NSString *supplementaryAmount = [priceManager localCurrencyStringForDashAmount:self.amount - self.fee];
+
+    return supplementaryAmount;
+}
+
+- (nullable NSString *)generalInfoString {
+    BOOL hasInfo = NO;
+    NSString *info = @"";
+    if (self.name.length > 0) {
+        if (self.isSecure) {
+            info = LOCK @" ";
+        }
+
+        info = [info stringByAppendingString:sanitizeString(self.name)];
+        hasInfo = YES;
+    }
+
+    if (self.memo.length > 0) {
+        info = [info stringByAppendingFormat:@"\n%@", sanitizeString(self.memo)];
+        hasInfo = YES;
+    }
+
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    if (self.localCurrency && ![self.localCurrency isEqualToString:priceManager.localCurrencyCode]) {
+        NSString *requestedAmount = [[DSPriceManager sharedInstance] fiatCurrencyString:self.localCurrency forDashAmount:self.amount];
+        info = [info stringByAppendingString:@"\n"];
+        info = [info stringByAppendingFormat:NSLocalizedString(@"Local requested amount: %@", nil), requestedAmount];
+        hasInfo = YES;
+    }
+
+    return hasInfo ? info : nil;
+}
+
+- (nullable NSAttributedString *)networkFeeAttributedString {
+    if (self.fee > 0) {
+        return [self dashAttributedStringForAmount:self.fee
+                                             color:[UIColor dw_secondaryTextColor]
+                                        symbolSize:DashSymbolInRowSize];
+    }
+    else {
+        return nil;
+    }
+}
+
+- (NSAttributedString *)totalAttributedString {
+    return [self dashAttributedStringForAmount:self.amount
+                                         color:[UIColor dw_secondaryTextColor]
+                                    symbolSize:DashSymbolInRowSize];
+}
+
+#pragma mark - Private
+
+- (NSAttributedString *)dashAttributedStringForAmount:(uint64_t)amount
+                                                color:(UIColor *)color
+                                           symbolSize:(CGSize)symbolSize {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    NSString *dashAmount = [priceManager stringForDashAmount:amount];
+    NSAttributedString *result = [dashAmount
+        attributedStringForDashSymbolWithTintColor:color
+                                    dashSymbolSize:symbolSize];
+
+    return result;
 }
 
 @end

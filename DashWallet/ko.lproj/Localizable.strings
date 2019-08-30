@@ -426,6 +426,9 @@
 "Local currency" = "현지 통화";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "잠김";
 
 /* No comment provided by engineer. */

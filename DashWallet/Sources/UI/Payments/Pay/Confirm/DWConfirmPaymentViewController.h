@@ -19,7 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentOutput;
+@class DWConfirmPaymentViewController;
+
+@protocol DWConfirmPaymentViewControllerDelegate <NSObject>
+
+- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller;
+
+@end
+
 @interface DWConfirmPaymentViewController : DWBaseModalViewController
+
+@property (nullable, nonatomic, weak) id<DWConfirmPaymentViewControllerDelegate> delegate;
+@property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
 
 @end
 

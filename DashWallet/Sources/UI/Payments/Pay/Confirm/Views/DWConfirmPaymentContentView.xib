@@ -15,6 +15,7 @@
                 <outlet property="addressRowView" destination="3he-Ax-20F" id="tqI-B3-1ha"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="2Dp-wu-bkr"/>
                 <outlet property="feeRowView" destination="Buz-l8-KN2" id="XV9-iW-vox"/>
+                <outlet property="infoRowView" destination="Ecg-yC-KJa" id="MbH-Nt-hu5"/>
                 <outlet property="mainAmountLabel" destination="dQH-MC-bfv" id="eqz-s7-FDh"/>
                 <outlet property="supplementaryAmountLabel" destination="ee7-e9-plk" id="rn5-l0-FfH"/>
                 <outlet property="totalRowView" destination="3l3-Jl-KzQ" id="o1b-RH-bJh"/>
@@ -26,10 +27,10 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gMM-Cw-u0W">
-                    <rect key="frame" x="0.0" y="0.0" width="375" height="128"/>
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="76"/>
                     <subviews>
                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="mC6-74-Ha9">
-                            <rect key="frame" x="0.0" y="31.5" width="375" height="65"/>
+                            <rect key="frame" x="0.0" y="5.5" width="375" height="65"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="760" text="Main Amount" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="dQH-MC-bfv" userLabel="Main Amount">
                                     <rect key="frame" x="113" y="0.0" width="149" height="44"/>
@@ -55,24 +56,31 @@
                     </subviews>
                 </stackView>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="yo5-Z5-Odv">
-                    <rect key="frame" x="0.0" y="144" width="375" height="156"/>
+                    <rect key="frame" x="0.0" y="92" width="375" height="208"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3he-Ax-20F" customClass="DWConfirmPaymentRowView">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ecg-yC-KJa" customClass="DWConfirmPaymentRowView">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="52"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="52" id="Gmo-Lg-vG1"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3he-Ax-20F" customClass="DWConfirmPaymentRowView">
+                            <rect key="frame" x="0.0" y="52" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="Md4-dd-JZ9"/>
                             </constraints>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Buz-l8-KN2" customClass="DWConfirmPaymentRowView">
-                            <rect key="frame" x="0.0" y="52" width="375" height="52"/>
+                            <rect key="frame" x="0.0" y="104" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="MtT-yM-8CQ"/>
                             </constraints>
                         </view>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3l3-Jl-KzQ" customClass="DWConfirmPaymentRowView">
-                            <rect key="frame" x="0.0" y="104" width="375" height="52"/>
+                            <rect key="frame" x="0.0" y="156" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="nRX-VW-1wV"/>

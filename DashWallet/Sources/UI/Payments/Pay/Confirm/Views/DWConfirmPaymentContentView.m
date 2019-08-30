@@ -18,6 +18,7 @@
 #import "DWConfirmPaymentContentView.h"
 
 #import "DWConfirmPaymentRowView.h"
+#import "DWPaymentOutput.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -27,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *mainAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *supplementaryAmountLabel;
+@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *infoRowView;
 @property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *addressRowView;
 @property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *feeRowView;
 @property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *totalRowView;
@@ -69,6 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.mainAmountLabel.font = [UIFont dw_lightFontOfSize:44.0];
     self.supplementaryAmountLabel.font = [UIFont dw_lightFontOfSize:18.0];
 
+    self.infoRowView.titleLabel.hidden = YES;
+
     self.addressRowView.titleLabel.text = NSLocalizedString(@"Pay to", nil);
     self.feeRowView.titleLabel.text = NSLocalizedString(@"Network fee", nil);
     self.totalRowView.titleLabel.text = NSLocalizedString(@"Total", nil);
@@ -76,6 +80,23 @@ NS_ASSUME_NONNULL_BEGIN
     self.addressRowView.detailLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     self.addressRowView.detailLabel.numberOfLines = 1;
     self.addressRowView.detailLabel.adjustsFontSizeToFitWidth = NO;
+}
+
+- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
+    self.mainAmountLabel.attributedText = [paymentOutput mainAmountAttributedString];
+    self.supplementaryAmountLabel.text = [paymentOutput supplementaryAmountString];
+
+    NSString *_Nullable info = [paymentOutput generalInfoString];
+    self.infoRowView.detailLabel.text = info;
+    self.infoRowView.hidden = (info == nil);
+
+    self.addressRowView.detailLabel.text = paymentOutput.address;
+
+    NSAttributedString *_Nullable fee = [paymentOutput networkFeeAttributedString];
+    self.feeRowView.detailLabel.attributedText = fee;
+    self.feeRowView.hidden = (fee == nil);
+
+    self.totalRowView.detailLabel.attributedText = [paymentOutput totalAttributedString];
 }
 
 @end

@@ -40,6 +40,7 @@ static NSString *sanitizeString(NSString *s) {
 
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, assign) BOOL canChangeAmount;
+@property (nonatomic, assign) BOOL shouldClearPasteboard;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *request;
 
 // Tx Manager blocks
@@ -86,7 +87,9 @@ static NSString *sanitizeString(NSString *s) {
             }
 
             if (errorTitle || errorMessage) {
-                [strongSelf failedWithTitle:errorTitle message:errorMessage];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [strongSelf failedWithTitle:errorTitle message:errorMessage];
+                });
             }
         };
     }
@@ -95,6 +98,8 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput {
     NSParameterAssert(self.delegate);
+
+    self.shouldClearPasteboard = paymentInput.source == DWPaymentInputSource_Pasteboard;
 
     if (paymentInput.request) {
         self.canChangeAmount = paymentInput.canChangeAmount;
@@ -590,10 +595,15 @@ static NSString *sanitizeString(NSString *s) {
 - (void)cancel {
     self.amount = 0;
     self.canChangeAmount = NO;
+    self.shouldClearPasteboard = NO;
 }
 
 - (void)reset {
     self.request = nil;
+    if (self.shouldClearPasteboard) {
+        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+        pasteboard.string = @"";
+    }
     [self cancel];
 }
 

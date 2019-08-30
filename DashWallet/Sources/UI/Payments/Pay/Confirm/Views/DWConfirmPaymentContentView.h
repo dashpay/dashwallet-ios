@@ -19,7 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentOutput;
+
 @interface DWConfirmPaymentContentView : UIView
+
+- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput;
 
 @end
 

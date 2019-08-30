@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWConfirmPaymentViewController ()
 
-@property (nonatomic, strong) DWConfirmPaymentContentView *confirmPaymentView;
+@property (null_resettable, nonatomic, strong) DWConfirmPaymentContentView *confirmPaymentView;
 
 @end
 
@@ -39,11 +39,30 @@ NS_ASSUME_NONNULL_BEGIN
     [self setupView];
 }
 
+- (void)actionButtonAction:(id)sender {
+    [self.delegate confirmPaymentViewControllerDidConfirm:self];
+}
+
+- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
+    _paymentOutput = paymentOutput;
+
+    [self.confirmPaymentView setPaymentOutput:paymentOutput];
+}
+
+#pragma mark - Private
+
 - (void)setupView {
     [self setModalTitle:NSLocalizedString(@"Confirm", nil)];
 
-    DWConfirmPaymentContentView *confirmPaymentView = [[DWConfirmPaymentContentView alloc] initWithFrame:CGRectZero];
-    [self setupModalContentView:confirmPaymentView];
+    [self setupModalContentView:self.confirmPaymentView];
+}
+
+- (DWConfirmPaymentContentView *)confirmPaymentView {
+    if (_confirmPaymentView == nil) {
+        _confirmPaymentView = [[DWConfirmPaymentContentView alloc] initWithFrame:CGRectZero];
+    }
+
+    return _confirmPaymentView;
 }
 
 @end

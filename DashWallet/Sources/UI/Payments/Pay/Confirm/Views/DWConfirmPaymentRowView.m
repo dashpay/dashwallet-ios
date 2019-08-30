@@ -65,7 +65,6 @@ static CGFloat const SPACING = 16.0;
     titleLabel.numberOfLines = 0;
     titleLabel.textColor = [UIColor dw_quaternaryTextColor];
     titleLabel.textAlignment = NSTextAlignmentLeft;
-    [self addSubview:titleLabel];
     _titleLabel = titleLabel;
 
     UILabel *detailLabel = [[UILabel alloc] init];
@@ -75,30 +74,25 @@ static CGFloat const SPACING = 16.0;
     detailLabel.adjustsFontSizeToFitWidth = YES;
     detailLabel.minimumScaleFactor = 0.5;
     detailLabel.numberOfLines = 0;
-    detailLabel.textColor = [UIColor dw_darkTitleColor];
+    detailLabel.textColor = [UIColor dw_secondaryTextColor];
     detailLabel.textAlignment = NSTextAlignmentRight;
-    [self addSubview:detailLabel];
     _detailLabel = detailLabel;
 
-    [titleLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh - 1
-                                                forAxis:UILayoutConstraintAxisHorizontal];
-    [titleLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 1
-                                  forAxis:UILayoutConstraintAxisHorizontal];
-    [detailLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
-                                                 forAxis:UILayoutConstraintAxisHorizontal];
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ titleLabel, detailLabel ]];
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    stackView.axis = UILayoutConstraintAxisHorizontal;
+    stackView.alignment = UIStackViewAlignmentCenter;
+    stackView.spacing = SPACING;
+    [self addSubview:stackView];
 
     [NSLayoutConstraint activateConstraints:@[
-        [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [titleLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [stackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [stackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+
         [titleLabel.widthAnchor constraintGreaterThanOrEqualToAnchor:self.widthAnchor
                                                           multiplier:0.35],
-
-        [detailLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [detailLabel.leadingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor
-                                                  constant:SPACING],
-        [detailLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [detailLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
     ]];
 }
 
