@@ -15,13 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWAlertViewActionBaseView.h"
-
-#import "DWAlertAction.h"
+#import <QuartzCore/QuartzCore.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAlertViewActionButton : DWAlertViewActionBaseView
+@interface DWAnimatedShapeLayer : CAShapeLayer
 
 @end
 

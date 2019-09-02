@@ -17,7 +17,8 @@
 
 #import "DWUpholdViewController.h"
 
-#import "DWAlertController.h"
+#import <DWAlertController/DWAlertController.h>
+
 #import "DWUpholdAuthViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdConstants.h"
@@ -79,8 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upholdMainViewControllerUserDidLogout:(DWUpholdMainViewController *)controller {
     DWUpholdLogoutTutorialViewController *logoutTutorialController = [DWUpholdLogoutTutorialViewController controller];
     logoutTutorialController.delegate = self;
-    DWAlertController *alertController = [[DWAlertController alloc] init];
-    [alertController setupContentController:logoutTutorialController];
+    DWAlertController *alertController = [DWAlertController alertControllerWithContentController:logoutTutorialController];
     [alertController setupActions:logoutTutorialController.providedActions];
     alertController.preferredAction = logoutTutorialController.preferredAction;
     [self presentViewController:alertController animated:YES completion:nil];

@@ -17,13 +17,13 @@
 
 #import "DWModalChevronView.h"
 
-#import "DWAnimatableShapeLayer.h"
+#import "DWAnimatedShapeLayer.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-static DWAnimatableShapeLayer *SegmentLayer(void) {
-    DWAnimatableShapeLayer *layer = [DWAnimatableShapeLayer layer];
+static DWAnimatedShapeLayer *SegmentLayer(void) {
+    DWAnimatedShapeLayer *layer = [DWAnimatedShapeLayer layer];
     layer.strokeColor = [UIColor dw_chevronColor].CGColor;
     layer.fillColor = [UIColor yellowColor].CGColor;
     layer.lineWidth = 3.0;
@@ -69,8 +69,8 @@ static UIBezierPath *LineSecondSegment(void) {
 
 @interface DWModalChevronView ()
 
-@property (readonly, strong, nonatomic) DWAnimatableShapeLayer *firstSegmentLayer;
-@property (readonly, strong, nonatomic) DWAnimatableShapeLayer *secondSegmentLayer;
+@property (readonly, strong, nonatomic) DWAnimatedShapeLayer *firstSegmentLayer;
+@property (readonly, strong, nonatomic) DWAnimatedShapeLayer *secondSegmentLayer;
 
 @end
 
@@ -95,11 +95,11 @@ static UIBezierPath *LineSecondSegment(void) {
 - (void)chevronView_setup {
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    DWAnimatableShapeLayer *firstSegmentLayer = SegmentLayer();
+    DWAnimatedShapeLayer *firstSegmentLayer = SegmentLayer();
     [self.layer addSublayer:firstSegmentLayer];
     _firstSegmentLayer = firstSegmentLayer;
 
-    DWAnimatableShapeLayer *secondSegmentLayer = SegmentLayer();
+    DWAnimatedShapeLayer *secondSegmentLayer = SegmentLayer();
     [self.layer addSublayer:secondSegmentLayer];
     _secondSegmentLayer = secondSegmentLayer;
 
@@ -132,7 +132,7 @@ static UIBezierPath *LineSecondSegment(void) {
     }
 }
 
-- (void)animateLayer:(DWAnimatableShapeLayer *)layer toPath:(UIBezierPath *)path isSecond:(BOOL)isSecond {
+- (void)animateLayer:(DWAnimatedShapeLayer *)layer toPath:(UIBezierPath *)path isSecond:(BOOL)isSecond {
     NSString *const pathKey = @"path";
     const CFTimeInterval pathDuration = 0.1;
 

@@ -15,23 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWAnimatableShapeLayer.h"
+#import "DWAnimatedShapeLayer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAnimatableShapeLayer ()
+@interface DWAnimatedShapeLayer ()
 
 @property (null_resettable, strong, nonatomic) NSMutableSet *animatableKeys;
 
 @end
 
-@implementation DWAnimatableShapeLayer
-
-- (void)setAnimationsDisabled {
-    [self.animatableKeys removeObject:@"path"];
-}
-
-#pragma mark - Private
+@implementation DWAnimatedShapeLayer
 
 - (NSMutableSet *)animatableKeys {
     if (!_animatableKeys) {

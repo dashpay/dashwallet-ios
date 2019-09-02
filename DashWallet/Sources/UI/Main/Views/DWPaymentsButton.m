@@ -67,15 +67,15 @@
 
 #import "DWPaymentsButton.h"
 
-#import "DWAnimatableShapeLayer.h"
+#import "DWAnimatedShapeLayer.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 CGSize const DW_PAYMENTS_BUTTON_SIZE = {48.0, 48.0};
 
-static DWAnimatableShapeLayer *SegmentLayer(void) {
-    DWAnimatableShapeLayer *layer = [DWAnimatableShapeLayer layer];
+static DWAnimatedShapeLayer *SegmentLayer(void) {
+    DWAnimatedShapeLayer *layer = [DWAnimatedShapeLayer layer];
     layer.strokeColor = [UIColor whiteColor].CGColor;
     layer.fillColor = [UIColor dw_dashBlueColor].CGColor;
     layer.lineWidth = 2.0;
@@ -143,8 +143,8 @@ static UIBezierPath *XSecondSegment(void) {
 
 @interface DWPaymentsButton ()
 
-@property (readonly, strong, nonatomic) DWAnimatableShapeLayer *firstSegmentLayer;
-@property (readonly, strong, nonatomic) DWAnimatableShapeLayer *secondSegmentLayer;
+@property (readonly, strong, nonatomic) DWAnimatedShapeLayer *firstSegmentLayer;
+@property (readonly, strong, nonatomic) DWAnimatedShapeLayer *secondSegmentLayer;
 
 @end
 
@@ -170,11 +170,11 @@ static UIBezierPath *XSecondSegment(void) {
     self.backgroundColor = [UIColor dw_dashBlueColor];
     self.layer.masksToBounds = YES;
 
-    DWAnimatableShapeLayer *firstSegmentLayer = SegmentLayer();
+    DWAnimatedShapeLayer *firstSegmentLayer = SegmentLayer();
     [self.layer addSublayer:firstSegmentLayer];
     _firstSegmentLayer = firstSegmentLayer;
 
-    DWAnimatableShapeLayer *secondSegmentLayer = SegmentLayer();
+    DWAnimatedShapeLayer *secondSegmentLayer = SegmentLayer();
     [self.layer addSublayer:secondSegmentLayer];
     _secondSegmentLayer = secondSegmentLayer;
 
@@ -206,7 +206,7 @@ static UIBezierPath *XSecondSegment(void) {
     }
 }
 
-- (void)animateLayer:(DWAnimatableShapeLayer *)layer toPath:(UIBezierPath *)path isSecond:(BOOL)isSecond {
+- (void)animateLayer:(DWAnimatedShapeLayer *)layer toPath:(UIBezierPath *)path isSecond:(BOOL)isSecond {
     NSString *const pathKey = @"path";
     NSString *const zRotationKey = @"transform.rotation.z";
     const CFTimeInterval pathDuration = 0.25;

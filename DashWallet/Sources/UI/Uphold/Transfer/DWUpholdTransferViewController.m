@@ -17,6 +17,8 @@
 
 #import "DWUpholdTransferViewController.h"
 
+#import <DWAlertController/DWAlertController.h>
+
 #import "DWUpholdConfirmTransferViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
@@ -30,34 +32,30 @@ NS_ASSUME_NONNULL_BEGIN
                                               DWUpholdConfirmTransferViewControllerDelegate,
                                               DWUpholdSuccessTransferViewControllerDelegate>
 
-@property (strong, nonatomic) DWUpholdCardObject *card;
-@property (strong, nonatomic) UIView *backgroundAlertView;
-@property (strong, nonatomic) NSLayoutConstraint *backgroundAlertViewCenterYConstraint;
-@property (strong, nonatomic) DWUpholdRequestTransferViewController *requestController;
+@property (readonly, strong, nonatomic) DWUpholdCardObject *card;
+@property (readonly, strong, nonatomic) DWUpholdRequestTransferViewController *requestController;
 
 @end
 
 @implementation DWUpholdTransferViewController
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card {
-    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] init];
-    controller.card = card;
+    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:card];
     return controller;
 }
 
-- (DWUpholdRequestTransferViewController *)requestController {
-    if (!_requestController) {
-        _requestController = [DWUpholdRequestTransferViewController controllerWithCard:self.card];
+- (instancetype)initWithCard:(DWUpholdCardObject *)card {
+    DWUpholdRequestTransferViewController *requestController = [DWUpholdRequestTransferViewController controllerWithCard:card];
+
+    self = [super initWithContentController:requestController];
+    if (self) {
+        _card = card;
+
+        _requestController = requestController;
         _requestController.delegate = self;
         _requestController.otpProvider = self;
     }
-    return _requestController;
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    [self showRequestController];
+    return self;
 }
 
 #pragma mark - DWUpholdOTPProvider
@@ -71,8 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }];
 
-    DWAlertController *alertOTPController = [[DWAlertController alloc] init];
-    [alertOTPController setupContentController:otpController];
+    DWAlertController *alertOTPController = [DWAlertController alertControllerWithContentController:otpController];
     [alertOTPController setupActions:otpController.providedActions];
     alertOTPController.preferredAction = otpController.preferredAction;
 
@@ -89,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
     confirmController.delegate = self;
     confirmController.otpProvider = self;
 
-    [self performTransitionToContentController:confirmController];
+    [self performTransitionToContentController:confirmController animated:YES];
     [self setupActions:confirmController.providedActions];
     self.preferredAction = confirmController.preferredAction;
 }
@@ -101,7 +98,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWUpholdConfirmTransferViewControllerDelegate
 
 - (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller {
-    [self showRequestController];
+    NSParameterAssert(self.contentController);
+    [self performTransitionToContentController:self.requestController animated:YES];
+    [self setupActions:self.requestController.providedActions];
+    self.preferredAction = self.requestController.preferredAction;
 }
 
 - (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
@@ -109,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
         [DWUpholdSuccessTransferViewController controllerWithTransaction:transaction];
     successController.delegate = self;
 
-    [self performTransitionToContentController:successController];
+    [self performTransitionToContentController:successController animated:YES];
     [self setupActions:successController.providedActions];
     self.preferredAction = successController.preferredAction;
 }
@@ -123,17 +123,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)upholdSuccessTransferViewControllerDidFinish:(DWUpholdSuccessTransferViewController *)controller
                                   openTransactionURL:(NSURL *)url {
     [self.delegate upholdTransferViewControllerDidFinish:self openTransactionURL:url];
-}
-
-- (void)showRequestController {
-    if (self.contentController) {
-        [self performTransitionToContentController:self.requestController];
-    }
-    else {
-        [self setupContentController:self.requestController];
-    }
-    [self setupActions:self.requestController.providedActions];
-    self.preferredAction = self.requestController.preferredAction;
 }
 
 @end
