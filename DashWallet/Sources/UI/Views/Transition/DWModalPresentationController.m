@@ -70,7 +70,9 @@ static CGFloat const PRESENTED_HEIGHT_PERCENT = 2.0 / 3.0;
     [super presentationTransitionDidEnd:completed];
 
     NSParameterAssert(self.interactiveTransition);
-    self.interactiveTransition.presenting = NO;
+    if (completed) {
+        self.interactiveTransition.presenting = NO;
+    }
 
     if (!completed) {
         [self.dimmingView removeFromSuperview];
