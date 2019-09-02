@@ -56,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 
         _selectController = controller;
         _selectController.delegate = self;
+
+        [self setupActions:controller.providedActions];
+        self.preferredAction = controller.preferredAction;
     }
     return self;
 }

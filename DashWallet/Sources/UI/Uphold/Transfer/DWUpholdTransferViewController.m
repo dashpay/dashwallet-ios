@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
         _requestController = requestController;
         _requestController.delegate = self;
         _requestController.otpProvider = self;
+
+        [self setupActions:requestController.providedActions];
+        self.preferredAction = requestController.preferredAction;
     }
     return self;
 }
