@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
             [self.qrCodeButton.heightAnchor constraintEqualToConstant:qrSize.height],
         ]];
 
-        self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+        self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
         [self.specifyAmountButton setTitle:NSLocalizedString(@"Specify Amount", nil) forState:UIControlStateNormal];
         [self.shareButton setTitle:NSLocalizedString(@"Share", nil) forState:UIControlStateNormal];

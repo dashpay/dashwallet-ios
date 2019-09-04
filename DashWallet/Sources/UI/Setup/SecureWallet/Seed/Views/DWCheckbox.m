@@ -78,7 +78,7 @@ static CGFloat const ICON_TEXT_PADDING = 7.0;
     textLabel.textAlignment = NSTextAlignmentLeft;
     textLabel.textColor = [UIColor dw_secondaryTextColor];
     textLabel.adjustsFontForContentSizeCategory = YES;
-    textLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    textLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     textLabel.adjustsFontSizeToFitWidth = YES;
     textLabel.minimumScaleFactor = 0.5;
     [contentView addSubview:textLabel];

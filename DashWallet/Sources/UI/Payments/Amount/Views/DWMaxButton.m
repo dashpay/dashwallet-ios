@@ -46,7 +46,7 @@ static UIEdgeInsets const MAXBUTTON_INSETS = {4.0, 20.0, 4.0, 20.0};
     UIColor *maxHighlightedColor = [maxNormalColor colorWithAlphaComponent:0.5];
     UIColor *maxSelectedColor = [UIColor dw_dashBlueColor];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
     self.contentEdgeInsets = MAXBUTTON_INSETS;
     self.layer.cornerRadius = 8.0;
     self.layer.borderWidth = 1.0;

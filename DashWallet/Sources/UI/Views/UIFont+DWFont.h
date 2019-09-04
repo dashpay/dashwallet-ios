@@ -45,8 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIFont *)dw_regularFontOfSize:(CGFloat)fontSize;
 + (UIFont *)dw_mediumFontOfSize:(CGFloat)fontSize;
-+ (UIFont *)dw_boldFontOfSize:(CGFloat)fontSize;
-+ (UIFont *)dw_lightFontOfSize:(CGFloat)fontSize;
 
 @end
 

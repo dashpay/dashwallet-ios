@@ -134,14 +134,6 @@ NS_ASSUME_NONNULL_BEGIN
     return [UIFont fontWithName:@"Montserrat-Medium" size:fontSize];
 }
 
-+ (UIFont *)dw_boldFontOfSize:(CGFloat)fontSize {
-    return [UIFont fontWithName:@"Montserrat-Bold" size:fontSize];
-}
-
-+ (UIFont *)dw_lightFontOfSize:(CGFloat)fontSize {
-    return [UIFont fontWithName:@"Montserrat-Light" size:fontSize];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

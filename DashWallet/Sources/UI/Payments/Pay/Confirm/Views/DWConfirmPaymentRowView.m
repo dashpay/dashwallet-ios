@@ -58,7 +58,7 @@ static CGFloat const SPACING = 16.0;
 
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     titleLabel.adjustsFontForContentSizeCategory = YES;
     titleLabel.adjustsFontSizeToFitWidth = YES;
     titleLabel.minimumScaleFactor = 0.5;
@@ -69,7 +69,7 @@ static CGFloat const SPACING = 16.0;
 
     UILabel *detailLabel = [[UILabel alloc] init];
     detailLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    detailLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    detailLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     detailLabel.adjustsFontForContentSizeCategory = YES;
     detailLabel.adjustsFontSizeToFitWidth = YES;
     detailLabel.minimumScaleFactor = 0.5;

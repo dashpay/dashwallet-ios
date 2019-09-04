@@ -38,10 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.addressLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    self.dateLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
-    self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+    self.addressLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    self.dateLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(contentSizeCategoryDidChangeNotification:)
@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(self.dataProvider);
     NSParameterAssert(self.transactionData);
 
-    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.dashAmountLabel.attributedText = [self.dataProvider dashAmountStringFrom:self.transactionData
                                                                              font:font];
 }

@@ -77,8 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     self.titleLabel.text = NSLocalizedString(@"Secure Wallet Now", nil);
     self.descriptionLabel.text = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);

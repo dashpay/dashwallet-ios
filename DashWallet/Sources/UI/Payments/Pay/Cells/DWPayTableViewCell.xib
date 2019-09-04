@@ -41,7 +41,6 @@
                                 <rect key="frame" x="52" y="23.5" width="198" height="15"/>
                                 <color key="backgroundColor" name="BackgroundColor"/>
                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
-                                <color key="textColor" name="DarkTitleColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="258" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Le8-Ow-UBi" customClass="DWBlueActionButton">
