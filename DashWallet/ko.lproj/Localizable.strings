@@ -138,10 +138,10 @@
 "Cancel" = "취소";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "변경";
 
 /* No comment provided by engineer. */
-"change" = "변경";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "암호 변경";

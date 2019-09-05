@@ -138,10 +138,10 @@
 "Cancel" = "إلغاء ";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "تغير";
 
 /* No comment provided by engineer. */
-"change" = "تغير";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "تغير الرقم السري";

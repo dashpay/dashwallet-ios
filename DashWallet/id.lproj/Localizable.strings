@@ -138,10 +138,10 @@
 "Cancel" = "Batalkan";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "ganti";
 
 /* No comment provided by engineer. */
-"change" = "ganti";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Ubah kode sandi";

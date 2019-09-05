@@ -26,7 +26,7 @@
 
 #import "DWTxHistoryViewController.h"
 #import "DWRootViewController.h"
-#import "DWTxDetailViewController.h"
+#import "DWOLDTxDetailViewController.h"
 #import "DWSeedViewController.h"
 #import "UIImage+Utils.h"
 #import <WebKit/WebKit.h>
@@ -363,7 +363,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)showTx:(id)sender
 {
     [DSEventManager saveEvent:@"tx_history:show_tx"];
-    DWTxDetailViewController *detailController
+    DWOLDTxDetailViewController *detailController
     = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
     detailController.txDateString = [self dateForTx:sender];

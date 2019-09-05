@@ -138,10 +138,10 @@
 "Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "變更";
 
 /* No comment provided by engineer. */
-"change" = "變更";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "變更驗證碼";

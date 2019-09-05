@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DWTxDetailViewController.h"
+#import "DWOLDTxDetailViewController.h"
 
 #import <DashSync/DashSync.h>
 #include <arpa/inet.h>
@@ -37,7 +37,7 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-@interface DWTxDetailViewController ()
+@interface DWOLDTxDetailViewController ()
 
 @property (nonatomic, strong) NSArray *inputAddresses, *outputText, *outputDetail, *outputAmount, *outputIsBitcoin;
 @property (nonatomic, assign) int64_t sent, received;
@@ -45,7 +45,7 @@
 
 @end
 
-@implementation DWTxDetailViewController
+@implementation DWOLDTxDetailViewController
 
 - (void)viewDidLoad
 {

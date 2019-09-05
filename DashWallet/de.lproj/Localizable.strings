@@ -138,10 +138,10 @@
 "Cancel" = "Abbrechen";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "Ändern";
 
 /* No comment provided by engineer. */
-"change" = "Ändern";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Zugangscode ändern";

@@ -138,10 +138,10 @@
 "Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "промяна";
 
 /* No comment provided by engineer. */
-"change" = "промяна";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Смяна на парола";

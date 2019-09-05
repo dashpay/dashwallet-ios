@@ -138,10 +138,10 @@
 "Cancel" = "İptal";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "değiştir";
 
 /* No comment provided by engineer. */
-"change" = "değiştir";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Parolayı değiştir";

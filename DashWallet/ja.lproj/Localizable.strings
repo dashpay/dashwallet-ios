@@ -138,10 +138,10 @@
 "Cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "変更";
 
 /* No comment provided by engineer. */
-"change" = "変更";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "パスコードを変更";

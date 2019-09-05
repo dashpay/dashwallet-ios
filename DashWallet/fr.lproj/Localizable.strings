@@ -138,10 +138,10 @@
 "Cancel" = "Annuler";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "modifier";
 
 /* No comment provided by engineer. */
-"change" = "modifier";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Modifier le code d’accès";
