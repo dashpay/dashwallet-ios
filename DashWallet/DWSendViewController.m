@@ -465,7 +465,7 @@ static NSString *sanitizeString(NSString *s)
         [alert addAction:cancelButton]; //cancel should always be on the left
         [alert addAction:ignoreButton];
         [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-    } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure,  NSString *_Nullable localCurrency) {
+    } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount, NSString *address, BOOL isSecure) {
         return TRUE; //just continue and let Dash Sync do it's thing
     } signedCompletion:^BOOL(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL cancelled) {
         if (cancelled) {

@@ -151,16 +151,16 @@ static NSString *sanitizeString(NSString *s) {
                                     protocolRequest:protocolRequest];
         }
         presentChallenge:self.challengeBlock
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *_Nullable localCurrency) {
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSString *address, BOOL isSecure) {
             [self txManagerConfirmTx:tx
                      protocolRequest:protocolRequest
                               amount:amount
-                                 fee:fee
+                                 fee:tx.feeUsed
                              address:address
-                                name:name
-                                memo:memo
+                                name:protocolRequest.commonName
+                                memo:protocolRequest.details.memo
                             isSecure:isSecure
-                       localCurrency:localCurrency];
+                       localCurrency:protocolRequest.requestedFiatAmountCurrencyCode];
             // don't sign tx automatically
             return NO;
         }
@@ -244,16 +244,16 @@ static NSString *sanitizeString(NSString *s) {
                                     protocolRequest:protocolRequest];
         }
         presentChallenge:self.challengeBlock
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, uint64_t fee, NSString *address, NSString *_Nullable name, NSString *_Nullable memo, BOOL isSecure, NSString *_Nullable localCurrency) {
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSString *address, BOOL isSecure) {
             [self txManagerConfirmTx:tx
                      protocolRequest:protocolRequest
                               amount:amount
-                                 fee:fee
+                                 fee:tx.feeUsed
                              address:address
-                                name:name
-                                memo:memo
+                                name:protocolRequest.commonName
+                                memo:protocolRequest.details.memo
                             isSecure:isSecure
-                       localCurrency:localCurrency];
+                       localCurrency:protocolRequest.requestedFiatAmountCurrencyCode];
             // don't sign tx automatically
             return NO;
         }
@@ -437,7 +437,7 @@ static NSString *sanitizeString(NSString *s) {
     DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc] initWithTx:tx
                                                          protocolRequest:protocolRequest
                                                                   amount:amount
-                                                                     fee:fee
+                                                                     fee:tx.feeUsed
                                                                  address:address
                                                                     name:name
                                                                     memo:memo
