@@ -34,8 +34,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static float const SHOW_BALANCE_THRESHOLD = 0.90;
-
 static BOOL IsJailbroken(void) {
     struct stat s;
     BOOL jailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
@@ -55,11 +53,13 @@ static BOOL IsJailbroken(void) {
 
 @interface DWHomeModel ()
 
+@property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
+@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
@@ -72,6 +72,8 @@ static BOOL IsJailbroken(void) {
     self = [super init];
     if (self) {
         [self connectIfNeeded];
+
+        _queue = dispatch_queue_create("DWHomeModel.queue", DISPATCH_QUEUE_SERIAL);
 
         _reachability = [DSReachabilityManager sharedManager];
         if (!_reachability.monitoring) {
@@ -132,7 +134,7 @@ static BOOL IsJailbroken(void) {
     _updatesObserver = updatesObserver;
 
     if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:NO];
+        [updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
     }
 }
 
@@ -143,7 +145,7 @@ static BOOL IsJailbroken(void) {
 
     _displayMode = displayMode;
 
-    [self.updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:YES];
+    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
 }
 
 - (BOOL)isJailbroken {
@@ -264,7 +266,7 @@ static BOOL IsJailbroken(void) {
         return;
     }
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(self.queue, ^{
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
         NSArray<DSTransaction *> *transactions = account.allTransactions;
@@ -288,8 +290,10 @@ static BOOL IsJailbroken(void) {
             [self sentDataSource];
         }
 
+        DWTransactionListDataSource *datasource = self.dataSource;
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:shouldAnimate];
+            [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
     });
 }
@@ -298,7 +302,7 @@ static BOOL IsJailbroken(void) {
     [self.receiveModel updateReceivingInfo];
 
     if (self.syncModel.state == DWSyncModelState_Syncing &&
-        self.syncModel.progress < SHOW_BALANCE_THRESHOLD) {
+        self.syncModel.progress < DW_SYNCING_COMPLETED_PROGRESS) {
         self.balanceModel = nil;
 
         return;

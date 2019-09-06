@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUIViewController.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
 
-@interface DWReceiveViewController : KVOUIViewController
+@interface DWReceiveViewController : UIViewController
 
 + (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
 

@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.titleLabel.text = NSLocalizedString(@"History", nil);
 
-    self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+    self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
 }
 
 - (void)setModel:(nullable DWHomeModel *)model {

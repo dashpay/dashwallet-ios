@@ -27,7 +27,7 @@ static CGFloat const ANIMATION_SPRING_DAMPING = 1.0;
 static CGFloat const ANIMATION_INITIAL_VELOCITY = 0.0;
 static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCurveEaseOut;
 
-@interface DWPinView () <DWPinFieldDelegate, DWNumberKeyboardDelegate>
+@interface DWPinView () <DSPinFieldDelegate, DWNumberKeyboardDelegate>
 
 @property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
 
@@ -62,14 +62,15 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.clipsToBounds = YES;
 
-    DWPinInputStepView *setPinView = [[DWPinInputStepView alloc] init];
+    DWPinInputStepView *setPinView = [[DWPinInputStepView alloc] initWithFrame:CGRectZero];
     setPinView.translatesAutoresizingMaskIntoConstraints = NO;
+    setPinView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     setPinView.titleText = NSLocalizedString(@"Set PIN", nil);
     setPinView.pinField.delegate = self;
     [self addSubview:setPinView];
     self.setPinView = setPinView;
 
-    DWPinInputStepView *confirmPinView = [[DWPinInputStepView alloc] init];
+    DWPinInputStepView *confirmPinView = [[DWPinInputStepView alloc] initWithFrame:CGRectZero];
     confirmPinView.translatesAutoresizingMaskIntoConstraints = NO;
     confirmPinView.titleText = NSLocalizedString(@"Confirm PIN", nil);
     confirmPinView.pinField.delegate = self;
@@ -113,9 +114,9 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     }
 }
 
-#pragma mark - DWPinFieldDelegate
+#pragma mark - DSPinFieldDelegate
 
-- (void)pinFieldDidFinishInput:(DWPinField *)pinField {
+- (void)pinFieldDidFinishInput:(DSPinField *)pinField {
     if (self.setPinView.pinField == pinField) {
         [self confirmPin];
     }
@@ -157,7 +158,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     self.confirmPinLeadingContraint.constant = 0;
 
     [UIView animateWithDuration:ANIMATION_DURATION
-        delay:[CATransaction animationDuration]
+        delay:0.0
         usingSpringWithDamping:ANIMATION_SPRING_DAMPING
         initialSpringVelocity:ANIMATION_INITIAL_VELOCITY
         options:ANIMATION_OPTIONS
@@ -177,41 +178,26 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     [self.confirmPinView.pinField resignFirstResponder];
     self.keyboard.userInteractionEnabled = NO;
 
-    // perform any action when input animation completes
-    __weak typeof(self) weakSelf = self;
-    dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW, (int64_t)([CATransaction animationDuration] * NSEC_PER_SEC));
-    dispatch_after(when, dispatch_get_main_queue(), ^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+    NSString *firstPin = self.setPinView.pinField.text;
+    NSString *secondPin = self.confirmPinView.pinField.text;
 
-        NSString *firstPin = strongSelf.setPinView.pinField.text;
-        NSString *secondPin = strongSelf.confirmPinView.pinField.text;
+    if ([firstPin isEqualToString:secondPin]) {
+        [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
 
-        if ([firstPin isEqualToString:secondPin]) {
-            [strongSelf.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
+        [self.delegate pinView:self didFinishWithPin:secondPin];
+    }
+    else {
+        [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
 
-            [strongSelf.delegate pinView:strongSelf didFinishWithPin:secondPin];
-        }
-        else {
-            [strongSelf.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
+        [self.confirmPinView.pinField dw_shakeViewWithCompletion:^{
+            [self.confirmPinView.pinField clear];
 
-            [strongSelf.confirmPinView.pinField dw_shakeViewWithCompletion:^{
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
+            [self.confirmPinView.pinField becomeFirstResponder];
+            self.keyboard.userInteractionEnabled = YES;
 
-                [strongSelf.confirmPinView.pinField clear];
-
-                [strongSelf.confirmPinView.pinField becomeFirstResponder];
-                strongSelf.keyboard.userInteractionEnabled = YES;
-
-                [strongSelf.feedbackGenerator prepare];
-            }];
-        }
-    });
+            [self.feedbackGenerator prepare];
+        }];
+    }
 }
 
 - (void)resetPin {

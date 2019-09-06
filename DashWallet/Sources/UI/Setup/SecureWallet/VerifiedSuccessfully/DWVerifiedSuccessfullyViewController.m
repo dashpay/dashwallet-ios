@@ -72,8 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.descriptionLabel.text = NSLocalizedString(@"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.", nil);
     [self.continueButton setTitle:NSLocalizedString(@"Continue", nil) forState:UIControlStateNormal];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 }
 
 @end

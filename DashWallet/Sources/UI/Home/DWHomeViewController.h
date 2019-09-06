@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBasePayViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,13 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
-- (void)homeViewController:(DWHomeViewController *)controller payToAddressButtonAction:(UIView *)sender;
-- (void)homeViewController:(DWHomeViewController *)controller scanQRAction:(UIView *)sender;
 - (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller;
 
 @end
 
-@interface DWHomeViewController : UIViewController
+@interface DWHomeViewController : DWBasePayViewController
 
 @property (readonly, strong, nonatomic) DWHomeModel *model;
 @property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate> delegate;

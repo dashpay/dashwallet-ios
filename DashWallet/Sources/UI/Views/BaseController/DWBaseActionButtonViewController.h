@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
 + (NSString *)actionButtonTitle;
++ (BOOL)showsActionButton;
 
 - (void)setupContentView:(UIView *)contentView;
 

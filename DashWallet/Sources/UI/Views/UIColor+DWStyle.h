@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_separatorLineColor;
 
++ (UIColor *)dw_modalDimmingColor;
+
++ (UIColor *)dw_chevronColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

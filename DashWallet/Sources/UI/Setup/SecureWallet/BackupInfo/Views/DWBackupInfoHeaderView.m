@@ -45,8 +45,8 @@ static CGFloat DescriptionBottomPadding(void) {
 
     self.descriptionBottomPadding.constant = DescriptionBottomPadding();
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     self.titleLabel.text = NSLocalizedString(@"It's Important", nil);
     self.descriptionLabel.text = NSLocalizedString(@"We are about to show you the secret key to your wallet.", nil);

@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" não é uma palavra da frase de recuperação";
 
@@ -426,6 +423,9 @@
 "Local currency" = "Moeda local";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Bloqueado";
 
 /* No comment provided by engineer. */
@@ -468,6 +468,9 @@
 "Network" = "Rede";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem estar infectados.";
 
 /* No comment provided by engineer. */
@@ -484,6 +487,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "Dispositivo NFC não transmitiu um endereço válido de dash ou bitcoin";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "não há dados da taxa de câmbio";

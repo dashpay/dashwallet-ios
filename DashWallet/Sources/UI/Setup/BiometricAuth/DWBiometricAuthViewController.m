@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
 
     [self.skipBiometricButton setTitle:NSLocalizedString(@"Skip", nil)
                               forState:UIControlStateNormal];

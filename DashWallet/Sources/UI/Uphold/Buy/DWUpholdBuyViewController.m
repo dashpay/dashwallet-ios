@@ -30,10 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
                                          DWUpholdBuyInputViewControllerDelegate,
                                          DWUpholdConfirmTransferViewControllerDelegate>
 
-@property (strong, nonatomic) DWUpholdCardObject *dashCard;
-@property (copy, nonatomic) NSArray<DWUpholdCardObject *> *fiatCards;
+@property (readonly, strong, nonatomic) DWUpholdCardObject *dashCard;
+@property (readonly, copy, nonatomic) NSArray<DWUpholdCardObject *> *fiatCards;
 @property (nullable, strong, nonatomic) DWUpholdCardObject *selectedCard;
-@property (null_resettable, strong, nonatomic) DWUpholdSelectCardViewController *selectController;
+@property (readonly, strong, nonatomic) DWUpholdSelectCardViewController *selectController;
 @property (null_resettable, strong, nonatomic) DWUpholdBuyInputViewController *inputController;
 
 @end
@@ -43,18 +43,24 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)controllerWithDashCard:(DWUpholdCardObject *)dashCard
                              fiatCards:(NSArray<DWUpholdCardObject *> *)fiatCards {
     DWUpholdBuyViewController *controller = [[DWUpholdBuyViewController alloc] init];
-    controller.dashCard = dashCard;
-    controller.fiatCards = fiatCards;
     return controller;
 }
 
-- (DWUpholdSelectCardViewController *)selectController {
-    if (!_selectController) {
-        DWUpholdSelectCardViewController *controller = [DWUpholdSelectCardViewController controllerWithCards:self.fiatCards];
-        controller.delegate = self;
+- (instancetype)initWithDashCard:(DWUpholdCardObject *)dashCard
+                       fiatCards:(NSArray<DWUpholdCardObject *> *)fiatCards {
+    DWUpholdSelectCardViewController *controller = [DWUpholdSelectCardViewController controllerWithCards:fiatCards];
+    self = [super initWithContentController:controller];
+    if (self) {
+        _dashCard = dashCard;
+        _fiatCards = [fiatCards copy];
+
         _selectController = controller;
+        _selectController.delegate = self;
+
+        [self setupActions:controller.providedActions];
+        self.preferredAction = controller.preferredAction;
     }
-    return _selectController;
+    return self;
 }
 
 - (DWUpholdBuyInputViewController *)inputController {
@@ -68,12 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
     return _inputController;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    [self showSelectController];
-}
-
 #pragma mark - DWUpholdOTPProvider
 
 - (void)requestOTPWithCompletion:(void (^)(NSString *_Nullable otpToken))completion {
@@ -85,8 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }];
 
-    DWAlertController *alertOTPController = [[DWAlertController alloc] init];
-    [alertOTPController setupContentController:otpController];
+    DWAlertController *alertOTPController = [DWAlertController alertControllerWithContentController:otpController];
     [alertOTPController setupActions:otpController.providedActions];
     alertOTPController.preferredAction = otpController.preferredAction;
 
@@ -115,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
     confirmController.delegate = self;
     confirmController.otpProvider = self;
 
-    [self performTransitionToContentController:confirmController];
+    [self performTransitionToContentController:confirmController animated:YES];
     [self setupActions:confirmController.providedActions];
     self.preferredAction = confirmController.preferredAction;
 }
@@ -137,12 +136,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)showSelectController {
-    if (self.contentController) {
-        [self performTransitionToContentController:self.selectController];
-    }
-    else {
-        [self setupContentController:self.selectController];
-    }
+    NSParameterAssert(self.contentController);
+
+    [self performTransitionToContentController:self.selectController animated:YES];
     [self setupActions:self.selectController.providedActions];
     self.preferredAction = self.selectController.preferredAction;
 }
@@ -150,7 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showInputController {
     DWUpholdBuyInputViewController *inputController = self.inputController;
 
-    [self performTransitionToContentController:inputController];
+    [self performTransitionToContentController:inputController animated:YES];
     [self setupActions:inputController.providedActions];
     self.preferredAction = inputController.preferredAction;
 }

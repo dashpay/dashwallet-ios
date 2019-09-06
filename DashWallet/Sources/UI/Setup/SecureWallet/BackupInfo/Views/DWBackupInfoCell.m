@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 }
 
 - (void)setText:(nullable NSString *)text {

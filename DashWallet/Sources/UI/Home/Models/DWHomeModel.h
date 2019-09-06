@@ -35,14 +35,15 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
 
-- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate;
+- (void)homeModel:(DWHomeModel *)model
+    didUpdateDataSource:(DWTransactionListDataSource *)dataSource
+          shouldAnimate:(BOOL)shouldAnimate;
 
 @end
 
 @interface DWHomeModel : NSObject
 
 @property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;

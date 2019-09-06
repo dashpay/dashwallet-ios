@@ -126,8 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWHomeModelUpdatesObserver
 
-- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate {
-    DWTransactionListDataSource *dataSource = self.model.dataSource;
+- (void)homeModel:(DWHomeModel *)model didUpdateDataSource:(DWTransactionListDataSource *)dataSource shouldAnimate:(BOOL)shouldAnimate {
     self.currentDataSource = dataSource;
 
     if (dataSource.isEmpty) {

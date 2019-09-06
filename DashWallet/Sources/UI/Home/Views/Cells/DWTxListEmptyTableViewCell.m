@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.placeholderLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.placeholderLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.placeholderLabel.text = NSLocalizedString(@"There are no transactions to display", nil);
 }
 
