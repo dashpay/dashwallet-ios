@@ -151,12 +151,12 @@ static NSString *sanitizeString(NSString *s) {
                                     protocolRequest:protocolRequest];
         }
         presentChallenge:self.challengeBlock
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSString *address, BOOL isSecure) {
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSArray<NSString *> *addresses, BOOL isSecure) {
             [self txManagerConfirmTx:tx
                      protocolRequest:protocolRequest
                               amount:amount
                                  fee:tx.feeUsed
-                             address:address
+                             address:addresses.firstObject
                                 name:protocolRequest.commonName
                                 memo:protocolRequest.details.memo
                             isSecure:isSecure
@@ -244,12 +244,12 @@ static NSString *sanitizeString(NSString *s) {
                                     protocolRequest:protocolRequest];
         }
         presentChallenge:self.challengeBlock
-        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSString *address, BOOL isSecure) {
+        transactionCreationCompletion:^BOOL(DSTransaction *_Nonnull tx, NSString *_Nonnull prompt, uint64_t amount, NSArray<NSString *> *addresses, BOOL isSecure) {
             [self txManagerConfirmTx:tx
                      protocolRequest:protocolRequest
                               amount:amount
                                  fee:tx.feeUsed
-                             address:address
+                             address:addresses.firstObject
                                 name:protocolRequest.commonName
                                 memo:protocolRequest.details.memo
                             isSecure:isSecure
