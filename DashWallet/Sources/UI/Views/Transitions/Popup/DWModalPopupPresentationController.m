@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
     const CGRect bounds = self.containerView.bounds;
     const CGFloat height = CGRectGetHeight(bounds);
     const CGFloat width = CGRectGetWidth(bounds);
-    
+
     CGFloat viewWidth;
     if (IS_IPAD) {
         viewWidth = width / 2;
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
         const CGFloat horizontalPadding = 16.0;
         viewWidth = width - horizontalPadding * 2;
     }
-    
+
     CGFloat viewHeight;
     if (IS_IPHONE_5_OR_LESS) {
         const CGFloat verticalPadding = 20.0;
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
         const CGFloat heightPercent = 0.68;
         viewHeight = ceil(height * heightPercent);
     }
-    
+
     const CGRect frame = CGRectMake((width - viewWidth) / 2,
                                     (height - viewHeight) / 2,
                                     viewWidth,
