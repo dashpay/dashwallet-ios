@@ -216,7 +216,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWConfirmPaymentViewControllerDelegate
 
 - (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller {
-    [self.navigationController.view dw_showProgressHUDWithMessage:nil];
     [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
 }
 
