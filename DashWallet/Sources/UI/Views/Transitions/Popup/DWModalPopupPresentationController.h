@@ -15,14 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWModalPresentationController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWConfirmPaymentRowView : UIView
-
-@property (readonly, nonatomic, strong) UILabel *titleLabel;
-@property (readonly, nonatomic, strong) UILabel *detailLabel;
+@interface DWModalPopupPresentationController : DWModalPresentationController
 
 @end
 

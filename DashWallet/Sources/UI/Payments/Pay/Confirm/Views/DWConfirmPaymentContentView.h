@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWConfirmPaymentContentView : UIView
 
-- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput;
+@property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
 
 @end
 

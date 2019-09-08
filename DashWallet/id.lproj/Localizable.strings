@@ -78,6 +78,12 @@
 "Amount" = "Jumlah";
 
 /* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
+
+/* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
@@ -180,6 +186,9 @@
 "clipboard doesn't contain a valid dash or bitcoin address" = "papan klip tidak berisi alamat dash atau bitcoin yang valid";
 
 /* No comment provided by engineer. */
+"Close" = "Close";
+
+/* No comment provided by engineer. */
 "Close App" = "Close App";
 
 /* No comment provided by engineer. */
@@ -259,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri dash Anda).";
@@ -546,6 +558,9 @@
 "Owner Keys" = "Kunci Pemilik";
 
 /* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
+
+/* No comment provided by engineer. */
 "Pay" = "Bayar";
 
 /* Pay by (scanning QR code) */
@@ -637,6 +652,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "Diterima %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "baru saja ditambang (dikunci)";
@@ -739,6 +757,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "terkirim";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "terkirim!";
@@ -964,6 +985,9 @@
 
 /* No comment provided by engineer. */
 "verifying quorum" = "memverifikasi kuorum";
+
+/* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "hash kunci suara:";

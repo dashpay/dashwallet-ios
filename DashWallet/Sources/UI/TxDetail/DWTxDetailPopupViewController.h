@@ -19,11 +19,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWModalBaseAnimation : NSObject <UIViewControllerAnimatedTransitioning>
+@protocol DWTransactionListDataProviderProtocol;
 
-@property (readonly, nonatomic, strong) UIViewPropertyAnimator *animator;
+@interface DWTxDetailPopupViewController : UIViewController
 
-- (UIViewPropertyAnimator *)animatorForTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
+- (instancetype)initWithTransaction:(DSTransaction *)transaction
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
+                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

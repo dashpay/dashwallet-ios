@@ -17,13 +17,11 @@
 
 #import "DWPaymentOutput+Private.h"
 
-#import "NSAttributedString+DWDashAmountDisplay.h"
+#import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGSize const DashSymbolInRowSize = {11.0, 8.0};
 
 #define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 
@@ -91,21 +89,25 @@ static NSString *sanitizeString(NSString *s) {
     return hasInfo ? info : nil;
 }
 
-- (nullable NSAttributedString *)networkFeeAttributedString {
+- (NSAttributedString *)addressAttributedStringWithFont:(UIFont *)font {
+    return [NSAttributedString dw_dashAddressAttributedString:self.address withFont:font];
+}
+
+- (nullable NSAttributedString *)networkFeeAttributedStringWithFont:(UIFont *)font {
     if (self.fee > 0) {
-        return [NSAttributedString dashAttributedStringForAmount:self.fee
-                                                           color:[UIColor dw_secondaryTextColor]
-                                                      symbolSize:DashSymbolInRowSize];
+        return [NSAttributedString dw_dashAttributedStringForAmount:self.fee
+                                                          tintColor:[UIColor dw_secondaryTextColor]
+                                                               font:font];
     }
     else {
         return nil;
     }
 }
 
-- (NSAttributedString *)totalAttributedString {
-    return [NSAttributedString dashAttributedStringForAmount:self.amount
-                                                       color:[UIColor dw_secondaryTextColor]
-                                                  symbolSize:DashSymbolInRowSize];
+- (NSAttributedString *)totalAttributedStringWithFont:(UIFont *)font {
+    return [NSAttributedString dw_dashAttributedStringForAmount:self.amount
+                                                      tintColor:[UIColor dw_secondaryTextColor]
+                                                           font:font];
 }
 
 @end

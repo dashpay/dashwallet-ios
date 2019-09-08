@@ -19,11 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSAttributedString (DWDashAmountDisplay)
+typedef NS_ENUM(NSUInteger, DWModalAnimationStyle) {
+    DWModalAnimationStyle_Default,
+    DWModalAnimationStyle_Fullscreen,
+};
 
-+ (NSAttributedString *)dashAttributedStringForAmount:(uint64_t)amount
-                                                color:(UIColor *)color
-                                           symbolSize:(CGSize)symbolSize;
+@interface DWModalBaseAnimation : NSObject <UIViewControllerAnimatedTransitioning>
+
+@property (readonly, nonatomic, strong) UIViewPropertyAnimator *animator;
+@property (readonly, nonatomic, assign) DWModalAnimationStyle style;
+
+- (UIViewPropertyAnimator *)animatorForTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
+
+- (instancetype)initWithStyle:(DWModalAnimationStyle)style NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -24,6 +24,7 @@
 #import "DWHomeViewController+DWTxFilter.h"
 #import "DWNavigationController.h"
 #import "DWShortcutAction.h"
+#import "DWTxDetailPopupViewController.h"
 #import "DWWindow.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -87,6 +88,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)homeView:(DWHomeView *)homeView balanceButtonAction:(UIControl *)sender {
     DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
     [self performActionForShortcut:action sender:sender];
+}
+
+- (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
+    id<DWTransactionListDataProviderProtocol> dataProvider = [self.model getDataProvider];
+    DWTxDetailPopupViewController *controller =
+        [[DWTxDetailPopupViewController alloc] initWithTransaction:transaction
+                                                      dataProvider:dataProvider];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - DWShortcutsActionDelegate

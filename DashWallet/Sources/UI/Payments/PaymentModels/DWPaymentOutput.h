@@ -37,8 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint64_t)amountToDisplay;
 
 - (nullable NSString *)generalInfoString;
-- (nullable NSAttributedString *)networkFeeAttributedString;
-- (NSAttributedString *)totalAttributedString;
+- (NSAttributedString *)addressAttributedStringWithFont:(UIFont *)font;
+- (nullable NSAttributedString *)networkFeeAttributedStringWithFont:(UIFont *)font;
+- (NSAttributedString *)totalAttributedStringWithFont:(UIFont *)font;
 
 - (instancetype)init NS_UNAVAILABLE;
 

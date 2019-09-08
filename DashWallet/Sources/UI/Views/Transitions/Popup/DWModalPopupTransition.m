@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DWModalTransition.h"
+#import "DWModalPopupTransition.h"
 
 #import "DWModalDismissalAnimation.h"
 #import "DWModalInteractiveTransition.h"
+#import "DWModalPopupPresentationController.h"
 #import "DWModalPresentationAnimation.h"
-#import "DWModalPresentationController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWModalTransition ()
+@interface DWModalPopupTransition ()
 
 @property (readonly, nonatomic, strong) DWModalInteractiveTransition *interactiveTransition;
 
 @end
 
-@implementation DWModalTransition
+@implementation DWModalPopupTransition
 
 - (instancetype)init {
     self = [super init];
@@ -43,11 +43,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (nullable id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
-    return [[DWModalPresentationAnimation alloc] init];
+    return [[DWModalPresentationAnimation alloc] initWithStyle:DWModalAnimationStyle_Fullscreen];
 }
 
 - (nullable id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    return [[DWModalDismissalAnimation alloc] init];
+    return [[DWModalDismissalAnimation alloc] initWithStyle:DWModalAnimationStyle_Fullscreen];
 }
 
 - (nullable id<UIViewControllerInteractiveTransitioning>)interactionControllerForPresentation:(id<UIViewControllerAnimatedTransitioning>)animator {
@@ -61,9 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable UIPresentationController *)presentationControllerForPresentedViewController:(UIViewController *)presented presentingViewController:(nullable UIViewController *)presenting sourceViewController:(UIViewController *)source {
     self.interactiveTransition.presentedController = (id)presented;
 
-    DWModalPresentationController *presentationController =
-        [[DWModalPresentationController alloc] initWithPresentedViewController:presented
-                                                      presentingViewController:presenting];
+    DWModalPopupPresentationController *presentationController =
+        [[DWModalPopupPresentationController alloc] initWithPresentedViewController:presented
+                                                           presentingViewController:presenting];
     presentationController.interactiveTransition = self.interactiveTransition;
 
     return presentationController;

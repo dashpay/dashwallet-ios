@@ -23,9 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWModalBaseAnimation
 
-- (instancetype)init {
+- (instancetype)initWithStyle:(DWModalAnimationStyle)style {
     self = [super init];
     if (self) {
+        _style = style;
+
         UISpringTimingParameters *timingParameters =
             [[UISpringTimingParameters alloc] initWithDamping:0.8
                                                      response:0.4];

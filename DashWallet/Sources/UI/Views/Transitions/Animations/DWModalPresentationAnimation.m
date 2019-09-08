@@ -44,7 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     const CGRect finalFrame = [transitionContext finalFrameForViewController:toViewController];
 
-    toView.frame = CGRectOffset(finalFrame, 0.0, CGRectGetHeight(finalFrame));
+    const CGFloat heightOffset = self.style == DWModalAnimationStyle_Default
+                                     ? CGRectGetHeight(finalFrame)
+                                     : CGRectGetHeight([UIScreen mainScreen].bounds);
+
+    toView.frame = CGRectOffset(finalFrame, 0.0, heightOffset);
 
     [animator addAnimations:^{
         toView.frame = finalFrame;

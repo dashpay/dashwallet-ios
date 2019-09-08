@@ -183,6 +183,10 @@ static BOOL IsJailbroken(void) {
     [self connectIfNeeded];
 }
 
+- (id<DWTransactionListDataProviderProtocol>)getDataProvider {
+    return self.dataProvider;
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {

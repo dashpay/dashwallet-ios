@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWReceiveModel;
 @class DWShortcutsModel;
 @class DWPayModel;
+@protocol DWTransactionListDataProviderProtocol;
 
 typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
     DWHomeTxDisplayMode_All,
@@ -59,6 +60,8 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 - (void)reloadShortcuts;
 
 - (void)retrySyncing;
+
+- (id<DWTransactionListDataProviderProtocol>)getDataProvider;
 
 @end
 
