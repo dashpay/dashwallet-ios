@@ -22,8 +22,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWSecureWalletInfoMessageType) {
+    DWSecureWalletInfoMessageType_Setup,
+    DWSecureWalletInfoMessageType_Reminder,
+};
+
 @interface DWSecureWalletInfoViewController : DWBaseViewController <DWNavigationFullscreenable>
 
+@property (nonatomic, assign) DWSecureWalletInfoMessageType messageType;
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
 + (instancetype)controller;

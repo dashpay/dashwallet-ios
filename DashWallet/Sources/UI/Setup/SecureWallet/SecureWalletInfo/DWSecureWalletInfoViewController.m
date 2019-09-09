@@ -81,7 +81,19 @@ NS_ASSUME_NONNULL_BEGIN
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     self.titleLabel.text = NSLocalizedString(@"Secure Wallet Now", nil);
-    self.descriptionLabel.text = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
+
+    NSString *descriptionText = nil;
+    switch (self.messageType) {
+        case DWSecureWalletInfoMessageType_Setup: {
+            descriptionText = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
+            break;
+        }
+        case DWSecureWalletInfoMessageType_Reminder: {
+            descriptionText = NSLocalizedString(@"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
+            break;
+        }
+    }
+    self.descriptionLabel.text = descriptionText;
 
     [self.secureNowButton setTitle:NSLocalizedString(@"Secure now", nil)
                           forState:UIControlStateNormal];
