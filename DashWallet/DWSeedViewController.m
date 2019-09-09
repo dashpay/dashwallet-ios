@@ -38,7 +38,7 @@
 
 @interface DWSeedViewController ()
 
-//TODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
+//OLDTODO: create a secure version of UILabel and use it for seedLabel, but make sure there's an accessibility work around
 @property (nonatomic, strong) IBOutlet UILabel *seedLabel, *writeLabel;
 @property (nonatomic, strong) IBOutlet UIButton *writeButton;
 @property (strong, nonatomic) IBOutlet DWWhiteActionButton *doneButton;
@@ -196,7 +196,7 @@
                                                           }];
     }
     
-    //TODO: make it easy to create a new wallet and transfer balance
+    //OLDTODO: make it easy to create a new wallet and transfer balance
     if (! self.screenshotObserver) {
         self.screenshotObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationUserDidTakeScreenshotNotification

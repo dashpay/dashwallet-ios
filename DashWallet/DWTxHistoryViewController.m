@@ -348,7 +348,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)scanQR:(id)sender
 {
-    //TODO: show scanner in settings rather than dismissing
+    //OLDTODO: show scanner in settings rather than dismissing
     [DSEventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
     
@@ -805,7 +805,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
+    //OLDTODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *destinationController = nil;
     
     switch (indexPath.section) {
