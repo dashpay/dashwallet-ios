@@ -180,8 +180,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
     DWPayModel *payModel = homeModel.payModel;
+    id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
-                                                                                       payModel:payModel];
+                                                                                       payModel:payModel
+                                                                                   dataProvider:dataProvider];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
     DWNavigationController *navigationController =

@@ -19,6 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSTransaction;
 @protocol DWTransactionListDataProviderProtocol;
 
 @interface DWTxDetailPopupViewController : UIViewController

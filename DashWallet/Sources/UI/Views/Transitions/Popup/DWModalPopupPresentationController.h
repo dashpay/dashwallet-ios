@@ -17,9 +17,13 @@
 
 #import "DWModalPresentationController.h"
 
+#import "DWModalPopupAppearanceStyle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWModalPopupPresentationController : DWModalPresentationController
+
+@property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
 
 @end
 

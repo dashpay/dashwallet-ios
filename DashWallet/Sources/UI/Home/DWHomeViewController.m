@@ -125,6 +125,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self.model.payModel;
 }
 
+- (id<DWTransactionListDataProviderProtocol>)dataProvider {
+    return [self.model getDataProvider];
+}
+
 - (void)setupView {
     UIImage *logoImage = [UIImage imageNamed:@"dash_logo"];
     NSParameterAssert(logoImage);

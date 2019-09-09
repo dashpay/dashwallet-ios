@@ -25,6 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (CGRect)frameOfPresentedViewInContainerView {
     const CGRect bounds = self.containerView.bounds;
+
+    if (self.appearanceStyle == DWModalPopupAppearanceStyle_Fullscreen) {
+        return bounds;
+    }
+
     const CGFloat height = CGRectGetHeight(bounds);
     const CGFloat width = CGRectGetWidth(bounds);
 

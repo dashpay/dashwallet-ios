@@ -56,6 +56,7 @@
 		2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
 		2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */; };
 		2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */; };
+		2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */; };
 		2A2120E72213201E009906DC /* DWAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E62213201E009906DC /* DWAmountModel.m */; };
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
@@ -542,6 +543,9 @@
 		2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailPopupViewController.m; sourceTree = "<group>"; };
 		2A1B7DB223244CD700BA8C6A /* NSAttributedString+DWBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+DWBuilder.h"; sourceTree = "<group>"; };
 		2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+DWBuilder.m"; sourceTree = "<group>"; };
+		2A1B7DBA2326187D00BA8C6A /* DWTxDetailFullscreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailFullscreenViewController.h; sourceTree = "<group>"; };
+		2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailFullscreenViewController.m; sourceTree = "<group>"; };
+		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
 		2A2120E52213201E009906DC /* DWAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountModel.h; sourceTree = "<group>"; };
 		2A2120E62213201E009906DC /* DWAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountModel.m; sourceTree = "<group>"; };
 		2A2120E82214566A009906DC /* DWAmountInputValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputValidator.h; sourceTree = "<group>"; };
@@ -1432,6 +1436,8 @@
 				2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */,
 				2A1B7DAC2323B06300BA8C6A /* DWTxDetailPopupViewController.h */,
 				2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */,
+				2A1B7DBA2326187D00BA8C6A /* DWTxDetailFullscreenViewController.h */,
+				2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */,
 			);
 			path = TxDetail;
 			sourceTree = "<group>";
@@ -1474,6 +1480,7 @@
 				2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */,
 				2A1B7DA62323AF4300BA8C6A /* DWModalPopupTransition.h */,
 				2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */,
+				2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */,
 			);
 			path = Popup;
 			sourceTree = "<group>";
@@ -3547,6 +3554,7 @@
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
+				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
 				BAC7B6BE1BD9C29900165B84 /* DWPhoneWCSessionManager.m in Sources */,
 				2A9FFF1A2233E56E00956D5F /* DWUpholdCardTableViewCell.m in Sources */,

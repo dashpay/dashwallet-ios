@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSAttributedString *detail = [NSAttributedString dw_dashAttributedStringForAmount:feeValue
                                                                             tintColor:tintColor
                                                                                  font:font];
-    ;
+
     DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
                                                                             title:title
                                                                  attributedDetail:detail];

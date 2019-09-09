@@ -41,10 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPayViewController
 
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel {
++ (instancetype)controllerWithModel:(DWPayModel *)payModel
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];
     controller.payModel = payModel;
+    controller.dataProvider = dataProvider;
 
     return controller;
 }

@@ -25,6 +25,7 @@
 #import "DWQRScanModel.h"
 #import "DWQRScanViewController.h"
 #import "DWSendAmountViewController.h"
+#import "DWTxDetailFullscreenViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 
@@ -170,7 +171,9 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"sent!", nil)];
+    DWTxDetailFullscreenViewController *controller = [[DWTxDetailFullscreenViewController alloc] initWithTransaction:transaction
+                                                                                                        dataProvider:self.dataProvider];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
@@ -197,10 +200,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     showProgressHUDWithMessage:(nullable NSString *)message {
+    NSAssert(self.confirmViewController == nil, @"Consider showing HUD on confirmViewController?");
     [self.navigationController.view dw_showProgressHUDWithMessage:message];
 }
 
 - (void)paymentInputProcessorHideProgressHUD:(DWPaymentProcessor *)processor {
+    NSAssert(self.confirmViewController == nil, @"Consider hiding HUD from confirmViewController?");
     [self.navigationController.view dw_hideProgressHUD];
 }
 

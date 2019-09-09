@@ -15,17 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
+#ifndef DWModalPopupAppearanceStyle_h
+#define DWModalPopupAppearanceStyle_h
 
-NS_ASSUME_NONNULL_BEGIN
+typedef NS_ENUM(NSUInteger, DWModalPopupAppearanceStyle) {
+    DWModalPopupAppearanceStyle_Popup,
+    DWModalPopupAppearanceStyle_Fullscreen,
+};
 
-@class DWPayModel;
-
-@interface DWPayViewController : DWBasePayViewController
-
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel
-                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWModalPopupAppearanceStyle_h */

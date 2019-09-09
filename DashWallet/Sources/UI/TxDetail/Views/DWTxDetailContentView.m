@@ -160,7 +160,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     self.addressCellView.model = [model addressWithFont:detailFont];
-    ;
 
     id<DWTitleDetailItem> feeModel = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     self.feeCellView.model = feeModel;

@@ -65,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
         [[DWModalPopupPresentationController alloc] initWithPresentedViewController:presented
                                                            presentingViewController:presenting];
     presentationController.interactiveTransition = self.interactiveTransition;
+    presentationController.appearanceStyle = self.appearanceStyle;
 
     return presentationController;
 }

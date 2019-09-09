@@ -21,10 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWPayModel;
 @class DWPaymentProcessor;
+@protocol DWTransactionListDataProviderProtocol;
 
 @interface DWBasePayViewController : UIViewController
 
 @property (nonatomic, strong) DWPayModel *payModel;
+@property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 @property (null_resettable, nonatomic, strong) DWPaymentProcessor *paymentProcessor;
 
 - (void)performScanQRCodeAction;

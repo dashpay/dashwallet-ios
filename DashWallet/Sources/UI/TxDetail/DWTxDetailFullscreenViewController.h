@@ -15,16 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPayModel;
+@class DSTransaction;
+@protocol DWTransactionListDataProviderProtocol;
 
-@interface DWPayViewController : DWBasePayViewController
+@interface DWTxDetailFullscreenViewController : UIViewController
 
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel
+- (instancetype)initWithTransaction:(DSTransaction *)transaction
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
+                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

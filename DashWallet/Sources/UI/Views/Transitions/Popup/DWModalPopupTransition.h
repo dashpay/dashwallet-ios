@@ -17,9 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWModalPopupAppearanceStyle.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWModalPopupTransition : NSObject <UIViewControllerTransitioningDelegate>
+
+@property (nonatomic, assign) DWModalPopupAppearanceStyle appearanceStyle;
 
 @end
 
