@@ -21,6 +21,8 @@
 #import <DashSync/UIImage+DSUtils.h>
 #import <UIKit/UIKit.h>
 
+#import "NSAttributedString+DWBuilder.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWBalanceModel
@@ -38,31 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *string = [priceManager stringForDashAmount:self.value];
-
-    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
-
-    const NSRange range = [attributedString.string rangeOfString:DASH];
-    const BOOL dashSymbolFound = range.location != NSNotFound;
-    NSAssert(dashSymbolFound, @"Dash number formatter invalid");
-    if (dashSymbolFound) {
-        const CGFloat scaleFactor = 0.665;
-        const CGFloat side = font.pointSize * scaleFactor;
-        const CGSize symbolSize = CGSizeMake(side, side);
-        NSTextAttachment *dashSymbol = [[NSTextAttachment alloc] init];
-        dashSymbol.bounds = CGRectMake(0, 0, symbolSize.width, symbolSize.height);
-        dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:tintColor];
-        NSAttributedString *dashSymbolAttributedString = [NSAttributedString attributedStringWithAttachment:dashSymbol];
-
-        [attributedString replaceCharactersInRange:range withAttributedString:dashSymbolAttributedString];
-
-        const NSRange fullRange = NSMakeRange(0, attributedString.length);
-        [attributedString addAttribute:NSForegroundColorAttributeName value:tintColor range:fullRange];
-        [attributedString addAttribute:NSFontAttributeName value:font range:fullRange];
-    }
-
-    return [attributedString copy];
+    return [NSAttributedString dw_dashAttributedStringForAmount:self.value tintColor:tintColor font:font];
 }
 
 - (NSString *)fiatAmountString {

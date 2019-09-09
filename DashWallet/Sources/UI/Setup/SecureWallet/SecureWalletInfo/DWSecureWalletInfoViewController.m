@@ -17,6 +17,8 @@
 
 #import "DWSecureWalletInfoViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWUIKit.h"
@@ -47,9 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self setupView];
 
-    // Create wallet entry point
-    self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
-    [self.seedPhraseModel getOrCreateNewWallet];
+    if (self.type == DWSecureWalletInfoType_Setup) {
+        // Create wallet entry point
+        self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
+        [self.seedPhraseModel getOrCreateNewWallet];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -65,9 +69,25 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)secureNowButtonAction:(id)sender {
-    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithModel:self.seedPhraseModel];
-    controller.delegate = self.delegate;
-    [self.navigationController pushViewController:controller animated:YES];
+    if (self.type == DWSecureWalletInfoType_Setup) {
+        [self showBackupInfoController];
+    }
+    else {
+        [[DSAuthenticationManager sharedInstance]
+            authenticateWithPrompt:nil
+                        andTouchId:NO
+                    alertIfLockout:YES
+                        completion:^(BOOL authenticated, BOOL cancelled) {
+                            if (!authenticated) {
+                                return;
+                            }
+
+                            self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
+                            [self.seedPhraseModel getOrCreateNewWallet];
+
+                            [self showBackupInfoController];
+                        }];
+    }
 }
 
 - (IBAction)skipButtonAction:(id)sender {
@@ -83,12 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.titleLabel.text = NSLocalizedString(@"Secure Wallet Now", nil);
 
     NSString *descriptionText = nil;
-    switch (self.messageType) {
-        case DWSecureWalletInfoMessageType_Setup: {
+    switch (self.type) {
+        case DWSecureWalletInfoType_Setup: {
             descriptionText = NSLocalizedString(@"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
             break;
         }
-        case DWSecureWalletInfoMessageType_Reminder: {
+        case DWSecureWalletInfoType_Reminder: {
             descriptionText = NSLocalizedString(@"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.", nil);
             break;
         }
@@ -99,6 +119,12 @@ NS_ASSUME_NONNULL_BEGIN
                           forState:UIControlStateNormal];
     [self.skipButton setTitle:NSLocalizedString(@"Skip", nil)
                      forState:UIControlStateNormal];
+}
+
+- (void)showBackupInfoController {
+    DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithModel:self.seedPhraseModel];
+    controller.delegate = self.delegate;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end

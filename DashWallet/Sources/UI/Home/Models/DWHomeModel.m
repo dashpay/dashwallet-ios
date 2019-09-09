@@ -24,6 +24,7 @@
 
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
@@ -170,6 +171,30 @@ static BOOL IsJailbroken(void) {
     }
 }
 
+- (BOOL)shouldShowWalletBackupReminder {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    if (!options.walletNeedsBackup) {
+        return NO;
+    }
+
+    if (options.walletBackupReminderWasShown) {
+        return NO;
+    }
+
+    NSDate *balanceChangedDate = options.balanceChangedDate;
+    if (balanceChangedDate == nil) {
+        return NO;
+    }
+
+    NSDate *now = [NSDate date];
+
+    const NSTimeInterval secondsSinceBalanceChanged =
+        now.timeIntervalSince1970 - balanceChangedDate.timeIntervalSince1970;
+
+    // Show wallet backup reminder after 24h since balance has been changed
+    return (secondsSinceBalanceChanged > DAY_TIME_INTERVAL);
+}
+
 - (void)reloadShortcuts {
     [self.shortcutsModel reloadShortcuts];
 }
@@ -185,6 +210,14 @@ static BOOL IsJailbroken(void) {
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider {
     return self.dataProvider;
+}
+
+- (void)walletBackupReminderWasShown {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+
+    NSAssert(options.walletBackupReminderWasShown == NO, @"Inconsistent state");
+
+    options.walletBackupReminderWasShown = YES;
 }
 
 #pragma mark - Notifications
@@ -320,6 +353,11 @@ static BOOL IsJailbroken(void) {
     }
 
     self.balanceModel = [[DWBalanceModel alloc] initWithValue:balanceValue];
+
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
+        options.balanceChangedDate = [NSDate date];
+    }
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

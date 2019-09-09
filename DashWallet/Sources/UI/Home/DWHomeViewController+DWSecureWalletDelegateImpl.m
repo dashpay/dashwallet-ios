@@ -15,24 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 
-#import "DWNavigationFullscreenable.h"
-#import "DWSecureWalletDelegate.h"
+#import "DWHomeModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWSecureWalletInfoType) {
-    DWSecureWalletInfoType_Setup,
-    DWSecureWalletInfoType_Reminder,
-};
+@implementation DWHomeViewController (DWSecureWalletDelegateImpl)
 
-@interface DWSecureWalletInfoViewController : DWBaseViewController <DWNavigationFullscreenable>
+#pragma mark - DWSecureWalletDelegate
 
-@property (nonatomic, assign) DWSecureWalletInfoType type;
-@property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
+- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
 
-+ (instancetype)controller;
+- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
+    [self.model reloadShortcuts];
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
 
 @end
 

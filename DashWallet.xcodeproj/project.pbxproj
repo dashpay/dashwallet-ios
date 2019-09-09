@@ -57,6 +57,8 @@
 		2A1B7DAE2323B06300BA8C6A /* DWTxDetailPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DAD2323B06300BA8C6A /* DWTxDetailPopupViewController.m */; };
 		2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DB323244CD700BA8C6A /* NSAttributedString+DWBuilder.m */; };
 		2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */; };
+		2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
+		2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
 		2A2120E72213201E009906DC /* DWAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E62213201E009906DC /* DWAmountModel.m */; };
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
@@ -546,6 +548,10 @@
 		2A1B7DBA2326187D00BA8C6A /* DWTxDetailFullscreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailFullscreenViewController.h; sourceTree = "<group>"; };
 		2A1B7DBB2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailFullscreenViewController.m; sourceTree = "<group>"; };
 		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
+		2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "DWHomeViewController+DWBackupReminder.h"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.h"; sourceTree = SOURCE_ROOT; };
+		2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "DWHomeViewController+DWBackupReminder.m"; path = "DashWallet/Sources/UI/Home/DWHomeViewController+DWBackupReminder.m"; sourceTree = SOURCE_ROOT; };
+		2A1B7DC123266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWSecureWalletDelegateImpl.h"; sourceTree = "<group>"; };
+		2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWSecureWalletDelegateImpl.m"; sourceTree = "<group>"; };
 		2A2120E52213201E009906DC /* DWAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountModel.h; sourceTree = "<group>"; };
 		2A2120E62213201E009906DC /* DWAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountModel.m; sourceTree = "<group>"; };
 		2A2120E82214566A009906DC /* DWAmountInputValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputValidator.h; sourceTree = "<group>"; };
@@ -2028,6 +2034,10 @@
 				2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */,
 				2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */,
 				2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */,
+				2A1B7DBE232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.h */,
+				2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */,
+				2A1B7DC123266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.h */,
+				2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -3481,6 +3491,7 @@
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
 				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
+				2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */,
 				75AA5F55194143D5003F23BD /* BRBouncyBurgerButton.m in Sources */,
 				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				2A4431BC22D4ACCD009BAF7F /* DWSecureWalletInfoViewController.m in Sources */,
@@ -3690,6 +3701,7 @@
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
 				2A9FFE852230FF4700956D5F /* DWBaseFormCellModel.m in Sources */,
+				2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */,
 				2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */,
 				2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */,
 				2A9CEBB922E1FA1000A50237 /* DWHomeViewController.m in Sources */,

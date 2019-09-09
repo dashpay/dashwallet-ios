@@ -19,6 +19,7 @@
 
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
+#import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
 #import "DWHomeViewController+DWShortcuts.h"
 #import "DWHomeViewController+DWTxFilter.h"
@@ -69,6 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self showWalletBackupReminderIfNeeded];
 }
 
 #pragma mark - DWHomeViewDelegate

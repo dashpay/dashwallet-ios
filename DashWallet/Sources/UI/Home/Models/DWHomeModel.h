@@ -52,6 +52,8 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 @property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 @property (readonly, nonatomic, strong) DWPayModel *payModel;
 
+@property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
+
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
 @property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
@@ -62,6 +64,8 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 - (void)retrySyncing;
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider;
+
+- (void)walletBackupReminderWasShown;
 
 @end
 
