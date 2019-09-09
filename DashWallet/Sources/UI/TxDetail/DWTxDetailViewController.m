@@ -66,6 +66,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.model = self.model;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    [self.view viewDidAppear];
+}
+
 #pragma mark - DWTxDetailContentViewDelegate
 
 - (void)txDetailContentView:(DWTxDetailContentView *)view viewInExplorerButtonAction:(UIButton *)sender {

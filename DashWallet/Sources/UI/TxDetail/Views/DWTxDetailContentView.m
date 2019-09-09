@@ -21,12 +21,14 @@
 #import "DWTxDetailModel.h"
 #import "DWUIKit.h"
 
+#import "DWSuccessfulTransactionAnimatedIconView.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWTxDetailContentView ()
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
-@property (strong, nonatomic) IBOutlet UIImageView *iconImageView;
+@property (strong, nonatomic) IBOutlet UIView *iconContentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
@@ -35,6 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *feeCellView;
 @property (strong, nonatomic) IBOutlet DWTitleDetailCellView *dateCellView;
 @property (strong, nonatomic) IBOutlet UIButton *closeButton;
+
+@property (strong, nonatomic) UIImageView *iconImageView;
+@property (nonatomic, strong) DWSuccessfulTransactionAnimatedIconView *animatedIconView;
 
 @end
 
@@ -93,6 +98,8 @@ NS_ASSUME_NONNULL_BEGIN
     DWTitleDetailCellViewPadding contentPadding;
     switch (displayType) {
         case DWTxDetailDisplayType_Sent: {
+            [self setupIconImageView];
+
             iconImage = [UIImage imageNamed:@"icon_tx_sent"];
             title = NSLocalizedString(@"Amount Sent", nil);
             contentPadding = DWTitleDetailCellViewPadding_Small;
@@ -100,6 +107,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWTxDetailDisplayType_Received: {
+            [self setupIconImageView];
+
             iconImage = [UIImage imageNamed:@"icon_tx_received"];
             title = NSLocalizedString(@"Amount Received", nil);
             contentPadding = DWTitleDetailCellViewPadding_Small;
@@ -107,7 +116,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWTxDetailDisplayType_Paid: {
-            iconImage = [UIImage imageNamed:@"icon_tx_paid"];
+            [self setupAnimatedIconView];
+
             title = NSLocalizedString(@"Paid successfully", nil);
             contentPadding = DWTitleDetailCellViewPadding_None;
 
@@ -115,9 +125,10 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    NSParameterAssert(iconImage);
+    if (iconImage) {
+        self.iconImageView.image = iconImage;
+    }
 
-    self.iconImageView.image = iconImage;
     self.titleLabel.text = title;
 
     self.addressCellView.contentPadding = contentPadding;
@@ -132,6 +143,10 @@ NS_ASSUME_NONNULL_BEGIN
     self.dateCellView.model = model.date;
 
     [self reloadAttributedData];
+}
+
+- (void)viewDidAppear {
+    [self.animatedIconView showAnimatedIfNeeded];
 }
 
 #pragma mark - Actions
@@ -164,6 +179,45 @@ NS_ASSUME_NONNULL_BEGIN
     id<DWTitleDetailItem> feeModel = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     self.feeCellView.model = feeModel;
     self.feeCellView.hidden = (feeModel == nil);
+}
+
+- (void)setupIconImageView {
+    if (self.iconImageView) {
+        return;
+    }
+    [self.animatedIconView removeFromSuperview];
+
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.iconContentView addSubview:imageView];
+    self.iconImageView = imageView;
+
+    [self pinViewToIconContentView:imageView];
+}
+
+- (void)setupAnimatedIconView {
+    if (self.animatedIconView) {
+        return;
+    }
+    [self.iconImageView removeFromSuperview];
+
+    DWSuccessfulTransactionAnimatedIconView *animatedIconView =
+        [[DWSuccessfulTransactionAnimatedIconView alloc] initWithFrame:CGRectZero];
+    animatedIconView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.iconContentView addSubview:animatedIconView];
+    self.animatedIconView = animatedIconView;
+
+    [self pinViewToIconContentView:animatedIconView];
+}
+
+- (void)pinViewToIconContentView:(UIView *)view {
+    UIView *contentView = self.iconContentView;
+    [NSLayoutConstraint activateConstraints:@[
+        [view.topAnchor constraintEqualToAnchor:contentView.topAnchor],
+        [view.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+        [view.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
+        [view.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+    ]];
 }
 
 @end

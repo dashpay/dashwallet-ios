@@ -41,6 +41,8 @@ typedef NS_ENUM(NSUInteger, DWTxDetailDisplayType) {
 @property (nullable, nonatomic, strong) DWTxDetailModel *model;
 @property (nullable, nonatomic, weak) id<DWTxDetailContentViewDelegate> delegate;
 
+- (void)viewDidAppear;
+
 - (instancetype)init NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
