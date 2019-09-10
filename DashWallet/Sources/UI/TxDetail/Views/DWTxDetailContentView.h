@@ -43,6 +43,8 @@ typedef NS_ENUM(NSUInteger, DWTxDetailDisplayType) {
 
 - (void)viewDidAppear;
 
+- (void)setViewInExplorerButtonCopyHintTitle;
+
 - (instancetype)init NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 

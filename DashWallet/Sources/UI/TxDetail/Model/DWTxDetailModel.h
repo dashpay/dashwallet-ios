@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSURL *)explorerURL;
 
+- (BOOL)copyTransactionIdToPasteboard;
+
 - (instancetype)initWithTransaction:(DSTransaction *)transaction
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 

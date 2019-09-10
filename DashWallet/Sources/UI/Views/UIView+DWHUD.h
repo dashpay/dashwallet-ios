@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME;
+
 @interface UIView (DWHUD)
 
 - (void)dw_showProgressHUDWithMessage:(nullable NSString *)message;

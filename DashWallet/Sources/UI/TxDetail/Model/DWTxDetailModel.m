@@ -124,6 +124,18 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
+- (BOOL)copyTransactionIdToPasteboard {
+    NSString *transactionId = self.transactionId;
+    NSParameterAssert(transactionId);
+    if (!transactionId) {
+        return NO;
+    }
+
+    [UIPasteboard generalPasteboard].string = transactionId;
+
+    return YES;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

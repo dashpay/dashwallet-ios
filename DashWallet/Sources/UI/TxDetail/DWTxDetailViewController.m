@@ -84,7 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
     // The views beneath the presented content are not removed from the view hierarchy when the presentation finishes.
     controller.modalPresentationStyle = UIModalPresentationOverFullScreen;
     controller.modalPresentationCapturesStatusBarAppearance = YES;
-    [self presentViewController:controller animated:YES completion:nil];
+    [self presentViewController:controller
+                       animated:YES
+                     completion:^{
+                         [self.view setViewInExplorerButtonCopyHintTitle];
+                     }];
 }
 
 - (void)txDetailContentView:(DWTxDetailContentView *)view closeButtonAction:(UIButton *)sender {

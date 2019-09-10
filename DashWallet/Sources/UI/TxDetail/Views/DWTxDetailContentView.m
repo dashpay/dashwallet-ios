@@ -17,11 +17,11 @@
 
 #import "DWTxDetailContentView.h"
 
+#import "DWSuccessfulTransactionAnimatedIconView.h"
 #import "DWTitleDetailCellView.h"
 #import "DWTxDetailModel.h"
 #import "DWUIKit.h"
-
-#import "DWSuccessfulTransactionAnimatedIconView.h"
+#import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -79,8 +79,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    [self.viewInExplorerButton setTitle:NSLocalizedString(@"View in Explorer", nil)
-                               forState:UIControlStateNormal];
+    [self setViewInExplorerDefaultTitle];
+    UILongPressGestureRecognizer *recognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(longPressGestureAction:)];
+    [self.viewInExplorerButton addGestureRecognizer:recognizer];
+
     [self.closeButton setTitle:NSLocalizedString(@"Close", nil)
                       forState:UIControlStateNormal];
 
@@ -149,6 +153,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self.animatedIconView showAnimatedIfNeeded];
 }
 
+- (void)setViewInExplorerButtonCopyHintTitle {
+    [self.viewInExplorerButton setTitle:NSLocalizedString(@"Long press to copy ID", nil)
+                               forState:UIControlStateNormal];
+}
+
 #pragma mark - Actions
 
 - (IBAction)viewInExplorerButtonAction:(UIButton *)sender {
@@ -157,6 +166,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)closeButtonAction:(UIButton *)sender {
     [self.delegate txDetailContentView:self closeButtonAction:sender];
+}
+
+- (void)longPressGestureAction:(UILongPressGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    BOOL result = [self.model copyTransactionIdToPasteboard];
+    if (result) {
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+
+        dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW,
+                                             (int64_t)(DW_INFO_HUD_DISPLAY_TIME * NSEC_PER_SEC));
+        dispatch_after(when, dispatch_get_main_queue(), ^{
+            [self setViewInExplorerDefaultTitle];
+        });
+    }
 }
 
 #pragma mark - Notifications
@@ -218,6 +244,11 @@ NS_ASSUME_NONNULL_BEGIN
         [view.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
         [view.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
     ]];
+}
+
+- (void)setViewInExplorerDefaultTitle {
+    [self.viewInExplorerButton setTitle:NSLocalizedString(@"View in Explorer", nil)
+                               forState:UIControlStateNormal];
 }
 
 @end
