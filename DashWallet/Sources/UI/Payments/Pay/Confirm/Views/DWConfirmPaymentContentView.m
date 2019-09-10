@@ -18,10 +18,10 @@
 #import "DWConfirmPaymentContentView.h"
 
 #import "DWAmountPreviewView.h"
-#import "DWPaymentOutput.h"
-#import "DWTitleDetailCellModel.h"
+#import "DWPaymentOutput+DWView.h"
 #import "DWTitleDetailCellView.h"
 #import "DWUIKit.h"
+#import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -73,6 +73,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.feeRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
     self.totalRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
 
+    UILongPressGestureRecognizer *recognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(addressLongPressGestureAction:)];
+    [self.addressRowView addGestureRecognizer:recognizer];
+
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(contentSizeCategoryDidChangeNotification)
                                                  name:UIContentSizeCategoryDidChangeNotification
@@ -84,16 +90,24 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.amountView setAmount:[paymentOutput amountToDisplay]];
 
-    NSString *_Nullable infoString = [paymentOutput generalInfoString];
-    DWTitleDetailCellModel *info =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
-                                                title:nil
-                                          plainDetail:infoString];
-
+    id<DWTitleDetailItem> info = [self.paymentOutput generalInfo];
     self.infoRowView.model = info;
-    self.infoRowView.hidden = (infoString == nil);
+    self.infoRowView.hidden = (info == nil);
 
     [self reloadAttributedData];
+}
+
+#pragma mark - Actions
+
+- (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    BOOL result = [self.paymentOutput copyAddressToPasteboard];
+    if (result) {
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+    }
 }
 
 #pragma mark - Notifications
@@ -106,27 +120,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadAttributedData {
     UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    UIColor *color = [UIColor dw_secondaryTextColor];
 
-    NSAttributedString *addressString = [self.paymentOutput addressAttributedStringWithFont:font];
-    DWTitleDetailCellModel *address =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                title:NSLocalizedString(@"Pay to", nil)
-                                     attributedDetail:addressString];
-    self.addressRowView.model = address;
+    self.addressRowView.model = [self.paymentOutput addressWithFont:font];
 
-    NSAttributedString *_Nullable feeString = [self.paymentOutput networkFeeAttributedStringWithFont:font];
-    DWTitleDetailCellModel *fee =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
-                                                title:NSLocalizedString(@"Network fee", nil)
-                                     attributedDetail:feeString];
+    id<DWTitleDetailItem> fee = [self.paymentOutput feeWithFont:font tintColor:color];
     self.feeRowView.model = fee;
-    self.feeRowView.hidden = (feeString == nil);
+    self.feeRowView.hidden = (fee == nil);
 
-    DWTitleDetailCellModel *total =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
-                                                title:NSLocalizedString(@"Total", nil)
-                                     attributedDetail:[self.paymentOutput totalAttributedStringWithFont:font]];
-    self.totalRowView.model = total;
+    self.totalRowView.model = [self.paymentOutput totalWithFont:font tintColor:color];
 }
 
 @end

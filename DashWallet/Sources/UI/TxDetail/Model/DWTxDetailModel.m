@@ -75,7 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
                           ? NSLocalizedString(@"Sent to", nil)
                           : NSLocalizedString(@"Received from", nil);
 
-    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:self.dataItem.address
+    NSString *address = self.dataItem.address;
+    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
                                                                            withFont:font];
     DWTitleDetailCellModel *model =
         [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
@@ -132,6 +133,18 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [UIPasteboard generalPasteboard].string = transactionId;
+
+    return YES;
+}
+
+- (BOOL)copyAddressToPasteboard {
+    NSString *address = self.dataItem.address;
+    NSParameterAssert(address);
+    if (!address) {
+        return NO;
+    }
+
+    [UIPasteboard generalPasteboard].string = address;
 
     return YES;
 }

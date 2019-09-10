@@ -19,6 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class UIColor;
+@class UIFont;
+
 @interface NSAttributedString (DWBuilder)
 
 + (NSAttributedString *)dw_dashAttributedStringForAmount:(uint64_t)amount

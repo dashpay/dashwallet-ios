@@ -15,38 +15,25 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWPaymentOutput.h"
 
 #import "DWTitleDetailItem.h"
-#import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSTransaction;
+@class UIFont;
+@class UIColor;
 
-@interface DWTxDetailModel : NSObject
+@interface DWPaymentOutput (DWView)
 
-@property (readonly, nonatomic, strong) DSTransaction *transaction;
+- (uint64_t)amountToDisplay;
 
-@property (readonly, nonatomic) NSString *transactionId;
-@property (readonly, nonatomic) BOOL isSent;
-@property (readonly, nonatomic) NSString *fiatAmountString;
-@property (readonly, nonatomic) id<DWTitleDetailItem> date;
-
-- (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font;
-
+- (nullable id<DWTitleDetailItem>)generalInfo;
 - (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 
-- (nullable NSURL *)explorerURL;
-
-- (BOOL)copyTransactionIdToPasteboard;
 - (BOOL)copyAddressToPasteboard;
-
-- (instancetype)initWithTransaction:(DSTransaction *)transaction
-                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

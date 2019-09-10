@@ -79,10 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    [self setViewInExplorerDefaultTitle];
     UILongPressGestureRecognizer *recognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                      action:@selector(longPressGestureAction:)];
+                                                      action:@selector(addressLongPressGestureAction:)];
+    [self.addressCellView addGestureRecognizer:recognizer];
+
+    [self setViewInExplorerDefaultTitle];
+    recognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(explorerLongPressGestureAction:)];
     [self.viewInExplorerButton addGestureRecognizer:recognizer];
 
     [self.closeButton setTitle:NSLocalizedString(@"Close", nil)
@@ -168,7 +173,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate txDetailContentView:self closeButtonAction:sender];
 }
 
-- (void)longPressGestureAction:(UILongPressGestureRecognizer *)sender {
+- (void)explorerLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
     if (sender.state != UIGestureRecognizerStateEnded) {
         return;
     }
@@ -182,6 +187,17 @@ NS_ASSUME_NONNULL_BEGIN
         dispatch_after(when, dispatch_get_main_queue(), ^{
             [self setViewInExplorerDefaultTitle];
         });
+    }
+}
+
+- (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    BOOL result = [self.model copyAddressToPasteboard];
+    if (result) {
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
     }
 }
 

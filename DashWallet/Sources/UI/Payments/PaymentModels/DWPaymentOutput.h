@@ -34,13 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL isSecure;
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
 
-- (uint64_t)amountToDisplay;
-
-- (nullable NSString *)generalInfoString;
-- (NSAttributedString *)addressAttributedStringWithFont:(UIFont *)font;
-- (nullable NSAttributedString *)networkFeeAttributedStringWithFont:(UIFont *)font;
-- (NSAttributedString *)totalAttributedStringWithFont:(UIFont *)font;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

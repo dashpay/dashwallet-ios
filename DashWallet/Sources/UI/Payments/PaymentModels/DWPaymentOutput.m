@@ -17,19 +17,7 @@
 
 #import "DWPaymentOutput+Private.h"
 
-#import "NSAttributedString+DWBuilder.h"
-#import "UIColor+DWStyle.h"
-#import <DashSync/DashSync.h>
-
 NS_ASSUME_NONNULL_BEGIN
-
-#define LOCK @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
-
-static NSString *sanitizeString(NSString *s) {
-    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
-    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
-    return sane;
-}
 
 @implementation DWPaymentOutput
 
@@ -55,59 +43,6 @@ static NSString *sanitizeString(NSString *s) {
         _localCurrency = localCurrency;
     }
     return self;
-}
-
-- (uint64_t)amountToDisplay {
-    return self.amount - self.fee;
-}
-
-- (nullable NSString *)generalInfoString {
-    BOOL hasInfo = NO;
-    NSString *info = @"";
-    if (self.name.length > 0) {
-        if (self.isSecure) {
-            info = LOCK @" ";
-        }
-
-        info = [info stringByAppendingString:sanitizeString(self.name)];
-        hasInfo = YES;
-    }
-
-    if (self.memo.length > 0) {
-        info = [info stringByAppendingFormat:@"\n%@", sanitizeString(self.memo)];
-        hasInfo = YES;
-    }
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    if (self.localCurrency && ![self.localCurrency isEqualToString:priceManager.localCurrencyCode]) {
-        NSString *requestedAmount = [[DSPriceManager sharedInstance] fiatCurrencyString:self.localCurrency forDashAmount:self.amount];
-        info = [info stringByAppendingString:@"\n"];
-        info = [info stringByAppendingFormat:NSLocalizedString(@"Local requested amount: %@", nil), requestedAmount];
-        hasInfo = YES;
-    }
-
-    return hasInfo ? info : nil;
-}
-
-- (NSAttributedString *)addressAttributedStringWithFont:(UIFont *)font {
-    return [NSAttributedString dw_dashAddressAttributedString:self.address withFont:font];
-}
-
-- (nullable NSAttributedString *)networkFeeAttributedStringWithFont:(UIFont *)font {
-    if (self.fee > 0) {
-        return [NSAttributedString dw_dashAttributedStringForAmount:self.fee
-                                                          tintColor:[UIColor dw_secondaryTextColor]
-                                                               font:font];
-    }
-    else {
-        return nil;
-    }
-}
-
-- (NSAttributedString *)totalAttributedStringWithFont:(UIFont *)font {
-    return [NSAttributedString dw_dashAttributedStringForAmount:self.amount
-                                                      tintColor:[UIColor dw_secondaryTextColor]
-                                                           font:font];
 }
 
 @end
