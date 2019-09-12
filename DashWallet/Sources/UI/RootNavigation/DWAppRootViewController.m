@@ -61,7 +61,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
         // prepare controller & models
         [self mainController];
 
-        controller = [self lockController];
+        controller = [self lockControllerWithMode:DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive];
         self.displayedLockController = controller;
     }
     else {
@@ -75,8 +75,8 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
                                name:UIApplicationDidBecomeActiveNotification
                              object:nil];
     [notificationCenter addObserver:self
-                           selector:@selector(applicationWillResignActiveNotification)
-                               name:UIApplicationWillResignActiveNotification
+                           selector:@selector(applicationDidEnterBackgroundNotification)
+                               name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
 }
 
@@ -126,8 +126,8 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     [self showLockControllerIfNeeded];
 }
 
-- (void)applicationWillResignActiveNotification {
-    [self.model applicationWillResignActive];
+- (void)applicationDidEnterBackgroundNotification {
+    [self.model applicationDidEnterBackground];
 }
 
 #pragma mark - Private
@@ -141,7 +141,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
         return;
     }
 
-    UIViewController *controller = [self lockController];
+    UIViewController *controller = [self lockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
     [self performTransitionToViewController:controller];
 
     self.displayedLockController = controller;
@@ -179,8 +179,9 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     return _mainController;
 }
 
-- (UIViewController *)lockController {
-    UIViewController *controller = [DWLockScreenViewController controllerEmbededInNavigationWithDelegate:self];
+- (UIViewController *)lockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
+    UIViewController *controller = [DWLockScreenViewController controllerEmbededInNavigationWithDelegate:self
+                                                                                              unlockMode:mode];
 
     return controller;
 }

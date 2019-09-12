@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
     return authenticationManager.passcodeEnabled;
 }
 
-- (void)applicationWillResignActive {
+- (void)applicationDidEnterBackground {
     self.lastActiveDate = [NSDate date];
 }
 
@@ -56,8 +56,13 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
+    const BOOL didAuthenticate = authManager.didAuthenticate;
+    if (didAuthenticate) {
+        return NO;
+    }
+
     if (!self.lastActiveDate) {
-        return (authManager.didAuthenticate == NO);
+        return (didAuthenticate == NO);
     }
 
     NSDate *now = [NSDate date];

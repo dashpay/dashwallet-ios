@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWLockPinInputViewDelegate <NSObject>
 
-- (void)lockPinInputViewKeyboardCancelButtonAction:(DWLockPinInputView *)view;
 - (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text;
 
 @end

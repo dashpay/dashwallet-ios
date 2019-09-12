@@ -38,6 +38,16 @@ NS_ASSUME_NONNULL_BEGIN
                              completion:completion];
 }
 
++ (void)authenticateUsingBiometricsOnlyWithPrompt:(nullable NSString *)prompt
+                                       completion:(PinCompletionBlock)completion {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if ([authManager isBiometricAuthenticationAllowed]) {
+        [[AppDelegate instance] setBlurringScreenDisabledOneTime];
+    }
+
+    [authManager authenticateUsingBiometricsOnlyWithPrompt:prompt completion:completion];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

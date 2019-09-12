@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWNumberKeyboardDelegate> delegate;
 
 - (void)configureWithCustomFunctionButtonTitle:(NSString *)customFunctionButtonTitle;
+- (void)configureFunctionButtonAsHidden;
 
 @end
 

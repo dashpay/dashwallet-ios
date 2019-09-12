@@ -21,6 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
+    DWLockScreenViewControllerUnlockMode_Instantly,
+    DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive,
+};
+
 @class DWLockScreenViewController;
 
 @protocol DWLockScreenViewControllerDelegate <NSObject>
@@ -31,9 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWLockScreenViewController : UIViewController <DWNavigationFullscreenable>
 
+@property (nonatomic, assign) DWLockScreenViewControllerUnlockMode unlockMode;
 @property (nullable, nonatomic, weak) id<DWLockScreenViewControllerDelegate> delegate;
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate;
++ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
+                                                     unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode;
 
 @end
 

@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly, nonatomic, assign) BOOL walletOperationAllowed;
 
-- (void)applicationWillResignActive;
+- (void)applicationDidEnterBackground;
 - (BOOL)shouldShowLockScreen;
 
 @end

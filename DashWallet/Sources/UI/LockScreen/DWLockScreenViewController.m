@@ -19,11 +19,14 @@
 
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
+#import "DWLockScreenModel.h"
 #import "DWNavigationController.h"
 #import "DWNumberKeyboard.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 static CGFloat DashLogoTopPadding(void) {
     if (IS_IPHONE_5_OR_LESS) {
@@ -56,26 +59,30 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
 @interface DWLockScreenViewController () <DWLockPinInputViewDelegate>
 
+@property (strong, nonatomic) DWLockScreenModel *model;
+
 @property (strong, nonatomic) IBOutlet DWLockPinInputView *pinInputView;
 @property (strong, nonatomic) IBOutlet UIButton *forgotPinButton;
 @property (strong, nonatomic) IBOutlet DWLockActionButton *quickReceiveButton;
 @property (strong, nonatomic) IBOutlet DWLockActionButton *loginButton;
 @property (strong, nonatomic) IBOutlet DWLockActionButton *scanToPayButton;
 @property (strong, nonatomic) IBOutlet DWNumberKeyboard *keyboarView;
-@property (strong, nonatomic) IBOutlet UIView *keyboardContainerView;
 
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *dashLogoTopConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *keyboardSpacingViewHeightConstraint;
-@property (strong, nonatomic) IBOutlet NSLayoutConstraint *keyboardBottomConstraint;
+
+@property (nonatomic, assign) BOOL biometricsAuthorizationAttemptWasMade;
 
 @end
 
 @implementation DWLockScreenViewController
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate {
++ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
+                                                     unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
     controller.delegate = delegate;
+    controller.unlockMode = unlockMode;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -86,23 +93,42 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.model = [[DWLockScreenModel alloc] init];
+
     [self setupView];
+
+    if (self.unlockMode == DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive) {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(applicationDidBecomeActiveNotification)
+                                   name:UIApplicationDidBecomeActiveNotification
+                                 object:nil];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    if (self.unlockMode == DWLockScreenViewControllerUnlockMode_Instantly) {
+        [self tryOnceToUnlockUsingBiometrics];
+    }
+}
+
 #pragma mark - Actions
 
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
+    [self.delegate lockScreenViewControllerDidUnlock:self];
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
 }
 
 - (IBAction)loginButtonAction:(DWLockActionButton *)sender {
-    [self.delegate lockScreenViewControllerDidUnlock:self];
+    [self performBiometricAuthentication];
 }
 
 - (IBAction)scanToPayButtonAction:(DWLockActionButton *)sender {
@@ -116,15 +142,29 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
 #pragma mark - DWLockPinInputViewDelegate
 
-- (void)lockPinInputViewKeyboardCancelButtonAction:(DWLockPinInputView *)view {
+- (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text {
 }
 
-- (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text {
+#pragma mark - Notifications
+
+- (void)applicationDidBecomeActiveNotification {
+    [self hideLoginButtonIfNeeded];
+    [self tryOnceToUnlockUsingBiometrics];
 }
 
 #pragma mark - Private
 
+- (void)tryOnceToUnlockUsingBiometrics {
+    if (!self.biometricsAuthorizationAttemptWasMade) {
+        self.biometricsAuthorizationAttemptWasMade = YES;
+
+        [self performBiometricAuthentication];
+    }
+}
+
 - (void)setupView {
+    NSParameterAssert(self.model);
+
     self.pinInputView.delegate = self;
     [self.pinInputView configureWithKeyboard:self.keyboarView];
 
@@ -133,14 +173,52 @@ static CGFloat KeyboardSpacingViewHeight(void) {
     self.quickReceiveButton.title = NSLocalizedString(@"Quick Receive", nil);
     self.quickReceiveButton.image = [UIImage imageNamed:@"icon_lock_receive"];
 
-    self.loginButton.title = NSLocalizedString(@"Login with PIN", nil);
-    self.loginButton.image = [UIImage imageNamed:@"icon_lock_pin"];
+    switch (self.model.biometryType) {
+        case LABiometryTypeFaceID: {
+            self.loginButton.title = NSLocalizedString(@"Login with Face ID", nil);
+            // TODO: use correct icon
+            self.loginButton.image = [UIImage imageNamed:@"icon_lock_touchid"];
+
+            break;
+        }
+        case LABiometryTypeTouchID: {
+            self.loginButton.title = NSLocalizedString(@"Login with Touch ID", nil);
+            self.loginButton.image = [UIImage imageNamed:@"icon_lock_touchid"];
+
+            break;
+        }
+        default: {
+            self.loginButton.hidden = YES;
+
+            break;
+        }
+    }
+    [self hideLoginButtonIfNeeded];
 
     self.scanToPayButton.title = NSLocalizedString(@"Scan to Pay", nil);
     self.scanToPayButton.image = [UIImage imageNamed:@"icon_lock_scan_to_pay"];
 
+    [self.keyboarView configureFunctionButtonAsHidden];
+
     self.dashLogoTopConstraint.constant = DashLogoTopPadding();
     self.keyboardSpacingViewHeightConstraint.constant = KeyboardSpacingViewHeight();
+}
+
+- (void)performBiometricAuthentication {
+    if (self.model.isBiometricAuthenticationAllowed) {
+        [self.model authenticateUsingBiometricsOnlyCompletion:^(BOOL authenticated) {
+            if (authenticated) {
+                [self.delegate lockScreenViewControllerDidUnlock:self];
+            }
+            else {
+                [self hideLoginButtonIfNeeded];
+            }
+        }];
+    }
+}
+
+- (void)hideLoginButtonIfNeeded {
+    self.loginButton.hidden = !self.model.isBiometricAuthenticationAllowed;
 }
 
 @end

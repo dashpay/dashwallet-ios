@@ -24,12 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
 
-@interface DWBiometricAuthModel ()
-
-@property (null_resettable, nonatomic, strong) LAContext *context;
-
-@end
-
 @implementation DWBiometricAuthModel
 
 - (void)dealloc {
@@ -55,26 +49,19 @@ NS_ASSUME_NONNULL_BEGIN
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;
 #else
-    LAContext *context = self.context;
-    BOOL available = [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
-    NSAssert(available, @"LAPolicyDeviceOwnerAuthenticationWithBiometrics should be available");
+    LAContext *context = [[LAContext alloc] init];
+    [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil];
 
     return context.biometryType;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
-- (LAContext *)context {
-    if (!_context) {
-        _context = [[LAContext alloc] init];
-    }
-    return _context;
-}
-
 - (void)enableBiometricAuth:(void (^)(void))completion {
     NSParameterAssert(completion);
 
+    LAContext *context = [[LAContext alloc] init];
     NSString *reason = nil;
-    switch (self.context.biometryType) {
+    switch (context.biometryType) {
         case LABiometryTypeTouchID:
             reason = NSLocalizedString(@"Enable Touch ID", nil);
             break;
@@ -88,15 +75,15 @@ NS_ASSUME_NONNULL_BEGIN
 
     [[AppDelegate instance] setBlurringScreenDisabledOneTime];
 
-    [self.context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                 localizedReason:reason
-                           reply:^(BOOL success, NSError *_Nullable error) {
-                               // TODO: discuss how biometric Auth should work
+    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+            localizedReason:reason
+                      reply:^(BOOL success, NSError *_Nullable error) {
+                          // TODO: discuss how biometric Auth should work
 
-                               [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
-                               [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
-                               dispatch_async(dispatch_get_main_queue(), completion);
-                           }];
+                          [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
+                          [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
+                          dispatch_async(dispatch_get_main_queue(), completion);
+                      }];
 }
 
 - (void)disableBiometricAuth {

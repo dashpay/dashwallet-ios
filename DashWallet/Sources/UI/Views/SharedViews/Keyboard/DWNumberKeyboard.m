@@ -101,6 +101,10 @@ static const NSUInteger SECTIONS_COUNT = 3;
     [self.functionButton configureAsCustomTypeWithTitle:customFunctionButtonTitle];
 }
 
+- (void)configureFunctionButtonAsHidden {
+    self.functionButton.hidden = YES;
+}
+
 - (CGSize)intrinsicContentSize {
     return CGSizeMake(UIViewNoIntrinsicMetric,
                       BUTTON_HEIGHT * ROWS_COUNT + PADDING * (ROWS_COUNT - 1));

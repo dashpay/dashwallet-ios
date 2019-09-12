@@ -16,25 +16,16 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import <DashSync/DSAuthenticationManager.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- DSAuthenticationManager proxy
- */
-@interface DWAuthenticationManager : NSObject
+@interface DWLockScreenModel : NSObject
 
-+ (void)authenticateWithPrompt:(nullable NSString *)prompt
-                    biometrics:(BOOL)useBiometrics
-                alertIfLockout:(BOOL)alertIfLockout
-                    completion:(nullable PinCompletionBlock)completion;
+@property (readonly, nonatomic, assign, getter=isBiometricAuthenticationAllowed) BOOL biometricAuthenticationAllowed;
+@property (readonly, nonatomic, assign) LABiometryType biometryType;
 
-+ (void)authenticateUsingBiometricsOnlyWithPrompt:(nullable NSString *)prompt
-                                       completion:(PinCompletionBlock)completion;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion;
 
 @end
 

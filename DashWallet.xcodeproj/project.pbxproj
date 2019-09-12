@@ -280,6 +280,7 @@
 		2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */; };
 		2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */; };
 		2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */; };
+		2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD46231232A286000C71557 /* DWLockScreenModel.m */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1002,6 +1003,8 @@
 		2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseModel.m; sourceTree = "<group>"; };
 		2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWGlobalOptions.h; sourceTree = "<group>"; };
 		2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGlobalOptions.m; sourceTree = "<group>"; };
+		2AD46230232A286000C71557 /* DWLockScreenModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLockScreenModel.h; sourceTree = "<group>"; };
+		2AD46231232A286000C71557 /* DWLockScreenModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockScreenModel.m; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -1864,6 +1867,8 @@
 				2A6300412328CCE900827825 /* LockScreen.storyboard */,
 				2A63004C2328F37C00827825 /* DWLockScreenViewController.h */,
 				2A63004D2328F37C00827825 /* DWLockScreenViewController.m */,
+				2AD46230232A286000C71557 /* DWLockScreenModel.h */,
+				2AD46231232A286000C71557 /* DWLockScreenModel.m */,
 			);
 			path = LockScreen;
 			sourceTree = "<group>";
@@ -3586,6 +3591,7 @@
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
+				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,

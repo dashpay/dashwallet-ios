@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const VERTICAL_PADDING = 16.0;
 
-@interface DWLockPinInputView () <DWNumberKeyboardDelegate, DSPinFieldDelegate>
+@interface DWLockPinInputView () <DSPinFieldDelegate>
 
 @property (readonly, nonatomic, strong) DWPinField *pinField;
 @property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
@@ -94,8 +94,6 @@ static CGFloat const VERTICAL_PADDING = 16.0;
 
     self.keyboard = keyboard;
     self.keyboard.textInput = self.pinField;
-    self.keyboard.delegate = self;
-    [self.keyboard configureWithCustomFunctionButtonTitle:NSLocalizedString(@"Cancel", nil)];
 }
 
 - (void)clearAndShakePinField {
@@ -106,12 +104,6 @@ static CGFloat const VERTICAL_PADDING = 16.0;
 
         [self.feedbackGenerator prepare];
     }];
-}
-
-#pragma mark - DWNumberKeyboardDelegate
-
-- (void)numberKeyboardCustomFunctionButtonTap:(DWNumberKeyboard *)numberKeyboard {
-    [self.delegate lockPinInputViewKeyboardCancelButtonAction:self];
 }
 
 #pragma mark - DSPinFieldDelegate

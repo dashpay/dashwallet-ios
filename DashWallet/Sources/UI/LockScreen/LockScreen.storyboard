@@ -28,7 +28,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6kH-KV-Ehe" userLabel="Top View">
                                 <rect key="frame" x="16" y="0.0" width="343" height="546"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="y6t-bT-ytP" userLabel="Center View">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="y6t-bT-ytP" userLabel="Pin Input Container">
                                         <rect key="frame" x="46.666666666666657" y="192" width="249.99999999999997" height="162"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" placeholderIntrinsicWidth="250" placeholderIntrinsicHeight="100" translatesAutoresizingMaskIntoConstraints="NO" id="3J8-Qf-qxL" customClass="DWLockPinInputView">
@@ -62,40 +62,34 @@
                                             <constraint firstAttribute="trailing" secondItem="OoX-IL-a9a" secondAttribute="trailing" id="wKC-Qh-YQi"/>
                                         </constraints>
                                     </view>
-                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="8G6-Mw-7HV">
-                                        <rect key="frame" x="0.0" y="430" width="343" height="112"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="8G6-Mw-7HV">
+                                        <rect key="frame" x="0.0" y="446" width="343" height="96"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bo4-U0-Y4o" customClass="DWLockActionButton">
-                                                <rect key="frame" x="0.0" y="0.33333333333331439" width="111.66666666666667" height="111.66666666666667"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="111.66666666666667" height="96"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="bo4-U0-Y4o" secondAttribute="height" multiplier="1:1" id="brP-zL-jTG"/>
-                                                </constraints>
                                                 <connections>
                                                     <action selector="receiveButtonAction:" destination="5D3-0m-4wL" eventType="touchUpInside" id="eQj-Xm-8IU"/>
                                                 </connections>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yeA-xW-SjY" customClass="DWLockActionButton">
-                                                <rect key="frame" x="115.66666666666666" y="0.0" width="112" height="112"/>
+                                                <rect key="frame" x="115.66666666666666" y="0.0" width="111.66666666666666" height="96"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="yeA-xW-SjY" secondAttribute="height" multiplier="1:1" id="XkA-yh-E29"/>
-                                                </constraints>
                                                 <connections>
                                                     <action selector="loginButtonAction:" destination="5D3-0m-4wL" eventType="touchUpInside" id="IK2-TC-iP6"/>
                                                 </connections>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wWk-X0-0db" customClass="DWLockActionButton">
-                                                <rect key="frame" x="231.66666666666666" y="0.33333333333331439" width="111.33333333333334" height="111.33333333333333"/>
+                                                <rect key="frame" x="231.33333333333334" y="0.0" width="111.66666666666666" height="96"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" secondItem="wWk-X0-0db" secondAttribute="height" multiplier="1:1" id="PDm-Kk-cv9"/>
-                                                </constraints>
                                                 <connections>
                                                     <action selector="scanToPayButtonAction:" destination="5D3-0m-4wL" eventType="touchUpInside" id="zDg-fk-nb9"/>
                                                 </connections>
                                             </view>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="96" id="e1b-SE-jS7"/>
+                                        </constraints>
                                     </stackView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -161,8 +155,6 @@
                         <outlet property="dashLogoTopConstraint" destination="v46-vS-TBn" id="ct4-wB-rOD"/>
                         <outlet property="forgotPinButton" destination="OoX-IL-a9a" id="owa-dG-YJJ"/>
                         <outlet property="keyboarView" destination="cNS-3P-mcP" id="v4Q-gA-NxX"/>
-                        <outlet property="keyboardBottomConstraint" destination="pSP-f8-P2S" id="meE-in-DGQ"/>
-                        <outlet property="keyboardContainerView" destination="1O1-se-Z2m" id="FY3-Yy-zZY"/>
                         <outlet property="keyboardSpacingViewHeightConstraint" destination="BXv-iy-E3F" id="fqd-re-1hc"/>
                         <outlet property="loginButton" destination="yeA-xW-SjY" id="RDa-54-qPa"/>
                         <outlet property="pinInputView" destination="3J8-Qf-qxL" id="dBr-st-ykZ"/>
