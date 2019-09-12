@@ -78,17 +78,17 @@ static CGFloat const BalanceButtonMinHeight(void) {
     self.backgroundColor = [UIColor dw_backgroundColor];
 
     self.titleLabel.text = NSLocalizedString(@"Available balance", nil);
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.titleLabel.textColor = [UIColor dw_lightTitleColor];
 
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
-    self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     [self.payButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
-    self.payButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.payButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
     [self.receiveButton setTitle:NSLocalizedString(@"Receive", nil) forState:UIControlStateNormal];
-    self.receiveButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.receiveButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
     self.balanceViewHeightContraint.constant = BalanceButtonMinHeight();
 
@@ -151,7 +151,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
     else {
         // 😭 UI designes states so:
         self.dashBalanceLabel.textColor = [balanceColor colorWithAlphaComponent:0.44];
-        self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+        self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
 
         self.dashBalanceLabel.text = NSLocalizedString(@"Please wait for the sync to complete", nil);
         self.fiatBalanceLabel.hidden = YES;

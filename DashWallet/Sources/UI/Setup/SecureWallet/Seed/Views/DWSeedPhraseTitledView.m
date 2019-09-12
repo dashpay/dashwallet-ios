@@ -50,7 +50,7 @@ static UIColor *TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle titleStyle) 
         titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
         titleLabel.backgroundColor = self.backgroundColor;
         titleLabel.textAlignment = NSTextAlignmentCenter;
-        titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+        titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
         titleLabel.textColor = TitleColorForStyle(DWSeedPhraseTitledViewTitleStyle_Default);
         titleLabel.adjustsFontForContentSizeCategory = YES;
         titleLabel.numberOfLines = 0;

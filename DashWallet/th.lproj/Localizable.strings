@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 ดัฟฟ์/ไบต์";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
@@ -79,6 +76,12 @@
 
 /* No comment provided by engineer. */
 "Amount" = "จำนวน";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
@@ -141,10 +144,10 @@
 "Cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "เปลี่ยนแปลง";
 
 /* No comment provided by engineer. */
-"change" = "เปลี่ยนแปลง";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "เปลี่ยนแปลงรหัสผ่าน";
@@ -181,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "คลิปบอร์ดไม่มีอยู่ใน dash หรือ ที่อยู่ของ bitcoin";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -262,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น  สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )";
@@ -426,6 +435,9 @@
 "Local currency" = "สกุลเงินท้องถิ่น";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Locked";
 
 /* No comment provided by engineer. */
@@ -442,6 +454,9 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "ที่อยู่สำหรับ  Masternode";
@@ -468,6 +483,9 @@
 "Network" = "เครือข่าย";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "อย่าพิมพ์วลีกู้คืนที่เกี่ยวข้อง รหัสผ่าน หรือ อื่นๆ อุปกรณ์อื่นอาจติดไวรัสได้";
 
 /* No comment provided by engineer. */
@@ -484,6 +502,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ Dash หรือ ที่อยู่ Bitcoin ที่ถูกต้อง";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "ไม่มีข้อมูลอัตราแลกเปลี่ยน";
@@ -538,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "เจ้าของ Keys";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "จ่ายเงิน";
@@ -631,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ได้รับ %1$@(%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "ขุดเมื่อไม่นานนี้ (ล็อค)";
@@ -733,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "ส่ง";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "ส่ง!";
@@ -960,6 +990,9 @@
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "Hash ของ voting key: ";
 
 /* No comment provided by engineer. */
@@ -1018,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "คุณได้รับ dash ";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "คุณจะต้องออกจากระบบของเว็บไซต์ Uphold โดยใช้เบราว์เซอร์ของคุณ";

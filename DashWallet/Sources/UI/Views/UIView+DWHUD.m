@@ -24,7 +24,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 3.5;
+NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
 
 @implementation UIView (DWHUD)
 
@@ -67,7 +67,7 @@ static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 3.5;
         if (nextHUD) {
             [strongSelf addSubview:nextHUD];
             [nextHUD showAnimated:YES];
-            [nextHUD hideAnimated:YES afterDelay:INFO_HUD_DISPLAY_TIME];
+            [nextHUD hideAnimated:YES afterDelay:DW_INFO_HUD_DISPLAY_TIME];
         }
     };
 
@@ -82,7 +82,7 @@ static NSTimeInterval const INFO_HUD_DISPLAY_TIME = 3.5;
     if (infoHUDQueue.count == 1) {
         [self addSubview:hud];
         [hud showAnimated:YES];
-        [hud hideAnimated:YES afterDelay:INFO_HUD_DISPLAY_TIME];
+        [hud hideAnimated:YES afterDelay:DW_INFO_HUD_DISPLAY_TIME];
     }
 }
 

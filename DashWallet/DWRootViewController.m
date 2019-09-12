@@ -517,7 +517,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     DWVersionManager * dashwalletVersionManager = [DWVersionManager sharedInstance];
     DSChain * chain = [DWEnvironment sharedInstance].currentChain;
     
-    //todo improve this to a better architecture
+    //OLDTODO improve this to a better architecture
     if ([defs integerForKey:SETTINGS_MAX_DIGITS_KEY] == 5) {
         priceManager.dashFormat.currencySymbol = @"m" BTC NARROW_NBSP;
         priceManager.dashFormat.maximumFractionDigits = 5;
@@ -534,7 +534,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     return;
 #endif /* SNAPSHOT */
     
-    //todo : this should be implemented in DashSync, not here
+    //OLDTODO : this should be implemented in DashSync, not here
     if (!chain.hasAWallet && [dashSyncVersionManager noOldWallet]) {
         if (!authenticationManager.passcodeEnabled) {
             UIAlertController * alert = [UIAlertController

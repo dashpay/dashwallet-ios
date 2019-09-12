@@ -48,9 +48,9 @@ static CGFloat HorizontalPadding(DWSeedPhraseType type) {
     switch (type) {
         case DWSeedPhraseType_Preview:
         case DWSeedPhraseType_Verify:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+            return [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
         case DWSeedPhraseType_Select:
-            return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+            return [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     }
 }
 

@@ -15,18 +15,16 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBasePayViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPayModel;
 
-@interface DWPayViewController : UIViewController
+@interface DWPayViewController : DWBasePayViewController
 
-- (void)scanQRCode;
-- (void)payToPasteboard;
-
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel;
++ (instancetype)controllerWithModel:(DWPayModel *)payModel
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end
 

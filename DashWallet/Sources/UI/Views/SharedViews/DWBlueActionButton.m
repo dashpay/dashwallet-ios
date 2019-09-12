@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetAppearance {
-    UIFontTextStyle textStyle = self.small ? UIFontTextStyleCaption2 : UIFontTextStyleCaption1;
+    UIFontTextStyle textStyle = UIFontTextStyleSubheadline;
     self.titleLabel.font = [UIFont dw_fontForTextStyle:textStyle];
 
     if (self.small) {

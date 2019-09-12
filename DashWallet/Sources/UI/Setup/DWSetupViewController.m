@@ -185,6 +185,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 - (UIViewController *)secureWalletInfoController {
     DWSecureWalletInfoViewController *controller = [DWSecureWalletInfoViewController controller];
+    controller.type = DWSecureWalletInfoType_Setup;
     controller.delegate = self;
 
     return controller;

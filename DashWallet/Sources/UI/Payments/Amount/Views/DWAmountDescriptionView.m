@@ -50,7 +50,7 @@ static CALayer *SeparatorLineLayer(void) {
         UILabel *descriptionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = NO;
         descriptionLabel.backgroundColor = self.backgroundColor;
-        descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+        descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         descriptionLabel.adjustsFontForContentSizeCategory = YES;
         descriptionLabel.numberOfLines = 0;
         descriptionLabel.lineBreakMode = NSLineBreakByWordWrapping;

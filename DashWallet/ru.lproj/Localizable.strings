@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/байт";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "«%@» не является словом из фразы восстановления";
 
@@ -79,6 +76,12 @@
 
 /* No comment provided by engineer. */
 "Amount" = "Сумма";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
@@ -141,10 +144,10 @@
 "Cancel" = "Отмена";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "Изменить";
 
 /* No comment provided by engineer. */
-"change" = "Изменить";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Изменить код доступа";
@@ -181,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "Буфер обмена не содержит корректного адреса Dash или Bitcoin";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -262,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "БЕЗОПАСНОСТЬ УСТРОЙСТВА ПОД УГРОЗОЙ\nЛюбое «jailbreak» приложение может получить доступ к Вашим приватным ключам (и украсть Ваши DASH).";
@@ -426,6 +435,9 @@
 "Local currency" = "Местная валюта";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Зафиксировано";
 
 /* No comment provided by engineer. */
@@ -442,6 +454,9 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "адрес расположения мастерноды";
@@ -468,6 +483,9 @@
 "Network" = "Сеть";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "НИКОГДА не вводите Вашу фразу восстановления в менеджеры паролей или другие приложения. Другие устройства могут быть инфицированы.";
 
 /* No comment provided by engineer. */
@@ -484,6 +502,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "NFC устройство не предоставило правильный dash или bitcoin адрес";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "Не удалось получить курсы обмена";
@@ -538,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Ключи владельца";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "Оплатить";
@@ -631,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "Получено %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "недавно добыто (заблокировано)";
@@ -733,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Отправлено";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "Отправлено!";
@@ -960,6 +990,9 @@
 "verifying quorum" = "подтверждение кворума";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "хеш ключа голосования:";
 
 /* No comment provided by engineer. */
@@ -1018,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "Вы получили DASH!";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Вам также необходимо будет выйти из своей учётной записи Uphold используя браузер";

@@ -36,7 +36,7 @@ static DWOverlapControl *SegmentedButton(NSString *text) {
             UILabel *label = [[UILabel alloc] init];
             label.backgroundColor = [UIColor clearColor];
             label.textAlignment = NSTextAlignmentCenter;
-            label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+            label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
             label.adjustsFontForContentSizeCategory = YES;
             label.adjustsFontSizeToFitWidth = YES;
             label.minimumScaleFactor = 0.5;

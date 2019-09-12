@@ -24,6 +24,7 @@
 
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
@@ -33,8 +34,6 @@
 #import "UIDevice+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static float const SHOW_BALANCE_THRESHOLD = 0.90;
 
 static BOOL IsJailbroken(void) {
     struct stat s;
@@ -55,11 +54,13 @@ static BOOL IsJailbroken(void) {
 
 @interface DWHomeModel ()
 
+@property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
 @property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
+@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
@@ -72,6 +73,8 @@ static BOOL IsJailbroken(void) {
     self = [super init];
     if (self) {
         [self connectIfNeeded];
+
+        _queue = dispatch_queue_create("DWHomeModel.queue", DISPATCH_QUEUE_SERIAL);
 
         _reachability = [DSReachabilityManager sharedManager];
         if (!_reachability.monitoring) {
@@ -132,7 +135,7 @@ static BOOL IsJailbroken(void) {
     _updatesObserver = updatesObserver;
 
     if (self.allDataSource) {
-        [updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:NO];
+        [updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
     }
 }
 
@@ -143,7 +146,7 @@ static BOOL IsJailbroken(void) {
 
     _displayMode = displayMode;
 
-    [self.updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:YES];
+    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:YES];
 }
 
 - (BOOL)isJailbroken {
@@ -168,6 +171,30 @@ static BOOL IsJailbroken(void) {
     }
 }
 
+- (BOOL)shouldShowWalletBackupReminder {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    if (!options.walletNeedsBackup) {
+        return NO;
+    }
+
+    if (options.walletBackupReminderWasShown) {
+        return NO;
+    }
+
+    NSDate *balanceChangedDate = options.balanceChangedDate;
+    if (balanceChangedDate == nil) {
+        return NO;
+    }
+
+    NSDate *now = [NSDate date];
+
+    const NSTimeInterval secondsSinceBalanceChanged =
+        now.timeIntervalSince1970 - balanceChangedDate.timeIntervalSince1970;
+
+    // Show wallet backup reminder after 24h since balance has been changed
+    return (secondsSinceBalanceChanged > DAY_TIME_INTERVAL);
+}
+
 - (void)reloadShortcuts {
     [self.shortcutsModel reloadShortcuts];
 }
@@ -179,6 +206,18 @@ static BOOL IsJailbroken(void) {
     }
 
     [self connectIfNeeded];
+}
+
+- (id<DWTransactionListDataProviderProtocol>)getDataProvider {
+    return self.dataProvider;
+}
+
+- (void)walletBackupReminderWasShown {
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+
+    NSAssert(options.walletBackupReminderWasShown == NO, @"Inconsistent state");
+
+    options.walletBackupReminderWasShown = YES;
 }
 
 #pragma mark - Notifications
@@ -264,7 +303,7 @@ static BOOL IsJailbroken(void) {
         return;
     }
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(self.queue, ^{
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
         NSArray<DSTransaction *> *transactions = account.allTransactions;
@@ -288,8 +327,10 @@ static BOOL IsJailbroken(void) {
             [self sentDataSource];
         }
 
+        DWTransactionListDataSource *datasource = self.dataSource;
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.updatesObserver homeModel:self didUpdateDataSourceShouldAnimate:shouldAnimate];
+            [self.updatesObserver homeModel:self didUpdateDataSource:datasource shouldAnimate:shouldAnimate];
         });
     });
 }
@@ -298,7 +339,7 @@ static BOOL IsJailbroken(void) {
     [self.receiveModel updateReceivingInfo];
 
     if (self.syncModel.state == DWSyncModelState_Syncing &&
-        self.syncModel.progress < SHOW_BALANCE_THRESHOLD) {
+        self.syncModel.progress < DW_SYNCING_COMPLETED_PROGRESS) {
         self.balanceModel = nil;
 
         return;
@@ -312,6 +353,11 @@ static BOOL IsJailbroken(void) {
     }
 
     self.balanceModel = [[DWBalanceModel alloc] initWithValue:balanceValue];
+
+    DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
+    if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
+        options.balanceChangedDate = [NSDate date];
+    }
 }
 
 - (NSArray<DSTransaction *> *)filterTransactions:(NSArray<DSTransaction *> *)allTransactions

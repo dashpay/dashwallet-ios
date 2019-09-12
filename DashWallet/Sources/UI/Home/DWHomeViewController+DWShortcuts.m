@@ -21,6 +21,7 @@
 
 #import "DWBackupInfoViewController.h"
 #import "DWHomeModel.h"
+#import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWNavigationController.h"
 #import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -31,10 +32,6 @@
 #import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface DWHomeViewController (DWShortcuts_Internal) <DWSecureWalletDelegate>
-
-@end
 
 @implementation DWHomeViewController (DWShortcuts)
 
@@ -150,7 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         if (success) {
-            [strongSelf.delegate homeViewController:strongSelf payToAddressButtonAction:sender];
+            [strongSelf performPayToPasteboardAction];
         }
         else {
             NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil);
@@ -168,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)scanQRAction:(UIView *)sender {
-    [self.delegate homeViewController:self scanQRAction:sender];
+    [self performScanQRCodeAction];
 }
 
 - (void)debug_wipeWallet {
@@ -202,17 +199,6 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:cancel];
 
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-#pragma mark - DWSecureWalletDelegate
-
-- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
-    [self.model reloadShortcuts];
-    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)secureWalletCancelButtonAction:(id)sender {

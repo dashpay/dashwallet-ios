@@ -26,8 +26,7 @@ static CGFloat const VERTICAL_PADDING = 16.0;
 
 @interface DWPinInputStepView ()
 
-@property (nonatomic, strong) UILabel *titleLabel;
-@property (nonatomic, strong) DWPinField *pinField;
+@property (readonly, nonatomic, strong) UILabel *titleLabel;
 
 @end
 
@@ -36,51 +35,39 @@ static CGFloat const VERTICAL_PADDING = 16.0;
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self setupView];
+        self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+        UILabel *titleLabel = [[UILabel alloc] init];
+        titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        titleLabel.adjustsFontForContentSizeCategory = YES;
+        titleLabel.numberOfLines = 0;
+        titleLabel.backgroundColor = self.backgroundColor;
+        titleLabel.textColor = [UIColor dw_darkTitleColor];
+        titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+        titleLabel.textAlignment = NSTextAlignmentCenter;
+        titleLabel.adjustsFontSizeToFitWidth = YES;
+        titleLabel.minimumScaleFactor = 0.5;
+        [self addSubview:titleLabel];
+        _titleLabel = titleLabel;
+
+        DWPinField *inputView = [[DWPinField alloc] initWithStyle:DSPinFieldStyle_Default];
+        inputView.backgroundColor = self.backgroundColor;
+        inputView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:inputView];
+        _pinField = inputView;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
+            [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+
+            [inputView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+            [inputView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                                constant:VERTICAL_PADDING],
+            [inputView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        ]];
     }
     return self;
-}
-
-- (nullable instancetype)initWithCoder:(NSCoder *)coder {
-    self = [super initWithCoder:coder];
-    if (self) {
-        [self setupView];
-    }
-    return self;
-}
-
-- (void)setupView {
-    self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-    UILabel *titleLabel = [[UILabel alloc] init];
-    titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    titleLabel.adjustsFontForContentSizeCategory = YES;
-    titleLabel.numberOfLines = 0;
-    titleLabel.backgroundColor = self.backgroundColor;
-    titleLabel.textColor = [UIColor dw_darkTitleColor];
-    titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
-    titleLabel.textAlignment = NSTextAlignmentCenter;
-    titleLabel.adjustsFontSizeToFitWidth = YES;
-    titleLabel.minimumScaleFactor = 0.5;
-    [self addSubview:titleLabel];
-    self.titleLabel = titleLabel;
-
-    DWPinField *inputView = [[DWPinField alloc] init];
-    inputView.backgroundColor = self.backgroundColor;
-    inputView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:inputView];
-    self.pinField = inputView;
-
-    [NSLayoutConstraint activateConstraints:@[
-        [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-
-        [inputView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-        [inputView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                            constant:VERTICAL_PADDING],
-        [inputView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-    ]];
 }
 
 - (nullable NSString *)titleText {

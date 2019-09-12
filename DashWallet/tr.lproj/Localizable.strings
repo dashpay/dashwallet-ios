@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/bayt";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" kurtarma cümlesi kelimesi değil";
 
@@ -79,6 +76,12 @@
 
 /* No comment provided by engineer. */
 "Amount" = "Tutar";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
@@ -141,10 +144,10 @@
 "Cancel" = "İptal";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "değiştir";
 
 /* No comment provided by engineer. */
-"change" = "değiştir";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Parolayı değiştir";
@@ -181,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "panoda geçerli bir dash veya bitcoin adresi yok";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -262,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "CİHAZ GÜVENLİĞİ ZAYIFLADI\nHerhangi bir 'jailbreak' uygulaması diğer uygulamaların verilerine erişebilir (ve dashlerinizi çalabilir).";
@@ -426,6 +435,9 @@
 "Local currency" = "Yerel para birimi";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Kilitlendi";
 
 /* No comment provided by engineer. */
@@ -442,6 +454,9 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "anadüğüm barındırma adresi";
@@ -468,6 +483,9 @@
 "Network" = "Ağ";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Kurtarma cümlenizi ASLA parola yöneticilerine veya başka bir yere yazmayın. Diğer cihazlarda açık olabilir.";
 
 /* No comment provided by engineer. */
@@ -484,6 +502,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "NFC cihazı geçerli bir dash veya bitcoin adresi göndermedi";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "döviz kuru verisi yok";
@@ -538,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Sahip Anahtarları";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "Ödeme";
@@ -631,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ alındı (%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "yeni kazıldı (kilitli)";
@@ -733,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Gönderildi";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "gönderildi!";
@@ -960,6 +990,9 @@
 "verifying quorum" = "nisap doğrulanıyor";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "oy verme anahtarı hashi:";
 
 /* No comment provided by engineer. */
@@ -1018,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "dash aldınız!";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Aynı zamanda tarayıcınızda Uphold internet sitesinden çıkış yapmanız gerekecek";

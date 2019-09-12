@@ -15,24 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <DashSync/DSPinField.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPinField;
-
-@protocol DWPinFieldDelegate <NSObject>
-
-- (void)pinFieldDidFinishInput:(DWPinField *)pinField;
-
-@end
-
-@interface DWPinField : UIView <UITextInput>
-
-@property (nullable, nonatomic, weak) id<DWPinFieldDelegate> delegate;
-@property (readonly, nonatomic, copy) NSString *text;
-
-- (void)clear;
+@interface DWPinField : DSPinField
 
 @end
 

@@ -26,7 +26,7 @@
 
 #import "DWTxHistoryViewController.h"
 #import "DWRootViewController.h"
-#import "DWTxDetailViewController.h"
+#import "DWOLDTxDetailViewController.h"
 #import "DWSeedViewController.h"
 #import "UIImage+Utils.h"
 #import <WebKit/WebKit.h>
@@ -348,7 +348,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)scanQR:(id)sender
 {
-    //TODO: show scanner in settings rather than dismissing
+    //OLDTODO: show scanner in settings rather than dismissing
     [DSEventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
     
@@ -363,7 +363,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)showTx:(id)sender
 {
     [DSEventManager saveEvent:@"tx_history:show_tx"];
-    DWTxDetailViewController *detailController
+    DWOLDTxDetailViewController *detailController
     = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
     detailController.txDateString = [self dateForTx:sender];
@@ -805,7 +805,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
+    //OLDTODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *destinationController = nil;
     
     switch (indexPath.section) {

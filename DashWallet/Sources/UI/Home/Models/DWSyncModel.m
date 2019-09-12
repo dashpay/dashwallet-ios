@@ -47,7 +47,7 @@ NSString *const DWSyncStateChangedNotification = @"DWSyncStateChangedNotificatio
 NSString *const DWSyncStateChangedFromStateKey = @"DWSyncStateChangedFromStateKey";
 
 static NSTimeInterval const SYNC_LOOP_INTERVAL = 0.2;
-static float const SYNCING_COMPLETED_PROGRESS = 0.995;
+float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
 
 @interface DWSyncModel ()
 
@@ -139,7 +139,7 @@ static float const SYNCING_COMPLETED_PROGRESS = 0.995;
     DWSyncLog(@"[DW Sync] chainBlocksDidChangeNotification");
 
     const double progress = [self chainSyncProgress];
-    if (progress < SYNCING_COMPLETED_PROGRESS) {
+    if (progress < DW_SYNCING_COMPLETED_PROGRESS) {
         [self startSyncingActivity];
     }
 }
@@ -229,7 +229,7 @@ static float const SYNCING_COMPLETED_PROGRESS = 0.995;
 
     DWSyncLog(@"[DW Sync] >>> %0.3f", progress);
 
-    if (progress < SYNCING_COMPLETED_PROGRESS) {
+    if (progress < DW_SYNCING_COMPLETED_PROGRESS) {
         self.syncing = YES;
 
         self.progress = progress;

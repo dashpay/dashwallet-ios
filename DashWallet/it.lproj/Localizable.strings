@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" non è una parola della frase di recupero";
 
@@ -79,6 +76,12 @@
 
 /* No comment provided by engineer. */
 "Amount" = "Importo";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
@@ -141,10 +144,10 @@
 "Cancel" = "Cancella";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "modifica";
 
 /* No comment provided by engineer. */
-"change" = "modifica";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Cambia passcode";
@@ -181,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "gli appunti non contengono un indirizzo bitcoin o un indirizzo dash valido";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -262,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi dash).";
@@ -426,6 +435,9 @@
 "Local currency" = "Moneta Locale";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Bloccato";
 
 /* No comment provided by engineer. */
@@ -442,6 +454,9 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "indirizzo di partecipazione del masternode";
@@ -468,6 +483,9 @@
 "Network" = "Network";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "MAI scrivere la tua frase di recupero in qualunque altro programma. Altri dispositivi possono essere infetti.";
 
 /* No comment provided by engineer. */
@@ -484,6 +502,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "Il dispositivo NFC non ha trasmesso un indirizzo dash o bitcoin valido";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "nessun dato del tasso di cambio";
@@ -538,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Chiavi proprietario";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "Paga";
@@ -631,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ricevuto %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = " minato recentemente (bloccato)";
@@ -733,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Inviato";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "inviato!";
@@ -960,6 +990,9 @@
 "verifying quorum" = "verifica del quorum";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "hash chiave voto:";
 
 /* No comment provided by engineer. */
@@ -1018,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "hai ricevuto dei dash!";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Sarà inoltre necessario disconnettersi dal sito Web di Uphold utilizzando il browser";

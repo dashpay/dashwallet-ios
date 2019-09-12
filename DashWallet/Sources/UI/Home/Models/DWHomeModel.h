@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWReceiveModel;
 @class DWShortcutsModel;
 @class DWPayModel;
+@protocol DWTransactionListDataProviderProtocol;
 
 typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
     DWHomeTxDisplayMode_All,
@@ -35,20 +36,23 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
 
-- (void)homeModel:(DWHomeModel *)model didUpdateDataSourceShouldAnimate:(BOOL)shouldAnimate;
+- (void)homeModel:(DWHomeModel *)model
+    didUpdateDataSource:(DWTransactionListDataSource *)dataSource
+          shouldAnimate:(BOOL)shouldAnimate;
 
 @end
 
 @interface DWHomeModel : NSObject
 
 @property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
-@property (readonly, nonatomic, strong) DWTransactionListDataSource *dataSource;
 
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 @property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
 @property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 @property (readonly, nonatomic, strong) DWPayModel *payModel;
+
+@property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 
 @property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
 
@@ -58,6 +62,10 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 - (void)reloadShortcuts;
 
 - (void)retrySyncing;
+
+- (id<DWTransactionListDataProviderProtocol>)getDataProvider;
+
+- (void)walletBackupReminderWasShown;
 
 @end
 

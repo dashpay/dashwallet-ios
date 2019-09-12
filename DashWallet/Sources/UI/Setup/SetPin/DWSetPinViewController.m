@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.title = NSLocalizedString(@"Create a New Wallet", nil);
 
     self.descriptionLabel.text = NSLocalizedString(@"This PIN will be required to unlock your app everytime when you use it.", nil);
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
     [self.pinView configureWithKeyboard:self.keyboardView];
     self.pinView.delegate = self;

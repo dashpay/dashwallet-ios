@@ -29,7 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)shouldSetPin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    return ![authenticationManager hasPin];
+    NSError *error = nil;
+    BOOL hasPin = [authenticationManager hasPin:&error];
+    if (error) {
+        return NO;
+    }
+    return !hasPin;
 }
 
 - (BOOL)setPin:(NSString *)pin {

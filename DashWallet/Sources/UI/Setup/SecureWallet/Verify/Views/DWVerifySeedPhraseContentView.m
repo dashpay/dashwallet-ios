@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
         hintLabel.translatesAutoresizingMaskIntoConstraints = NO;
         hintLabel.backgroundColor = self.backgroundColor;
         hintLabel.textAlignment = NSTextAlignmentCenter;
-        hintLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+        hintLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         hintLabel.textColor = [UIColor dw_secondaryTextColor];
         hintLabel.adjustsFontForContentSizeCategory = YES;
         hintLabel.numberOfLines = 0;

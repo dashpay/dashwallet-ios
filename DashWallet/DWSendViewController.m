@@ -83,7 +83,7 @@ static NSString *sanitizeString(NSString *s)
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    // TODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
+    // OLDTODO: XXX redesign page with round buttons like the iOS power down screen... apple watch also has round buttons
     self.scanButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.clipboardButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     
@@ -309,7 +309,7 @@ static NSString *sanitizeString(NSString *s)
         return;
     }
     
-    // TODO: reject payments that don't match requested amounts/scripts, implement refunds
+    // OLDTODO: reject payments that don't match requested amounts/scripts, implement refunds
     DSPaymentProtocolPayment *payment = [DSPaymentProtocolPayment paymentWithData:file onChain:[DWEnvironment sharedInstance].currentChain];
     DSChainManager * chainManager = [DWEnvironment sharedInstance].currentChainManager;
     if (payment.transactions.count > 0) {
@@ -465,7 +465,7 @@ static NSString *sanitizeString(NSString *s)
         [alert addAction:cancelButton]; //cancel should always be on the left
         [alert addAction:ignoreButton];
         [viewControllerToShowAlert presentViewController:alert animated:YES completion:nil];
-    } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount) {
+    } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount, NSArray<NSString *> *addresses, BOOL isSecure) {
         return TRUE; //just continue and let Dash Sync do it's thing
     } signedCompletion:^BOOL(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL cancelled) {
         if (cancelled) {
@@ -803,7 +803,7 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)updateClipboardText
 {
-    // TODO: clean up, produced results of this method are unused
+    // OLDTODO: clean up, produced results of this method are unused
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *str = [[UIPasteboard generalPasteboard].string
                          stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];

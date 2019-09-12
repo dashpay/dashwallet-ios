@@ -66,8 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.percentLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
 }
 

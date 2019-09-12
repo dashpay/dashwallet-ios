@@ -35,6 +35,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @property (nonatomic, strong) DWReceiveModel *receiveModel;
 @property (nonatomic, strong) DWPayModel *payModel;
+@property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (nonatomic, strong) DWPayViewController *payViewController;
 @property (nonatomic, strong) DWReceiveViewController *receiveViewController;
@@ -46,11 +47,14 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel payModel:(DWPayModel *)payModel {
++ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
+                                  payModel:(DWPayModel *)payModel
+                              dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
     controller.receiveModel = receiveModel;
     controller.payModel = payModel;
+    controller.dataProvider = dataProvider;
 
     return controller;
 }
@@ -76,24 +80,6 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     [self setupView];
     [self setupControllers];
-
-    if (self.currentIndex == DWPaymentsViewControllerIndex_Pay) {
-        switch (self.payAction) {
-            case DWPaymentsViewControllerPayAction_None: {
-                break;
-            }
-            case DWPaymentsViewControllerPayAction_ScanToPay: {
-                [self.payViewController scanQRCode];
-                break;
-            }
-            case DWPaymentsViewControllerPayAction_PayToPasteboard: {
-                [self.payViewController payToPasteboard];
-                break;
-            }
-        }
-
-        self.payAction = DWPaymentsViewControllerPayAction_None;
-    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -122,21 +108,21 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
         self.didPerformInitialPageOpen = YES;
 
         // scroll to needed index when reloadData finishes
-        DWPaymentsViewControllerIndex previouslySelectedPageIndex = [self previouslySelectedPageIndex];
-        if (self.currentIndex != previouslySelectedPageIndex) {
-            [self.controllerCollectionView
-                performBatchUpdates:^{
+
+        [self.controllerCollectionView
+            performBatchUpdates:^{
+            }
+            completion:^(BOOL finished) {
+                DWPaymentsViewControllerIndex previousIndex = [self previouslySelectedPageIndex];
+                if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
+                    self.currentIndex = previousIndex;
                 }
-                completion:^(BOOL finished) {
-                    if (self.currentIndex == DWPaymentsViewControllerIndex_None) {
-                        self.currentIndex = previouslySelectedPageIndex;
-                    }
-                    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
-                    [self scrollToIndexPath:indexPath animated:NO];
-                }];
-        }
+                NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
+                [self scrollToIndexPath:indexPath animated:NO];
+            }];
     }
 }
+
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
@@ -171,7 +157,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 }
 
 - (void)setupControllers {
-    self.payViewController = [DWPayViewController controllerWithModel:self.payModel];
+    self.payViewController = [DWPayViewController controllerWithModel:self.payModel
+                                                         dataProvider:self.dataProvider];
     self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
 }
 

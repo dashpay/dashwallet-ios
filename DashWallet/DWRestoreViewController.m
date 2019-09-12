@@ -46,8 +46,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    // TODO: create secure versions of keyboard and UILabel and use in place of UITextView
-    // TODO: autocomplete based on 4 letter prefixes of mnemonic words
+    // OLDTODO: create secure versions of keyboard and UILabel and use in place of UITextView
+    // OLDTODO: autocomplete based on 4 letter prefixes of mnemonic words
     
     self.textView.layer.cornerRadius = 5.0;
     self.textView.textContainerInset = UIEdgeInsetsMake(12, 12, 12, 12);
@@ -379,7 +379,7 @@
             [self performSelector:@selector(wipeWithPhrase:) withObject:phrase afterDelay:0.75];
         }
         else {
-            //TODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
+            //OLDTODO: offer the user an option to move funds to a new seed if their wallet device was lost or stolen
             DSChain * chain = [[DWEnvironment sharedInstance] currentChain];
             [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME forChain:chain storeSeedPhrase:YES isTransient:NO];
             textView.text = nil;

@@ -38,11 +38,21 @@ static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_ScanQR:
             return NSLocalizedString(@"Scanning QR code", @"(Pay by) Scanning QR code");
         case DWPayOptionModelType_Pasteboard:
-            return NSLocalizedString(@"<no Dash address>", @"no Dash address (in clipboard)");
+            return NSLocalizedString(@"No address copied", nil);
         case DWPayOptionModelType_NFC:
             return NSLocalizedString(@"NFC device", nil);
     }
 }
+
+static UIColor *DescriptionColor(DWPayOptionModelType type, BOOL empty) {
+    if (empty && type == DWPayOptionModelType_Pasteboard) {
+        return [UIColor dw_quaternaryTextColor];
+    }
+    else {
+        return [UIColor dw_darkTitleColor];
+    }
+}
+
 
 static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
     switch (type) {
@@ -87,8 +97,8 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
     // KVO
 
@@ -119,7 +129,9 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 - (void)updateDetails {
     DWPayOptionModelType type = self.model.type;
     NSString *details = self.model.details;
-    self.descriptionLabel.text = details ?: DescriptionForOptionType(type);
+    const BOOL emptyDetails = details == nil;
+    self.descriptionLabel.text = emptyDetails ? DescriptionForOptionType(type) : details;
+    self.descriptionLabel.textColor = DescriptionColor(type, emptyDetails);
 
     if (type == DWPayOptionModelType_Pasteboard) {
         self.actionButton.enabled = !!details;

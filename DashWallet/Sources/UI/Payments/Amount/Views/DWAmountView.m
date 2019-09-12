@@ -90,7 +90,9 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         textField.spellCheckingType = UITextSpellCheckingTypeNo;
         CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-        textField.inputView = [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+        DWNumberKeyboardInputViewAudioFeedback *inputView =
+            [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+        textField.inputView = inputView;
         UITextInputAssistantItem *inputAssistantItem = textField.inputAssistantItem;
         inputAssistantItem.leadingBarButtonGroups = @[];
         inputAssistantItem.trailingBarButtonGroups = @[];

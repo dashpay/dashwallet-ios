@@ -18,8 +18,8 @@
 #import "DWTransactionListDataProvider.h"
 
 #import <DashSync/DashSync.h>
-#import <DashSync/UIImage+DSUtils.h>
 
+#import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -183,28 +183,7 @@ static NSString *TxDateFormat(NSString *template) {
         string = [@"+" stringByAppendingString:formattedNumber];
     }
 
-    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
-
-    const NSRange range = [attributedString.string rangeOfString:DASH];
-    const BOOL dashSymbolFound = range.location != NSNotFound;
-    NSAssert(dashSymbolFound, @"Dash number formatter invalid");
-    if (dashSymbolFound) {
-        const CGFloat scaleFactor = 0.665;
-        const CGFloat side = font.pointSize * scaleFactor;
-        const CGSize symbolSize = CGSizeMake(side, side);
-        NSTextAttachment *dashSymbol = [[NSTextAttachment alloc] init];
-        dashSymbol.bounds = CGRectMake(0, 0, symbolSize.width, symbolSize.height);
-        dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:tintColor];
-        NSAttributedString *dashSymbolAttributedString = [NSAttributedString attributedStringWithAttachment:dashSymbol];
-
-        [attributedString replaceCharactersInRange:range withAttributedString:dashSymbolAttributedString];
-
-        const NSRange fullRange = NSMakeRange(0, attributedString.length);
-        [attributedString addAttribute:NSForegroundColorAttributeName value:tintColor range:fullRange];
-        [attributedString addAttribute:NSFontAttributeName value:font range:fullRange];
-    }
-
-    return [attributedString copy];
+    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor font:font];
 }
 
 #pragma mark - Private

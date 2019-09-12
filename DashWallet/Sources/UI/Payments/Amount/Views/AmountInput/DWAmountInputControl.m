@@ -38,11 +38,11 @@ static CGFloat const ConvertImageBottomPadding(BOOL small) {
 }
 
 static CGFloat MainAmountFontSize(BOOL small) {
-    return small ? 20.0 : 36.0;
+    return small ? 20.0 : 34.0;
 }
 
 static CGFloat SupplementaryAmountFontSize(BOOL small) {
-    return small ? 11.0 : 18.0;
+    return small ? 11.0 : 17.0;
 }
 
 static CGFloat AmountHeight(BOOL small) {
@@ -114,8 +114,8 @@ static CGFloat AmountHeight(BOOL small) {
     _smallSize = smallSize;
 
     self.contentViewHeightConstraint.constant = ViewHeight(smallSize);
-    self.mainAmountLabel.font = [UIFont dw_lightFontOfSize:MainAmountFontSize(smallSize)];
-    self.supplementaryAmountLabel.font = [UIFont dw_lightFontOfSize:SupplementaryAmountFontSize(smallSize)];
+    self.mainAmountLabel.font = [UIFont dw_regularFontOfSize:MainAmountFontSize(smallSize)];
+    self.supplementaryAmountLabel.font = [UIFont dw_regularFontOfSize:SupplementaryAmountFontSize(smallSize)];
     self.mainAlignmentViewHeightConstraint.constant = AmountHeight(smallSize);
     self.mainAmountLabelHeightConstraint.constant = AmountHeight(smallSize);
     self.supplementaryAlignmentViewHeightConstraint.constant = AmountHeight(smallSize);
@@ -146,9 +146,9 @@ static CGFloat AmountHeight(BOOL small) {
         smallLabel = self.supplementaryAmountLabel;
     }
     const CGFloat scale = SupplementaryAmountFontSize(smallSize) / MainAmountFontSize(smallSize);
-    bigLabel.font = [UIFont dw_lightFontOfSize:SupplementaryAmountFontSize(smallSize)];
+    bigLabel.font = [UIFont dw_regularFontOfSize:SupplementaryAmountFontSize(smallSize)];
     bigLabel.transform = CGAffineTransformMakeScale(1.0 / scale, 1.0 / scale);
-    smallLabel.font = [UIFont dw_lightFontOfSize:MainAmountFontSize(smallSize)];
+    smallLabel.font = [UIFont dw_regularFontOfSize:MainAmountFontSize(smallSize)];
     smallLabel.transform = CGAffineTransformMakeScale(scale, scale);
 
     [UIView animateWithDuration:0.1

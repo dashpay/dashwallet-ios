@@ -38,13 +38,13 @@ static UIColor *BackgroundHighlightedColor() {
 }
 
 static UIFont *TitleFont() {
-    return [UIFont dw_fontForTextStyle:UIFontTextStyleCallout respectMinSize:YES];
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3 respectMinSize:YES];
 }
 
 static UIFont *CustomTitleFont() {
     const CGFloat minSize = 14.0;
     // UIFontTextStyleBody doesn't support minimum size, check it manually
-    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     if (font.pointSize < minSize) {
         font = [UIFont fontWithName:font.fontName size:minSize];
     }
@@ -134,14 +134,20 @@ static CGFloat const CORNER_RADIUS = 8.0;
 - (void)setHighlighted:(BOOL)highlighted {
     _highlighted = highlighted;
 
-    if (highlighted) {
-        self.backgroundColor = BackgroundHighlightedColor();
-        self.titleLabel.textColor = TextHighlightedColor();
-    }
-    else {
-        self.backgroundColor = BackgroundColor();
-        self.titleLabel.textColor = TextColor();
-    }
+    [UIView animateWithDuration:0.075
+                          delay:0.0
+                        options:UIViewAnimationCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
+                     animations:^{
+                         if (highlighted) {
+                             self.backgroundColor = BackgroundHighlightedColor();
+                             self.titleLabel.textColor = TextHighlightedColor();
+                         }
+                         else {
+                             self.backgroundColor = BackgroundColor();
+                             self.titleLabel.textColor = TextColor();
+                         }
+                     }
+                     completion:nil];
 }
 
 - (void)configureAsCustomTypeWithTitle:(NSString *)title {

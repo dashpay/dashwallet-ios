@@ -29,9 +29,6 @@
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
-/* no Dash address (in clipboard) */
-"<no Dash address>" = "<no Dash address>";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
 
@@ -79,6 +76,12 @@
 
 /* No comment provided by engineer. */
 "Amount" = "Số tiền";
+
+/* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
@@ -141,10 +144,10 @@
 "Cancel" = "Huỷ bỏ";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "thay đổi";
 
 /* No comment provided by engineer. */
-"change" = "thay đổi";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Đổi mật khẩu";
@@ -181,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "bộ đệm không chứa địa chỉ hợp lệ của dash hay bitcoin";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -262,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "AN NINH THIẾT BỊ BỊ  TỔN HẠI\nBất kỳ ứng dụng 'jailbreak' hay 'phá khoá' nào đều có thể truy cập vào dữ liệu chìa khoá của ứng dụng (và đánh cắp dash của bạn).";
@@ -426,6 +435,9 @@
 "Local currency" = "Tiền địa phương";
 
 /* No comment provided by engineer. */
+"Local requested amount: %@" = "Local requested amount: %@";
+
+/* No comment provided by engineer. */
 "Locked" = "Đã khoá";
 
 /* No comment provided by engineer. */
@@ -442,6 +454,9 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "masternode holding address" = "địa chỉ đặt cọc masternode";
@@ -468,6 +483,9 @@
 "Network" = "Mạng";
 
 /* No comment provided by engineer. */
+"Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
 
 /* No comment provided by engineer. */
@@ -484,6 +502,9 @@
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "Thiết bị NFC không truyền đi một địa chỉ Dash hoặc Bitcoin hợp lệ";
+
+/* No comment provided by engineer. */
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "không có thông tin về tỷ giá";
@@ -538,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Khoá của chủ sở hữu";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "thanh toán";
@@ -631,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "nhận %@ (%@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "mới được khai thác (khoá)";
@@ -733,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Đã gửi";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "đã gửi!";
@@ -960,6 +990,9 @@
 "verifying quorum" = "đang kiểm tra quorum";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "mã băm của khoá bỏ phiếu";
 
 /* No comment provided by engineer. */
@@ -1018,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "bạn đã nhận được dash!";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Bạn sẽ cần phải đăng xuất khỏi tài khoản từ trang web Uphold với trình duyệt của mình";

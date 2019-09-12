@@ -27,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, copy) NSString *titleText;
 
+- (instancetype)init NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END
