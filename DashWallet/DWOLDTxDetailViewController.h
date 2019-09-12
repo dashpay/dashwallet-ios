@@ -27,7 +27,7 @@
 
 @class DSTransaction;
 
-@interface DWTxDetailViewController : UITableViewController
+@interface DWOLDTxDetailViewController : UITableViewController
 
 @property (nonatomic, strong) DSTransaction *transaction;
 @property (nonatomic, strong) NSString *txDateString;

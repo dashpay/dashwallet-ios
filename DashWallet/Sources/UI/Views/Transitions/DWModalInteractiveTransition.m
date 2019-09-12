@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWModalInteractiveTransition ()
 
 @property (nonatomic, strong) UIPanGestureRecognizer *panGestureRecognizer;
+@property (nonatomic, assign) CGPoint originalTouchPoint;
 
 @end
 
@@ -52,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _presenting = YES;
+        _originalTouchPoint = CGPointZero;
     }
     return self;
 }
@@ -78,8 +80,13 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (void)panGestureRecognizerAction:(UIPanGestureRecognizer *)sender {
+    UIView *view = sender.view;
+    const CGPoint touchPoint = [sender locationInView:view.superview];
+
     switch (sender.state) {
         case UIGestureRecognizerStateBegan: {
+            self.originalTouchPoint = touchPoint;
+
             [self pauseInteractiveTransition];
 
             if (self.isPresenting == NO && self.percentComplete == 0.0) {
@@ -89,6 +96,11 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case UIGestureRecognizerStateChanged: {
+            // allow to pull view to the top (negative offset)
+            CGFloat offset = touchPoint.y - self.originalTouchPoint.y;
+            offset = offset < 0.0 ? -pow(-offset, 0.7) : 0.0;
+            sender.view.transform = CGAffineTransformMakeTranslation(0, offset);
+
             CGFloat currentPercent = [sender dw_percentOfTranslationSinceLastChange];
             if (self.isPresenting) {
                 currentPercent *= -1;
@@ -135,6 +147,19 @@ NS_ASSUME_NONNULL_BEGIN
             else {
                 [self cancelInteractiveTransition];
                 [self didUpdateProgress:0.0];
+
+                // rubberbanding
+                UISpringTimingParameters *timingParameters =
+                    [[UISpringTimingParameters alloc] initWithDamping:0.6
+                                                             response:0.3];
+                UIViewPropertyAnimator *animator =
+                    [[UIViewPropertyAnimator alloc] initWithDuration:0.0
+                                                    timingParameters:timingParameters];
+                [animator addAnimations:^{
+                    sender.view.transform = CGAffineTransformIdentity;
+                }];
+                animator.interruptible = YES;
+                [animator startAnimation];
             }
 
             break;

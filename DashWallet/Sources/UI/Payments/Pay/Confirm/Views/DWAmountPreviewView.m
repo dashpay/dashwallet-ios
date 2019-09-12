@@ -18,7 +18,7 @@
 #import "DWAmountPreviewView.h"
 
 #import "DWUIKit.h"
-#import "NSAttributedString+DWDashAmountDisplay.h"
+#import "NSAttributedString+DWBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -66,7 +66,7 @@ static CGSize const DashSymbolMainSize = {35.0, 27.0};
 
     // These two labels doesn't support Dynamic Type and have same hardcoded values as in DWAmountInputControl
     self.mainAmountLabel.font = [UIFont dw_regularFontOfSize:34.0];
-    self.supplementaryAmountLabel.font = [UIFont dw_regularFontOfSize:17.0];
+    self.supplementaryAmountLabel.font = [UIFont dw_regularFontOfSize:16.0];
 }
 
 - (void)setAmount:(uint64_t)amount {
@@ -77,9 +77,9 @@ static CGSize const DashSymbolMainSize = {35.0, 27.0};
 #pragma mark - Private
 
 - (NSAttributedString *)mainAmountAttributedStringForAmount:(uint64_t)amount {
-    return [NSAttributedString dashAttributedStringForAmount:amount
-                                                       color:[UIColor dw_darkTitleColor]
-                                                  symbolSize:DashSymbolMainSize];
+    return [NSAttributedString dw_dashAttributedStringForAmount:amount
+                                                      tintColor:[UIColor dw_darkTitleColor]
+                                                     symbolSize:DashSymbolMainSize];
 }
 
 - (NSString *)supplementaryAmountStringForAmount:(uint64_t)amount {

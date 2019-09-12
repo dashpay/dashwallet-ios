@@ -78,6 +78,12 @@
 "Amount" = "Bedrag";
 
 /* No comment provided by engineer. */
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
+
+/* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
@@ -138,10 +144,10 @@
 "Cancel" = "Annuleer";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "wijzig";
 
 /* No comment provided by engineer. */
-"change" = "wijzig";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Wijzig toegangscode";
@@ -178,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "het klembord bevat geen geldig dash- of bitcoinadres";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
@@ -259,6 +268,9 @@
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"Date" = "Date";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "BEVEILIGING VAN HET APPARAAT IN GEVAAR\nEen 'jailbreak'-app heeft toegang tot de sleutelhanger van andere apps (en de mogelijkheid om je dash te stelen).";
@@ -444,6 +456,9 @@
 "Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
+"Long press to copy ID" = "Long press to copy ID";
+
+/* No comment provided by engineer. */
 "masternode holding address" = "adres met saldo van masternode";
 
 /* No comment provided by engineer. */
@@ -546,6 +561,9 @@
 "Owner Keys" = "Eigenaar sleutels";
 
 /* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
+
+/* No comment provided by engineer. */
 "Pay" = "Betaal";
 
 /* Pay by (scanning QR code) */
@@ -637,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "received %@ (%@)" = "ontvangen %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "Recentelijk geminet (vergrendeld)";
@@ -739,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Verstuurd";
+
+/* No comment provided by engineer. */
+"Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
 "sent!" = "verstuurd!";
@@ -966,6 +990,9 @@
 "verifying quorum" = "quorum aan het verifiëren";
 
 /* No comment provided by engineer. */
+"View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
 "voting key hash:" = "hash van stem-sleutel:";
 
 /* No comment provided by engineer. */
@@ -1024,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "you received dash!" = "je hebt dash ontvangen!";
+
+/* No comment provided by engineer. */
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";

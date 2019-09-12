@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,17 +15,25 @@
 //  limitations under the License.
 //
 
-#import "SFSafariViewController+DashWallet.h"
+#import "DWPaymentOutput.h"
+
+#import "DWTitleDetailItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation SFSafariViewController (DashWallet)
+@class UIFont;
+@class UIColor;
 
-+ (instancetype)dw_controllerWithURL:(NSURL *)url {
-    SFSafariViewController *controller = [[SFSafariViewController alloc] initWithURL:url];
-    controller.preferredControlTintColor = UIColorFromRGB(0x008DE4);
-    return controller;
-}
+@interface DWPaymentOutput (DWView)
+
+- (uint64_t)amountToDisplay;
+
+- (nullable id<DWTitleDetailItem>)generalInfo;
+- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
+- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+
+- (BOOL)copyAddressToPasteboard;
 
 @end
 

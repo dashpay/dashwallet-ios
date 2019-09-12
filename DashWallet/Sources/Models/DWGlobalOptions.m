@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWGlobalOptions
 
 @dynamic walletNeedsBackup;
+@dynamic balanceChangedDate;
+@dynamic walletBackupReminderWasShown;
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
 @dynamic shortcuts;
@@ -56,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)restoreToDefaults {
     self.walletNeedsBackup = YES;
+    self.balanceChangedDate = nil;
+    self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;
 }
 

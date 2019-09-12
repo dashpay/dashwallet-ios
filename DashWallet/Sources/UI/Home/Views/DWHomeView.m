@@ -166,6 +166,13 @@ NS_ASSUME_NONNULL_BEGIN
     return headerView;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    DSTransaction *transaction = self.currentDataSource.items[indexPath.row];
+    [self.delegate homeView:self didSelectTransaction:transaction];
+}
+
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

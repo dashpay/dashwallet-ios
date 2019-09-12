@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -32,28 +33,28 @@
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="yo5-Z5-Odv">
                     <rect key="frame" x="0.0" y="92" width="375" height="208"/>
                     <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ecg-yC-KJa" customClass="DWConfirmPaymentRowView">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ecg-yC-KJa" customClass="DWTitleDetailCellView">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="Gmo-Lg-vG1"/>
                             </constraints>
                         </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3he-Ax-20F" customClass="DWConfirmPaymentRowView">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3he-Ax-20F" customClass="DWTitleDetailCellView">
                             <rect key="frame" x="0.0" y="52" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="Md4-dd-JZ9"/>
                             </constraints>
                         </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Buz-l8-KN2" customClass="DWConfirmPaymentRowView">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Buz-l8-KN2" customClass="DWTitleDetailCellView">
                             <rect key="frame" x="0.0" y="104" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="52" id="MtT-yM-8CQ"/>
                             </constraints>
                         </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3l3-Jl-KzQ" customClass="DWConfirmPaymentRowView">
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3l3-Jl-KzQ" customClass="DWTitleDetailCellView">
                             <rect key="frame" x="0.0" y="156" width="375" height="52"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
@@ -63,7 +64,7 @@
                     </subviews>
                 </stackView>
             </subviews>
-            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color key="backgroundColor" name="BackgroundColor"/>
             <constraints>
                 <constraint firstAttribute="bottom" secondItem="yo5-Z5-Odv" secondAttribute="bottom" id="HLz-QX-JUz"/>
                 <constraint firstItem="qfu-0f-ohJ" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="Ps6-nw-0ez"/>
@@ -80,4 +81,9 @@
             <point key="canvasLocation" x="131.8840579710145" y="70.982142857142847"/>
         </view>
     </objects>
+    <resources>
+        <namedColor name="BackgroundColor">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

@@ -15,15 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#ifndef DWModalPopupAppearanceStyle_h
+#define DWModalPopupAppearanceStyle_h
 
-NS_ASSUME_NONNULL_BEGIN
+typedef NS_ENUM(NSUInteger, DWModalPopupAppearanceStyle) {
+    DWModalPopupAppearanceStyle_Popup,
+    DWModalPopupAppearanceStyle_Fullscreen,
+};
 
-@interface DWConfirmPaymentRowView : UIView
-
-@property (readonly, nonatomic, strong) UILabel *titleLabel;
-@property (readonly, nonatomic, strong) UILabel *detailLabel;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWModalPopupAppearanceStyle_h */

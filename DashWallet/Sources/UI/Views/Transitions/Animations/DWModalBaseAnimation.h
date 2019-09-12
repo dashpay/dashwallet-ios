@@ -19,11 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWModalAnimationStyle) {
+    DWModalAnimationStyle_Default,
+    DWModalAnimationStyle_Fullscreen,
+};
+
 @interface DWModalBaseAnimation : NSObject <UIViewControllerAnimatedTransitioning>
 
 @property (readonly, nonatomic, strong) UIViewPropertyAnimator *animator;
+@property (readonly, nonatomic, assign) DWModalAnimationStyle style;
 
 - (UIViewPropertyAnimator *)animatorForTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
+
+- (instancetype)initWithStyle:(DWModalAnimationStyle)style NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -35,10 +35,9 @@
                         <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4tg-cy-qVc" customClass="DWButton">
                             <rect key="frame" x="315" y="8" width="12" height="75"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                            <color key="tintColor" name="DashBlueColor"/>
                             <inset key="imageEdgeInsets" minX="0.0" minY="2" maxX="-8" maxY="0.0"/>
-                            <state key="normal" image="icon_dropdown_arrow">
-                                <color key="titleColor" name="DashBlueColor"/>
-                            </state>
+                            <state key="normal" image="icon_dropdown_arrow"/>
                             <connections>
                                 <action selector="filterButtonAction:" destination="-1" eventType="touchUpInside" id="D1D-po-u2g"/>
                             </connections>

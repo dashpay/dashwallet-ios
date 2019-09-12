@@ -18,9 +18,10 @@
 #import "DWConfirmPaymentContentView.h"
 
 #import "DWAmountPreviewView.h"
-#import "DWConfirmPaymentRowView.h"
-#import "DWPaymentOutput.h"
+#import "DWPaymentOutput+DWView.h"
+#import "DWTitleDetailCellView.h"
 #import "DWUIKit.h"
+#import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,10 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet DWAmountPreviewView *amountView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *infoRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *addressRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *feeRowView;
-@property (strong, nonatomic) IBOutlet DWConfirmPaymentRowView *totalRowView;
+@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *infoRowView;
+@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *addressRowView;
+@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *feeRowView;
+@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *totalRowView;
 
 @end
 
@@ -67,31 +68,67 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    self.infoRowView.titleLabel.hidden = YES;
+    self.infoRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
+    self.addressRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
+    self.feeRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
+    self.totalRowView.separatorPosition = DWTitleDetailCellViewSeparatorPosition_Top;
 
-    self.addressRowView.titleLabel.text = NSLocalizedString(@"Pay to", nil);
-    self.feeRowView.titleLabel.text = NSLocalizedString(@"Network fee", nil);
-    self.totalRowView.titleLabel.text = NSLocalizedString(@"Total", nil);
+    UILongPressGestureRecognizer *recognizer =
+        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                      action:@selector(addressLongPressGestureAction:)];
+    [self.addressRowView addGestureRecognizer:recognizer];
 
-    self.addressRowView.detailLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-    self.addressRowView.detailLabel.numberOfLines = 1;
-    self.addressRowView.detailLabel.adjustsFontSizeToFitWidth = NO;
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(contentSizeCategoryDidChangeNotification)
+                                                 name:UIContentSizeCategoryDidChangeNotification
+                                               object:nil];
 }
 
 - (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
+    _paymentOutput = paymentOutput;
+
     [self.amountView setAmount:[paymentOutput amountToDisplay]];
 
-    NSString *_Nullable info = [paymentOutput generalInfoString];
-    self.infoRowView.detailLabel.text = info;
+    id<DWTitleDetailItem> info = [self.paymentOutput generalInfo];
+    self.infoRowView.model = info;
     self.infoRowView.hidden = (info == nil);
 
-    self.addressRowView.detailLabel.text = paymentOutput.address;
+    [self reloadAttributedData];
+}
 
-    NSAttributedString *_Nullable fee = [paymentOutput networkFeeAttributedString];
-    self.feeRowView.detailLabel.attributedText = fee;
+#pragma mark - Actions
+
+- (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    BOOL result = [self.paymentOutput copyAddressToPasteboard];
+    if (result) {
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+    }
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self reloadAttributedData];
+}
+
+#pragma mark - Private
+
+- (void)reloadAttributedData {
+    UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    UIColor *color = [UIColor dw_secondaryTextColor];
+
+    self.addressRowView.model = [self.paymentOutput addressWithFont:font];
+
+    id<DWTitleDetailItem> fee = [self.paymentOutput feeWithFont:font tintColor:color];
+    self.feeRowView.model = fee;
     self.feeRowView.hidden = (fee == nil);
 
-    self.totalRowView.detailLabel.attributedText = [paymentOutput totalAttributedString];
+    self.totalRowView.model = [self.paymentOutput totalWithFont:font tintColor:color];
 }
 
 @end

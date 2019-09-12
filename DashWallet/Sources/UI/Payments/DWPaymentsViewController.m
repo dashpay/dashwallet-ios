@@ -35,6 +35,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @property (nonatomic, strong) DWReceiveModel *receiveModel;
 @property (nonatomic, strong) DWPayModel *payModel;
+@property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (nonatomic, strong) DWPayViewController *payViewController;
 @property (nonatomic, strong) DWReceiveViewController *receiveViewController;
@@ -46,11 +47,14 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel payModel:(DWPayModel *)payModel {
++ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
+                                  payModel:(DWPayModel *)payModel
+                              dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
     controller.receiveModel = receiveModel;
     controller.payModel = payModel;
+    controller.dataProvider = dataProvider;
 
     return controller;
 }
@@ -153,7 +157,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 }
 
 - (void)setupControllers {
-    self.payViewController = [DWPayViewController controllerWithModel:self.payModel];
+    self.payViewController = [DWPayViewController controllerWithModel:self.payModel
+                                                         dataProvider:self.dataProvider];
     self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
 }
 

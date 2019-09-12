@@ -19,11 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSAttributedString (DWDashAmountDisplay)
+@class DSTransaction;
+@protocol DWTransactionListDataProviderProtocol;
 
-+ (NSAttributedString *)dashAttributedStringForAmount:(uint64_t)amount
-                                                color:(UIColor *)color
-                                           symbolSize:(CGSize)symbolSize;
+@interface DWTxDetailPopupViewController : UIViewController
+
+- (instancetype)initWithTransaction:(DSTransaction *)transaction
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
+                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(nullable NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end
 

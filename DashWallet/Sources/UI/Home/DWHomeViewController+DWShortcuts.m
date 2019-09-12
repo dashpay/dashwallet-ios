@@ -21,6 +21,7 @@
 
 #import "DWBackupInfoViewController.h"
 #import "DWHomeModel.h"
+#import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWNavigationController.h"
 #import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -31,10 +32,6 @@
 #import "UIView+DWHUD.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface DWHomeViewController (DWShortcuts_Internal) <DWSecureWalletDelegate>
-
-@end
 
 @implementation DWHomeViewController (DWShortcuts)
 
@@ -202,17 +199,6 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:cancel];
 
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-#pragma mark - DWSecureWalletDelegate
-
-- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
-    [self.model reloadShortcuts];
-    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)secureWalletCancelButtonAction:(id)sender {

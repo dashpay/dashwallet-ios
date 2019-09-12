@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWPayViewController : DWBasePayViewController
 
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel;
++ (instancetype)controllerWithModel:(DWPayModel *)payModel
+                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end
 
