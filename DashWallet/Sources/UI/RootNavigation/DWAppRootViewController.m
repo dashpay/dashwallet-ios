@@ -17,6 +17,7 @@
 
 #import "DWAppRootViewController.h"
 
+#import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -26,10 +27,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
-@interface DWAppRootViewController () <DWSetupViewControllerDelegate, DWMainTabbarViewControllerDelegate>
+@interface DWAppRootViewController () <DWSetupViewControllerDelegate,
+                                       DWMainTabbarViewControllerDelegate,
+                                       DWLockScreenViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DWRootModel *model;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
+
+@property (null_resettable, nonatomic, strong) UIViewController *mainController;
+@property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
 @end
 
@@ -50,12 +56,28 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
     UIViewController *controller = nil;
     if (self.model.hasAWallet) {
-        controller = [self mainController];
+        // always show lock controller on app's start
+
+        // prepare controller & models
+        [self mainController];
+
+        controller = [self lockController];
+        self.displayedLockController = controller;
     }
     else {
         controller = [self setupController];
     }
     [self displayViewController:controller];
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActiveNotification)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
@@ -77,7 +99,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    UIViewController *mainController = [self mainController];
+    UIViewController *mainController = self.mainController;
     [self performTransitionToViewController:mainController];
 }
 
@@ -88,7 +110,42 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     [self performTransitionToViewController:setupController];
 }
 
+#pragma mark - DWLockScreenViewControllerDelegate
+
+- (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
+    UIViewController *lockNavigationController = controller.navigationController;
+    NSParameterAssert(lockNavigationController);
+
+    UIViewController *mainController = self.mainController;
+    [self performTransitionToViewController:mainController];
+}
+
+#pragma mark - Notifications
+
+- (void)applicationDidBecomeActiveNotification {
+    [self showLockControllerIfNeeded];
+}
+
+- (void)applicationWillResignActiveNotification {
+    [self.model applicationWillResignActive];
+}
+
 #pragma mark - Private
+
+- (void)showLockControllerIfNeeded {
+    if (self.displayedLockController) {
+        return;
+    }
+
+    if (![self.model shouldShowLockScreen]) {
+        return;
+    }
+
+    UIViewController *controller = [self lockController];
+    [self performTransitionToViewController:controller];
+
+    self.displayedLockController = controller;
+}
 
 - (void)showDevicePasscodeAlert {
     UIAlertController *alert = [UIAlertController
@@ -112,8 +169,18 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 }
 
 - (UIViewController *)mainController {
-    DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
-    controller.delegate = self;
+    if (_mainController == nil) {
+        DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
+        controller.delegate = self;
+
+        _mainController = controller;
+    }
+
+    return _mainController;
+}
+
+- (UIViewController *)lockController {
+    UIViewController *controller = [DWLockScreenViewController controllerEmbededInNavigationWithDelegate:self];
 
     return controller;
 }

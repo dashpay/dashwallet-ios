@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWAuthenticationManager.h"
 #import "DWBackupInfoViewController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWUIKit.h"
@@ -73,9 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
         [self showBackupInfoController];
     }
     else {
-        [[DSAuthenticationManager sharedInstance]
+        [DWAuthenticationManager
             authenticateWithPrompt:nil
-                        andTouchId:NO
+                        biometrics:NO
                     alertIfLockout:YES
                         completion:^(BOOL authenticated, BOOL cancelled) {
                             if (!authenticated) {

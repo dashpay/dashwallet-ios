@@ -19,6 +19,7 @@
 
 #import <CoreNFC/CoreNFC.h>
 
+#import "AppDelegate.h"
 #import "DWPasteboardAddressObserver.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
@@ -77,6 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion {
     NSParameterAssert(completion);
+
+    [[AppDelegate instance] setBlurringScreenDisabledOneTime];
 
     self.nfcReadingCompletion = completion;
 

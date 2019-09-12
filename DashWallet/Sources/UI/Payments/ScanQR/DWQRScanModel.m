@@ -27,6 +27,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "AppDelegate.h"
 #import "DWPaymentInput+Private.h"
 #import "DWQRScanModel.h"
 
@@ -117,6 +118,8 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 
     switch ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo]) {
         case AVAuthorizationStatusNotDetermined: {
+            [[AppDelegate instance] setBlurringScreenDisabledOneTime];
+
             [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
                                      completionHandler:^(BOOL granted) {
                                          if (granted) {

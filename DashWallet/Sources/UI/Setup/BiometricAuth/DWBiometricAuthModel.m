@@ -17,6 +17,7 @@
 
 #import "DWBiometricAuthModel.h"
 
+#import "AppDelegate.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -84,6 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
             reason = @" ";
             break;
     }
+
+    [[AppDelegate instance] setBlurringScreenDisabledOneTime];
 
     [self.context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                  localizedReason:reason

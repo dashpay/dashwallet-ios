@@ -18,6 +18,7 @@
 #import "DWAmountModel.h"
 
 #import "DWAmountInputValidator.h"
+#import "DWAuthenticationManager.h"
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -147,13 +148,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)unlock {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    [authenticationManager authenticateWithPrompt:nil
-                                       andTouchId:YES
-                                   alertIfLockout:YES
-                                       completion:^(BOOL authenticated, BOOL cancelled) {
-                                           self.locked = !authenticated;
-                                       }];
+    [DWAuthenticationManager authenticateWithPrompt:nil
+                                         biometrics:YES
+                                     alertIfLockout:YES
+                                         completion:^(BOOL authenticated, BOOL cancelled) {
+                                             self.locked = !authenticated;
+                                         }];
 }
 
 - (void)selectAllFunds {

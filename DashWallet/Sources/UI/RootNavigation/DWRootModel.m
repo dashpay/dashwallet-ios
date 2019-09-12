@@ -18,8 +18,15 @@
 #import "DWRootModel.h"
 
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWRootModel ()
+
+@property (nullable, nonatomic, strong) NSDate *lastActiveDate;
+
+@end
 
 @implementation DWRootModel
 
@@ -33,6 +40,30 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)walletOperationAllowed {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     return authenticationManager.passcodeEnabled;
+}
+
+- (void)applicationWillResignActive {
+    self.lastActiveDate = [NSDate date];
+}
+
+- (BOOL)shouldShowLockScreen {
+    if (!self.hasAWallet) {
+        return NO;
+    }
+
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if (!authManager.usesAuthentication) {
+        return NO;
+    }
+
+    if (!self.lastActiveDate) {
+        return (authManager.didAuthenticate == NO);
+    }
+
+    NSDate *now = [NSDate date];
+    const NSTimeInterval interval = [now timeIntervalSince1970] - [self.lastActiveDate timeIntervalSince1970];
+
+    return (interval > [DWGlobalOptions sharedInstance].autoLockAppInterval);
 }
 
 @end

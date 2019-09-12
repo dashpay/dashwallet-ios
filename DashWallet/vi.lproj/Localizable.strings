@@ -321,6 +321,9 @@
 "enter" = "nhập";
 
 /* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
@@ -352,6 +355,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
 "from:" = "từ:";
@@ -451,6 +457,9 @@
 
 /* No comment provided by engineer. */
 "Login with Face ID" = "Login with Face ID";
+
+/* No comment provided by engineer. */
+"Login with PIN" = "Login with PIN";
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
@@ -640,6 +649,9 @@
 
 /* No comment provided by engineer. */
 "public key:" = "khoá công khai:";
+
+/* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
 
 /* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "tỷ giá: %1$@ = %2$@\ncập nhật: %3$@\nkhối # %4$dcủa %5$d\ncác thành phần được kết nối: %6$d\ndl peer: %7$@\nquorum được kiểm chứng: %8$d/%9$d";
