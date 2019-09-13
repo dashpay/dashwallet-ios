@@ -17,6 +17,7 @@
 
 #import "DWAppRootViewController.h"
 
+#import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWRootModel.h"
@@ -170,7 +171,8 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
 - (UIViewController *)mainController {
     if (_mainController == nil) {
-        DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
+        DWHomeModel *homeModel = self.model.homeModel;
+        DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
         controller.delegate = self;
 
         _mainController = controller;
@@ -180,8 +182,13 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 }
 
 - (UIViewController *)lockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
-    UIViewController *controller = [DWLockScreenViewController controllerEmbededInNavigationWithDelegate:self
-                                                                                              unlockMode:mode];
+    DWHomeModel *homeModel = self.model.homeModel;
+    DWPayModel *payModel = homeModel.payModel;
+    id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
+    UIViewController *controller = [DWLockScreenViewController lockNavigationWithDelegate:self
+                                                                               unlockMode:mode
+                                                                                 payModel:payModel
+                                                                             dataProvider:dataProvider];
 
     return controller;
 }

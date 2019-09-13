@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBasePayViewController.h"
 
 #import "DWNavigationFullscreenable.h"
 
@@ -34,13 +34,15 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 
 @end
 
-@interface DWLockScreenViewController : UIViewController <DWNavigationFullscreenable>
+@interface DWLockScreenViewController : DWBasePayViewController <DWNavigationFullscreenable>
 
 @property (nonatomic, assign) DWLockScreenViewControllerUnlockMode unlockMode;
 @property (nullable, nonatomic, weak) id<DWLockScreenViewControllerDelegate> delegate;
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
-                                                     unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode;
++ (UIViewController *)lockNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
+                                      unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
+                                        payModel:(DWPayModel *)payModel
+                                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end
 

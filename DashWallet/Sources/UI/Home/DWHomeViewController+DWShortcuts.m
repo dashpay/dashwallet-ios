@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWAuthenticationManager.h"
 #import "DWBackupInfoViewController.h"
 #import "DWHomeModel.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
@@ -88,9 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)secureWalletAction {
-    [DWAuthenticationManager
+    [[DSAuthenticationManager sharedInstance]
         authenticateWithPrompt:nil
-                    biometrics:NO
+                    andTouchId:NO
                 alertIfLockout:YES
                     completion:^(BOOL authenticated, BOOL cancelled) {
                         if (!authenticated) {
@@ -120,9 +119,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)buySellDashAction {
-    [DWAuthenticationManager
+    [[DSAuthenticationManager sharedInstance]
         authenticateWithPrompt:nil
-                    biometrics:YES
+                    andTouchId:YES
                 alertIfLockout:YES
                     completion:^(BOOL authenticated, BOOL cancelled) {
                         if (authenticated) {

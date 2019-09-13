@@ -20,7 +20,6 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <SafariServices/SafariServices.h>
 
-#import "AppDelegate.h"
 #import "DWAppDelegate.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -66,8 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)linkUpholdAccountButtonAction:(id)sender {
     self.linkButton.userInteractionEnabled = NO;
-
-    [[AppDelegate instance] setBlurringScreenDisabledOneTime];
 
     NSURL *url = [[DWUpholdClient sharedInstance] startAuthRoutineByURL];
 

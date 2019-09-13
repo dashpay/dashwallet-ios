@@ -19,6 +19,7 @@
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWHomeModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,6 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
 
     return (chain.hasAWallet || ![dashSyncVersionManager noOldWallet]);
+}
+
+- (DWHomeModel *)homeModel {
+    if (_homeModel == nil) {
+        _homeModel = [[DWHomeModel alloc] init];
+    }
+
+    return _homeModel;
 }
 
 - (BOOL)walletOperationAllowed {

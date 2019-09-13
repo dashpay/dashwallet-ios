@@ -96,6 +96,10 @@ static CGFloat const VERTICAL_PADDING = 16.0;
     self.keyboard.textInput = self.pinField;
 }
 
+- (void)activatePinField {
+    [self.pinField becomeFirstResponder];
+}
+
 - (void)clearAndShakePinField {
     [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
 

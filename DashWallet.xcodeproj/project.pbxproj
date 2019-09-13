@@ -135,7 +135,6 @@
 		2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300442328D07500827825 /* DWLockPinInputView.m */; };
 		2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63004D2328F37C00827825 /* DWLockScreenViewController.m */; };
-		2A63005323293FD500827825 /* DWAuthenticationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63005223293FD500827825 /* DWAuthenticationManager.m */; };
 		2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFE82305264200C475EB /* DWBaseActionButtonViewController.m */; };
 		2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFEC2305318000C475EB /* DWRecoverViewController.m */; };
 		2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF0230531DA00C475EB /* DWRecoverContentView.m */; };
@@ -697,8 +696,6 @@
 		2A6300482328EA8900827825 /* DWLockActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockActionButton.m; sourceTree = "<group>"; };
 		2A63004C2328F37C00827825 /* DWLockScreenViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLockScreenViewController.h; sourceTree = "<group>"; };
 		2A63004D2328F37C00827825 /* DWLockScreenViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockScreenViewController.m; sourceTree = "<group>"; };
-		2A63005123293FD500827825 /* DWAuthenticationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAuthenticationManager.h; sourceTree = "<group>"; };
-		2A63005223293FD500827825 /* DWAuthenticationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAuthenticationManager.m; sourceTree = "<group>"; };
 		2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWReceiveModel+Private.h"; sourceTree = "<group>"; };
 		2A74EFE72305264200C475EB /* DWBaseActionButtonViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseActionButtonViewController.h; sourceTree = "<group>"; };
 		2A74EFE82305264200C475EB /* DWBaseActionButtonViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseActionButtonViewController.m; sourceTree = "<group>"; };
@@ -1755,8 +1752,6 @@
 				2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */,
 				2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */,
 				2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */,
-				2A63005123293FD500827825 /* DWAuthenticationManager.h */,
-				2A63005223293FD500827825 /* DWAuthenticationManager.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3628,7 +3623,6 @@
 				2A9FFF1A2233E56E00956D5F /* DWUpholdCardTableViewCell.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
-				2A63005323293FD500827825 /* DWAuthenticationManager.m in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWLockPinInputViewDelegate> delegate;
 
 - (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard;
-
+- (void)activatePinField;
 - (void)clearAndShakePinField;
 
 @end

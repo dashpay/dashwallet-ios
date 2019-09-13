@@ -77,12 +77,16 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
 @implementation DWLockScreenViewController
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
-                                                     unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode {
++ (UIViewController *)lockNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
+                                      unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
+                                        payModel:(DWPayModel *)payModel
+                                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
     controller.delegate = delegate;
     controller.unlockMode = unlockMode;
+    controller.payModel = payModel;
+    controller.dataProvider = dataProvider;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -97,17 +101,25 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
     [self setupView];
 
-    if (self.unlockMode == DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive) {
-        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        [notificationCenter addObserver:self
-                               selector:@selector(applicationDidBecomeActiveNotification)
-                                   name:UIApplicationDidBecomeActiveNotification
-                                 object:nil];
-    }
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActiveNotification)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackgroundNotification)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self.pinInputView activatePinField];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -131,6 +143,7 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 }
 
 - (IBAction)scanToPayButtonAction:(DWLockActionButton *)sender {
+    [self performScanQRCodeAction];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -156,6 +169,11 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 - (void)applicationDidBecomeActiveNotification {
     [self hideLoginButtonIfNeeded];
     [self tryOnceToUnlockUsingBiometrics];
+}
+
+- (void)applicationDidEnterBackgroundNotification {
+    // If the user leave the app while on the lock screen reset flag to request biometrics on the next launch
+    self.biometricsAuthorizationAttemptWasMade = NO;
 }
 
 #pragma mark - Private

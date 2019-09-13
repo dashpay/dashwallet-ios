@@ -33,6 +33,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWHomeViewControllerDelegate,
                                           UINavigationControllerDelegate>
 
+@property (nonatomic, strong) DWHomeModel *homeModel;
+
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 @property (nullable, nonatomic, strong) UIViewController *modalController;
 
@@ -46,8 +48,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @implementation DWMainTabbarViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel {
     DWMainTabbarViewController *controller = [[DWMainTabbarViewController alloc] init];
+    controller.homeModel = homeModel;
 
     return controller;
 }
@@ -176,7 +179,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     self.tabBarView.userInteractionEnabled = NO;
     [self.tabBarView setPaymentsButtonOpened:YES];
 
-    DWHomeModel *homeModel = self.homeViewController.model;
+    DWHomeModel *homeModel = self.homeModel;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
     DWPayModel *payModel = homeModel.payModel;
@@ -199,6 +202,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)setupControllers {
     DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
+    homeController.model = self.homeModel;
     homeController.delegate = self;
     self.homeViewController = homeController;
 

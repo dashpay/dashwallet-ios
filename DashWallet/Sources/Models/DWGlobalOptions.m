@@ -57,7 +57,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Non-stored options
 
 - (NSTimeInterval)autoLockAppInterval {
-    return 3.0;
+    // TODO: for debugging/testing purposes. set to 60
+    return 5.0;
 }
 
 #pragma mark - Methods

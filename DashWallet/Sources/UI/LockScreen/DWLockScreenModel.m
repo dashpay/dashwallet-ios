@@ -17,7 +17,6 @@
 
 #import "DWLockScreenModel.h"
 
-#import "DWAuthenticationManager.h"
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
@@ -43,12 +42,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion {
-    [DWAuthenticationManager authenticateUsingBiometricsOnlyWithPrompt:nil
-                                                            completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
-                                                                if (completion) {
-                                                                    completion(authenticatedOrSuccess);
-                                                                }
-                                                            }];
+    [[DSAuthenticationManager sharedInstance] authenticateUsingBiometricsOnlyWithPrompt:nil
+                                                                             completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                                                                                 if (completion) {
+                                                                                     completion(authenticatedOrSuccess);
+                                                                                 }
+                                                                             }];
 }
 
 - (BOOL)checkPin:(NSString *)inputPin {

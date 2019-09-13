@@ -26,7 +26,6 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
 @interface DWWindow ()
 
 @property (nullable, nonatomic, strong) UIVisualEffectView *blurView;
-@property (nonatomic, assign, getter=isBlurringDisabled) BOOL blurringDisabled;
 
 @end
 
@@ -37,8 +36,8 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
     if (self) {
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
-                               selector:@selector(applicationWillResignActiveNotification)
-                                   name:UIApplicationWillResignActiveNotification
+                               selector:@selector(applicationDidEnterBackgroundNotification)
+                                   name:UIApplicationDidEnterBackgroundNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(applicationDidBecomeActiveNotification)
@@ -57,38 +56,19 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
     }
 }
 
-- (void)setBlurringScreenDisabledOneTime {
-    self.blurringDisabled = YES;
-}
-
 #pragma mark - Notifications
 
-- (void)applicationWillResignActiveNotification {
-    if (self.isBlurringDisabled) {
-        return;
-    }
-
+- (void)applicationDidEnterBackgroundNotification {
     if (self.blurView) {
         return;
     }
 
     UIVisualEffectView *visualEffectView = [self createVisualEffectView];
-    visualEffectView.alpha = 0.0;
     [self addSubview:visualEffectView];
     self.blurView = visualEffectView;
-
-    UIViewPropertyAnimator *animator =
-        [[UIViewPropertyAnimator alloc] initWithDuration:BLUR_ANIMATION_DURATION
-                                                   curve:UIViewAnimationCurveLinear
-                                              animations:^{
-                                                  visualEffectView.alpha = 1.0;
-                                              }];
-    [animator startAnimation];
 }
 
 - (void)applicationDidBecomeActiveNotification {
-    self.blurringDisabled = NO;
-
     if (!self.blurView) {
         return;
     }
@@ -113,7 +93,6 @@ static NSTimeInterval const BLUR_ANIMATION_DURATION = 0.15;
     UIVisualEffectView *visualEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
     visualEffectView.frame = [UIScreen mainScreen].bounds;
     visualEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    visualEffectView.backgroundColor = [UIColor clearColor];
 
     return visualEffectView;
 }

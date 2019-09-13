@@ -56,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    NSParameterAssert(self.model);
+
     [self setupView];
     [self performJailbreakCheck];
 
@@ -119,14 +121,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
-
-- (DWHomeModel *)model {
-    if (_model == nil) {
-        _model = [[DWHomeModel alloc] init];
-    }
-
-    return _model;
-}
 
 - (DWPayModel *)payModel {
     return self.model.payModel;

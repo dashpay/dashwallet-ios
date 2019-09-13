@@ -23,8 +23,6 @@ extern NSString *const DWDeviceDidShakeNotification;
 
 @interface DWWindow : UIWindow
 
-- (void)setBlurringScreenDisabledOneTime;
-
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 @end

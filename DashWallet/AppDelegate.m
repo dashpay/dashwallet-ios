@@ -58,19 +58,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation AppDelegate
 
-+ (instancetype)instance {
-    AppDelegate *instance = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    NSAssert([instance isKindOfClass:AppDelegate.class], @"Inconsistent state");
-    
-    return instance;
-}
-
-- (void)setBlurringScreenDisabledOneTime {
-    DWWindow *window = (DWWindow *)self.window;
-    NSAssert([window isKindOfClass:DWWindow.class], @"Inconsistent state");
-    [window setBlurringScreenDisabledOneTime];
-}
-
 #pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
@@ -154,7 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: register for notifications when appropriate
 - (void)registerForPushNotifications {
     UNAuthorizationOptions options = (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
-    [self setBlurringScreenDisabledOneTime];
     [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
         
     }];

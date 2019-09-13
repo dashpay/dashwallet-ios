@@ -19,9 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWHomeModel;
+
 @interface DWRootModel : NSObject
 
 @property (readonly, nonatomic, assign) BOOL hasAWallet;
+
+@property (null_resettable, nonatomic, strong) DWHomeModel *homeModel;
 
 /**
  NO if running Dashwallet is not allowed on this device for security reasons
