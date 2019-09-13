@@ -18,6 +18,7 @@
 #import "DWLockScreenModel.h"
 
 #import "DWAuthenticationManager.h"
+#import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -48,6 +49,22 @@ NS_ASSUME_NONNULL_BEGIN
                                                                     completion(authenticatedOrSuccess);
                                                                 }
                                                             }];
+}
+
+- (BOOL)checkPin:(NSString *)inputPin {
+    // TODO: handle wrong attempts here
+    NSError *error = nil;
+    NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&error];
+    if (error) {
+        return NO;
+    }
+
+    BOOL isPinValid = [inputPin isEqualToString:pin];
+    if (isPinValid) {
+        [DSAuthenticationManager sharedInstance].didAuthenticate = YES;
+    }
+
+    return isPinValid;
 }
 
 @end

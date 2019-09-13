@@ -121,7 +121,6 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 #pragma mark - Actions
 
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
-    [self.delegate lockScreenViewControllerDidUnlock:self];
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
@@ -143,6 +142,13 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 #pragma mark - DWLockPinInputViewDelegate
 
 - (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text {
+    BOOL isPinValid = [self.model checkPin:text];
+    if (isPinValid) {
+        [self.delegate lockScreenViewControllerDidUnlock:self];
+    }
+    else {
+        [view clearAndShakePinField];
+    }
 }
 
 #pragma mark - Notifications
