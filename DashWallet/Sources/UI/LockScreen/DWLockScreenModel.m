@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)checkPin:(NSString *)inputPin {
+    // TODO: refactor authentication logic into separate "action"
     // TODO: handle wrong attempts here
     NSError *error = nil;
     NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&error];
@@ -60,7 +61,17 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL isPinValid = [inputPin isEqualToString:pin];
     if (isPinValid) {
-        [DSAuthenticationManager sharedInstance].didAuthenticate = YES;
+        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+
+        [authManager.failedPins removeAllObjects];
+        authManager.didAuthenticate = YES;
+
+        [authManager setFailCount:0];
+        [authManager setFailHeight:0];
+
+        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
+        [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
+                                                  forKey:PIN_UNLOCK_TIME_KEY];
     }
 
     return isPinValid;

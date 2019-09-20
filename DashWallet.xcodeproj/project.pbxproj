@@ -164,6 +164,9 @@
 		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
 		2A8BE8BF21888F9C00DBA382 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */; };
+		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
+		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
+		2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
@@ -755,6 +758,12 @@
 		2A8BE8BD21888F9C00DBA382 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A8BE8BE21888F9C00DBA382 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A8BE8C021888FE600DBA382 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
+		2A8C24B02333659100000D43 /* DWReceiveViewType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveViewType.h; sourceTree = "<group>"; };
+		2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQuickReceiveViewController.h; sourceTree = "<group>"; };
+		2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQuickReceiveViewController.m; sourceTree = "<group>"; };
+		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
+		2A8C24B72333A85E00000D43 /* DWModalNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalNavigationController.h; sourceTree = "<group>"; };
+		2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalNavigationController.m; sourceTree = "<group>"; };
 		2A8F420821BED16300858B91 /* DashSyncCurrentCommit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DashSyncCurrentCommit; sourceTree = SOURCE_ROOT; };
 		2A8F420D21BEE95D00858B91 /* DWAboutViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAboutViewController.h; sourceTree = "<group>"; };
 		2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAboutViewController.m; sourceTree = "<group>"; };
@@ -1858,6 +1867,7 @@
 		2A6300402328CCAC00827825 /* LockScreen */ = {
 			isa = PBXGroup;
 			children = (
+				2A8C24B123336FC800000D43 /* QuickReceive */,
 				2A6300462328D07800827825 /* Views */,
 				2A6300412328CCE900827825 /* LockScreen.storyboard */,
 				2A63004C2328F37C00827825 /* DWLockScreenViewController.h */,
@@ -2000,6 +2010,7 @@
 				2A8B9E732302E5ED00FF8653 /* DWReceiveViewController.m */,
 				2ACCD86C2319609400A96B62 /* UIViewController+DWShareReceiveInfo.h */,
 				2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */,
+				2A8C24B02333659100000D43 /* DWReceiveViewType.h */,
 			);
 			path = Receive;
 			sourceTree = "<group>";
@@ -2012,6 +2023,16 @@
 				2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2A8C24B123336FC800000D43 /* QuickReceive */ = {
+			isa = PBXGroup;
+			children = (
+				2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */,
+				2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */,
+				2A8C24B5233370A600000D43 /* QuickReceive.storyboard */,
+			);
+			path = QuickReceive;
 			sourceTree = "<group>";
 		};
 		2A8F420A21BEE69E00858B91 /* About */ = {
@@ -2055,6 +2076,8 @@
 				2A44311C22CC9B5A009BAF7F /* DWNavigationController.h */,
 				2A44311D22CC9B5A009BAF7F /* DWNavigationController.m */,
 				2A44314D22CF8BF5009BAF7F /* DWNavigationFullscreenable.h */,
+				2A8C24B72333A85E00000D43 /* DWModalNavigationController.h */,
+				2A8C24B82333A85E00000D43 /* DWModalNavigationController.m */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -3225,6 +3248,7 @@
 				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
+				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
@@ -3752,6 +3776,7 @@
 				2A9FFDF32230FF1A00956D5F /* UIViewController+DWChildControllers.m in Sources */,
 				2A74EFF823053ECE00C475EB /* DWIntrinsicTextView.m in Sources */,
 				2A0C69A623114BA7001B8C90 /* DWSendAmountViewController.m in Sources */,
+				2A8C24B92333A85E00000D43 /* DWModalNavigationController.m in Sources */,
 				2A0C69D323143568001B8C90 /* DWModalTransition.m in Sources */,
 				2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */,
 				2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */,
@@ -3786,6 +3811,7 @@
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
+				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

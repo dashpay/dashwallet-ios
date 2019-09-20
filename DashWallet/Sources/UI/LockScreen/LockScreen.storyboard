@@ -94,7 +94,7 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="y6t-bT-ytP" firstAttribute="centerY" secondItem="6kH-KV-Ehe" secondAttribute="centerY" id="9U8-cv-KG7"/>
+                                    <constraint firstItem="y6t-bT-ytP" firstAttribute="centerY" secondItem="6kH-KV-Ehe" secondAttribute="centerY" priority="999" id="9U8-cv-KG7"/>
                                     <constraint firstItem="8G6-Mw-7HV" firstAttribute="leading" secondItem="6kH-KV-Ehe" secondAttribute="leading" id="QxT-Lo-pZq"/>
                                     <constraint firstAttribute="trailing" secondItem="8G6-Mw-7HV" secondAttribute="trailing" id="XaO-KL-Vqs"/>
                                     <constraint firstAttribute="bottom" secondItem="8G6-Mw-7HV" secondAttribute="bottom" constant="4" id="ohu-sA-bBb"/>
@@ -152,6 +152,7 @@
                         <viewLayoutGuide key="safeArea" id="464-jB-Yuf"/>
                     </view>
                     <connections>
+                        <outlet property="actionButtonsHeightConstraint" destination="e1b-SE-jS7" id="UsU-Zf-T65"/>
                         <outlet property="dashLogoTopConstraint" destination="v46-vS-TBn" id="ct4-wB-rOD"/>
                         <outlet property="forgotPinButton" destination="OoX-IL-a9a" id="owa-dG-YJJ"/>
                         <outlet property="keyboarView" destination="cNS-3P-mcP" id="v4Q-gA-NxX"/>

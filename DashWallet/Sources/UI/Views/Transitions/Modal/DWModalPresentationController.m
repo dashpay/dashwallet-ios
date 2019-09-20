@@ -22,7 +22,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const PRESENTED_HEIGHT_PERCENT = 2.0 / 3.0;
+static CGFloat PresentedHeightPercent(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 6.0 / 7.0;
+    }
+    else if (IS_IPHONE_6) {
+        return 3.0 / 4.0;
+    }
+    else {
+        return 2.0 / 3.0;
+    }
+}
 
 @interface DWModalPresentationController ()
 
@@ -40,7 +50,7 @@ static CGFloat const PRESENTED_HEIGHT_PERCENT = 2.0 / 3.0;
     const CGRect bounds = self.containerView.bounds;
     const CGFloat height = CGRectGetHeight(bounds);
     const CGFloat width = CGRectGetWidth(bounds);
-    const CGFloat viewHeight = ceil(height * PRESENTED_HEIGHT_PERCENT);
+    const CGFloat viewHeight = ceil(height * PresentedHeightPercent());
     const CGRect frame = CGRectMake(0.0, height - viewHeight, width, viewHeight);
 
     return frame;

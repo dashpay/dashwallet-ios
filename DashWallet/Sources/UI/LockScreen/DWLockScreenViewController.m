@@ -22,6 +22,7 @@
 #import "DWLockScreenModel.h"
 #import "DWNavigationController.h"
 #import "DWNumberKeyboard.h"
+#import "DWQuickReceiveViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,13 +54,23 @@ static CGFloat KeyboardSpacingViewHeight(void) {
         return 20.0;
     }
     else { // iPhone 5-like, 6-like
-        return 16.0;
+        return 0.0;
+    }
+}
+
+static CGFloat ActionButtonsHeight(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 76.0;
+    }
+    else {
+        return 96.0;
     }
 }
 
 @interface DWLockScreenViewController () <DWLockPinInputViewDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
+@property (nonatomic, strong) DWReceiveModel *receiveModel;
 
 @property (strong, nonatomic) IBOutlet DWLockPinInputView *pinInputView;
 @property (strong, nonatomic) IBOutlet UIButton *forgotPinButton;
@@ -70,6 +81,7 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *dashLogoTopConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *keyboardSpacingViewHeightConstraint;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *actionButtonsHeightConstraint;
 
 @property (nonatomic, assign) BOOL biometricsAuthorizationAttemptWasMade;
 
@@ -80,12 +92,14 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 + (UIViewController *)lockNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
                                       unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
                                         payModel:(DWPayModel *)payModel
+                                    receiveModel:(DWReceiveModel *)receiveModel
                                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
     controller.delegate = delegate;
     controller.unlockMode = unlockMode;
     controller.payModel = payModel;
+    controller.receiveModel = receiveModel;
     controller.dataProvider = dataProvider;
 
     DWNavigationController *navigationController =
@@ -136,6 +150,8 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
+    UIViewController *controller = [DWQuickReceiveViewController controllerWithModel:self.receiveModel];
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 - (IBAction)loginButtonAction:(DWLockActionButton *)sender {
@@ -226,6 +242,7 @@ static CGFloat KeyboardSpacingViewHeight(void) {
 
     self.dashLogoTopConstraint.constant = DashLogoTopPadding();
     self.keyboardSpacingViewHeightConstraint.constant = KeyboardSpacingViewHeight();
+    self.actionButtonsHeightConstraint.constant = ActionButtonsHeight();
 }
 
 - (void)performBiometricAuthentication {

@@ -333,6 +333,9 @@
 "Enter your 2FA code below" = "Hãy nhập mà xác thực 2 lớp vào dưới đây";
 
 /* No comment provided by engineer. */
+"Exit" = "Exit";
+
+/* No comment provided by engineer. */
 "exit" = "thoát";
 
 /* No comment provided by engineer. */
@@ -721,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Hãy quét mã QR của người kia để lấy địa chỉ dash hay bitcoin của họ. Bạn có thể gửi tiền cho bất cứ ai khi có địa chỉ của họ.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";

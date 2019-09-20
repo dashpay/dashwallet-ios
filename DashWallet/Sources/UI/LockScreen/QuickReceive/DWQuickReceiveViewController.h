@@ -17,28 +17,15 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWReceiveViewType.h"
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
-@class DWReceiveViewController;
 
-/**
- Used for `DWReceiveViewType_QuickReceive` type
- */
-@protocol DWReceiveViewControllerDelegate <NSObject>
+@interface DWQuickReceiveViewController : UIViewController <DWNavigationFullscreenable>
 
-- (void)receiveViewControllerExitButtonAction:(DWReceiveViewController *)controller;
-
-@end
-
-@interface DWReceiveViewController : UIViewController
-
-@property (nonatomic, assign) DWReceiveViewType viewType;
-@property (nullable, nonatomic, weak) id<DWReceiveViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
++ (UIViewController *)controllerWithModel:(DWReceiveModel *)receiveModel;
 
 @end
 

@@ -15,31 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#ifndef DWReceiveViewType_h
+#define DWReceiveViewType_h
 
-#import "DWReceiveViewType.h"
+typedef NS_ENUM(NSUInteger, DWReceiveViewType) {
+    DWReceiveViewType_Default,
+    DWReceiveViewType_QuickReceive,
+};
 
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWReceiveModel;
-@class DWReceiveViewController;
-
-/**
- Used for `DWReceiveViewType_QuickReceive` type
- */
-@protocol DWReceiveViewControllerDelegate <NSObject>
-
-- (void)receiveViewControllerExitButtonAction:(DWReceiveViewController *)controller;
-
-@end
-
-@interface DWReceiveViewController : UIViewController
-
-@property (nonatomic, assign) DWReceiveViewType viewType;
-@property (nullable, nonatomic, weak) id<DWReceiveViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DWReceiveViewType_h */

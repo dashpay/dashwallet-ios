@@ -27,6 +27,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const TRANSITION_DURATION = 0.35;
+static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
+
+static UIWindowLevel const LockWindowLevel(void) {
+    return UIWindowLevelNormal + 10;
+}
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
                                        DWMainTabbarViewControllerDelegate,
@@ -36,6 +41,8 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 
 @property (null_resettable, nonatomic, strong) UIViewController *mainController;
+
+@property (nonatomic, strong) UIWindow *lockWindow;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
 @end
@@ -55,20 +62,25 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
+    UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    lockWindow.backgroundColor = [UIColor blackColor];
+    lockWindow.windowLevel = LockWindowLevel();
+    self.lockWindow = lockWindow;
+
+    const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
-    if (self.model.hasAWallet) {
-        // always show lock controller on app's start
-
-        // prepare controller & models
-        [self mainController];
-
-        controller = [self lockControllerWithMode:DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive];
-        self.displayedLockController = controller;
+    if (hasAWallet) {
+        controller = [self mainController];
     }
     else {
         controller = [self setupController];
     }
     [self displayViewController:controller];
+
+    if (hasAWallet) {
+        // always show lock controller on app's start
+        [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive];
+    }
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -114,11 +126,15 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 #pragma mark - DWLockScreenViewControllerDelegate
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
-    UIViewController *lockNavigationController = controller.navigationController;
-    NSParameterAssert(lockNavigationController);
-
-    UIViewController *mainController = self.mainController;
-    [self performTransitionToViewController:mainController];
+    [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
+        animations:^{
+            self.lockWindow.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+            self.lockWindow.rootViewController = nil;
+            self.lockWindow.hidden = YES;
+            self.lockWindow.alpha = 1.0;
+        }];
 }
 
 #pragma mark - Notifications
@@ -142,10 +158,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
         return;
     }
 
-    UIViewController *controller = [self lockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
-    [self performTransitionToViewController:controller];
-
-    self.displayedLockController = controller;
+    [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
 }
 
 - (void)showDevicePasscodeAlert {
@@ -181,16 +194,24 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     return _mainController;
 }
 
-- (UIViewController *)lockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
+- (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
+    NSParameterAssert(self.lockWindow);
+    NSAssert(self.displayedLockController == nil, @"Inconsistent state");
+
     DWHomeModel *homeModel = self.model.homeModel;
     DWPayModel *payModel = homeModel.payModel;
+    DWReceiveModel *receiveModel = homeModel.receiveModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     UIViewController *controller = [DWLockScreenViewController lockNavigationWithDelegate:self
                                                                                unlockMode:mode
                                                                                  payModel:payModel
+                                                                             receiveModel:receiveModel
                                                                              dataProvider:dataProvider];
 
-    return controller;
+    self.lockWindow.rootViewController = controller;
+    [self.lockWindow makeKeyAndVisible];
+
+    self.displayedLockController = controller;
 }
 
 - (void)displayViewController:(UIViewController *)controller {

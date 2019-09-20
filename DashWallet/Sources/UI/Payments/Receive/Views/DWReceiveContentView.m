@@ -22,6 +22,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static CGFloat ActionButtonsTopPadding(void) {
+    if (IS_IPHONE_5_OR_LESS) {
+        return 0.0;
+    }
+    else {
+        return 12.0;
+    }
+}
+
 @interface DWReceiveContentView ()
 
 @property (nonatomic, strong) DWReceiveModel *model;
@@ -30,7 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
 @property (strong, nonatomic) IBOutlet UIButton *addressButton;
 @property (strong, nonatomic) IBOutlet UIButton *specifyAmountButton;
-@property (strong, nonatomic) IBOutlet UIButton *shareButton;
+@property (strong, nonatomic) IBOutlet UIButton *secondButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *actionButtonsTopPadding;
 
 @property (nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
 
@@ -42,8 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _model = model;
-
-        self.backgroundColor = [UIColor dw_backgroundColor];
 
         [[NSBundle mainBundle] loadNibNamed:NSStringFromClass([self class]) owner:self options:nil];
         [self addSubview:self.contentView];
@@ -64,7 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
         self.addressButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
 
         [self.specifyAmountButton setTitle:NSLocalizedString(@"Specify Amount", nil) forState:UIControlStateNormal];
-        [self.shareButton setTitle:NSLocalizedString(@"Share", nil) forState:UIControlStateNormal];
+
+        self.actionButtonsTopPadding.constant = ActionButtonsTopPadding();
 
         self.feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
 
@@ -75,7 +84,10 @@ NS_ASSUME_NONNULL_BEGIN
                           BOOL hasValue = !!value;
                           self.addressButton.hidden = !hasValue;
                           self.specifyAmountButton.enabled = hasValue;
-                          self.shareButton.enabled = hasValue;
+
+                          if (self.viewType == DWReceiveViewType_Default) {
+                              self.secondButton.enabled = hasValue;
+                          }
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.qrCodeImage)
@@ -85,6 +97,30 @@ NS_ASSUME_NONNULL_BEGIN
                       }];
     }
     return self;
+}
+
+- (void)setViewType:(DWReceiveViewType)viewType {
+    _viewType = viewType;
+
+    NSString *title = nil;
+    UIColor *backgroundColor = nil;
+    switch (viewType) {
+        case DWReceiveViewType_Default: {
+            title = NSLocalizedString(@"Share", nil);
+            backgroundColor = [UIColor dw_backgroundColor];
+
+            break;
+        }
+        case DWReceiveViewType_QuickReceive: {
+            title = NSLocalizedString(@"Exit", nil);
+            backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+            break;
+        }
+    }
+    [self.secondButton setTitle:title forState:UIControlStateNormal];
+    self.backgroundColor = backgroundColor;
+    self.contentView.backgroundColor = backgroundColor;
 }
 
 - (void)viewDidAppear {
@@ -113,8 +149,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate receiveContentView:self specifyAmountButtonAction:sender];
 }
 
-- (IBAction)shareButtonAction:(UIButton *)sender {
-    [self.delegate receiveContentView:self shareButtonAction:sender];
+- (IBAction)secondButtonAction:(UIButton *)sender {
+    [self.delegate receiveContentView:self secondButtonAction:sender];
 }
 
 @end

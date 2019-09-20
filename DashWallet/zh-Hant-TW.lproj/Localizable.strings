@@ -333,6 +333,9 @@
 "Enter your 2FA code below" = "Enter your 2FA code below";
 
 /* No comment provided by engineer. */
+"Exit" = "Exit";
+
+/* No comment provided by engineer. */
 "exit" = "退出";
 
 /* No comment provided by engineer. */
@@ -721,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";

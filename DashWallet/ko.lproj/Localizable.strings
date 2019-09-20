@@ -333,6 +333,9 @@
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
 /* No comment provided by engineer. */
+"Exit" = "Exit";
+
+/* No comment provided by engineer. */
 "exit" = "나가기";
 
 /* No comment provided by engineer. */
@@ -721,6 +724,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "다른 사람의 QR 코드를 스캔하여 대시 혹은 비트코인 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";

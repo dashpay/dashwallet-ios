@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 };
 
 @class DWLockScreenViewController;
+@class DWReceiveModel;
 
 @protocol DWLockScreenViewControllerDelegate <NSObject>
 
@@ -42,6 +43,7 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 + (UIViewController *)lockNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
                                       unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
                                         payModel:(DWPayModel *)payModel
+                                    receiveModel:(DWReceiveModel *)receiveModel
                                     dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
 @end

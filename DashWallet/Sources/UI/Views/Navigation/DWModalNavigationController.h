@@ -15,30 +15,15 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWReceiveViewType.h"
+#import "DWNavigationController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
-@class DWReceiveViewController;
 
 /**
- Used for `DWReceiveViewType_QuickReceive` type
+ DWNavigationController that supports modal transition
  */
-@protocol DWReceiveViewControllerDelegate <NSObject>
-
-- (void)receiveViewControllerExitButtonAction:(DWReceiveViewController *)controller;
-
-@end
-
-@interface DWReceiveViewController : UIViewController
-
-@property (nonatomic, assign) DWReceiveViewType viewType;
-@property (nullable, nonatomic, weak) id<DWReceiveViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
+@interface DWModalNavigationController : DWNavigationController
 
 @end
 
