@@ -102,6 +102,9 @@
 "Are you sure?" = "Sei sicuro??";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "disponibile";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "Cancella";
 
 /* No comment provided by engineer. */
-"change" = "modifica";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "modifica";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Cambia passcode";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "indirizzo portafoglio";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Chiavi Portafoglio";

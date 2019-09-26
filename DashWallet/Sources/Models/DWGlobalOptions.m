@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSTimeInterval)autoLockAppInterval {
     // TODO: for debugging/testing purposes. set to 60
-    return 5.0;
+    return 3.0;
 }
 
 #pragma mark - Methods

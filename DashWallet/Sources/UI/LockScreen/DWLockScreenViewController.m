@@ -67,7 +67,7 @@ static CGFloat ActionButtonsHeight(void) {
     }
 }
 
-@interface DWLockScreenViewController () <DWLockPinInputViewDelegate>
+@interface DWLockScreenViewController () <DWLockPinInputViewDelegate, DWLockScreenModelDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
 @property (nonatomic, strong) DWReceiveModel *receiveModel;
@@ -112,6 +112,7 @@ static CGFloat ActionButtonsHeight(void) {
     [super viewDidLoad];
 
     self.model = [[DWLockScreenModel alloc] init];
+    self.model.delegate = self;
 
     [self setupView];
 
@@ -134,6 +135,7 @@ static CGFloat ActionButtonsHeight(void) {
     [super viewWillAppear:animated];
 
     [self.pinInputView activatePinField];
+    [self.model startCheckingAuthState];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -142,6 +144,12 @@ static CGFloat ActionButtonsHeight(void) {
     if (self.unlockMode == DWLockScreenViewControllerUnlockMode_Instantly) {
         [self tryOnceToUnlockUsingBiometrics];
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self.model stopCheckingAuthState];
 }
 
 #pragma mark - Actions
@@ -168,6 +176,42 @@ static CGFloat ActionButtonsHeight(void) {
     return YES;
 }
 
+#pragma mark - DWLockScreenModelDelegate
+
+- (void)lockScreenModel:(DWLockScreenModel *)model
+    shouldContinueAuthentication:(BOOL)shouldContinueAuthentication
+                   authenticated:(BOOL)authenticated
+                   shouldLockout:(BOOL)shouldLockout
+                 attemptsMessage:(nullable NSString *)attemptsMessage {
+    self.keyboarView.enabled = shouldContinueAuthentication;
+    self.scanToPayButton.enabled = shouldContinueAuthentication;
+
+    [self hideLoginButtonIfNeeded];
+
+    if (shouldContinueAuthentication) {
+        [self.pinInputView setTitleText:NSLocalizedString(@"Enter PIN", nil)];
+        [self.pinInputView setAttemptsText:attemptsMessage errorText:nil];
+    }
+    else {
+        if (shouldLockout) {
+            NSString *errorText = [self.model lockoutErrorMessage];
+            [self.pinInputView setAttemptsText:nil errorText:errorText];
+        }
+        else if (!authenticated) {
+            // error reading from the Keychain
+            [self.pinInputView setAttemptsText:nil
+                                     errorText:NSLocalizedString(@"Authentication is unvailable", nil)];
+        }
+
+        if (authenticated) {
+            [self.delegate lockScreenViewControllerDidUnlock:self];
+        }
+        else {
+            [self.pinInputView setTitleText:NSLocalizedString(@"Wallet disabled", nil)];
+        }
+    }
+}
+
 #pragma mark - DWLockPinInputViewDelegate
 
 - (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text {
@@ -183,13 +227,14 @@ static CGFloat ActionButtonsHeight(void) {
 #pragma mark - Notifications
 
 - (void)applicationDidBecomeActiveNotification {
-    [self hideLoginButtonIfNeeded];
     [self tryOnceToUnlockUsingBiometrics];
+    [self.model startCheckingAuthState];
 }
 
 - (void)applicationDidEnterBackgroundNotification {
     // If the user leave the app while on the lock screen reset flag to request biometrics on the next launch
     self.biometricsAuthorizationAttemptWasMade = NO;
+    [self.model stopCheckingAuthState];
 }
 
 #pragma mark - Private

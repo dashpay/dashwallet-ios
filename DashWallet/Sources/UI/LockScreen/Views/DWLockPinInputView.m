@@ -24,9 +24,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const VERTICAL_PADDING = 16.0;
+static CGFloat const SPACING = 8.0;
 
 @interface DWLockPinInputView () <DSPinFieldDelegate>
 
+@property (readonly, nonatomic, strong) UILabel *titleLabel;
+@property (readonly, nonatomic, strong) UILabel *attemptsLabel;
+@property (readonly, nonatomic, strong) UILabel *errorLabel;
 @property (readonly, nonatomic, strong) DWPinField *pinField;
 @property (nullable, nonatomic, weak) DWNumberKeyboard *keyboard;
 @property (nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
@@ -64,25 +68,57 @@ static CGFloat const VERTICAL_PADDING = 16.0;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.adjustsFontSizeToFitWidth = YES;
     titleLabel.minimumScaleFactor = 0.5;
-    titleLabel.text = NSLocalizedString(@"Enter PIN", nil);
     [self addSubview:titleLabel];
+    _titleLabel = titleLabel;
+
+    UILabel *attemptsLabel = [[UILabel alloc] init];
+    attemptsLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    attemptsLabel.adjustsFontForContentSizeCategory = YES;
+    attemptsLabel.numberOfLines = 0;
+    attemptsLabel.backgroundColor = self.backgroundColor;
+    attemptsLabel.textColor = [UIColor dw_lightTitleColor];
+    attemptsLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+    attemptsLabel.textAlignment = NSTextAlignmentCenter;
+    attemptsLabel.adjustsFontSizeToFitWidth = YES;
+    attemptsLabel.minimumScaleFactor = 0.5;
+    attemptsLabel.hidden = YES;
+    _attemptsLabel = attemptsLabel;
+
+    UILabel *errorLabel = [[UILabel alloc] init];
+    errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    errorLabel.adjustsFontForContentSizeCategory = YES;
+    errorLabel.numberOfLines = 0;
+    errorLabel.backgroundColor = self.backgroundColor;
+    errorLabel.textColor = [UIColor dw_lightTitleColor];
+    errorLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    errorLabel.textAlignment = NSTextAlignmentCenter;
+    errorLabel.adjustsFontSizeToFitWidth = YES;
+    errorLabel.minimumScaleFactor = 0.5;
+    errorLabel.hidden = YES;
+    _errorLabel = errorLabel;
 
     DWPinField *pinField = [[DWPinField alloc] initWithStyle:DSPinFieldStyle_DefaultWhite];
     pinField.backgroundColor = self.backgroundColor;
     pinField.translatesAutoresizingMaskIntoConstraints = NO;
     pinField.delegate = self;
-    [self addSubview:pinField];
     _pinField = pinField;
+
+    UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[ attemptsLabel, pinField, errorLabel ]];
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    stackView.alignment = UIStackViewAlignmentCenter;
+    stackView.axis = UILayoutConstraintAxisVertical;
+    stackView.spacing = SPACING;
+    [self addSubview:stackView];
 
     [NSLayoutConstraint activateConstraints:@[
         [titleLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
         [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
-        [pinField.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-        [pinField.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                           constant:VERTICAL_PADDING],
-        [pinField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [stackView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        [stackView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                            constant:VERTICAL_PADDING],
+        [stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     ]];
 
     _feedbackGenerator = [[UINotificationFeedbackGenerator alloc] init];
@@ -108,6 +144,21 @@ static CGFloat const VERTICAL_PADDING = 16.0;
 
         [self.feedbackGenerator prepare];
     }];
+}
+
+- (void)setTitleText:(nullable NSString *)title {
+    self.titleLabel.text = title;
+}
+
+- (void)setAttemptsText:(nullable NSString *)attemptsText errorText:(nullable NSString *)errorText {
+    self.attemptsLabel.text = attemptsText;
+    self.attemptsLabel.hidden = attemptsText == nil;
+
+    self.errorLabel.text = errorText;
+
+    const BOOL hasError = errorText != nil;
+    self.pinField.hidden = hasError;
+    self.errorLabel.hidden = !hasError;
 }
 
 #pragma mark - DSPinFieldDelegate

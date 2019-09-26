@@ -20,12 +20,30 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWLockScreenModel;
+
+@protocol DWLockScreenModelDelegate <NSObject>
+
+- (void)lockScreenModel:(DWLockScreenModel *)model
+    shouldContinueAuthentication:(BOOL)shouldContinueAuthentication
+                   authenticated:(BOOL)authenticated
+                   shouldLockout:(BOOL)shouldLockout
+                 attemptsMessage:(nullable NSString *)attemptsMessage;
+
+@end
+
 @interface DWLockScreenModel : NSObject
 
 @property (readonly, nonatomic, assign, getter=isBiometricAuthenticationAllowed) BOOL biometricAuthenticationAllowed;
 @property (readonly, nonatomic, assign) LABiometryType biometryType;
+@property (nullable, nonatomic, weak) id<DWLockScreenModelDelegate> delegate;
 
 - (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion;
+
+- (void)startCheckingAuthState;
+- (void)stopCheckingAuthState;
+
+- (nullable NSString *)lockoutErrorMessage;
 
 - (BOOL)checkPin:(NSString *)inputPin;
 

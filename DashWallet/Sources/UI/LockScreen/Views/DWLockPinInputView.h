@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)configureWithKeyboard:(DWNumberKeyboard *)keyboard;
 - (void)activatePinField;
 - (void)clearAndShakePinField;
+- (void)setTitleText:(nullable NSString *)title;
+- (void)setAttemptsText:(nullable NSString *)attemptsText errorText:(nullable NSString *)errorText;
 
 @end
 

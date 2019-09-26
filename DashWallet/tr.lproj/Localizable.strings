@@ -102,6 +102,9 @@
 "Are you sure?" = "Emin misiniz?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "mevcut";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "İptal";
 
 /* No comment provided by engineer. */
-"change" = "değiştir";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "değiştir";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Parolayı değiştir";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "cüzdan adresi";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Cüzdan Anahtarları";

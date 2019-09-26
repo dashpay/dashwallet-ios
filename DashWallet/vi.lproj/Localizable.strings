@@ -102,6 +102,9 @@
 "Are you sure?" = "Bạn chắc chứ?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "còn lại";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "Huỷ bỏ";
 
 /* No comment provided by engineer. */
-"change" = "thay đổi";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "thay đổi";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Đổi mật khẩu";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "địa chỉ ví";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Khoá của ví";

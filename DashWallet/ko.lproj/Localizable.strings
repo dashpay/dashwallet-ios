@@ -102,6 +102,9 @@
 "Are you sure?" = "확실합니까?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "가능";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "취소";
 
 /* No comment provided by engineer. */
-"change" = "변경";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "변경";
 
 /* No comment provided by engineer. */
 "Change passcode" = "암호 변경";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "지갑 주소";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "지갑 키";

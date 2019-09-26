@@ -64,6 +64,8 @@ static const NSUInteger SECTIONS_COUNT = 3;
 }
 
 - (void)setupNumberKeyboard {
+    self.enabled = YES;
+
     NSMutableArray<DWNumberKeyboardButton *> *buttons = [NSMutableArray array];
     for (DWNumberKeyboardButtonType type = DWNumberKeyboardButtonType_Digit0; type <= DWNumberKeyboardButtonType_Digit9; type++) {
         DWNumberKeyboardButton *button = [[DWNumberKeyboardButton alloc] init];
@@ -182,12 +184,20 @@ static const NSUInteger SECTIONS_COUNT = 3;
 #pragma mark - DWNumberKeyboardButtonDelegate
 
 - (void)numberButton:(DWNumberKeyboardButton *)numberButton touchBegan:(UITouch *)touch {
+    if (!self.isEnabled) {
+        return;
+    }
+
     [[UIDevice currentDevice] playInputClick];
 
     numberButton.highlighted = YES;
 }
 
 - (void)numberButton:(DWNumberKeyboardButton *)numberButton touchMoved:(UITouch *)touch {
+    if (!self.isEnabled) {
+        return;
+    }
+
     for (DWNumberKeyboardButton *button in self.allButtons) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
@@ -205,6 +215,10 @@ static const NSUInteger SECTIONS_COUNT = 3;
 }
 
 - (void)numberButton:(DWNumberKeyboardButton *)numberButton touchEnded:(UITouch *)touch {
+    if (!self.isEnabled) {
+        return;
+    }
+
     for (DWNumberKeyboardButton *button in self.allButtons) {
         CGRect bounds = button.bounds;
         CGPoint point = [touch locationInView:button];
@@ -218,6 +232,10 @@ static const NSUInteger SECTIONS_COUNT = 3;
 }
 
 - (void)numberButton:(DWNumberKeyboardButton *)numberButton touchCancelled:(UITouch *)touch {
+    if (!self.isEnabled) {
+        return;
+    }
+
     [self resetHighlightedButton];
 }
 

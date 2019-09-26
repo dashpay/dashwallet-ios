@@ -24,6 +24,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
 
+static NSTimeInterval const CHECK_INTERVAL = 1.0;
+
+@interface DWLockScreenModel ()
+
+@property (nullable, nonatomic, strong) NSTimer *checkTimer;
+
+@end
+
 @implementation DWLockScreenModel
 
 - (BOOL)isBiometricAuthenticationAllowed {
@@ -50,31 +58,82 @@ NS_ASSUME_NONNULL_BEGIN
                                                                              }];
 }
 
+- (void)startCheckingAuthState {
+    if (self.checkTimer) {
+        return;
+    }
+
+    [self checkTimerAction];
+
+    self.checkTimer = [NSTimer scheduledTimerWithTimeInterval:CHECK_INTERVAL
+                                                       target:self
+                                                     selector:@selector(checkTimerAction)
+                                                     userInfo:nil
+                                                      repeats:YES];
+}
+
+- (void)stopCheckingAuthState {
+    [self.checkTimer invalidate];
+    self.checkTimer = nil;
+}
+
 - (BOOL)checkPin:(NSString *)inputPin {
-    // TODO: refactor authentication logic into separate "action"
-    // TODO: handle wrong attempts here
-    NSError *error = nil;
-    NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&error];
-    if (error) {
-        return NO;
-    }
+    [self stopCheckingAuthState];
 
-    BOOL isPinValid = [inputPin isEqualToString:pin];
-    if (isPinValid) {
-        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    __block BOOL isPinValid = NO;
+    [authManager performPinVerificationAgainstCurrentPin:inputPin
+                                              completion:^(BOOL allowedNextVerificationRound,
+                                                           BOOL authenticated,
+                                                           BOOL cancelled,
+                                                           BOOL shouldLockout) {
+                                                  isPinValid = authenticated;
 
-        [authManager.failedPins removeAllObjects];
-        authManager.didAuthenticate = YES;
-
-        [authManager setFailCount:0];
-        [authManager setFailHeight:0];
-
-        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
-        [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
-                                                  forKey:PIN_UNLOCK_TIME_KEY];
-    }
+                                                  if (!authenticated) {
+                                                      [self startCheckingAuthState];
+                                                  }
+                                              }];
 
     return isPinValid;
+}
+
+- (nullable NSString *)lockoutErrorMessage {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+
+    NSError *error = nil;
+    uint64_t failCount = [authManager getFailCount:&error];
+    if (error) {
+        return nil;
+    }
+    NSString *message = nil;
+    if (failCount < MAX_FAIL_COUNT) {
+        NSTimeInterval wait = [authManager lockoutWaitTime];
+        NSString *waitString = [NSString waitTimeFromNow:wait];
+        message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
+    }
+    else {
+        message = DSLocalizedString(@"No attempts remaining", nil);
+    }
+
+    return message;
+}
+
+#pragma mark - Private
+
+- (void)checkTimerAction {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+
+    [authManager
+        performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
+                                        BOOL authenticated,
+                                        BOOL shouldLockout,
+                                        NSString *_Nullable attemptsMessage) {
+            [self.delegate lockScreenModel:self
+                shouldContinueAuthentication:shouldContinueAuthentication
+                               authenticated:authenticated
+                               shouldLockout:shouldLockout
+                             attemptsMessage:attemptsMessage];
+        }];
 }
 
 @end

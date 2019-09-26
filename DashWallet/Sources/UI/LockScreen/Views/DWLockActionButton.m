@@ -105,6 +105,12 @@ static CGFloat const SPACING = 4.0;
     self.label.text = title;
 }
 
+- (void)setEnabled:(BOOL)enabled {
+    [super setEnabled:enabled];
+
+    self.alpha = enabled ? 1.0 : 0.5;
+}
+
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
 

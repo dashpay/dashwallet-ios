@@ -102,6 +102,9 @@
 "Are you sure?" = "هل انت متأكد ؟ ";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "available";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "إلغاء ";
 
 /* No comment provided by engineer. */
-"change" = "تغير";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "تغير";
 
 /* No comment provided by engineer. */
 "Change passcode" = "تغير الرقم السري";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "عنوان المحفظة";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Wallet Keys";

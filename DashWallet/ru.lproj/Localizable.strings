@@ -102,6 +102,9 @@
 "Are you sure?" = "Вы уверены?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "доступно";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "Отмена";
 
 /* No comment provided by engineer. */
-"change" = "Изменить";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "Изменить";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Изменить код доступа";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "Адрес кошелька";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Ключи кошелька";

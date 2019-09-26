@@ -102,6 +102,9 @@
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "ที่สามารถใช้ได้";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"change" = "เปลี่ยนแปลง";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "เปลี่ยนแปลง";
 
 /* No comment provided by engineer. */
 "Change passcode" = "เปลี่ยนแปลงรหัสผ่าน";
@@ -1018,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "ที่อยู่ wallet ";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Wallet Keys";
