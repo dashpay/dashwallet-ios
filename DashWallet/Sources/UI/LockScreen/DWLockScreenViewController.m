@@ -104,6 +104,7 @@ static CGFloat ActionButtonsHeight(void) {
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
     return navigationController;
 }
@@ -155,6 +156,24 @@ static CGFloat ActionButtonsHeight(void) {
 #pragma mark - Actions
 
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
+    [self.model stopCheckingAuthState];
+
+    __weak typeof(self) weakSelf = self;
+    [[DSAuthenticationManager sharedInstance]
+        resetWalletWithWipeHandler:nil
+                        completion:^(BOOL success) {
+                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                            if (!strongSelf) {
+                                return;
+                            }
+
+                            if (success) {
+                                [self.delegate lockScreenViewControllerDidUnlock:self];
+                            }
+                            else {
+                                [self.model startCheckingAuthState];
+                            }
+                        }];
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {

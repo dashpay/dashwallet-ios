@@ -17,6 +17,8 @@
 
 #import "DWAppRootViewController.h"
 
+#import <DashSync/UIWindow+DSUtils.h>
+
 #import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
@@ -29,10 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 static NSTimeInterval const TRANSITION_DURATION = 0.35;
 static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
-static UIWindowLevel const LockWindowLevel(void) {
-    return UIWindowLevelNormal + 10;
-}
-
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
                                        DWMainTabbarViewControllerDelegate,
                                        DWLockScreenViewControllerDelegate>
@@ -42,7 +40,6 @@ static UIWindowLevel const LockWindowLevel(void) {
 
 @property (null_resettable, nonatomic, strong) UIViewController *mainController;
 
-@property (nonatomic, strong) UIWindow *lockWindow;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
 @end
@@ -62,11 +59,6 @@ static UIWindowLevel const LockWindowLevel(void) {
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
-    UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    lockWindow.backgroundColor = [UIColor blackColor];
-    lockWindow.windowLevel = LockWindowLevel();
-    self.lockWindow = lockWindow;
-
     const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
     if (hasAWallet) {
@@ -77,10 +69,6 @@ static UIWindowLevel const LockWindowLevel(void) {
     }
     [self displayViewController:controller];
 
-    if (hasAWallet) {
-        // always show lock controller on app's start
-        [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_ApplicationDidBecomeActive];
-    }
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -126,15 +114,8 @@ static UIWindowLevel const LockWindowLevel(void) {
 #pragma mark - DWLockScreenViewControllerDelegate
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
-    [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
-        animations:^{
-            self.lockWindow.alpha = 0.0;
-        }
-        completion:^(BOOL finished) {
-            self.lockWindow.rootViewController = nil;
-            self.lockWindow.hidden = YES;
-            self.lockWindow.alpha = 1.0;
-        }];
+    NSParameterAssert(self.displayedLockController);
+    [self.displayedLockController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Notifications
@@ -195,7 +176,6 @@ static UIWindowLevel const LockWindowLevel(void) {
 }
 
 - (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
-    NSParameterAssert(self.lockWindow);
     NSAssert(self.displayedLockController == nil, @"Inconsistent state");
 
     DWHomeModel *homeModel = self.model.homeModel;
@@ -208,10 +188,22 @@ static UIWindowLevel const LockWindowLevel(void) {
                                                                              receiveModel:receiveModel
                                                                              dataProvider:dataProvider];
 
-    self.lockWindow.rootViewController = controller;
-    [self.lockWindow makeKeyAndVisible];
+    void (^presentLockScreen)(void) = ^{
+        UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+        UIViewController *presentingController = [window ds_presentingViewController];
+        NSParameterAssert(presentingController);
 
-    self.displayedLockController = controller;
+        [presentingController presentViewController:controller animated:NO completion:nil];
+
+        self.displayedLockController = controller;
+    };
+
+    if (self.presentedViewController) {
+        [self dismissViewControllerAnimated:NO completion:presentLockScreen];
+    }
+    else {
+        presentLockScreen();
+    }
 }
 
 - (void)displayViewController:(UIViewController *)controller {

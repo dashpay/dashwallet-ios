@@ -17,7 +17,7 @@
 
 #import "DWSetPinModel.h"
 
-#import <DashSync/DashSync.h>
+#import <DashSync/DSAuthenticationManager+Private.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)setPin:(NSString *)pin {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    return [authenticationManager setPin:pin];
+    return [authenticationManager setupNewPin:pin];
 }
 
 @end

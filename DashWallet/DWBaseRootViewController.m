@@ -123,12 +123,12 @@ NS_ASSUME_NONNULL_BEGIN
                                           if (timer) {
                                               [timer invalidate];
                                           }
-                                          
-                                          [[DSAuthenticationManager sharedInstance]  showResetWalletWithWipeHandler:^{
-                                              [self wipeAlert];
-                                          } cancelHandler:^{
-                                              [self protectedViewDidAppear];
-                                          }];
+            
+                                            [[DSAuthenticationManager sharedInstance] resetWalletWithWipeHandler:^{
+                                                [self wipeAlert];
+                                            } completion:^(BOOL success) {
+                                                [self protectedViewDidAppear];
+                                            }];
                                       }];
         if (waitTime) {
             UIAlertAction *exitButton = [UIAlertAction

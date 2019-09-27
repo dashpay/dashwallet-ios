@@ -61,10 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-    if (!authManager.usesAuthentication) {
-        return NO;
-    }
-
     const BOOL didAuthenticate = authManager.didAuthenticate;
     if (didAuthenticate) {
         return NO;

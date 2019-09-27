@@ -29,6 +29,7 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 @interface DWLockScreenModel ()
 
 @property (nullable, nonatomic, strong) NSTimer *checkTimer;
+@property (nonatomic, assign) BOOL checkingAuth;
 
 @end
 
@@ -59,12 +60,23 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 }
 
 - (void)startCheckingAuthState {
-    if (self.checkTimer) {
+    if (self.checkingAuth) {
         return;
     }
 
+    self.checkingAuth = YES;
+
     [self checkTimerAction];
 
+    // Edge case: pin was erased (by recovery pharse) but not set properly
+    // Don't run auth precheck more than once
+    if (![DSAuthenticationManager sharedInstance].usesAuthentication) {
+        return;
+    }
+
+    if (self.checkTimer) {
+        return;
+    }
     self.checkTimer = [NSTimer scheduledTimerWithTimeInterval:CHECK_INTERVAL
                                                        target:self
                                                      selector:@selector(checkTimerAction)
@@ -73,6 +85,8 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 }
 
 - (void)stopCheckingAuthState {
+    self.checkingAuth = NO;
+
     [self.checkTimer invalidate];
     self.checkTimer = nil;
 }
