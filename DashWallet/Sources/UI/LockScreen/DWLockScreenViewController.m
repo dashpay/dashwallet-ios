@@ -280,8 +280,7 @@ static CGFloat ActionButtonsHeight(void) {
     switch (self.model.biometryType) {
         case LABiometryTypeFaceID: {
             self.loginButton.title = NSLocalizedString(@"Login with Face ID", nil);
-            // TODO: use correct icon
-            self.loginButton.image = [UIImage imageNamed:@"icon_lock_touchid"];
+            self.loginButton.image = [UIImage imageNamed:@"icon_lock_faceid"];
 
             break;
         }
