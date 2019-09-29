@@ -17,8 +17,6 @@
 
 #import "DWAppRootViewController.h"
 
-#import <DashSync/UIWindow+DSUtils.h>
-
 #import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
@@ -40,6 +38,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (null_resettable, nonatomic, strong) UIViewController *mainController;
 
+@property (nonatomic, strong) UIImageView *overlayImageView;
+@property (nonatomic, strong) UIWindow *lockWindow;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
 @end
@@ -59,6 +59,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
+    const CGRect screenBounds = [UIScreen mainScreen].bounds;
+    UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:screenBounds];
+    lockWindow.backgroundColor = [UIColor blackColor];
+    lockWindow.windowLevel = UIWindowLevelNormal;
+    self.lockWindow = lockWindow;
+
     const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
     if (hasAWallet) {
@@ -69,6 +75,19 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
     [self displayViewController:controller];
 
+    if (hasAWallet) {
+        // Lock controller will be shown in applicationDidBecomeActiveNotification.
+        // INFO: If we make the lockWindow key and visisble before our main window gets properly initialized
+        // it will lead to weird bugs with keyboard (lockWindow will be visible, but main window remain key).
+        //
+        // Temporary cover root controller with overlay. It will be hidden after unlocking
+        UIImageView *overlayImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"image_bg"]];
+        overlayImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        overlayImageView.frame = screenBounds;
+        overlayImageView.contentMode = UIViewContentModeScaleAspectFill;
+        [self.view addSubview:overlayImageView];
+        self.overlayImageView = overlayImageView;
+    }
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -115,7 +134,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
     NSParameterAssert(self.displayedLockController);
-    [self.displayedLockController dismissViewControllerAnimated:YES completion:nil];
+    self.overlayImageView.hidden = YES;
+    [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
+        animations:^{
+            self.lockWindow.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+            self.lockWindow.rootViewController = nil;
+            self.lockWindow.hidden = YES;
+            self.lockWindow.alpha = 1.0;
+        }];
 }
 
 #pragma mark - Notifications
@@ -188,22 +216,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                                                              receiveModel:receiveModel
                                                                              dataProvider:dataProvider];
 
-    void (^presentLockScreen)(void) = ^{
-        UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-        UIViewController *presentingController = [window ds_presentingViewController];
-        NSParameterAssert(presentingController);
+    self.lockWindow.rootViewController = controller;
+    [self.lockWindow makeKeyAndVisible];
 
-        [presentingController presentViewController:controller animated:NO completion:nil];
-
-        self.displayedLockController = controller;
-    };
-
-    if (self.presentedViewController) {
-        [self dismissViewControllerAnimated:NO completion:presentLockScreen];
-    }
-    else {
-        presentLockScreen();
-    }
+    self.displayedLockController = controller;
 }
 
 - (void)displayViewController:(UIViewController *)controller {
