@@ -262,7 +262,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)highlightedTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return [[UIColor dw_lightTitleColor] colorWithAlphaComponent:0.5];
+        return inverted ? [[UIColor dw_lightTitleColor] colorWithAlphaComponent:0.5] : [UIColor dw_dashBlueColor];
     }
     else {
         return inverted ? [[UIColor dw_dashBlueColor] colorWithAlphaComponent:0.5] : [UIColor dw_dashBlueColor];
