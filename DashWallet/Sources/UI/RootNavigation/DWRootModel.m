@@ -31,19 +31,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWRootModel
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _homeModel = [[DWHomeModel alloc] init];
+    }
+    return self;
+}
+
 - (BOOL)hasAWallet {
     DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
 
     return (chain.hasAWallet || ![dashSyncVersionManager noOldWallet]);
-}
-
-- (DWHomeModel *)homeModel {
-    if (_homeModel == nil) {
-        _homeModel = [[DWHomeModel alloc] init];
-    }
-
-    return _homeModel;
 }
 
 - (BOOL)walletOperationAllowed {
