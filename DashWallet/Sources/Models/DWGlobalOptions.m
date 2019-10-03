@@ -54,7 +54,14 @@ NS_ASSUME_NONNULL_BEGIN
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
 }
 
-#pragma mark - Public
+#pragma mark - Non-stored options
+
+- (NSTimeInterval)autoLockAppInterval {
+    // TODO: for debugging/testing purposes. set to 60
+    return 3.0;
+}
+
+#pragma mark - Methods
 
 - (void)restoreToDefaults {
     self.walletNeedsBackup = YES;

@@ -17,6 +17,8 @@
 
 #import <KVO-MVVM/KVOUIView.h>
 
+#import "DWReceiveViewType.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
@@ -25,12 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWReceiveContentViewDelegate <NSObject>
 
 - (void)receiveContentView:(DWReceiveContentView *)view specifyAmountButtonAction:(UIButton *)sender;
-- (void)receiveContentView:(DWReceiveContentView *)view shareButtonAction:(UIButton *)sender;
+- (void)receiveContentView:(DWReceiveContentView *)view secondButtonAction:(UIButton *)sender;
 
 @end
 
 @interface DWReceiveContentView : KVOUIView
 
+@property (nonatomic, assign) DWReceiveViewType viewType;
 @property (nullable, nonatomic, weak) id<DWReceiveContentViewDelegate> delegate;
 
 - (void)viewDidAppear;

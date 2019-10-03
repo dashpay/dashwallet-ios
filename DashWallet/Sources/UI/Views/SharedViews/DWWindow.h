@@ -23,6 +23,8 @@ extern NSString *const DWDeviceDidShakeNotification;
 
 @interface DWWindow : UIWindow
 
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END

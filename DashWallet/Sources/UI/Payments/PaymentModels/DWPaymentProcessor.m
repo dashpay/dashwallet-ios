@@ -81,6 +81,8 @@ static NSString *sanitizeString(NSString *s) {
                 return NO;
             }
 
+            NSCAssert([NSThread isMainThread], @"Main thread is assumed here");
+
             return [strongSelf txManagerSignedCompletion:cancelled error:error];
         };
 

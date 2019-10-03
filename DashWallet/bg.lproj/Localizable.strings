@@ -102,6 +102,9 @@
 "Are you sure?" = "Сигурен ли си ?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "налично";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
-"change" = "промяна";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "промяна";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Смяна на парола";
@@ -321,6 +324,9 @@
 "enter" = "вход";
 
 /* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
@@ -328,6 +334,9 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Въведете вашият 2FA код по-долу";
+
+/* No comment provided by engineer. */
+"Exit" = "Exit";
 
 /* No comment provided by engineer. */
 "exit" = "изход";
@@ -352,6 +361,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
 "from:" = "от:";
@@ -642,6 +654,9 @@
 "public key:" = "публичен адрес:";
 
 /* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
+
+/* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "стойност: %1$@ = %2$@\nобновени: %3$@\nблок #%4$d of %5$d\nсвързани пиъри: %6$d\ndl пиър: %7$@\nвалидирани кворуми: %8$d/%9$d";
 
 /* No comment provided by engineer. */
@@ -712,6 +727,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash или bitcoin адрес. Можете да изпратите плащане към всеки с наличен адрес.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
@@ -1003,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "адрес на портфейла";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Ключове на портфейла";

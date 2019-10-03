@@ -147,13 +147,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)unlock {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    [authenticationManager authenticateWithPrompt:nil
-                                       andTouchId:YES
-                                   alertIfLockout:YES
-                                       completion:^(BOOL authenticated, BOOL cancelled) {
-                                           self.locked = !authenticated;
-                                       }];
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
+                                                          andTouchId:YES
+                                                      alertIfLockout:YES
+                                                          completion:^(BOOL authenticated, BOOL cancelled) {
+                                                              self.locked = !authenticated;
+                                                          }];
 }
 
 - (void)selectAllFunds {

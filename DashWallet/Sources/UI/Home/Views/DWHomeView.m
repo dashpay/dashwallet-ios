@@ -169,6 +169,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
+    if (self.currentDataSource.isEmpty) {
+        return;
+    }
+
     DSTransaction *transaction = self.currentDataSource.items[indexPath.row];
     [self.delegate homeView:self didSelectTransaction:transaction];
 }

@@ -17,6 +17,8 @@
 
 #import "DWAppRootViewController.h"
 
+#import "DWHomeModel.h"
+#import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -25,11 +27,20 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const TRANSITION_DURATION = 0.35;
+static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
-@interface DWAppRootViewController () <DWSetupViewControllerDelegate, DWMainTabbarViewControllerDelegate>
+@interface DWAppRootViewController () <DWSetupViewControllerDelegate,
+                                       DWMainTabbarViewControllerDelegate,
+                                       DWLockScreenViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DWRootModel *model;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
+
+@property (null_resettable, nonatomic, strong) UIViewController *mainController;
+
+@property (nonatomic, strong) UIImageView *overlayImageView;
+@property (nonatomic, strong) UIWindow *lockWindow;
+@property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
 @end
 
@@ -48,14 +59,45 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
+    const CGRect screenBounds = [UIScreen mainScreen].bounds;
+    UIWindow *lockWindow = [[UIWindow alloc] initWithFrame:screenBounds];
+    lockWindow.backgroundColor = [UIColor blackColor];
+    lockWindow.windowLevel = UIWindowLevelNormal;
+    self.lockWindow = lockWindow;
+
+    const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
-    if (self.model.hasAWallet) {
+    if (hasAWallet) {
         controller = [self mainController];
     }
     else {
         controller = [self setupController];
     }
     [self displayViewController:controller];
+
+    if (hasAWallet) {
+        // Lock controller will be shown in applicationDidBecomeActiveNotification.
+        // INFO: If we make the lockWindow key and visisble before our main window gets properly initialized
+        // it will lead to weird bugs with keyboard (lockWindow will be visible, but main window remain key).
+        //
+        // Temporary cover root controller with overlay. It will be hidden after unlocking
+        UIImageView *overlayImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"image_bg"]];
+        overlayImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        overlayImageView.frame = screenBounds;
+        overlayImageView.contentMode = UIViewContentModeScaleAspectFill;
+        [self.view addSubview:overlayImageView];
+        self.overlayImageView = overlayImageView;
+    }
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidBecomeActiveNotification)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationDidEnterBackgroundNotification)
+                               name:UIApplicationDidEnterBackgroundNotification
+                             object:nil];
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {
@@ -77,7 +119,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    UIViewController *mainController = [self mainController];
+    UIViewController *mainController = self.mainController;
     [self performTransitionToViewController:mainController];
 }
 
@@ -88,7 +130,45 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
     [self performTransitionToViewController:setupController];
 }
 
+#pragma mark - DWLockScreenViewControllerDelegate
+
+- (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
+    NSParameterAssert(self.displayedLockController);
+    self.overlayImageView.hidden = YES;
+    [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
+        animations:^{
+            self.lockWindow.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+            self.lockWindow.rootViewController = nil;
+            self.lockWindow.hidden = YES;
+            self.lockWindow.alpha = 1.0;
+        }];
+}
+
+#pragma mark - Notifications
+
+- (void)applicationDidBecomeActiveNotification {
+    [self showLockControllerIfNeeded];
+}
+
+- (void)applicationDidEnterBackgroundNotification {
+    [self.model applicationDidEnterBackground];
+}
+
 #pragma mark - Private
+
+- (void)showLockControllerIfNeeded {
+    if (self.displayedLockController) {
+        return;
+    }
+
+    if (![self.model shouldShowLockScreen]) {
+        return;
+    }
+
+    [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
+}
 
 - (void)showDevicePasscodeAlert {
     UIAlertController *alert = [UIAlertController
@@ -112,10 +192,34 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 }
 
 - (UIViewController *)mainController {
-    DWMainTabbarViewController *controller = [DWMainTabbarViewController controller];
-    controller.delegate = self;
+    if (_mainController == nil) {
+        DWHomeModel *homeModel = self.model.homeModel;
+        DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
+        controller.delegate = self;
 
-    return controller;
+        _mainController = controller;
+    }
+
+    return _mainController;
+}
+
+- (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
+    NSAssert(self.displayedLockController == nil, @"Inconsistent state");
+
+    DWHomeModel *homeModel = self.model.homeModel;
+    DWPayModel *payModel = homeModel.payModel;
+    DWReceiveModel *receiveModel = homeModel.receiveModel;
+    id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
+    UIViewController *controller = [DWLockScreenViewController lockNavigationWithDelegate:self
+                                                                               unlockMode:mode
+                                                                                 payModel:payModel
+                                                                             receiveModel:receiveModel
+                                                                             dataProvider:dataProvider];
+
+    self.lockWindow.rootViewController = controller;
+    [self.lockWindow makeKeyAndVisible];
+
+    self.displayedLockController = controller;
 }
 
 - (void)displayViewController:(UIViewController *)controller {

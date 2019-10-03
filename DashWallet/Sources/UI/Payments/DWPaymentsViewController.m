@@ -159,7 +159,9 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 - (void)setupControllers {
     self.payViewController = [DWPayViewController controllerWithModel:self.payModel
                                                          dataProvider:self.dataProvider];
-    self.receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
+    DWReceiveViewController *receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
+    receiveViewController.viewType = DWReceiveViewType_Default;
+    self.receiveViewController = receiveViewController;
 }
 
 #pragma mark - Actions

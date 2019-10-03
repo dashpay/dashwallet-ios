@@ -58,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation AppDelegate
 
+#pragma mark - UIApplicationDelegate
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
 #if FRESH_INSTALL
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];

@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
         DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:model];
         contentView.translatesAutoresizingMaskIntoConstraints = NO;
         contentView.delegate = self;
+        contentView.viewType = DWReceiveViewType_Default;
         [contentView setSpecifyAmountButtonHidden:YES];
         [self addSubview:contentView];
         _contentView = contentView;
@@ -78,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
     // NOP
 }
 
-- (void)receiveContentView:(DWReceiveContentView *)view shareButtonAction:(UIButton *)sender {
+- (void)receiveContentView:(DWReceiveContentView *)view secondButtonAction:(UIButton *)sender {
     [self.delegate requestAmountContentView:self shareButtonAction:sender];
 }
 

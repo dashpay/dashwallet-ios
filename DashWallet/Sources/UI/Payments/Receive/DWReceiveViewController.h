@@ -17,11 +17,26 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWReceiveViewType.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWReceiveModel;
+@class DWReceiveViewController;
+
+/**
+ Used for `DWReceiveViewType_QuickReceive` type
+ */
+@protocol DWReceiveViewControllerDelegate <NSObject>
+
+- (void)receiveViewControllerExitButtonAction:(DWReceiveViewController *)controller;
+
+@end
 
 @interface DWReceiveViewController : UIViewController
+
+@property (nonatomic, assign) DWReceiveViewType viewType;
+@property (nullable, nonatomic, weak) id<DWReceiveViewControllerDelegate> delegate;
 
 + (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
 

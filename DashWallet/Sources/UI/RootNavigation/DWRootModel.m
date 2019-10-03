@@ -18,10 +18,26 @@
 #import "DWRootModel.h"
 
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
+#import "DWHomeModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWRootModel ()
+
+@property (nullable, nonatomic, strong) NSDate *lastActiveDate;
+
+@end
+
 @implementation DWRootModel
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _homeModel = [[DWHomeModel alloc] init];
+    }
+    return self;
+}
 
 - (BOOL)hasAWallet {
     DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
@@ -33,6 +49,31 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)walletOperationAllowed {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     return authenticationManager.passcodeEnabled;
+}
+
+- (void)applicationDidEnterBackground {
+    self.lastActiveDate = [NSDate date];
+}
+
+- (BOOL)shouldShowLockScreen {
+    if (!self.hasAWallet) {
+        return NO;
+    }
+
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    const BOOL didAuthenticate = authManager.didAuthenticate;
+    if (didAuthenticate) {
+        return NO;
+    }
+
+    if (!self.lastActiveDate) {
+        return (didAuthenticate == NO);
+    }
+
+    NSDate *now = [NSDate date];
+    const NSTimeInterval interval = [now timeIntervalSince1970] - [self.lastActiveDate timeIntervalSince1970];
+
+    return (interval > [DWGlobalOptions sharedInstance].autoLockAppInterval);
 }
 
 @end
