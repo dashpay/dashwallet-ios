@@ -124,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
                                               [timer invalidate];
                                           }
             
-                                            [[DSAuthenticationManager sharedInstance] resetWalletWithWipeHandler:^{
+                                            [[DSAuthenticationManager sharedInstance] resetAllWalletsWithWipeHandler:^{
                                                 [self wipeAlert];
                                             } completion:^(BOOL success) {
                                                 [self protectedViewDidAppear];

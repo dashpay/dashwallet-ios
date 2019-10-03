@@ -160,20 +160,20 @@ static CGFloat ActionButtonsHeight(void) {
 
     __weak typeof(self) weakSelf = self;
     [[DSAuthenticationManager sharedInstance]
-        resetWalletWithWipeHandler:nil
-                        completion:^(BOOL success) {
-                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                            if (!strongSelf) {
-                                return;
-                            }
+        resetAllWalletsWithWipeHandler:nil
+                            completion:^(BOOL success) {
+                                __strong typeof(weakSelf) strongSelf = weakSelf;
+                                if (!strongSelf) {
+                                    return;
+                                }
 
-                            if (success) {
-                                [self.delegate lockScreenViewControllerDidUnlock:self];
-                            }
-                            else {
-                                [self.model startCheckingAuthState];
-                            }
-                        }];
+                                if (success) {
+                                    [self.delegate lockScreenViewControllerDidUnlock:self];
+                                }
+                                else {
+                                    [self.model startCheckingAuthState];
+                                }
+                            }];
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
