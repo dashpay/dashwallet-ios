@@ -31,8 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) UIResponder<UITextInput> *textInput;
 @property (nullable, nonatomic, weak) id<DWNumberKeyboardDelegate> delegate;
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
 
 - (void)configureWithCustomFunctionButtonTitle:(NSString *)customFunctionButtonTitle;
+- (void)configureFunctionButtonAsHidden;
 
 @end
 

@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController : DWBasePayViewController
 
-@property (readonly, strong, nonatomic) DWHomeModel *model;
+@property (strong, nonatomic) DWHomeModel *model;
 @property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate> delegate;
 
 @end

@@ -36,6 +36,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
+// Non-stored options
+
+- (NSTimeInterval)autoLockAppInterval;
+
+// Methods
+
 - (void)restoreToDefaults;
 
 + (instancetype)sharedInstance;

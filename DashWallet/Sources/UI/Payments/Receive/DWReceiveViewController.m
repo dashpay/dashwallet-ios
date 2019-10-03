@@ -27,7 +27,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGFloat const TOP_PADDING = 44.0;
+static CGFloat TopPadding(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 8.0;
+    }
+    else {
+        return 44.0;
+    }
+}
 
 @interface DWReceiveViewController () <DWReceiveContentViewDelegate,
                                        DWSpecifyAmountViewControllerDelegate,
@@ -46,6 +53,12 @@ static CGFloat const TOP_PADDING = 44.0;
     controller.model = receiveModel;
 
     return controller;
+}
+
+- (void)setViewType:(DWReceiveViewType)viewType {
+    _viewType = viewType;
+
+    NSAssert(!self.isViewLoaded, @"Controller should be configured before presenting");
 }
 
 - (void)viewDidLoad {
@@ -70,8 +83,19 @@ static CGFloat const TOP_PADDING = 44.0;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
-- (void)receiveContentView:(DWReceiveContentView *)view shareButtonAction:(UIButton *)sender {
-    [self dw_shareReceiveInfo:self.model sender:sender];
+- (void)receiveContentView:(DWReceiveContentView *)view secondButtonAction:(UIButton *)sender {
+    switch (self.viewType) {
+        case DWReceiveViewType_Default: {
+            [self dw_shareReceiveInfo:self.model sender:sender];
+
+            break;
+        }
+        case DWReceiveViewType_QuickReceive: {
+            [self.delegate receiveViewControllerExitButtonAction:self];
+
+            break;
+        }
+    }
 }
 
 #pragma mark - DWSpecifyAmountViewControllerDelegate
@@ -103,19 +127,39 @@ static CGFloat const TOP_PADDING = 44.0;
 #pragma mark - Private
 
 - (void)setupView {
+    UIColor *backgroundColor = nil;
+    switch (self.viewType) {
+        case DWReceiveViewType_Default: {
+            backgroundColor = [UIColor dw_backgroundColor];
+
+            break;
+        }
+        case DWReceiveViewType_QuickReceive: {
+            backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
+            break;
+        }
+    }
+    self.view.backgroundColor = backgroundColor;
+
     DWReceiveContentView *contentView = [[DWReceiveContentView alloc] initWithModel:self.model];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
+    contentView.viewType = self.viewType;
     [self.view addSubview:contentView];
     self.contentView = contentView;
 
     UILayoutGuide *marginsGuide = self.view.layoutMarginsGuide;
     [NSLayoutConstraint activateConstraints:@[
         [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor
-                                              constant:TOP_PADDING],
+                                              constant:TopPadding()],
         [contentView.leadingAnchor constraintEqualToAnchor:marginsGuide.leadingAnchor],
         [contentView.trailingAnchor constraintEqualToAnchor:marginsGuide.trailingAnchor],
     ]];
+
+    if (self.viewType == DWReceiveViewType_QuickReceive) {
+        [contentView.bottomAnchor constraintEqualToAnchor:marginsGuide.bottomAnchor].active = YES;
+    }
 }
 
 @end

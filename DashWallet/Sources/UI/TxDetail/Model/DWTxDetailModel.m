@@ -86,6 +86,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
+    if (!self.isSent) {
+        return nil;
+    }
+
     const uint64_t feeValue = self.transaction.feeUsed;
     if (feeValue == 0) {
         return nil;

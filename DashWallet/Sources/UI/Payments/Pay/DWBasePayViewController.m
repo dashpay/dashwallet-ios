@@ -73,9 +73,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
-
-//- paymentPro
-
 #pragma mark - DWPaymentProcessorDelegate
 
 // User Actions

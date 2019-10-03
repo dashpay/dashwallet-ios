@@ -20,6 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainTabbarViewController;
+@class DWHomeModel;
 
 @protocol DWMainTabbarViewControllerDelegate <NSObject>
 
@@ -31,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWMainTabbarViewControllerDelegate> delegate;
 
-+ (instancetype)controller;
++ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
 
 @end
 

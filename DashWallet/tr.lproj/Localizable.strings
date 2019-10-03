@@ -102,6 +102,9 @@
 "Are you sure?" = "Emin misiniz?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "mevcut";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "İptal";
 
 /* No comment provided by engineer. */
-"change" = "değiştir";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "değiştir";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Parolayı değiştir";
@@ -321,6 +324,9 @@
 "enter" = "gir";
 
 /* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
@@ -328,6 +334,9 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "2FA kodunu aşağıya girin";
+
+/* No comment provided by engineer. */
+"Exit" = "Exit";
 
 /* No comment provided by engineer. */
 "exit" = "çık";
@@ -352,6 +361,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
 "from:" = "kaynak:";
@@ -642,6 +654,9 @@
 "public key:" = "herkese açık anahtar:";
 
 /* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
+
+/* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "oran: %1$@ = %2$@\ngüncellendi: %3$@\nblok #%4$d of %5$d\nbağlanan eşler: %6$d\ndl eş: %7$@\nnisaplar doğrulandı: %8$d/%9$d";
 
 /* No comment provided by engineer. */
@@ -712,6 +727,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Başkalarının dash veya bitcoin adreslerini öğrenmek için QR kodlarını taratın. Adresi olan herkese ödeme gönderebilirsiniz.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
@@ -1003,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "cüzdan adresi";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Cüzdan Anahtarları";

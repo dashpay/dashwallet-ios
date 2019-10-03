@@ -102,6 +102,9 @@
 "Are you sure?" = "Você tem certeza?";
 
 /* No comment provided by engineer. */
+"Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
 "available" = "disponível";
 
 /* No comment provided by engineer. */
@@ -144,10 +147,10 @@
 "Cancel" = "cancelar";
 
 /* No comment provided by engineer. */
-"change" = "alterar";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"change" = "alterar";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Mudar senha";
@@ -321,6 +324,9 @@
 "enter" = "enter";
 
 /* No comment provided by engineer. */
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
@@ -328,6 +334,9 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Digite abaixo seu código de autenticação de dois fatores \"2FA\"";
+
+/* No comment provided by engineer. */
+"Exit" = "Exit";
 
 /* No comment provided by engineer. */
 "exit" = "sair";
@@ -352,6 +361,9 @@
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
 "from:" = "de:";
@@ -642,6 +654,9 @@
 "public key:" = "chave pública:";
 
 /* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
+
+/* No comment provided by engineer. */
 "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "taxa: %1$@ = %2$@\natualizado: %3$@\nbloco #%4$d de %5$d\npares conectados: %6$d\npares dl: %7$@\nquorums validados: %8$d/%9$d";
 
 /* No comment provided by engineer. */
@@ -712,6 +727,9 @@
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
+
+/* No comment provided by engineer. */
+"Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
@@ -1003,6 +1021,9 @@
 
 /* No comment provided by engineer. */
 "wallet address" = "endereço da carteira";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Chaves da Carteira";

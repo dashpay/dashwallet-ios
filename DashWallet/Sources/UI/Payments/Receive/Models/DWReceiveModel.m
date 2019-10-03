@@ -52,6 +52,9 @@ static CGSize HoleSize(BOOL hasAmount) {
     if (IS_IPAD) {
         return CGSizeMake(84.0, 84.0); // 2 + 80(logo size) + 2
     }
+    else if (IS_IPHONE_5_OR_LESS) {
+        return CGSizeMake(58.0, 58.0);
+    }
     else {
         if (hasAmount) {
             return CGSizeMake(58.0, 58.0);
@@ -67,6 +70,9 @@ static CGSize const LOGO_SMALL_SIZE = {54.0, 54.0};
 static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
     if (IS_IPAD) {
         return NO;
+    }
+    if (IS_IPHONE_5_OR_LESS) {
+        return YES;
     }
     else {
         return hasAmount;
