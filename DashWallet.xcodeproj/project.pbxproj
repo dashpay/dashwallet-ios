@@ -145,6 +145,7 @@
 		2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0002305C40F00C475EB /* DWHomeViewController+DWShortcuts.m */; };
 		2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0032305C59700C475EB /* DWHomeViewController+DWTxFilter.m */; };
 		2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */; };
+		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
 		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
 		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
@@ -721,6 +722,8 @@
 		2A74F0052305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWHomeViewController+DWJailbreakCheck.h"; sourceTree = "<group>"; };
 		2A74F0062305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWJailbreakCheck.m"; sourceTree = "<group>"; };
 		2A74F0082305F1C100C475EB /* DWRecoverAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverAction.h; sourceTree = "<group>"; };
+		2A7A7BAC234770C900451078 /* DWCaptureSessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCaptureSessionManager.h; sourceTree = "<group>"; };
+		2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCaptureSessionManager.m; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
 		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
@@ -1354,6 +1357,8 @@
 				2AC92C861FEB0AE8008CAEE0 /* DWQRScanView.m */,
 				2AC92C881FEB0B8B008CAEE0 /* DWQRScanModel.h */,
 				2AC92C891FEB0B8B008CAEE0 /* DWQRScanModel.m */,
+				2A7A7BAC234770C900451078 /* DWCaptureSessionManager.h */,
+				2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */,
 			);
 			path = ScanQR;
 			sourceTree = "<group>";
@@ -3763,6 +3768,7 @@
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
+				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
