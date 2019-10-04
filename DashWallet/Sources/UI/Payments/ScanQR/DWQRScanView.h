@@ -33,8 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DWQRScanModel *model;
 
-- (void)viewWillAppear;
-- (void)viewDidDisappear;
+- (void)connectCaptureSession;
+- (void)disconnectCaptureSession;
 
 @end
 

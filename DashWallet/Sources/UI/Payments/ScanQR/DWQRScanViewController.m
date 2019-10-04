@@ -58,6 +58,18 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.view.model = self.model;
+
+    if (!self.model.isCameraDeniedOrRestricted) {
+        __weak typeof(self) weakSelf = self;
+        [self.model startPreviewCompletion:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf.view connectCaptureSession];
+        }];
+    }
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -66,8 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-
-    [self.view viewWillAppear];
 
     if (self.model.isCameraDeniedOrRestricted) {
         NSString *displayName = [NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"];
@@ -100,15 +110,12 @@ NS_ASSUME_NONNULL_BEGIN
 
         [self presentViewController:alert animated:YES completion:nil];
     }
-    else {
-        [self.model startPreview];
-    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
 
-    [self.view viewDidDisappear];
+    [self.view disconnectCaptureSession];
     [self.model stopPreview];
 }
 

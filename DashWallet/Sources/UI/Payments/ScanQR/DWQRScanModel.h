@@ -61,7 +61,7 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 @property (readonly, assign, nonatomic, getter=isCameraDeniedOrRestricted) BOOL cameraDeniedOrRestricted;
 @property (nullable, readonly, strong, nonatomic) QRCodeObject *qrCodeObject;
 
-- (void)startPreview;
+- (void)startPreviewCompletion:(void (^)(void))completion;
 - (void)stopPreview;
 
 - (void)switchTorch;
