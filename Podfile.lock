@@ -25,7 +25,7 @@ DEPENDENCIES:
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
     - CocoaLumberjack
     - DWAlertController
@@ -62,4 +62,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 4835386dfa380577be67f8f3c31924b6e9f3728e
 
-COCOAPODS: 1.8.1
+COCOAPODS: 1.7.5
