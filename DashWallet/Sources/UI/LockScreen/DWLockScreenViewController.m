@@ -262,6 +262,11 @@ static CGFloat ActionButtonsHeight(void) {
     if (!self.biometricsAuthorizationAttemptWasMade) {
         self.biometricsAuthorizationAttemptWasMade = YES;
 
+        // Don't try to use biometrics if there any of quick actions screen is active
+        if (self.presentedViewController) {
+            return;
+        }
+
         [self performBiometricAuthentication];
     }
 }

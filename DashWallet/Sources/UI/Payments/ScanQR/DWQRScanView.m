@@ -120,12 +120,13 @@ NS_ASSUME_NONNULL_BEGIN
     self.previewLayer.frame = self.bounds;
 }
 
-- (void)viewWillAppear {
+- (void)connectCaptureSession {
     NSParameterAssert(self.model);
+
     self.previewLayer.session = self.model.captureSession;
 }
 
-- (void)viewDidDisappear {
+- (void)disconnectCaptureSession {
     self.previewLayer.session = nil;
 }
 

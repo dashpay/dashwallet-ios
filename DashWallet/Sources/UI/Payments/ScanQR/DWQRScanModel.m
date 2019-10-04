@@ -27,6 +27,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWCaptureSessionManager.h"
 #import "DWPaymentInput+Private.h"
 #import "DWQRScanModel.h"
 
@@ -68,11 +69,8 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 
 #pragma mark - View Model
 
-@interface DWQRScanModel () <AVCaptureMetadataOutputObjectsDelegate>
+@interface DWQRScanModel () <DWCaptureSessionMetadataDelegate>
 
-@property (strong, nonatomic) dispatch_queue_t sessionQueue;
-@property (strong, nonatomic) dispatch_queue_t metadataQueue;
-@property (assign, nonatomic, getter=isCaptureSessionConfigured) BOOL captureSessionConfigured;
 @property (assign, atomic) BOOL paused;
 @property (nullable, strong, nonatomic) QRCodeObject *qrCodeObject;
 
@@ -83,7 +81,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _captureSession = [[AVCaptureSession alloc] init];
+        [DWCaptureSessionManager sharedInstance].delegate = self;
     }
     return self;
 }
@@ -93,80 +91,27 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 }
 
 + (BOOL)isTorchAvailable {
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    return device.torchAvailable;
+    return [DWCaptureSessionManager sharedInstance].isTorchAvailable;
+}
+
+- (AVCaptureSession *)captureSession {
+    return [DWCaptureSessionManager sharedInstance].captureSession;
 }
 
 - (BOOL)isCameraDeniedOrRestricted {
-    AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-    return (status == AVAuthorizationStatusDenied || status == AVAuthorizationStatusRestricted);
+    return [DWCaptureSessionManager sharedInstance].isCameraDeniedOrRestricted;
 }
 
-- (void)startPreview {
-    void (^doStartPreview)(void) = ^{
-#if !TARGET_OS_SIMULATOR
-        [self setupCaptureSessionIfNeeded];
-#endif /* TARGET_OS_SIMULATOR */
-
-        dispatch_async(self.sessionQueue, ^{
-            if (!self.captureSession.isRunning) {
-                [self.captureSession startRunning];
-            }
-        });
-    };
-
-    switch ([AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo]) {
-        case AVAuthorizationStatusNotDetermined: {
-            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
-                                     completionHandler:^(BOOL granted) {
-                                         if (granted) {
-                                             dispatch_async(dispatch_get_main_queue(), doStartPreview);
-                                         }
-                                     }];
-            break;
-        }
-
-        case AVAuthorizationStatusRestricted:
-        case AVAuthorizationStatusDenied: {
-            break;
-        }
-
-        case AVAuthorizationStatusAuthorized: {
-            doStartPreview();
-            break;
-        }
-    }
+- (void)startPreviewCompletion:(void (^)(void))completion {
+    [[DWCaptureSessionManager sharedInstance] startPreviewCompletion:completion];
 }
 
 - (void)stopPreview {
-    dispatch_async(self.sessionQueue, ^{
-        if (self.captureSession.isRunning) {
-            [self.captureSession stopRunning];
-        }
-    });
+    [[DWCaptureSessionManager sharedInstance] stopPreview];
 }
 
 - (void)switchTorch {
-    if (![[self class] isTorchAvailable]) {
-        return;
-    }
-
-    if (!self.captureSession.isRunning) {
-        return;
-    }
-
-    dispatch_async(self.sessionQueue, ^{
-        NSError *error = nil;
-        AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-
-        if ([device lockForConfiguration:&error]) {
-            device.torchMode = device.torchActive ? AVCaptureTorchModeOff : AVCaptureTorchModeOn;
-            [device unlockForConfiguration];
-        }
-        else {
-            DSLogInfo(@"DWQRScanModel: %@", error);
-        }
-    });
+    [[DWCaptureSessionManager sharedInstance] switchTorch];
 }
 
 - (void)cancel {
@@ -174,67 +119,6 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
 }
 
 #pragma mark Private
-
-- (dispatch_queue_t)sessionQueue {
-    if (!_sessionQueue) {
-        _sessionQueue = dispatch_queue_create("DWQRScanViewModel.CaptureSession.queue", DISPATCH_QUEUE_SERIAL);
-    }
-    return _sessionQueue;
-}
-
-- (dispatch_queue_t)metadataQueue {
-    if (!_metadataQueue) {
-        _metadataQueue = dispatch_queue_create("DWQRScanViewModel.CaptureMetadataOutput.queue", DISPATCH_QUEUE_SERIAL);
-    }
-    return _metadataQueue;
-}
-
-- (void)setupCaptureSessionIfNeeded {
-    if (self.isCaptureSessionConfigured) {
-        return;
-    }
-    self.captureSessionConfigured = YES;
-
-    dispatch_async(self.sessionQueue, ^{
-        NSError *error = nil;
-        AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
-        if (error) {
-            DSLogInfo(@"DWQRScanModel: %@", error);
-        }
-        if ([device lockForConfiguration:&error]) {
-            if (device.isAutoFocusRangeRestrictionSupported) {
-                device.autoFocusRangeRestriction = AVCaptureAutoFocusRangeRestrictionNear;
-            }
-
-            if ([device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
-                device.focusMode = AVCaptureFocusModeContinuousAutoFocus;
-            }
-
-            [device unlockForConfiguration];
-        }
-        else {
-            DSLogInfo(@"DWQRScanModel: %@", error);
-        }
-
-        [self.captureSession beginConfiguration];
-
-        if (input && [self.captureSession canAddInput:input]) {
-            [self.captureSession addInput:input];
-        }
-
-        AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
-        if ([self.captureSession canAddOutput:output]) {
-            [self.captureSession addOutput:output];
-        }
-        [output setMetadataObjectsDelegate:self queue:self.metadataQueue];
-        if ([output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
-            output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
-        }
-
-        [self.captureSession commitConfiguration];
-    });
-}
 
 - (void)pauseQRCodeSearch {
     self.paused = YES;
@@ -246,32 +130,54 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
     self.qrCodeObject = nil;
 }
 
-#pragma mark AVCaptureMetadataOutputObjectsDelegate
+- (nullable AVMetadataMachineReadableCodeObject *)preferredMetadataObjectInObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects {
+    AVMetadataMachineReadableCodeObject *anyObject = nil;
+    for (__kindof AVMetadataObject *object in metadataObjects) {
+        if (![object.type isEqual:AVMetadataObjectTypeQRCode]) {
+            continue;
+        }
 
-- (void)captureOutput:(AVCaptureOutput *)output didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects fromConnection:(AVCaptureConnection *)connection {
-    if (self.paused) {
-        return;
+        AVMetadataMachineReadableCodeObject *codeObject = object;
+
+        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+        NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
+        if (request.isValid || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+            return codeObject;
+        }
+        else if (!anyObject) {
+            anyObject = codeObject;
+        }
     }
 
-    NSUInteger index = [metadataObjects indexOfObjectPassingTest:^BOOL(__kindof AVMetadataObject *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-        return [obj.type isEqual:AVMetadataObjectTypeQRCode];
-    }];
-    if (index == NSNotFound) {
+    return anyObject;
+}
+
+#pragma mark DWCaptureSessionMetadataDelegate
+
+- (void)didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects {
+    if (self.paused) {
         return;
     }
 
     [self pauseQRCodeSearch];
 
-    AVMetadataMachineReadableCodeObject *codeObject = metadataObjects[index];
+    AVMetadataMachineReadableCodeObject *codeObject = [self preferredMetadataObjectInObjects:metadataObjects];
+    if (!codeObject) {
+        [self resumeQRCodeSearch];
+
+        return;
+    }
 
     NSAssert(![NSThread isMainThread], nil);
     dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
         self.qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
     });
 
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:[DWEnvironment sharedInstance].currentChain];
-    if (request.isValid || [addr isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] || [addr isValidDashBIP38Key]) {
+    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
+    if (request.isValid || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             [self.qrCodeObject setValid];
         });
