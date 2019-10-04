@@ -19,6 +19,7 @@
 
 #import "DWHomeModel.h"
 #import "DWHomeViewController.h"
+#import "DWMainMenuViewController.h"
 #import "DWNavigationController.h"
 #import "DWPaymentsViewController.h"
 #import "DWTabBarView.h"
@@ -42,7 +43,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *tabBarBottomConstraint;
 
-@property (nullable, nonatomic, strong) DWHomeViewController *homeViewController;
+@property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
+@property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
 
 @end
 
@@ -83,6 +85,26 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {
+    switch (buttonType) {
+        case DWTabBarViewButtonType_Home: {
+            if (self.currentController == self.homeNavigationController) {
+                return;
+            }
+
+            [self switchToViewController:self.homeNavigationController];
+
+            break;
+        }
+        case DWTabBarViewButtonType_Others: {
+            if (self.currentController == self.menuNavigationController) {
+                return;
+            }
+
+            [self switchToViewController:self.menuNavigationController];
+
+            break;
+        }
+    }
 }
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
@@ -141,6 +163,29 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 #pragma mark - Private
+
+- (DWNavigationController *)homeNavigationController {
+    if (!_homeNavigationController) {
+        DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
+        homeController.model = self.homeModel;
+        homeController.delegate = self;
+
+        _homeNavigationController = [[DWNavigationController alloc] initWithRootViewController:homeController];
+    }
+
+    return _homeNavigationController;
+}
+
+- (DWNavigationController *)menuNavigationController {
+    if (!_menuNavigationController) {
+        DWMainMenuViewController *menuController = [[DWMainMenuViewController alloc] init];
+
+        _menuNavigationController = [[DWNavigationController alloc] initWithRootViewController:menuController];
+        _menuNavigationController.delegate = self;
+    }
+
+    return _menuNavigationController;
+}
 
 - (void)setupView {
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
@@ -201,14 +246,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)setupControllers {
-    DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
-    homeController.model = self.homeModel;
-    homeController.delegate = self;
-    self.homeViewController = homeController;
-
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:homeController];
-
+    DWNavigationController *navigationController = self.homeNavigationController;
     [self displayViewController:navigationController];
 }
 
@@ -232,6 +270,33 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     self.currentController = controller;
 
     [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (void)switchToViewController:(UIViewController *)toViewController {
+    NSParameterAssert(toViewController);
+    if (!toViewController) {
+        return;
+    }
+
+    UIViewController *fromViewController = self.currentController;
+    self.currentController = toViewController;
+
+    UIView *toView = toViewController.view;
+    UIView *fromView = fromViewController.view;
+
+    [fromViewController willMoveToParentViewController:nil];
+    [self addChildViewController:toViewController];
+
+    UIView *contentView = self.contentView;
+    toView.frame = contentView.bounds;
+    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [contentView addSubview:toView];
+
+    [self setNeedsStatusBarAppearanceUpdate];
+
+    [fromView removeFromSuperview];
+    [fromViewController removeFromParentViewController];
+    [toViewController didMoveToParentViewController:self];
 }
 
 - (void)displayModalViewController:(UIViewController *)controller completion:(void (^)(void))completion {

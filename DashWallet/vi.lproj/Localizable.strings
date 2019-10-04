@@ -125,6 +125,9 @@
 /* No comment provided by engineer. */
 "block #%d of %d" = "khối #%1$d của %2$d";
 
+/* No comment provided by engineer. */
+"Buy & Sell Dash" = "Buy & Sell Dash";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Buy / Sell Dash";
 
@@ -216,6 +219,9 @@
 "confirmed in block #%d" = "đã được xác thực trong khối #%d";
 
 /* No comment provided by engineer. */
+"Connect with third party exchanges" = "Connect with third party exchanges";
+
+/* No comment provided by engineer. */
 "Continue" = "Continue";
 
 /* No comment provided by engineer. */
@@ -274,6 +280,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* No comment provided by engineer. */
+"Default currency, spend limit, tools…" = "Default currency, spend limit, tools…";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "AN NINH THIẾT BỊ BỊ  TỔN HẠI\nBất kỳ ứng dụng 'jailbreak' hay 'phá khoá' nào đều có thể truy cập vào dữ liệu chìa khoá của ứng dụng (và đánh cắp dash của bạn).";
@@ -408,6 +417,9 @@
 "Import private key" = "Nhập khoá riêng";
 
 /* No comment provided by engineer. */
+"Import private key…" = "Import private key…";
+
+/* No comment provided by engineer. */
 "IMPORTANT" = "QUAN TRỌNG";
 
 /* No comment provided by engineer. */
@@ -484,6 +496,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
+
+/* No comment provided by engineer. */
+"More" = "More";
 
 /* No comment provided by engineer. */
 "more..." = "tiếp...";
@@ -753,6 +768,9 @@
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
+"Security" = "Security";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "Xem trên Uphold";
 
 /* No comment provided by engineer. */
@@ -912,6 +930,9 @@
 "to: %@" = "đến: %@";
 
 /* No comment provided by engineer. */
+"Tools" = "Tools";
+
+/* No comment provided by engineer. */
 "topup amount:" = "số lượng nạp thêm:";
 
 /* No comment provided by engineer. */
@@ -1009,6 +1030,9 @@
 
 /* No comment provided by engineer. */
 "View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
+"View passphrase, backup wallet…" = "View passphrase, backup wallet…";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "mã băm của khoá bỏ phiếu";

@@ -21,4 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern CGFloat const DW_TABBAR_NOTCH;
 
+CGFloat const DWDefaultMargin(void);
+
 NS_ASSUME_NONNULL_END

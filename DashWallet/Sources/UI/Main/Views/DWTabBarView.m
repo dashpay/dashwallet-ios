@@ -190,9 +190,15 @@ static UIColor *InactiveButtonColor(void) {
     else {
         if (sender == self.homeButton) {
             [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Home];
+
+            self.othersButton.tintColor = InactiveButtonColor();
+            self.homeButton.tintColor = ActiveButtonColor();
         }
         else if (sender == self.othersButton) {
             [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Others];
+
+            self.othersButton.tintColor = ActiveButtonColor();
+            self.homeButton.tintColor = InactiveButtonColor();
         }
         else {
             NSAssert(NO, @"Invalid sender");

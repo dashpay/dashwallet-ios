@@ -17,8 +17,24 @@
 
 #import "DWSharedUIConstants.h"
 
+#import "DWUIKit.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 CGFloat const DW_TABBAR_NOTCH = 8.0;
+
+CGFloat const DWDefaultMargin(void) {
+    if (IS_IPAD) {
+        return 20.0;
+    }
+    else {
+        if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6 || IS_IPHONE_X) {
+            return 16.0;
+        }
+        else {
+            return 20.0;
+        }
+    }
+}
 
 NS_ASSUME_NONNULL_END
