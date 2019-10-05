@@ -17,11 +17,15 @@
 
 #import "DWMainMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
+#import "DWNavigationController.h"
 #import "DWSecurityMenuViewController.h"
 #import "DWSettingsMenuViewController.h"
 #import "DWToolsMenuViewController.h"
+#import "DWUpholdViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -65,6 +69,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)mainMenuContentView:(DWMainMenuContentView *)view didSelectMenuItem:(id<DWMainMenuItem>)item {
     switch (item.type) {
         case DWMainMenuItemType_BuySellDash: {
+            [[DSAuthenticationManager sharedInstance]
+                authenticateWithPrompt:nil
+                            andTouchId:YES
+                        alertIfLockout:YES
+                            completion:^(BOOL authenticated, BOOL cancelled) {
+                                if (authenticated) {
+                                    UIViewController *controller = [DWUpholdViewController controller];
+                                    DWNavigationController *navigationController =
+                                        [[DWNavigationController alloc] initWithRootViewController:controller];
+                                    [self presentViewController:navigationController animated:YES completion:nil];
+                                }
+                            }];
 
             break;
         }
