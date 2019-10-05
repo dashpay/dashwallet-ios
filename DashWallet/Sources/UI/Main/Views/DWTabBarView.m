@@ -89,7 +89,6 @@ static UIColor *InactiveButtonColor(void) {
             UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
             UIImage *image = [UIImage imageNamed:@"tabbar_home_icon"];
             [button setImage:image forState:UIControlStateNormal];
-            button.tintColor = ActiveButtonColor();
             [button addTarget:self
                           action:@selector(tabBarButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -112,7 +111,6 @@ static UIColor *InactiveButtonColor(void) {
             UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
             UIImage *image = [UIImage imageNamed:@"tabbar_other_icon"];
             [button setImage:image forState:UIControlStateNormal];
-            button.tintColor = InactiveButtonColor();
             [button addTarget:self
                           action:@selector(tabBarButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -122,6 +120,8 @@ static UIColor *InactiveButtonColor(void) {
         }
 
         _buttons = [buttons copy];
+
+        [self updateSelectedTabButton:DWTabBarViewButtonType_Home];
     }
     return self;
 }
@@ -188,20 +188,42 @@ static UIColor *InactiveButtonColor(void) {
         [self.delegate tabBarViewDidClosePayments:self];
     }
     else {
+        DWTabBarViewButtonType type;
         if (sender == self.homeButton) {
-            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Home];
-
-            self.othersButton.tintColor = InactiveButtonColor();
-            self.homeButton.tintColor = ActiveButtonColor();
+            type = DWTabBarViewButtonType_Home;
         }
         else if (sender == self.othersButton) {
-            [self.delegate tabBarView:self didTapButtonType:DWTabBarViewButtonType_Others];
-
-            self.othersButton.tintColor = ActiveButtonColor();
-            self.homeButton.tintColor = InactiveButtonColor();
+            type = DWTabBarViewButtonType_Others;
         }
         else {
+            type = DWTabBarViewButtonType_Home;
             NSAssert(NO, @"Invalid sender");
+        }
+
+        [self.delegate tabBarView:self didTapButtonType:type];
+        [self updateSelectedTabButton:type];
+    }
+}
+
+- (void)updateSelectedTabButton:(DWTabBarViewButtonType)type {
+    switch (type) {
+        case DWTabBarViewButtonType_Home: {
+            self.othersButton.tintColor = InactiveButtonColor();
+            self.homeButton.tintColor = ActiveButtonColor();
+
+            self.homeButton.userInteractionEnabled = NO;
+            self.othersButton.userInteractionEnabled = YES;
+
+            break;
+        }
+        case DWTabBarViewButtonType_Others: {
+            self.othersButton.tintColor = ActiveButtonColor();
+            self.homeButton.tintColor = InactiveButtonColor();
+
+            self.homeButton.userInteractionEnabled = YES;
+            self.othersButton.userInteractionEnabled = NO;
+
+            break;
         }
     }
 }

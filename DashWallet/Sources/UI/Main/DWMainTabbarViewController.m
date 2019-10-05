@@ -97,8 +97,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         }
         case DWTabBarViewButtonType_Others: {
             if (self.currentController == self.menuNavigationController) {
-                [self.menuNavigationController popToRootViewControllerAnimated:YES];
-
                 return;
             }
 
