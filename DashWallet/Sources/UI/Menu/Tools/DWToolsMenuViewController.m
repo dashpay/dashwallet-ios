@@ -81,6 +81,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 

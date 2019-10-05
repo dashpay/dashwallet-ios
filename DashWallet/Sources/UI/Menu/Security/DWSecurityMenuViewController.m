@@ -17,6 +17,7 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import "DWBorderedActionButton.h"
 #import "DWFormTableViewController.h"
 #import "DWSecurityMenuModel.h"
 #import "DWUIKit.h"
@@ -113,13 +114,55 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    UIView *contentView = self.view;
+
+    UIColor *backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    contentView.backgroundColor = backgroundColor;
+
+    UIView *bottomView = [[UIView alloc] initWithFrame:CGRectZero];
+    bottomView.translatesAutoresizingMaskIntoConstraints = NO;
+    bottomView.backgroundColor = backgroundColor;
+    [contentView addSubview:bottomView];
+
+    DWBorderedActionButton *resetWalletButton = [[DWBorderedActionButton alloc] initWithFrame:CGRectZero];
+    resetWalletButton.translatesAutoresizingMaskIntoConstraints = NO;
+    resetWalletButton.accentColor = [UIColor dw_redColor];
+    [resetWalletButton setTitle:NSLocalizedString(@"Reset Wallet", nil) forState:UIControlStateNormal];
+    [bottomView addSubview:resetWalletButton];
+
+    const CGFloat padding = 24.0;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [bottomView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+        [bottomView.bottomAnchor constraintEqualToAnchor:contentView.safeAreaLayoutGuide.bottomAnchor],
+        [bottomView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+
+        [resetWalletButton.topAnchor constraintEqualToAnchor:bottomView.topAnchor
+                                                    constant:padding],
+        [resetWalletButton.bottomAnchor constraintEqualToAnchor:bottomView.bottomAnchor
+                                                       constant:-padding],
+        [resetWalletButton.centerXAnchor constraintEqualToAnchor:bottomView.centerXAnchor],
+    ]];
+
+    // Forms
+
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 
     [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
+
+    UIView *formView = formController.view;
+    formView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [contentView addSubview:formView];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [formView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
+        [formView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
+        [formView.bottomAnchor constraintEqualToAnchor:bottomView.topAnchor],
+        [formView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
+    ]];
+
     [formController didMoveToParentViewController:self];
     self.formController = formController;
 }
