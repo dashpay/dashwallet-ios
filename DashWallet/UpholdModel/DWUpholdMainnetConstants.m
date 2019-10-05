@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWUpholdMainnetConstants
 
 + (NSString *)authorizeURLFormat {
-    return @"***REMOVED***@";
+    return @"";
 }
 
 + (NSString *)baseURLString {
@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)clientID {
-    return @"***REMOVED***";
+    return @"";
 }
 
 + (NSString *)clientSecret {
-    return @"***REMOVED***";
+    return @"";
 }
 
 + (NSString *)buyCardURLFormat {
@@ -46,7 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)logoutURLString {
-    return @"https://uphold.com/dashboard";
+    return @"https://uphold.com/";
+
 }
 
 @end
