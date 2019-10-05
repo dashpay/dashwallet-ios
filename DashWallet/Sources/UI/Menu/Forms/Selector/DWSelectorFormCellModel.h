@@ -15,16 +15,27 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
 #import "DWBaseFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWFormSectionModel : NSObject
+typedef NS_ENUM(NSUInteger, DWSelectorFormCellModelStyle) {
+    DWSelectorFormCellModelStyleBlack,
+    DWSelectorFormCellModelStyleBlue,
+    DWSelectorFormCellModelStyleRed,
+};
 
-@property (nullable, copy, nonatomic) NSString *headerTitle;
-@property (nullable, copy, nonatomic) NSArray<DWBaseFormCellModel *> *items;
+typedef NS_ENUM(NSUInteger, DWSelectorFormAccessoryType) {
+    DWSelectorFormAccessoryType_None,
+    DWSelectorFormAccessoryType_DisclosureIndicator,
+};
+
+@interface DWSelectorFormCellModel : DWBaseFormCellModel
+
+@property (nullable, copy, nonatomic) NSString *subTitle;
+@property (assign, nonatomic) DWSelectorFormAccessoryType accessoryType;
+@property (assign, nonatomic) DWSelectorFormCellModelStyle style;
+@property (nullable, copy, nonatomic) void (^didSelectBlock)(DWSelectorFormCellModel *cellModel, NSIndexPath *indexPath);
 
 @end
 

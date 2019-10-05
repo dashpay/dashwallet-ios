@@ -15,17 +15,16 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUITableViewCell.h>
+#import <Foundation/Foundation.h>
 
-#import "DWSelectorFormCellModel.h"
+#import "DWBaseFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSelectorFormTableViewCell : KVOUITableViewCell
+@interface DWFormSectionModel : NSObject
 
-@property (nullable, strong, nonatomic) DWSelectorFormCellModel *cellModel;
+@property (nullable, copy, nonatomic) NSArray<DWBaseFormCellModel *> *items;
 
 @end
 
 NS_ASSUME_NONNULL_END
- 

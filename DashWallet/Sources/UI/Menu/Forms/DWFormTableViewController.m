@@ -19,15 +19,13 @@
 
 #import "DWPlaceholderFormTableViewCell.h"
 #import "DWSelectorFormTableViewCell.h"
+#import "DWSharedUIConstants.h"
 #import "DWSwitcherFormTableViewCell.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *const SELECTOR_CELL_ID = @"DWSelectorFormTableViewCell";
-static NSString *const SWITCHER_CELL_ID = @"DWSwitcherFormTableViewCell";
-static NSString *const PLACEHOLDER_CELL_ID = @"DWPlaceholderFormTableViewCell";
-
-static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
+static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
 
 @interface DWFormTableViewController ()
 
@@ -41,15 +39,20 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    NSArray<NSString *> *cellIds = @[
-        SELECTOR_CELL_ID,
-        SWITCHER_CELL_ID,
-        PLACEHOLDER_CELL_ID,
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.tableFooterView = [[UIView alloc] init];
+    self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+
+    NSArray<Class> *cellClasses = @[
+        DWSelectorFormTableViewCell.class,
+        DWSwitcherFormTableViewCell.class,
+        DWPlaceholderFormTableViewCell.class,
     ];
-    for (NSString *cellId in cellIds) {
-        UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
-        NSParameterAssert(nib);
-        [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
+
+    for (Class cellClass in cellClasses) {
+        [self.tableView registerClass:cellClass forCellReuseIdentifier:NSStringFromClass(cellClass)];
     }
 }
 
@@ -98,17 +101,23 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
     DWBaseFormCellModel *cellModel = items[indexPath.row];
 
     if ([cellModel isKindOfClass:DWSelectorFormCellModel.class]) {
-        DWSelectorFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:SELECTOR_CELL_ID forIndexPath:indexPath];
+        NSString *cellId = NSStringFromClass(DWSelectorFormTableViewCell.class);
+        DWSelectorFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                            forIndexPath:indexPath];
         cell.cellModel = (DWSelectorFormCellModel *)cellModel;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {
-        DWSwitcherFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:SWITCHER_CELL_ID forIndexPath:indexPath];
+        NSString *cellId = NSStringFromClass(DWSwitcherFormTableViewCell.class);
+        DWSwitcherFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                            forIndexPath:indexPath];
         cell.cellModel = (DWSwitcherFormCellModel *)cellModel;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWPlaceholderFormCellModel.class]) {
-        DWPlaceholderFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:PLACEHOLDER_CELL_ID forIndexPath:indexPath];
+        NSString *cellId = NSStringFromClass(DWPlaceholderFormTableViewCell.class);
+        DWPlaceholderFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                               forIndexPath:indexPath];
         cell.cellModel = (DWPlaceholderFormCellModel *)cellModel;
         return cell;
     }
@@ -121,7 +130,7 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
 
 #pragma mark UITableViewDelegate
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
     DWFormSectionModel *sectionModel = self.internalDataSource[indexPath.section];
     NSArray<DWBaseFormCellModel *> *items = sectionModel.items;
     DWBaseFormCellModel *cellModel = items[indexPath.row];
@@ -132,43 +141,6 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
     else {
         return DEFAULT_CELL_HEIGHT;
     }
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    DWFormSectionModel *sectionModel = self.internalDataSource[section];
-    NSString *sectionTitle = sectionModel.headerTitle;
-
-    if (sectionTitle.length == 0) {
-        return 0.0;
-    }
-
-    CGRect textRect = [sectionTitle boundingRectWithSize:CGSizeMake(CGRectGetWidth(tableView.frame) - 20.0, CGFLOAT_MAX)
-                                                 options:NSStringDrawingUsesLineFragmentOrigin
-                                              attributes:@{ NSFontAttributeName : [UIFont systemFontOfSize:14] }
-                                                 context:nil];
-
-    return textRect.size.height + 22.0 + 10.0;
-}
-
-- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    DWFormSectionModel *sectionModel = self.internalDataSource[section];
-    CGRect headerViewFrame = CGRectMake(0.0, 0.0,
-                                        CGRectGetWidth(tableView.frame),
-                                        [self tableView:tableView heightForHeaderInSection:section]);
-    UIView *headerView = [[UIView alloc] initWithFrame:headerViewFrame];
-    CGRect titleLabelFrame = CGRectMake(16.0, 10.0,
-                                        headerView.frame.size.width - 20.0,
-                                        headerView.frame.size.height - 12.0);
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:titleLabelFrame];
-
-    titleLabel.text = sectionModel.headerTitle;
-    titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightMedium];
-    titleLabel.textColor = [UIColor grayColor];
-    headerView.backgroundColor = tableView.backgroundColor;
-    [headerView addSubview:titleLabel];
-
-    return headerView;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -185,7 +157,11 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 44.0;
         }
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {
-        // NOP
+        DWSwitcherFormCellModel *switcherCellModel = (DWSwitcherFormCellModel *)cellModel;
+        switcherCellModel.on = !switcherCellModel.on;
+        if (switcherCellModel.didChangeValueBlock) {
+            switcherCellModel.didChangeValueBlock(switcherCellModel);
+        }
     }
 }
 

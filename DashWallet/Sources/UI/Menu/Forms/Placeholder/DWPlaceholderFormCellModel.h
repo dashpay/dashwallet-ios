@@ -19,18 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWSelectorFormCellModelStyle) {
-    DWSelectorFormCellModelStyleBlack,
-    DWSelectorFormCellModelStyleBlue,
-    DWSelectorFormCellModelStyleRed,
-};
-
-@interface DWSelectorFormCellModel : DWBaseFormCellModel
-
-@property (nullable, copy, nonatomic) NSString *subTitle;
-@property (assign, nonatomic) UITableViewCellAccessoryType accessoryType;
-@property (assign, nonatomic) DWSelectorFormCellModelStyle style;
-@property (nullable, copy, nonatomic) void (^didSelectBlock)(DWSelectorFormCellModel *cellModel, NSIndexPath *indexPath);
+@interface DWPlaceholderFormCellModel : DWBaseFormCellModel
 
 @end
 

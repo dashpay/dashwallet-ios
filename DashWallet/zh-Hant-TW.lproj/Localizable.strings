@@ -165,6 +165,9 @@
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
@@ -264,6 +267,9 @@
 "CRITICAL" = "緊要";
 
 /* No comment provided by engineer. */
+"Customize Shortcuts" = "Customize Shortcuts";
+
+/* No comment provided by engineer. */
 "Dash address" = "達世幣位址";
 
 /* No comment provided by engineer. */
@@ -322,6 +328,9 @@
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
+
+/* No comment provided by engineer. */
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "啟用接收通知";
@@ -729,6 +738,9 @@
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
+"Rescan Blockchain" = "Rescan Blockchain";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "重新掃瞄區塊鏈";
 
 /* No comment provided by engineer. */
@@ -1033,6 +1045,9 @@
 
 /* No comment provided by engineer. */
 "View passphrase, backup wallet…" = "View passphrase, backup wallet…";
+
+/* No comment provided by engineer. */
+"View Recovery Phrase" = "View Recovery Phrase";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "voting key hash:";

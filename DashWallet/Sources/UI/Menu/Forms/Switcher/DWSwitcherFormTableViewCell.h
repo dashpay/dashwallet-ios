@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,11 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWPlaceholderFormCellModel.h"
+#import "DWBaseFormTableViewCell.h"
+#import "DWSwitcherFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWPlaceholderFormCellModel
+@interface DWSwitcherFormTableViewCell : DWBaseFormTableViewCell
+
+@property (nullable, strong, nonatomic) DWSwitcherFormCellModel *cellModel;
 
 @end
 

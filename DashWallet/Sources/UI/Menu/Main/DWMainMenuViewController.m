@@ -19,6 +19,9 @@
 
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
+#import "DWSecurityMenuViewController.h"
+#import "DWSettingsMenuViewController.h"
+#import "DWToolsMenuViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,7 +63,30 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWMainMenuContentViewDelegate
 
 - (void)mainMenuContentView:(DWMainMenuContentView *)view didSelectMenuItem:(id<DWMainMenuItem>)item {
-    // TODO
+    switch (item.type) {
+        case DWMainMenuItemType_BuySellDash: {
+
+            break;
+        }
+        case DWMainMenuItemType_Security: {
+            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
+            [self.navigationController pushViewController:controller animated:YES];
+
+            break;
+        }
+        case DWMainMenuItemType_Settings: {
+            DWSettingsMenuViewController *controller = [[DWSettingsMenuViewController alloc] init];
+            [self.navigationController pushViewController:controller animated:YES];
+
+            break;
+        }
+        case DWMainMenuItemType_Tools: {
+            DWToolsMenuViewController *controller = [[DWToolsMenuViewController alloc] init];
+            [self.navigationController pushViewController:controller animated:YES];
+
+            break;
+        }
+    }
 }
 
 @end

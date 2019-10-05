@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUITableViewCell.h>
-
-#import "DWSwitcherFormCellModel.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSwitcherFormTableViewCell : KVOUITableViewCell
-
-@property (nullable, strong, nonatomic) DWSwitcherFormCellModel *cellModel;
+@interface DWSettingsMenuViewController : UIViewController
 
 @end
 

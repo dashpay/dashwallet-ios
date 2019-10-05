@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
@@ -15,19 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWPlaceholderFormTableViewCell.h"
+#import <KVO-MVVM/KVOUITableViewCell.h>
+
+#import "DWPlaceholderFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWPlaceholderFormTableViewCell
+@interface DWPlaceholderFormTableViewCell : KVOUITableViewCell
 
-- (void)awakeFromNib {
-    [super awakeFromNib];
-    
-    [self mvvm_observe:@"cellModel.title" with:^(__typeof(self) self, NSString * value) {
-        self.textLabel.text = value;
-    }];
-}
+@property (nullable, strong, nonatomic) DWPlaceholderFormCellModel *cellModel;
 
 @end
 

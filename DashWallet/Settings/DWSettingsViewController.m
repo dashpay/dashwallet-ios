@@ -243,21 +243,21 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"GENERAL", nil);
+//        section.headerTitle = NSLocalizedString(@"GENERAL", nil);
         section.items = [self generalItems];
         [sections addObject:section];
     }
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"CRITICAL", nil);
+//        section.headerTitle = NSLocalizedString(@"CRITICAL", nil);
         section.items = [self criticalItems];
         [sections addObject:section];
     }
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"ADVANCED", nil);
+//        section.headerTitle = NSLocalizedString(@"ADVANCED", nil);
         section.items = [self advancedItems];
         [sections addObject:section];
     }
