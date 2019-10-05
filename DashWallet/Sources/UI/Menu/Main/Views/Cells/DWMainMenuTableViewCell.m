@@ -54,7 +54,7 @@ static NSString *DescriptionByType(DWMainMenuItemType type) {
         case DWMainMenuItemType_Security:
             return NSLocalizedString(@"View passphrase, backup wallet…", nil);
         case DWMainMenuItemType_Settings:
-            return NSLocalizedString(@"Default currency, spend limit, tools…", nil);
+            return NSLocalizedString(@"Default currency, shortcuts, about…", nil);
         case DWMainMenuItemType_Tools:
             return NSLocalizedString(@"Import private key…", nil);
     }
