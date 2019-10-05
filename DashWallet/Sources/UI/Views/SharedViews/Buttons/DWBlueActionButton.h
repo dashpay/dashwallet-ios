@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWButton.h"
+#import "DWActionButton.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBlueActionButton : DWButton
+@interface DWBlueActionButton : DWActionButton
 
 @property (assign, nonatomic) IBInspectable BOOL usedOnDarkBackground;
 @property (assign, nonatomic) IBInspectable BOOL inverted;

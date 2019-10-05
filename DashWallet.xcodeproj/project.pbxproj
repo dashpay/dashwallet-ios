@@ -158,6 +158,8 @@
 		2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD82348CB7300451078 /* DWSettingsMenuModel.m */; };
 		2A7A7BDD2348DC0A00451078 /* DWToolsMenuModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BDC2348DC0A00451078 /* DWToolsMenuModel.m */; };
 		2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BDF2348DC1900451078 /* DWToolsMenuViewController.m */; };
+		2A7A7BE42348E85400451078 /* DWActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BE22348E85400451078 /* DWActionButton.m */; };
+		2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BE62348E9AA00451078 /* DWBorderedActionButton.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
 		2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3A22FC817100FF8653 /* DWPaymentsViewController.m */; };
 		2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E3C22FD71E100FF8653 /* Payments.storyboard */; };
@@ -757,6 +759,10 @@
 		2A7A7BDC2348DC0A00451078 /* DWToolsMenuModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWToolsMenuModel.m; sourceTree = "<group>"; };
 		2A7A7BDE2348DC1900451078 /* DWToolsMenuViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWToolsMenuViewController.h; sourceTree = "<group>"; };
 		2A7A7BDF2348DC1900451078 /* DWToolsMenuViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWToolsMenuViewController.m; sourceTree = "<group>"; };
+		2A7A7BE22348E85400451078 /* DWActionButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWActionButton.m; sourceTree = "<group>"; };
+		2A7A7BE32348E85400451078 /* DWActionButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWActionButton.h; sourceTree = "<group>"; };
+		2A7A7BE52348E9AA00451078 /* DWBorderedActionButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBorderedActionButton.h; sourceTree = "<group>"; };
+		2A7A7BE62348E9AA00451078 /* DWBorderedActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBorderedActionButton.m; sourceTree = "<group>"; };
 		2A8B9E2722FB1C5D00FF8653 /* DWSharedUIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSharedUIConstants.h; sourceTree = "<group>"; };
 		2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSharedUIConstants.m; sourceTree = "<group>"; };
 		2A8B9E3922FC817100FF8653 /* DWPaymentsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPaymentsViewController.h; sourceTree = "<group>"; };
@@ -1717,11 +1723,10 @@
 		2A44312B22CD0304009BAF7F /* SharedViews */ = {
 			isa = PBXGroup;
 			children = (
+				2A7A7BE12348E83B00451078 /* Buttons */,
 				2A1B7D942322CFDD00BA8C6A /* TitleDetailCell */,
 				2A9FFF3722357F6800956D5F /* Keyboard */,
 				2A8B9E4422FD8CF500FF8653 /* SegmentedControl */,
-				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
-				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
 				2AD1CEA022DFC80800C99324 /* DWCenteredScrollView.h */,
 				2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */,
 				2A2CD72022F9B571008C7BC9 /* DWIntrinsicCollectionView.h */,
@@ -1730,14 +1735,10 @@
 				2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */,
 				2A4431C622D4D92A009BAF7F /* DWCenteredTableView.h */,
 				2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */,
-				2A307CBD22E8A44200A18347 /* DWButton.h */,
-				2A307CBE22E8A44200A18347 /* DWButton.m */,
 				2A4E531B22EA49FE00E5168A /* DWProgressView.h */,
 				2A4E531C22EA49FE00E5168A /* DWProgressView.m */,
 				2A2CD71422F98FEA008C7BC9 /* DWShadowView.h */,
 				2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */,
-				2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */,
-				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
 				2A74EFF623053ECE00C475EB /* DWIntrinsicTextView.h */,
 				2A74EFF723053ECE00C475EB /* DWIntrinsicTextView.m */,
 				2A0C69B12312E8A0001B8C90 /* DWWindow.h */,
@@ -2044,6 +2045,23 @@
 				2A7A7BDF2348DC1900451078 /* DWToolsMenuViewController.m */,
 			);
 			path = Tools;
+			sourceTree = "<group>";
+		};
+		2A7A7BE12348E83B00451078 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				2A307CBD22E8A44200A18347 /* DWButton.h */,
+				2A307CBE22E8A44200A18347 /* DWButton.m */,
+				2A2CD72322FA05DD008C7BC9 /* DWPressableButton.h */,
+				2A2CD72422FA05DD008C7BC9 /* DWPressableButton.m */,
+				2A7A7BE32348E85400451078 /* DWActionButton.h */,
+				2A7A7BE22348E85400451078 /* DWActionButton.m */,
+				FB43BC76211CD15500BC9879 /* DWBlueActionButton.h */,
+				FB43BC77211CD15500BC9879 /* DWBlueActionButton.m */,
+				2A7A7BE52348E9AA00451078 /* DWBorderedActionButton.h */,
+				2A7A7BE62348E9AA00451078 /* DWBorderedActionButton.m */,
+			);
+			path = Buttons;
 			sourceTree = "<group>";
 		};
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
@@ -3799,6 +3817,7 @@
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
 				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
+				2A7A7BE42348E85400451078 /* DWActionButton.m in Sources */,
 				75878BC1192AEC3F002505AB /* DWOLDReceiveViewController.m in Sources */,
 				759816E719357D6F005060EA /* BRBubbleView.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
@@ -3935,6 +3954,7 @@
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWTxListHeaderView.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
+				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
 				2A9FFE9D2230FF4700956D5F /* DWUpholdTransferViewController.m in Sources */,

@@ -21,20 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBlueActionButton ()
-
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, UIColor *> *backgroundColors;
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, UIColor *> *borderColors;
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, NSNumber *> *borderWidths;
-
-@end
-
 @implementation DWBlueActionButton
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        [self performInitialSetup];
+        [self setup_blueActionButton];
     }
     return self;
 }
@@ -42,14 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self performInitialSetup];
+        [self setup_blueActionButton];
     }
     return self;
-}
-
-- (void)performInitialSetup {
-    self.usedOnDarkBackground = NO;
-    self.inverted = NO;
 }
 
 - (void)setUsedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -70,93 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self resetAppearance];
 }
 
-- (void)setEnabled:(BOOL)enabled {
-    [super setEnabled:enabled];
-
-    [self updateButtonState];
-}
-
-- (void)setHighlighted:(BOOL)highlighted {
-    [super setHighlighted:highlighted];
-
-    [self updateButtonState];
-}
-
-- (void)setSelected:(BOOL)selected {
-    [super setSelected:selected];
-
-    [self updateButtonState];
-}
-
-#pragma mark - Background color
-
-- (UIColor *)backgroundColorForState:(UIControlState)state {
-    return self.backgroundColors[@(state)];
-}
-
-- (void)setBackgroundColor:(UIColor *)color forState:(UIControlState)state {
-    if (color) {
-        self.backgroundColors[@(state)] = color;
-    }
-    else {
-        [self.backgroundColors removeObjectForKey:@(state)];
-    }
-    [self updateButtonState];
-}
-
-#pragma mark - Border color
-
-- (UIColor *)borderColorForState:(UIControlState)state {
-    return self.borderColors[@(state)];
-}
-
-- (void)setBorderColor:(UIColor *)color forState:(UIControlState)state {
-    if (color) {
-        self.borderColors[@(state)] = color;
-    }
-    else {
-        [self.borderColors removeObjectForKey:@(state)];
-    }
-    [self updateButtonState];
-}
-
-#pragma mark - Border width
-
-- (CGFloat)borderWidthForState:(UIControlState)state {
-    return self.borderWidths[@(state)].doubleValue;
-}
-
-- (void)setBorderWidth:(CGFloat)width forState:(UIControlState)state {
-    if (width) {
-        self.borderWidths[@(state)] = @(width);
-    }
-    else {
-        [self.borderWidths removeObjectForKey:@(state)];
-    }
-    [self updateButtonState];
-}
-
 #pragma mark - Private
 
-- (NSMutableDictionary<NSNumber *, UIColor *> *)backgroundColors {
-    if (_backgroundColors == nil) {
-        _backgroundColors = [NSMutableDictionary dictionary];
-    }
-    return _backgroundColors;
-}
-
-- (NSMutableDictionary<NSNumber *, UIColor *> *)borderColors {
-    if (_borderColors == nil) {
-        _borderColors = [NSMutableDictionary dictionary];
-    }
-    return _borderColors;
-}
-
-- (NSMutableDictionary<NSNumber *, NSNumber *> *)borderWidths {
-    if (_borderWidths == nil) {
-        _borderWidths = [NSMutableDictionary dictionary];
-    }
-    return _borderWidths;
+- (void)setup_blueActionButton {
+    self.usedOnDarkBackground = NO;
+    self.inverted = NO;
 }
 
 - (void)resetAppearance {
@@ -201,41 +106,14 @@ NS_ASSUME_NONNULL_BEGIN
     [self setBorderColor:color forState:UIControlStateDisabled];
 }
 
-- (void)updateButtonState {
-    UIControlState state = self.state;
-
-    for (NSNumber *flag in @[ @0, @(UIControlStateDisabled), @(UIControlStateSelected), @(UIControlStateHighlighted) ]) {
-        state &= ~flag.unsignedIntegerValue;
-        UIColor *backgroundColor = self.backgroundColors[@(state)];
-        if (backgroundColor) {
-            self.backgroundColor = backgroundColor;
-            break;
-        }
-    }
-
-    for (NSNumber *flag in @[ @0, @(UIControlStateDisabled), @(UIControlStateSelected), @(UIControlStateHighlighted) ]) {
-        state &= ~flag.unsignedIntegerValue;
-        UIColor *borderColor = self.borderColors[@(state)];
-        if (borderColor) {
-            self.layer.borderColor = borderColor.CGColor;
-            break;
-        }
-    }
-
-    for (NSNumber *flag in @[ @0, @(UIControlStateDisabled), @(UIControlStateSelected), @(UIControlStateHighlighted) ]) {
-        state &= ~flag.unsignedIntegerValue;
-        NSNumber *borderWidth = self.borderWidths[@(state)];
-        if (borderWidth) {
-            self.layer.borderWidth = borderWidth.doubleValue;
-            break;
-        }
-    }
-}
-
 #pragma mark - Styles
 
++ (UIColor *)accentColor {
+    return [UIColor dw_dashBlueColor];
+}
+
 + (UIColor *)backgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
+    return inverted ? [UIColor clearColor] : [self accentColor];
 }
 
 + (UIColor *)highlightedBackgroundColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
@@ -256,16 +134,16 @@ NS_ASSUME_NONNULL_BEGIN
         return [UIColor dw_lightTitleColor];
     }
     else {
-        return inverted ? [UIColor dw_dashBlueColor] : [UIColor dw_lightTitleColor];
+        return inverted ? [self accentColor] : [UIColor dw_lightTitleColor];
     }
 }
 
 + (UIColor *)highlightedTextColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
     if (usedOnDarkBackground) {
-        return inverted ? [[UIColor dw_lightTitleColor] colorWithAlphaComponent:0.5] : [UIColor dw_dashBlueColor];
+        return inverted ? [[UIColor dw_lightTitleColor] colorWithAlphaComponent:0.5] : [self accentColor];
     }
     else {
-        return inverted ? [[UIColor dw_dashBlueColor] colorWithAlphaComponent:0.5] : [UIColor dw_dashBlueColor];
+        return inverted ? [[self accentColor] colorWithAlphaComponent:0.5] : [self accentColor];
     }
 }
 
@@ -274,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (UIColor *)borderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
-    return inverted ? [UIColor clearColor] : [UIColor dw_dashBlueColor];
+    return inverted ? [UIColor clearColor] : [self accentColor];
 }
 
 + (UIColor *)disabledBorderColorForInverted:(BOOL)inverted usedOnDarkBackground:(BOOL)usedOnDarkBackground {
