@@ -180,10 +180,10 @@
 "Classical Transaction" = "Classical Transaction";
 
 /* No comment provided by engineer. */
-"clear" = "مسح";
+"Clear" = "Clear";
 
 /* No comment provided by engineer. */
-"clear trusted node?" = "مسح نود المونوقين؟";
+"Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
@@ -225,6 +225,9 @@
 "Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
+"Contact Support" = "Contact Support";
+
+/* No comment provided by engineer. */
 "Continue" = "Continue";
 
 /* No comment provided by engineer. */
@@ -237,10 +240,16 @@
 "copy address to clipboard" = "إنسخ العنوان إلى الحافظة";
 
 /* No comment provided by engineer. */
+"copy logs" = "copy logs";
+
+/* No comment provided by engineer. */
 "copy request to clipboard" = "إنسخ الطلب إلى الحافظة";
 
 /* No comment provided by engineer. */
 "copy wallet addresses to clipboard?" = "إنسخ عنوان المحفظة إلى الحافظة";
+
+/* No comment provided by engineer. */
+"Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:";
 
 /* No comment provided by engineer. */
 "couldn't check address balance" = "لا يمكن التحقق من رصيد العنوان";
@@ -352,6 +361,9 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Enter your 2FA code below";
+
+/* No comment provided by engineer. */
+"Exchange rate data provided by" = "Exchange rate data provided by";
 
 /* No comment provided by engineer. */
 "Exit" = "Exit";
@@ -822,7 +834,7 @@
 "sent!" = "أرسلت!";
 
 /* No comment provided by engineer. */
-"set a trusted node" = "وضع نود الموتوقين";
+"Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
 "Set PIN" = "Set PIN";
@@ -978,7 +990,7 @@
 "Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
-"trust" = "التقة";
+"Trust" = "Trust";
 
 /* No comment provided by engineer. */
 "try again" = "try again";

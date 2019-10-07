@@ -17,8 +17,8 @@
 
 #import "DWAboutViewController.h"
 
-#import "BRBubbleView.h"
 #import "DWAboutModel.h"
+#import "DWUIKit.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,10 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *mainTitleLabel;
 @property (strong, nonatomic) IBOutlet UIButton *statusButton;
 @property (strong, nonatomic) IBOutlet UIButton *logsCopyButton;
+@property (strong, nonatomic) IBOutlet UIButton *contactSupportButton;
+@property (strong, nonatomic) IBOutlet UILabel *copyrightLabel;
+@property (strong, nonatomic) IBOutlet UILabel *exchangeRatesTitleLabel;
+@property (strong, nonatomic) IBOutlet UILabel *exchangeRatesLabel;
+@property (strong, nonatomic) IBOutlet UILabel *repositoryURLLabel;
 
 @property (strong, nonatomic) DWAboutModel *model;
-
-@property (strong, nonatomic) id chainTipBlockObserver,connectedPeersObserver,downloadPeerObserver,quorumObserver;
 
 @end
 
@@ -41,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AboutStoryboard" bundle:nil];
     DWAboutViewController *controller = [storyboard instantiateInitialViewController];
+    controller.hidesBottomBarWhenPushed = YES;
 
     return controller;
 }
@@ -55,40 +59,50 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
+    [self.logsCopyButton setTitle:NSLocalizedString(@"copy logs", nil) forState:UIControlStateNormal];
+    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:", nil);
+    self.exchangeRatesTitleLabel.text = NSLocalizedString(@"Exchange rate data provided by", nil);
+
     self.logsCopyButton.hidden = NO;
 
     self.mainTitleLabel.text = [self.model mainTitle];
 
+    NSString *_Nullable currentPriceSourcing = [self.model currentPriceSourcing];
+    BOOL hasPriceSourcing = currentPriceSourcing != nil;
+    self.exchangeRatesLabel.text = currentPriceSourcing;
+    self.exchangeRatesTitleLabel.hidden = !hasPriceSourcing;
+    self.exchangeRatesLabel.hidden = !hasPriceSourcing;
+
     [self.mainContentView.gestureRecognizers.firstObject addTarget:self action:@selector(aboutAction:)];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(updateStatusNotification:)
-                                                 name:DSTransactionManagerTransactionStatusDidChangeNotification
-                                               object:nil];
-    
-    self.chainTipBlockObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [self updateStatusNotification:note];
-    }];
-    
-    self.downloadPeerObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerDownloadPeerDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [self updateStatusNotification:note];
-    }];
-    
-    self.connectedPeersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerConnectedPeersDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [self updateStatusNotification:note];
-    }];
-    
-    self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [self updateStatusNotification:note];
-    }];
-    
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateStatusNotification:)
+                               name:DSTransactionManagerTransactionStatusDidChangeNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateStatusNotification:)
+                               name:DSChainNewChainTipBlockNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateStatusNotification:)
+                               name:DSPeerManagerDownloadPeerDidChangeNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateStatusNotification:)
+                               name:DSPeerManagerConnectedPeersDidChangeNotification
+                             object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(updateStatusNotification:)
+                               name:DSQuorumListDidChangeNotification
+                             object:nil];
+
     [self updateStatusNotification:nil];
 }
 
--(void)dealloc {
-    if (self.chainTipBlockObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.chainTipBlockObserver];
-    if (self.downloadPeerObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.downloadPeerObserver];
-    if (self.connectedPeersObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.connectedPeersObserver];
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
 }
 
 #pragma mark Actions
@@ -113,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"set a trusted node", nil)
+                             message:NSLocalizedString(@"Set a trusted node", nil)
                       preferredStyle:UIAlertControllerStyleAlert];
         [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
             textField.placeholder = NSLocalizedString(@"node ip", nil);
@@ -122,11 +136,11 @@ NS_ASSUME_NONNULL_BEGIN
             textField.borderStyle = UITextBorderStyleRoundedRect;
         }];
         UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"cancel", nil)
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
                       style:UIAlertActionStyleCancel
                     handler:nil];
         UIAlertAction *trustButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"trust", nil)
+            actionWithTitle:NSLocalizedString(@"Trust", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
                         UITextField *ipField = alert.textFields.firstObject;
@@ -140,14 +154,14 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"clear trusted node?", nil)
+                             message:NSLocalizedString(@"Clear trusted node?", nil)
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"cancel", nil)
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
                       style:UIAlertActionStyleCancel
                     handler:nil];
         UIAlertAction *clearButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"clear", nil)
+            actionWithTitle:NSLocalizedString(@"Clear", nil)
                       style:UIAlertActionStyleDestructive
                     handler:^(UIAlertAction *action) {
                         [self.model clearFixedPeer];

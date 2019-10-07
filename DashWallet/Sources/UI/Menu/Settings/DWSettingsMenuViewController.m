@@ -17,6 +17,7 @@
 
 #import "DWSettingsMenuViewController.h"
 
+#import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUIKit.h"
@@ -140,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf showAboutController];
         };
         [items addObject:cellModel];
     }
@@ -183,6 +184,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateSwitchNetworkCellModel {
     self.switchNetworkCellModel.subTitle = self.model.networkName;
+}
+
+
+- (void)showAboutController {
+    DWAboutViewController *aboutViewController = [DWAboutViewController controller];
+    [self.navigationController pushViewController:aboutViewController animated:YES];
 }
 
 - (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {

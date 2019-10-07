@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -23,8 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)mainTitle;
 - (NSString *)status;
+- (nullable NSString *)currentPriceSourcing;
 
-- (NSArray <NSURL *> *)logFiles;
+- (NSArray<NSURL *> *)logFiles;
 
 - (void)setFixedPeer:(NSString *)fixedPeer;
 - (void)clearFixedPeer;
