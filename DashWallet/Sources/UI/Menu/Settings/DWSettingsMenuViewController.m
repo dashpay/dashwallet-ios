@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf rescanBlockchainAction];
         };
         [items addObject:cellModel];
     }
@@ -186,6 +186,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.switchNetworkCellModel.subTitle = self.model.networkName;
 }
 
+- (void)rescanBlockchainAction {
+    [self.model rescanBlockchain];
+}
 
 - (void)showAboutController {
     DWAboutViewController *aboutViewController = [DWAboutViewController controller];

@@ -48,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
     [[DWEnvironment sharedInstance] switchToTestnetWithCompletion:completion];
 }
 
+- (void)rescanBlockchain {
+    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+    [chainManager rescan];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
