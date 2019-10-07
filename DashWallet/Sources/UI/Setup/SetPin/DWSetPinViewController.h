@@ -19,6 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWSetPinIntent) {
+    DWSetPinIntent_CreateNewWallet,
+    DWSetPinIntent_ChangePin,
+};
+
 @class DWSetPinViewController;
 
 @protocol DWSetPinViewControllerDelegate <NSObject>
@@ -32,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWSetPinViewControllerDelegate> delegate;
 
-+ (instancetype)controller;
++ (instancetype)controllerWithIntent:(DWSetPinIntent)intent;
 
 @end
 

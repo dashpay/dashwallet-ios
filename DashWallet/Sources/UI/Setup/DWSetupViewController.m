@@ -170,7 +170,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (UIViewController *)setPinController {
-    DWSetPinViewController *controller = [DWSetPinViewController controller];
+    DWSetPinViewController *controller = [DWSetPinViewController controllerWithIntent:DWSetPinIntent_CreateNewWallet];
     controller.delegate = self;
 
     return controller;

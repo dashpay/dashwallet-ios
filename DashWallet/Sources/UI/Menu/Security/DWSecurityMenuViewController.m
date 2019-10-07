@@ -19,12 +19,14 @@
 
 #import "DWBorderedActionButton.h"
 #import "DWFormTableViewController.h"
+#import "DWNavigationController.h"
 #import "DWSecurityMenuModel.h"
+#import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSecurityMenuViewController ()
+@interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate>
 
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
@@ -79,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf changePinAction];
         };
         [items addObject:cellModel];
     }
@@ -171,10 +173,34 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
+#pragma mark - DWSetPinViewControllerDelegate
+
+- (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
+    [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
+    [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
+}
+
 #pragma mark - Private
 
 - (void)updateBiometricAuthCellModel {
     self.biometricAuthCellModel.subTitle = self.model.biometricAuthSpendingLimit;
+}
+
+- (void)changePinAction {
+    [self.model changePinContinueBlock:^(BOOL allowed) {
+        if (!allowed) {
+            return;
+        }
+
+        DWSetPinViewController *controller = [DWSetPinViewController controllerWithIntent:DWSetPinIntent_ChangePin];
+        controller.delegate = self;
+        DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
+        navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self presentViewController:navigationController animated:YES completion:nil];
+    }];
 }
 
 @end

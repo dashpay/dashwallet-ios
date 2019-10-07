@@ -17,6 +17,7 @@
 
 #import "DWSecurityMenuModel.h"
 
+#import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,6 +38,32 @@ NS_ASSUME_NONNULL_BEGIN
     DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
 
     return [priceManager stringForDashAmount:chainsManager.spendingLimit];
+}
+
+- (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock {
+    [[DSAuthenticationManager sharedInstance]
+        authenticateWithPrompt:nil
+                    andTouchId:NO
+                alertIfLockout:YES
+                    completion:^(BOOL authenticated, BOOL cancelled) {
+                        if (continueBlock) {
+                            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                            authManager.didAuthenticate = NO;
+
+                            continueBlock(authenticated);
+                        }
+                    }];
+}
+
+- (void)setupNewPin:(NSString *)pin {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    __unused BOOL success = [authManager setupNewPin:pin];
+    NSAssert(success, @"Pin setup failed");
+}
+
+#pragma mark - Private
+
+- (void)resetCurrentPin {
 }
 
 @end

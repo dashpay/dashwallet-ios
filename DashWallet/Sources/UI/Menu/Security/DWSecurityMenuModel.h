@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, assign, nonatomic) BOOL hasFaceID;
 @property (readonly, copy, nonatomic) NSString *biometricAuthSpendingLimit;
 
+- (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock;
+- (void)setupNewPin:(NSString *)pin;
+
 @end
 
 NS_ASSUME_NONNULL_END
