@@ -19,12 +19,13 @@
 
 #import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
+#import "DWLocalCurrencyViewController.h"
 #import "DWSettingsMenuModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSettingsMenuViewController ()
+@interface DWSettingsMenuViewController () <DWLocalCurrencyViewControllerDelegate>
 
 @property (null_resettable, nonatomic, strong) DWSettingsMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
@@ -68,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf showCurrencySelector];
         };
         [items addObject:cellModel];
     }
@@ -176,6 +177,13 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
+#pragma mark - DWLocalCurrencyViewControllerDelegate
+
+- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller {
+    [self updateLocalCurrencyCellModel];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 #pragma mark - Private
 
 - (void)updateLocalCurrencyCellModel {
@@ -188,6 +196,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)rescanBlockchainAction {
     [self.model rescanBlockchain];
+}
+
+- (void)showCurrencySelector {
+    DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] init];
+    controller.delegate = self;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)showAboutController {
