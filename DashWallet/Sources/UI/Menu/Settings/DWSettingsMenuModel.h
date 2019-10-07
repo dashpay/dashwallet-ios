@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) BOOL notificationsEnabled;
 
+- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
+- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

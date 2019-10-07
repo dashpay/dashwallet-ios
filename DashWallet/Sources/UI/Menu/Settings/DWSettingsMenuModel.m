@@ -40,6 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].localNotificationsEnabled = notificationsEnabled;
 }
 
+- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
+    [[DWEnvironment sharedInstance] switchToMainnetWithCompletion:completion];
+}
+
+- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
+    [[DWEnvironment sharedInstance] switchToTestnetWithCompletion:completion];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

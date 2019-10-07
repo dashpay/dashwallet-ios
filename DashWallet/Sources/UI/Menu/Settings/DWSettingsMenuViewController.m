@@ -97,10 +97,9 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
-            //            UITableView *tableView = self.formController.tableView;
-            //            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-            //            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
+            UITableView *tableView = self.formController.tableView;
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
         };
         [items addObject:cellModel];
     }
@@ -184,6 +183,46 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateSwitchNetworkCellModel {
     self.switchNetworkCellModel.subTitle = self.model.networkName;
+}
+
+- (void)showChangeNetworkFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Network", nil)
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *mainnet = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Mainnet", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self.model switchToMainnetWithCompletion:^(BOOL success) {
+                        if (success) {
+                            [self updateSwitchNetworkCellModel];
+                        }
+                    }];
+                }];
+    UIAlertAction *testnet = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Testnet", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self.model switchToTestnetWithCompletion:^(BOOL success) {
+                        if (success) {
+                            [self updateSwitchNetworkCellModel];
+                        }
+                    }];
+                }];
+
+    UIAlertAction *cancel = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:mainnet];
+    [actionSheet addAction:testnet];
+    [actionSheet addAction:cancel];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
 @end
