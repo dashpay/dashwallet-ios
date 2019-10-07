@@ -15,30 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWSettingsMenuModel.h"
-
-#import "DWEnvironment.h"
-#import "DWGlobalOptions.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWSettingsMenuModel
+@interface DWBalanceNotifier : NSObject
 
-- (NSString *)networkName {
-    return [DWEnvironment sharedInstance].currentChain.name;
-}
-
-- (NSString *)localCurrencyCode {
-    return [DSPriceManager sharedInstance].localCurrencyCode;
-}
-
-- (BOOL)notificationsEnabled {
-    return [DWGlobalOptions sharedInstance].localNotificationsEnabled;
-}
-
-- (void)setNotificationsEnabled:(BOOL)notificationsEnabled {
-    [DWGlobalOptions sharedInstance].localNotificationsEnabled = notificationsEnabled;
-}
+- (void)setupNotifications;
+- (void)updateBalance;
 
 @end
 

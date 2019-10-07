@@ -693,6 +693,9 @@
 "Received" = "Alındı";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "%1$@ alındı (%2$@)";
 
 /* No comment provided by engineer. */

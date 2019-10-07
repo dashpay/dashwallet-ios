@@ -693,6 +693,9 @@
 "Received" = "己收到";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "己收到 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */

@@ -693,6 +693,9 @@
 "Received" = "Otrzymano";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "otrzymano %1$@ (%2$@)";
 
 /* No comment provided by engineer. */

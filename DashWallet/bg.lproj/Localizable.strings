@@ -693,6 +693,9 @@
 "Received" = "Получени";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
 /* No comment provided by engineer. */

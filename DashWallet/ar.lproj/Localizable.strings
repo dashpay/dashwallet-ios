@@ -693,6 +693,9 @@
 "Received" = "تم الاستلام";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "تم الاستلام %1$@ (%2$@)";
 
 /* No comment provided by engineer. */

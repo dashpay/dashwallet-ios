@@ -693,6 +693,9 @@
 "Received" = "ได้รับ";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "ได้รับ %1$@(%2$@)";
 
 /* No comment provided by engineer. */

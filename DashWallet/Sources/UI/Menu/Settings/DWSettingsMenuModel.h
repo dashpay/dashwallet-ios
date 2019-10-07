@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *networkName;
 @property (readonly, copy, nonatomic) NSString *localCurrencyCode;
 
-@property (assign, nonatomic) BOOL enableNotifications;
+@property (assign, nonatomic) BOOL notificationsEnabled;
 
 @end
 

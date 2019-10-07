@@ -74,14 +74,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Enable Receive Notifications", nil)];
-        cellModel.on = self.model.enableNotifications;
+        cellModel.on = self.model.notificationsEnabled;
         cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
 
-            strongSelf.model.enableNotifications = cellModel.on;
+            strongSelf.model.notificationsEnabled = cellModel.on;
         };
         [items addObject:cellModel];
     }

@@ -693,6 +693,9 @@
 "Received" = "受取済み";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "着金あり %1$@ (%2$@)";
 
 /* No comment provided by engineer. */

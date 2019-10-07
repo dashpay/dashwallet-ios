@@ -693,6 +693,9 @@
 "Received" = "Received";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "mottok %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
