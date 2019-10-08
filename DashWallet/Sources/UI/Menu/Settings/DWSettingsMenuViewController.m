@@ -128,7 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf rescanBlockchainAction];
+            UITableView *tableView = self.formController.tableView;
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            [strongSelf rescanBlockchainActionFromSourceView:tableView sourceRect:cell.frame];
         };
         [items addObject:cellModel];
     }
@@ -194,8 +196,29 @@ NS_ASSUME_NONNULL_BEGIN
     self.switchNetworkCellModel.subTitle = self.model.networkName;
 }
 
-- (void)rescanBlockchainAction {
-    [self.model rescanBlockchain];
+- (void)rescanBlockchainActionFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *rescanAction = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Confirm", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [self.model rescanBlockchain];
+                }];
+
+    UIAlertAction *cancelAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:rescanAction];
+    [actionSheet addAction:cancelAction];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [self presentViewController:actionSheet animated:YES completion:nil];
 }
 
 - (void)showCurrencySelector {
