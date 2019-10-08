@@ -23,7 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWLocalCurrencyTableViewCell : DWBaseFormTableViewCell
 
-- (void)configureWithModel:(id<DWCurrencyItem>)model selected:(BOOL)selected;
+- (void)configureWithModel:(id<DWCurrencyItem>)model
+                  selected:(BOOL)selected
+               searchQuery:(nullable NSString *)searchQuery;
 
 @end
 

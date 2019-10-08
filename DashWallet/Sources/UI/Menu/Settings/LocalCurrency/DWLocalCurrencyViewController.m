@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWLocalCurrencyViewController () <UISearchBarDelegate>
+@interface DWLocalCurrencyViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
 @property (nonatomic, strong) DWLocalCurrencyModel *model;
 
@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     id<DWCurrencyItem> item = self.model.items[indexPath.row];
     const BOOL selected = [self.model isCurrencyItemsSelected:item];
-    [cell configureWithModel:item selected:selected];
+    [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
 
     return cell;
 }
@@ -110,17 +110,33 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate localCurrencyViewControllerDidSelectCurrency:self];
 }
 
+#pragma mark - UISearchResultsUpdating
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    NSString *query = searchController.searchBar.text ?: @"";
+    [self.model filterItemsWithSearchQuery:query];
+
+    [self.tableView reloadData];
+}
+
+#pragma mark - UISearchBarDelegate
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [searchBar resignFirstResponder];
+}
+
 #pragma mark - Private
 
 - (void)setupSearchController {
     self.definesPresentationContext = YES;
 
     UISearchController *searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
-    //  searchController.searchResultsUpdater = self;
+    searchController.searchResultsUpdater = self;
     searchController.obscuresBackgroundDuringPresentation = NO;
     self.navigationItem.searchController = searchController;
 
     UISearchBar *searchBar = searchController.searchBar;
+    searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
     searchBar.searchBarStyle = UISearchBarStyleMinimal;
     searchBar.delegate = self;
     searchBar.tintColor = [UIColor dw_tintColor];

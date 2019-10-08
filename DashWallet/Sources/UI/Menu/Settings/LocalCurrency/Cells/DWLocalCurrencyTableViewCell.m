@@ -19,6 +19,7 @@
 
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
+#import "NSAttributedString+DWHighlightText.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,6 +31,9 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 @property (readonly, strong, nonatomic) UILabel *nameLabel;
 @property (readonly, strong, nonatomic) UILabel *priceLabel;
 @property (readonly, nonatomic, strong) UIImageView *accessoryImageView;
+
+@property (nullable, nonatomic, strong) id<DWCurrencyItem> model;
+@property (nullable, nonatomic, copy) NSString *searchQuery;
 
 @end
 
@@ -134,17 +138,54 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
             [accessoryImageView.widthAnchor constraintEqualToConstant:ACCESSORY_SIZE.width],
             [accessoryImageView.heightAnchor constraintEqualToConstant:ACCESSORY_SIZE.height],
         ]];
+
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(contentSizeCategoryDidChangeNotification)
+                                   name:UIContentSizeCategoryDidChangeNotification
+                                 object:nil];
     }
 
     return self;
 }
 
-- (void)configureWithModel:(id<DWCurrencyItem>)model selected:(BOOL)selected {
-    self.codeLabel.text = model.code;
-    self.nameLabel.text = model.name;
-    self.priceLabel.text = model.priceString;
+- (void)configureWithModel:(id<DWCurrencyItem>)model
+                  selected:(BOOL)selected
+               searchQuery:(nullable NSString *)searchQuery {
+    self.model = model;
+    self.searchQuery = searchQuery;
 
+    self.priceLabel.text = model.priceString;
     self.accessoryImageView.highlighted = selected;
+
+    [self resetAttributedLabels];
+}
+
+#pragma mark - Private
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self resetAttributedLabels];
+}
+
+- (void)resetAttributedLabels {
+    NSString *highlightedText = self.searchQuery;
+    UIColor *highlightedTextColor = [UIColor dw_dashBlueColor];
+
+    UIFont *codeFont = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    UIColor *codeColor = [UIColor dw_darkTitleColor];
+    self.codeLabel.attributedText = [NSAttributedString attributedText:self.model.code
+                                                                  font:codeFont
+                                                             textColor:codeColor
+                                                       highlightedText:highlightedText
+                                                  highlightedTextColor:highlightedTextColor];
+
+    UIFont *nameFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    UIColor *nameColor = [UIColor dw_quaternaryTextColor];
+    self.nameLabel.attributedText = [NSAttributedString attributedText:self.model.name
+                                                                  font:nameFont
+                                                             textColor:nameColor
+                                                       highlightedText:highlightedText
+                                                  highlightedTextColor:highlightedTextColor];
 }
 
 @end

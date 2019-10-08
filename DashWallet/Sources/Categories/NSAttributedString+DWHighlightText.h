@@ -17,19 +17,15 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWCurrencyItem.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWLocalCurrencyModel : NSObject
+@interface NSAttributedString (DWHighlightText)
 
-@property (readonly, copy, nonatomic) NSArray<id<DWCurrencyItem>> *items;
-@property (nullable, readonly, nonatomic, copy) NSString *trimmedQuery;
-
-- (BOOL)isCurrencyItemsSelected:(id<DWCurrencyItem>)currencyItem;
-- (void)selectItem:(id<DWCurrencyItem>)item;
-
-- (void)filterItemsWithSearchQuery:(NSString *)query;
++ (NSAttributedString *)attributedText:(NSString *)text
+                                  font:(UIFont *)font
+                             textColor:(UIColor *)textColor
+                       highlightedText:(nullable NSString *)highlightedText
+                  highlightedTextColor:(UIColor *)highlightedTextColor;
 
 @end
 

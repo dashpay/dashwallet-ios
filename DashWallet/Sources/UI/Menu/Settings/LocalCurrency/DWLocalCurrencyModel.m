@@ -17,12 +17,11 @@
 
 #import "DWLocalCurrencyModel.h"
 
+#import <DashSync/DSCurrencyPriceObject.h>
+#import <DashSync/DashSync.h>
 #import <objc/runtime.h>
 
 #import "DWWeakContainer.h"
-#import <DashSync/DSCurrencyPriceObject.h>
-#import <DashSync/DashSync.h>
-
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -82,6 +81,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWLocalCurrencyModel () <DWCurrencyItemPriceProvider>
 
+@property (readonly, copy, nonatomic) NSArray<id<DWCurrencyItem>> *allItems;
+@property (nullable, copy, nonatomic) NSArray<id<DWCurrencyItem>> *filteredItems;
+@property (nullable, nonatomic, copy) NSString *trimmedQuery;
+@property (nonatomic, assign, getter=isSearching) BOOL searching;
+
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nullable, nonatomic, strong) DSCurrencyPriceObject *currentPrice;
 
@@ -101,13 +105,22 @@ NS_ASSUME_NONNULL_BEGIN
 
         _currentPrice = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
 
-        _items = priceManager.prices;
-        for (DSCurrencyPriceObject *priceObject in _items) {
+        _allItems = priceManager.prices;
+        for (DSCurrencyPriceObject *priceObject in _allItems) {
             [priceObject setPriceProvider:self];
         }
     }
 
     return self;
+}
+
+- (NSArray<id<DWCurrencyItem>> *)items {
+    if (self.isSearching) {
+        return self.filteredItems ?: @[];
+    }
+    else {
+        return self.allItems;
+    }
 }
 
 - (BOOL)isCurrencyItemsSelected:(id<DWCurrencyItem>)currencyItem {
@@ -125,6 +138,17 @@ NS_ASSUME_NONNULL_BEGIN
     priceManager.localCurrencyCode = item.code;
 }
 
+- (void)filterItemsWithSearchQuery:(NSString *)query {
+    self.searching = query.length > 0;
+
+    NSCharacterSet *whitespaces = [NSCharacterSet whitespaceCharacterSet];
+    NSString *trimmedQuery = [query stringByTrimmingCharactersInSet:whitespaces];
+    self.trimmedQuery = trimmedQuery;
+
+    NSPredicate *predicate = [self searchPredicateForTrimmedQuery:trimmedQuery];
+    self.filteredItems = [self.allItems filteredArrayUsingPredicate:predicate];
+}
+
 #pragma mark - DWCurrencyItemPriceProvider
 
 - (nullable NSString *)formatPrice:(NSNumber *)price {
@@ -133,6 +157,47 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return [self.numberFormatter stringFromNumber:price];
+}
+
+#pragma mark - Private
+
+- (NSCompoundPredicate *)searchPredicateForTrimmedQuery:(NSString *)trimmedQuery {
+    NSArray<NSString *> *searchItems = [trimmedQuery componentsSeparatedByString:@" "];
+
+    NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
+    for (NSString *searchString in searchItems) {
+        NSCompoundPredicate *orPredicate = [self findMatchesForString:searchString];
+        [searchItemsPredicate addObject:orPredicate];
+    }
+
+    NSCompoundPredicate *andPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:searchItemsPredicate];
+
+    return andPredicate;
+}
+
+- (NSCompoundPredicate *)findMatchesForString:(NSString *)searchString {
+    NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
+
+    id<DWCurrencyItem> item = nil;
+    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, code), DW_KEYPATH(item, name) ];
+
+    for (NSString *keyPath in searchKeyPaths) {
+        NSExpression *leftExpression = [NSExpression expressionForKeyPath:keyPath];
+        NSExpression *rightExpression = [NSExpression expressionForConstantValue:searchString];
+        NSComparisonPredicateOptions options =
+            NSCaseInsensitivePredicateOption | NSDiacriticInsensitivePredicateOption;
+        NSComparisonPredicate *comparisonPredicate =
+            [NSComparisonPredicate predicateWithLeftExpression:leftExpression
+                                               rightExpression:rightExpression
+                                                      modifier:NSDirectPredicateModifier
+                                                          type:NSContainsPredicateOperatorType
+                                                       options:options];
+        [searchItemsPredicate addObject:comparisonPredicate];
+    }
+
+    NSCompoundPredicate *orPredicate = [NSCompoundPredicate orPredicateWithSubpredicates:searchItemsPredicate];
+
+    return orPredicate;
 }
 
 @end
