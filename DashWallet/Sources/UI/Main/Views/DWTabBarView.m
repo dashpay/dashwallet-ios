@@ -19,6 +19,7 @@
 
 #import "DWPaymentsButton.h"
 #import "DWSharedUIConstants.h"
+#import "DWTabBarButton.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -28,24 +29,16 @@ static CGFloat const TABBAR_HEIGHT_LARGE = 77.0;
 static CGFloat const TABBAR_BORDER_WIDTH = 1.0;
 static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
-static UIColor *ActiveButtonColor(void) {
-    return [UIColor dw_dashBlueColor];
-}
-
-static UIColor *InactiveButtonColor(void) {
-    return [UIColor dw_tabbarInactiveButtonColor];
-}
-
 @interface DWTabBarView ()
 
 @property (nonatomic, strong) CALayer *backgroundLayer;
 @property (nonatomic, strong) CAShapeLayer *centerCircleLayer;
 @property (nonatomic, strong) CALayer *circleOverlayLayer;
 
-@property (nonatomic, copy) NSArray<UIButton *> *buttons;
-@property (nonatomic, strong) UIButton *homeButton;
+@property (nonatomic, copy) NSArray<UIView *> *buttons;
+@property (nonatomic, strong) DWTabBarButton *homeButton;
 @property (nonatomic, strong) DWPaymentsButton *paymentsButton;
-@property (nonatomic, strong) UIButton *othersButton;
+@property (nonatomic, strong) DWTabBarButton *othersButton;
 
 @end
 
@@ -83,12 +76,10 @@ static UIColor *InactiveButtonColor(void) {
         [self.layer addSublayer:circleOverlayLayer];
         _circleOverlayLayer = circleOverlayLayer;
 
-        NSMutableArray<UIButton *> *buttons = [NSMutableArray array];
+        NSMutableArray<UIView *> *buttons = [NSMutableArray array];
 
         {
-            UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-            UIImage *image = [UIImage imageNamed:@"tabbar_home_icon"];
-            [button setImage:image forState:UIControlStateNormal];
+            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Home];
             [button addTarget:self
                           action:@selector(tabBarButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -108,9 +99,7 @@ static UIColor *InactiveButtonColor(void) {
         }
 
         {
-            UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-            UIImage *image = [UIImage imageNamed:@"tabbar_other_icon"];
-            [button setImage:image forState:UIControlStateNormal];
+            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Others];
             [button addTarget:self
                           action:@selector(tabBarButtonAction:)
                 forControlEvents:UIControlEventTouchUpInside];
@@ -183,7 +172,7 @@ static UIColor *InactiveButtonColor(void) {
     }
 }
 
-- (void)tabBarButtonAction:(UIButton *)sender {
+- (void)tabBarButtonAction:(UIView *)sender {
     if (self.paymentsButton.opened) {
         [self.delegate tabBarViewDidClosePayments:self];
     }
@@ -208,20 +197,14 @@ static UIColor *InactiveButtonColor(void) {
 - (void)updateSelectedTabButton:(DWTabBarViewButtonType)type {
     switch (type) {
         case DWTabBarViewButtonType_Home: {
-            self.othersButton.tintColor = InactiveButtonColor();
-            self.homeButton.tintColor = ActiveButtonColor();
-
-            self.homeButton.userInteractionEnabled = NO;
-            self.othersButton.userInteractionEnabled = YES;
+            self.othersButton.selected = NO;
+            self.homeButton.selected = YES;
 
             break;
         }
         case DWTabBarViewButtonType_Others: {
-            self.othersButton.tintColor = ActiveButtonColor();
-            self.homeButton.tintColor = InactiveButtonColor();
-
-            self.homeButton.userInteractionEnabled = YES;
-            self.othersButton.userInteractionEnabled = NO;
+            self.othersButton.selected = YES;
+            self.homeButton.selected = NO;
 
             break;
         }

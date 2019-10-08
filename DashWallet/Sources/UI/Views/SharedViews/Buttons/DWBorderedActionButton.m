@@ -93,7 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)disabledColorForColor:(UIColor *)color {
     CGFloat hue, saturation, brightness, alpha;
     BOOL result = [color getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
-    NSAssert(result, @"Invalid color");
     if (!result) {
         return [color colorWithAlphaComponent:0.35];
     }

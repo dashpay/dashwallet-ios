@@ -42,6 +42,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *tabBarBottomConstraint;
+@property (nullable, nonatomic, strong) NSLayoutConstraint *contentBottomConstraint;
 
 @property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
@@ -70,16 +71,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (nullable UIViewController *)childViewControllerForStatusBarHidden {
     return self.modalController ?: self.currentController;
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-
-    // Set home's navigation delegate here to prevent unpleasant animation during very first show of the screen
-    if ([self.currentController isKindOfClass:DWNavigationController.class]) {
-        DWNavigationController *navigationController = (DWNavigationController *)self.currentController;
-        navigationController.delegate = self;
-    }
 }
 
 #pragma mark - DWTabBarViewDelegate
@@ -171,6 +162,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         homeController.delegate = self;
 
         _homeNavigationController = [[DWNavigationController alloc] initWithRootViewController:homeController];
+        _homeNavigationController.delegate = self;
     }
 
     return _homeNavigationController;
@@ -202,6 +194,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self.view addSubview:tabBarView];
     self.tabBarView = tabBarView;
 
+    self.contentBottomConstraint = [contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
     self.tabBarBottomConstraint = [tabBarView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -376,14 +369,34 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)setTabBarHiddenAnimated:(BOOL)hidden animated:(BOOL)animated {
-    const CGFloat constant = hidden ? DW_TABBAR_HEIGHT : 0.0;
+    if (hidden) {
+        self.tabBarBottomConstraint.active = NO;
+        self.contentBottomConstraint.active = YES;
+    }
+    else {
+        self.contentBottomConstraint.active = NO;
+        self.tabBarBottomConstraint.active = YES;
+    }
+
     const CGFloat alpha = hidden ? 0.0 : 1.0;
 
-    self.tabBarBottomConstraint.constant = constant;
+    if (self.tabBarView.alpha == alpha) {
+        return;
+    }
+
+    if (@available(iOS 13.0, *)) {
+        // NOP
+    }
+    else {
+        [self.view layoutSubviews];
+    }
 
     [UIView animateWithDuration:animated ? ANIMATION_DURATION : 0.0
                      animations:^{
-                         [self.view layoutIfNeeded];
+                         if (@available(iOS 13.0, *)) {
+                             [self.view layoutSubviews];
+                         }
+
                          self.tabBarView.alpha = alpha;
                      }];
 }

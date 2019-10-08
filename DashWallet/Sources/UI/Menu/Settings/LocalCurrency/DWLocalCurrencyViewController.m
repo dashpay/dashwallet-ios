@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
     searchBar.delegate = self;
     searchBar.tintColor = [UIColor dw_tintColor];
     searchBar.barTintColor = [UIColor dw_dashBlueColor];
-    
+
     // TODO: set correct color for Dark Mode instead of white/black
 
     UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
