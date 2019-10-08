@@ -23,6 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) UIWindow *window;
 
++ (AppDelegate *)appDelegate;
+
+- (void)registerForPushNotifications;
+
 @end
 
 NS_ASSUME_NONNULL_END

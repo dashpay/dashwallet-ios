@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setupNotifications;
 - (void)updateBalance;
+- (void)registerForPushNotifications;
 
 @end
 

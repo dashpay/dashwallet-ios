@@ -64,10 +64,16 @@ NS_ASSUME_NONNULL_BEGIN
         if (self.balance == UINT64_MAX) {
             self.balance = [DWEnvironment sharedInstance].currentWallet.balance;
         }
-
-        // entry point for asking access for notifications
-        [self registerForPushNotifications];
     });
+}
+
+- (void)registerForPushNotifications {
+    const UNAuthorizationOptions options =
+        (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
+    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options
+                                                                        completionHandler:^(BOOL granted, NSError *_Nullable error) {
+                                                                            DSLogVerbose(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
+                                                                        }];
 }
 
 #pragma mark - Private
@@ -122,16 +128,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.balance = wallet.balance;
 }
-
-- (void)registerForPushNotifications {
-    const UNAuthorizationOptions options =
-        (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
-    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options
-                                                                        completionHandler:^(BOOL granted, NSError *_Nullable error) {
-                                                                            DSLogVerbose(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
-                                                                        }];
-}
-
 
 @end
 

@@ -61,6 +61,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation AppDelegate
 
+#pragma mark - Public
+
++ (AppDelegate *)appDelegate {
+    return (AppDelegate *)[UIApplication sharedApplication].delegate;
+}
+
+- (void)registerForPushNotifications {
+    [self.balanceNotifier registerForPushNotifications];
+}
+
 #pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {

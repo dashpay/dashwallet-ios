@@ -17,6 +17,7 @@
 
 #import "DWHomeViewController.h"
 
+#import "AppDelegate.h"
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
@@ -78,6 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidAppear:animated];
 
     [self showWalletBackupReminderIfNeeded];
+
+    [[AppDelegate appDelegate] registerForPushNotifications];
 }
 
 #pragma mark - DWHomeViewDelegate
