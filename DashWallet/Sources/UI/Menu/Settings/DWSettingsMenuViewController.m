@@ -197,28 +197,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)rescanBlockchainActionFromSourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect {
-    UIAlertController *actionSheet = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)
-                         message:nil
-                  preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *rescanAction = [UIAlertAction
-        actionWithTitle:DSLocalizedString(@"Confirm", nil)
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction *action) {
-                    [self.model rescanBlockchain];
-                }];
-
-    UIAlertAction *cancelAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                  style:UIAlertActionStyleCancel
-                handler:nil];
-    [actionSheet addAction:rescanAction];
-    [actionSheet addAction:cancelAction];
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        actionSheet.popoverPresentationController.sourceView = sourceView;
-        actionSheet.popoverPresentationController.sourceRect = sourceRect;
-    }
-    [self presentViewController:actionSheet animated:YES completion:nil];
+    [DWSettingsMenuModel rescanBlockchainActionFromController:self
+                                                   sourceView:sourceView
+                                                   sourceRect:sourceRect];
 }
 
 - (void)showCurrencySelector {
@@ -241,7 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
         actionWithTitle:DSLocalizedString(@"Mainnet", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
-                    [self.model switchToMainnetWithCompletion:^(BOOL success) {
+                    [DWSettingsMenuModel switchToMainnetWithCompletion:^(BOOL success) {
                         if (success) {
                             [self updateSwitchNetworkCellModel];
                         }
@@ -251,7 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
         actionWithTitle:DSLocalizedString(@"Testnet", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
-                    [self.model switchToTestnetWithCompletion:^(BOOL success) {
+                    [DWSettingsMenuModel switchToTestnetWithCompletion:^(BOOL success) {
                         if (success) {
                             [self updateSwitchNetworkCellModel];
                         }

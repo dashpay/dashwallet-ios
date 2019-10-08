@@ -26,10 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (assign, nonatomic) BOOL notificationsEnabled;
 
-- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
-- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
++ (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
++ (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
 
-- (void)rescanBlockchain;
++ (void)rescanBlockchainActionFromController:(UIViewController *)controller
+                                  sourceView:(UIView *)sourceView
+                                  sourceRect:(CGRect)sourceRect;
 
 @end
 

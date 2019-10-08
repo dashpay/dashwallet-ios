@@ -73,6 +73,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
+- (void)performNFCReadingAction {
+    __weak typeof(self) weakSelf = self;
+    [self.payModel performNFCReadingWithCompletion:^(DWPaymentInput *_Nonnull paymentInput) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        strongSelf.paymentProcessor = nil;
+        [strongSelf.paymentProcessor processPaymentInput:paymentInput];
+    }];
+}
+
 #pragma mark - DWPaymentProcessorDelegate
 
 // User Actions

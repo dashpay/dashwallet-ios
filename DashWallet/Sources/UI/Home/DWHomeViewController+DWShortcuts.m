@@ -26,6 +26,7 @@
 #import "DWNavigationController.h"
 #import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWSettingsMenuModel.h"
 #import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
 
@@ -45,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ScanToPay: {
-            [self scanQRAction:sender];
+            [self performScanQRCodeAction];
             break;
         }
         case DWShortcutActionType_PayToAddress: {
@@ -57,9 +58,13 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_SyncNow: {
+            [DWSettingsMenuModel rescanBlockchainActionFromController:self
+                                                           sourceView:sender
+                                                           sourceRect:sender.bounds];
             break;
         }
         case DWShortcutActionType_PayWithNFC: {
+            [self performNFCReadingAction];
             break;
         }
         case DWShortcutActionType_LocalCurrency: {
@@ -70,9 +75,15 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_SwitchToTestnet: {
+            [DWSettingsMenuModel switchToTestnetWithCompletion:^(BOOL success){
+                // NOP
+            }];
             break;
         }
         case DWShortcutActionType_SwitchToMainnet: {
+            [DWSettingsMenuModel switchToMainnetWithCompletion:^(BOOL success){
+                // NOP
+            }];
             break;
         }
         case DWShortcutActionType_ReportAnIssue: {
@@ -176,10 +187,6 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf presentViewController:alert animated:YES completion:nil];
         }
     }];
-}
-
-- (void)scanQRAction:(UIView *)sender {
-    [self performScanQRCodeAction];
 }
 
 - (void)debug_wipeWallet {

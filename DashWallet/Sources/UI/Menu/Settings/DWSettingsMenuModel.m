@@ -40,17 +40,40 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].localNotificationsEnabled = notificationsEnabled;
 }
 
-- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
++ (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     [[DWEnvironment sharedInstance] switchToMainnetWithCompletion:completion];
 }
 
-- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
++ (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
     [[DWEnvironment sharedInstance] switchToTestnetWithCompletion:completion];
 }
 
-- (void)rescanBlockchain {
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-    [chainManager rescan];
++ (void)rescanBlockchainActionFromController:(UIViewController *)controller
+                                  sourceView:(UIView *)sourceView
+                                  sourceRect:(CGRect)sourceRect {
+    UIAlertController *actionSheet = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)
+                         message:nil
+                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *rescanAction = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Confirm", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
+                    [chainManager rescan];
+                }];
+
+    UIAlertAction *cancelAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [actionSheet addAction:rescanAction];
+    [actionSheet addAction:cancelAction];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        actionSheet.popoverPresentationController.sourceView = sourceView;
+        actionSheet.popoverPresentationController.sourceRect = sourceRect;
+    }
+    [controller presentViewController:actionSheet animated:YES completion:nil];
 }
 
 @end
