@@ -17,7 +17,6 @@
 
 #import "DWSecurityMenuViewController.h"
 
-#import "DWBorderedActionButton.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
 #import "DWSecurityMenuModel.h"
@@ -103,6 +102,20 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Reset Wallet", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            // TODO: impl
+        };
+        [items addObject:cellModel];
+    }
+
     return items;
 }
 
@@ -116,55 +129,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    UIView *contentView = self.view;
-
-    UIColor *backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    contentView.backgroundColor = backgroundColor;
-
-    UIView *bottomView = [[UIView alloc] initWithFrame:CGRectZero];
-    bottomView.translatesAutoresizingMaskIntoConstraints = NO;
-    bottomView.backgroundColor = backgroundColor;
-    [contentView addSubview:bottomView];
-
-    DWBorderedActionButton *resetWalletButton = [[DWBorderedActionButton alloc] initWithFrame:CGRectZero];
-    resetWalletButton.translatesAutoresizingMaskIntoConstraints = NO;
-    resetWalletButton.accentColor = [UIColor dw_redColor];
-    [resetWalletButton setTitle:NSLocalizedString(@"Reset Wallet", nil) forState:UIControlStateNormal];
-    [bottomView addSubview:resetWalletButton];
-
-    const CGFloat padding = 24.0;
-
-    [NSLayoutConstraint activateConstraints:@[
-        [bottomView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-        [bottomView.bottomAnchor constraintEqualToAnchor:contentView.safeAreaLayoutGuide.bottomAnchor],
-        [bottomView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-
-        [resetWalletButton.topAnchor constraintEqualToAnchor:bottomView.topAnchor
-                                                    constant:padding],
-        [resetWalletButton.bottomAnchor constraintEqualToAnchor:bottomView.bottomAnchor
-                                                       constant:-padding],
-        [resetWalletButton.centerXAnchor constraintEqualToAnchor:bottomView.centerXAnchor],
-    ]];
-
-    // Forms
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
     DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     [formController setSections:[self sections] placeholderText:nil];
 
     [self addChildViewController:formController];
-
-    UIView *formView = formController.view;
-    formView.translatesAutoresizingMaskIntoConstraints = NO;
-
-    [contentView addSubview:formView];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [formView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
-        [formView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-        [formView.bottomAnchor constraintEqualToAnchor:bottomView.topAnchor],
-        [formView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-    ]];
-
+    formController.view.frame = self.view.bounds;
+    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:formController.view];
     [formController didMoveToParentViewController:self];
     self.formController = formController;
 }
