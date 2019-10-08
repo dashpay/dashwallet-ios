@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)loadView {
-    CGRect frame = [UIScreen mainScreen].bounds;
+    const CGRect frame = [UIScreen mainScreen].bounds;
     self.view = [[DWMainMenuContentView alloc] initWithFrame:frame];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.view.delegate = self;

@@ -69,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                              style:UIBarButtonItemStylePlain
                                                             target:nil
                                                             action:nil];
+    item.tintColor = [UIColor dw_tintColor];
     viewController.navigationItem.backBarButtonItem = item;
 
     id<UINavigationControllerDelegate> delegate = self.realDelegate;
@@ -100,18 +101,35 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)dwNavigationControllerSetup {
-    self.navigationBar.barStyle = UIBarStyleDefault;
-    self.navigationBar.barTintColor = [UIColor dw_dashBlueColor];
-    self.navigationBar.tintColor = [UIColor dw_tintColor];
-    self.navigationBar.translucent = NO;
+    UINavigationBar *navigationBar = self.navigationBar;
+    navigationBar.barStyle = UIBarStyleDefault;
+    navigationBar.barTintColor = [UIColor dw_dashBlueColor];
+    navigationBar.tintColor = [UIColor dw_tintColor];
+    navigationBar.translucent = NO;
 
-    self.navigationBar.titleTextAttributes = @{
+    navigationBar.titleTextAttributes = @{
         NSForegroundColorAttributeName : [UIColor dw_lightTitleColor],
         NSFontAttributeName : [UIFont dw_navigationBarTitleFont],
     };
 
-    [self.navigationBar setBackgroundImage:[[UIImage alloc] init] forBarMetrics:UIBarMetricsDefault];
-    self.navigationBar.shadowImage = [[UIImage alloc] init];
+    navigationBar.shadowImage = [[UIImage alloc] init];
+
+    if (@available(iOS 13.0, *)) {
+        UINavigationBarAppearance *standardAppearance = navigationBar.standardAppearance;
+        NSParameterAssert(standardAppearance);
+        standardAppearance.backgroundColor = navigationBar.barTintColor;
+        standardAppearance.titleTextAttributes = navigationBar.titleTextAttributes;
+        standardAppearance.shadowImage = navigationBar.shadowImage;
+        standardAppearance.shadowColor = [UIColor clearColor];
+
+        UIBarButtonItemAppearance *buttonAppearance = standardAppearance.buttonAppearance;
+        NSParameterAssert(buttonAppearance);
+        UIBarButtonItemStateAppearance *stateApperance = buttonAppearance.normal;
+        stateApperance.titleTextAttributes = navigationBar.titleTextAttributes;
+
+        navigationBar.scrollEdgeAppearance = standardAppearance;
+        navigationBar.compactAppearance = standardAppearance;
+    }
 }
 
 #pragma mark - Delegate Forwarder

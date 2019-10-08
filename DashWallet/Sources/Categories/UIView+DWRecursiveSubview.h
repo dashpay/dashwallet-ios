@@ -19,17 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWLocalCurrencyViewController;
+@interface UIView (DWRecursiveSubview)
 
-@protocol DWLocalCurrencyViewControllerDelegate <NSObject>
-
-- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller;
-
-@end
-
-@interface DWLocalCurrencyViewController : UITableViewController
-
-@property (nullable, nonatomic, weak) id<DWLocalCurrencyViewControllerDelegate> delegate;
+- (nullable UIView *)dw_findSubviewOfClass:(Class)klass;
 
 @end
 

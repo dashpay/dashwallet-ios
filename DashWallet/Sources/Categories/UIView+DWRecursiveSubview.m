@@ -15,28 +15,26 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWCurrencyItem.h"
+#import "UIView+DWRecursiveSubview.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWLocalCurrencyModel;
-@class DWLocalCurrencyContentView;
+@implementation UIView (DWRecursiveSubview)
 
-@protocol DWLocalCurrencyContentViewDelegate <NSObject>
+- (nullable UIView *)dw_findSubviewOfClass:(Class)klass {
+    for (UIView *subview in self.subviews) {
+        if ([subview isKindOfClass:klass]) {
+            return subview;
+        }
 
-- (void)localCurrencyContentViewdidSelectCurrencyItem:(DWLocalCurrencyContentView *)view;
+        UIView *subSubview = [subview dw_findSubviewOfClass:klass];
+        if (subSubview) {
+            return subSubview;
+        }
+    }
 
-@end
-
-@interface DWLocalCurrencyContentView : UIView
-
-@property (nonatomic, strong) DWLocalCurrencyModel *model;
-@property (nullable, nonatomic, weak) id<DWLocalCurrencyContentViewDelegate> delegate;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+    return nil;
+}
 
 @end
 

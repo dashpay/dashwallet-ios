@@ -163,7 +163,6 @@
 		2A7A7C10234B591300451078 /* DWBalanceNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C0F234B591300451078 /* DWBalanceNotifier.m */; };
 		2A7A7C12234B675100451078 /* AboutStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7A7C11234B675000451078 /* AboutStoryboard.storyboard */; };
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
-		2A7A7C1A234B765C00451078 /* DWLocalCurrencyContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C19234B765C00451078 /* DWLocalCurrencyContentView.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
 		2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E2822FB1C5D00FF8653 /* DWSharedUIConstants.m */; };
@@ -280,6 +279,7 @@
 		2ACCD8ED231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8EB231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.m */; };
 		2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8EF231ECDE000A96B62 /* DWPinField.m */; };
 		2ACD53EB234BCFAA00650AD3 /* DWWeakContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */; };
+		2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */; };
 		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
@@ -774,8 +774,6 @@
 		2A7A7C11234B675000451078 /* AboutStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = AboutStoryboard.storyboard; sourceTree = "<group>"; };
 		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
 		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
-		2A7A7C18234B765C00451078 /* DWLocalCurrencyContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyContentView.h; sourceTree = "<group>"; };
-		2A7A7C19234B765C00451078 /* DWLocalCurrencyContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyContentView.m; sourceTree = "<group>"; };
 		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
 		2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyModel.m; sourceTree = "<group>"; };
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
@@ -1008,6 +1006,8 @@
 		2ACD53E6234BADD300650AD3 /* DWCurrencyItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItem.h; sourceTree = "<group>"; };
 		2ACD53E9234BCFAA00650AD3 /* DWWeakContainer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWeakContainer.h; sourceTree = "<group>"; };
 		2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWeakContainer.m; sourceTree = "<group>"; };
+		2ACD53EC234C9D8E00650AD3 /* UIView+DWRecursiveSubview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWRecursiveSubview.h"; sourceTree = "<group>"; };
+		2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWRecursiveSubview.m"; sourceTree = "<group>"; };
 		2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCrashReporter.h; sourceTree = "<group>"; };
 		2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCrashReporter.m; sourceTree = "<group>"; };
 		2AD1CE5E22D8E9D900C99324 /* DWSeedPhraseView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseView.h; sourceTree = "<group>"; };
@@ -2073,7 +2073,7 @@
 		2A7A7C13234B761700451078 /* LocalCurrency */ = {
 			isa = PBXGroup;
 			children = (
-				2A7A7C17234B764C00451078 /* Views */,
+				2A7A7C17234B764C00451078 /* Cells */,
 				2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */,
 				2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */,
 				2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */,
@@ -2083,15 +2083,13 @@
 			path = LocalCurrency;
 			sourceTree = "<group>";
 		};
-		2A7A7C17234B764C00451078 /* Views */ = {
+		2A7A7C17234B764C00451078 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				2A7A7C18234B765C00451078 /* DWLocalCurrencyContentView.h */,
-				2A7A7C19234B765C00451078 /* DWLocalCurrencyContentView.m */,
 				2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */,
 				2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */,
 			);
-			path = Views;
+			path = Cells;
 			sourceTree = "<group>";
 		};
 		2A8B9E3822FC7F3B00FF8653 /* Payments */ = {
@@ -2717,6 +2715,8 @@
 				2A4E534722F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m */,
 				2A2CD6EC22F48159008C7BC9 /* UIDevice+DashWallet.h */,
 				2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */,
+				2ACD53EC234C9D8E00650AD3 /* UIView+DWRecursiveSubview.h */,
+				2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -3740,10 +3740,10 @@
 				2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */,
 				2ACCD84D23180E7E00A96B62 /* DWPaymentOutput.m in Sources */,
 				2A74EFF1230531DA00C475EB /* DWRecoverContentView.m in Sources */,
-				2A7A7C1A234B765C00451078 /* DWLocalCurrencyContentView.m in Sources */,
 				2AD1CE9022DD070000C99324 /* DWSeedPhraseViewLayout.m in Sources */,
 				2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */,
 				2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */,
+				2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */,
 				2A7A7C10234B591300451078 /* DWBalanceNotifier.m in Sources */,
 				2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */,
 				2AD1CEA822E0C8C900C99324 /* DWPreviewSeedPhraseModel.m in Sources */,
