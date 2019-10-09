@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d duff/bayt";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d/%2$d kilitli oy";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld kullanıldı";
 
 /* No comment provided by engineer. */

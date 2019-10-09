@@ -47,8 +47,6 @@
 #define REDX @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 #define NBSP @"\xC2\xA0"         // no-break space (utf-8)
 
-#define SEND_INSTANTLY_KEY @"SEND_INSTANTLY_KEY"
-
 static NSString *sanitizeString(NSString *s)
 {
     NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
@@ -59,7 +57,7 @@ static NSString *sanitizeString(NSString *s)
 
 @interface DWSendViewController () <DWQRScanModelDelegate, DWOLDAmountViewControllerDelegate>
 
-@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount, sendInstantly;
+@property (nonatomic, assign) BOOL clearClipboard, useClipboard, showTips, showBalance, canChangeAmount;
 @property (nonatomic, strong) DSPaymentProtocolRequest *request;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, assign) uint64_t amount;
@@ -128,8 +126,6 @@ static NSString *sanitizeString(NSString *s)
             }
         }
     }
-    
-    self.sendInstantly = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
     
     BOOL hasNFC = NO;
     if (@available(iOS 11.0, *)) {
@@ -436,7 +432,7 @@ static NSString *sanitizeString(NSString *s)
     
     __block BOOL displayedSentMessage = FALSE;
     
-    [chainManager.transactionManager confirmProtocolRequest:protoReq forAmount:self.amount fromAccount:account acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+    [chainManager.transactionManager confirmProtocolRequest:protoReq forAmount:self.amount fromAccount:account acceptInternalAddress:NO acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         if (additionalInfoRequestType == DSRequestingAdditionalInfo_Amount) {
             self.request = protoReq;
             [self updateTitleView];
@@ -1105,10 +1101,6 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)amountViewController:(DWOLDAmountViewController *)controller didInputAmount:(uint64_t)amount wasProposedToUseInstantSend:(BOOL)wasProposedInstantSend usedInstantSend:(BOOL)usedInstantSend {
     self.amount = amount;
-    if (wasProposedInstantSend) {
-        self.sendInstantly = usedInstantSend;
-        [[NSUserDefaults standardUserDefaults] setBool:usedInstantSend forKey:SEND_INSTANTLY_KEY];
-    }
     [self.request updateForRequestsInstantSend:usedInstantSend requiresInstantSend:self.request.requiresInstantSend];
     [self confirmProtocolRequest:self.request];
 }

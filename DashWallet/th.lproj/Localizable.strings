@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d ดัฟฟ์/ไบต์";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "ล็อคโหวต %1$dจาก%2$d";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld ใช้แล้ว";
 
 /* No comment provided by engineer. */

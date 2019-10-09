@@ -551,7 +551,6 @@ static NSString *dateFormat(NSString *template)
     DSTransaction *tx = self.transactions[indexPath.row];
     BOOL instantSendReceived = tx.instantSendReceived;
     BOOL processingInstantSend = tx.hasUnverifiedInstantSendLock;
-    uint32_t transactionLocksCount = [tx.transactionLockVotes count];
     uint64_t received = [account amountReceivedFromTransaction:tx],
     sent = [account amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];

@@ -238,6 +238,7 @@ static NSString *sanitizeString(NSString *s) {
         confirmProtocolRequest:protocolRequest
         forAmount:self.amount
         fromAccount:account
+        acceptInternalAddress:NO
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
