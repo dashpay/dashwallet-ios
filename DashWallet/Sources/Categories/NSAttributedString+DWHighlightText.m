@@ -40,24 +40,27 @@ NS_ASSUME_NONNULL_BEGIN
     [string setAttributes:attributes range:textRange];
 
     if (highlightedText.length > 0) {
-        NSRange searchRange = textRange;
-        NSRange foundRange;
-        while (searchRange.location < textRange.length) {
-            searchRange.length = text.length - searchRange.location;
-            foundRange = [text rangeOfString:highlightedText
-                                     options:NSCaseInsensitiveSearch
-                                       range:searchRange];
-            if (foundRange.location != NSNotFound) {
-                NSDictionary<NSAttributedStringKey, id> *attributes = @{
-                    NSForegroundColorAttributeName : highlightedTextColor,
-                };
-                [string removeAttribute:NSForegroundColorAttributeName range:foundRange];
-                [string addAttributes:attributes range:foundRange];
+        NSArray<NSString *> *searchItems = [highlightedText componentsSeparatedByString:@" "];
+        for (NSString *searchItem in searchItems) {
+            NSRange searchRange = textRange;
+            NSRange foundRange;
+            while (searchRange.location < textRange.length) {
+                searchRange.length = text.length - searchRange.location;
+                foundRange = [text rangeOfString:searchItem
+                                         options:NSCaseInsensitiveSearch
+                                           range:searchRange];
+                if (foundRange.location != NSNotFound) {
+                    NSDictionary<NSAttributedStringKey, id> *attributes = @{
+                        NSForegroundColorAttributeName : highlightedTextColor,
+                    };
+                    [string removeAttribute:NSForegroundColorAttributeName range:foundRange];
+                    [string addAttributes:attributes range:foundRange];
 
-                searchRange.location = foundRange.location + foundRange.length;
-            }
-            else {
-                break;
+                    searchRange.location = foundRange.location + foundRange.length;
+                }
+                else {
+                    break;
+                }
             }
         }
     }
