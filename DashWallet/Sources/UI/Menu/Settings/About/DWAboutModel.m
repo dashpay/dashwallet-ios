@@ -25,13 +25,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutModel
 
-- (NSString *)mainTitle {
+- (NSString *)appVersion {
     DWEnvironment *environment = [DWEnvironment sharedInstance];
     NSString *networkString = @"";
     if (![environment.currentChain isMainnet]) {
         networkString = [NSString stringWithFormat:@" (%@)", environment.currentChain.name];
     }
 
+    NSBundle *bundle = [NSBundle mainBundle];
+
+    return [NSString stringWithFormat:@"DashWallet v%@ - %@%@",
+                                      bundle.infoDictionary[@"CFBundleShortVersionString"],
+                                      bundle.infoDictionary[@"CFBundleVersion"],
+                                      networkString];
+}
+
+- (NSString *)dashSyncVersion {
     static NSString *dashSyncCommit = nil;
     if (!dashSyncCommit) {
         NSString *path = [[NSBundle mainBundle] pathForResource:@"DashSyncCurrentCommit" ofType:nil];
@@ -44,13 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
         dashSyncCommit = dashSyncCommit.length > 7 ? [dashSyncCommit substringToIndex:7] : dashSyncCommit;
     }
 
-    NSBundle *bundle = [NSBundle mainBundle];
-    // non-localizable
-    return [NSString stringWithFormat:@"DashWallet v%@ - %@%@\nDashSync %@",
-                                      bundle.infoDictionary[@"CFBundleShortVersionString"],
-                                      bundle.infoDictionary[@"CFBundleVersion"],
-                                      networkString,
-                                      dashSyncCommit];
+    return [NSString stringWithFormat:@"DashSync %@", dashSyncCommit];
 }
 
 - (NSString *)status {
@@ -66,7 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
     DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
     DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
-
 
     return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
                                                          "connected peers: %d\ndl peer: %@\nquorums validated: %d/%d",

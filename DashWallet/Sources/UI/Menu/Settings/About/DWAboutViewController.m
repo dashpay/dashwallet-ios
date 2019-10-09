@@ -17,6 +17,8 @@
 
 #import "DWAboutViewController.h"
 
+#import <StoreKit/StoreKit.h>
+
 #import "DWAboutModel.h"
 #import "DWUIKit.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -25,15 +27,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutViewController ()
 
-@property (strong, nonatomic) IBOutlet UIView *mainContentView;
-@property (strong, nonatomic) IBOutlet UILabel *mainTitleLabel;
-@property (strong, nonatomic) IBOutlet UIButton *statusButton;
-@property (strong, nonatomic) IBOutlet UIButton *logsCopyButton;
+@property (strong, nonatomic) IBOutlet UILabel *appVersionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *dashSyncVersionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
+
+@property (strong, nonatomic) IBOutlet UIButton *repositoryURLButton;
+
+@property (strong, nonatomic) IBOutlet UILabel *rateReviewLabel;
+@property (strong, nonatomic) IBOutlet UIButton *rateReviewButton;
 @property (strong, nonatomic) IBOutlet UIButton *contactSupportButton;
 @property (strong, nonatomic) IBOutlet UILabel *copyrightLabel;
-@property (strong, nonatomic) IBOutlet UILabel *exchangeRatesTitleLabel;
-@property (strong, nonatomic) IBOutlet UILabel *exchangeRatesLabel;
-@property (strong, nonatomic) IBOutlet UILabel *repositoryURLLabel;
 
 @property (strong, nonatomic) DWAboutModel *model;
 
@@ -42,9 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWAboutViewController
 
 + (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"AboutStoryboard" bundle:nil];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"About" bundle:nil];
     DWAboutViewController *controller = [storyboard instantiateInitialViewController];
     controller.hidesBottomBarWhenPushed = YES;
+    controller.title = NSLocalizedString(@"About", nil);
 
     return controller;
 }
@@ -59,22 +63,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.appVersionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.dashSyncVersionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+    self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    self.rateReviewLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    self.copyrightLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
+
+    self.appVersionLabel.text = [self.model appVersion];
+    self.dashSyncVersionLabel.text = [self.model dashSyncVersion];
+    self.descriptionLabel.text = NSLocalizedString(@"Forked from breadwallet.\nThis app is open source:", nil);
+    [self.repositoryURLButton setTitle:@"https://github.com/dashevo/dashwallet-ios" forState:UIControlStateNormal];
+    self.rateReviewLabel.text = NSLocalizedString(@"Help us improve your experience", nil);
+    [self.rateReviewButton setTitle:NSLocalizedString(@"Review & Rate the app", nil) forState:UIControlStateNormal];
     [self.contactSupportButton setTitle:NSLocalizedString(@"Contact Support", nil) forState:UIControlStateNormal];
-    [self.logsCopyButton setTitle:NSLocalizedString(@"copy logs", nil) forState:UIControlStateNormal];
-    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:", nil);
-    self.exchangeRatesTitleLabel.text = NSLocalizedString(@"Exchange rate data provided by", nil);
-
-    self.logsCopyButton.hidden = NO;
-
-    self.mainTitleLabel.text = [self.model mainTitle];
-
-    NSString *_Nullable currentPriceSourcing = [self.model currentPriceSourcing];
-    BOOL hasPriceSourcing = currentPriceSourcing != nil;
-    self.exchangeRatesLabel.text = currentPriceSourcing;
-    self.exchangeRatesTitleLabel.hidden = !hasPriceSourcing;
-    self.exchangeRatesLabel.hidden = !hasPriceSourcing;
-
-    [self.mainContentView.gestureRecognizers.firstObject addTarget:self action:@selector(aboutAction:)];
+    self.copyrightLabel.text = NSLocalizedString(@"Copyright © 2019 Dash Core", nil);
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -107,9 +109,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark Actions
 
-- (void)aboutAction:(id)sender {
+- (IBAction)respositoryURLAction:(id)sender {
     NSURL *url = [NSURL URLWithString:@"https://github.com/dashevo/dashwallet-ios?files=1"];
     [self displaySafariControllerWithURL:url];
+}
+
+- (IBAction)rateReviewAction:(id)sender {
+    [SKStoreReviewController requestReview];
 }
 
 - (IBAction)contactSupportButtonAction:(id)sender {
@@ -117,11 +123,15 @@ NS_ASSUME_NONNULL_BEGIN
     [self displaySafariControllerWithURL:url];
 }
 
-- (IBAction)logsCopyButtonAction:(id)sender {
-    NSArray *dataToShare = [self.model logFiles];
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare applicationActivities:nil];
-    [self presentViewController:activityViewController animated:YES completion:nil];
-}
+// TODO: enable copy logs button
+
+//- (IBAction)logsCopyButtonAction:(id)sender {
+//    NSArray *dataToShare = [self.model logFiles];
+//    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare applicationActivities:nil];
+//    [self presentViewController:activityViewController animated:YES completion:nil];
+//}
+
+// TODO: set fixed peer
 
 - (IBAction)setFixedPeerButtonAction:(id)sender {
     if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
@@ -173,7 +183,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateStatusNotification:(nullable NSNotification *)sender {
-    [self.statusButton setTitle:[self.model status] forState:UIControlStateNormal];
+    // TODO: put tech info somewhere else
+    //    [self.statusButton setTitle:[self.model status] forState:UIControlStateNormal];
 }
 
 #pragma mark Private

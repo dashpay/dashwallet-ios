@@ -237,16 +237,13 @@
 "copy address to clipboard" = "kopieer adres naar klembord";
 
 /* No comment provided by engineer. */
-"copy logs" = "copy logs";
-
-/* No comment provided by engineer. */
 "copy request to clipboard" = "kopieer adres naar klembord";
 
 /* No comment provided by engineer. */
 "copy wallet addresses to clipboard?" = "wilt u het portemonnee-adres kopiëren naar het klembord?";
 
 /* No comment provided by engineer. */
-"Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:";
+"Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
 
 /* No comment provided by engineer. */
 "couldn't check address balance" = "het controleren van het saldo is mislukt";
@@ -360,9 +357,6 @@
 "Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
 
 /* No comment provided by engineer. */
-"Exchange rate data provided by" = "Exchange rate data provided by";
-
-/* No comment provided by engineer. */
 "Exit" = "Exit";
 
 /* No comment provided by engineer. */
@@ -393,6 +387,9 @@
 "Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
+"Forked from breadwallet.\nThis app is open source:" = "Forked from breadwallet.\nThis app is open source:";
+
+/* No comment provided by engineer. */
 "from:" = "van:";
 
 /* No comment provided by engineer. */
@@ -400,6 +397,9 @@
 
 /* No comment provided by engineer. */
 "Go to Website" = "Ga naar website";
+
+/* No comment provided by engineer. */
+"Help us improve your experience" = "Help us improve your experience";
 
 /* No comment provided by engineer. */
 "History" = "History";
@@ -760,6 +760,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Reset Wallet";
+
+/* No comment provided by engineer. */
+"Review & Rate the app" = "Review & Rate the app";
 
 /* No comment provided by engineer. */
 "Scan" = "Scan";

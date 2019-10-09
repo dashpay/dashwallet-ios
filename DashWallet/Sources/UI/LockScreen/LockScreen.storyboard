@@ -20,8 +20,12 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image_bg" translatesAutoresizingMaskIntoConstraints="NO" id="IE5-H0-lfN">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_lockscreen" translatesAutoresizingMaskIntoConstraints="NO" id="6gb-B3-WGw">
-                                <rect key="frame" x="78.666666666666686" y="86" width="218" height="58"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_template" translatesAutoresizingMaskIntoConstraints="NO" id="6gb-B3-WGw">
+                                <rect key="frame" x="133" y="86" width="109" height="66"/>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="109" id="0jG-mt-T3M"/>
+                                </constraints>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6kH-KV-Ehe" userLabel="Top View">
                                 <rect key="frame" x="16" y="0.0" width="343" height="546"/>
@@ -167,7 +171,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="dash_logo_lockscreen" width="109" height="29"/>
+        <image name="dash_logo_template" width="128" height="33"/>
         <image name="image_bg" width="750" height="1624"/>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
