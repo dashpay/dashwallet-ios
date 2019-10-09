@@ -21,13 +21,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define SEND_INSTANTLY_KEY @"SEND_INSTANTLY_KEY"
-
 @interface DWAmountSendingOptionsModel ()
 
 @property (strong, nonatomic) DSPaymentProtocolDetails *paymentDetails;
 @property (assign, nonatomic) DWAmountSendOptionsModelState state;
-@property (assign, nonatomic) BOOL useInstantSend;
 @property (nullable, copy, nonatomic) NSString *instantSendFee;
 
 @end
@@ -39,76 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _sendingDestination = [sendingDestination copy];
         _paymentDetails = paymentDetails;
-        _useInstantSend = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
     }
     return self;
-}
-
-- (void)setUseInstantSend:(BOOL)useInstantSend {
-    _useInstantSend = useInstantSend;
-
-    [[NSUserDefaults standardUserDefaults] setBool:useInstantSend forKey:SEND_INSTANTLY_KEY];
 }
 
 - (void)updateWithAmount:(uint64_t)amount {
     self.instantSendFee = nil;
 
-    DSSporkManager *sporkManager = [DWEnvironment sharedInstance].currentChainManager.sporkManager;
-    if ([sporkManager llmqInstantSendEnabled]) {
-        self.state = DWAmountSendOptionsModelState_AutoLocks;
-        return;
-    }
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-
     if (amount == 0) {
         self.state = DWAmountSendOptionsModelState_None;
-
-        return;
-    }
-
-    uint32_t inputsWithInstantSend;
-    uint32_t inputsWithoutInstantSend;
-
-    uint64_t maxIXOutputAmountWithInstantSend =
-        [account maxOutputAmountWithConfirmationCount:account.wallet.chain.ixPreviousConfirmationsNeeded
-                                     usingInstantSend:YES
-                                     returnInputCount:&inputsWithInstantSend];
-    uint64_t maxIXOutputAmountWithoutInstantSend =
-        [account maxOutputAmountWithConfirmationCount:0
-                                     usingInstantSend:NO
-                                     returnInputCount:&inputsWithoutInstantSend];
-
-    uint64_t maxIXOutputAmount = MAX(maxIXOutputAmountWithInstantSend, maxIXOutputAmountWithoutInstantSend);
-    BOOL isInstantSendAmountAvailable = maxIXOutputAmountWithInstantSend >= amount;
-    BOOL isAmountAvailable = maxIXOutputAmountWithoutInstantSend >= amount;
-    if (!isInstantSendAmountAvailable && isAmountAvailable && inputsWithoutInstantSend != inputsWithInstantSend) {
-        _useInstantSend = NO;
-        self.state = DWAmountSendOptionsModelState_Regular;
-
-        return;
-    }
-
-    _useInstantSend = [[NSUserDefaults standardUserDefaults] boolForKey:SEND_INSTANTLY_KEY];
-
-    BOOL canAutoLock = [account canUseAutoLocksForAmount:amount];
-    if (!canAutoLock) {
-        if (amount > maxIXOutputAmountWithInstantSend)
-            amount = maxIXOutputAmountWithInstantSend;
-        DSTransaction *tx = [account transactionForAmounts:@[ @(amount) ]
-                                           toOutputScripts:@[ self.paymentDetails.outputScripts.firstObject ]
-                                                   withFee:YES
-                                                 isInstant:YES
-                                       toShapeshiftAddress:nil];
-        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-        uint64_t instantSendExtraFee = MAX(0, tx.standardInstantFee - tx.standardFee);
-
-        self.instantSendFee = [priceManager localCurrencyStringForDashAmount:instantSendExtraFee];
-        self.state = DWAmountSendOptionsModelState_ProposeInstantSend;
-
-        // Set to be InstantSend by default
-        self.useInstantSend = YES;
-
         return;
     }
 

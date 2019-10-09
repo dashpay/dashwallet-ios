@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%dduffs/byte ";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$dz pośród %2$dgłosów zablokowanych";
-
-/* No comment provided by engineer. */
 "%ld used" = "%Id użyty";
 
 /* No comment provided by engineer. */

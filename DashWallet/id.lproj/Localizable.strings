@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%dduffs/byte ";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$ddari %2$d kunci suara";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld digunakan";
 
 /* No comment provided by engineer. */

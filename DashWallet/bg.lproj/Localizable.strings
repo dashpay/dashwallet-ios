@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d извън %2$d заключени гласове";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld използван";
 
 /* No comment provided by engineer. */

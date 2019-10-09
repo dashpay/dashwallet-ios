@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d더프/바이트";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%2$d 중 %1$d 잠금 투표";
-
-/* No comment provided by engineer. */
 "%ld used" = "사용된 %ld";
 
 /* No comment provided by engineer. */

@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = " %2$dの%1$dがロック投票\n";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld 使用済み";
 
 /* No comment provided by engineer. */

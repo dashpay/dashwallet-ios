@@ -15,9 +15,6 @@
 "%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d trên tổng số %2$d biểu quyết khoá";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld đã sử dụng";
 
 /* No comment provided by engineer. */

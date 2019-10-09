@@ -352,8 +352,6 @@
                         if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                             cell.moreInfoLabel.text = [NSString stringWithFormat:@"%@ - %@",[NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                                                                         self.transaction.blockHeight], self.txDateString];
-                        } else if (self.transaction.transactionLockVotes.count) {
-                            cell.moreInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d out of %d lock votes",nil),self.transaction.transactionLockVotes.count,self.transaction.inputHashes.count*10];
                         } else {
                             cell.moreInfoLabel.text = NSLocalizedString(@"accepted by quorum",nil);
                         }
