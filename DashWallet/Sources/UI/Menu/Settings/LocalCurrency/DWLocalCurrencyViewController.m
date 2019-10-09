@@ -17,6 +17,8 @@
 
 #import "DWLocalCurrencyViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWLocalCurrencyModel.h"
 
 #import "DWLocalCurrencyTableViewCell.h"
@@ -29,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWLocalCurrencyViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
 @property (nonatomic, strong) DWLocalCurrencyModel *model;
+@property (nonatomic, strong) UILabel *priceSourceLabel;
 
 @end
 
@@ -165,6 +168,29 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.tableView registerClass:DWLocalCurrencyTableViewCell.class
            forCellReuseIdentifier:DWLocalCurrencyTableViewCell.dw_reuseIdentifier];
+
+    const CGFloat height = 160.0;
+    const CGRect frame = CGRectMake(0.0, -height, CGRectGetWidth([UIScreen mainScreen].bounds), height);
+    UILabel *priceSourceLabel = [[UILabel alloc] initWithFrame:frame];
+    priceSourceLabel.textColor = [UIColor dw_tertiaryTextColor];
+    priceSourceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    priceSourceLabel.numberOfLines = 0;
+    priceSourceLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    priceSourceLabel.textAlignment = NSTextAlignmentCenter;
+    [self.tableView addSubview:priceSourceLabel];
+    self.priceSourceLabel = priceSourceLabel;
+
+    [self walletBalanceDidChangeNotification:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(walletBalanceDidChangeNotification:)
+                                                 name:DSWalletBalanceDidChangeNotification
+                                               object:nil];
+}
+
+- (void)walletBalanceDidChangeNotification:(nullable NSNotification *)sender {
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+    self.priceSourceLabel.text = [NSString stringWithFormat:@"📈 %@",
+                                                            priceManager.lastPriceSourceInfo ?: @"?"];
 }
 
 @end
