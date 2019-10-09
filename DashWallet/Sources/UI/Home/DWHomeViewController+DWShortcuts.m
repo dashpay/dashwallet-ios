@@ -22,16 +22,19 @@
 #import "DWBackupInfoViewController.h"
 #import "DWHomeModel.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
+#import "DWLocalCurrencyViewController.h"
 #import "DWNavigationController.h"
 #import "DWPayModel.h"
 #import "DWPreviewSeedPhraseModel.h"
+#import "DWSettingsMenuModel.h"
 #import "DWShortcutAction.h"
 #import "DWUpholdViewController.h"
 
-// TODO: rm
-#import "UIView+DWHUD.h"
-
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWHomeViewController (DWShortcuts_Internal) <DWLocalCurrencyViewControllerDelegate>
+
+@end
 
 @implementation DWHomeViewController (DWShortcuts)
 
@@ -43,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ScanToPay: {
-            [self scanQRAction:sender];
+            [self performScanQRCodeAction];
             break;
         }
         case DWShortcutActionType_PayToAddress: {
@@ -55,24 +58,32 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_SyncNow: {
+            [DWSettingsMenuModel rescanBlockchainActionFromController:self
+                                                           sourceView:sender
+                                                           sourceRect:sender.bounds];
             break;
         }
         case DWShortcutActionType_PayWithNFC: {
+            [self performNFCReadingAction];
             break;
         }
         case DWShortcutActionType_LocalCurrency: {
-            // TODO: rm
-            [self.view dw_showInfoHUDWithText:@"The Local Currency screen will be opened here as soon as it is implemented 😉"];
-
+            [self showLocalCurrencyAction];
             break;
         }
         case DWShortcutActionType_ImportPrivateKey: {
             break;
         }
         case DWShortcutActionType_SwitchToTestnet: {
+            [DWSettingsMenuModel switchToTestnetWithCompletion:^(BOOL success){
+                // NOP
+            }];
             break;
         }
         case DWShortcutActionType_SwitchToMainnet: {
+            [DWSettingsMenuModel switchToMainnetWithCompletion:^(BOOL success){
+                // NOP
+            }];
             break;
         }
         case DWShortcutActionType_ReportAnIssue: {
@@ -137,6 +148,20 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 
+- (void)showLocalCurrencyAction {
+    DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] init];
+    controller.delegate = self;
+    UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                             target:self
+                             action:@selector(cancelLocalCurrencyScreen)];
+    controller.navigationItem.leftBarButtonItem = cancelButton;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
 - (void)payToAddressAction:(UIView *)sender {
     DWPayModel *payModel = self.model.payModel;
     __weak typeof(self) weakSelf = self;
@@ -162,10 +187,6 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf presentViewController:alert animated:YES completion:nil];
         }
     }];
-}
-
-- (void)scanQRAction:(UIView *)sender {
-    [self performScanQRCodeAction];
 }
 
 - (void)debug_wipeWallet {
@@ -203,6 +224,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)secureWalletCancelButtonAction:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - DWLocalCurrencyViewControllerDelegate
+
+- (void)cancelLocalCurrencyScreen {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller {
+    [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

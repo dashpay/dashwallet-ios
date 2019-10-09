@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
+@property (nonatomic, assign) BOOL localNotificationsEnabled;
+
 // Non-stored options
 
 - (NSTimeInterval)autoLockAppInterval;

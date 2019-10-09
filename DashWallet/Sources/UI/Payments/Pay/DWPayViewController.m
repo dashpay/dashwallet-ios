@@ -109,16 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWPayOptionModelType_NFC: {
-            __weak typeof(self) weakSelf = self;
-            [self.payModel performNFCReadingWithCompletion:^(DWPaymentInput *_Nonnull paymentInput) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-
-                strongSelf.paymentProcessor = nil;
-                [strongSelf.paymentProcessor processPaymentInput:paymentInput];
-            }];
+            [self performNFCReadingAction];
 
             break;
         }

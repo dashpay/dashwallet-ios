@@ -19,6 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// backward compatibility
+static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY";
+
 @implementation DWGlobalOptions
 
 @dynamic walletNeedsBackup;
@@ -32,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init {
     NSDictionary *defaults = @{
-        @"walletNeedsBackup" : @YES,
+        DW_KEYPATH(self, walletNeedsBackup) : @YES,
+        DW_KEYPATH(self, localNotificationsEnabled) : @YES,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -51,6 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DSDynamicOptions
 
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
+    if ([propertyName isEqualToString:DW_KEYPATH(self, localNotificationsEnabled)]) {
+        return LOCAL_NOTIFICATIONS_ENABLED_KEY;
+    }
+
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
 }
 
@@ -68,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.balanceChangedDate = nil;
     self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;
+    self.localNotificationsEnabled = YES;
 }
 
 @end

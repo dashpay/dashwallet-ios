@@ -125,6 +125,9 @@
 /* No comment provided by engineer. */
 "block #%d of %d" = "bloco #%1$d de %2$d";
 
+/* No comment provided by engineer. */
+"Buy & Sell Dash" = "Buy & Sell Dash";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Buy / Sell Dash";
 
@@ -162,6 +165,9 @@
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
+"Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
@@ -174,10 +180,10 @@
 "Classical Transaction" = "Transação Comum";
 
 /* No comment provided by engineer. */
-"clear" = "limpar";
+"Clear" = "Clear";
 
 /* No comment provided by engineer. */
-"clear trusted node?" = "limpar nó confiável?";
+"Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
@@ -216,6 +222,12 @@
 "confirmed in block #%d" = "confirmada no bloco #%d";
 
 /* No comment provided by engineer. */
+"Connect with third party exchanges" = "Connect with third party exchanges";
+
+/* No comment provided by engineer. */
+"Contact Support" = "Contact Support";
+
+/* No comment provided by engineer. */
 "Continue" = "Continue";
 
 /* No comment provided by engineer. */
@@ -228,10 +240,16 @@
 "copy address to clipboard" = "copiar endereço para área de transferência";
 
 /* No comment provided by engineer. */
+"copy logs" = "copy logs";
+
+/* No comment provided by engineer. */
 "copy request to clipboard" = "copiar pedido para área de transferência";
 
 /* No comment provided by engineer. */
 "copy wallet addresses to clipboard?" = "copiar endereços da carteira para área de transferência?";
+
+/* No comment provided by engineer. */
+"Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:" = "Copyright © 2019 Dash Core\nForked from breadwallet.\nThis app is open source:";
 
 /* No comment provided by engineer. */
 "couldn't check address balance" = "não consegui verificar o saldo do endereço";
@@ -258,6 +276,9 @@
 "CRITICAL" = "CRÍTICO";
 
 /* No comment provided by engineer. */
+"Customize Shortcuts" = "Customize Shortcuts";
+
+/* No comment provided by engineer. */
 "Dash address" = "Endereço Dash";
 
 /* No comment provided by engineer. */
@@ -274,6 +295,9 @@
 
 /* No comment provided by engineer. */
 "Date" = "Date";
+
+/* No comment provided by engineer. */
+"Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus dash).";
@@ -315,6 +339,9 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
+"Enable Receive Notifications" = "Enable Receive Notifications";
+
+/* No comment provided by engineer. */
 "Enable receive notifications" = "Habilitar recebimento de notificações";
 
 /* No comment provided by engineer. */
@@ -334,6 +361,9 @@
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Digite abaixo seu código de autenticação de dois fatores \"2FA\"";
+
+/* No comment provided by engineer. */
+"Exchange rate data provided by" = "Exchange rate data provided by";
 
 /* No comment provided by engineer. */
 "Exit" = "Exit";
@@ -406,6 +436,9 @@
 
 /* No comment provided by engineer. */
 "Import private key" = "Importe chave privada";
+
+/* No comment provided by engineer. */
+"Import private key…" = "Import private key…";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "IMPORTANTE";
@@ -484,6 +517,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
+
+/* No comment provided by engineer. */
+"More" = "More";
 
 /* No comment provided by engineer. */
 "more..." = "mais...";
@@ -669,6 +705,9 @@
 "Received" = "Recebido";
 
 /* No comment provided by engineer. */
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
 "received %@ (%@)" = "recebeu %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -714,10 +753,16 @@
 "rescan" = "reescanear";
 
 /* No comment provided by engineer. */
+"Rescan Blockchain" = "Rescan Blockchain";
+
+/* No comment provided by engineer. */
 "Rescan blockchain" = "Reexaminar blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "redefinir";
+
+/* No comment provided by engineer. */
+"Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
 "Scan" = "Scan";
@@ -753,6 +798,9 @@
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
+"Security" = "Security";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "Veja no Uphold";
 
 /* No comment provided by engineer. */
@@ -786,7 +834,7 @@
 "sent!" = "enviado!";
 
 /* No comment provided by engineer. */
-"set a trusted node" = "configure um nó confiável";
+"Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
 "Set PIN" = "Set PIN";
@@ -912,6 +960,9 @@
 "to: %@" = "para: %@";
 
 /* No comment provided by engineer. */
+"Tools" = "Tools";
+
+/* No comment provided by engineer. */
 "topup amount:" = "valor de recarga:";
 
 /* No comment provided by engineer. */
@@ -939,7 +990,7 @@
 "Transfer from Uphold" = "Transferir da Uphold";
 
 /* No comment provided by engineer. */
-"trust" = "confiança";
+"Trust" = "Trust";
 
 /* No comment provided by engineer. */
 "try again" = "tentar novamente";
@@ -1009,6 +1060,12 @@
 
 /* No comment provided by engineer. */
 "View in Explorer" = "View in Explorer";
+
+/* No comment provided by engineer. */
+"View passphrase, backup wallet…" = "View passphrase, backup wallet…";
+
+/* No comment provided by engineer. */
+"View Recovery Phrase" = "View Recovery Phrase";
 
 /* No comment provided by engineer. */
 "voting key hash:" = "código \"hash\" da chave de votação:";

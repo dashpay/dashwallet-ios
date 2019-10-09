@@ -17,15 +17,16 @@
 
 #import "AppDelegate.h"
 
-#import <UserNotifications/UserNotifications.h>
-#import "DWAppRootViewController.h"
 #import <DashSync/DashSync.h>
+
+#import "DWAppRootViewController.h"
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
 #import "DWStartModel.h"
 #import "DWCrashReporter.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
+#import "DWBalanceNotifier.h"
 
 // TODO: re-enable Watch App
 //#ifndef IGNORE_WATCH_TARGET
@@ -54,9 +55,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AppDelegate () <DWStartViewControllerDelegate>
 
+@property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
+
 @end
 
 @implementation AppDelegate
+
+#pragma mark - Public
+
++ (AppDelegate *)appDelegate {
+    return (AppDelegate *)[UIApplication sharedApplication].delegate;
+}
+
+- (void)registerForPushNotifications {
+    [self.balanceNotifier registerForPushNotifications];
+}
 
 #pragma mark - UIApplicationDelegate
 
@@ -125,6 +138,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    
+    //
+    // THIS IS IMPORTANT!
+    //
+    // When adding any logic here mind the migration process
+    //
+    [self.balanceNotifier updateBalance];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -136,14 +156,6 @@ NS_ASSUME_NONNULL_BEGIN
 // If unimplemented, the default behavior is to allow the extension point identifier.
 - (BOOL)application:(UIApplication *)application shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier {
     return NO; // disable extensions such as custom keyboards for security purposes
-}
-
-// TODO: register for notifications when appropriate
-- (void)registerForPushNotifications {
-    UNAuthorizationOptions options = (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
-    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
-        
-    }];
 }
 
 #pragma mark - Private
@@ -208,10 +220,8 @@ NS_ASSUME_NONNULL_BEGIN
     
     [DSShapeshiftManager sharedInstance];
 
-    // TODO: notifications
-    // observe balance and create notifications
-//    [self setupBalanceNotification:[UIApplication sharedApplication]];
-//    [self setupPreferenceDefaults];
+    self.balanceNotifier = [[DWBalanceNotifier alloc] init];
+    [self.balanceNotifier setupNotifications];
 }
 
 #pragma mark - DWStartViewControllerDelegate

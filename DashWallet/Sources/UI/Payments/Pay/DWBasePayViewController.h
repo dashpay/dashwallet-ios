@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performScanQRCodeAction;
 - (void)performPayToPasteboardAction;
+- (void)performNFCReadingAction;
 
 @end
 

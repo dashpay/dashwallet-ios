@@ -37,10 +37,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSetPinViewController
 
-+ (instancetype)controller {
++ (instancetype)controllerWithIntent:(DWSetPinIntent)intent {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"SetPin" bundle:nil];
     DWSetPinViewController *controller = [storyboard instantiateInitialViewController];
-    controller.title = NSLocalizedString(@"Create a New Wallet", nil);
+    switch (intent) {
+        case DWSetPinIntent_CreateNewWallet: {
+            controller.title = NSLocalizedString(@"Create a New Wallet", nil);
+            break;
+        }
+        case DWSetPinIntent_ChangePin: {
+            controller.title = NSLocalizedString(@"Change PIN", nil);
+            break;
+        }
+    }
+
     controller.model = [[DWSetPinModel alloc] init];
 
     return controller;
@@ -81,8 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
-    self.title = NSLocalizedString(@"Create a New Wallet", nil);
-
     self.descriptionLabel.text = NSLocalizedString(@"This PIN will be required to unlock your app everytime when you use it.", nil);
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
