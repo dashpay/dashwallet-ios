@@ -163,7 +163,6 @@
 		2A7A7BE42348E85400451078 /* DWActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BE22348E85400451078 /* DWActionButton.m */; };
 		2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BE62348E9AA00451078 /* DWBorderedActionButton.m */; };
 		2A7A7C10234B591300451078 /* DWBalanceNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C0F234B591300451078 /* DWBalanceNotifier.m */; };
-		2A7A7C12234B675100451078 /* AboutStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A7A7C11234B675000451078 /* AboutStoryboard.storyboard */; };
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
@@ -259,6 +258,7 @@
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
+		2AB7C907234DB82700A56795 /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB7C906234DB82700A56795 /* About.storyboard */; };
 		2AB8CDDB220D879300A3D1DB /* DWOLDAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDA220D879300A3D1DB /* DWOLDAmountViewController.m */; };
 		2AB8CDDF220D880100A3D1DB /* DWNumberKeyboardButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB8CDDE220D880100A3D1DB /* DWNumberKeyboardButton.m */; };
 		2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */; };
@@ -777,7 +777,6 @@
 		2A7A7BE62348E9AA00451078 /* DWBorderedActionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBorderedActionButton.m; sourceTree = "<group>"; };
 		2A7A7C0E234B591300451078 /* DWBalanceNotifier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceNotifier.h; sourceTree = "<group>"; };
 		2A7A7C0F234B591300451078 /* DWBalanceNotifier.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceNotifier.m; sourceTree = "<group>"; };
-		2A7A7C11234B675000451078 /* AboutStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = AboutStoryboard.storyboard; sourceTree = "<group>"; };
 		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
 		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
 		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
@@ -969,6 +968,7 @@
 		2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = StartStoryboard.storyboard; sourceTree = "<group>"; };
 		2AB231D52196E5CF00A6E7E6 /* DWStartModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartModel.h; sourceTree = "<group>"; };
 		2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartModel.m; sourceTree = "<group>"; };
+		2AB7C906234DB82700A56795 /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		2AB8CDD9220D879300A3D1DB /* DWOLDAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOLDAmountViewController.h; sourceTree = "<group>"; };
 		2AB8CDDA220D879300A3D1DB /* DWOLDAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOLDAmountViewController.m; sourceTree = "<group>"; };
 		2AB8CDDD220D880100A3D1DB /* DWNumberKeyboardButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboardButton.h; sourceTree = "<group>"; };
@@ -2212,11 +2212,11 @@
 		2A8F420A21BEE69E00858B91 /* About */ = {
 			isa = PBXGroup;
 			children = (
-				2A7A7C11234B675000451078 /* AboutStoryboard.storyboard */,
 				2A8F420D21BEE95D00858B91 /* DWAboutViewController.h */,
 				2A8F420E21BEE95D00858B91 /* DWAboutViewController.m */,
 				2A8F421E21BEFEEA00858B91 /* DWAboutModel.h */,
 				2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */,
+				2AB7C906234DB82700A56795 /* About.storyboard */,
 			);
 			path = About;
 			sourceTree = "<group>";
@@ -3396,7 +3396,6 @@
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
-				2A7A7C12234B675100451078 /* AboutStoryboard.storyboard in Resources */,
 				FB3FF0B22226416A0059A9A5 /* MasternodeKeys.storyboard in Resources */,
 				2A8B9E6222FF712000FF8653 /* DWPayTableViewCell.xib in Resources */,
 				FBFC2ED521137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
@@ -3413,6 +3412,7 @@
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
+				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,

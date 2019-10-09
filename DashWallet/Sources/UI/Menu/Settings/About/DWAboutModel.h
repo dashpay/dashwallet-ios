@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAboutModel : NSObject
 
-- (NSString *)mainTitle;
+- (NSString *)appVersion;
+- (NSString *)dashSyncVersion;
 - (NSString *)status;
 - (nullable NSString *)currentPriceSourcing;
 
