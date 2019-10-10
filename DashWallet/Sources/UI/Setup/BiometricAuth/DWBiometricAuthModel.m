@@ -79,6 +79,9 @@ NS_ASSUME_NONNULL_BEGIN
 
                           [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
                           [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
+
+                          [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:success ? DUFFS : 0];
+
                           dispatch_async(dispatch_get_main_queue(), completion);
                       }];
 }

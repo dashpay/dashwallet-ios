@@ -17,8 +17,10 @@
 
 #import "DWAmountModel.h"
 
-#import "DWAmountInputValidator.h"
 #import <DashSync/DashSync.h>
+
+#import "DWAmountInputValidator.h"
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -147,8 +149,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)unlock {
+    const BOOL biometricsEnabled = [DWGlobalOptions sharedInstance].biometricAuthEnabled;
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
-                                                          andTouchId:YES
+                                                          andTouchId:biometricsEnabled
                                                       alertIfLockout:YES
                                                           completion:^(BOOL authenticated, BOOL cancelled) {
                                                               self.locked = !authenticated;

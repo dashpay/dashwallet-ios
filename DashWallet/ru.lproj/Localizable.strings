@@ -72,6 +72,9 @@
 "always require passcode" = "Всегда требовать код доступа";
 
 /* No comment provided by engineer. */
+"Always require passcode" = "Always require passcode";
+
+/* No comment provided by engineer. */
 "Amount" = "Сумма";
 
 /* No comment provided by engineer. */
