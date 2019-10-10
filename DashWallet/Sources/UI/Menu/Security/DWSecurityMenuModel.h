@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWSelectorFormItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuModel : NSObject
@@ -24,9 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, assign, nonatomic) BOOL hasTouchID;
 @property (readonly, assign, nonatomic) BOOL hasFaceID;
 @property (readonly, copy, nonatomic) NSString *biometricAuthSpendingLimit;
+@property (readonly, assign, nonatomic) BOOL biometricsEnabled;
 
 - (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock;
 - (void)setupNewPin:(NSString *)pin;
+
+- (void)setBiometricsEnabled:(BOOL)enabled completion:(void (^)(BOOL success))completion;
+
+- (void)requestBiometricsSpendingLimitOptions:(void (^)(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex))completion;
+- (void)setBiometricsSpendingLimitForOption:(id<DWSelectorFormItem>)option;
 
 @end
 

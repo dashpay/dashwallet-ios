@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-#import "DWCurrencyItem.h"
+#import "DWSelectorFormItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWLocalCurrencyModel : NSObject
+@class DWFormTableViewController;
 
-@property (readonly, copy, nonatomic) NSArray<id<DWCurrencyItem>> *items;
-@property (nullable, readonly, nonatomic, copy) NSString *trimmedQuery;
-@property (readonly, nonatomic, assign) NSUInteger selectedIndex;
+@interface DWSelectorViewController : UIViewController
 
-- (void)selectItem:(id<DWCurrencyItem>)item;
+@property (readonly, strong, nonatomic) DWFormTableViewController *formController;
+@property (copy, nonatomic) void (^didSelectItemBlock)(id<DWSelectorFormItem> item, NSUInteger index);
 
-- (void)filterItemsWithSearchQuery:(NSString *)query;
+- (void)setItems:(NSArray<id<DWSelectorFormItem>> *)items
+      selectedIndex:(NSUInteger)selectedIndex
+    placeholderText:(nullable NSString *)placeholderText;
+
++ (instancetype)controller;
 
 @end
 

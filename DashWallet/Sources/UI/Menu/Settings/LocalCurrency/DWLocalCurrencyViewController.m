@@ -54,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self setupView];
     [self setupSearchController];
+
+    [self.tableView reloadData];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -61,6 +63,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     // show search bar initially, but hide when scrolling
     self.navigationItem.hidesSearchBarWhenScrolling = NO;
+
+    const NSUInteger selectedIndex = self.model.selectedIndex;
+    if (selectedIndex != NSNotFound) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:selectedIndex inSection:0];
+        [self.tableView scrollToRowAtIndexPath:indexPath
+                              atScrollPosition:UITableViewScrollPositionMiddle
+                                      animated:NO];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -93,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
     DWLocalCurrencyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
     id<DWCurrencyItem> item = self.model.items[indexPath.row];
-    const BOOL selected = [self.model isCurrencyItemsSelected:item];
+    const BOOL selected = indexPath.row == self.model.selectedIndex;
     [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
 
     return cell;

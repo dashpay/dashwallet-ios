@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWGlobalOptions.h"
 #import "DWMainMenuContentView.h"
 #import "DWMainMenuModel.h"
 #import "DWNavigationController.h"
@@ -71,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
         case DWMainMenuItemType_BuySellDash: {
             [[DSAuthenticationManager sharedInstance]
                 authenticateWithPrompt:nil
-                            andTouchId:YES
+                            andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
                         alertIfLockout:YES
                             completion:^(BOOL authenticated, BOOL cancelled) {
                                 if (authenticated) {

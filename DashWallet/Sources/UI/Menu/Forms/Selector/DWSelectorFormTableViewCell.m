@@ -22,7 +22,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGSize const ACCESSORY_SIZE = {10.0, 19.0};
+static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
+
+static UIImage *_Nullable AccessoryImageForType(DWSelectorFormAccessoryType type) {
+    switch (type) {
+        case DWSelectorFormAccessoryType_None:
+            return nil;
+        case DWSelectorFormAccessoryType_DisclosureIndicator:
+            return [UIImage imageNamed:@"icon_disclosure_indicator"];
+        case DWSelectorFormAccessoryType_CheckmarkEmpty:
+            return [UIImage imageNamed:@"icon_checkbox"];
+        case DWSelectorFormAccessoryType_CheckmarkSelected:
+            return [UIImage imageNamed:@"icon_checkbox_checked"];
+    }
+}
 
 @interface DWSelectorFormTableViewCell ()
 
@@ -51,7 +64,7 @@ static CGSize const ACCESSORY_SIZE = {10.0, 19.0};
         titleLabel.adjustsFontForContentSizeCategory = YES;
         titleLabel.minimumScaleFactor = 0.5;
         titleLabel.adjustsFontSizeToFitWidth = YES;
-        [titleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+        [titleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 2
                                                     forAxis:UILayoutConstraintAxisVertical];
         [contentView addSubview:titleLabel];
         _titleLabel = titleLabel;
@@ -67,17 +80,18 @@ static CGSize const ACCESSORY_SIZE = {10.0, 19.0};
         detailLabel.adjustsFontForContentSizeCategory = YES;
         detailLabel.minimumScaleFactor = 0.5;
         detailLabel.adjustsFontSizeToFitWidth = YES;
-        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
                                                      forAxis:UILayoutConstraintAxisHorizontal];
-        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
                                                      forAxis:UILayoutConstraintAxisVertical];
+        [detailLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
+                                       forAxis:UILayoutConstraintAxisHorizontal];
         [contentView addSubview:detailLabel];
         _detailLabel = detailLabel;
 
-        UIImage *accessoryImage = [UIImage imageNamed:@"icon_disclosure_indicator"];
-        NSParameterAssert(accessoryImage);
-        UIImageView *accessoryImageView = [[UIImageView alloc] initWithImage:accessoryImage];
+        UIImageView *accessoryImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
         accessoryImageView.translatesAutoresizingMaskIntoConstraints = NO;
+        accessoryImageView.contentMode = UIViewContentModeCenter;
         [contentView addSubview:accessoryImageView];
         _accessoryImageView = accessoryImageView;
 
@@ -128,8 +142,8 @@ static CGSize const ACCESSORY_SIZE = {10.0, 19.0};
     [self mvvm_observe:DW_KEYPATH(self, cellModel.accessoryType)
                   with:^(typeof(self) self, NSNumber *value) {
                       const DWSelectorFormAccessoryType accessoryType = value.unsignedIntegerValue;
-                      const BOOL hidden = accessoryType == DWSelectorFormAccessoryType_None;
-                      self.accessoryImageView.hidden = hidden;
+                      UIImage *image = AccessoryImageForType(accessoryType);
+                      self.accessoryImageView.image = image;
                   }];
 
     [self mvvm_observe:DW_KEYPATH(self, cellModel.style)

@@ -20,6 +20,8 @@
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
+#import "DWGlobalOptions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
@@ -36,7 +38,8 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 @implementation DWLockScreenModel
 
 - (BOOL)isBiometricAuthenticationAllowed {
-    return [[DSAuthenticationManager sharedInstance] isBiometricAuthenticationAllowed];
+    return [DWGlobalOptions sharedInstance].biometricAuthEnabled &&
+           [[DSAuthenticationManager sharedInstance] isBiometricAuthenticationAllowed];
 }
 
 - (LABiometryType)biometryType {

@@ -28,6 +28,8 @@ typedef NS_ENUM(NSUInteger, DWSelectorFormCellModelStyle) {
 typedef NS_ENUM(NSUInteger, DWSelectorFormAccessoryType) {
     DWSelectorFormAccessoryType_None,
     DWSelectorFormAccessoryType_DisclosureIndicator,
+    DWSelectorFormAccessoryType_CheckmarkEmpty,
+    DWSelectorFormAccessoryType_CheckmarkSelected,
 };
 
 @interface DWSelectorFormCellModel : DWBaseFormCellModel
