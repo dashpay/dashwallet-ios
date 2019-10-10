@@ -346,19 +346,19 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWSelectorViewController *controller = [DWSelectorViewController controller];
-        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID spending limit", nil) : NSLocalizedString(@"Face ID spending limit", nil);
-        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
-        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setBiometricAuthSpendingLimitForOptionIndex:index];
-            [strongSelf updateBiometricAuthCellModel];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
+//        DWSelectorViewController *controller = [DWSelectorViewController controller];
+//        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID spending limit", nil) : NSLocalizedString(@"Face ID spending limit", nil);
+//        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
+//        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//
+//            [strongSelf.model setBiometricAuthSpendingLimitForOptionIndex:index];
+//            [strongSelf updateBiometricAuthCellModel];
+//        };
+//        [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
 }
 
@@ -371,20 +371,20 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWLocalCurrecnySelectorViewController *controller = [DWLocalCurrecnySelectorViewController controller];
-        [controller setItems:options
-               selectedIndex:selectedIndex
-             placeholderText:NSLocalizedString(@"no exchange rate data", nil)];
-        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setLocalCurrencyForOptionIndex:index];
-            [strongSelf updateLocalCurrencyCellModel];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
+//        DWLocalCurrecnySelectorViewController *controller = [DWLocalCurrecnySelectorViewController controller];
+//        [controller setItems:options
+//               selectedIndex:selectedIndex
+//             placeholderText:NSLocalizedString(@"no exchange rate data", nil)];
+//        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//
+//            [strongSelf.model setLocalCurrencyForOptionIndex:index];
+//            [strongSelf updateLocalCurrencyCellModel];
+//        };
+//        [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
 }
 

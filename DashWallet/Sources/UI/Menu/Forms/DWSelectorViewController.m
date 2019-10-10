@@ -18,13 +18,15 @@
 #import "DWSelectorViewController.h"
 
 #import "DWFormTableViewController.h"
+#import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSelectorViewController ()
 
+@property (copy, nonatomic) NSArray<id<DWSelectorFormItem>> *items;
 @property (assign, nonatomic) NSUInteger selectedIndex;
-@property (strong, nonatomic) DWFormTableViewController *formController;
+@property (null_resettable, strong, nonatomic) DWFormTableViewController *formController;
 
 @end
 
@@ -34,17 +36,28 @@ NS_ASSUME_NONNULL_BEGIN
     return [[self alloc] init];
 }
 
-- (void)setItems:(NSArray<NSString *> *)items selectedIndex:(NSUInteger)selectedIndex placeholderText:(nullable NSString *)placeholderText {
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
+    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+        self.hidesBottomBarWhenPushed = YES;
+    }
+
+    return self;
+}
+
+- (void)setItems:(NSArray<id<DWSelectorFormItem>> *)items
+      selectedIndex:(NSUInteger)selectedIndex
+    placeholderText:(nullable NSString *)placeholderText {
+    self.items = items;
     self.selectedIndex = selectedIndex;
 
     __weak __typeof(self) weakSelf = self;
 
     NSMutableArray<DWSelectorFormCellModel *> *cellModels = [NSMutableArray array];
     NSUInteger index = 0;
-    for (NSString *item in items) {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:item];
-        cellModel.accessoryType = (index == selectedIndex) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+    for (id<DWSelectorFormItem> item in items) {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:item.title];
+        cellModel.accessoryType = (index == selectedIndex) ? DWSelectorFormAccessoryType_CheckmarkSelected : DWSelectorFormAccessoryType_CheckmarkEmpty;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *cellModel, NSIndexPath *indexPath) {
             __strong __typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -64,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWFormTableViewController *)formController {
     if (!_formController) {
-        _formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStyleGrouped];
+        _formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
     }
     return _formController;
 }
@@ -72,12 +85,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
     DWFormTableViewController *formController = self.formController;
     [self addChildViewController:formController];
     formController.view.frame = self.view.bounds;
     formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:formController.view];
     [formController didMoveToParentViewController:self];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -99,13 +118,13 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (self.selectedIndex != NSNotFound) {
         DWSelectorFormCellModel *previousCellModel = cellModels[self.selectedIndex];
-        previousCellModel.accessoryType = UITableViewCellAccessoryNone;
+        previousCellModel.accessoryType = DWSelectorFormAccessoryType_CheckmarkEmpty;
     }
     self.selectedIndex = [cellModels indexOfObject:cellModel];
-    cellModel.accessoryType = UITableViewCellAccessoryCheckmark;
+    cellModel.accessoryType = DWSelectorFormAccessoryType_CheckmarkSelected;
 
     if (self.didSelectItemBlock) {
-        self.didSelectItemBlock(cellModel.title, self.selectedIndex);
+        self.didSelectItemBlock(self.items[self.selectedIndex], self.selectedIndex);
     }
 }
 

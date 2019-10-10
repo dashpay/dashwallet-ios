@@ -72,6 +72,9 @@
 "always require passcode" = "常にパスコードを要求します。";
 
 /* No comment provided by engineer. */
+"Always require passcode" = "Always require passcode";
+
+/* No comment provided by engineer. */
 "Amount" = "金額";
 
 /* No comment provided by engineer. */

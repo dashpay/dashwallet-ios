@@ -85,9 +85,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, copy, nonatomic) NSArray<id<DWCurrencyItem>> *filteredItems;
 @property (nullable, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign, getter=isSearching) BOOL searching;
+@property (nonatomic, assign) NSUInteger selectedIndex;
 
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
-@property (nullable, nonatomic, strong) DSCurrencyPriceObject *currentPrice;
 
 @end
 
@@ -102,8 +102,8 @@ NS_ASSUME_NONNULL_BEGIN
         _numberFormatter = numberFormatter;
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-
-        _currentPrice = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
+        DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
+        _selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
 
         _allItems = priceManager.prices;
         for (DSCurrencyPriceObject *priceObject in _allItems) {
@@ -123,19 +123,12 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (BOOL)isCurrencyItemsSelected:(id<DWCurrencyItem>)currencyItem {
-    if (!self.currentPrice) {
-        return NO;
-    }
-
-    return [self.currentPrice.code isEqualToString:currencyItem.code];
-}
-
 - (void)selectItem:(id<DWCurrencyItem>)item {
-    self.currentPrice = (DSCurrencyPriceObject *)item;
-
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     priceManager.localCurrencyCode = item.code;
+
+    DSCurrencyPriceObject *price = [priceManager priceForCurrencyCode:priceManager.localCurrencyCode];
+    self.selectedIndex = price ? [priceManager.prices indexOfObject:price] : 0;
 }
 
 - (void)filterItemsWithSearchQuery:(NSString *)query {

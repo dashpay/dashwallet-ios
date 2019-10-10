@@ -623,6 +623,7 @@
 		2A307CBB22E8925100A18347 /* DWHomeView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWHomeView.m; sourceTree = "<group>"; };
 		2A307CBD22E8A44200A18347 /* DWButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWButton.h; sourceTree = "<group>"; };
 		2A307CBE22E8A44200A18347 /* DWButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWButton.m; sourceTree = "<group>"; };
+		2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormItem.h; sourceTree = "<group>"; };
 		2A392563234CD21300316EA6 /* DWTabBarButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTabBarButton.h; sourceTree = "<group>"; };
 		2A392564234CD21300316EA6 /* DWTabBarButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTabBarButton.m; sourceTree = "<group>"; };
 		2A392566234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+DWHighlightText.h"; sourceTree = "<group>"; };
@@ -2333,8 +2334,6 @@
 			children = (
 				2A9FFE442230FF4600956D5F /* DWLocalCurrecnySelectorViewController.h */,
 				2A9FFE402230FF4600956D5F /* DWLocalCurrecnySelectorViewController.m */,
-				2A9FFE422230FF4600956D5F /* DWSelectorViewController.h */,
-				2A9FFE3F2230FF4600956D5F /* DWSelectorViewController.m */,
 				2A9FFE252230FF4600956D5F /* DWSettingsControllerModel.h */,
 				2A9FFE432230FF4600956D5F /* DWSettingsControllerModel.m */,
 				2A9FFE412230FF4600956D5F /* DWSettingsViewController.h */,
@@ -2357,6 +2356,9 @@
 				2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */,
 				2A9FFE362230FF4600956D5F /* DWFormTableViewController.h */,
 				2A9FFE2E2230FF4600956D5F /* DWFormTableViewController.m */,
+				2A9FFE422230FF4600956D5F /* DWSelectorViewController.h */,
+				2A9FFE3F2230FF4600956D5F /* DWSelectorViewController.m */,
+				2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */,
 			);
 			path = Forms;
 			sourceTree = "<group>";

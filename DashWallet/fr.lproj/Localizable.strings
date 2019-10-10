@@ -72,6 +72,9 @@
 "always require passcode" = "toujours exiger le code d'accès";
 
 /* No comment provided by engineer. */
+"Always require passcode" = "Always require passcode";
+
+/* No comment provided by engineer. */
 "Amount" = "Montant";
 
 /* No comment provided by engineer. */

@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBackupInfoViewController.h"
+#import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
@@ -132,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)buySellDashAction {
     [[DSAuthenticationManager sharedInstance]
         authenticateWithPrompt:nil
-                    andTouchId:YES
+                    andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
                 alertIfLockout:YES
                     completion:^(BOOL authenticated, BOOL cancelled) {
                         if (authenticated) {
