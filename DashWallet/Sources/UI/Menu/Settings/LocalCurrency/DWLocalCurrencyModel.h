@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, copy, nonatomic) NSArray<id<DWCurrencyItem>> *items;
 @property (nullable, readonly, nonatomic, copy) NSString *trimmedQuery;
+@property (readonly, nonatomic, assign) NSUInteger selectedIndex;
 
-- (BOOL)isCurrencyItemsSelected:(id<DWCurrencyItem>)currencyItem;
 - (void)selectItem:(id<DWCurrencyItem>)item;
 
 - (void)filterItemsWithSearchQuery:(NSString *)query;
