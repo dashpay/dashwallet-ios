@@ -43,11 +43,13 @@ static NSString *TxDateFormat(NSString *template) {
 
 #pragma mark - Data Item
 
+
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
-@property (nonatomic, copy) NSString *address;
+@property (nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
+@property (nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
-@property (nonatomic, assign, getter=isSent) BOOL sent;
+@property (nonatomic, assign) DSTransactionDirection direction;
 @property (nonatomic, strong) UIColor *dashAmountTintColor;
 @property (nonatomic, copy) NSString *fiatAmount;
 
@@ -119,48 +121,37 @@ static NSString *TxDateFormat(NSString *template) {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAccount *account = transaction.account;
 
-    const uint64_t sent = [account amountSentByTransaction:transaction];
-    const uint64_t received = [account amountReceivedFromTransaction:transaction];
 
+    DSTransactionDirection transactionDirection = [account directionOfTransaction:transaction];
     uint64_t dashAmount;
     UIColor *tintColor = nil;
-    BOOL treatAsSent;
-    if (sent > 0 && received == sent) {
-        // moved
-        dashAmount = sent;
-        tintColor = [UIColor dw_darkTitleColor];
-        treatAsSent = YES;
-    }
-    else if (sent > 0) {
-        // sent
-        dashAmount = received - sent;
-        tintColor = [UIColor dw_darkTitleColor];
-        treatAsSent = YES;
-    }
-    else {
-        // received
-        dashAmount = received;
-        tintColor = [UIColor dw_dashBlueColor];
-        treatAsSent = NO;
-    }
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
 
-    if (treatAsSent) {
-        NSMutableArray<NSString *> *outputs = [self outputsForTransaction:transaction
-                                                                     sent:sent
-                                                                 received:received];
-        dataItem.address = outputs.firstObject;
-    }
-    else {
-        NSMutableArray<NSString *> *inputs = [self inputsForTransaction:transaction];
-        dataItem.address = inputs.firstObject;
+    dataItem.direction = transactionDirection;
+
+    switch (transactionDirection) {
+        case DSTransactionDirection_Moved: {
+            dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
+            dataItem.dashAmountTintColor = [UIColor dw_chevronColor];
+        } break;
+        case DSTransactionDirection_Sent: {
+            dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
+            dataItem.dashAmountTintColor = [UIColor dw_darkTitleColor];
+        } break;
+        case DSTransactionDirection_Received: {
+            dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
+            dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
+        } break;
+
+        default:
+            break;
     }
 
-    dataItem.dashAmount = dashAmount;
-    dataItem.sent = treatAsSent;
-    dataItem.dashAmountTintColor = tintColor;
-    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dashAmount];
+    dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+
+    dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
+
 
     return dataItem;
 }
@@ -175,13 +166,22 @@ static NSString *TxDateFormat(NSString *template) {
     NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
         decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
     NSString *formattedNumber = [numberFormatter stringFromNumber:number];
-    NSString *string = nil;
-    if (transactionData.isSent) {
-        string = formattedNumber;
+    NSString *symbol = nil;
+    switch (transactionData.direction) {
+        case DSTransactionDirection_Moved:
+            symbol = @"⟲";
+            break;
+        case DSTransactionDirection_Received:
+            symbol = @"+";
+            break;
+        case DSTransactionDirection_Sent:
+            symbol = @"-";
+            break;
+
+        default:
+            break;
     }
-    else {
-        string = [@"+" stringByAppendingString:formattedNumber];
-    }
+    NSString *string = [symbol stringByAppendingString:formattedNumber];
 
     return [NSAttributedString dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor font:font];
 }
@@ -198,58 +198,6 @@ static NSString *TxDateFormat(NSString *template) {
     }
 
     return inputs;
-}
-
-- (NSMutableArray<NSString *> *)outputsForTransaction:(DSTransaction *)transaction
-                                                 sent:(uint64_t)sent
-                                             received:(uint64_t)received {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSAccount *account = transaction.account;
-
-    const uint64_t fee = [account feeForTransaction:transaction];
-
-    NSMutableArray<NSString *> *outputs = [NSMutableArray array];
-
-    NSUInteger outputAmountIndex = 0;
-
-    for (NSString *address in transaction.outputAddresses) {
-        NSData *script = transaction.outputScripts[outputAmountIndex];
-
-        if (address == (id)[NSNull null]) {
-            if (sent > 0) {
-                if ([script UInt8AtOffset:0] == OP_RETURN) {
-                    UInt8 length = [script UInt8AtOffset:1];
-                    if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
-                        NSMutableData *data = [NSMutableData data];
-                        uint8_t v = BITCOIN_PUBKEY_ADDRESS;
-                        [data appendBytes:&v length:1];
-                        NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
-
-                        [data appendData:addressData];
-                        [outputs addObject:[NSString base58checkWithData:data]];
-                    }
-                }
-                else {
-                    [outputs addObject:NSLocalizedString(@"unknown address", nil)];
-                }
-            }
-        }
-        else if ([transaction isKindOfClass:DSProviderRegistrationTransaction.class] && [((DSProviderRegistrationTransaction *)transaction).masternodeHoldingWallet containsHoldingAddress:address]) {
-            if (sent == 0 || received + MASTERNODE_COST + fee == sent) {
-                [outputs addObject:address];
-            }
-        }
-        else if ([account containsAddress:address]) {
-            if (sent == 0 || received == sent) {
-                [outputs addObject:address];
-            }
-        }
-        else if (sent > 0) {
-            [outputs addObject:address];
-        }
-    }
-
-    return outputs;
 }
 
 @end

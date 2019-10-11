@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWTxDetailModel;
 
 typedef NS_ENUM(NSUInteger, DWTxDetailDisplayType) {
+    DWTxDetailDisplayType_Moved,
     DWTxDetailDisplayType_Sent,
     DWTxDetailDisplayType_Received,
     DWTxDetailDisplayType_Paid, // (v) icon, info screen for tx that has been just sent

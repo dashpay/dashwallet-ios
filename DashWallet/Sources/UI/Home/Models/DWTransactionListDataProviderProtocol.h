@@ -20,14 +20,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSTransactionDirection);
+
 @class DSTransaction;
 
 @protocol DWTransactionListDataItem <NSObject>
 
 /// to (sent) / from (received)
-@property (readonly, nonatomic, copy) NSString *address;
+@property (readonly, nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
+@property (readonly, nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
 @property (readonly, nonatomic, assign) uint64_t dashAmount;
-@property (readonly, nonatomic, assign, getter=isSent) BOOL sent;
+@property (readonly, nonatomic, assign) DSTransactionDirection direction;
 @property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
 @property (readonly, nonatomic, copy) NSString *fiatAmount;
 

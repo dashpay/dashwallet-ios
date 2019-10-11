@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.dataProvider = dataProvider;
     self.transactionData = [self.dataProvider transactionDataForTransaction:transaction];
 
-    self.addressLabel.text = self.transactionData.address;
+    self.addressLabel.text = self.transactionData.outputReceiveAddresses.firstObject;
     self.dateLabel.text = [self.dataProvider dateForTransaction:transaction];
     self.fiatAmountLabel.text = self.transactionData.fiatAmount;
     [self updateDashAmountLabel];

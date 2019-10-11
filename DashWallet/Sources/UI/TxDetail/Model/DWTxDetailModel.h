@@ -29,13 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DSTransaction *transaction;
 
 @property (readonly, nonatomic) NSString *transactionId;
-@property (readonly, nonatomic) BOOL isSent;
+@property (readonly, nonatomic) DSTransactionDirection direction;
 @property (readonly, nonatomic) NSString *fiatAmountString;
 @property (readonly, nonatomic) id<DWTitleDetailItem> date;
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font;
 
-- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
+- (NSArray<id<DWTitleDetailItem>> *)addressesWithFont:(UIFont *)font;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 
 - (nullable NSURL *)explorerURL;

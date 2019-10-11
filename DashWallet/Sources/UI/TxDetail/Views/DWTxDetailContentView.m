@@ -124,6 +124,15 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWTxDetailDisplayType_Moved: {
+            [self setupIconImageView];
+
+            iconImage = [UIImage imageNamed:@"icon_tx_received"];
+            title = NSLocalizedString(@"Moved to Address", nil);
+            contentPadding = DWTitleDetailCellViewPadding_Small;
+
+            break;
+        }
         case DWTxDetailDisplayType_Paid: {
             [self setupAnimatedIconView];
 
