@@ -19,7 +19,7 @@
 
 #import "DWBackupInfoCell.h"
 #import "DWBackupInfoHeaderView.h"
-#import "DWPreviewSeedPhraseViewController.h"
+#import "DWBackupSeedPhraseViewController.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -83,7 +83,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Actions
 
 - (IBAction)showRecoveryPhraseButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *controller = [DWPreviewSeedPhraseViewController controllerWithModel:self.seedPhraseModel];
+    DWPreviewSeedPhraseViewController *controller =
+        [[DWBackupSeedPhraseViewController alloc] initWithModel:self.seedPhraseModel];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }

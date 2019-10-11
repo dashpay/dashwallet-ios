@@ -19,6 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DWSeedPhraseDisplayType) {
+    DWSeedPhraseDisplayType_Backup,
+    DWSeedPhraseDisplayType_Preview,
+};
+
 @class DWPreviewSeedPhraseContentView;
 @class DWSeedPhraseModel;
 
@@ -32,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPreviewSeedPhraseContentView : UIView
 
 @property (nullable, nonatomic, strong) DWSeedPhraseModel *model;
+@property (nonatomic, assign) DWSeedPhraseDisplayType displayType;
 
 @property (nonatomic, assign) CGSize visibleSize;
 @property (nullable, nonatomic, weak) id<DWPreviewSeedPhraseContentViewDelegate> delegate;

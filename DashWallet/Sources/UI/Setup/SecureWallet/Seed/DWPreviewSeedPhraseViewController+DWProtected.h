@@ -15,17 +15,20 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWPreviewSeedPhraseViewController.h"
+
+#import "DWPreviewSeedPhraseContentView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSecureWalletInfoViewController;
-@class DWVerifiedSuccessfullyViewController;
+@interface DWPreviewSeedPhraseViewController () <DWPreviewSeedPhraseContentViewDelegate>
 
-@protocol DWSecureWalletDelegate <NSObject>
+@property (nonatomic, strong) DWPreviewSeedPhraseModel *model;
 
-- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller;
-- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller;
+@property (nonatomic, strong) DWPreviewSeedPhraseContentView *contentView;
+@property (null_resettable, nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
+
+- (void)screenshotAlertOKAction;
 
 @end
 

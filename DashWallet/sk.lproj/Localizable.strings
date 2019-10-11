@@ -729,6 +729,9 @@
 "Recovery phrase" = "Fráza pre obnovenie";
 
 /* No comment provided by engineer. */
+"Recovery Phrase" = "Recovery Phrase";
+
+/* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
 
 /* No comment provided by engineer. */
