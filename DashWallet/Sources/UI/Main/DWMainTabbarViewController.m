@@ -32,7 +32,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @interface DWMainTabbarViewController () <DWTabBarViewDelegate,
                                           DWPaymentsViewControllerDelegate,
                                           DWHomeViewControllerDelegate,
-                                          UINavigationControllerDelegate>
+                                          UINavigationControllerDelegate,
+                                          DWWipeDelegate>
 
 @property (nonatomic, strong) DWHomeModel *homeModel;
 
@@ -135,8 +136,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Receive];
 }
 
-- (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller {
-    [self.delegate mainTabbarViewControllerDidWipeWallet:self];
+#pragma mark - DWWipeDelegate
+
+- (void)didWipeWallet {
+    [self.delegate didWipeWallet];
 }
 
 #pragma mark - UINavigationControllerDelegate
@@ -171,6 +174,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (DWNavigationController *)menuNavigationController {
     if (!_menuNavigationController) {
         DWMainMenuViewController *menuController = [[DWMainMenuViewController alloc] init];
+        menuController.delegate = self;
 
         _menuNavigationController = [[DWNavigationController alloc] initWithRootViewController:menuController];
         _menuNavigationController.delegate = self;

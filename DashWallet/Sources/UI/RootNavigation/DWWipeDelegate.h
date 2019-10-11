@@ -15,19 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWWipeDelegate.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@protocol DWWipeDelegate <NSObject>
 
-@interface DWMainTabbarViewController : UIViewController
-
-@property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
-
-+ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
+- (void)didWipeWallet;
 
 @end
 

@@ -87,6 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWMainMenuItemType_Security: {
             DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
+            controller.delegate = self.delegate;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
