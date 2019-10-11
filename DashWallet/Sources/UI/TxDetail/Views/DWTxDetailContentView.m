@@ -124,6 +124,15 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWTxDetailDisplayType_Moved: {
+            [self setupIconImageView];
+
+            iconImage = [UIImage imageNamed:@"icon_tx_received"];
+            title = NSLocalizedString(@"Moved to Address", nil);
+            contentPadding = DWTitleDetailCellViewPadding_Small;
+
+            break;
+        }
         case DWTxDetailDisplayType_Paid: {
             [self setupAnimatedIconView];
 
@@ -216,7 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
 
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-    self.addressCellView.model = [model addressWithFont:detailFont];
+    self.addressCellView.model = [model addressesWithFont:detailFont].firstObject;
 
     id<DWTitleDetailItem> feeModel = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     self.feeCellView.model = feeModel;

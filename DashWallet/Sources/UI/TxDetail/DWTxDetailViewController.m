@@ -58,7 +58,20 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     if (self.displayingAsDetails) {
-        self.view.displayType = self.model.isSent ? DWTxDetailDisplayType_Sent : DWTxDetailDisplayType_Received;
+        switch (self.model.direction) {
+            case DSTransactionDirection_Moved:
+                self.view.displayType = DWTxDetailDisplayType_Moved;
+                break;
+            case DSTransactionDirection_Sent:
+                self.view.displayType = DWTxDetailDisplayType_Sent;
+                break;
+            case DSTransactionDirection_Received:
+                self.view.displayType = DWTxDetailDisplayType_Received;
+                break;
+
+            default:
+                break;
+        }
     }
     else {
         self.view.displayType = DWTxDetailDisplayType_Paid;

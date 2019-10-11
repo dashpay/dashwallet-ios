@@ -58,8 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
     return _transactionId;
 }
 
-- (BOOL)isSent {
-    return self.dataItem.isSent;
+- (DSTransactionDirection)direction {
+    return self.dataItem.direction;
 }
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font {
@@ -70,23 +70,35 @@ NS_ASSUME_NONNULL_BEGIN
     return self.dataItem.fiatAmount;
 }
 
-- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font {
-    NSString *title = self.dataItem.isSent
-                          ? NSLocalizedString(@"Sent to", nil)
-                          : NSLocalizedString(@"Received from", nil);
+- (NSArray<id<DWTitleDetailItem>> *)addressesWithFont:(UIFont *)font {
+    NSMutableArray *detailItems = [NSMutableArray array];
+    for (NSString *address in self.dataItem.outputReceiveAddresses) {
+        NSString *title;
+        switch (self.dataItem.direction) {
+            case DSTransactionDirection_Sent:
+                title = NSLocalizedString(@"Sent to", nil);
+                break;
+            case DSTransactionDirection_Received:
+                title = NSLocalizedString(@"Received at", nil);
+                break;
+            case DSTransactionDirection_Moved:
+                title = NSLocalizedString(@"Moved internally to", nil);
+                break;
+        }
 
-    NSString *address = self.dataItem.address;
-    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                           withFont:font];
-    DWTitleDetailCellModel *model =
-        [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                title:title
-                                     attributedDetail:detail];
-    return model;
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:title
+                                         attributedDetail:detail];
+        [detailItems addObject:model];
+    }
+    return detailItems;
 }
 
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    if (!self.isSent) {
+    if (self.direction == DSTransactionDirection_Received) {
         return nil;
     }
 
@@ -142,13 +154,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)copyAddressToPasteboard {
-    NSString *address = self.dataItem.address;
-    NSParameterAssert(address);
-    if (!address) {
-        return NO;
-    }
+    // TODO: fix me
 
-    [UIPasteboard generalPasteboard].string = address;
+    //    NSString *address = self.dataItem.address;
+    //    NSParameterAssert(address);
+    //    if (!address) {
+    //        return NO;
+    //    }
+    //
+    //    [UIPasteboard generalPasteboard].string = address;
 
     return YES;
 }

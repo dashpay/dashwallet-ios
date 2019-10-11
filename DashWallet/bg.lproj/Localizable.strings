@@ -528,6 +528,12 @@
 "Moved" = "Преместен";
 
 /* No comment provided by engineer. */
+"Moved internally to" = "Moved internally to";
+
+/* No comment provided by engineer. */
+"Moved to Address" = "Moved to Address";
+
+/* No comment provided by engineer. */
 "Network" = "Мрежа";
 
 /* No comment provided by engineer. */
@@ -711,7 +717,7 @@
 "received %@ (%@)" = "получени %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"Received from" = "Received from";
+"Received at" = "Received at";
 
 /* No comment provided by engineer. */
 "recently mined (locked)" = "наскоро добит (заключен)";
