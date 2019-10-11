@@ -33,7 +33,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWPaymentsViewControllerDelegate,
                                           DWHomeViewControllerDelegate,
                                           UINavigationControllerDelegate,
-                                          DWWipeDelegate>
+                                          DWWipeDelegate,
+                                          DWMainMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWHomeModel *homeModel;
 
@@ -47,6 +48,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
+@property (nonatomic, weak) DWHomeViewController *homeController;
 
 @end
 
@@ -97,6 +99,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
             break;
         }
     }
+    [tabBarView updateSelectedTabButton:buttonType];
 }
 
 - (void)tabBarViewDidOpenPayments:(DWTabBarView *)tabBarView {
@@ -142,6 +145,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self.delegate didWipeWallet];
 }
 
+#pragma mark - DWMainMenuViewControllerDelegate
+
+- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller {
+    [self switchToViewController:self.homeNavigationController];
+    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
+    [self.homeController performScanQRCodeAction];
+}
+
 #pragma mark - UINavigationControllerDelegate
 
 - (void)navigationController:(UINavigationController *)navigationController
@@ -163,6 +174,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         DWHomeViewController *homeController = [[DWHomeViewController alloc] init];
         homeController.model = self.homeModel;
         homeController.delegate = self;
+        self.homeController = homeController;
 
         _homeNavigationController = [[DWNavigationController alloc] initWithRootViewController:homeController];
         _homeNavigationController.delegate = self;

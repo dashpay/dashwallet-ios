@@ -19,7 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWToolsMenuViewController;
+
+@protocol DWToolsMenuViewControllerDelegate <NSObject>
+
+- (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller;
+
+@end
+
 @interface DWToolsMenuViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWToolsMenuViewControllerDelegate> delegate;
 
 @end
 

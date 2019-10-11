@@ -190,7 +190,6 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         }
 
         [self.delegate tabBarView:self didTapButtonType:type];
-        [self updateSelectedTabButton:type];
     }
 }
 

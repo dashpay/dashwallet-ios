@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf.delegate toolsMenuViewControllerImportPrivateKey:strongSelf];
         };
         [items addObject:cellModel];
     }
