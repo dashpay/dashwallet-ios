@@ -26,8 +26,9 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection);
 
 @protocol DWTransactionListDataItem <NSObject>
 
-/// to (sent) / from (received)
+/// From (received)
 @property (readonly, nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
+/// To (sent)
 @property (readonly, nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
 @property (readonly, nonatomic, assign) uint64_t dashAmount;
 @property (readonly, nonatomic, assign) DSTransactionDirection direction;

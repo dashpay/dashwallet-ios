@@ -225,7 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
 
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-    self.addressCellView.model = [model addressWithFont:detailFont];
+    self.addressCellView.model = [model addressesWithFont:detailFont].firstObject;
 
     id<DWTitleDetailItem> feeModel = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     self.feeCellView.model = feeModel;

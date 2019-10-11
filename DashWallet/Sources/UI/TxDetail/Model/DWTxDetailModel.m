@@ -154,13 +154,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)copyAddressToPasteboard {
-    NSString *address = self.dataItem.address;
-    NSParameterAssert(address);
-    if (!address) {
-        return NO;
-    }
+    // TODO: fix me
 
-    [UIPasteboard generalPasteboard].string = address;
+    //    NSString *address = self.dataItem.address;
+    //    NSParameterAssert(address);
+    //    if (!address) {
+    //        return NO;
+    //    }
+    //
+    //    [UIPasteboard generalPasteboard].string = address;
 
     return YES;
 }

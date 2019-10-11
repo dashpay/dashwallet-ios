@@ -133,19 +133,22 @@ static NSString *TxDateFormat(NSString *template) {
     switch (transactionDirection) {
         case DSTransactionDirection_Moved: {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
-            dataItem.dashAmountTintColor = [UIColor dw_chevronColor];
-        } break;
+            dataItem.dashAmountTintColor = [UIColor dw_quaternaryTextColor];
+
+            break;
+        }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.dashAmountTintColor = [UIColor dw_darkTitleColor];
-        } break;
+
+            break;
+        }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
-        } break;
 
-        default:
             break;
+        }
     }
 
     dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
@@ -176,9 +179,6 @@ static NSString *TxDateFormat(NSString *template) {
             break;
         case DSTransactionDirection_Sent:
             symbol = @"-";
-            break;
-
-        default:
             break;
     }
     NSString *string = [symbol stringByAppendingString:formattedNumber];
