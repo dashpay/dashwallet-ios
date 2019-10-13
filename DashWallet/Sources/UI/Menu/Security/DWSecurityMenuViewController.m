@@ -19,6 +19,9 @@
 
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
+#import "DWPreviewSeedPhraseModel.h"
+#import "DWPreviewSeedPhraseViewController.h"
+#import "DWRecoverViewController.h"
 #import "DWSecurityMenuModel.h"
 #import "DWSelectorViewController.h"
 #import "DWSetPinViewController.h"
@@ -26,7 +29,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate>
+@interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate, DWRecoverViewControllerDelegate>
 
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
@@ -67,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [strongSelf showSeedPharseAction];
         };
         [items addObject:cellModel];
     }
@@ -130,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            // TODO: impl
+            [self resetWalletAction];
         };
         [items addObject:cellModel];
     }
@@ -175,10 +178,52 @@ NS_ASSUME_NONNULL_BEGIN
     [controller.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
+#pragma mark - DWSecureWalletDelegate
+
+- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller {
+    NSAssert(NO, @"This delegate method shouldn't be called from a preview seed phrase VC");
+}
+
+#pragma mark - DWRecoverViewControllerDelegate
+
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller {
+    NSAssert(NO, @"Inconsistent state");
+}
+
+- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
+    [self.delegate didWipeWallet];
+}
+
 #pragma mark - Private
 
 - (void)updateBiometricAuthCellModel {
     self.biometricLimitAuthCellModel.subTitle = self.model.biometricAuthSpendingLimit;
+}
+
+- (void)showSeedPharseAction {
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager
+        authenticateWithPrompt:nil
+                    andTouchId:NO
+                alertIfLockout:YES
+                    completion:^(BOOL authenticated, BOOL cancelled) {
+                        if (!authenticated) {
+                            return;
+                        }
+
+                        DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
+                        [model getOrCreateNewWallet];
+
+                        DWPreviewSeedPhraseViewController *controller =
+                            [[DWPreviewSeedPhraseViewController alloc] initWithModel:model];
+                        controller.hidesBottomBarWhenPushed = YES;
+                        controller.delegate = self;
+                        [self.navigationController pushViewController:controller animated:YES];
+                    }];
 }
 
 - (void)changePinAction {
@@ -240,6 +285,14 @@ NS_ASSUME_NONNULL_BEGIN
         };
         [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
+}
+
+- (void)resetWalletAction {
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.hidesBottomBarWhenPushed = YES;
+    controller.action = DWRecoverAction_Wipe;
+    controller.delegate = self;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end

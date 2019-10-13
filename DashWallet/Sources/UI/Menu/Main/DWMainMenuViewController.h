@@ -17,9 +17,21 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWWipeDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWMainMenuViewController;
+
+@protocol DWMainMenuViewControllerDelegate <NSObject>
+
+- (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller;
+
+@end
+
 @interface DWMainMenuViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
 
 @end
 

@@ -43,6 +43,7 @@ extern CGFloat const DW_TABBAR_HEIGHT;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 
 - (void)setPaymentsButtonOpened:(BOOL)opened;
+- (void)updateSelectedTabButton:(DWTabBarViewButtonType)type;
 
 @end
 

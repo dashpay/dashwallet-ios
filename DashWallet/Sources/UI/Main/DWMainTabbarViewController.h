@@ -17,20 +17,15 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWWipeDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWMainTabbarViewController;
 @class DWHomeModel;
-
-@protocol DWMainTabbarViewControllerDelegate <NSObject>
-
-- (void)mainTabbarViewControllerDidWipeWallet:(DWMainTabbarViewController *)controller;
-
-@end
 
 @interface DWMainTabbarViewController : UIViewController
 
-@property (nullable, nonatomic, weak) id<DWMainTabbarViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
 
 + (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
 

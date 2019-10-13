@@ -30,7 +30,7 @@ static NSTimeInterval const TRANSITION_DURATION = 0.35;
 static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
-                                       DWMainTabbarViewControllerDelegate,
+                                       DWWipeDelegate,
                                        DWLockScreenViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DWRootModel *model;
@@ -123,9 +123,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self performTransitionToViewController:mainController];
 }
 
-#pragma mark - DWMainTabbarViewControllerDelegate
+#pragma mark - DWWipeDelegate
 
-- (void)mainTabbarViewControllerDidWipeWallet:(DWMainTabbarViewController *)controller {
+- (void)didWipeWallet {
     UIViewController *setupController = [self setupController];
     [self performTransitionToViewController:setupController];
 }

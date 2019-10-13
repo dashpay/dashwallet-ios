@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWSecureWalletDelegate
 
-- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
+- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

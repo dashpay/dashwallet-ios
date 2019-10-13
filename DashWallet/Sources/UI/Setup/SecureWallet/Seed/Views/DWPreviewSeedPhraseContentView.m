@@ -45,7 +45,6 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
     if (self) {
         DWSeedPhraseTitledView *seedPhraseView = [[DWSeedPhraseTitledView alloc] initWithType:DWSeedPhraseType_Preview];
         seedPhraseView.translatesAutoresizingMaskIntoConstraints = NO;
-        seedPhraseView.title = NSLocalizedString(@"Please write it down", nil);
         [self addSubview:seedPhraseView];
         _seedPhraseView = seedPhraseView;
 
@@ -101,6 +100,25 @@ static NSTimeInterval const SCREENSHOT_ERROR_MSG_DELAY = 5.0;
 
 - (void)setModel:(nullable DWSeedPhraseModel *)model {
     self.seedPhraseView.model = model;
+}
+
+- (void)setDisplayType:(DWSeedPhraseDisplayType)displayType {
+    _displayType = displayType;
+
+    switch (displayType) {
+        case DWSeedPhraseDisplayType_Backup: {
+            self.confirmationCheckbox.hidden = NO;
+            self.seedPhraseView.title = NSLocalizedString(@"Please write it down", nil);
+
+            break;
+        }
+        case DWSeedPhraseDisplayType_Preview: {
+            self.confirmationCheckbox.hidden = YES;
+            self.seedPhraseView.title = @"";
+
+            break;
+        }
+    }
 }
 
 - (void)setVisibleSize:(CGSize)visibleSize {

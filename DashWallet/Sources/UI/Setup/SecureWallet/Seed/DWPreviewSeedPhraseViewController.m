@@ -15,32 +15,26 @@
 //  limitations under the License.
 //
 
-#import "DWPreviewSeedPhraseViewController.h"
+#import "DWPreviewSeedPhraseViewController+DWProtected.h"
 
-#import "DWPreviewSeedPhraseContentView.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "DWUIKit.h"
-#import "DWVerifySeedPhraseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPreviewSeedPhraseViewController () <DWPreviewSeedPhraseContentViewDelegate>
-
-@property (nonatomic, strong) DWPreviewSeedPhraseModel *model;
-
-@property (nonatomic, strong) DWPreviewSeedPhraseContentView *contentView;
-@property (null_resettable, nonatomic, strong) UINotificationFeedbackGenerator *feedbackGenerator;
-
-@end
-
 @implementation DWPreviewSeedPhraseViewController
 
-+ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model {
-    DWPreviewSeedPhraseViewController *controller = [[DWPreviewSeedPhraseViewController alloc] init];
-    controller.model = model;
+- (instancetype)initWithModel:(DWPreviewSeedPhraseModel *)model {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        self.model = model;
+    }
+    return self;
+}
 
-    return controller;
++ (NSString *)actionButtonTitle {
+    return NSLocalizedString(@"Done", nil);
 }
 
 - (void)viewDidLoad {
@@ -75,11 +69,13 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
-    self.title = NSLocalizedString(@"Backup Wallet", nil);
+    self.title = NSLocalizedString(@"Recovery Phrase", nil);
+    self.actionButton.enabled = YES;
 
     DWPreviewSeedPhraseContentView *contentView = [[DWPreviewSeedPhraseContentView alloc] initWithFrame:CGRectZero];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
+    contentView.displayType = DWSeedPhraseDisplayType_Preview;
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 
@@ -111,15 +107,14 @@ NS_ASSUME_NONNULL_BEGIN
     return _feedbackGenerator;
 }
 
+- (void)screenshotAlertOKAction {
+    // NOP
+}
+
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {
-    DWSeedPhraseModel *seedPhrase = self.contentView.model;
-
-    DWVerifySeedPhraseViewController *controller = [DWVerifySeedPhraseViewController
-        controllerWithSeedPhrase:seedPhrase];
-    controller.delegate = self.delegate;
-    [self.navigationController pushViewController:controller animated:YES];
+    [self.delegate secureWalletRoutineDidCanceled:self];
 }
 
 #pragma mark - DWPreviewSeedPhraseContentViewDelegate
@@ -144,15 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
         actionWithTitle:NSLocalizedString(@"OK", nil)
                   style:UIAlertActionStyleCancel
                 handler:^(UIAlertAction *action) {
-                    [self.model clearAllWallets];
-
-                    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
-
-                    DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
-                    [self.contentView updateSeedPhraseModelAnimated:seedPhrase];
-                    [self.contentView showScreenshotDetectedErrorMessage];
-
-                    self.actionButton.enabled = NO;
+                    [self screenshotAlertOKAction];
                 }];
     [alert addAction:okAction];
     [self presentViewController:alert animated:YES completion:nil];

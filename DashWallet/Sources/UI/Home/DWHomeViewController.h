@@ -17,6 +17,8 @@
 
 #import "DWBasePayViewController.h"
 
+#import "DWWipeDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeViewController;
@@ -26,14 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeViewController:(DWHomeViewController *)controller payButtonAction:(UIButton *)sender;
 - (void)homeViewController:(DWHomeViewController *)controller receiveButtonAction:(UIButton *)sender;
-- (void)homeViewControllerDidWipeWallet:(DWHomeViewController *)controller;
 
 @end
 
 @interface DWHomeViewController : DWBasePayViewController
 
 @property (strong, nonatomic) DWHomeModel *model;
-@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
 
 @end
 

@@ -118,7 +118,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 #pragma mark - DWSecureWalletDelegate
 
-- (void)secureWalletRoutineDidCanceled:(DWSecureWalletInfoViewController *)controller {
+- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller {
     [self completeSetup];
 }
 

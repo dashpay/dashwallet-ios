@@ -19,13 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWSecureWalletInfoViewController;
-@class DWVerifiedSuccessfullyViewController;
+@protocol DWWipeDelegate <NSObject>
 
-@protocol DWSecureWalletDelegate <NSObject>
-
-- (void)secureWalletRoutineDidCanceled:(UIViewController *)controller;
-- (void)secureWalletRoutineDidVerify:(DWVerifiedSuccessfullyViewController *)controller;
+- (void)didWipeWallet;
 
 @end
 

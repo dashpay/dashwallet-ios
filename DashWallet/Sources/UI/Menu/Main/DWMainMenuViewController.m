@@ -30,7 +30,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate>
+@interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
 
@@ -87,6 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWMainMenuItemType_Security: {
             DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
+            controller.delegate = self.delegate;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
@@ -99,11 +100,19 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWMainMenuItemType_Tools: {
             DWToolsMenuViewController *controller = [[DWToolsMenuViewController alloc] init];
+            controller.delegate = self;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
         }
     }
+}
+
+#pragma mark - DWToolsMenuViewControllerDelegate
+
+- (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
+    [self.navigationController popViewControllerAnimated:NO];
+    [self.delegate mainMenuViewControllerImportPrivateKey:self];
 }
 
 @end

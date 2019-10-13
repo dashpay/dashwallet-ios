@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
     [self dismissViewControllerAnimated:YES
                              completion:^{
-                                 [self.delegate homeViewControllerDidWipeWallet:self];
+                                 [self.delegate didWipeWallet];
                              }];
 }
 
