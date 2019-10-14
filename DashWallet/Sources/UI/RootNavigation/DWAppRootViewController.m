@@ -42,6 +42,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nonatomic, strong) UIWindow *lockWindow;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockController;
 
+@property (nonatomic, assign) BOOL launchingWasDeferred;
+
 @end
 
 @implementation DWAppRootViewController
@@ -53,6 +55,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
     return self;
 }
+
+#pragma mark - Public
+
+- (void)setLaunchingAsDeferredController {
+    self.launchingWasDeferred = YES;
+}
+
+#pragma mark - Life Cycle
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -113,6 +123,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     if (!self.model.walletOperationAllowed) {
         [self showDevicePasscodeAlert];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    // If launch of DWAppRootViewController was deferred by DWStartViewController perform
+    // missed UIApplicationDidBecomeActiveNotification notification action
+    if (self.launchingWasDeferred) {
+        self.launchingWasDeferred = NO;
+
+        [self applicationDidBecomeActiveNotification];
     }
 }
 
