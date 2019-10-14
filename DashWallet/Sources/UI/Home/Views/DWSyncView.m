@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *percentLabel;
 @property (strong, nonatomic) IBOutlet UIButton *retryButton;
 @property (strong, nonatomic) IBOutlet DWProgressView *progressView;
+@property (assign, nonatomic) BOOL viewStateSeeingBlocks;
+@property (assign, nonatomic) DWSyncModelState syncState;
 
 @end
 
@@ -69,9 +71,16 @@ NS_ASSUME_NONNULL_BEGIN
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.percentLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
+    self.viewStateSeeingBlocks = NO;
+
+    UITapGestureRecognizer *tapGestureRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(changeSeeBlocksStateAction:)];
+    [self.roundedView addGestureRecognizer:tapGestureRecognizer];
 }
 
 - (void)setSyncState:(DWSyncModelState)state {
+    _syncState = state;
     if (state == DWSyncModelState_NoConnection) {
         self.titleLabel.textColor = [UIColor dw_lightTitleColor];
         self.descriptionLabel.textColor = [UIColor dw_lightTitleColor];
@@ -89,8 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.retryButton.hidden = YES;
             self.progressView.hidden = NO;
             self.titleLabel.text = NSLocalizedString(@"Syncing", nil);
-            self.descriptionLabel.text = NSLocalizedString(@"with Dash blockchain", nil);
-
+            [self updateUIForViewStateSeeingBlocks];
             break;
         }
         case DWSyncModelState_SyncFailed: {
@@ -121,9 +129,32 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setProgress:(float)progress animated:(BOOL)animated {
     self.percentLabel.text = [NSString stringWithFormat:@"%0.1f%%", progress * 100.0];
     [self.progressView setProgress:progress animated:animated];
+    if (self.viewStateSeeingBlocks && self.syncState == DWSyncModelState_Syncing) {
+        [self updateUIForViewStateSeeingBlocks];
+    }
+}
+
+- (void)updateUIForViewStateSeeingBlocks {
+    if (self.syncState == DWSyncModelState_Syncing || self.syncState == DWSyncModelState_SyncDone) {
+        if (self.viewStateSeeingBlocks) {
+            DWEnvironment *environment = [DWEnvironment sharedInstance];
+            DSChain *chain = environment.currentChain;
+            self.descriptionLabel.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+                                                                    chain.lastBlockHeight,
+                                                                    chain.estimatedBlockHeight];
+        }
+        else {
+            self.descriptionLabel.text = NSLocalizedString(@"with Dash blockchain", nil);
+        }
+    }
 }
 
 #pragma mark - Actions
+
+- (void)changeSeeBlocksStateAction:(id)sender {
+    self.viewStateSeeingBlocks = !self.viewStateSeeingBlocks;
+    [self updateUIForViewStateSeeingBlocks];
+}
 
 - (IBAction)retryButtonAction:(id)sender {
     [self.delegate syncViewRetryButtonAction:self];
