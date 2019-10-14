@@ -72,6 +72,11 @@ NS_ASSUME_NONNULL_BEGIN
     self.descriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
     self.percentLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.viewStateSeeingBlocks = NO;
+
+    UITapGestureRecognizer *tapGestureRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(changeSeeBlocksStateAction:)];
+    [self.roundedView addGestureRecognizer:tapGestureRecognizer];
 }
 
 - (void)setSyncState:(DWSyncModelState)state {
@@ -146,7 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Actions
 
-- (IBAction)changeSeeBlocksState:(id)sender {
+- (void)changeSeeBlocksStateAction:(id)sender {
     self.viewStateSeeingBlocks = !self.viewStateSeeingBlocks;
     [self updateUIForViewStateSeeingBlocks];
 }
