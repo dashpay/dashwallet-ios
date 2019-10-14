@@ -17,32 +17,25 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWTitleDetailItem.h"
+#import "DWTitleDetailCellView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- Content padding
- 
- - DWTitleDetailCellViewPadding_None: 0 pt
- - DWTitleDetailCellViewPadding_Small: 12 pt
- */
-typedef NS_ENUM(NSUInteger, DWTitleDetailCellViewPadding) {
-    DWTitleDetailCellViewPadding_None,
-    DWTitleDetailCellViewPadding_Small,
-};
+@interface DWTxDetailListView : UIStackView
 
-typedef NS_ENUM(NSUInteger, DWTitleDetailCellViewSeparatorPosition) {
-    DWTitleDetailCellViewSeparatorPosition_Bottom,
-    DWTitleDetailCellViewSeparatorPosition_Top,
-    DWTitleDetailCellViewSeparatorPosition_Hidden,
-};
-
-@interface DWTitleDetailCellView : UIView
+@property (readonly, copy, nonatomic) NSArray<DWTitleDetailCellView *> *arrangedSubviews;
 
 @property (nonatomic, assign) DWTitleDetailCellViewPadding contentPadding;
-@property (nonatomic, assign) DWTitleDetailCellViewSeparatorPosition separatorPosition;
-@property (nullable, nonatomic, strong) id<DWTitleDetailItem> model;
+
+- (void)configureWithInputAddressesCount:(NSUInteger)inputAddressesCount
+                    outputAddressesCount:(NSUInteger)outputAddressesCount
+                                  hasFee:(BOOL)hasFee
+                                 hasDate:(BOOL)hasDate;
+
+- (void)updateDataWithInputAddresses:(NSArray<id<DWTitleDetailItem>> *)inputAddresses
+                     outputAddresses:(NSArray<id<DWTitleDetailItem>> *)outputAddresses
+                                 fee:(nullable id<DWTitleDetailItem>)fee
+                                date:(nullable id<DWTitleDetailItem>)date;
 
 @end
 

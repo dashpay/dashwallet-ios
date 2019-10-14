@@ -11,12 +11,10 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWTxDetailContentView">
             <connections>
-                <outlet property="addressCellView" destination="FnH-wP-n9N" id="6gQ-db-ybk"/>
                 <outlet property="closeButton" destination="ByK-l3-Ip6" id="vIh-YV-LKi"/>
                 <outlet property="contentView" destination="iN0-l3-epB" id="EU9-0a-AYv"/>
                 <outlet property="dashAmountLabel" destination="LwM-v9-FPI" id="hjd-XI-btS"/>
-                <outlet property="dateCellView" destination="0wX-2B-Du2" id="2ZI-9I-bqk"/>
-                <outlet property="feeCellView" destination="PUR-RB-aqi" id="8NQ-eq-GTS"/>
+                <outlet property="detailListView" destination="T21-Jw-zcN" id="4Cy-pz-03f"/>
                 <outlet property="fiatAmountLabel" destination="cyK-yZ-QTQ" id="bTt-s2-NTs"/>
                 <outlet property="iconContentView" destination="9yk-vl-MSt" id="6At-Gy-xh0"/>
                 <outlet property="titleLabel" destination="RHG-cA-BWQ" id="nWD-Zc-DfP"/>
@@ -78,31 +76,8 @@
                         <constraint firstAttribute="height" constant="1" id="VFT-Gk-5v0"/>
                     </constraints>
                 </view>
-                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="T21-Jw-zcN">
+                <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="350" placeholderIntrinsicHeight="156" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="T21-Jw-zcN" userLabel="Tx Detail List View" customClass="DWTxDetailListView">
                     <rect key="frame" x="0.0" y="225" width="350" height="156"/>
-                    <subviews>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FnH-wP-n9N" customClass="DWTitleDetailCellView">
-                            <rect key="frame" x="0.0" y="0.0" width="350" height="52"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="52" id="igm-U0-Z7N"/>
-                            </constraints>
-                        </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PUR-RB-aqi" customClass="DWTitleDetailCellView">
-                            <rect key="frame" x="0.0" y="52" width="350" height="52"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="52" id="KPi-8C-aFZ"/>
-                            </constraints>
-                        </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0wX-2B-Du2" customClass="DWTitleDetailCellView">
-                            <rect key="frame" x="0.0" y="104" width="350" height="52"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="52" id="Emc-Dl-N4C"/>
-                            </constraints>
-                        </view>
-                    </subviews>
                 </stackView>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ByK-l3-Ip6" customClass="DWBlueActionButton">
                     <rect key="frame" x="148" y="411" width="54" height="39"/>

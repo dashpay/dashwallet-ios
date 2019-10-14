@@ -70,43 +70,99 @@ NS_ASSUME_NONNULL_BEGIN
     return self.dataItem.fiatAmount;
 }
 
-- (NSArray<id<DWTitleDetailItem>> *)addressesWithFont:(UIFont *)font {
-    NSMutableArray *detailItems = [NSMutableArray array];
-    for (NSString *address in self.dataItem.outputReceiveAddresses) {
-        NSString *title;
-        switch (self.dataItem.direction) {
-            case DSTransactionDirection_Sent:
-                title = NSLocalizedString(@"Sent to", nil);
-                break;
-            case DSTransactionDirection_Received:
-                title = NSLocalizedString(@"Received at", nil);
-                break;
-            case DSTransactionDirection_Moved:
-                title = NSLocalizedString(@"Moved internally to", nil);
-                break;
-        }
-
-        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
-                                                                               withFont:font];
-        DWTitleDetailCellModel *model =
-            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
-                                                    title:title
-                                         attributedDetail:detail];
-        [detailItems addObject:model];
-    }
-    return detailItems;
+- (NSUInteger)inputAddressesCount {
+    return self.dataItem.inputSendAddresses.count;
 }
 
-- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
+- (NSUInteger)outputAddressesCount {
+    return self.dataItem.outputReceiveAddresses.count;
+}
+
+- (BOOL)hasFee {
     if (self.direction == DSTransactionDirection_Received) {
-        return nil;
+        return NO;
     }
 
     const uint64_t feeValue = self.transaction.feeUsed;
     if (feeValue == 0) {
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)hasDate {
+    return YES;
+}
+
+- (NSArray<id<DWTitleDetailItem>> *)inputAddressesWithFont:(UIFont *)font {
+    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
+    NSString *title;
+    switch (self.dataItem.direction) {
+        case DSTransactionDirection_Sent:
+            title = NSLocalizedString(@"Sent from", nil);
+            break;
+        case DSTransactionDirection_Received:
+            title = NSLocalizedString(@"Received from", nil);
+            break;
+        case DSTransactionDirection_Moved:
+            title = NSLocalizedString(@"Moved from", nil);
+            break;
+    }
+
+    NSArray<NSString *> *addresses = self.dataItem.inputSendAddresses;
+    NSString *firstAddress = addresses.firstObject;
+    for (NSString *address in addresses) {
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        const BOOL hasTitle = address == firstAddress;
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:hasTitle ? title : @""
+                                         attributedDetail:detail];
+        [models addObject:model];
+    }
+
+    return [models copy];
+}
+
+- (NSArray<id<DWTitleDetailItem>> *)outputAddressesWithFont:(UIFont *)font {
+    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
+    NSString *title;
+    switch (self.dataItem.direction) {
+        case DSTransactionDirection_Sent:
+            title = NSLocalizedString(@"Sent to", nil);
+            break;
+        case DSTransactionDirection_Received:
+            title = NSLocalizedString(@"Received at", nil);
+            break;
+        case DSTransactionDirection_Moved:
+            title = NSLocalizedString(@"Moved internally to", nil);
+            break;
+    }
+
+    NSArray<NSString *> *addresses = self.dataItem.outputReceiveAddresses;
+    NSString *firstAddress = addresses.firstObject;
+    for (NSString *address in addresses) {
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        const BOOL hasTitle = address == firstAddress;
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:hasTitle ? title : @""
+                                         attributedDetail:detail];
+        [models addObject:model];
+    }
+
+    return [models copy];
+}
+
+- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
+    if (![self hasFee]) {
         return nil;
     }
 
+    const uint64_t feeValue = self.transaction.feeUsed;
     NSString *title = NSLocalizedString(@"Network fee", nil);
     NSAttributedString *detail = [NSAttributedString dw_dashAttributedStringForAmount:feeValue
                                                                             tintColor:tintColor

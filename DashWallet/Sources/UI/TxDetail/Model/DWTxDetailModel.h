@@ -31,12 +31,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSString *transactionId;
 @property (readonly, nonatomic) DSTransactionDirection direction;
 @property (readonly, nonatomic) NSString *fiatAmountString;
-@property (readonly, nonatomic) id<DWTitleDetailItem> date;
 
 - (NSAttributedString *)dashAmountStringWithFont:(UIFont *)font;
 
-- (NSArray<id<DWTitleDetailItem>> *)addressesWithFont:(UIFont *)font;
+- (NSUInteger)inputAddressesCount;
+- (NSUInteger)outputAddressesCount;
+- (BOOL)hasFee;
+- (BOOL)hasDate;
+
+- (NSArray<id<DWTitleDetailItem>> *)inputAddressesWithFont:(UIFont *)font;
+- (NSArray<id<DWTitleDetailItem>> *)outputAddressesWithFont:(UIFont *)font;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (id<DWTitleDetailItem>)date;
 
 - (nullable NSURL *)explorerURL;
 

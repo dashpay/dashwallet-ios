@@ -19,6 +19,7 @@
 
 #import "DWSuccessfulTransactionAnimatedIconView.h"
 #import "DWTitleDetailCellView.h"
+#import "DWTxDetailListView.h"
 #import "DWTxDetailModel.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
@@ -33,9 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
 @property (strong, nonatomic) IBOutlet UIButton *viewInExplorerButton;
-@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *addressCellView;
-@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *feeCellView;
-@property (strong, nonatomic) IBOutlet DWTitleDetailCellView *dateCellView;
+@property (strong, nonatomic) IBOutlet DWTxDetailListView *detailListView;
 @property (strong, nonatomic) IBOutlet UIButton *closeButton;
 
 @property (strong, nonatomic) UIImageView *iconImageView;
@@ -79,13 +78,13 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
     self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    UILongPressGestureRecognizer *recognizer =
-        [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                      action:@selector(addressLongPressGestureAction:)];
-    [self.addressCellView addGestureRecognizer:recognizer];
+    //    UILongPressGestureRecognizer *recognizer =
+    //        [[UILongPressGestureRecognizer alloc] initWithTarget:self
+    //                                                      action:@selector(addressLongPressGestureAction:)];
+    //    [self.addressCellView addGestureRecognizer:recognizer];
 
     [self setViewInExplorerDefaultTitle];
-    recognizer =
+    UILongPressGestureRecognizer *recognizer =
         [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                       action:@selector(explorerLongPressGestureAction:)];
     [self.viewInExplorerButton addGestureRecognizer:recognizer];
@@ -149,16 +148,18 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.titleLabel.text = title;
 
-    self.addressCellView.contentPadding = contentPadding;
-    self.feeCellView.contentPadding = contentPadding;
-    self.dateCellView.contentPadding = contentPadding;
+    self.detailListView.contentPadding = contentPadding;
 }
 
 - (void)setModel:(nullable DWTxDetailModel *)model {
     _model = model;
 
     self.fiatAmountLabel.text = model.fiatAmountString;
-    self.dateCellView.model = model.date;
+
+    [self.detailListView configureWithInputAddressesCount:[self.model inputAddressesCount]
+                                     outputAddressesCount:[self.model outputAddressesCount]
+                                                   hasFee:[self.model hasFee]
+                                                  hasDate:[self.model hasDate]];
 
     [self reloadAttributedData];
 }
@@ -225,11 +226,14 @@ NS_ASSUME_NONNULL_BEGIN
     self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
 
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-    self.addressCellView.model = [model addressesWithFont:detailFont].firstObject;
-
-    id<DWTitleDetailItem> feeModel = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
-    self.feeCellView.model = feeModel;
-    self.feeCellView.hidden = (feeModel == nil);
+    NSArray<id<DWTitleDetailItem>> *inputAddresses = [self.model inputAddressesWithFont:detailFont];
+    NSArray<id<DWTitleDetailItem>> *outputAddresses = [self.model outputAddressesWithFont:detailFont];
+    id<DWTitleDetailItem> fee = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
+    id<DWTitleDetailItem> date = [model date];
+    [self.detailListView updateDataWithInputAddresses:inputAddresses
+                                      outputAddresses:outputAddresses
+                                                  fee:fee
+                                                 date:date];
 }
 
 - (void)setupIconImageView {
