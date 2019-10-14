@@ -133,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [self resetWalletAction];
+            [strongSelf resetWalletAction];
         };
         [items addObject:cellModel];
     }

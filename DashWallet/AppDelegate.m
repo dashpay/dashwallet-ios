@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self performDeferredStartWithLaunchOptions:launchOptions];
     }
     else {
-        [self performNormalStartWithLaunchOptions:launchOptions];
+        [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:NO];
     }
     
     NSParameterAssert(self.window.rootViewController);
@@ -169,10 +169,13 @@ NS_ASSUME_NONNULL_BEGIN
     self.window.rootViewController = controller;
 }
 
-- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
+- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions wasDeferred:(BOOL)wasDeferred {
     [[DWCrashReporter sharedInstance] enableCrashReporter];
     
     DWAppRootViewController *rootController = [[DWAppRootViewController alloc] init];
+    if (wasDeferred) {
+        [rootController setLaunchingAsDeferredController];
+    }
     self.window.rootViewController = rootController;
     
     [self setupDashWalletComponentsWithOptions:launchOptions];
@@ -227,7 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWStartViewControllerDelegate
 
 - (void)startViewController:(DWStartViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
-    [self performNormalStartWithLaunchOptions:launchOptions];
+    [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:YES];
     
     if (shouldRescanBlockchain) {
         DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
