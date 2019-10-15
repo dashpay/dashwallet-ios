@@ -25,13 +25,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const CORNER_RADIUS = 8.0;
 
+static CGFloat VerticalPadding(void) {
+    if (IS_IPAD) {
+        return 32.0;
+    }
+    else if (IS_IPHONE_6 || IS_IPHONE_5_OR_LESS) {
+        return 16.0;
+    }
+    else {
+        return 24.0;
+    }
+}
+
 @interface DWTxDetailPopupViewController () <DWTxDetailViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) DSTransaction *transaction;
 @property (readonly, nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (nonatomic, strong) DWModalPopupTransition *modalTransition;
-@property (nonatomic, strong) DWTxDetailViewController *detailController;
 
 @end
 
@@ -85,10 +96,15 @@ static CGFloat const CORNER_RADIUS = 8.0;
     childView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:childView];
 
+    const CGFloat padding = VerticalPadding();
     [NSLayoutConstraint activateConstraints:@[
         [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
         [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
         [childView.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor],
+        [childView.topAnchor constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
+                                                         constant:padding],
+        [childView.bottomAnchor constraintGreaterThanOrEqualToAnchor:contentView.bottomAnchor
+                                                            constant:-padding],
     ]];
 
     [controller didMoveToParentViewController:self];

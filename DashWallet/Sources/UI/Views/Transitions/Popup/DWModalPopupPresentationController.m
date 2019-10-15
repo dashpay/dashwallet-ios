@@ -48,15 +48,15 @@ NS_ASSUME_NONNULL_BEGIN
         viewHeight = height - verticalPadding * 2;
     }
     else if (IS_IPHONE_6) {
-        const CGFloat verticalPadding = 50.0;
+        const CGFloat verticalPadding = 28.0;
         viewHeight = height - verticalPadding * 2;
     }
     else if (IS_IPHONE_6_PLUS) {
-        const CGFloat verticalPadding = 90.0;
+        const CGFloat verticalPadding = 32.0;
         viewHeight = height - verticalPadding * 2;
     }
     else {
-        const CGFloat heightPercent = 0.68;
+        const CGFloat heightPercent = 0.85;
         viewHeight = ceil(height * heightPercent);
     }
 

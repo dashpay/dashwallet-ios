@@ -17,8 +17,9 @@
 
 #import "DWTxDetailContentView.h"
 
-#import "DWSuccessfulTransactionAnimatedIconView.h"
+#import "DWBlueActionButton.h"
 #import "DWTitleDetailCellView.h"
+#import "DWTxDetailHeaderView.h"
 #import "DWTxDetailListView.h"
 #import "DWTxDetailModel.h"
 #import "DWUIKit.h"
@@ -26,19 +27,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTxDetailContentView ()
+static CGFloat const CLOSE_BUTTON_HEIGHT = 39.0;
+static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
-@property (strong, nonatomic) IBOutlet UIView *contentView;
-@property (strong, nonatomic) IBOutlet UIView *iconContentView;
-@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-@property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
-@property (strong, nonatomic) IBOutlet UIButton *viewInExplorerButton;
-@property (strong, nonatomic) IBOutlet DWTxDetailListView *detailListView;
-@property (strong, nonatomic) IBOutlet UIButton *closeButton;
+@interface DWTxDetailContentView () <DWTxDetailHeaderViewDelegate>
 
-@property (strong, nonatomic) UIImageView *iconImageView;
-@property (nonatomic, strong) DWSuccessfulTransactionAnimatedIconView *animatedIconView;
+@property (readonly, strong, nonatomic) UIView *headerContentView;
+@property (readonly, strong, nonatomic) DWTxDetailHeaderView *headerView;
+@property (readonly, strong, nonatomic) UIScrollView *detailsScrollView;
+@property (readonly, strong, nonatomic) DWTxDetailListView *detailListView;
+@property (readonly, strong, nonatomic) UIButton *closeButton;
 
 @end
 
@@ -47,157 +45,131 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self commonInit];
+        self.backgroundColor = [UIColor dw_backgroundColor];
+
+        UIView *headerContentView = [[UIView alloc] initWithFrame:CGRectZero];
+        headerContentView.backgroundColor = self.backgroundColor;
+        [self addSubview:headerContentView];
+        _headerContentView = headerContentView;
+
+        DWTxDetailHeaderView *headerView = [[DWTxDetailHeaderView alloc] initWithFrame:CGRectZero];
+        headerView.translatesAutoresizingMaskIntoConstraints = NO;
+        headerView.delegate = self;
+        [headerContentView addSubview:headerView];
+        _headerView = headerView;
+
+        UIScrollView *detailsScrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
+        detailsScrollView.backgroundColor = self.backgroundColor;
+        [self addSubview:detailsScrollView];
+        _detailsScrollView = detailsScrollView;
+
+        DWTxDetailListView *detailListView = [[DWTxDetailListView alloc] initWithFrame:CGRectZero];
+        detailListView.translatesAutoresizingMaskIntoConstraints = NO;
+        [detailsScrollView addSubview:detailListView];
+        _detailListView = detailListView;
+
+        DWBlueActionButton *closeButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
+        closeButton.usedOnDarkBackground = NO;
+        closeButton.small = YES;
+        [closeButton setTitle:NSLocalizedString(@"Close", nil) forState:UIControlStateNormal];
+        [closeButton addTarget:self
+                        action:@selector(closeButtonAction:)
+              forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:closeButton];
+        _closeButton = closeButton;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [headerView.topAnchor constraintEqualToAnchor:headerContentView.topAnchor],
+            [headerView.leadingAnchor constraintEqualToAnchor:headerContentView.leadingAnchor],
+            [headerView.bottomAnchor constraintEqualToAnchor:headerContentView.bottomAnchor],
+            [headerView.trailingAnchor constraintEqualToAnchor:headerContentView.trailingAnchor],
+
+            [detailListView.topAnchor constraintEqualToAnchor:detailsScrollView.topAnchor],
+            [detailListView.leadingAnchor constraintEqualToAnchor:detailsScrollView.leadingAnchor],
+            [detailListView.bottomAnchor constraintEqualToAnchor:detailsScrollView.bottomAnchor],
+            [detailListView.trailingAnchor constraintEqualToAnchor:detailsScrollView.trailingAnchor],
+            [detailListView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
+        ]];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(contentSizeCategoryDidChangeNotification)
+                                                     name:UIContentSizeCategoryDidChangeNotification
+                                                   object:nil];
     }
     return self;
 }
 
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    const CGSize size = self.bounds.size;
+
+    const CGFloat headerHeight =
+        [self.headerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+    const CGFloat detailsHeight =
+        [self.detailListView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+
+    CGFloat contentHeight = headerHeight + CLOSE_BUTTON_DETAILS_PADDING + CLOSE_BUTTON_HEIGHT;
+    CGFloat scrollViewHeight;
+    if (contentHeight + detailsHeight <= size.height) {
+        contentHeight += detailsHeight;
+        scrollViewHeight = detailsHeight;
     }
-    return self;
-}
+    else {
+        scrollViewHeight = size.height - headerHeight - CLOSE_BUTTON_DETAILS_PADDING - CLOSE_BUTTON_HEIGHT;
+        contentHeight += scrollViewHeight;
+    }
 
-- (void)commonInit {
-    [[NSBundle mainBundle] loadNibNamed:NSStringFromClass([self class]) owner:self options:nil];
-    [self addSubview:self.contentView];
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-        [self.contentView.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [self.contentView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-        [self.contentView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        [self.contentView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-        [self.contentView.widthAnchor constraintEqualToAnchor:self.widthAnchor],
-    ]];
+    CGFloat y = (size.height - contentHeight) / 2.0;
+    self.headerContentView.frame = CGRectMake(0.0, y, size.width, headerHeight);
+    y += headerHeight;
 
-    self.backgroundColor = [UIColor dw_backgroundColor];
+    self.detailsScrollView.frame = CGRectMake(0.0, y, size.width, scrollViewHeight);
+    y += scrollViewHeight + CLOSE_BUTTON_DETAILS_PADDING;
 
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
-    self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
-    self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-
-    //    UILongPressGestureRecognizer *recognizer =
-    //        [[UILongPressGestureRecognizer alloc] initWithTarget:self
-    //                                                      action:@selector(addressLongPressGestureAction:)];
-    //    [self.addressCellView addGestureRecognizer:recognizer];
-
-    [self setViewInExplorerDefaultTitle];
-    UILongPressGestureRecognizer *recognizer =
-        [[UILongPressGestureRecognizer alloc] initWithTarget:self
-                                                      action:@selector(explorerLongPressGestureAction:)];
-    [self.viewInExplorerButton addGestureRecognizer:recognizer];
-
-    [self.closeButton setTitle:NSLocalizedString(@"Close", nil)
-                      forState:UIControlStateNormal];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(contentSizeCategoryDidChangeNotification)
-                                                 name:UIContentSizeCategoryDidChangeNotification
-                                               object:nil];
+    const CGFloat buttonWidth = [self.closeButton sizeThatFits:CGSizeZero].width;
+    self.closeButton.frame = CGRectMake((size.width - buttonWidth) / 2.0,
+                                        y,
+                                        buttonWidth,
+                                        CLOSE_BUTTON_HEIGHT);
 }
 
 - (void)setDisplayType:(DWTxDetailDisplayType)displayType {
     _displayType = displayType;
 
-    UIImage *iconImage = nil;
-    NSString *title = nil;
-    DWTitleDetailCellViewPadding contentPadding;
-    switch (displayType) {
-        case DWTxDetailDisplayType_Sent: {
-            [self setupIconImageView];
+    self.headerView.displayType = displayType;
 
-            iconImage = [UIImage imageNamed:@"icon_tx_sent"];
-            title = NSLocalizedString(@"Amount Sent", nil);
-            contentPadding = DWTitleDetailCellViewPadding_Small;
-
-            break;
-        }
-        case DWTxDetailDisplayType_Received: {
-            [self setupIconImageView];
-
-            iconImage = [UIImage imageNamed:@"icon_tx_received"];
-            title = NSLocalizedString(@"Amount Received", nil);
-            contentPadding = DWTitleDetailCellViewPadding_Small;
-
-            break;
-        }
-        case DWTxDetailDisplayType_Moved: {
-            [self setupIconImageView];
-
-            iconImage = [UIImage imageNamed:@"icon_tx_received"];
-            title = NSLocalizedString(@"Moved to Address", nil);
-            contentPadding = DWTitleDetailCellViewPadding_Small;
-
-            break;
-        }
-        case DWTxDetailDisplayType_Paid: {
-            [self setupAnimatedIconView];
-
-            title = NSLocalizedString(@"Paid successfully", nil);
-            contentPadding = DWTitleDetailCellViewPadding_None;
-
-            break;
-        }
-    }
-
-    if (iconImage) {
-        self.iconImageView.image = iconImage;
-    }
-
-    self.titleLabel.text = title;
-
+    const DWTitleDetailCellViewPadding contentPadding = displayType == DWTxDetailDisplayType_Paid
+                                                            ? DWTitleDetailCellViewPadding_None
+                                                            : DWTitleDetailCellViewPadding_Small;
     self.detailListView.contentPadding = contentPadding;
 }
 
 - (void)setModel:(nullable DWTxDetailModel *)model {
     _model = model;
 
-    self.fiatAmountLabel.text = model.fiatAmountString;
+    self.headerView.model = model;
 
-    [self.detailListView configureWithInputAddressesCount:[self.model inputAddressesCount]
-                                     outputAddressesCount:[self.model outputAddressesCount]
-                                                   hasFee:[self.model hasFee]
-                                                  hasDate:[self.model hasDate]];
+    [self.detailListView configureWithInputAddressesCount:[model inputAddressesCount]
+                                     outputAddressesCount:[model outputAddressesCount]
+                                                   hasFee:[model hasFee]
+                                                  hasDate:[model hasDate]];
 
     [self reloadAttributedData];
 }
 
 - (void)viewDidAppear {
-    [self.animatedIconView showAnimatedIfNeeded];
+    [self.headerView viewDidAppear];
 }
 
 - (void)setViewInExplorerButtonCopyHintTitle {
-    [self.viewInExplorerButton setTitle:NSLocalizedString(@"Long press to copy ID", nil)
-                               forState:UIControlStateNormal];
+    [self.headerView setViewInExplorerButtonCopyHintTitle];
 }
 
 #pragma mark - Actions
 
-- (IBAction)viewInExplorerButtonAction:(UIButton *)sender {
-    [self.delegate txDetailContentView:self viewInExplorerButtonAction:sender];
-}
-
-- (IBAction)closeButtonAction:(UIButton *)sender {
+- (void)closeButtonAction:(UIButton *)sender {
     [self.delegate txDetailContentView:self closeButtonAction:sender];
-}
-
-- (void)explorerLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
-    if (sender.state != UIGestureRecognizerStateEnded) {
-        return;
-    }
-
-    BOOL result = [self.model copyTransactionIdToPasteboard];
-    if (result) {
-        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
-
-        dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW,
-                                             (int64_t)(DW_INFO_HUD_DISPLAY_TIME * NSEC_PER_SEC));
-        dispatch_after(when, dispatch_get_main_queue(), ^{
-            [self setViewInExplorerDefaultTitle];
-        });
-    }
 }
 
 - (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
@@ -215,6 +187,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)contentSizeCategoryDidChangeNotification {
     [self reloadAttributedData];
+    [self setNeedsLayout];
+}
+
+#pragma mark - DWTxDetailHeaderViewDelegate
+
+- (void)txDetailHeaderView:(DWTxDetailHeaderView *)view viewInExplorerAction:(UIButton *)sender {
+    [self.delegate txDetailContentView:self viewInExplorerButtonAction:sender];
 }
 
 #pragma mark - Private
@@ -222,62 +201,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reloadAttributedData {
     DWTxDetailModel *model = self.model;
 
-    UIFont *amountFont = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
-    self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
-
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-    NSArray<id<DWTitleDetailItem>> *inputAddresses = [self.model inputAddressesWithFont:detailFont];
-    NSArray<id<DWTitleDetailItem>> *outputAddresses = [self.model outputAddressesWithFont:detailFont];
+    NSArray<id<DWTitleDetailItem>> *inputAddresses = [model inputAddressesWithFont:detailFont];
+    NSArray<id<DWTitleDetailItem>> *outputAddresses = [model outputAddressesWithFont:detailFont];
     id<DWTitleDetailItem> fee = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     id<DWTitleDetailItem> date = [model date];
     [self.detailListView updateDataWithInputAddresses:inputAddresses
                                       outputAddresses:outputAddresses
                                                   fee:fee
                                                  date:date];
-}
-
-- (void)setupIconImageView {
-    if (self.iconImageView) {
-        return;
-    }
-    [self.animatedIconView removeFromSuperview];
-
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    imageView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.iconContentView addSubview:imageView];
-    self.iconImageView = imageView;
-
-    [self pinViewToIconContentView:imageView];
-}
-
-- (void)setupAnimatedIconView {
-    if (self.animatedIconView) {
-        return;
-    }
-    [self.iconImageView removeFromSuperview];
-
-    DWSuccessfulTransactionAnimatedIconView *animatedIconView =
-        [[DWSuccessfulTransactionAnimatedIconView alloc] initWithFrame:CGRectZero];
-    animatedIconView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.iconContentView addSubview:animatedIconView];
-    self.animatedIconView = animatedIconView;
-
-    [self pinViewToIconContentView:animatedIconView];
-}
-
-- (void)pinViewToIconContentView:(UIView *)view {
-    UIView *contentView = self.iconContentView;
-    [NSLayoutConstraint activateConstraints:@[
-        [view.topAnchor constraintEqualToAnchor:contentView.topAnchor],
-        [view.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-        [view.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
-        [view.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-    ]];
-}
-
-- (void)setViewInExplorerDefaultTitle {
-    [self.viewInExplorerButton setTitle:NSLocalizedString(@"View in Explorer", nil)
-                               forState:UIControlStateNormal];
 }
 
 @end
