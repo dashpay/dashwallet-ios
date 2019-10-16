@@ -18,6 +18,7 @@
 #import "DWToolsMenuViewController.h"
 
 #import "DWFormTableViewController.h"
+#import "DWKeysOverviewViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
 
@@ -68,6 +69,20 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show Masternode Keys", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showMasternodeKeys];
+        };
+        [items addObject:cellModel];
+    }
+
     return items;
 }
 
@@ -96,6 +111,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - Private
+
+- (void)showMasternodeKeys {
+    DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
+    [self.navigationController pushViewController:keysViewController animated:YES];
 }
 
 @end

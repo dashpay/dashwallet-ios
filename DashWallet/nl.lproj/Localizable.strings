@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "onjuiste herstelzin";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "onjuiste herstelzin";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin-adres (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Door dit apparaat schoon te vegen heb je geen toegang meer tot het geld op dit apparaat. Dit zou alleen gedaan moeten worden als je de herstelzin hebt verloren en ook de pincode kwijt bent.";
 
 /* No comment provided by engineer. */
-"cancel" = "annuleer";
-
-/* No comment provided by engineer. */
 "Cancel" = "Annuleer";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "annuleer";
 
 /* No comment provided by engineer. */
 "change" = "wijzig";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Wijzig toegangscode";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "bedrag aanpassen?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "bedrag aanpassen?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "het klembord bevat geen geldig Dash-adres";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "het klembord bevat geen geldig Dash-adres";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "het klembord bevat geen geldig dash- of bitcoinadres";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "sluit app";
 
 /* No comment provided by engineer. */
-"close app" = "sluit app";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase Transaction";
 
-/* Confirm */
-"Confirm" = "Bevestig";
-
 /* No comment provided by engineer. */
 "confirm" = "bevestig";
+
+/* Confirm */
+"Confirm" = "Bevestig";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "het controleren van het saldo is mislukt";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "de betaling is mislukt";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "de betaling is mislukt";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "het uitvegen van het saldo is mislukt";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "de betaling kan niet worden verstuurd naar het dash-netwerk";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "de betaling kan niet worden verstuurd naar het dash-netwerk";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Schakel het ontvangen van meldingen in";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Schakel het ontvangen van meldingen in";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "Als je het nog steeds wilt wissen, voer a.u.b. in: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "negeer";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "negeer";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Laad meer";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "lokale valuta";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "node IP adres";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "ongeldig dash-adres";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "ongeldig dash- of bitcoinadres";
@@ -591,10 +591,10 @@
 "not voter" = "geen stemrecht";
 
 /* No comment provided by engineer. */
-"OK" = "Oké";
+"ok" = "oké";
 
 /* No comment provided by engineer. */
-"ok" = "oké";
+"OK" = "Oké";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "De geavanceerde functies alleen activeren als je kennis hebt van blockchain technologie.\nIndien geactiveerd, gebruik dan alleen de geavanceerde functies die je begrijpt.";
@@ -657,16 +657,16 @@
 "payout address:" = "uitbetalingsadres:";
 
 /* No comment provided by engineer. */
-"Pending" = "Wachtende";
-
-/* No comment provided by engineer. */
 "pending" = "in wachtrij";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
+"Pending" = "Wachtende";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "voer je pincode in om de wallet bij te werken";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Voer je pincode in om de portemonnee bij te werken";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Houd u uw telefoon bij een NFC apparaat";
@@ -687,10 +687,10 @@
 "Private key" = "persoonlijke sleutel";
 
 /* No comment provided by engineer. */
-"processing" = "verwerken";
+"Processing" = "Verwerken";
 
 /* No comment provided by engineer. */
-"Processing" = "Verwerken";
+"processing" = "verwerken";
 
 /* No comment provided by engineer. */
 "Public key" = "Publieke sleutel";
@@ -714,10 +714,10 @@
 "Received" = "Ontvangen";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "ontvangen %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "ontvangen %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Herstelzin";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Herstelzin";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Blockchain opnieuw scannen";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Blockchain opnieuw scannen";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "herstel";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "toon";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Toon masternode sleutels";
@@ -1020,10 +1023,10 @@
 "Try It!" = "Probeer het!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "zet apparaat-toegangscode aan";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "zet apparaat-toegangscode aan";
 
 /* No comment provided by engineer. */
 "type:" = "type:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We hebben gedetecteerd dat Dashwallet is gecrasht toen het voor de laatste keer werd gebruikt. Wil je ons helpen dat issue op te lossen door een crashrapport in te sturen? Je transactiegeschiedenis en andere privé-informatie WORDT NIET gedeeld.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "wis";
 
 /* No comment provided by engineer. */
-"wipe" = "wis";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

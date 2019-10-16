@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "錯誤恢復詞組";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "錯誤恢復詞組";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "比特幣位址 (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "通過擦洗此設備，您將無法再使用此設備上的資金。 只有在您無法再訪問密碼詞組並忘記密碼時，才應該這樣做。";
 
 /* No comment provided by engineer. */
-"cancel" = "取消";
-
-/* No comment provided by engineer. */
 "Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "取消";
 
 /* No comment provided by engineer. */
 "change" = "變更";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "變更驗證碼";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "變更付款金額?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "變更付款金額?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "關閉程序";
 
 /* No comment provided by engineer. */
-"close app" = "關閉程序";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase Transaction";
 
-/* Confirm */
-"Confirm" = "確認:";
-
 /* No comment provided by engineer. */
 "confirm" = "confirm";
+
+/* Confirm */
+"Confirm" = "確認:";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "無法檢查位址餘額";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "無法進行支付";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "無法進行支付";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "無法清除餘額";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "無法將交易傳送到達世幣網絡";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "無法將交易傳送到達世幣網絡";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "啟用接收通知";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "啟用接收通知";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "如果你仍然想擦拭它，請輸入： \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "忽略";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "忽略";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Load more";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Local currency";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "不是一個有效的達世幣位址";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
@@ -591,10 +591,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"OK" = "好";
+"ok" = "確定";
 
 /* No comment provided by engineer. */
-"ok" = "確定";
+"OK" = "好";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -657,16 +657,16 @@
 "payout address:" = "payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
-
-/* No comment provided by engineer. */
 "pending" = "處理中";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "請輸入密碼以升級錢包";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "請將手機放在NFC設備附近。";
@@ -687,10 +687,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -714,10 +714,10 @@
 "Received" = "己收到";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "己收到 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "己收到 %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "恢復詞組";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "恢復詞組";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "重新掃瞄區塊鏈";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "重新掃瞄區塊鏈";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "重置";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "顯示";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Show masternode keys";
@@ -1020,10 +1023,10 @@
 "Try It!" = "嘗試一下!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "在設備上開啟驗證碼";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "在設備上開啟驗證碼";
 
 /* No comment provided by engineer. */
 "type:" = "type:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "清空";
 
 /* No comment provided by engineer. */
-"wipe" = "清空";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

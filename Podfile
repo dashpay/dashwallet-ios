@@ -3,8 +3,8 @@ target 'dashwallet' do
   
   pod 'DashSync', :path => '../DashSync/'
   
-  pod 'KVO-MVVM', '0.5.1'
-  pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash', :commit => '41a46e6', :inhibit_warnings => true
+  pod 'KVO-MVVM', '0.5.6'
+  pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash_1.5.1', :commit => 'b472e89', :inhibit_warnings => true
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
 

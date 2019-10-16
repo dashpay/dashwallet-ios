@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "hatalı kurtarma cümlesi";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "hatalı kurtarma cümlesi";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin adresi (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Bu cihazı silerseniz bu cihazdaki paraya artık ulaşamazsınız. Bunu sadece parola cümlenize ulaşamıyorsanız ve pin kodunuzu unuttuysanız yapmalısınız.";
 
 /* No comment provided by engineer. */
-"cancel" = "iptal";
-
-/* No comment provided by engineer. */
 "Cancel" = "İptal";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "iptal";
 
 /* No comment provided by engineer. */
 "change" = "değiştir";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Parolayı değiştir";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "ödeme tutarı değişsin mi?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "ödeme tutarı değişsin mi?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "panoda geçerli bir dash adresi yok";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "panoda geçerli bir dash adresi yok";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "panoda geçerli bir dash veya bitcoin adresi yok";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "uygulamayı kapat";
 
 /* No comment provided by engineer. */
-"close app" = "uygulamayı kapat";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase İşlemi";
 
-/* Confirm */
-"Confirm" = "Onayla";
-
 /* No comment provided by engineer. */
 "confirm" = "onayla";
+
+/* Confirm */
+"Confirm" = "Onayla";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "adres bakiyesi denetlenemedi";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "ödeme yapılamadı";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "ödeme yapılamadı";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "bakiye silinemedi";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "ödeme dash ağına iletilemedi";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "ödeme dash ağına iletilemedi";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Bildirim almayı etkinleştir";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Bildirim almayı etkinleştir";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "Eğer hala sıfırlamak istiyorsanız lütfen şu metni girin: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "yoksay";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "yoksay";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Daha fazla yükle";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Yerel para birimi";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "düğüm ip'si";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "geçerli bir dash adresi değil";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "geçerli bir dash veya bitcoin adresi değil";
@@ -591,10 +591,10 @@
 "not voter" = "oy veren değil";
 
 /* No comment provided by engineer. */
-"OK" = "Tamam";
+"ok" = "tamam";
 
 /* No comment provided by engineer. */
-"ok" = "tamam";
+"OK" = "Tamam";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "İleri seviye özellikleri sadece blok zinciri teknolojisinden anlıyorsanız etkinleştirin\nEtkinleştirirseniz sadece bildiğiniz ileri seviye özellikleri kullanın.";
@@ -657,16 +657,16 @@
 "payout address:" = "ödeme adresi:";
 
 /* No comment provided by engineer. */
-"Pending" = "Bekliyor";
-
-/* No comment provided by engineer. */
 "pending" = "bekliyor";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Cüzdanı yükseltmek için lütfen pin kodunu girin";
+"Pending" = "Bekliyor";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "lütfen cüzdanı yükseltmek için pin girin";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Cüzdanı yükseltmek için lütfen pin kodunu girin";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Lütfen telefonunuzu bir NFC cihazının yakınına yerleştirin.";
@@ -687,10 +687,10 @@
 "Private key" = "Özel anahtar";
 
 /* No comment provided by engineer. */
-"processing" = "işleniyor";
+"Processing" = "İşleniyor";
 
 /* No comment provided by engineer. */
-"Processing" = "İşleniyor";
+"processing" = "işleniyor";
 
 /* No comment provided by engineer. */
 "Public key" = "Herkese açık anahtar";
@@ -714,10 +714,10 @@
 "Received" = "Alındı";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "%1$@ alındı (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "%1$@ alındı (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Kurtarma cümlesi";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Kurtarma cümlesi";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Blok zincirini tekrar tara";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Blok zincirini tekrar tara";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "sıfırla";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "göster";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Anadüğüm anahtarlarını göster";
@@ -1020,10 +1023,10 @@
 "Try It!" = "Dene!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "cihaz parolasını aç";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "cihaz parolasını aç";
 
 /* No comment provided by engineer. */
 "type:" = "tür:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Dash cüzdanı'nın son açıldığında çökme yaşadığını tespit ettik. Çökme raporu verilerini bize göndererek bu sorunu çözmemize yardımcı olmak ister misiniz? İşlem geçmişiniz ve diğer özel bilgileriniz paylaşılmayacaktır.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "sil";
 
 /* No comment provided by engineer. */
-"wipe" = "sil";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

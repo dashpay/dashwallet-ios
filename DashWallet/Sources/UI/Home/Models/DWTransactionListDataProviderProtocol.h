@@ -18,9 +18,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIColor.h>
 
-NS_ASSUME_NONNULL_BEGIN
+#import <DashSync/DSAccount.h>
 
-typedef NS_ENUM(NSUInteger, DSTransactionDirection);
+NS_ASSUME_NONNULL_BEGIN
 
 @class DSTransaction;
 

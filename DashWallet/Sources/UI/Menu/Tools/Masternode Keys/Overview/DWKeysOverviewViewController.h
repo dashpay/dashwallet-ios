@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,11 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSAuthenticationKeysDerivationPath;
-
-@interface DWDerivationPathKeysViewController : UITableViewController
-
-@property (nonatomic,strong) DSAuthenticationKeysDerivationPath *derivationPath;
+@interface DWKeysOverviewViewController : UIViewController
 
 @end
 

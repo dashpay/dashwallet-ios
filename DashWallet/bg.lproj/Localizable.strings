@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "грешна фраза за възстановяване";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "грешна фраза за възстановяване";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin адрес (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Чрез изтриването на това устройство вече няма да имате достъп до средства на това устройство. Това трябва да се направи само, ако вече нямате достъп до фразата за възстановяване си и сте забравили своя ПИН код.";
 
 /* No comment provided by engineer. */
-"cancel" = "отказ";
-
-/* No comment provided by engineer. */
 "Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "отказ";
 
 /* No comment provided by engineer. */
 "change" = "промяна";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Смяна на парола";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "промяна сумата на плащането?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "промяна сумата на плащането?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "клипборда на съдържа валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "клипборда на съдържа валиден Dash адрес";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "клипборда не съдържа валиден dash или bitcoin адрес";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "затвори приложението";
 
 /* No comment provided by engineer. */
-"close app" = "затвори приложението";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase транзакция";
 
-/* Confirm */
-"Confirm" = "Потвърди";
-
 /* No comment provided by engineer. */
 "confirm" = "потвърждавам";
+
+/* Confirm */
+"Confirm" = "Потвърди";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "не може да провери баланса на адреса";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "не може да се направи плащане";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "не може да се направи плащане";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "не може да изчисти баланса";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "плащането не може да бъде предадено към мрежата на dash";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "плащането не може да бъде предадено към мрежата на dash";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Включи получаване на известия ";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Включи получаване на известия ";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "Ако все още искате да го изтриете, моля въведете: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "игнорирай";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "игнорирай";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Зареди още";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Местна валута";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "нод ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "не е валиден Dash адрес";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "не е валиден Dash или Bitcoin адрес";
@@ -591,10 +591,10 @@
 "not voter" = "не гласуващ";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ок";
 
 /* No comment provided by engineer. */
-"ok" = "ок";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Използвайте разширените функции само ако сте добре запознат с блокчейн технологиите . \nАко са активирани използвайте само разширени функции, които разбирате.";
@@ -657,16 +657,16 @@
 "payout address:" = "адрес за заплащане:";
 
 /* No comment provided by engineer. */
-"Pending" = "Изчакване";
-
-/* No comment provided by engineer. */
 "pending" = "изчакване";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
+"Pending" = "Изчакване";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "моля въведете ПИН за надграждане на портфейла";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Моля поставете вашият телефон близо до NFC устройство.";
@@ -687,10 +687,10 @@
 "Private key" = "Частен ключ";
 
 /* No comment provided by engineer. */
-"processing" = "обработване";
+"Processing" = "Обработване";
 
 /* No comment provided by engineer. */
-"Processing" = "Обработване";
+"processing" = "обработване";
 
 /* No comment provided by engineer. */
 "Public key" = "Публичен адрес";
@@ -714,10 +714,10 @@
 "Received" = "Получени";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "получени %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "получени %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Фраза за възстановяване";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Фраза за възстановяване";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "повторно сканиране";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Повторно сканиране на блок-веригата";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "изчистване";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "покажи";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Покажи masternode ключове";
@@ -1020,10 +1023,10 @@
 "Try It!" = "Опитай!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "включи устройство за паролата";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "включи устройство за паролата";
 
 /* No comment provided by engineer. */
 "type:" = "вид:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Установихме, че е имало срив в Dashwallet , когато е бил отворен последно. Искате ли да ни помогнете да разрешим проблема, като ни изпратите данните от доклада за сривове? Историята на транзакциите ви и всяка друга лична информация НЯМА ДА БЪДАТ споделяни.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "изчисти";
 
 /* No comment provided by engineer. */
-"wipe" = "изчисти";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

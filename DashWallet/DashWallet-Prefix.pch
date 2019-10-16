@@ -4,12 +4,16 @@
 //  The contents of this file are implicitly included at the beginning of every source file.
 //
 
-#include <Availability.h>
-#include "DWUserDefaultsConstants.h"
+#ifndef DashWallet_PrefixHeader_pch
+#define DashWallet_PrefixHeader_pch
 
 #ifdef __OBJC__
-#import <UIKit/UIKit.h>
+
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#include <Availability.h>
+#include "DWUserDefaultsConstants.h"
 
 // Compile-time check for keypaths
 // More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
@@ -50,3 +54,5 @@
 #if ! DEBUG
 #define NSLog(...)
 #endif
+
+#endif /* DashWallet_PrefixHeader_pch */
