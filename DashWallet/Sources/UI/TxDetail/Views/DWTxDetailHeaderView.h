@@ -21,21 +21,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTxDetailContentView;
 @class DWTxDetailModel;
+@class DWTxDetailHeaderView;
 
-@protocol DWTxDetailContentViewDelegate <NSObject>
+@protocol DWTxDetailHeaderViewDelegate <NSObject>
 
-- (void)txDetailContentView:(DWTxDetailContentView *)view viewInExplorerButtonAction:(UIButton *)sender;
-- (void)txDetailContentView:(DWTxDetailContentView *)view closeButtonAction:(UIButton *)sender;
+- (void)txDetailHeaderView:(DWTxDetailHeaderView *)view viewInExplorerAction:(UIButton *)sender;
 
 @end
 
-@interface DWTxDetailContentView : UIView
+@interface DWTxDetailHeaderView : UIView
 
 @property (nonatomic, assign) DWTxDetailDisplayType displayType;
 @property (nullable, nonatomic, strong) DWTxDetailModel *model;
-@property (nullable, nonatomic, weak) id<DWTxDetailContentViewDelegate> delegate;
+@property (nullable, nonatomic, weak) id<DWTxDetailHeaderViewDelegate> delegate;
 
 - (void)viewDidAppear;
 

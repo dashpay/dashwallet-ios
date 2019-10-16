@@ -528,6 +528,9 @@
 "Moved" = "已移动";
 
 /* No comment provided by engineer. */
+"Moved from" = "Moved from";
+
+/* No comment provided by engineer. */
 "Moved internally to" = "Moved internally to";
 
 /* No comment provided by engineer. */
@@ -720,6 +723,9 @@
 "Received at" = "Received at";
 
 /* No comment provided by engineer. */
+"Received from" = "Received from";
+
+/* No comment provided by engineer. */
 "recently mined (locked)" = "recently mined (locked)";
 
 /* No comment provided by engineer. */
@@ -838,6 +844,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "已发送";
+
+/* No comment provided by engineer. */
+"Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";

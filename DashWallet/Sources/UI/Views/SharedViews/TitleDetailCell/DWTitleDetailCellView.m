@@ -169,7 +169,10 @@ static CGFloat const SMALL_PADDING = 12.0;
     const CGFloat y = (self.separatorPosition == DWTitleDetailCellViewSeparatorPosition_Top
                            ? 0.0
                            : size.height - SEPARATOR);
-    self.separatorLayer.frame = CGRectMake(0.0, y, size.width, SEPARATOR);
+    const CGFloat height = (self.separatorPosition == DWTitleDetailCellViewSeparatorPosition_Hidden
+                                ? 0.0
+                                : SEPARATOR);
+    self.separatorLayer.frame = CGRectMake(0.0, y, size.width, height);
 }
 
 @end

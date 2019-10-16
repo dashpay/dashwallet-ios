@@ -151,6 +151,7 @@ static NSString *TxDateFormat(NSString *template) {
         }
     }
 
+    dataItem.inputSendAddresses = transaction.inputAddresses;
     dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
 
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];

@@ -528,6 +528,9 @@
 "Moved" = "Movido";
 
 /* No comment provided by engineer. */
+"Moved from" = "Moved from";
+
+/* No comment provided by engineer. */
 "Moved internally to" = "Moved internally to";
 
 /* No comment provided by engineer. */
@@ -720,6 +723,9 @@
 "Received at" = "Received at";
 
 /* No comment provided by engineer. */
+"Received from" = "Received from";
+
+/* No comment provided by engineer. */
 "recently mined (locked)" = "minado recientemente (bloqueado)";
 
 /* No comment provided by engineer. */
@@ -838,6 +844,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Enviado";
+
+/* No comment provided by engineer. */
+"Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";

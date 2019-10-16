@@ -528,6 +528,9 @@
 "Moved" = "이동 완료";
 
 /* No comment provided by engineer. */
+"Moved from" = "Moved from";
+
+/* No comment provided by engineer. */
 "Moved internally to" = "Moved internally to";
 
 /* No comment provided by engineer. */
@@ -720,6 +723,9 @@
 "Received at" = "Received at";
 
 /* No comment provided by engineer. */
+"Received from" = "Received from";
+
+/* No comment provided by engineer. */
 "recently mined (locked)" = "최근 채굴됨 (잠김 상태)";
 
 /* No comment provided by engineer. */
@@ -838,6 +844,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "보냄";
+
+/* No comment provided by engineer. */
+"Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";
