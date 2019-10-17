@@ -21,11 +21,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWTxDetailListView;
+
+@protocol DWTxDetailListViewDelegate <NSObject>
+
+- (void)txDetailListView:(DWTxDetailListView *)view longPressActionOnView:(DWTitleDetailCellView *)cellView;
+
+@end
+
 @interface DWTxDetailListView : UIStackView
 
 @property (readonly, copy, nonatomic) NSArray<DWTitleDetailCellView *> *arrangedSubviews;
 
 @property (nonatomic, assign) DWTitleDetailCellViewPadding contentPadding;
+@property (nullable, nonatomic, weak) id<DWTxDetailListViewDelegate> delegate;
 
 - (void)configureWithInputAddressesCount:(NSUInteger)inputAddressesCount
                     outputAddressesCount:(NSUInteger)outputAddressesCount

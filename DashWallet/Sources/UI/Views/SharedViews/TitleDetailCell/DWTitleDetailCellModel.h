@@ -33,8 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
+             attributedDetail:(NSAttributedString *)attributedDetail
+                 copyableData:(nullable NSString *)copyableData;
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
+                        title:(nullable NSString *)title
                   plainDetail:(nullable NSString *)plainDetail
-             attributedDetail:(nullable NSAttributedString *)attributedDetail NS_DESIGNATED_INITIALIZER;
+             attributedDetail:(nullable NSAttributedString *)attributedDetail
+                 copyableData:(nullable NSString *)copyableData NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

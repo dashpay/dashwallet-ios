@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat const CLOSE_BUTTON_HEIGHT = 39.0;
 static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
-@interface DWTxDetailContentView () <DWTxDetailHeaderViewDelegate>
+@interface DWTxDetailContentView () <DWTxDetailHeaderViewDelegate, DWTxDetailListViewDelegate>
 
 @property (readonly, strong, nonatomic) UIView *headerContentView;
 @property (readonly, strong, nonatomic) DWTxDetailHeaderView *headerView;
@@ -65,6 +65,7 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
         DWTxDetailListView *detailListView = [[DWTxDetailListView alloc] initWithFrame:CGRectZero];
         detailListView.translatesAutoresizingMaskIntoConstraints = NO;
+        detailListView.delegate = self;
         [detailsScrollView addSubview:detailListView];
         _detailListView = detailListView;
 
@@ -172,17 +173,6 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
     [self.delegate txDetailContentView:self closeButtonAction:sender];
 }
 
-- (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {
-    if (sender.state != UIGestureRecognizerStateEnded) {
-        return;
-    }
-
-    BOOL result = [self.model copyAddressToPasteboard];
-    if (result) {
-        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
-    }
-}
-
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification {
@@ -194,6 +184,19 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
 - (void)txDetailHeaderView:(DWTxDetailHeaderView *)view viewInExplorerAction:(UIButton *)sender {
     [self.delegate txDetailContentView:self viewInExplorerButtonAction:sender];
+}
+
+#pragma mark - DWTxDetailListViewDelegate
+
+- (void)txDetailListView:(DWTxDetailListView *)view longPressActionOnView:(DWTitleDetailCellView *)cellView {
+    NSString *copyableData = cellView.model.copyableData;
+    if (!copyableData) {
+        return;
+    }
+
+    [UIPasteboard generalPasteboard].string = copyableData;
+
+    [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
 }
 
 #pragma mark - Private
