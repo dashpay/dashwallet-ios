@@ -40,6 +40,8 @@
 		2A0C69F423179C0F001B8C90 /* DWConfirmPaymentContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A0C69F323179C0F001B8C90 /* DWConfirmPaymentContentView.xib */; };
 		2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */; };
 		2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */; };
+		2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
+		2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */; };
 		2A11F59421947CBE00E7B563 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */; };
 		2A11F59521947CBE00E7B563 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58321947CBE00E7B563 /* BRPeerEntity.m */; };
 		2A11F59621947CBE00E7B563 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F58621947CBE00E7B563 /* BRMerkleBlockEntity.m */; };
@@ -550,6 +552,9 @@
 		2A10EB332358996700C38B61 /* DWImportWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImportWalletInfoViewController.h; sourceTree = "<group>"; };
 		2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImportWalletInfoViewController.m; sourceTree = "<group>"; };
 		2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ImportWalletInfo.storyboard; sourceTree = "<group>"; };
+		2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetWalletInfo.storyboard; sourceTree = "<group>"; };
+		2A10EB422358D2CA00C38B61 /* DWResetWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWResetWalletInfoViewController.h; sourceTree = "<group>"; };
+		2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWResetWalletInfoViewController.m; sourceTree = "<group>"; };
 		2A11F58221947CBE00E7B563 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
 		2A11F58321947CBE00E7B563 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		2A11F58521947CBE00E7B563 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
@@ -1528,6 +1533,16 @@
 			path = InfoTextCell;
 			sourceTree = "<group>";
 		};
+		2A10EB3F2358D29500C38B61 /* ResetWalletInfo */ = {
+			isa = PBXGroup;
+			children = (
+				2A10EB422358D2CA00C38B61 /* DWResetWalletInfoViewController.h */,
+				2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */,
+				2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */,
+			);
+			path = ResetWalletInfo;
+			sourceTree = "<group>";
+		};
 		2A11F58021947CBE00E7B563 /* DataMigration */ = {
 			isa = PBXGroup;
 			children = (
@@ -2083,6 +2098,7 @@
 		2A7A7BCA2347EF7A00451078 /* Security */ = {
 			isa = PBXGroup;
 			children = (
+				2A10EB3F2358D29500C38B61 /* ResetWalletInfo */,
 				2A7A7BCB2347F01B00451078 /* DWSecurityMenuViewController.h */,
 				2A7A7BCC2347F01B00451078 /* DWSecurityMenuViewController.m */,
 				2A7A7BCE2348A34800451078 /* DWSecurityMenuModel.h */,
@@ -3518,6 +3534,7 @@
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
 				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
 				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
+				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
 				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
@@ -3890,6 +3907,7 @@
 				2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
+				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,

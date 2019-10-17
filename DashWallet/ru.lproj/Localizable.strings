@@ -1116,6 +1116,9 @@
 "Wallet Keys" = "Ключи кошелька";
 
 /* No comment provided by engineer. */
+"Warning" = "Warning";
+
+/* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
@@ -1156,6 +1159,9 @@
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Теперь Вы можете купить DASH\nв dashwallet с помощью наличных\nили банковского перевода.";
