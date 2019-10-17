@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "błędna fraza odzyskiwania danych";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "błędna fraza odzyskiwania danych";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Adres Bitcoin (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Jeśli wyczyścisz to urządzenie, stracisz dostęp do funduszy na tym urządzeniu. Tę czynność możesz rozważyć jedynie, gdy nie masz dostępu do frazy odzyskiwania portfela oraz pinu. ";
 
 /* No comment provided by engineer. */
-"cancel" = "anuluj";
-
-/* No comment provided by engineer. */
 "Cancel" = "Anuluj";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "anuluj";
 
 /* No comment provided by engineer. */
 "change" = "zmień";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Zmień hasło";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "zmienić kwotę płatności?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "zmienić kwotę płatności?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "schowek nie zawiera prawidłowego adresu dash";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "schowek nie zawiera prawidłowego adresu dash";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "schowek nie zawiera prawidłowego adresu  dash lub bitcoin";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "zamknij aplikację";
 
 /* No comment provided by engineer. */
-"close app" = "zamknij aplikację";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Transakcja coinbase";
 
-/* Confirm */
-"Confirm" = "Potwierdź";
-
 /* No comment provided by engineer. */
 "confirm" = "potwierdź";
+
+/* Confirm */
+"Confirm" = "Potwierdź";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "nie mogłem sprawdzić salda adresu";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "płatność nieudana";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "płatność nieudana";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "nie można wmieść saldo";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "nie można przekazać płatności do sieci dash";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "nie można przekazać płatności do sieci dash";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Pozwól na otrzymywanie powiadomień";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Pozwól na otrzymywanie powiadomień";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "Jeś dalej nalegasz na wymazanie, proszę o wpisanie: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "ignoruj";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "ignoruj";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Załaduj więcej";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Lokalna waluta";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "IP węzła";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "nieprawidłowy adres dash";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "nieprawidłowy adres dash lub bitcoin";
@@ -591,10 +591,10 @@
 "not voter" = "nie głosujący";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Aktywuj ustawienia zaawansowane jedynie w przypadku, gdy posiadasz wystarczającą wiedzę o technologii blockchain.\nJeżeli aktywujesz ustawienia zaawansowane, używaj wyłącznie tych, których działanie rozumiesz.";
@@ -657,16 +657,16 @@
 "payout address:" = "adres wypłaty:";
 
 /* No comment provided by engineer. */
-"Pending" = "Oczekujący";
-
-/* No comment provided by engineer. */
 "pending" = "w toku";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Wpisz pin aby zaktualizować porfel. ";
+"Pending" = "Oczekujący";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "wprowadź pin w celu aktualizacji portfela";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Wpisz pin aby zaktualizować porfel. ";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Przyłóż telefon do urządzenia NFC ";
@@ -687,10 +687,10 @@
 "Private key" = "Klucz prywatny";
 
 /* No comment provided by engineer. */
-"processing" = "przetwarzanie";
+"Processing" = "Przetwarzanie";
 
 /* No comment provided by engineer. */
-"Processing" = "Przetwarzanie";
+"processing" = "przetwarzanie";
 
 /* No comment provided by engineer. */
 "Public key" = "Klucz publiczny";
@@ -714,10 +714,10 @@
 "Received" = "Otrzymano";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "otrzymano %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "otrzymano %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Fraza do odzysku portfela";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Fraza do odzysku portfela";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "ponownie zeskanuj";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Przeskanuj blockchain ponownie";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Przeskanuj blockchain ponownie";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "resetuj";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "pokaż";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Pokaż klucze masternoda";
@@ -1020,10 +1023,10 @@
 "Try It!" = "Spróbuj!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "włącz hasło urządzenia";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "włącz hasło urządzenia";
 
 /* No comment provided by engineer. */
 "type:" = "rodzaj:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Wykryliśmy, że ostatnio Dashwallet uległ awarii. Czy chcesz pomóc nam rozwiązać problem, przesyłając nam dane z raportu awarii? Twoja historia transakcji i inne prywatne informacje NIE będą udostępniane.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "wyczyść";
 
 /* No comment provided by engineer. */
-"wipe" = "wyczyść";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

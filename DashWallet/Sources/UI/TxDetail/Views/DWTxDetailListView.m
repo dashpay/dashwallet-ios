@@ -76,12 +76,20 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
     const CGFloat inputHeight = inputAddressesCount > 1 ? MULTIPLE_ROW_HEIGHT : REGULAR_ROW_HEIGHT;
     for (NSUInteger i = 0; i < inputAddressesCount; i++) {
         DWTitleDetailCellView *cellView = [self addDetailCellViewWithHeight:inputHeight];
+        UILongPressGestureRecognizer *recognizer =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                          action:@selector(longTapGestureRecognizerAction:)];
+        [cellView addGestureRecognizer:recognizer];
         [self.inputAddressViews addObject:cellView];
     }
 
     const CGFloat outputHeight = outputAddressesCount > 1 ? MULTIPLE_ROW_HEIGHT : REGULAR_ROW_HEIGHT;
     for (NSUInteger i = 0; i < outputAddressesCount; i++) {
         DWTitleDetailCellView *cellView = [self addDetailCellViewWithHeight:outputHeight];
+        UILongPressGestureRecognizer *recognizer =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                          action:@selector(longTapGestureRecognizerAction:)];
+        [cellView addGestureRecognizer:recognizer];
         [self.outputAddressViews addObject:cellView];
     }
 
@@ -125,6 +133,21 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
 
     self.feeCellView.model = fee;
     self.dateCellView.model = date;
+}
+
+#pragma mark - Actions
+
+- (void)longTapGestureRecognizerAction:(UIGestureRecognizer *)sender {
+    if (sender.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    DWTitleDetailCellView *view = (DWTitleDetailCellView *)sender.view;
+    if (![view isKindOfClass:DWTitleDetailCellView.class]) {
+        return;
+    }
+
+    [self.delegate txDetailListView:self longPressActionOnView:view];
 }
 
 #pragma mark - Private

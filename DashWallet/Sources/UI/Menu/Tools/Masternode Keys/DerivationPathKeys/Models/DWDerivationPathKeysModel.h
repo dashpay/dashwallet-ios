@@ -17,27 +17,29 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWDerivationPathKeysItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSAuthenticationKeysDerivationPath;
+@class DWSelectorFormCellModel;
 
-/**
- Style of displaying detail info
-
- - DWTitleDetailItem_Default: Multiline
- - DWTitleDetailItem_TruncatedSingleLine: 1 line, truncated middle
- */
-typedef NS_ENUM(NSUInteger, DWTitleDetailItemStyle) {
-    DWTitleDetailItem_Default,
-    DWTitleDetailItem_TruncatedSingleLine,
+typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
+    DWDerivationPathInfo_Address,
+    DWDerivationPathInfo_PublicKey,
+    DWDerivationPathInfo_PrivateKey,
+    _DWDerivationPathInfo_Count,
 };
 
-@protocol DWTitleDetailItem <NSObject>
+@interface DWDerivationPathKeysModel : NSObject
 
-@property (assign, nonatomic) DWTitleDetailItemStyle style;
-@property (nullable, readonly, nonatomic) NSString *title;
-@property (nullable, readonly, nonatomic) NSString *plainDetail;
-@property (nullable, readonly, nonatomic) NSAttributedString *attributedDetail;
-@property (nullable, readonly, nonatomic) NSString *copyableData;
+@property (readonly, nonatomic, strong) DWSelectorFormCellModel *loadMoreItem;
+
+- (id<DWDerivationPathKeysItem>)itemForInfo:(DWDerivationPathInfo)info atIndex:(NSInteger)index;
+
+- (instancetype)initWithDerivationPath:(DSAuthenticationKeysDerivationPath *)derivationPath;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

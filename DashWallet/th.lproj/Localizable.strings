@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "วลีกู้คืนไม่ถูกต้อง";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "ที่อยู่ Bitcoin  (shapshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "การล้างข้อมูลอุปกรณ์นี้ คุณจะไม่สามารถเข้าถึงเงินในอุปกรณ์นี้ได้อีกต่อไป   ควรล้างข้อมูลเฉพาะเมื่อคุณไม่สามารถเข้าถึงข้อความรหัสผ่านและลืมรหัสผ่านของคุณ";
 
 /* No comment provided by engineer. */
-"cancel" = "ยกเลิก";
-
-/* No comment provided by engineer. */
 "Cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
 "change" = "เปลี่ยนแปลง";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "เปลี่ยนแปลงรหัสผ่าน";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "เปลี่ยนแปลงยอดชำระ";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "เปลี่ยนแปลงยอดชำระ";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "คลิปบอร์ดไม่มีที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "คลิปบอร์ดไม่มีที่อยู่ dash ที่ถูกต้อง";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "คลิปบอร์ดไม่มีอยู่ใน dash หรือ ที่อยู่ของ bitcoin";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "ปิดแอพพลิเคชั่น";
 
 /* No comment provided by engineer. */
-"close app" = "ปิดแอพพลิเคชั่น";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "ธุรกรรม Coinbase";
 
-/* Confirm */
-"Confirm" = "ยืนยัน";
-
 /* No comment provided by engineer. */
 "confirm" = "ยืนยัน";
+
+/* Confirm */
+"Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "ไม่สามารถตรวจสอบที่อยู่ได้";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "ไม่สามารถชำระเงินได้";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "ไม่สามารถชำระเงินได้";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "ไม่สามารถกวาดความสมดุลได้";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "ไม่สามารถส่งการชำระเงินไปยังเครือข่าย dash ได้";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "ไม่สามารถส่งการชำระเงินไปยังเครือข่าย dash ได้";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "เปิดรับการแจ้งเตือน";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "เปิดรับการแจ้งเตือน";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "เพิกเฉย";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "เพิกเฉย";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "โหลดเพิ่ม";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "สกุลเงินท้องถิ่น";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "ไม่ใช่ที่อยู่ dash หรือ bitcoin ที่ถูกต้อง";
@@ -591,10 +591,10 @@
 "not voter" = "ไม่ใช่ผู้โหวต";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "โอเค";
 
 /* No comment provided by engineer. */
-"ok" = "โอเค";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "เปิดใช้งานคุณลักษณะขั้นสูงหากคุณรู้เกี่ยวกับเทคโนโลยี blockchain เท่านั้น \nเปิดใช้งานใช้เฉพาะคุณลักษณะขั้นสูงที่คุณเข้าใจเท่านั้น";
@@ -657,16 +657,16 @@
 "payout address:" = "ที่อยู่การจ่ายเงิน:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
-
-/* No comment provided by engineer. */
 "pending" = "อยู่ระหว่างดำเนินการ";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "โปรดป้อน pin เพื่ออัพเกรด wallet";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
@@ -687,10 +687,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -714,10 +714,10 @@
 "Received" = "ได้รับ";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "ได้รับ %1$@(%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "ได้รับ %1$@(%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "วลีกู้คืน";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "วลีกู้คืน";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "สแกน blockchain อีกครั้ง";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "รีเซ็ต";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "แสดง";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "แสดง masternode keys";
@@ -1020,10 +1023,10 @@
 "Try It!" = "ลอง!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "เปิดการใช้งานรหัส";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "เปิดการใช้งานรหัส";
 
 /* No comment provided by engineer. */
 "type:" = "ชนิด:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "ลบล้าง";
 
 /* No comment provided by engineer. */
-"wipe" = "ลบล้าง";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

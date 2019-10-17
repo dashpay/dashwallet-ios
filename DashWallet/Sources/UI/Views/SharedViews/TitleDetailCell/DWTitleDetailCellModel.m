@@ -25,29 +25,47 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize title = _title;
 @synthesize plainDetail = _plainDetail;
 @synthesize attributedDetail = _attributedDetail;
+@synthesize copyableData = _copyableData;
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
                   plainDetail:(NSString *)plainDetail {
-    return [self initWithStyle:style title:title plainDetail:plainDetail attributedDetail:nil];
+    return [self initWithStyle:style title:title plainDetail:plainDetail attributedDetail:nil copyableData:nil];
 }
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
              attributedDetail:(NSAttributedString *)attributedDetail {
-    return [self initWithStyle:style title:title plainDetail:nil attributedDetail:attributedDetail];
+    return [self initWithStyle:style
+                         title:title
+                   plainDetail:nil
+              attributedDetail:attributedDetail
+                  copyableData:nil];
+}
+
+- (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
+                        title:(nullable NSString *)title
+             attributedDetail:(NSAttributedString *)attributedDetail
+                 copyableData:(nullable NSString *)copyableData {
+    return [self initWithStyle:style
+                         title:title
+                   plainDetail:nil
+              attributedDetail:attributedDetail
+                  copyableData:copyableData];
 }
 
 - (instancetype)initWithStyle:(DWTitleDetailItemStyle)style
                         title:(nullable NSString *)title
                   plainDetail:(nullable NSString *)plainDetail
-             attributedDetail:(nullable NSAttributedString *)attributedDetail {
+             attributedDetail:(nullable NSAttributedString *)attributedDetail
+                 copyableData:(nullable NSString *)copyableData {
     self = [super init];
     if (self) {
         _style = style;
         _title = [title copy];
         _plainDetail = [plainDetail copy];
         _attributedDetail = [attributedDetail copy];
+        _copyableData = [copyableData copy];
     }
     return self;
 }

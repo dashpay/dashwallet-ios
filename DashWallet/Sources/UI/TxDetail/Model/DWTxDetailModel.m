@@ -119,7 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
                                                     title:hasTitle ? title : @""
-                                         attributedDetail:detail];
+                                         attributedDetail:detail
+                                             copyableData:address];
         [models addObject:model];
     }
 
@@ -150,7 +151,8 @@ NS_ASSUME_NONNULL_BEGIN
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
                                                     title:hasTitle ? title : @""
-                                         attributedDetail:detail];
+                                         attributedDetail:detail
+                                             copyableData:address];
         [models addObject:model];
     }
 
@@ -205,20 +207,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     [UIPasteboard generalPasteboard].string = transactionId;
-
-    return YES;
-}
-
-- (BOOL)copyAddressToPasteboard {
-    // TODO: fix me
-
-    //    NSString *address = self.dataItem.address;
-    //    NSParameterAssert(address);
-    //    if (!address) {
-    //        return NO;
-    //    }
-    //
-    //    [UIPasteboard generalPasteboard].string = address;
 
     return YES;
 }

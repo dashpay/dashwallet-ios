@@ -114,10 +114,10 @@
 "Backup Wallet" = "Backup Wallet";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"bad recovery phrase" = "bad recovery phrase";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "bad recovery phrase";
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin adresa (shapeshift)";
@@ -144,25 +144,25 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Vyčistením tohto zariadenia už nebudete mať prístup k prostriedkom na tomto zariadení. Toto by sa malo robiť len vtedy, ak už nemáte prístup k vašej prístupovej fráze a zabudli ste aj Váš PIN kód.";
 
 /* No comment provided by engineer. */
-"cancel" = "zrušiť";
-
-/* No comment provided by engineer. */
 "Cancel" = "Zrušiť";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"cancel" = "zrušiť";
 
 /* No comment provided by engineer. */
 "change" = "zmeniť";
 
 /* No comment provided by engineer. */
+"Change" = "Change";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Zmeniť prístupový kód";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "change payment amount?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"change payment amount?" = "change payment amount?";
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
@@ -186,10 +186,10 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"clipboard doesn't contain a valid dash address" = "schránka neobsahuje platnú dash adresu";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "schránka neobsahuje platnú dash adresu";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
 "clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
@@ -198,19 +198,19 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"close app" = "ukončiť applikáciu";
 
 /* No comment provided by engineer. */
-"close app" = "ukončiť applikáciu";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase Transaction";
 
-/* Confirm */
-"Confirm" = "Potvrdiť";
-
 /* No comment provided by engineer. */
 "confirm" = "potvrdiť:";
+
+/* Confirm */
+"Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirm PIN";
@@ -252,19 +252,19 @@
 "couldn't check address balance" = "couldn't check address balance";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"couldn't make payment" = "couldn't make payment";
 
 /* No comment provided by engineer. */
 "couldn't sweep balance" = "couldn't sweep balance";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "couldn't transmit payment to dash network";
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"couldn't transmit payment to dash network" = "couldn't transmit payment to dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -336,10 +336,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Povoliť upozornenia pri prijatí";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Povoliť upozornenia pri prijatí";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -426,10 +426,10 @@
 "If you still would like to wipe it please input: \"%@\"" = "Ak si ju stále prajete zmazať, prosím zadajte: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "ignorovať";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"ignore" = "ignorovať";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -473,11 +473,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Load more";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Miestna mena";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -570,13 +570,13 @@
 "node ip" = "node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
-
-/* No comment provided by engineer. */
 "not a valid dash address" = "not a valid dash address";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
@@ -591,10 +591,10 @@
 "not voter" = "not voter";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"ok" = "ok";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
@@ -657,16 +657,16 @@
 "payout address:" = "payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
-
-/* No comment provided by engineer. */
 "pending" = "čakajúce";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Pre inováciu peňaženky zadajte pin";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "please enter pin to upgrade wallet" = "pre inováciu peňaženky zadajte pin";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Pre inováciu peňaženky zadajte pin";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Umiestnite Váš telefón blízko NFC zariadenia.";
@@ -687,10 +687,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
@@ -714,10 +714,10 @@
 "Received" = "Prijté";
 
 /* No comment provided by engineer. */
-"Received %@ (%@)" = "Received %1$@ (%2$@)";
+"received %@ (%@)" = "prijaté %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "prijaté %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received at" = "Received at";
@@ -731,11 +731,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Fráza pre obnovenie";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Fráza pre obnovenie";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -768,10 +768,10 @@
 "rescan" = "pre-skenovať";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Znova prehľadať reťazec blokov";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "reset" = "vynulovať";
@@ -877,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "show" = "zobraziť";
+
+/* No comment provided by engineer. */
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
 "Show masternode keys" = "Show masternode keys";
@@ -1020,10 +1023,10 @@
 "Try It!" = "Try It!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "turn device passcode on";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"Turn device passcode on" = "Turn device passcode on";
+"turn device passcode on" = "turn device passcode on";
 
 /* No comment provided by engineer. */
 "type:" = "type:";
@@ -1125,10 +1128,10 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"wipe" = "vymazať";
 
 /* No comment provided by engineer. */
-"wipe" = "vymazať";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

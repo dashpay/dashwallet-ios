@@ -1,5 +1,5 @@
-//  
-//  Created by Sam Westrich
+//
+//  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,13 +15,18 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UITableViewController
+@class DSAuthenticationKeysDerivationPath;
 
-+ (instancetype)controller;
+@interface DWWalletKeysOverviewModel : NSObject
+
+@property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
+@property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *votingDerivationPath;
+@property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *operatorDerivationPath;
+
 
 @end
 

@@ -19,25 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol DWDerivationPathKeysItem <NSObject>
 
-/**
- Style of displaying detail info
-
- - DWTitleDetailItem_Default: Multiline
- - DWTitleDetailItem_TruncatedSingleLine: 1 line, truncated middle
- */
-typedef NS_ENUM(NSUInteger, DWTitleDetailItemStyle) {
-    DWTitleDetailItem_Default,
-    DWTitleDetailItem_TruncatedSingleLine,
-};
-
-@protocol DWTitleDetailItem <NSObject>
-
-@property (assign, nonatomic) DWTitleDetailItemStyle style;
-@property (nullable, readonly, nonatomic) NSString *title;
-@property (nullable, readonly, nonatomic) NSString *plainDetail;
-@property (nullable, readonly, nonatomic) NSAttributedString *attributedDetail;
-@property (nullable, readonly, nonatomic) NSString *copyableData;
+@property (readonly, nonatomic, copy) NSString *title;
+@property (readonly, nonatomic, copy) NSString *detail;
 
 @end
 
