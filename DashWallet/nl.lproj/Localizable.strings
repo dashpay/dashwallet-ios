@@ -786,6 +786,9 @@
 "Scan" = "Scan";
 
 /* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan de QR code van iemand anders om zijn of haar dash adres te verkrijgen. Je kan een betaling versturen naar iedereen met een adres.";
 
 /* No comment provided by engineer. */
@@ -978,6 +981,9 @@
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Deze portemonnee is niet leeg of sync is nog niet klaar, je mag het niet wissen zonder de herstelzin.";
 
 /* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
 "to:" = "naar:";
 
 /* No comment provided by engineer. */
@@ -1128,6 +1134,9 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We hebben gedetecteerd dat Dashwallet is gecrasht toen het voor de laatste keer werd gebruikt. Wil je ons helpen dat issue op te lossen door een crashrapport in te sturen? Je transactiegeschiedenis en andere privé-informatie WORDT NIET gedeeld.";
 
 /* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+
+/* No comment provided by engineer. */
 "wipe" = "wis";
 
 /* No comment provided by engineer. */
@@ -1144,6 +1153,9 @@
 
 /* No comment provided by engineer. */
 "yes" = "ja";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Je kunt nu dash kopen in\ndashwallet d.m.v. geld of\neen bankoverschrijving.";

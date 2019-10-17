@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWToolsMenuViewControllerDelegate
 
 - (void)toolsMenuViewControllerImportPrivateKey:(DWToolsMenuViewController *)controller {
-    [self.navigationController popViewControllerAnimated:NO];
+    [self.navigationController popToRootViewControllerAnimated:NO];
     [self.delegate mainMenuViewControllerImportPrivateKey:self];
 }
 

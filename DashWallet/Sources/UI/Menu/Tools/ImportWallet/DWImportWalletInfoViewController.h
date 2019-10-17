@@ -15,13 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBackupInfoCell : UITableViewCell
+@class DWImportWalletInfoViewController;
 
-@property (nullable, nonatomic, copy) NSString *text;
+@protocol DWImportWalletInfoViewControllerDelegate <NSObject>
+
+- (void)importWalletInfoViewControllerScanPrivateKeyAction:(DWImportWalletInfoViewController *)controller;
+
+@end
+
+@interface DWImportWalletInfoViewController : DWBaseViewController
+
+@property (nullable, nonatomic, weak) id<DWImportWalletInfoViewControllerDelegate> delegate;
+
++ (instancetype)controller;
 
 @end
 
