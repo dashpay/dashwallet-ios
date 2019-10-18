@@ -176,13 +176,6 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                   }
                               }
                           }];
-
-            [self mvvm_observe:DW_KEYPATH(self, model.allFundsSelected)
-                          with:^(typeof(self) self, NSNumber *value) {
-                              const BOOL allFundsSelected = self.model.allFundsSelected;
-                              self.maxButton.selected = allFundsSelected;
-                              self.inputControl.hidden = allFundsSelected;
-                          }];
         }
         else {
             _descriptionView.hidden = YES;
@@ -229,7 +222,17 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 }
 
 - (void)maxButtonAction:(id)sender {
-    self.model.allFundsSelected = !self.model.allFundsSelected;
+    __weak typeof(self) weakSelf = self;
+    [self.model selectAllFundsWithPreparationBlock:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (strongSelf.model.activeType == DWAmountTypeSupplementary) {
+            [strongSelf switchAmountCurrencyAction:sender];
+        }
+    }];
 }
 
 #pragma mark - Private

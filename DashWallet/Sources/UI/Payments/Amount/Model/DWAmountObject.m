@@ -190,6 +190,7 @@ static CGSize const DashSymbolSmallSize = {14.0, 11.0};
                                                 validator:(DWAmountInputValidator *)validator
                                                    locale:(NSLocale *)locale {
     NSNumber *number = [numberFormatter numberFromString:formattedString];
+    NSParameterAssert(number);
     if (!number) {
         return nil;
     }

@@ -2722,8 +2722,6 @@
 				2A9FFF3622357F2900956D5F /* Validation */,
 				2AB8CDDC220D87E300A3D1DB /* Views */,
 				2AB8CDE0220DC9D100A3D1DB /* AmountStoryboard.storyboard */,
-				2AB8CDD9220D879300A3D1DB /* DWOLDAmountViewController.h */,
-				2AB8CDDA220D879300A3D1DB /* DWOLDAmountViewController.m */,
 				2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */,
 				2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */,
 				2A0C69A423114BA7001B8C90 /* DWSendAmountViewController.h */,
@@ -2961,6 +2959,8 @@
 				FBFC2EFA211413EB00D20C57 /* DWWarningViewController.m */,
 				2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */,
 				2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */,
+				2AB8CDD9220D879300A3D1DB /* DWOLDAmountViewController.h */,
+				2AB8CDDA220D879300A3D1DB /* DWOLDAmountViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
