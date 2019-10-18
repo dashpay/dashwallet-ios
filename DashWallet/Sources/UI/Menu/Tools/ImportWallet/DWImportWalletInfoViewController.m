@@ -15,10 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DWBackupInfoViewController.h"
+#import "DWImportWalletInfoViewController.h"
 
-#import "DWBackupInfoHeaderView.h"
-#import "DWBackupSeedPhraseViewController.h"
 #import "DWInfoTextCell.h"
 #import "DWUIKit.h"
 
@@ -26,24 +24,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
-@interface DWBackupInfoViewController () <UITableViewDataSource, UITableViewDelegate>
-
-@property (nonatomic, strong) DWPreviewSeedPhraseModel *seedPhraseModel;
+@interface DWImportWalletInfoViewController () <UITableViewDataSource, UITableViewDelegate>
 
 @property (null_resettable, copy, nonatomic) NSArray<NSString *> *items;
 
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
-@property (strong, nonatomic) IBOutlet UIButton *showRecoveryPhraseButton;
+@property (strong, nonatomic) IBOutlet UIButton *scanPrivateKeyButton;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @end
 
-@implementation DWBackupInfoViewController
+@implementation DWImportWalletInfoViewController
 
-+ (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"BackupInfo" bundle:nil];
-    DWBackupInfoViewController *controller = [storyboard instantiateInitialViewController];
-    controller.seedPhraseModel = model;
++ (instancetype)controller {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"ImportWalletInfo" bundle:nil];
+    DWImportWalletInfoViewController *controller = [storyboard instantiateInitialViewController];
+    controller.hidesBottomBarWhenPushed = YES;
 
     return controller;
 }
@@ -82,11 +79,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 
 #pragma mark - Actions
 
-- (IBAction)showRecoveryPhraseButtonAction:(id)sender {
-    DWPreviewSeedPhraseViewController *controller =
-        [[DWBackupSeedPhraseViewController alloc] initWithModel:self.seedPhraseModel];
-    controller.delegate = self.delegate;
-    [self.navigationController pushViewController:controller animated:YES];
+- (IBAction)scanPrivatekeyButtonAction:(id)sender {
+    [self.delegate importWalletInfoViewControllerScanPrivateKeyAction:self];
 }
 
 #pragma mark - UITableViewDataSource
@@ -114,7 +108,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Private
 
 - (void)setupView {
-    self.title = NSLocalizedString(@"Backup Wallet", nil);
+    self.title = NSLocalizedString(@"Import Private Key", nil);
+
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.titleLabel.text = NSLocalizedString(@"Scan Private Key", nil);
 
     NSString *cellId = DWInfoTextCell.dw_reuseIdentifier;
     UINib *nib = [UINib nibWithNibName:cellId bundle:nil];
@@ -122,8 +119,8 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     [self.tableView registerNib:nib forCellReuseIdentifier:cellId];
     self.tableView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 
-    [self.showRecoveryPhraseButton setTitle:NSLocalizedString(@"Show Recovery Phrase", nil)
-                                   forState:UIControlStateNormal];
+    [self.scanPrivateKeyButton setTitle:NSLocalizedString(@"Scan Private Key", nil)
+                               forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(contentSizeCategoryDidChangeNotification:)
@@ -134,9 +131,9 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (NSArray<NSString *> *)items {
     if (!_items) {
         _items = @[
-            NSLocalizedString(@"This recovery phrase is your access to the funds in this wallet.", nil),
-            NSLocalizedString(@"We do not store this recovery phrase.", nil),
-            NSLocalizedString(@"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.", nil),
+            NSLocalizedString(@"You are about to sweep funds from another Dash wallet.", nil),
+            NSLocalizedString(@"This will move all coins from that wallet to your wallet on this device.", nil),
+            NSLocalizedString(@"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.", nil),
         ];
     }
 

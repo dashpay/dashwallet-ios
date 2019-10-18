@@ -21,7 +21,7 @@
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"
-#import "DWRecoverViewController.h"
+#import "DWResetWalletInfoViewController.h"
 #import "DWSecurityMenuModel.h"
 #import "DWSelectorViewController.h"
 #import "DWSetPinViewController.h"
@@ -29,7 +29,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate, DWRecoverViewControllerDelegate>
+@interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
 
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
@@ -188,16 +188,6 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(NO, @"This delegate method shouldn't be called from a preview seed phrase VC");
 }
 
-#pragma mark - DWRecoverViewControllerDelegate
-
-- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller {
-    NSAssert(NO, @"Inconsistent state");
-}
-
-- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
-    [self.delegate didWipeWallet];
-}
-
 #pragma mark - Private
 
 - (void)updateBiometricAuthCellModel {
@@ -288,10 +278,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)resetWalletAction {
-    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
-    controller.hidesBottomBarWhenPushed = YES;
-    controller.action = DWRecoverAction_Wipe;
-    controller.delegate = self;
+    DWResetWalletInfoViewController *controller = [DWResetWalletInfoViewController controller];
+    controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }
 

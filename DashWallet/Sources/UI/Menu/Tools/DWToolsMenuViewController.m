@@ -18,13 +18,14 @@
 #import "DWToolsMenuViewController.h"
 
 #import "DWFormTableViewController.h"
+#import "DWImportWalletInfoViewController.h"
 #import "DWKeysOverviewViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWToolsMenuViewController ()
+@interface DWToolsMenuViewController () <DWImportWalletInfoViewControllerDelegate>
 
 @property (null_resettable, nonatomic, strong) DWToolsMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
@@ -64,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf.delegate toolsMenuViewControllerImportPrivateKey:strongSelf];
+            [strongSelf showImportPrivateKey];
         };
         [items addObject:cellModel];
     }
@@ -113,7 +114,19 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
+#pragma mark - DWImportWalletInfoViewControllerDelegate
+
+- (void)importWalletInfoViewControllerScanPrivateKeyAction:(DWImportWalletInfoViewController *)controller {
+    [self.delegate toolsMenuViewControllerImportPrivateKey:self];
+}
+
 #pragma mark - Private
+
+- (void)showImportPrivateKey {
+    DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController controller];
+    controller.delegate = self;
+    [self.navigationController pushViewController:controller animated:YES];
+}
 
 - (void)showMasternodeKeys {
     DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];

@@ -15,33 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWBackupInfoCell.h"
-
-#import "DWUIKit.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBackupInfoCell ()
+@interface DWInfoTextCell : UITableViewCell
 
-@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
-
-@end
-
-@implementation DWBackupInfoCell
-
-- (void)awakeFromNib {
-    [super awakeFromNib];
-
-    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
-}
-
-- (void)setText:(nullable NSString *)text {
-    self.titleLabel.text = text;
-}
-
-- (nullable NSString *)text {
-    return self.titleLabel.text;
-}
+@property (nullable, nonatomic, copy) NSString *text;
 
 @end
 

@@ -786,6 +786,9 @@
 "Scan" = "Scan";
 
 /* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "디른 사람의 QR 코드를 스캔하여 대시 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
 
 /* No comment provided by engineer. */
@@ -978,6 +981,9 @@
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "이 지갑은 비어 있지 않거나 동기화가 완료되지 않았습니다. 복구 문구없이 삭제할 수 없습니다.";
 
 /* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
 "to:" = "받은 주소:";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1116,9 @@
 "Wallet Keys" = "지갑 키";
 
 /* No comment provided by engineer. */
+"Warning" = "Warning";
+
+/* No comment provided by engineer. */
 "WARNING" = "경고";
 
 /* No comment provided by engineer. */
@@ -1128,6 +1137,9 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "지난 번 대시 지갑을 실행하였을 때 충돌이 발생하였음을 감지하였습니다. 대시에 충돌 보고서 데이터를 전송해 해당 이슈를 해결할 수 있도록 도와주시겠습니까? 당신의 거래 내역 및 기타 개인 정보는 절대로 공유되지 않습니다.";
 
 /* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+
+/* No comment provided by engineer. */
 "wipe" = "지우기";
 
 /* No comment provided by engineer. */
@@ -1144,6 +1156,12 @@
 
 /* No comment provided by engineer. */
 "yes" = "예";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "이제 대시 지갑에서\n현금이나 은행 송금을 통해\n대시를 구매할 수 있습니다";

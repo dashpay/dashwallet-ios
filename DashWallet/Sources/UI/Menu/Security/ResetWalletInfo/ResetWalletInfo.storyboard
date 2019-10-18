@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YdS-GS-a75">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Reset Wallet Info View Controller-->
+        <scene sceneID="nYk-IE-mZb">
+            <objects>
+                <viewController id="YdS-GS-a75" customClass="DWResetWalletInfoViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="MJh-PJ-Dsr">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9vr-43-mdL" userLabel="Layout View">
+                                <rect key="frame" x="20" y="0.0" width="374" height="742"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="omW-8e-y0S">
+                                        <rect key="frame" x="0.0" y="281.5" width="374" height="179"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" placeholderIntrinsicWidth="75" placeholderIntrinsicHeight="96" image="icon_warning" translatesAutoresizingMaskIntoConstraints="NO" id="cfX-qC-vNv" userLabel="Icon Image View">
+                                                <rect key="frame" x="149.5" y="0.0" width="75" height="96"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9A9-eA-i1Z" userLabel="Title Label">
+                                                <rect key="frame" x="0.0" y="122" width="374" height="26.5"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                                <color key="textColor" name="DarkTitleColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PB9-c1-jiF" userLabel="Description Label">
+                                                <rect key="frame" x="0.0" y="158.5" width="374" height="20.5"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="9A9-eA-i1Z" firstAttribute="leading" secondItem="omW-8e-y0S" secondAttribute="leading" id="2p3-Am-RFi"/>
+                                            <constraint firstItem="PB9-c1-jiF" firstAttribute="leading" secondItem="omW-8e-y0S" secondAttribute="leading" id="4OZ-je-Ooe"/>
+                                            <constraint firstItem="cfX-qC-vNv" firstAttribute="top" secondItem="omW-8e-y0S" secondAttribute="top" id="5dO-Hz-L0n"/>
+                                            <constraint firstItem="PB9-c1-jiF" firstAttribute="top" secondItem="9A9-eA-i1Z" secondAttribute="bottom" constant="10" id="6fB-aa-dOA"/>
+                                            <constraint firstAttribute="trailing" secondItem="PB9-c1-jiF" secondAttribute="trailing" id="ASb-yY-LBK"/>
+                                            <constraint firstAttribute="trailing" secondItem="9A9-eA-i1Z" secondAttribute="trailing" id="Ans-1N-iur"/>
+                                            <constraint firstItem="cfX-qC-vNv" firstAttribute="centerX" secondItem="omW-8e-y0S" secondAttribute="centerX" id="Ktz-oC-hRg"/>
+                                            <constraint firstAttribute="bottom" secondItem="PB9-c1-jiF" secondAttribute="bottom" id="ek8-EV-EVo"/>
+                                            <constraint firstItem="9A9-eA-i1Z" firstAttribute="top" secondItem="cfX-qC-vNv" secondAttribute="bottom" constant="26" id="i1l-RS-MUX"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="omW-8e-y0S" secondAttribute="trailing" id="Mtb-5f-p3u"/>
+                                    <constraint firstItem="omW-8e-y0S" firstAttribute="leading" secondItem="9vr-43-mdL" secondAttribute="leading" id="Z1S-8U-5u5"/>
+                                    <constraint firstItem="omW-8e-y0S" firstAttribute="centerY" secondItem="9vr-43-mdL" secondAttribute="centerY" id="rOE-oQ-RoD"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4uM-RK-mYH" userLabel="Continue Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="742" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="EQ9-WK-row"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="continueButtonAction:" destination="YdS-GS-a75" eventType="touchUpInside" id="89V-Ef-eTb"/>
+                                </connections>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="43t-zS-NdU" userLabel="Cancel Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="20" y="804" width="374" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="SCg-nk-Pth"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="cancelButtonAction:" destination="YdS-GS-a75" eventType="touchUpInside" id="tln-zm-31O"/>
+                                </connections>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="4uM-RK-mYH" firstAttribute="top" secondItem="9vr-43-mdL" secondAttribute="bottom" id="0jH-2D-rZG"/>
+                            <constraint firstItem="43t-zS-NdU" firstAttribute="top" secondItem="4uM-RK-mYH" secondAttribute="bottom" constant="8" id="0or-e4-Dfj"/>
+                            <constraint firstItem="43t-zS-NdU" firstAttribute="trailing" secondItem="MJh-PJ-Dsr" secondAttribute="trailingMargin" id="1af-1c-Xex"/>
+                            <constraint firstItem="9vr-43-mdL" firstAttribute="top" secondItem="MJh-PJ-Dsr" secondAttribute="top" id="3LU-J7-ttq"/>
+                            <constraint firstItem="9vr-43-mdL" firstAttribute="leading" secondItem="MJh-PJ-Dsr" secondAttribute="leadingMargin" id="Psy-Gj-ZGf"/>
+                            <constraint firstItem="43t-zS-NdU" firstAttribute="leading" secondItem="MJh-PJ-Dsr" secondAttribute="leadingMargin" id="TOC-vh-bIm"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="9vr-43-mdL" secondAttribute="trailing" id="aNA-cZ-WGT"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="43t-zS-NdU" secondAttribute="bottom" constant="4" id="eNu-bS-UNq"/>
+                            <constraint firstItem="4uM-RK-mYH" firstAttribute="leading" secondItem="MJh-PJ-Dsr" secondAttribute="leadingMargin" id="ifZ-id-QJN"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="4uM-RK-mYH" secondAttribute="trailing" id="yab-3h-pQv"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="0Iz-dE-ln6"/>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="43t-zS-NdU" id="1K7-pE-RyI"/>
+                        <outlet property="contentBottomConstraint" destination="eNu-bS-UNq" id="ZiA-28-by7"/>
+                        <outlet property="continueButton" destination="4uM-RK-mYH" id="S43-pE-JUY"/>
+                        <outlet property="descriptionLabel" destination="PB9-c1-jiF" id="ils-OE-Xt3"/>
+                        <outlet property="titleLabel" destination="9A9-eA-i1Z" id="Dxf-Xd-V09"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZE3-lg-V2t" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="109" y="101"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="icon_warning" width="96" height="96"/>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryTextColor">
+            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

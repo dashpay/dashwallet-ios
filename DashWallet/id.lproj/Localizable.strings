@@ -786,6 +786,9 @@
 "Scan" = "Scan";
 
 /* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Pindai kode QR orang lain untuk mendapatkan alamat dash mereka. Anda dapat mengirim pembayaran kepada siapa pun yang memiliki alamat.";
 
 /* No comment provided by engineer. */
@@ -978,6 +981,9 @@
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Dompet ini tidak kosong atau sinkronisasi belum selesai, Anda tidak dapat menghapusnya tanpa frasa pemulihan";
 
 /* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
 "to:" = "ke:";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1116,9 @@
 "Wallet Keys" = "Kunci Dompet";
 
 /* No comment provided by engineer. */
+"Warning" = "Warning";
+
+/* No comment provided by engineer. */
 "WARNING" = "PERINGATAN";
 
 /* No comment provided by engineer. */
@@ -1128,6 +1137,9 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Kami telah mendeteksi bahwa Dashwallet macet saat terakhir kali dibuka. Apakah Anda ingin membantu kami menyelesaikan masalah dengan mengirimkan data laporan kerusakan kepada kami? Riwayat transaksi Anda dan informasi pribadi lainnya TIDAK AKAN dibagikan.";
 
 /* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+
+/* No comment provided by engineer. */
 "wipe" = "menghapus";
 
 /* No comment provided by engineer. */
@@ -1144,6 +1156,12 @@
 
 /* No comment provided by engineer. */
 "yes" = "ya";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Anda sekarang dapat membeli dash di\ndompet dash dengan uang tunai atau\ntranfer bank.";

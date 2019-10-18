@@ -786,6 +786,9 @@
 "Scan" = "Scan";
 
 /* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Jeśli chcesz poznać kogoś adres Dash przeskanuj ich kod QR. Możesz wysyłać Dash do kogolwiek z adresem Dash. ";
 
 /* No comment provided by engineer. */
@@ -978,6 +981,9 @@
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Portfel ten dalej ma fundusze lub synchronizacja nie jeszcze nie została ukończona. Nie możesz wymazać tego portfela bez listy słów wymaganych do odzysku portfela.";
 
 /* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
 "to:" = "do:";
 
 /* No comment provided by engineer. */
@@ -1110,6 +1116,9 @@
 "Wallet Keys" = "Klucze portfela";
 
 /* No comment provided by engineer. */
+"Warning" = "Warning";
+
+/* No comment provided by engineer. */
 "WARNING" = "UWAGA";
 
 /* No comment provided by engineer. */
@@ -1128,6 +1137,9 @@
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Wykryliśmy, że ostatnio Dashwallet uległ awarii. Czy chcesz pomóc nam rozwiązać problem, przesyłając nam dane z raportu awarii? Twoja historia transakcji i inne prywatne informacje NIE będą udostępniane.";
 
 /* No comment provided by engineer. */
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
+
+/* No comment provided by engineer. */
 "wipe" = "wyczyść";
 
 /* No comment provided by engineer. */
@@ -1144,6 +1156,12 @@
 
 /* No comment provided by engineer. */
 "yes" = "tak";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Teraz możesz kupić dash\npoprzez portfel, płacąc gotówką\nlub przelewem bankowym.";
