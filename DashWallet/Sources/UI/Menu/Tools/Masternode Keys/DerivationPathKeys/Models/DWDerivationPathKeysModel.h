@@ -28,6 +28,7 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
     DWDerivationPathInfo_Address,
     DWDerivationPathInfo_PublicKey,
     DWDerivationPathInfo_PrivateKey,
+    DWDerivationPathInfo_MasternodeInfo,
     _DWDerivationPathInfo_Count,
 };
 

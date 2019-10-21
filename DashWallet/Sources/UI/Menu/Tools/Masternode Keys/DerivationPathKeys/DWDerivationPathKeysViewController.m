@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithStyle:UITableViewStylePlain];
     if (self) {
         _model = [[DWDerivationPathKeysModel alloc] initWithDerivationPath:derivationPath];
+        self.derivationPath = derivationPath;
         self.hidesBottomBarWhenPushed = YES;
     }
     return self;
@@ -85,21 +86,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-    label.textColor = [UIColor dw_darkTitleColor];
-    label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-    label.adjustsFontForContentSizeCategory = YES;
-    label.minimumScaleFactor = 0.5;
-    label.adjustsFontSizeToFitWidth = YES;
-    label.textAlignment = NSTextAlignmentCenter;
+    UITextView *labelTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+    labelTextView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    labelTextView.textColor = [UIColor dw_darkTitleColor];
+    labelTextView.userInteractionEnabled = FALSE;
+    labelTextView.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
+    labelTextView.adjustsFontForContentSizeCategory = YES;
+    labelTextView.textAlignment = NSTextAlignmentCenter;
+    labelTextView.textContainerInset = UIEdgeInsetsMake(10, 0, 10, 0);
     if (section == self.visibleIndexes) {
-        label.text = @" ";
+        labelTextView.text = @" ";
     }
     else {
-        label.text = [NSString stringWithFormat:@"%ld", section];
+        labelTextView.text = [NSString stringWithFormat:NSLocalizedString(@"Keypair %ld", nil), section];
     }
-    return label;
+    return labelTextView;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

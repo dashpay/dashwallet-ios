@@ -88,6 +88,20 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWDerivationPathInfo_MasternodeInfo: {
+            BOOL used = [self.derivationPath addressIsUsedAtIndex:index];
+            item.title = used ? NSLocalizedString(@"Used at IP address", nil) : NSLocalizedString(@"Not yet used", nil);
+            if (used) {
+                DSLocalMasternode *localMasternode = [self.derivationPath.chain.chainManager.masternodeManager localMasternodeUsingIndex:index atDerivationPath:self.derivationPath];
+                item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
+            }
+            else {
+                item.detail = @"";
+            }
+
+
+            break;
+        }
         default: {
             NSAssert(NO, @"Inconsistent state");
 
