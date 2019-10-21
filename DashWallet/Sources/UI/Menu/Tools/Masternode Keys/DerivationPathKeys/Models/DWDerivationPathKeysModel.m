@@ -90,12 +90,32 @@ NS_ASSUME_NONNULL_BEGIN
         }
         case DWDerivationPathInfo_MasternodeInfo: {
             BOOL used = [self.derivationPath addressIsUsedAtIndex:index];
-            item.title = used ? NSLocalizedString(@"Used at IP address", nil) : NSLocalizedString(@"Not yet used", nil);
             if (used) {
                 DSLocalMasternode *localMasternode = [self.derivationPath.chain.chainManager.masternodeManager localMasternodeUsingIndex:index atDerivationPath:self.derivationPath];
-                item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
+                if (localMasternode) {
+                    item.title = NSLocalizedString(@"Used at IP address", nil);
+                    item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
+                }
+                else {
+                    NSArray *localMasternodesArray = [self.derivationPath.chain.chainManager.masternodeManager localMasternodesPreviouslyUsingIndex:index atDerivationPath:self.derivationPath];
+                    if (localMasternodesArray.count == 1) {
+                        item.title = NSLocalizedString(@"Previously used at IP address", nil);
+                        localMasternode = [localMasternodesArray firstObject];
+                        item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
+                    }
+                    else if (localMasternodesArray.count == 0) {
+                        item.title = NSLocalizedString(@"Used", nil);
+                        item.detail = @"";
+                    }
+                    else {
+                        item.title = NSLocalizedString(@"Previously last used at IP address", nil);
+                        localMasternode = [localMasternodesArray lastObject];
+                        item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
+                    }
+                }
             }
             else {
+                item.title = NSLocalizedString(@"Not yet used", nil);
                 item.detail = @"";
             }
 
