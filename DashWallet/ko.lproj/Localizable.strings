@@ -465,6 +465,9 @@
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
+"Keypair %ld" = "Keypair %ld";
+
+/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "다른 사람이 QR코드를 스캔해서 당신의 대시 주소를 확인할 수 있습니다. 당신의 대시 주소를 통해 누구나 당신의 지갑으로 대시를 보낼 수 있습니다.";
 
 /* No comment provided by engineer. */
@@ -589,6 +592,9 @@
 
 /* No comment provided by engineer. */
 "not voter" = "투표자 아님";
+
+/* No comment provided by engineer. */
+"Not yet used" = "Not yet used";
 
 /* No comment provided by engineer. */
 "ok" = "ok";
@@ -1063,6 +1069,9 @@
 
 /* No comment provided by engineer. */
 "Uphold account" = "업홀드 계정";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "사용자 등록 거래";

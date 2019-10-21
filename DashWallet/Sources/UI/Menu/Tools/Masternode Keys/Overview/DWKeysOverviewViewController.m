@@ -62,6 +62,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Owner Keys", nil)];
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                                        self.model.ownerDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

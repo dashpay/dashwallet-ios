@@ -465,6 +465,9 @@
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
+"Keypair %ld" = "Keypair %ld";
+
+/* No comment provided by engineer. */
 "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "อนุญาตให้ผู้อื่นสแกนโค้ด QR นี้เพื่อรับที่อยู่ dash ของคุณ  ทุกคนสามารถส่ง Dash ไปยัง wallet ของคุณได้โดยการโอนไปยังที่อยู่ของคุณ";
 
 /* No comment provided by engineer. */
@@ -589,6 +592,9 @@
 
 /* No comment provided by engineer. */
 "not voter" = "ไม่ใช่ผู้โหวต";
+
+/* No comment provided by engineer. */
+"Not yet used" = "Not yet used";
 
 /* No comment provided by engineer. */
 "ok" = "โอเค";
@@ -1063,6 +1069,9 @@
 
 /* No comment provided by engineer. */
 "Uphold account" = "บัญชี Uphold";
+
+/* No comment provided by engineer. */
+"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
 "User Registration Transaction" = "ธุรกรรมการลงทะเบียนผู้ใช้";
