@@ -254,11 +254,11 @@ static CGFloat HorizontalPadding() {
 }
 
 - (void)balanceButtonAction:(id)sender {
-    if (self.model.activeType == DWAmountTypeSupplementary) {
-        [self switchAmountCurrencyAction:sender];
-    }
-
-    [self.model selectAllFunds];
+    [self.model selectAllFundsWithPreparationBlock:^{
+        if (self.model.activeType == DWAmountTypeSupplementary) {
+            [self switchAmountCurrencyAction:sender];
+        }
+    }];
 }
 
 - (IBAction)instantSendSwitchAction:(UISwitch *)sender {

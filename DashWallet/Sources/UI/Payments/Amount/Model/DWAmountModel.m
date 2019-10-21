@@ -113,18 +113,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateCurrentAmount];
 }
 
-- (void)setAllFundsSelected:(BOOL)allFundsSelected {
-    _allFundsSelected = allFundsSelected;
-
-    if (!allFundsSelected) {
-        // reset amount
-        DWAmountObject *amount = [[DWAmountObject alloc] initWithDashAmountString:@"0"];
-        _amountEnteredInDash = amount;
-
-        [self updateCurrentAmount];
-    }
-}
-
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range {
     NSString *lastInputString = self.amount.amountInternalRepresentation;
     NSString *validatedResult = [self validatedStringFromLastInputString:lastInputString range:range replacementString:string];
@@ -158,15 +146,34 @@ NS_ASSUME_NONNULL_BEGIN
                                                           }];
 }
 
-- (void)selectAllFunds {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
+- (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
+    void (^selectAllFundsBlock)(void) = ^{
+        preparationBlock();
 
-    if (allAvailableFunds > 0) {
-        self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
-        self.amountEnteredInLocalCurrency = nil;
-        [self updateCurrentAmount];
+        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
+        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
+
+        if (allAvailableFunds > 0) {
+            self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
+            self.amountEnteredInLocalCurrency = nil;
+            [self updateCurrentAmount];
+        }
+    };
+
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    if (authManager.didAuthenticate) {
+        selectAllFundsBlock();
+    }
+    else {
+        [authManager authenticateWithPrompt:nil
+                                 andTouchId:YES
+                             alertIfLockout:YES
+                                 completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                                     if (authenticatedOrSuccess) {
+                                         selectAllFundsBlock();
+                                     }
+                                 }];
     }
 }
 
@@ -210,10 +217,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.inputIntent == DWAmountInputIntent_Send) {
         NSParameterAssert(self.sendingOptions);
         [self.sendingOptions updateWithAmount:self.amount.plainAmount];
-    }
-
-    if (self.allFundsSelected) {
-        self.allFundsSelected = NO;
     }
 }
 
