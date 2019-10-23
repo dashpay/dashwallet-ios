@@ -20,6 +20,7 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
+#import "DWShortcutsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,6 +75,10 @@ NS_ASSUME_NONNULL_BEGIN
     const NSTimeInterval interval = [now timeIntervalSince1970] - [self.lastActiveDate timeIntervalSince1970];
 
     return (interval > [DWGlobalOptions sharedInstance].autoLockAppInterval);
+}
+
+- (void)setupDidFinished {
+    [self.homeModel.shortcutsModel reloadShortcuts];
 }
 
 @end
