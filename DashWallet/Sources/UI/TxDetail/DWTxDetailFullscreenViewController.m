@@ -82,8 +82,8 @@ NS_ASSUME_NONNULL_BEGIN
     childView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:childView];
 
-    CGRect bounds = [UIScreen mainScreen].bounds;
-    CGFloat width = MIN(CGRectGetWidth(bounds), CGRectGetHeight(bounds));
+    const CGRect bounds = [UIScreen mainScreen].bounds;
+    const CGFloat width = MIN(CGRectGetWidth(bounds), CGRectGetHeight(bounds));
     CGFloat viewWidth;
     if (IS_IPAD) {
         viewWidth = width / 2;
@@ -93,10 +93,16 @@ NS_ASSUME_NONNULL_BEGIN
         viewWidth = width - horizontalPadding * 2;
     }
 
+    const CGFloat verticalPadding = 16.0;
+
     [NSLayoutConstraint activateConstraints:@[
         [childView.centerXAnchor constraintEqualToAnchor:contentView.centerXAnchor],
         [childView.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor],
         [childView.widthAnchor constraintEqualToConstant:viewWidth],
+        [childView.topAnchor constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
+                                                         constant:verticalPadding],
+        [childView.bottomAnchor constraintGreaterThanOrEqualToAnchor:contentView.bottomAnchor
+                                                            constant:-verticalPadding],
     ]];
 
     [controller didMoveToParentViewController:self];
