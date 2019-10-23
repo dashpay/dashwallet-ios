@@ -167,6 +167,12 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
     [self.headerView setViewInExplorerButtonCopyHintTitle];
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
+}
+
 #pragma mark - Actions
 
 - (void)closeButtonAction:(UIButton *)sender {

@@ -192,6 +192,13 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
     [self.textField resignFirstResponder];
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self.model reloadAttributedData];
+    self.inputControl.source = self.model.amount;
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {

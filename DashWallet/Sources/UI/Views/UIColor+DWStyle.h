@@ -58,6 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_chevronColor;
 
++ (UIColor *)dw_iconTintColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

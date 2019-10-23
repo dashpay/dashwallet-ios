@@ -141,6 +141,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
+    [self.model setupDidFinished];
+
     UIViewController *mainController = self.mainController;
     [self performTransitionToViewController:mainController];
 }

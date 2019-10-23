@@ -93,12 +93,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     UIImage *iconImage = nil;
     NSString *title = nil;
+    UIColor *iconTintColor = nil;
     switch (displayType) {
         case DWTxDetailDisplayType_Sent: {
             [self setupIconImageView];
 
             iconImage = [UIImage imageNamed:@"icon_tx_sent"];
             title = NSLocalizedString(@"Amount Sent", nil);
+            iconTintColor = [UIColor dw_iconTintColor]; // Black or White (in Dark Mode)
 
             break;
         }
@@ -107,6 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             iconImage = [UIImage imageNamed:@"icon_tx_received"];
             title = NSLocalizedString(@"Amount Received", nil);
+            iconTintColor = [UIColor dw_dashBlueColor];
 
             break;
         }
@@ -115,6 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             iconImage = [UIImage imageNamed:@"icon_tx_received"];
             title = NSLocalizedString(@"Moved to Address", nil);
+            iconTintColor = [UIColor dw_dashBlueColor];
 
             break;
         }
@@ -129,6 +133,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (iconImage) {
         self.iconImageView.image = iconImage;
+    }
+
+    if (iconTintColor) {
+        self.iconImageView.tintColor = iconTintColor;
     }
 
     self.titleLabel.text = title;
@@ -148,6 +156,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setViewInExplorerButtonCopyHintTitle {
     [self.viewInExplorerButton setTitle:NSLocalizedString(@"Long press to copy ID", nil)
                                forState:UIControlStateNormal];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
 }
 
 #pragma mark - Actions

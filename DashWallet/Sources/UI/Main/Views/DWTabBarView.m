@@ -157,6 +157,19 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
                                            DW_PAYMENTS_BUTTON_SIZE.height);
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    self.backgroundColor = [UIColor dw_backgroundColor];
+    self.backgroundLayer.backgroundColor = self.backgroundColor.CGColor;
+    self.centerCircleLayer.fillColor = self.backgroundColor.CGColor;
+    self.circleOverlayLayer.backgroundColor = self.backgroundColor.CGColor;
+
+    UIColor *borderColor = [UIColor dw_tabbarBorderColor];
+    self.backgroundLayer.borderColor = borderColor.CGColor;
+    self.centerCircleLayer.strokeColor = borderColor.CGColor;
+}
+
 - (void)setPaymentsButtonOpened:(BOOL)opened {
     self.paymentsButton.opened = opened;
 }

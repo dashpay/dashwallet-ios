@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *amountInternalRepresentation;
 @property (readonly, assign, nonatomic) int64_t plainAmount;
 
+- (void)reloadAttributedData;
 
 /**
  @return Object that internally represents Dash amount

@@ -70,10 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)registerForPushNotifications {
     const UNAuthorizationOptions options =
         (UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert);
-    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options
-                                                                        completionHandler:^(BOOL granted, NSError *_Nullable error) {
-                                                                            DSLogVerbose(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
-                                                                        }];
+    [[UNUserNotificationCenter currentNotificationCenter]
+        requestAuthorizationWithOptions:options
+                      completionHandler:^(BOOL granted, NSError *_Nullable error) {
+                          [DWGlobalOptions sharedInstance].localNotificationsEnabled = granted;
+                          DSLogVerbose(@"DWBalanceNotifier: register for notifications result %@, error %@", @(granted), error);
+                      }];
 }
 
 #pragma mark - Private

@@ -65,18 +65,24 @@ NS_ASSUME_NONNULL_BEGIN
     self.addressLabel.text = self.transactionData.outputReceiveAddresses.firstObject;
     self.dateLabel.text = [self.dataProvider dateForTransaction:transaction];
     self.fiatAmountLabel.text = self.transactionData.fiatAmount;
-    [self updateDashAmountLabel];
+    [self reloadAttributedData];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
 }
 
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    [self updateDashAmountLabel];
+    [self reloadAttributedData];
 }
 
 #pragma mark - Private
 
-- (void)updateDashAmountLabel {
+- (void)reloadAttributedData {
     NSParameterAssert(self.dataProvider);
     NSParameterAssert(self.transactionData);
 

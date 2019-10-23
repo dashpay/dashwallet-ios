@@ -192,6 +192,11 @@ NS_ASSUME_NONNULL_BEGIN
     return [priceManager stringForDashAmount:chain.minOutputAmount];
 }
 
+- (void)reloadAttributedData {
+    [self.amountEnteredInDash reloadAttributedData];
+    [self.amountEnteredInLocalCurrency reloadAttributedData];
+}
+
 #pragma mark - Private
 
 - (nullable NSString *)validatedStringFromLastInputString:(NSString *)lastInputString
