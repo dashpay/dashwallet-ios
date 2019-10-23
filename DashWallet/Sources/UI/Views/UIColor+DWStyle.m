@@ -171,6 +171,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_iconTintColor {
+    UIColor *color = [UIColor colorNamed:@"IconTintColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -97,6 +97,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self reloadAttributedData];
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
+}
+
 #pragma mark - Actions
 
 - (void)addressLongPressGestureAction:(UILongPressGestureRecognizer *)sender {

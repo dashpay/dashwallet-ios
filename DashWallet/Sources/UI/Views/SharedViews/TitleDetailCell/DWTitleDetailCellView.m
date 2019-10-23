@@ -175,6 +175,12 @@ static CGFloat const SMALL_PADDING = 12.0;
     self.separatorLayer.frame = CGRectMake(0.0, y, size.width, height);
 }
 
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    self.separatorLayer.backgroundColor = [UIColor dw_separatorLineColor].CGColor;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

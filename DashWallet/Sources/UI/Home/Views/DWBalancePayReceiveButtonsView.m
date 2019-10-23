@@ -101,7 +101,7 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
     [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
                   with:^(typeof(self) self, id value) {
-                      [self updateBalance];
+                      [self reloadAttributedData];
                   }];
 }
 
@@ -113,6 +113,12 @@ static CGFloat const BalanceButtonMinHeight(void) {
     CGFloat alpha = 1.0 - (threshold + offset - CGRectGetMinY(buttonsFrame)) / threshold;
     alpha = MAX(0.0, MIN(1.0, alpha));
     self.buttonsContainerView.alpha = alpha;
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
 }
 
 #pragma mark - Actions
@@ -132,12 +138,12 @@ static CGFloat const BalanceButtonMinHeight(void) {
 #pragma mark - Notifications
 
 - (void)contentSizeCategoryDidChangeNotification:(NSNotification *)notification {
-    [self updateBalance];
+    [self reloadAttributedData];
 }
 
 #pragma mark - Private
 
-- (void)updateBalance {
+- (void)reloadAttributedData {
     UIColor *balanceColor = [UIColor dw_lightTitleColor];
     DWBalanceModel *balanceModel = self.model.balanceModel;
     if (balanceModel) {

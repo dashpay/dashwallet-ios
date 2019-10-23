@@ -20,6 +20,7 @@
                 <subviews>
                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_exclamation" translatesAutoresizingMaskIntoConstraints="NO" id="dVX-9O-xI9">
                         <rect key="frame" x="0.0" y="3" width="34" height="34"/>
+                        <color key="tintColor" name="IconTintColor"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="34" id="GGa-dt-Bjg"/>
                             <constraint firstAttribute="height" constant="34" id="wSW-EG-Pfe"/>
@@ -53,6 +54,9 @@
     </objects>
     <resources>
         <image name="icon_exclamation" width="21" height="18"/>
+        <namedColor name="IconTintColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <namedColor name="SecondaryBackgroundColor">
             <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

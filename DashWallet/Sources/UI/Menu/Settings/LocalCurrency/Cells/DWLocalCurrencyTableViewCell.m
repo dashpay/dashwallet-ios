@@ -158,16 +158,22 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
     self.priceLabel.text = model.priceString;
     self.accessoryImageView.highlighted = selected;
 
-    [self resetAttributedLabels];
+    [self reloadAttributedData];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
 }
 
 #pragma mark - Private
 
 - (void)contentSizeCategoryDidChangeNotification {
-    [self resetAttributedLabels];
+    [self reloadAttributedData];
 }
 
-- (void)resetAttributedLabels {
+- (void)reloadAttributedData {
     NSString *highlightedText = self.searchQuery;
     UIColor *highlightedTextColor = [UIColor dw_dashBlueColor];
 

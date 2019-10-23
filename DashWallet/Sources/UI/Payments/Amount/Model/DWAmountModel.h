@@ -53,6 +53,8 @@ typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
 - (BOOL)isEnteredAmountLessThenMinimumOutputAmount;
 - (NSString *)minimumOutputAmountFormattedString;
 
+- (void)reloadAttributedData;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
