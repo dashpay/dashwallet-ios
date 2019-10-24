@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL result = [self.paymentOutput copyAddressToPasteboard];
     if (result) {
-        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
     }
 }
 

@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
                              message:NSLocalizedString(@"Set a trusted node", nil)
                       preferredStyle:UIAlertControllerStyleAlert];
         [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = NSLocalizedString(@"node ip", nil);
+            textField.placeholder = NSLocalizedString(@"Node ip", nil);
             textField.textColor = [UIColor darkTextColor];
             textField.clearButtonMode = UITextFieldViewModeWhileEditing;
             textField.borderStyle = UITextBorderStyleRoundedRect;

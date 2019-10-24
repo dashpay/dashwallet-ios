@@ -51,12 +51,12 @@
     if (![[DSAuthenticationManager sharedInstance] isPasscodeEnabled]) {
         [DSEventManager saveEvent:@"welcome:passcode_disabled"];
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"turn device passcode on", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", nil)
                                      message:NSLocalizedString(@"\nA device passcode is needed to safeguard your wallet. Go to settings and turn "
                                                                "passcode on to continue.", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];

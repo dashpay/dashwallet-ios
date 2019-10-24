@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                                 [self.model minimumOutputAmountFormattedString]]
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *okAction = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"ok", nil)
+            actionWithTitle:NSLocalizedString(@"OK", nil)
                       style:UIAlertActionStyleCancel
                     handler:nil];
         [alert addAction:okAction];

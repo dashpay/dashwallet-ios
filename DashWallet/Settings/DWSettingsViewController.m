@@ -312,11 +312,11 @@ NS_ASSUME_NONNULL_BEGIN
                          message:message
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     UIAlertAction *showButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"show", nil)
+        actionWithTitle:NSLocalizedString(@"Show", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [wallet seedPhraseAfterAuthentication:^(NSString *_Nullable seedPhrase) {
@@ -415,11 +415,11 @@ NS_ASSUME_NONNULL_BEGIN
                          message:NSLocalizedString(@"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     UIAlertAction *yesButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"yes", nil)
+        actionWithTitle:NSLocalizedString(@"Yes", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self.model enableAdvancedFeatures];
@@ -458,7 +458,7 @@ NS_ASSUME_NONNULL_BEGIN
                 }];
 
     UIAlertAction *cancel = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     [actionSheet addAction:mainnet];

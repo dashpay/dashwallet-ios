@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
         id<DWDerivationPathKeysItem> item = cell.item;
         [UIPasteboard generalPasteboard].string = item.detail;
 
-        [self.view dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+        [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
     }
 }
 

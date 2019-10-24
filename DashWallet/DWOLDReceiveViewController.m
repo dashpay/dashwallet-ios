@@ -218,7 +218,7 @@
 
             [self done:nil];
             [view addSubview:[[[BRBubbleView viewWithText:[NSString
-             stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil), [priceManager stringForDashAmount:total],
+             stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil), [priceManager stringForDashAmount:total],
              [priceManager localCurrencyStringForDashAmount:total]]
              center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
             break;
@@ -302,21 +302,21 @@
 
     UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Receive dash at this address: %@", nil),
                                                                                   self.paymentAddress] message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
-    [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"copy request to clipboard", nil) :
-                            NSLocalizedString(@"copy address to clipboard", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"Copy request to clipboard", nil) :
+                            NSLocalizedString(@"Copy address to clipboard", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                 [UIPasteboard generalPasteboard].string = (self.paymentRequest.amount > 0) ? self.paymentRequest.string :
                                 self.paymentAddress;
                                 NSLog(@"\n\nCOPIED PAYMENT REQUEST/ADDRESS:\n\n%@", [UIPasteboard generalPasteboard].string);
                                 
-                                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Copied", nil)
                                                                             center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
                                                        popOutAfterDelay:2.0]];
                                 [DSEventManager saveEvent:@"receive:copy_address"];
     }]];
 
     if ([MFMailComposeViewController canSendMail]) {
-        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"send request as email", nil) :
-                                NSLocalizedString(@"send address as email", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"Send request as email", nil) :
+                                NSLocalizedString(@"Send address as email", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                     if ([MFMailComposeViewController canSendMail]) {
                                         MFMailComposeViewController *composeController = [MFMailComposeViewController new];
                                         
@@ -334,10 +334,10 @@
                                         [DSEventManager saveEvent:@"receive:email_not_configured"];
                                         UIAlertController * alert = [UIAlertController
                                                                      alertControllerWithTitle:@""
-                                                                     message:NSLocalizedString(@"email not configured", nil)
+                                                                     message:NSLocalizedString(@"Email not configured", nil)
                                                                      preferredStyle:UIAlertControllerStyleAlert];
                                         UIAlertAction* okButton = [UIAlertAction
-                                                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                   actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                    style:UIAlertActionStyleCancel
                                                                    handler:^(UIAlertAction * action) {
                                                                    }];
@@ -350,8 +350,8 @@
 
 #if ! TARGET_IPHONE_SIMULATOR
     if ([MFMessageComposeViewController canSendText]) {
-        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"send request as message", nil) :
-                                NSLocalizedString(@"send address as message", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [actionSheet addAction:[UIAlertAction actionWithTitle:(req) ? NSLocalizedString(@"Send request as message", nil) :
+                                NSLocalizedString(@"Send address as message", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
                                     if ([MFMessageComposeViewController canSendText]) {
                                         MFMessageComposeViewController *composeController = [MFMessageComposeViewController new];
                                         
@@ -376,10 +376,10 @@
                                         [DSEventManager saveEvent:@"receive:message_not_configured"];
                                         UIAlertController * alert = [UIAlertController
                                                                      alertControllerWithTitle:@""
-                                                                     message:NSLocalizedString(@"sms not currently available", nil)
+                                                                     message:NSLocalizedString(@"SMS not currently available", nil)
                                                                      preferredStyle:UIAlertControllerStyleAlert];
                                         UIAlertAction* okButton = [UIAlertAction
-                                                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                   actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                    style:UIAlertActionStyleCancel
                                                                    handler:^(UIAlertAction * action) {
                                                                    }];
@@ -391,7 +391,7 @@
 #endif
 
     if (! req) {
-        [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"request an amount", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Request an amount", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             DWOLDAmountViewController *amountController = [DWOLDAmountViewController requestController];
             amountController.delegate = self;
             UINavigationController *amountNavigationController = [[UINavigationController alloc] initWithRootViewController:amountController];
@@ -399,7 +399,7 @@
             [DSEventManager saveEvent:@"receive:request_amount"];
         }]];
     }
-    [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+    [actionSheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         
     }]];
     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
