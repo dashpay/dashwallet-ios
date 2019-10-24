@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
         _headerView = headerView;
 
         UIView *topOverscrollView = [[UIView alloc] initWithFrame:CGRectZero];
-        topOverscrollView.backgroundColor = [UIColor dw_dashBlueColor];
+        topOverscrollView.backgroundColor = [UIColor dw_dashNavigationBlueColor];
         _topOverscrollView = topOverscrollView;
 
         UITableView *tableView = [[UITableView alloc] initWithFrame:self.bounds style:UITableViewStylePlain];

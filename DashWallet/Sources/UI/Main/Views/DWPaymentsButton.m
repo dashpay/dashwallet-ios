@@ -77,7 +77,7 @@ CGSize const DW_PAYMENTS_BUTTON_SIZE = {48.0, 48.0};
 static DWAnimatedShapeLayer *SegmentLayer(void) {
     DWAnimatedShapeLayer *layer = [DWAnimatedShapeLayer layer];
     layer.strokeColor = [UIColor whiteColor].CGColor;
-    layer.fillColor = [UIColor dw_dashBlueColor].CGColor;
+    layer.fillColor = [UIColor dw_dashNavigationBlueColor].CGColor;
     layer.lineWidth = 2.0;
     layer.lineCap = kCALineCapRound;
     layer.lineJoin = kCALineJoinRound;
@@ -167,7 +167,7 @@ static UIBezierPath *XSecondSegment(void) {
 }
 
 - (void)paymentsButton_setup {
-    self.backgroundColor = [UIColor dw_dashBlueColor];
+    self.backgroundColor = [UIColor dw_dashNavigationBlueColor];
     self.layer.masksToBounds = YES;
 
     DWAnimatedShapeLayer *firstSegmentLayer = SegmentLayer();
