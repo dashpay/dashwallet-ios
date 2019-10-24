@@ -27,6 +27,7 @@
 #import "DWAppDelegate.h"
 
 #import <DashSync/DashSync.h>
+#import <BackgroundTasks/BackgroundTasks.h>
 #import <UserNotifications/UserNotifications.h>
 
 #import "DWDataMigrationManager.h"
@@ -95,8 +96,20 @@
         [self performNormalStartWithLaunchOptions:launchOptions];
     }
     
+    if (@available(iOS 13.0,*)) {
+        [DashSync sharedSyncController];
+        BGAppRefreshTaskRequest * appRefresh = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"org.dashcore.dashsync.backgroundblocksync"];
+        NSError * error = nil;
+        [[BGTaskScheduler sharedScheduler] submitTaskRequest:appRefresh error:&error];
+        if (error) {
+            NSLog(@"Error scheduling background refresh");
+        }
+    }
+    
     NSParameterAssert(self.window.rootViewController);
     [self.window makeKeyAndVisible];
+    
+
     
     return YES;
 }
@@ -169,61 +182,7 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    __block id protectedObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
-    __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    void (^cleanup)(void) = ^() {
-        completion = nil;
-        if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
-        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-        protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
-    };
-
-    // timeout after 25 seconds
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [DWEnvironment sharedInstance].currentChainManager.syncProgress);
-            completion(([DWEnvironment sharedInstance].currentChainManager.syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
-                       UIBackgroundFetchResultFailed);
-            cleanup();
-        }
-        //OLDTODO: disconnect
-    });
-
-    protectedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch protected data available");
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-        }];
-
-    syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync finished");
-            if (completion) completion(UIBackgroundFetchResultNewData);
-            cleanup();
-        }];
-
-    syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync failed");
-            if (completion) completion(UIBackgroundFetchResultFailed);
-            cleanup();
-        }];
-
-    NSLog(@"background fetch starting");
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-
-    // sync events to the server
-    [[DSEventManager sharedEventManager] sync];
-    
-//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-//        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
-//        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
-//        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
-//    }
+    [[DashSync sharedSyncController] performFetchWithCompletionHandler:completionHandler];
 }
 
 - (void)performDeferredStartWithLaunchOptions:(NSDictionary *)launchOptions {
