@@ -171,11 +171,11 @@ static NSString *sanitizeString(NSString *s)
     if (! [self.url isEqual:url]) {
         self.url = url;
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"copy wallet addresses to clipboard?", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Copy wallet addresses to clipboard?", nil)
                                      message:nil
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                       actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            if (self.url) {
@@ -185,7 +185,7 @@ static NSString *sanitizeString(NSString *s)
                                            else [self cancelOrChangeAmount];
                                        }];
         UIAlertAction* copyButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"copy", nil)
+                                     actionWithTitle:NSLocalizedString(@"Copy", nil)
                                      style:UIAlertActionStyleDefault
                                      handler:^(UIAlertAction * action) {
                                          [self handleURL:self.url];
@@ -283,11 +283,11 @@ static NSString *sanitizeString(NSString *s)
     }
     else {
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"unsupported url", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Unsupported url", nil)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"ok", nil)
+                                   actionWithTitle:NSLocalizedString(@"OK", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                    }];
@@ -315,11 +315,11 @@ static NSString *sanitizeString(NSString *s)
                 
                 if (error) {
                     UIAlertController * alert = [UIAlertController
-                                                 alertControllerWithTitle:NSLocalizedString(@"couldn't transmit payment to dash network", nil)
+                                                 alertControllerWithTitle:NSLocalizedString(@"Couldn't transmit payment to dash network", nil)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               actionWithTitle:NSLocalizedString(@"OK", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -349,11 +349,11 @@ static NSString *sanitizeString(NSString *s)
         return;
     }
     UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:NSLocalizedString(@"unsupported or corrupted document", nil)
+                                 alertControllerWithTitle:NSLocalizedString(@"Unsupported or corrupted document", nil)
                                  message:@""
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               actionWithTitle:NSLocalizedString(@"OK", nil)
                                style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction * action) {
                                }];
@@ -371,14 +371,14 @@ static NSString *sanitizeString(NSString *s)
         else {
             if (FALSE) {
                 //this is kept here on purpose to keep the string in our localization script
-                NSString * lString = NSLocalizedString(@"not a valid dash or bitcoin address", nil);
+                NSString * lString = NSLocalizedString(@"Not a valid dash or bitcoin address", nil);
             }
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"not a valid dash address", nil)
+                                         alertControllerWithTitle:NSLocalizedString(@"Not a valid dash address", nil)
                                          message:request.paymentAddress
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -394,11 +394,11 @@ static NSString *sanitizeString(NSString *s)
                 
                 if (error && ! ([request.paymentAddress isValidDashAddressOnChain:[DWEnvironment sharedInstance].currentChain])) {
                     UIAlertController * alert = [UIAlertController
-                                                 alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                                 alertControllerWithTitle:NSLocalizedString(@"Couldn't make payment", nil)
                                                  message:error.localizedDescription
                                                  preferredStyle:UIAlertControllerStyleAlert];
                     UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                                               actionWithTitle:NSLocalizedString(@"OK", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
@@ -452,7 +452,7 @@ static NSString *sanitizeString(NSString *s)
                                            actionBlock();
                                        }];
         UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                       actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            cancelBlock();
@@ -468,11 +468,11 @@ static NSString *sanitizeString(NSString *s)
             [self cancelOrChangeAmount];
         } else if (error) {
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+                                         alertControllerWithTitle:NSLocalizedString(@"Couldn't make payment", nil)
                                          message:error.localizedDescription
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            
@@ -493,7 +493,7 @@ static NSString *sanitizeString(NSString *s)
                 [self startObservingShapeshift:tx.associatedShapeshift];
                 
             }
-            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Sent!", nil)
                                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                    popOutAfterDelay:2.0]];
 //            [[DWEnvironment sharedInstance] playPingSound];
@@ -515,7 +515,7 @@ static NSString *sanitizeString(NSString *s)
         if (relayedToServer) {
             if (!displayedSentMessage) {
                 [self.view addSubview:[[[BRBubbleView
-                                         viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"sent!", nil))
+                                         viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"Sent!", nil))
                                          center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                        popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
 //                [[DWEnvironment sharedInstance] playPingSound];
@@ -538,7 +538,7 @@ static NSString *sanitizeString(NSString *s)
                                          message:errorMessage
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -581,7 +581,7 @@ static NSString *sanitizeString(NSString *s)
     
     if (! [privKey isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] && ! [privKey isValidDashBIP38Key]) return;
     
-    BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking private key balance...", nil)
+    BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking private key balance...", nil)
                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
     statusView.font = [UIFont systemFontOfSize:14.0];
@@ -604,7 +604,7 @@ static NSString *sanitizeString(NSString *s)
                                              message:error.localizedDescription
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           actionWithTitle:NSLocalizedString(@"OK", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
                                            }];
@@ -628,7 +628,7 @@ static NSString *sanitizeString(NSString *s)
                                              message:alertMsg
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                    [self cancelOrChangeAmount];
@@ -644,12 +644,12 @@ static NSString *sanitizeString(NSString *s)
                                                        
                                                        if (error) {
                                                            UIAlertController * alert = [UIAlertController
-                                                                                        alertControllerWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+                                                                                        alertControllerWithTitle:NSLocalizedString(@"Couldn't sweep balance", nil)
                                                                                         message:error.localizedDescription
                                                                                         preferredStyle:UIAlertControllerStyleAlert];
                                                            
                                                            UIAlertAction* okButton = [UIAlertAction
-                                                                                      actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                                      actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                                       style:UIAlertActionStyleCancel
                                                                                       handler:^(UIAlertAction * action) {
                                                                                       }];
@@ -659,7 +659,7 @@ static NSString *sanitizeString(NSString *s)
                                                            return;
                                                        }
                                                        
-                                                       [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"swept!", nil)
+                                                       [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Swept!", nil)
                                                                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
                                                                                popIn] popOutAfterDelay:2.0]];
                                                        [self reset:nil];
@@ -681,7 +681,7 @@ static NSString *sanitizeString(NSString *s)
     
     DSInsightManager * insightManager = [DSInsightManager sharedInstance];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    BRBubbleView * statusView = [BRBubbleView viewWithText:NSLocalizedString(@"checking address balance...", nil)
+    BRBubbleView * statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking address balance...", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
     
     statusView.font = [UIFont systemFontOfSize:14.0];
@@ -698,11 +698,11 @@ static NSString *sanitizeString(NSString *s)
                                    
                                    if (error) {
                                        UIAlertController * alert = [UIAlertController
-                                                                    alertControllerWithTitle:NSLocalizedString(@"couldn't check address balance", nil)
+                                                                    alertControllerWithTitle:NSLocalizedString(@"Couldn't check address balance", nil)
                                                                     message:error.localizedDescription
                                                                     preferredStyle:UIAlertControllerStyleAlert];
                                        UIAlertAction* okButton = [UIAlertAction
-                                                                  actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                  actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                   style:UIAlertActionStyleCancel
                                                                   handler:^(UIAlertAction * action) {
                                                                   }];
@@ -723,7 +723,7 @@ static NSString *sanitizeString(NSString *s)
                                                                     message:alertMsg
                                                                     preferredStyle:UIAlertControllerStyleAlert];
                                        UIAlertAction* okButton = [UIAlertAction
-                                                                  actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                  actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                   style:UIAlertActionStyleCancel
                                                                   handler:^(UIAlertAction * action) {
                                                                   }];
@@ -743,17 +743,17 @@ static NSString *sanitizeString(NSString *s)
             viewControllerToShowAlert = presentedController.topViewController;
         }
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"change payment amount?", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Change payment amount?", nil)
                                      message:nil
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel",nil)
+                                       actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            [self cancel:nil];
                                        }];
         UIAlertAction* changeButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"change",nil)
+                                       actionWithTitle:NSLocalizedString(@"Change",nil)
                                        style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction * action) {
                                            [self confirmProtocolRequest:self.request];
@@ -882,7 +882,7 @@ static NSString *sanitizeString(NSString *s)
                                  message:errorMessage
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               actionWithTitle:NSLocalizedString(@"OK", nil)
                                style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction * action) {
                                }];
@@ -932,7 +932,7 @@ static NSString *sanitizeString(NSString *s)
                 self.shapeshiftLabel.text = shapeshift.shapeshiftStatusString;
                 self.shapeshiftView.hidden = TRUE;
             }
-            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"shapeshift succeeded", nil)
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Shapeshift succeeded", nil)
                                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                    popOutAfterDelay:2.0]];
             break;
@@ -1017,9 +1017,9 @@ static NSString *sanitizeString(NSString *s)
     self.clearClipboard = YES;
     if (FALSE) {
         //this is kept here on purpose to keep the string in our localization script
-        NSString * lString = NSLocalizedString(@"clipboard doesn't contain a valid dash or bitcoin address", nil);
+        NSString * lString = NSLocalizedString(@"Clipboard doesn't contain a valid dash or bitcoin address", nil);
     }
-    [self payFirstFromArray:set.array errorMessage:NSLocalizedString(@"clipboard doesn't contain a valid dash address", nil)];
+    [self payFirstFromArray:set.array errorMessage:NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil)];
 }
 
 - (IBAction)reset:(id)sender
@@ -1131,11 +1131,11 @@ static NSString *sanitizeString(NSString *s)
 //
 //        if (error && !request.isValid) {
 //            UIAlertController *alert = [UIAlertController
-//                                        alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
+//                                        alertControllerWithTitle:NSLocalizedString(@"Couldn't make payment", nil)
 //                                        message:error.localizedDescription
 //                                        preferredStyle:UIAlertControllerStyleAlert];
 //            UIAlertAction* okButton = [UIAlertAction
-//                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+//                                       actionWithTitle:NSLocalizedString(@"OK", nil)
 //                                       style:UIAlertActionStyleCancel
 //                                       handler:nil];
 //            [alert addAction:okButton];

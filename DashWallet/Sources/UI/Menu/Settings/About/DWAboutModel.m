@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
     DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
 
-    return [NSString stringWithFormat:NSLocalizedString(@"rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
+    return [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\n"
                                                          "connected peers: %d\ndl peer: %@\nquorums validated: %d/%d",
                                                         NULL),
                                       [priceManager localCurrencyStringForDashAmount:DUFFS / priceManager.localCurrencyDashPrice.doubleValue],

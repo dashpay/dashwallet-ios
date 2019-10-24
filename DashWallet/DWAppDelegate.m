@@ -160,7 +160,7 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -296,7 +296,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         usingBlock:^(NSNotification * _Nonnull note) {
             if (self.balance < wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
-                NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
+                NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
                                       [priceManager stringForDashAmount:wallet.balance - self.balance],
                                       [priceManager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
                 

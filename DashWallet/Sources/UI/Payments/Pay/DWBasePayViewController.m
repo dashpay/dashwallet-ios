@@ -189,7 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor
          didSweepRequest:(nonnull DSPaymentRequest *)protocolRequest
              transaction:(nonnull DSTransaction *)transaction {
-    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"swept!", nil)];
+    [self.navigationController.view dw_showInfoHUDWithText:NSLocalizedString(@"Swept!", nil)];
 
     if ([self.navigationController.topViewController isKindOfClass:DWSendAmountViewController.class]) {
         [self.navigationController popViewControllerAnimated:YES];

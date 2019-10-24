@@ -202,7 +202,7 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
     [UIPasteboard generalPasteboard].string = copyableData;
 
-    [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+    [self dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
 }
 
 #pragma mark - Private

@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)biometricAuthSpendingLimitOptions {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     NSArray<NSString *> *options = @[
-        NSLocalizedString(@"always require passcode", nil),
+        NSLocalizedString(@"Always require passcode", nil),
         [NSString stringWithFormat:@"%@ (%@)",
                                    [priceManager stringForDashAmount:DUFFS / 10],
                                    [priceManager localCurrencyStringForDashAmount:DUFFS / 10]],

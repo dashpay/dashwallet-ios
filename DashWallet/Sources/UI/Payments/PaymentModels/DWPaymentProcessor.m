@@ -521,7 +521,7 @@ static NSString *sanitizeString(NSString *s) {
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
 
     if (error) {
-        [self failedWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+        [self failedWithTitle:NSLocalizedString(@"Couldn't sweep balance", nil)
                       message:error.localizedDescription];
     }
     else if (tx) {
@@ -554,7 +554,7 @@ static NSString *sanitizeString(NSString *s) {
                     publishTransaction:tx
                             completion:^(NSError *error) {
                                 if (error) {
-                                    [self failedWithTitle:NSLocalizedString(@"couldn't sweep balance", nil)
+                                    [self failedWithTitle:NSLocalizedString(@"Couldn't sweep balance", nil)
                                                   message:error.localizedDescription];
                                 }
                                 else {

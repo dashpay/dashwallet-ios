@@ -205,12 +205,12 @@ static CGFloat HorizontalPadding() {
 - (void)actionButtonAction:(id)sender {
     if ([self.model isEnteredAmountLessThenMinimumOutputAmount]) {
         UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:NSLocalizedString(@"amount too small", nil)
-                             message:[NSString stringWithFormat:NSLocalizedString(@"dash payments can't be less than %@", nil),
+            alertControllerWithTitle:NSLocalizedString(@"Amount too small", nil)
+                             message:[NSString stringWithFormat:NSLocalizedString(@"Dash payments can't be less than %@", nil),
                                                                 [self.model minimumOutputAmountFormattedString]]
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *okAction = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"ok", nil)
+            actionWithTitle:NSLocalizedString(@"OK", nil)
                       style:UIAlertActionStyleCancel
                     handler:nil];
         [alert addAction:okAction];
@@ -313,7 +313,7 @@ static CGFloat HorizontalPadding() {
             self.infoStackView.hidden = NO;
             DWAmountSendingOptionsModel *sendingOptions = self.model.sendingOptions;
             NSParameterAssert(sendingOptions);
-            self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"to: %@", nil),
+            self.addressLabel.text = [NSString stringWithFormat:NSLocalizedString(@"To: %@", nil),
                                                                 sendingOptions.sendingDestination];
 
             break;

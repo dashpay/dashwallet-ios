@@ -69,9 +69,6 @@
 "Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"always require passcode" = "è sempre richiesto il codice di accesso";
-
-/* No comment provided by engineer. */
 "Always require passcode" = "Always require passcode";
 
 /* No comment provided by engineer. */
@@ -85,9 +82,6 @@
 
 /* No comment provided by engineer. */
 "Amount too small" = "Amount too small";
-
-/* No comment provided by engineer. */
-"amount too small" = "importo troppo piccolo";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "<br>L'applicazione %@ richiede un pagamento";
@@ -105,16 +99,13 @@
 "Authentication is unvailable" = "Authentication is unvailable";
 
 /* No comment provided by engineer. */
-"available" = "disponibile";
+"Available" = "Available";
 
 /* No comment provided by engineer. */
 "Available balance" = "Available balance";
 
 /* No comment provided by engineer. */
 "Backup Wallet" = "Backup Wallet";
-
-/* No comment provided by engineer. */
-"bad recovery phrase" = "frase di sicurezza errata";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Bad recovery phrase";
@@ -147,12 +138,6 @@
 "Cancel" = "Cancella";
 
 /* No comment provided by engineer. */
-"cancel" = "annulla";
-
-/* No comment provided by engineer. */
-"change" = "modifica";
-
-/* No comment provided by engineer. */
 "Change" = "Change";
 
 /* No comment provided by engineer. */
@@ -162,19 +147,16 @@
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "cambiare l'ammontare del pagamento?";
-
-/* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "verificando il saldo del indirizzo...";
+"Checking address balance..." = "Checking address balance...";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "verificando il saldo della chiave privata...";
+"Checking private key balance..." = "Checking private key balance...";
 
 /* No comment provided by engineer. */
 "Classical Transaction" = "Transazione Classica";
@@ -186,28 +168,22 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "gli appunti non contiene un indirizzo dash valido";
-
-/* No comment provided by engineer. */
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "gli appunti non contengono un indirizzo bitcoin o un indirizzo dash valido";
+"Clipboard doesn't contain a valid dash or bitcoin address" = "Clipboard doesn't contain a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"close app" = "chiudi app";
-
-/* No comment provided by engineer. */
 "Close App" = "Close App";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Transazione Coinbase";
+"Close app" = "Close app";
 
 /* No comment provided by engineer. */
-"confirm" = "Conferma";
+"Coinbase Transaction" = "Transazione Coinbase";
 
 /* Confirm */
 "Confirm" = "Conferma";
@@ -231,40 +207,34 @@
 "Continue" = "Continue";
 
 /* No comment provided by engineer. */
-"copied" = "copiato";
+"Copied" = "Copied";
 
 /* No comment provided by engineer. */
-"copy" = "copia";
+"Copy" = "Copy";
 
 /* No comment provided by engineer. */
-"copy address to clipboard" = "copia indirizzo negli appunti";
+"Copy address to clipboard" = "Copy address to clipboard";
 
 /* No comment provided by engineer. */
-"copy request to clipboard" = "copia richiesta negli appunti";
+"Copy request to clipboard" = "Copy request to clipboard";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "copia indirizzo di portafoglio negli appunti?";
+"Copy wallet addresses to clipboard?" = "Copy wallet addresses to clipboard?";
 
 /* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "impossibile verificando il saldo del indirizzo";
+"Couldn't check address balance" = "Couldn't check address balance";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "impossibile effettuare il pagamento";
-
-/* No comment provided by engineer. */
-"couldn't sweep balance" = "impossibile trasferire il saldo";
+"Couldn't sweep balance" = "Couldn't sweep balance";
 
 /* No comment provided by engineer. */
 "Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
-
-/* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "impossibile trasferire il pagamento alla rete dash";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -282,10 +252,7 @@
 "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Gli indirizzi Dash possono anche essere copiati negli Appunti. Un indirizzo dash inizia sempre con 'X' o '7'.";
 
 /* No comment provided by engineer. */
-"dash network fee" = "tassa di rete dash";
-
-/* No comment provided by engineer. */
-"dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
+"Dash network fee" = "Dash network fee";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -303,7 +270,7 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SICUREZZA DEL DISPOSITIVO COMPROMESSA\nQualunque app \"jailbreak\" può accedere ai dati di altre app (e rubare i tuoi dash). Elimina subito questo portafoglio e ripristina su un dispositivo sicuro.";
 
 /* No comment provided by engineer. */
-"do it later" = "fallo più tardi";
+"Do it later" = "Do it later";
 
 /* No comment provided by engineer. */
 "DO NOT let anyone see your recovery phrase or they can spend your dash." = "NON LASCIARE che qualcuno veda la tua frase di recupero o potrà usare i tuoi dash.";
@@ -324,7 +291,7 @@
 "Email client is not configured. Please add your email account in Settings" = "Il client di posta elettronica non è configurato. Aggiungi il tuo account e-mail nelle Impostazioni";
 
 /* No comment provided by engineer. */
-"email not configured" = "email non configurata";
+"Email not configured" = "Email not configured";
 
 /* No comment provided by engineer. */
 "Enable advanced features" = "Abilita funzioni avanzate";
@@ -336,16 +303,16 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Abilita ricezzione delle notifiche";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Abilita ricezzione delle notifiche";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
-"enter" = "immetti";
+"Enter" = "Enter";
 
 /* No comment provided by engineer. */
 "Enter PIN" = "Enter PIN";
@@ -361,9 +328,6 @@
 
 /* No comment provided by engineer. */
 "Exit" = "Exit";
-
-/* No comment provided by engineer. */
-"exit" = "esci";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Limite \"Face ID\"";
@@ -393,7 +357,7 @@
 "Forked from breadwallet.\nThis app is open source:" = "Forked from breadwallet.\nThis app is open source:";
 
 /* No comment provided by engineer. */
-"from:" = "da:";
+"From:" = "From:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "GENERALE";
@@ -408,7 +372,7 @@
 "History" = "History";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "indice dei fondi di partecipazione:";
+"Holding funds index:" = "Holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "accetto di perdere le mie monete se non possiedo la frase di recupero";
@@ -417,7 +381,7 @@
 "I wrote it down" = "I wrote it down";
 
 /* No comment provided by engineer. */
-"id:" = "id:";
+"ID:" = "ID:";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -427,9 +391,6 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
-
-/* No comment provided by engineer. */
-"ignore" = "ignora";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -476,11 +437,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Carica di più";
 
-/* No comment provided by engineer. */
-"Local currency" = "Moneta Locale";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
+
+/* No comment provided by engineer. */
+"Local currency" = "Moneta Locale";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -507,7 +468,7 @@
 "Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "indirizzo di partecipazione del masternode";
+"Masternode holding address" = "Masternode holding address";
 
 /* No comment provided by engineer. */
 "Masternode Registration Transaction" = "Transazione di registrazione Masternode";
@@ -525,7 +486,7 @@
 "More" = "More";
 
 /* No comment provided by engineer. */
-"more..." = "di più...";
+"More..." = "More...";
 
 /* No comment provided by engineer. */
 "Moved" = "Mosso";
@@ -549,7 +510,7 @@
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "MAI scrivere la tua frase di recupero in qualunque altro programma. Altri dispositivi possono essere infetti.";
 
 /* No comment provided by engineer. */
-"new public key:" = "nuova chiave pubblica:";
+"New public key:" = "New public key:";
 
 /* No comment provided by engineer. */
 "next, write down your recovery phrase" = "ora, scrivi la tua frase di recupero";
@@ -570,25 +531,28 @@
 "no exchange rate data" = "nessun dato del tasso di cambio";
 
 /* No comment provided by engineer. */
-"node ip" = "\"ip\" del nodo";
-
-/* No comment provided by engineer. */
-"not a valid dash address" = "non un indirizzo dash valido";
-
-/* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "non un indirizzo dash o bitcoin valido";
+"Not a valid dash address" = "Not a valid dash address";
+
+/* No comment provided by engineer. */
+"Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
 "not operator" = "non operatore";
 
 /* No comment provided by engineer. */
-"not owner" = "non proprietario";
+"Not owner" = "Not owner";
+
+/* No comment provided by engineer. */
+"Not voter" = "Not voter";
 
 /* No comment provided by engineer. */
 "not voter" = "non votante";
@@ -597,28 +561,25 @@
 "Not yet used" = "Not yet used";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
-
-/* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
 "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Abilita le funzionalità avanzate solo se sei esperto in tecnologia \"blockchain\".\nNel caso decida di abilitarlo, usa solo le funzioni avanzate che conosci.";
 
 /* No comment provided by engineer. */
-"operator key index:" = "indice chiave dell'operatore:";
+"Operator key index:" = "Operator key index:";
 
 /* No comment provided by engineer. */
-"operator key:" = "chiave operatore:";
+"Operator key:" = "Operator key:";
 
 /* No comment provided by engineer. */
 "Operator Keys" = "Chiavi operatore:";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "chiave hash proprietario:";
+"Owner key hash:" = "Owner key hash:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "indice chiave proprietario:";
+"Owner key index:" = "Owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Chiavi proprietario";
@@ -645,31 +606,28 @@
 "Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
-"payload:" = "payload:";
+"Payload:" = "Payload:";
 
 /* No comment provided by engineer. */
-"payment address" = "indirizzo pagamento";
+"Payment address" = "Payment address";
 
 /* No comment provided by engineer. */
-"payment output" = "uscita pagamento";
+"Payment output" = "Payment output";
 
 /* No comment provided by engineer. */
 "Payments" = "Payments";
 
 /* No comment provided by engineer. */
-"payout Address" = "Indirizzo di pagamento";
+"Payout Address" = "Payout Address";
 
 /* No comment provided by engineer. */
-"payout address:" = "indirizzo di pagamento:";
-
-/* No comment provided by engineer. */
-"pending" = "in attesa di";
+"Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
 "Pending" = "In attesa";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "Immettere il pin per fare l'upgrade del wallet";
+"pending" = "in attesa di";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "\nInserisci il PIN per aggiornare il portafoglio";
@@ -699,22 +657,22 @@
 "Private key" = "Chiave privata";
 
 /* No comment provided by engineer. */
-"Processing" = "In lavorazione";
+"processing" = "in lavorazione";
 
 /* No comment provided by engineer. */
-"processing" = "in lavorazione";
+"Processing" = "In lavorazione";
 
 /* No comment provided by engineer. */
 "Public key" = "Chiave pubblica";
 
 /* No comment provided by engineer. */
-"public key:" = "chiave pubblica:";
+"Public key:" = "Public key:";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Quick Receive";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "tasso di cambio %1$@ = %2$@\naggiornato: %3$@\nblocco #%4$d di %5$d\npeers connessi: %6$d\ndi peer: %7$@\nquorums validati: %8$d/%9$d";
+"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "Rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
 
 /* No comment provided by engineer. */
 "Receive" = "Receive";
@@ -724,9 +682,6 @@
 
 /* No comment provided by engineer. */
 "Received" = "Ricevuto";
-
-/* No comment provided by engineer. */
-"received %@ (%@)" = "ricevuto %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "Received %@ (%@)" = "Received %1$@ (%2$@)";
@@ -743,26 +698,20 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* No comment provided by engineer. */
-"Recovery Phrase" = "Recovery Phrase";
-
 /* Recovery phrase */
 "Recovery phrase" = "Frase di recupero";
+
+/* No comment provided by engineer. */
+"Recovery Phrase" = "Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "la frase di recupero non coincide";
-
-/* No comment provided by engineer. */
-"recovery phrase must have %d words" = "la frase di recupero deve avere %d parole";
-
-/* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registrazione tx:";
+"Registration tx:" = "Registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Ricordamelo in seguito";
@@ -774,19 +723,19 @@
 "Request" = "Richiesta";
 
 /* No comment provided by engineer. */
-"request an amount" = "richiedi una somma";
+"Request an amount" = "Request an amount";
 
 /* No comment provided by engineer. */
-"rescan" = "riscansiona";
-
-/* No comment provided by engineer. */
-"Rescan blockchain" = "Riscansione blockchain";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
 "Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
-"reset" = "resetta";
+"Rescan blockchain" = "Riscansione blockchain";
+
+/* No comment provided by engineer. */
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Reset Wallet";
@@ -843,19 +792,19 @@
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Inviare %1$@ (%2$@) da questa chiave privata al tuo portafoglio? La rete dash riceverà una tassa di %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
-"send address as email" = "invia indirizzo per email";
+"Send address as email" = "Send address as email";
 
 /* No comment provided by engineer. */
-"send address as message" = "invia indirizzo per messaggio";
+"Send address as message" = "Send address as message";
 
 /* No comment provided by engineer. */
-"send crash report" = "invia un rapporto sugli arresti anomali";
+"Send crash report" = "Send crash report";
 
 /* No comment provided by engineer. */
-"send request as email" = "invia richiesta per email";
+"Send request as email" = "Send request as email";
 
 /* No comment provided by engineer. */
-"send request as message" = "invia richiesta per messaggio";
+"Send request as message" = "Send request as message";
 
 /* No comment provided by engineer. */
 "Sent" = "Inviato";
@@ -867,7 +816,7 @@
 "Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
-"sent!" = "inviato!";
+"Sent!" = "Sent!";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "Set a trusted node";
@@ -879,19 +828,19 @@
 "Settings" = "Impostazioni";
 
 /* No comment provided by engineer. */
-"shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
+"Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift status:" = "stato dello shapeshift:";
+"Shapeshift status:" = "Shapeshift status:";
 
 /* No comment provided by engineer. */
-"shapeshift succeeded" = "shapeshift avvenuto con successo";
+"Shapeshift succeeded" = "Shapeshift succeeded";
 
 /* No comment provided by engineer. */
 "Share" = "Share";
 
 /* No comment provided by engineer. */
-"show" = "mostra";
+"Show" = "Show";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
@@ -900,19 +849,22 @@
 "Show masternode keys" = "Mostra le chiavi masternode";
 
 /* No comment provided by engineer. */
+"Show phrase" = "Show phrase";
+
+/* No comment provided by engineer. */
 "show phrase" = "mostra frase";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
 
 /* No comment provided by engineer. */
-"size:" = "taglia:";
+"Size:" = "Size:";
 
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
 /* No comment provided by engineer. */
-"sms not currently available" = "sms non disponibili al momento";
+"SMS not currently available" = "SMS not currently available";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Qualcosa è andato storto";
@@ -921,16 +873,16 @@
 "Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
-"spent address" = "indirizzo speso";
+"Spent address" = "Spent address";
 
 /* No comment provided by engineer. */
-"spent input" = "introito esaurito";
+"Spent input" = "Spent input";
 
 /* No comment provided by engineer. */
 "Start / Recover another wallet" = "Inizia / Recupera un altro wallet";
 
 /* No comment provided by engineer. */
-"status:" = "stato:";
+"Status:" = "Status:";
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Passi per riprodurre il crash";
@@ -939,7 +891,7 @@
 "Success" = "Successo";
 
 /* No comment provided by engineer. */
-"swept!" = "pulito!";
+"Swept!" = "Swept!";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Mainnet" = "Switch to Mainnet";
@@ -960,7 +912,7 @@
 "Syncing:" = "Sincronizzazione:";
 
 /* No comment provided by engineer. */
-"the app will now close" = "l'app verrà chiusa";
+"The app will now close" = "The app will now close";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
@@ -996,16 +948,16 @@
 "This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
 
 /* No comment provided by engineer. */
-"to:" = "a:";
+"To:" = "To:";
 
 /* No comment provided by engineer. */
-"to: %@" = "a: %@";
+"To: %@" = "To: %@";
 
 /* No comment provided by engineer. */
 "Tools" = "Tools";
 
 /* No comment provided by engineer. */
-"topup amount:" = "importo di ricarica:";
+"Topup amount:" = "Topup amount:";
 
 /* No comment provided by engineer. */
 "Total" = "Totale";
@@ -1035,7 +987,7 @@
 "Trust" = "Trust";
 
 /* No comment provided by engineer. */
-"try again" = "riprova";
+"Try again" = "Try again";
 
 /* No comment provided by engineer. */
 "Try It!" = "Provalo!";
@@ -1044,10 +996,7 @@
 "Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "attiva codice d'accesso dispositivo";
-
-/* No comment provided by engineer. */
-"type:" = "genere:";
+"Type:" = "Type:";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Unable to connect";
@@ -1056,16 +1005,13 @@
 "Unable to get new qr code" = "Impossibile ottenere un nuovo codice QR";
 
 /* No comment provided by engineer. */
-"unknown address" = "indirizzo sconoscuito";
-
-/* No comment provided by engineer. */
-"unsupported or corrupted document" = "documento non supportato o corrotto";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
-"unsupported url" = "url non supportato";
+"Unsupported url" = "Unsupported url";
 
 /* No comment provided by engineer. */
 "Unverified" = "Non verificato";
@@ -1092,7 +1038,7 @@
 "User Topup Transaction" = "transazione Topup utente";
 
 /* No comment provided by engineer. */
-"username:" = "nome utente:";
+"Username:" = "Username:";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
@@ -1116,16 +1062,16 @@
 "View Recovery Phrase" = "View Recovery Phrase";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "hash chiave voto:";
+"Voting key hash:" = "Voting key hash:";
 
 /* No comment provided by engineer. */
-"voting key index:" = "indice chiave di voto:";
+"Voting key index:" = "Voting key index:";
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Chiavi  di Voto";
 
 /* No comment provided by engineer. */
-"wallet address" = "indirizzo portafoglio";
+"Wallet address" = "Wallet address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";
@@ -1140,7 +1086,7 @@
 "WARNING" = "ATTENZIONE";
 
 /* No comment provided by engineer. */
-"watch only" = "guarda solamente";
+"Watch only" = "Watch only";
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
@@ -1158,9 +1104,6 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
 
 /* No comment provided by engineer. */
-"wipe" = "eliminare";
-
-/* No comment provided by engineer. */
 "Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
@@ -1173,7 +1116,7 @@
 "WRITE DOWN YOUR RECOVERY PHRASE" = "SCRIVI LA TUA FRASE DI RECUPERO";
 
 /* No comment provided by engineer. */
-"yes" = "si";
+"Yes" = "Yes";
 
 /* No comment provided by engineer. */
 "You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
@@ -1188,7 +1131,7 @@
 "You must enter your pin in order to enter dashwallet" = "\nDevi inserire il tuo pin per accedere a dashwallet";
 
 /* No comment provided by engineer. */
-"you received dash!" = "hai ricevuto dei dash!";
+"You received dash!" = "You received dash!";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
