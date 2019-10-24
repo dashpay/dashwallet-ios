@@ -209,7 +209,7 @@
                                                                                                                          "Your funds are at risk. Transfer your balance to another wallet.", nil)
                                                                                                preferredStyle:UIAlertControllerStyleAlert];
                                                                   UIAlertAction* okButton = [UIAlertAction
-                                                                                             actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                                             actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                                              style:UIAlertActionStyleCancel
                                                                                              handler:^(UIAlertAction * action) {
                                                                                              }];
@@ -227,7 +227,7 @@
                                                                                                                          "Generate a new recovery phrase and keep it secret.", nil)
                                                                                                preferredStyle:UIAlertControllerStyleAlert];
                                                                   UIAlertAction* okButton = [UIAlertAction
-                                                                                             actionWithTitle:NSLocalizedString(@"ok", nil)
+                                                                                             actionWithTitle:NSLocalizedString(@"OK", nil)
                                                                                              style:UIAlertActionStyleCancel
                                                                                              handler:^(UIAlertAction * action) {
                                                                                              }];

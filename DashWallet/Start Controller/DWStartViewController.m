@@ -89,13 +89,13 @@ NS_ASSUME_NONNULL_BEGIN
                          message:NSLocalizedString(@"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *migrateButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"try again", nil)
+        actionWithTitle:NSLocalizedString(@"Try again", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *_Nonnull action) {
                     [self performMigration];
                 }];
     UIAlertAction *rescanButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"rescan", nil)
+        actionWithTitle:NSLocalizedString(@"Rescan", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self performRescanBlockchain];
@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:migrateButton];
     if (self.viewModel.shouldHandleCrashReports) {
         UIAlertAction *crashReportButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"send crash report", nil)
+            actionWithTitle:NSLocalizedString(@"Send crash report", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
                         [self performCrashReportingForced:YES];
@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
-    [dashSyncVersionManager upgradeVersion1ExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+    [dashSyncVersionManager upgradeVersion1ExtendedKeysForWallet:wallet chain:[DWEnvironment sharedInstance].currentChain withMessage:NSLocalizedString(@"Please enter pin to upgrade wallet", nil) withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
         if (!success && neededUpgrade && !authenticated) {
             [self forceUpdateWalletAuthentication:cancelled];
         }
@@ -169,7 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
                                         message:NSLocalizedString(@"Email client is not configured. Please add your email account in Settings", nil)
                                         preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction *cancelAction = [UIAlertAction
-                                             actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                             actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                              style:UIAlertActionStyleCancel
                                              handler:^(UIAlertAction *action) {
                                                  [self.viewModel finalizeCrashReporting];
@@ -188,14 +188,14 @@ NS_ASSUME_NONNULL_BEGIN
                                 message:NSLocalizedString(@"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.", nil)
                                 preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelAction = [UIAlertAction
-                                    actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                    actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                     style:UIAlertActionStyleCancel
                                     handler:^(UIAlertAction *_Nonnull action) {
                                         [self.viewModel finalizeCrashReporting];
                                     }];
     [alert addAction:cancelAction];
     UIAlertAction *crashReportAction = [UIAlertAction
-                                        actionWithTitle:NSLocalizedString(@"send crash report", nil)
+                                        actionWithTitle:NSLocalizedString(@"Send crash report", nil)
                                         style:UIAlertActionStyleDefault
                                         handler:^(UIAlertAction *action) {
                                             [self performCrashReportingForced:YES];

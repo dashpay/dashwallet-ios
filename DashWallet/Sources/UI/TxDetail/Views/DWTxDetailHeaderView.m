@@ -177,7 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL result = [self.model copyTransactionIdToPasteboard];
     if (result) {
-        [self dw_showInfoHUDWithText:NSLocalizedString(@"copied", nil)];
+        [self dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
 
         dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW,
                                              (int64_t)(DW_INFO_HUD_DISPLAY_TIME * NSEC_PER_SEC));

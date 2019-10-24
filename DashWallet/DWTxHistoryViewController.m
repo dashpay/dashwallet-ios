@@ -470,7 +470,7 @@ static NSString *dateFormat(NSString *template)
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
-                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
+                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"More...", nil) :
                 NSLocalizedString(@"Transaction history", nil);
                 actionCell.imageIcon = [UIImage imageNamed:@"transaction-history"];
                 actionCell.selectedImageIcon = [UIImage imageNamed:@"transaction-history-selected"];

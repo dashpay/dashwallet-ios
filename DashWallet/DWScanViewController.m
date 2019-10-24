@@ -75,7 +75,7 @@
                                                                                           NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                    actionWithTitle:NSLocalizedString(@"ok", nil)
+                                    actionWithTitle:NSLocalizedString(@"OK", nil)
                                     style:UIAlertActionStyleCancel
                                     handler:^(UIAlertAction * action) {
                                         //Handle your yes please button action here

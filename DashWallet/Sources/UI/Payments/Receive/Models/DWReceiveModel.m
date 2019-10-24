@@ -185,7 +185,7 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
             // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
             // (`total` is not calculated properly for very small amounts like 0.000257)
 
-            NSString *info = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
+            NSString *info = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
                                                         [priceManager stringForDashAmount:self.amount],
                                                         [priceManager localCurrencyStringForDashAmount:self.amount]];
 
