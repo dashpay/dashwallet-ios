@@ -60,7 +60,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         CAShapeLayer *line = [CAShapeLayer layer];
         UIBezierPath *linePath = [UIBezierPath bezierPath];
         [linePath moveToPoint:CGPointMake(0.0, 0.0)];
-        [linePath addLineToPoint:CGPointMake(1000.0, 0.0)];
+        [linePath addLineToPoint:CGPointMake(2048.0, 0.0)];
         line.path = linePath.CGPath;
         line.fillColor = self.backgroundColor.CGColor;
         line.opacity = 1.0;
