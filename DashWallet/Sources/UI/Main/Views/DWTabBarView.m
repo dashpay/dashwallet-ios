@@ -31,8 +31,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
 @interface DWTabBarView ()
 
-@property (nonatomic, strong) CALayer *backgroundLayer;
-@property (nonatomic, strong) CAShapeLayer *topLineLayer;
+@property (nonatomic, strong) CALayer *topLineLayer;
 @property (nonatomic, strong) CAShapeLayer *centerCircleLayer;
 @property (nonatomic, strong) CALayer *circleOverlayLayer;
 
@@ -51,22 +50,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         self.backgroundColor = [UIColor dw_backgroundColor];
         self.clipsToBounds = NO;
 
-        CALayer *backgroundLayer = [CALayer layer];
-        backgroundLayer.backgroundColor = self.backgroundColor.CGColor;
-        backgroundLayer.borderWidth = 0;
-        [self.layer addSublayer:backgroundLayer];
-        _backgroundLayer = backgroundLayer;
-
-        CAShapeLayer *line = [CAShapeLayer layer];
-        UIBezierPath *linePath = [UIBezierPath bezierPath];
-        [linePath moveToPoint:CGPointMake(0.0, 0.0)];
-        [linePath addLineToPoint:CGPointMake(2048.0, 0.0)];
-        line.path = linePath.CGPath;
-        line.fillColor = self.backgroundColor.CGColor;
-        line.opacity = 1.0;
-        line.strokeColor = [UIColor dw_tabbarBorderColor].CGColor;
-        [self.layer addSublayer:line];
-        _topLineLayer = line;
+        CALayer *topLineLayer = [CALayer layer];
+        topLineLayer.backgroundColor = [UIColor dw_tabbarBorderColor].CGColor;
+        [self.layer addSublayer:topLineLayer];
+        _topLineLayer = topLineLayer;
 
         CAShapeLayer *centerCircleLayer = [CAShapeLayer layer];
         centerCircleLayer.fillColor = self.backgroundColor.CGColor;
@@ -147,9 +134,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         x += buttonWidth;
     }
 
-    self.backgroundLayer.frame = self.bounds;
-
-    self.topLineLayer.frame = CGRectMake(0, 0, size.width, 1);
+    self.topLineLayer.frame = CGRectMake(0, 0, size.width, TABBAR_BORDER_WIDTH);
 
     const CGSize arcSize = CGSizeMake(CENTER_CIRCLE_SIZE, CENTER_CIRCLE_SIZE / 2.0);
     self.centerCircleLayer.frame = CGRectMake((size.width - arcSize.width) / 2.0,
@@ -174,13 +159,12 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
     [super traitCollectionDidChange:previousTraitCollection];
 
     self.backgroundColor = [UIColor dw_backgroundColor];
-    self.backgroundLayer.backgroundColor = self.backgroundColor.CGColor;
     self.centerCircleLayer.fillColor = self.backgroundColor.CGColor;
     self.circleOverlayLayer.backgroundColor = self.backgroundColor.CGColor;
 
     UIColor *borderColor = [UIColor dw_tabbarBorderColor];
     self.centerCircleLayer.strokeColor = borderColor.CGColor;
-    self.topLineLayer.strokeColor = borderColor.CGColor;
+    self.topLineLayer.backgroundColor = borderColor.CGColor;
 }
 
 - (void)setPaymentsButtonOpened:(BOOL)opened {
