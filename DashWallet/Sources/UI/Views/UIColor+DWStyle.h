@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)dw_tintColor;
 
 + (UIColor *)dw_dashBlueColor;
++ (UIColor *)dw_dashNavigationBlueColor;
 + (UIColor *)dw_lightTitleColor;
 + (UIColor *)dw_darkTitleColor;
 + (UIColor *)dw_secondaryTextColor;

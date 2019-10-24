@@ -390,9 +390,6 @@
 "Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
-"Forked from breadwallet.\nThis app is open source:" = "Forked from breadwallet.\nThis app is open source:";
-
-/* No comment provided by engineer. */
 "from:" = "kaynak:";
 
 /* No comment provided by engineer. */
@@ -964,6 +961,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Bu sizin dash adresiniz. Kopyalamak veya ister kısa mesaj ister e-posta yoluyla göndermek için dokunun. Her para alışınızda adres değişecek fakat eski adresler her zaman çalışacaktır.";

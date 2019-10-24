@@ -390,9 +390,6 @@
 "Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
-"Forked from breadwallet.\nThis app is open source:" = "Forked from breadwallet.\nThis app is open source:";
-
-/* No comment provided by engineer. */
 "from:" = "보낸 주소:";
 
 /* No comment provided by engineer. */
@@ -964,6 +961,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "이것이 당신의 대시 주소입니다. 탭 하여 복사하시거나 이메일, 혹은 SMS를 이용해 다른 사람에게 보낼 수 있습니다. 이 주소는 당신이 돈을 받을 때마다 새로 생성됩니다. 그러나 이전 주소도 언제든지 계속 사용할 수 있습니다.";

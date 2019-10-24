@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dwNavigationControllerSetup {
     UINavigationBar *navigationBar = self.navigationBar;
     navigationBar.barStyle = UIBarStyleDefault;
-    navigationBar.barTintColor = [UIColor dw_dashBlueColor];
+    navigationBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
     navigationBar.tintColor = [UIColor dw_tintColor];
     navigationBar.translucent = NO;
 

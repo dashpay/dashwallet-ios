@@ -45,6 +45,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_dashNavigationBlueColor {
+    UIColor *color = [UIColor colorNamed:@"DashNavigationBarBlueColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_lightTitleColor {
     UIColor *color = [UIColor colorNamed:@"LightTitleColor"];
     NSParameterAssert(color);

@@ -153,10 +153,10 @@ NS_ASSUME_NONNULL_BEGIN
     searchBar.searchBarStyle = UISearchBarStyleMinimal;
     searchBar.delegate = self;
     searchBar.tintColor = [UIColor dw_tintColor];
-    searchBar.barTintColor = [UIColor dw_dashBlueColor];
+    searchBar.barTintColor = [UIColor dw_dashNavigationBlueColor];
 
     UITextField *searchTextField = (UITextField *)[searchBar dw_findSubviewOfClass:UITextField.class];
-    searchTextField.tintColor = [UIColor dw_dashBlueColor];
+    searchTextField.tintColor = [UIColor dw_dashNavigationBlueColor];
     searchTextField.textColor = [UIColor dw_darkTitleColor];
     searchTextField.backgroundColor = [UIColor dw_backgroundColor];
 

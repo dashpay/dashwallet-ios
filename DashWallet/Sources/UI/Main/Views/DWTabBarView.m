@@ -32,6 +32,7 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 @interface DWTabBarView ()
 
 @property (nonatomic, strong) CALayer *backgroundLayer;
+@property (nonatomic, strong) CAShapeLayer *topLineLayer;
 @property (nonatomic, strong) CAShapeLayer *centerCircleLayer;
 @property (nonatomic, strong) CALayer *circleOverlayLayer;
 
@@ -52,10 +53,20 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
         CALayer *backgroundLayer = [CALayer layer];
         backgroundLayer.backgroundColor = self.backgroundColor.CGColor;
-        backgroundLayer.borderColor = [UIColor dw_tabbarBorderColor].CGColor;
-        backgroundLayer.borderWidth = TABBAR_BORDER_WIDTH;
+        backgroundLayer.borderWidth = 0;
         [self.layer addSublayer:backgroundLayer];
         _backgroundLayer = backgroundLayer;
+
+        CAShapeLayer *line = [CAShapeLayer layer];
+        UIBezierPath *linePath = [UIBezierPath bezierPath];
+        [linePath moveToPoint:CGPointMake(0.0, 0.0)];
+        [linePath addLineToPoint:CGPointMake(1000.0, 0.0)];
+        line.path = linePath.CGPath;
+        line.fillColor = self.backgroundColor.CGColor;
+        line.opacity = 1.0;
+        line.strokeColor = [UIColor dw_tabbarBorderColor].CGColor;
+        [self.layer addSublayer:line];
+        _topLineLayer = line;
 
         CAShapeLayer *centerCircleLayer = [CAShapeLayer layer];
         centerCircleLayer.fillColor = self.backgroundColor.CGColor;
@@ -138,6 +149,8 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
     self.backgroundLayer.frame = self.bounds;
 
+    self.topLineLayer.frame = CGRectMake(0, 0, size.width, 1);
+
     const CGSize arcSize = CGSizeMake(CENTER_CIRCLE_SIZE, CENTER_CIRCLE_SIZE / 2.0);
     self.centerCircleLayer.frame = CGRectMake((size.width - arcSize.width) / 2.0,
                                               -DW_TABBAR_NOTCH,
@@ -166,8 +179,8 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
     self.circleOverlayLayer.backgroundColor = self.backgroundColor.CGColor;
 
     UIColor *borderColor = [UIColor dw_tabbarBorderColor];
-    self.backgroundLayer.borderColor = borderColor.CGColor;
     self.centerCircleLayer.strokeColor = borderColor.CGColor;
+    self.topLineLayer.strokeColor = borderColor.CGColor;
 }
 
 - (void)setPaymentsButtonOpened:(BOOL)opened {

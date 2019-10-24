@@ -390,9 +390,6 @@
 "Forgot PIN?" = "Forgot PIN?";
 
 /* No comment provided by engineer. */
-"Forked from breadwallet.\nThis app is open source:" = "Forked from breadwallet.\nThis app is open source:";
-
-/* No comment provided by engineer. */
 "from:" = "送金元:";
 
 /* No comment provided by engineer. */
@@ -964,6 +961,9 @@
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
 "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "これはあなたのDashアドレスです。タップするとコピーされメールやSMSで共有できます。取引を行うごとにアドレスは入れ替わりますが、一度表示したアドレスに対して送られたDashはいつまでも自動的に受け取られます。";

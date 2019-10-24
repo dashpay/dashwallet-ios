@@ -64,7 +64,7 @@ static CGPoint AnchorByProgress(float progress) {
     self.greenLayer = greenLayer;
 
     CALayer *blueLayer = [CALayer layer];
-    blueLayer.backgroundColor = [UIColor dw_dashBlueColor].CGColor;
+    blueLayer.backgroundColor = [UIColor dw_dashNavigationBlueColor].CGColor;
     [self.layer addSublayer:blueLayer];
     self.blueLayer = blueLayer;
 }
@@ -132,7 +132,7 @@ static CGPoint AnchorByProgress(float progress) {
     anchorAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
 
     CABasicAnimation *colorAnimation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
-    colorAnimation.fromValue = (id)[UIColor dw_dashBlueColor].CGColor;
+    colorAnimation.fromValue = (id)[UIColor dw_dashNavigationBlueColor].CGColor;
     colorAnimation.toValue = (id)[UIColor dw_greenColor].CGColor;
     colorAnimation.duration = colorAnimationDuration;
     colorAnimation.beginTime = anchorAnimationDuration + delayBeforeFadingOut;
