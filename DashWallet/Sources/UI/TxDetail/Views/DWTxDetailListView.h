@@ -41,10 +41,23 @@ NS_ASSUME_NONNULL_BEGIN
                                   hasFee:(BOOL)hasFee
                                  hasDate:(BOOL)hasDate;
 
+- (void)configureWithInputAddressesCount:(NSUInteger)inputAddressesCount
+                    outputAddressesCount:(NSUInteger)outputAddressesCount
+                        specialInfoCount:(NSUInteger)specialInfoCount
+                                  hasFee:(BOOL)hasFee
+                                 hasDate:(BOOL)hasDate;
+
 - (void)updateDataWithInputAddresses:(NSArray<id<DWTitleDetailItem>> *)inputAddresses
                      outputAddresses:(NSArray<id<DWTitleDetailItem>> *)outputAddresses
                                  fee:(nullable id<DWTitleDetailItem>)fee
                                 date:(nullable id<DWTitleDetailItem>)date;
+
+- (void)updateDataWithInputAddresses:(NSArray<id<DWTitleDetailItem>> *)inputAddresses
+                     outputAddresses:(NSArray<id<DWTitleDetailItem>> *)outputAddresses
+                         specialInfo:(NSArray<id<DWTitleDetailItem>> *)specialInfo
+                                 fee:(nullable id<DWTitleDetailItem>)fee
+                                date:(nullable id<DWTitleDetailItem>)date;
+
 
 @end
 

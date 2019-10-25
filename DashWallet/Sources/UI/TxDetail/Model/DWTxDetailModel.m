@@ -78,6 +78,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self.dataItem.outputReceiveAddresses.count;
 }
 
+- (NSUInteger)specialInfoCount {
+    return self.dataItem.specialInfoAddresses.count;
+}
+
 - (BOOL)hasFee {
     if (self.direction == DSTransactionDirection_Received) {
         return NO;
@@ -108,10 +112,13 @@ NS_ASSUME_NONNULL_BEGIN
         case DSTransactionDirection_Moved:
             title = NSLocalizedString(@"Moved from", nil);
             break;
+        case DSTransactionDirection_NotAccountFunds:
+            title = NSLocalizedString(@"Registered from", nil);
+            break;
     }
 
-    NSArray<NSString *> *addresses = self.dataItem.inputSendAddresses;
-    NSString *firstAddress = addresses.firstObject;
+    NSSet<NSString *> *addresses = [NSSet setWithArray:self.dataItem.inputSendAddresses];
+    NSString *firstAddress = addresses.anyObject;
     for (NSString *address in addresses) {
         NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
                                                                                withFont:font];
@@ -140,6 +147,9 @@ NS_ASSUME_NONNULL_BEGIN
         case DSTransactionDirection_Moved:
             title = NSLocalizedString(@"Moved internally to", nil);
             break;
+        case DSTransactionDirection_NotAccountFunds:
+            title = @""; //this should not be possible
+            break;
     }
 
     NSArray<NSString *> *addresses = self.dataItem.outputReceiveAddresses;
@@ -151,6 +161,41 @@ NS_ASSUME_NONNULL_BEGIN
         DWTitleDetailCellModel *model =
             [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
                                                     title:hasTitle ? title : @""
+                                         attributedDetail:detail
+                                             copyableData:address];
+        [models addObject:model];
+    }
+
+    return [models copy];
+}
+
+- (NSArray<id<DWTitleDetailItem>> *)specialInfoWithFont:(UIFont *)font {
+    NSMutableArray<id<DWTitleDetailItem>> *models = [NSMutableArray array];
+
+
+    NSDictionary<NSString *, NSNumber *> *addresses = self.dataItem.specialInfoAddresses;
+    for (NSString *address in addresses) {
+        NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address
+                                                                               withFont:font];
+        NSInteger type = [addresses[address] integerValue];
+        NSString *title;
+        switch (type) {
+            case 0:
+                title = NSLocalizedString(@"Owner Address", nil);
+                break;
+            case 1:
+                title = NSLocalizedString(@"Provider Address", nil);
+                break;
+            case 2:
+                title = NSLocalizedString(@"Voting Address", nil);
+                break;
+            default:
+                title = @"";
+                break;
+        }
+        DWTitleDetailCellModel *model =
+            [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
+                                                    title:title
                                          attributedDetail:detail
                                              copyableData:address];
         [models addObject:model];

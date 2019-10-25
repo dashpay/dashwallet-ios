@@ -68,7 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
             case DSTransactionDirection_Received:
                 self.view.displayType = DWTxDetailDisplayType_Received;
                 break;
-
+            case DSTransactionDirection_NotAccountFunds:
+                //in v14 it can only be masternode registration
+                self.view.displayType = DWTxDetailDisplayType_MasternodeRegistration;
+                break;
             default:
                 break;
         }

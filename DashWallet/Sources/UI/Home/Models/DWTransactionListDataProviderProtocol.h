@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
 /// To (sent)
 @property (readonly, nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
+
+@property (readonly, nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
 @property (readonly, nonatomic, assign) uint64_t dashAmount;
 @property (readonly, nonatomic, assign) DSTransactionDirection direction;
 @property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
