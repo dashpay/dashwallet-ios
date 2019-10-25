@@ -177,10 +177,10 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close app" = "Close app";
 
 /* No comment provided by engineer. */
-"Close app" = "Close app";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase транзакция";
@@ -303,10 +303,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Включи получаване на известия ";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Включи получаване на известия ";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -434,11 +434,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Зареди още";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Местна валута";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -531,19 +531,19 @@
 "Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"Not operator" = "Not operator";
+"not operator" = "не оператор";
 
 /* No comment provided by engineer. */
-"not operator" = "не оператор";
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
 "Not owner" = "Not owner";
@@ -624,10 +624,10 @@
 "Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "Изчакване";
+"pending" = "изчакване";
 
 /* No comment provided by engineer. */
-"pending" = "изчакване";
+"Pending" = "Изчакване";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Моля въведете ПИН за обновяването на портфейла";
@@ -657,10 +657,10 @@
 "Private key" = "Частен ключ";
 
 /* No comment provided by engineer. */
-"processing" = "обработване";
+"Processing" = "Обработване";
 
 /* No comment provided by engineer. */
-"Processing" = "Обработване";
+"processing" = "обработване";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -701,11 +701,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Фраза за възстановяване";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Фраза за възстановяване";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -738,10 +738,10 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Повторно сканиране на блок-веригата";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Повторно сканиране на блок-веригата";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
@@ -757,6 +757,9 @@
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Сканирайте някой друг QR код за да получите техният dash адрес. Можете да изпратите плащане към всеки с наличен адрес.";
@@ -798,6 +801,9 @@
 "seen by %d of %d peers" = "видян от %1$d от%2$d пиъра";
 
 /* No comment provided by engineer. */
+"Send" = "Send";
+
+/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Изпрати %1$@ (%2$@) от този частен ключ в твоят портфейл? Dash мрежата ще получи такса от %3$@ (%4$@).";
 
 /* No comment provided by engineer. */
@@ -837,6 +843,9 @@
 "Settings" = "Настройки";
 
 /* No comment provided by engineer. */
+"Setup Wallet" = "Setup Wallet";
+
+/* No comment provided by engineer. */
 "Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
@@ -858,10 +867,10 @@
 "Show masternode keys" = "Покажи masternode ключове";
 
 /* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
+"show phrase" = "покажи фраза";
 
 /* No comment provided by engineer. */
-"show phrase" = "покажи фраза";
+"Show phrase" = "Show phrase";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";

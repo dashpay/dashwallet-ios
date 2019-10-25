@@ -7,8 +7,10 @@ PODS:
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - CocoaLumberjack (= 3.6.0)
+    - DSDynamicOptions (= 0.1.0)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.2)
+  - DSDynamicOptions (0.1.0)
   - DWAlertController (0.2.1)
   - KVO-MVVM (0.5.6)
   - MBProgressHUD (1.1.0)
@@ -19,22 +21,23 @@ PODS:
 DEPENDENCIES:
   - Dash-PLCrashReporter (from `https://github.com/podkovyrin/plcrashreporter.git`, commit `b472e89`, branch `dash_1.5.1`)
   - DashSync (from `../DashSync/`)
+  - DSDynamicOptions (= 0.1.0)
   - KVO-MVVM (= 0.5.6)
   - MBProgressHUD (= 1.1.0)
   - SimulatorStatusMagic (= 2.4.1)
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - bls-signatures-pod
+    - CocoaLumberjack
+    - DSDynamicOptions
+    - DWAlertController
+    - KVO-MVVM
     - MBProgressHUD
     - secp256k1_dash
     - SimulatorStatusMagic
     - UIViewController-KeyboardAdditions
-  trunk:
-    - CocoaLumberjack
-    - DWAlertController
-    - KVO-MVVM
 
 EXTERNAL SOURCES:
   Dash-PLCrashReporter:
@@ -53,7 +56,8 @@ SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   Dash-PLCrashReporter: c6f194c683685579f05bda3524893a7add0ec89a
-  DashSync: f054f28be95aba398839adb4721ba65dc3eaedf3
+  DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
+  DSDynamicOptions: 6a37eb496daee3c067e086b5b236d77707e9a3ee
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
@@ -61,6 +65,6 @@ SPEC CHECKSUMS:
   SimulatorStatusMagic: 28d4a9d1a500ac7cea0b2b5a43c1c6ddb40ba56c
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: e2b3de1776837b2dea3568767cb2a7bc86de5fd6
+PODFILE CHECKSUM: ac93d6cf2d52503c0ae5e8ee6760953fe25f1ac6
 
 COCOAPODS: 1.8.4

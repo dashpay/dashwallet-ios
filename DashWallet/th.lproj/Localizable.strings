@@ -177,10 +177,10 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close app" = "Close app";
 
 /* No comment provided by engineer. */
-"Close app" = "Close app";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "ธุรกรรม Coinbase";
@@ -303,10 +303,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "เปิดรับการแจ้งเตือน";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "เปิดรับการแจ้งเตือน";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -434,11 +434,11 @@
 /* No comment provided by engineer. */
 "Load more" = "โหลดเพิ่ม";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "สกุลเงินท้องถิ่น";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -531,19 +531,19 @@
 "Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"Not operator" = "Not operator";
+"not operator" = "ไม่ใช่ตัวดำเนินการ";
 
 /* No comment provided by engineer. */
-"not operator" = "ไม่ใช่ตัวดำเนินการ";
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
 "Not owner" = "Not owner";
@@ -624,10 +624,10 @@
 "Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "Pending";
+"pending" = "อยู่ระหว่างดำเนินการ";
 
 /* No comment provided by engineer. */
-"pending" = "อยู่ระหว่างดำเนินการ";
+"Pending" = "Pending";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
@@ -657,10 +657,10 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"processing" = "processing";
+"Processing" = "Processing";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"processing" = "processing";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -701,11 +701,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "วลีกู้คืน";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "วลีกู้คืน";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -738,10 +738,10 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "สแกน blockchain อีกครั้ง";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
@@ -757,6 +757,9 @@
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "สแกนโค้ด QR ของผู้อื่นเพื่อรับที่อยู่ dash ของพวกเขา คุณสามารถส่งการชำระเงินให้กับทุกคนที่มีที่อยู่ได้";
@@ -798,6 +801,9 @@
 "seen by %d of %d peers" = "เห็นแล้ว %1$d ของ %2$d ผู้ปล่อย ";
 
 /* No comment provided by engineer. */
+"Send" = "Send";
+
+/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "ส่ง %1$@(%2$@) จากคีย์ส่วนตัวนี้ไปยัง wallet ของคุณหรือไม่?  เครือข่าย dash จะได้รับค่าธรรมเนียมของ %3$@ (%4$@)";
 
 /* No comment provided by engineer. */
@@ -837,6 +843,9 @@
 "Settings" = "ตั้งค่า";
 
 /* No comment provided by engineer. */
+"Setup Wallet" = "Setup Wallet";
+
+/* No comment provided by engineer. */
 "Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
@@ -858,10 +867,10 @@
 "Show masternode keys" = "แสดง masternode keys";
 
 /* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
+"show phrase" = "แสดงวลี";
 
 /* No comment provided by engineer. */
-"show phrase" = "แสดงวลี";
+"Show phrase" = "Show phrase";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";

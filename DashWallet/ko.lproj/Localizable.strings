@@ -177,10 +177,10 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close app" = "Close app";
 
 /* No comment provided by engineer. */
-"Close app" = "Close app";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "코인베이스 거래";
@@ -303,10 +303,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "수신 알림 허용";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "수신 알림 허용";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -434,11 +434,11 @@
 /* No comment provided by engineer. */
 "Load more" = "더 보기";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "현지 통화";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -531,19 +531,19 @@
 "Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"Not operator" = "Not operator";
+"not operator" = "운영자 아님";
 
 /* No comment provided by engineer. */
-"not operator" = "운영자 아님";
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
 "Not owner" = "Not owner";
@@ -624,10 +624,10 @@
 "Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "대기 중";
+"pending" = "대기 중";
 
 /* No comment provided by engineer. */
-"pending" = "대기 중";
+"Pending" = "대기 중";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "지갑을 업그레이드하려면 PIN을 입력하십시오";
@@ -657,10 +657,10 @@
 "Private key" = "비밀 키";
 
 /* No comment provided by engineer. */
-"processing" = "처리 중";
+"Processing" = "처리 중";
 
 /* No comment provided by engineer. */
-"Processing" = "처리 중";
+"processing" = "처리 중";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -701,11 +701,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "복원 문구";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "복원 문구";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -738,10 +738,10 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "블록체인 재스캔";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "블록체인 재스캔";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
@@ -757,6 +757,9 @@
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "디른 사람의 QR 코드를 스캔하여 대시 주소를 확인하세요. 주소를 가진 누구에게나 지불할 수 있습니다.";
@@ -798,6 +801,9 @@
 "seen by %d of %d peers" = "%2$d개의 피어중 %1$d개의 피어가 보았습니다";
 
 /* No comment provided by engineer. */
+"Send" = "Send";
+
+/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "이 비밀 키에서 %1$@ (%2$@)를 당신의 지갑으로 옮기겠습니까? 대시 네트워크에 %3$@ (%4$@)의 수수료가 지급됩니다.";
 
 /* No comment provided by engineer. */
@@ -837,6 +843,9 @@
 "Settings" = "설정";
 
 /* No comment provided by engineer. */
+"Setup Wallet" = "Setup Wallet";
+
+/* No comment provided by engineer. */
 "Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
@@ -858,10 +867,10 @@
 "Show masternode keys" = "마스터노드 키 확인하기";
 
 /* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
+"show phrase" = "문구 보기";
 
 /* No comment provided by engineer. */
-"show phrase" = "문구 보기";
+"Show phrase" = "Show phrase";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";

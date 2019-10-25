@@ -31,7 +31,7 @@
 #import "DWRestoreViewController.h"
 #import "DWSeedViewController.h"
 #import "DWAppDelegate.h"
-#import "BRBubbleView.h"
+//#import "BRBubbleView.h"
 #import "BRBouncyBurgerButton.h"
 #import "UIImage+Utils.h"
 #import "BREventConfirmView.h"
@@ -63,7 +63,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIGestureRecognizer *navBarTap;
-@property (nonatomic, strong) BRBubbleView *tipView;
+//@property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL shouldShowTips, showTips, inNextTip, didAppear;
 @property (nonatomic, assign) uint64_t balance;
 @property (nonatomic, strong) NSURL *url;
@@ -748,11 +748,11 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
     
     if (balance > _balance && [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
-                                                            stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil), [priceManager stringForDashAmount:balance - _balance],
-                                                            [priceManager localCurrencyStringForDashAmount:balance - _balance]]
-                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                               popOutAfterDelay:3.0]];
+//        [self.view addSubview:[[[BRBubbleView viewWithText:[NSString
+//                                                            stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil), [priceManager stringForDashAmount:balance - _balance],
+//                                                            [priceManager localCurrencyStringForDashAmount:balance - _balance]]
+//                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                               popOutAfterDelay:3.0]];
 //        [[DWEnvironment sharedInstance] playPingSound];
     }
     
@@ -846,13 +846,13 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
     
     double progress = [DWEnvironment sharedInstance].currentChainManager.syncProgress;
     
-    if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
-        DSChain *chain = [DWEnvironment sharedInstance].currentChainManager.chain;
-        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
-                             chain.lastBlockHeight,
-                             chain.estimatedBlockHeight];
-    }
-    
+//    if (progress > DBL_EPSILON && ! self.shouldShowTips && self.tipView.alpha > 0.5) {
+//        DSChain *chain = [DWEnvironment sharedInstance].currentChainManager.chain;
+//        self.tipView.text = [NSString stringWithFormat:NSLocalizedString(@"block #%d of %d", nil),
+//                             chain.lastBlockHeight,
+//                             chain.estimatedBlockHeight];
+//    }
+//    
     if (progress < SYNCING_COMPLETED_PROGRESS) {
         self.progress.hidden = self.pulse.hidden = NO;
         self.progress.alpha = 1.0;
@@ -992,48 +992,48 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
 
 - (void)hideTips
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tip:) object:nil];
-    if (self.tipView.alpha > 0.5) [self.tipView popOut];
+//    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tip:) object:nil];
+//    if (self.tipView.alpha > 0.5) [self.tipView popOut];
 }
 
 - (BOOL)nextTip
 {
-    if (self.tipView.alpha < 0.5) { // if the tip view is dismissed, cycle through child view controller tips
-        BOOL ret;
-        
-        if (self.inNextTip) return NO; // break out of recursive loop
-        self.inNextTip = YES;
-        ret = [self.pageViewController.viewControllers.lastObject nextTip];
-        self.inNextTip = NO;
-        return ret;
-    }
-    
-    BRBubbleView *tipView = self.tipView;
-    
-    self.tipView = nil;
-    [tipView popOut];
-    
-    if ([tipView.text hasPrefix:BALANCE_TIP]) {
-        DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-        UINavigationBar *b = self.navigationController.navigationBar;
-        NSString *text = [NSString stringWithFormat:MDASH_TIP, priceManager.dashFormat.currencySymbol, [priceManager stringForDashAmount:DUFFS]];
-        CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
-                                                        attributes:b.titleTextAttributes context:nil];
-        
-        self.tipView = [BRBubbleView viewWithAttributedText:[text attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:CGSizeMake(13, 11)]
-                                                   tipPoint:CGPointMake(b.center.x + 5.0 - r.size.width/2.0,
-                                                                        b.frame.origin.y + b.frame.size.height - 10)
-                                               tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.backgroundColor = tipView.backgroundColor;
-        self.tipView.font = tipView.font;
-        self.tipView.userInteractionEnabled = NO;
-        [self.view addSubview:[self.tipView popIn]];
-    }
-    else if (self.showTips) {
-        self.showTips = NO;
-        [self.pageViewController.viewControllers.lastObject tip:self];
-    }
-    
+//    if (self.tipView.alpha < 0.5) { // if the tip view is dismissed, cycle through child view controller tips
+//        BOOL ret;
+//
+//        if (self.inNextTip) return NO; // break out of recursive loop
+//        self.inNextTip = YES;
+//        ret = [self.pageViewController.viewControllers.lastObject nextTip];
+//        self.inNextTip = NO;
+//        return ret;
+//    }
+//
+//    BRBubbleView *tipView = self.tipView;
+//
+//    self.tipView = nil;
+//    [tipView popOut];
+//
+//    if ([tipView.text hasPrefix:BALANCE_TIP]) {
+//        DSPriceManager * priceManager = [DSPriceManager sharedInstance];
+//        UINavigationBar *b = self.navigationController.navigationBar;
+//        NSString *text = [NSString stringWithFormat:MDASH_TIP, priceManager.dashFormat.currencySymbol, [priceManager stringForDashAmount:DUFFS]];
+//        CGRect r = [self.navigationItem.title boundingRectWithSize:b.bounds.size options:0
+//                                                        attributes:b.titleTextAttributes context:nil];
+//
+//        self.tipView = [BRBubbleView viewWithAttributedText:[text attributedStringForDashSymbolWithTintColor:[UIColor whiteColor] dashSymbolSize:CGSizeMake(13, 11)]
+//                                                   tipPoint:CGPointMake(b.center.x + 5.0 - r.size.width/2.0,
+//                                                                        b.frame.origin.y + b.frame.size.height - 10)
+//                                               tipDirection:BRBubbleTipDirectionUp];
+//        self.tipView.backgroundColor = tipView.backgroundColor;
+//        self.tipView.font = tipView.font;
+//        self.tipView.userInteractionEnabled = NO;
+//        [self.view addSubview:[self.tipView popIn]];
+//    }
+//    else if (self.showTips) {
+//        self.showTips = NO;
+//        [self.pageViewController.viewControllers.lastObject tip:self];
+//    }
+//
     return YES;
 }
 
@@ -1088,13 +1088,13 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         if (range.length != 0)
             [attributedTip replaceCharactersInRange:range
                                withAttributedString:[NSString dashSymbolAttributedStringWithTintColor:[UIColor whiteColor] forDashSymbolSize:CGSizeMake(13, 11)]];
-        self.tipView = [BRBubbleView viewWithAttributedText:attributedTip
-                                                   tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
-                                               tipDirection:BRBubbleTipDirectionUp];
-        self.tipView.font = [UIFont systemFontOfSize:14.0];
-        self.tipView.userInteractionEnabled = NO;
-        UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
-        [currentWindow addSubview:[self.tipView popIn]];
+//        self.tipView = [BRBubbleView viewWithAttributedText:attributedTip
+//                                                   tipPoint:CGPointMake(b.center.x, b.frame.origin.y + b.frame.size.height - 10)
+//                                               tipDirection:BRBubbleTipDirectionUp];
+//        self.tipView.font = [UIFont systemFontOfSize:14.0];
+//        self.tipView.userInteractionEnabled = NO;
+//        UIWindow *currentWindow = [UIApplication sharedApplication].keyWindow;
+//        [currentWindow addSubview:[self.tipView popIn]];
         if (self.showTips) self.scrollView.scrollEnabled = NO;
     }
 }

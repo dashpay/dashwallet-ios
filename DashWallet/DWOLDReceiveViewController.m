@@ -26,7 +26,7 @@
 
 #import "DWOLDReceiveViewController.h"
 #import "DWRootViewController.h"
-#import "BRBubbleView.h"
+//#import "BRBubbleView.h"
 #import "DWAppGroupConstants.h"
 #import "UIImage+Utils.h"
 #import <MobileCoreServices/UTCoreTypes.h>
@@ -44,7 +44,7 @@
 @interface DWOLDReceiveViewController () <DWOLDAmountViewControllerDelegate>
 
 @property (nonatomic, strong) UIImage *qrImage;
-@property (nonatomic, strong) BRBubbleView *tipView;
+//@property (nonatomic, strong) BRBubbleView *tipView;
 @property (nonatomic, assign) BOOL showTips;
 @property (nonatomic, strong) NSUserDefaults *groupDefs;
 @property (nonatomic, strong) id balanceObserver, txStatusObserver, txReceivedObserver;
@@ -217,10 +217,10 @@
             UIView *view = self.navigationController.presentingViewController.view;
 
             [self done:nil];
-            [view addSubview:[[[BRBubbleView viewWithText:[NSString
-             stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil), [priceManager stringForDashAmount:total],
-             [priceManager localCurrencyStringForDashAmount:total]]
-             center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
+//            [view addSubview:[[[BRBubbleView viewWithText:[NSString
+//             stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil), [priceManager stringForDashAmount:total],
+//             [priceManager localCurrencyStringForDashAmount:total]]
+//             center:CGPointMake(view.bounds.size.width/2, view.bounds.size.height/2)] popIn] popOutAfterDelay:3.0]];
             break;
         }
     }
@@ -240,33 +240,33 @@
 
 - (BOOL)nextTip
 {
-    if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
-
-    BRBubbleView *tipView = self.tipView;
-
-    self.tipView = nil;
-    [tipView popOut];
-
-    if ([tipView.text hasPrefix:QR_TIP]) {
-        self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP tipPoint:[self.addressButton.superview
-                        convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10.0)
-                        toView:self.view] tipDirection:BRBubbleTipDirectionDown];
-        self.tipView.backgroundColor = tipView.backgroundColor;
-        self.tipView.font = tipView.font;
-        self.tipView.userInteractionEnabled = NO;
-        [self.view addSubview:[self.tipView popIn]];
-    }
-    else if (self.showTips && [tipView.text hasPrefix:ADDRESS_TIP]) {
-        self.showTips = NO;
-        [(id)self.parentViewController.parentViewController tip:self];
-    }
+//    if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
+//
+//    BRBubbleView *tipView = self.tipView;
+//
+//    self.tipView = nil;
+//    [tipView popOut];
+//
+//    if ([tipView.text hasPrefix:QR_TIP]) {
+//        self.tipView = [BRBubbleView viewWithText:ADDRESS_TIP tipPoint:[self.addressButton.superview
+//                        convertPoint:CGPointMake(self.addressButton.center.x, self.addressButton.center.y - 10.0)
+//                        toView:self.view] tipDirection:BRBubbleTipDirectionDown];
+//        self.tipView.backgroundColor = tipView.backgroundColor;
+//        self.tipView.font = tipView.font;
+//        self.tipView.userInteractionEnabled = NO;
+//        [self.view addSubview:[self.tipView popIn]];
+//    }
+//    else if (self.showTips && [tipView.text hasPrefix:ADDRESS_TIP]) {
+//        self.showTips = NO;
+//        [(id)self.parentViewController.parentViewController tip:self];
+//    }
 
     return YES;
 }
 
 - (void)hideTips
 {
-    if (self.tipView.alpha > 0.5) [self.tipView popOut];
+//    if (self.tipView.alpha > 0.5) [self.tipView popOut];
 }
 
 // MARK: - IBAction
@@ -286,11 +286,11 @@
         self.showTips = YES;
     }
 
-    self.tipView = [BRBubbleView viewWithText:QR_TIP
-                    tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
-                    tipDirection:BRBubbleTipDirectionUp];
-    self.tipView.font = [UIFont systemFontOfSize:14.0];
-    [self.view addSubview:[self.tipView popIn]];
+//    self.tipView = [BRBubbleView viewWithText:QR_TIP
+//                    tipPoint:[self.qrView.superview convertPoint:self.qrView.center toView:self.view]
+//                    tipDirection:BRBubbleTipDirectionUp];
+//    self.tipView.font = [UIFont systemFontOfSize:14.0];
+//    [self.view addSubview:[self.tipView popIn]];
 }
 
 - (IBAction)address:(id)sender
@@ -308,9 +308,9 @@
                                 self.paymentAddress;
                                 NSLog(@"\n\nCOPIED PAYMENT REQUEST/ADDRESS:\n\n%@", [UIPasteboard generalPasteboard].string);
                                 
-                                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Copied", nil)
-                                                                            center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
-                                                       popOutAfterDelay:2.0]];
+//                                [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Copied", nil)
+//                                                                            center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+//                                                       popOutAfterDelay:2.0]];
                                 [DSEventManager saveEvent:@"receive:copy_address"];
     }]];
 

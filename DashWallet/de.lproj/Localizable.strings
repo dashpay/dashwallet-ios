@@ -177,10 +177,10 @@
 "Close" = "Close";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close app" = "Close app";
 
 /* No comment provided by engineer. */
-"Close app" = "Close app";
+"Close App" = "Close App";
 
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase-Transaktion";
@@ -303,10 +303,10 @@
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable receive notifications" = "Empfang von Hinweisen ermöglichen";
 
 /* No comment provided by engineer. */
-"Enable receive notifications" = "Empfang von Hinweisen ermöglichen";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
@@ -434,11 +434,11 @@
 /* No comment provided by engineer. */
 "Load more" = "Mehr laden";
 
-/* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
-
 /* No comment provided by engineer. */
 "Local currency" = "Lokale Währung";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -531,19 +531,19 @@
 "Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
 "Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"Not operator" = "Not operator";
+"not operator" = "nicht Betreiber";
 
 /* No comment provided by engineer. */
-"not operator" = "nicht Betreiber";
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
 "Not owner" = "Not owner";
@@ -624,10 +624,10 @@
 "Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
-"Pending" = "Ausstehend";
+"pending" = "vorbehaltlich";
 
 /* No comment provided by engineer. */
-"pending" = "vorbehaltlich";
+"Pending" = "Ausstehend";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "PIN eingeben zum upgraden der Wallet";
@@ -657,10 +657,10 @@
 "Private key" = "Privater Schlüssel";
 
 /* No comment provided by engineer. */
-"processing" = "verarbeite";
+"Processing" = "Verarbeitung";
 
 /* No comment provided by engineer. */
-"Processing" = "Verarbeitung";
+"processing" = "verarbeite";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -701,11 +701,11 @@
 /* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
-/* Recovery phrase */
-"Recovery phrase" = "Wiederherstellungs-Wortfolge";
-
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
+
+/* Recovery phrase */
+"Recovery phrase" = "Wiederherstellungs-Wortfolge";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -738,10 +738,10 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan blockchain" = "Blockchain erneut scannen";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Blockchain erneut scannen";
+"Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
@@ -757,6 +757,9 @@
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scannen Sie jemandes QR-Code um eine Zahlungs-Adresse zu erhalten. Sie können eine Zahlung an jeden mit einer Adresse senden.";
@@ -798,6 +801,9 @@
 "seen by %d of %d peers" = "von %1$d aus %2$d anderen gesehen";
 
 /* No comment provided by engineer. */
+"Send" = "Send";
+
+/* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "%1$@ (%2$@) von diesem privaten Schlüssel an Ihr Wallet senden? Das Dash-Netzwerk wird eine Gebühr von %3$@ (%4$@) erhalten.";
 
 /* No comment provided by engineer. */
@@ -837,6 +843,9 @@
 "Settings" = "Einstellungen";
 
 /* No comment provided by engineer. */
+"Setup Wallet" = "Setup Wallet";
+
+/* No comment provided by engineer. */
 "Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
@@ -858,10 +867,10 @@
 "Show masternode keys" = "Masternode-Schlüssel anzeigen";
 
 /* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
+"show phrase" = "Wiederherstellungs-Wortfolge anzeigen";
 
 /* No comment provided by engineer. */
-"show phrase" = "Wiederherstellungs-Wortfolge anzeigen";
+"Show phrase" = "Show phrase";
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
