@@ -304,9 +304,9 @@ static BOOL IsJailbroken(void) {
     }
 
     dispatch_async(self.queue, ^{
-        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
-        NSArray<DSTransaction *> *transactions = account.allTransactions;
+        NSArray<DSTransaction *> *transactions = wallet.allTransactions;
 
         BOOL shouldAnimate = YES;
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;

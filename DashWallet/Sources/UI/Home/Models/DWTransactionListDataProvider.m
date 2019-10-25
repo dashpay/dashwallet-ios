@@ -47,6 +47,7 @@ static NSString *TxDateFormat(NSString *template) {
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
 @property (nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
+@property (nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
 @property (nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
@@ -121,8 +122,7 @@ static NSString *TxDateFormat(NSString *template) {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAccount *account = transaction.account;
 
-
-    DSTransactionDirection transactionDirection = [account directionOfTransaction:transaction];
+    DSTransactionDirection transactionDirection = account ? [account directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
     UIColor *tintColor = nil;
 
@@ -134,25 +134,39 @@ static NSString *TxDateFormat(NSString *template) {
         case DSTransactionDirection_Moved: {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_quaternaryTextColor];
-
+            dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
             break;
         }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.dashAmountTintColor = [UIColor dw_darkTitleColor];
-
+            dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
             break;
         }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
+            dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+            break;
+        }
+        case DSTransactionDirection_NotAccountFunds: {
+            dataItem.dashAmount = 0;
+            dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
+            if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+                DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+                dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};
+            }
+            else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+                DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+                dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
+            }
 
             break;
         }
     }
 
     dataItem.inputSendAddresses = transaction.inputAddresses;
-    dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+
 
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
 
@@ -180,6 +194,9 @@ static NSString *TxDateFormat(NSString *template) {
             break;
         case DSTransactionDirection_Sent:
             symbol = @"-";
+            break;
+        case DSTransactionDirection_NotAccountFunds:
+            symbol = @"";
             break;
     }
     NSString *string = [symbol stringByAppendingString:formattedNumber];

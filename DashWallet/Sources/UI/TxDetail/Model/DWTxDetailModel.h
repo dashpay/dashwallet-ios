@@ -36,11 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)inputAddressesCount;
 - (NSUInteger)outputAddressesCount;
+- (NSUInteger)specialInfoCount;
 - (BOOL)hasFee;
 - (BOOL)hasDate;
 
 - (NSArray<id<DWTitleDetailItem>> *)inputAddressesWithFont:(UIFont *)font;
 - (NSArray<id<DWTitleDetailItem>> *)outputAddressesWithFont:(UIFont *)font;
+- (NSArray<id<DWTitleDetailItem>> *)specialInfoWithFont:(UIFont *)font;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 - (id<DWTitleDetailItem>)date;
 

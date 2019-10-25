@@ -23,6 +23,7 @@ typedef NS_ENUM(NSUInteger, DWTxDetailDisplayType) {
     DWTxDetailDisplayType_Sent,
     DWTxDetailDisplayType_Received,
     DWTxDetailDisplayType_Paid, // (v) icon, info screen for tx that has been just sent
+    DWTxDetailDisplayType_MasternodeRegistration,
 };
 
 #endif /* DWTxDetailDisplayType_h */

@@ -129,6 +129,15 @@ NS_ASSUME_NONNULL_BEGIN
 
             break;
         }
+        case DWTxDetailDisplayType_MasternodeRegistration: {
+            [self setupIconImageView];
+
+            iconImage = [UIImage imageNamed:@"icon_tx_received"];
+            title = NSLocalizedString(@"Registered Masternode", nil);
+            iconTintColor = [UIColor dw_iconTintColor]; // Black or White (in Dark Mode)
+
+            break;
+        }
     }
 
     if (iconImage) {
@@ -144,8 +153,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setModel:(nullable DWTxDetailModel *)model {
     _model = model;
-
-    self.fiatAmountLabel.text = model.fiatAmountString;
 
     [self reloadAttributedData];
 }
@@ -196,10 +203,17 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    DWTxDetailModel *model = self.model;
+    if (self.displayType == DWTxDetailDisplayType_MasternodeRegistration) {
+        self.fiatAmountLabel.text = @"";
+        self.dashAmountLabel.text = @"";
+    }
+    else {
+        DWTxDetailModel *model = self.model;
 
-    UIFont *amountFont = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
-    self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
+        UIFont *amountFont = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
+        self.fiatAmountLabel.text = model.fiatAmountString;
+        self.dashAmountLabel.attributedText = [model dashAmountStringWithFont:amountFont];
+    }
 }
 
 - (void)setupIconImageView {

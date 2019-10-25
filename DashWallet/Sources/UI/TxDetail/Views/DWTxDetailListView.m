@@ -26,6 +26,7 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
 
 @property (strong, nonatomic) NSMutableArray<DWTitleDetailCellView *> *inputAddressViews;
 @property (strong, nonatomic) NSMutableArray<DWTitleDetailCellView *> *outputAddressViews;
+@property (strong, nonatomic) NSMutableArray<DWTitleDetailCellView *> *specialTransactionInfoViews;
 @property (nullable, weak, nonatomic) DWTitleDetailCellView *feeCellView;
 @property (nullable, weak, nonatomic) DWTitleDetailCellView *dateCellView;
 
@@ -59,9 +60,17 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
     }
 }
 
+- (void)configureWithInputAddressesCount:(NSUInteger)inputAddressesCount
+                    outputAddressesCount:(NSUInteger)outputAddressesCount
+                                  hasFee:(BOOL)hasFee
+                                 hasDate:(BOOL)hasDate {
+    [self configureWithInputAddressesCount:inputAddressesCount outputAddressesCount:outputAddressesCount specialInfoCount:0 hasFee:hasFee hasDate:hasDate];
+}
+
 // Consider using UITableView if reuse is needed
 - (void)configureWithInputAddressesCount:(NSUInteger)inputAddressesCount
                     outputAddressesCount:(NSUInteger)outputAddressesCount
+                        specialInfoCount:(NSUInteger)specialInfoCount
                                   hasFee:(BOOL)hasFee
                                  hasDate:(BOOL)hasDate {
     const SEL sel = @selector(removeFromSuperview);
@@ -69,6 +78,8 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
     [self.inputAddressViews removeAllObjects];
     [self.outputAddressViews makeObjectsPerformSelector:sel];
     [self.outputAddressViews removeAllObjects];
+    [self.specialTransactionInfoViews makeObjectsPerformSelector:sel];
+    [self.specialTransactionInfoViews removeAllObjects];
     [self.feeCellView removeFromSuperview];
     [self.dateCellView removeFromSuperview];
 
@@ -93,6 +104,16 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
         [self.outputAddressViews addObject:cellView];
     }
 
+    const CGFloat specialInfoHeight = specialInfoCount > 1 ? MULTIPLE_ROW_HEIGHT : REGULAR_ROW_HEIGHT;
+    for (NSUInteger i = 0; i < specialInfoCount; i++) {
+        DWTitleDetailCellView *cellView = [self addDetailCellViewWithHeight:outputHeight];
+        UILongPressGestureRecognizer *recognizer =
+            [[UILongPressGestureRecognizer alloc] initWithTarget:self
+                                                          action:@selector(longTapGestureRecognizerAction:)];
+        [cellView addGestureRecognizer:recognizer];
+        [self.specialTransactionInfoViews addObject:cellView];
+    }
+
     if (hasFee) {
         DWTitleDetailCellView *cellView = [self addDetailCellViewWithHeight:REGULAR_ROW_HEIGHT];
         self.feeCellView = cellView;
@@ -108,8 +129,17 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
                      outputAddresses:(NSArray<id<DWTitleDetailItem>> *)outputAddresses
                                  fee:(nullable id<DWTitleDetailItem>)fee
                                 date:(nullable id<DWTitleDetailItem>)date {
+    [self updateDataWithInputAddresses:inputAddresses outputAddresses:outputAddresses specialInfo:[NSArray array] fee:fee date:date];
+}
+
+- (void)updateDataWithInputAddresses:(NSArray<id<DWTitleDetailItem>> *)inputAddresses
+                     outputAddresses:(NSArray<id<DWTitleDetailItem>> *)outputAddresses
+                         specialInfo:(NSArray<id<DWTitleDetailItem>> *)specialInfo
+                                 fee:(nullable id<DWTitleDetailItem>)fee
+                                date:(nullable id<DWTitleDetailItem>)date {
     NSAssert(self.inputAddressViews.count == inputAddresses.count, @"DWTxDetailListView is not configured");
     NSAssert(self.outputAddressViews.count == outputAddresses.count, @"DWTxDetailListView is not configured");
+    NSAssert(self.specialTransactionInfoViews.count == specialInfo.count, @"DWTxDetailListView is not configured");
 
     for (NSUInteger i = 0; i < inputAddresses.count; i++) {
         id<DWTitleDetailItem> item = inputAddresses[i];
@@ -126,6 +156,16 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
         DWTitleDetailCellView *cellView = self.outputAddressViews[i];
         cellView.model = item;
         const BOOL separatorHidden = i != (outputAddresses.count - 1);
+        cellView.separatorPosition = (separatorHidden
+                                          ? DWTitleDetailCellViewSeparatorPosition_Hidden
+                                          : DWTitleDetailCellViewSeparatorPosition_Bottom);
+    }
+
+    for (NSUInteger i = 0; i < specialInfo.count; i++) {
+        id<DWTitleDetailItem> item = specialInfo[i];
+        DWTitleDetailCellView *cellView = self.specialTransactionInfoViews[i];
+        cellView.model = item;
+        const BOOL separatorHidden = i != (specialInfo.count - 1);
         cellView.separatorPosition = (separatorHidden
                                           ? DWTitleDetailCellViewSeparatorPosition_Hidden
                                           : DWTitleDetailCellViewSeparatorPosition_Bottom);
@@ -160,6 +200,7 @@ static CGFloat const MULTIPLE_ROW_HEIGHT = 40.0;
 
     self.inputAddressViews = [NSMutableArray array];
     self.outputAddressViews = [NSMutableArray array];
+    self.specialTransactionInfoViews = [NSMutableArray array];
 }
 
 - (DWTitleDetailCellView *)addDetailCellViewWithHeight:(CGFloat)height {

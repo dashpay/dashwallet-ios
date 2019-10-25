@@ -153,6 +153,7 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
     [self.detailListView configureWithInputAddressesCount:[model inputAddressesCount]
                                      outputAddressesCount:[model outputAddressesCount]
+                                         specialInfoCount:[model specialInfoCount]
                                                    hasFee:[model hasFee]
                                                   hasDate:[model hasDate]];
 
@@ -212,11 +213,13 @@ static CGFloat const CLOSE_BUTTON_DETAILS_PADDING = 30.0;
 
     UIFont *detailFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     NSArray<id<DWTitleDetailItem>> *inputAddresses = [model inputAddressesWithFont:detailFont];
-    NSArray<id<DWTitleDetailItem>> *outputAddresses = [model outputAddressesWithFont:detailFont];
     id<DWTitleDetailItem> fee = [model feeWithFont:detailFont tintColor:[UIColor dw_secondaryTextColor]];
     id<DWTitleDetailItem> date = [model date];
+    NSArray<id<DWTitleDetailItem>> *specialInfo = [model specialInfoWithFont:detailFont];
+    NSArray<id<DWTitleDetailItem>> *outputAddresses = [model outputAddressesWithFont:detailFont];
     [self.detailListView updateDataWithInputAddresses:inputAddresses
                                       outputAddresses:outputAddresses
+                                          specialInfo:specialInfo
                                                   fee:fee
                                                  date:date];
 }

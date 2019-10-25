@@ -573,6 +573,9 @@
 "Operator Keys" = "Clés d'opérateur";
 
 /* No comment provided by engineer. */
+"Owner Address" = "Owner Address";
+
+/* No comment provided by engineer. */
 "Owner key hash:" = "Owner key hash:";
 
 /* No comment provided by engineer. */
@@ -660,6 +663,9 @@
 "Processing" = "En cours";
 
 /* No comment provided by engineer. */
+"Provider Address" = "Provider Address";
+
+/* No comment provided by engineer. */
 "Public key" = "Clé publique";
 
 /* No comment provided by engineer. */
@@ -706,6 +712,12 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
+
+/* No comment provided by engineer. */
+"Registered from" = "Registered from";
+
+/* No comment provided by engineer. */
+"Registered Masternode" = "Registered Masternode";
 
 /* No comment provided by engineer. */
 "Registration tx:" = "Registration tx:";
@@ -1060,6 +1072,9 @@
 
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "View Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Voting Address";
 
 /* No comment provided by engineer. */
 "Voting key hash:" = "Voting key hash:";
