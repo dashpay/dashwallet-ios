@@ -18,6 +18,7 @@
 #import "AppDelegate.h"
 
 #import <DashSync/DashSync.h>
+#import <DashSync/UIWindow+DSUtils.h>
 
 #import "DWAppRootViewController.h"
 #import "DWDataMigrationManager.h"
@@ -27,6 +28,7 @@
 #import "DWVersionManager.h"
 #import "DWWindow.h"
 #import "DWBalanceNotifier.h"
+#import "DWURLParser.h"
 
 // TODO: re-enable Watch App
 //#ifndef IGNORE_WATCH_TARGET
@@ -168,6 +170,38 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     [[DashSync sharedSyncController] performFetchWithCompletionHandler:completionHandler];
+}
+
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if (![DWURLParser canHandleURL:url]) {
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:NSLocalizedString(@"Not a dash URL", nil)
+                                     message:url.absoluteString
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okAction = [UIAlertAction
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:nil];
+
+        [alert addAction:okAction];
+        
+        UIViewController *presentingController = [application.keyWindow ds_presentingViewController];
+        [presentingController presentViewController:alert animated:YES completion:nil];
+        
+        return NO;
+    }
+    
+    DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
+    if ([rootController isKindOfClass:DWAppRootViewController.class]) {
+        [rootController handleURL:url];
+    }
+    else {
+        NSAssert(NO, @"%@ is not supports handling URL: %@", self.window.rootViewController, url);
+    }
+
+    return YES;
 }
 
 #pragma mark - Private

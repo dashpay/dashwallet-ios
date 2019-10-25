@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
 
+- (void)performScanQRCodeAction;
+
 + (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
 
 @end

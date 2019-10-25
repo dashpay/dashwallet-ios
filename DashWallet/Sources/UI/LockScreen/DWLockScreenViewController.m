@@ -20,7 +20,6 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
-#import "DWNavigationController.h"
 #import "DWNumberKeyboard.h"
 #import "DWQuickReceiveViewController.h"
 #import "DWUIKit.h"
@@ -89,24 +88,18 @@ static CGFloat ActionButtonsHeight(void) {
 
 @implementation DWLockScreenViewController
 
-+ (UIViewController *)lockNavigationWithDelegate:(id<DWLockScreenViewControllerDelegate>)delegate
-                                      unlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
-                                        payModel:(DWPayModel *)payModel
-                                    receiveModel:(DWReceiveModel *)receiveModel
-                                    dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
++ (instancetype)lockScreenWithUnlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
+                                payModel:(DWPayModel *)payModel
+                            receiveModel:(DWReceiveModel *)receiveModel
+                            dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
-    controller.delegate = delegate;
     controller.unlockMode = unlockMode;
     controller.payModel = payModel;
     controller.receiveModel = receiveModel;
     controller.dataProvider = dataProvider;
 
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-
-    return navigationController;
+    return controller;
 }
 
 - (void)viewDidLoad {

@@ -76,6 +76,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     return self.modalController ?: self.currentController;
 }
 
+#pragma mark - Public
+
+- (void)performScanQRCodeAction {
+    [self switchToViewController:self.homeNavigationController];
+    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
+    [self.homeController performScanQRCodeAction];
+}
+
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {
@@ -148,9 +156,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 #pragma mark - DWMainMenuViewControllerDelegate
 
 - (void)mainMenuViewControllerImportPrivateKey:(DWMainMenuViewController *)controller {
-    [self switchToViewController:self.homeNavigationController];
-    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
-    [self.homeController performScanQRCodeAction];
+    [self performScanQRCodeAction];
 }
 
 #pragma mark - UINavigationControllerDelegate
@@ -284,6 +290,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (void)switchToViewController:(UIViewController *)toViewController {
     NSParameterAssert(toViewController);
     if (!toViewController) {
+        return;
+    }
+
+    if (self.currentController == toViewController) {
         return;
     }
 

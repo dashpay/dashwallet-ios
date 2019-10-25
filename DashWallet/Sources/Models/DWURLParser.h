@@ -15,19 +15,27 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppRootViewController : UIViewController
+#pragma mark - Actions
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@interface DWURLAction : NSObject
+@end
 
-- (void)setLaunchingAsDeferredController;
-- (void)handleURL:(NSURL *)url;
+@interface DWURLScanQRAction : DWURLAction
+@end
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+#pragma mark - Parser
+
+@interface DWURLParser : NSObject
+
++ (BOOL)canHandleURL:(NSURL *)url;
+
++ (nullable DWURLAction *)actionForURL:(NSURL *)url;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

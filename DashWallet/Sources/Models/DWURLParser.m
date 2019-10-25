@@ -15,19 +15,41 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWURLParser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppRootViewController : UIViewController
+#pragma mark - Actions
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@implementation DWURLAction
+@end
 
-- (void)setLaunchingAsDeferredController;
-- (void)handleURL:(NSURL *)url;
+@implementation DWURLScanQRAction
+@end
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+#pragma mark - Parser
+
+@implementation DWURLParser
+
++ (BOOL)canHandleURL:(NSURL *)url {
+    if (!url) {
+        return NO;
+    }
+
+    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"];
+}
+
++ (nullable DWURLAction *)actionForURL:(NSURL *)url {
+    if ([url.scheme isEqual:@"dashwallet"]) {
+        if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) {
+            return [[DWURLScanQRAction alloc] init];
+        }
+    }
+
+    // TODO: impl other URL types
+
+    return nil;
+}
 
 @end
 
