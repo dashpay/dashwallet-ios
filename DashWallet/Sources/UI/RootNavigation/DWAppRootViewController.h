@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 - (void)setLaunchingAsDeferredController;
+- (void)handleURL:(NSURL *)url;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;

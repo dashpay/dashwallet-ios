@@ -1,5 +1,5 @@
 target 'dashwallet' do
-  platform :ios, '10.0'
+  platform :ios, '11.0'
   
   pod 'DashSync', :path => '../DashSync/'
   
@@ -24,6 +24,9 @@ target 'dashwallet' do
 end
 
 target 'TodayExtension' do
+  platform :ios, '11.0'
+  
+  pod 'DSDynamicOptions', '0.1.0'
 
 end
 

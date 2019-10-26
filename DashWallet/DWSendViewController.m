@@ -28,7 +28,7 @@
 #import "DWRootViewController.h"
 #import "DWSettingsViewController.h"
 #import "DWOLDAmountViewController.h"
-#import "BRBubbleView.h"
+//#import "BRBubbleView.h"
 #import "FBShimmeringView.h"
 #import "MBProgressHUD.h"
 #import "DWQRScanViewController.h"
@@ -61,7 +61,7 @@ static NSString *sanitizeString(NSString *s)
 @property (nonatomic, strong) DSPaymentProtocolRequest *request;
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, assign) uint64_t amount;
-@property (nonatomic, strong) BRBubbleView *tipView;
+//@property (nonatomic, strong) BRBubbleView *tipView;
 
 @property (nonatomic, strong) IBOutlet UILabel *sendLabel;
 @property (nonatomic, strong) IBOutlet UIButton *scanButton, *clipboardButton;
@@ -327,10 +327,10 @@ static NSString *sanitizeString(NSString *s)
                     [self presentViewController:alert animated:YES completion:nil];
                 }
                 
-                [self.view addSubview:[[[BRBubbleView
-                                         viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"Received", nil))
-                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                       popOutAfterDelay:(payment.memo.length > 0 ? 3.0 : 2.0)]];
+//                [self.view addSubview:[[[BRBubbleView
+//                                         viewWithText:(payment.memo.length > 0 ? payment.memo : NSLocalizedString(@"Received", nil))
+//                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                                       popOutAfterDelay:(payment.memo.length > 0 ? 3.0 : 2.0)]];
             }];
         }
         
@@ -341,9 +341,9 @@ static NSString *sanitizeString(NSString *s)
     
     if (ack) {
         if (ack.memo.length > 0) {
-            [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
-                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                   popOutAfterDelay:3.0]];
+//            [self.view addSubview:[[[BRBubbleView viewWithText:ack.memo
+//                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                                   popOutAfterDelay:3.0]];
         }
         
         return;
@@ -493,9 +493,9 @@ static NSString *sanitizeString(NSString *s)
                 [self startObservingShapeshift:tx.associatedShapeshift];
                 
             }
-            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Sent!", nil)
-                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                   popOutAfterDelay:2.0]];
+//            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Sent!", nil)
+//                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                                   popOutAfterDelay:2.0]];
 //            [[DWEnvironment sharedInstance] playPingSound];
             
             displayedSentMessage = TRUE;
@@ -514,10 +514,10 @@ static NSString *sanitizeString(NSString *s)
     } requestRelayCompletion:^(DSTransaction * _Nonnull tx, DSPaymentProtocolACK * _Nonnull ack, BOOL relayedToServer) {
         if (relayedToServer) {
             if (!displayedSentMessage) {
-                [self.view addSubview:[[[BRBubbleView
-                                         viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"Sent!", nil))
-                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                       popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
+//                [self.view addSubview:[[[BRBubbleView
+//                                         viewWithText:(ack.memo.length > 0 ? ack.memo : NSLocalizedString(@"Sent!", nil))
+//                                         center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                                       popOutAfterDelay:(ack.memo.length > 0 ? 3.0 : 2.0)]];
 //                [[DWEnvironment sharedInstance] playPingSound];
             }
             if (protoReq.callbackScheme) {
@@ -581,14 +581,14 @@ static NSString *sanitizeString(NSString *s)
     
     if (! [privKey isValidDashPrivateKeyOnChain:[DWEnvironment sharedInstance].currentChain] && ! [privKey isValidDashBIP38Key]) return;
     
-    BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking private key balance...", nil)
-                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
-    
-    statusView.font = [UIFont systemFontOfSize:14.0];
-    statusView.customView = [[UIActivityIndicatorView alloc]
-                             initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-    [(id)statusView.customView startAnimating];
-    [self.view addSubview:[statusView popIn]];
+//    BRBubbleView *statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking private key balance...", nil)
+//                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+//
+//    statusView.font = [UIFont systemFontOfSize:14.0];
+//    statusView.customView = [[UIActivityIndicatorView alloc]
+//                             initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+//    [(id)statusView.customView startAnimating];
+//    [self.view addSubview:[statusView popIn]];
     
     DSAccount * account = [DWEnvironment sharedInstance].currentAccount;
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
@@ -596,7 +596,7 @@ static NSString *sanitizeString(NSString *s)
     
     [account sweepPrivateKey:privKey withFee:YES completion:^(DSTransaction *tx, uint64_t fee, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [statusView popOut];
+//            [statusView popOut];
             
             if (error) {
                 UIAlertController * alert = [UIAlertController
@@ -659,9 +659,9 @@ static NSString *sanitizeString(NSString *s)
                                                            return;
                                                        }
                                                        
-                                                       [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Swept!", nil)
-                                                                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
-                                                                               popIn] popOutAfterDelay:2.0]];
+//                                                       [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Swept!", nil)
+//                                                                                                   center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)]
+//                                                                               popIn] popOutAfterDelay:2.0]];
                                                        [self reset:nil];
                                                    }];
                                                    
@@ -681,20 +681,20 @@ static NSString *sanitizeString(NSString *s)
     
     DSInsightManager * insightManager = [DSInsightManager sharedInstance];
     DSPriceManager * priceManager = [DSPriceManager sharedInstance];
-    BRBubbleView * statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking address balance...", nil)
-                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
-    
-    statusView.font = [UIFont systemFontOfSize:14.0];
-    statusView.customView = [[UIActivityIndicatorView alloc]
-                             initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-    [(id)statusView.customView startAnimating];
-    [self.view addSubview:[statusView popIn]];
+//    BRBubbleView * statusView = [BRBubbleView viewWithText:NSLocalizedString(@"Checking address balance...", nil)
+//                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)];
+//
+//    statusView.font = [UIFont systemFontOfSize:14.0];
+//    statusView.customView = [[UIActivityIndicatorView alloc]
+//                             initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+//    [(id)statusView.customView startAnimating];
+//    [self.view addSubview:[statusView popIn]];
     
     [insightManager utxosForAddresses:@[address]
                               onChain:[DWEnvironment sharedInstance].currentChain
                            completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                                dispatch_async(dispatch_get_main_queue(), ^{
-                                   [statusView popOut];
+//                                   [statusView popOut];
                                    
                                    if (error) {
                                        UIAlertController * alert = [UIAlertController
@@ -768,31 +768,31 @@ static NSString *sanitizeString(NSString *s)
 
 - (void)hideTips
 {
-    if (self.tipView.alpha > 0.5) [self.tipView popOut];
+//    if (self.tipView.alpha > 0.5) [self.tipView popOut];
 }
 
 - (BOOL)nextTip
 {
-    if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
-    
-    BRBubbleView *tipView = self.tipView;
-    
-    self.tipView = nil;
-    [tipView popOut];
-    
-    if ([tipView.text hasPrefix:SCAN_TIP]) {
-        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP
-                                         tipPoint:CGPointMake(self.clipboardButton.center.x, self.clipboardButton.center.y + 10.0)
-                                     tipDirection:BRBubbleTipDirectionDown];
-        self.tipView.backgroundColor = tipView.backgroundColor;
-        self.tipView.font = tipView.font;
-        self.tipView.userInteractionEnabled = NO;
-        [self.view addSubview:[self.tipView popIn]];
-    }
-    else if (self.showTips && [tipView.text hasPrefix:CLIPBOARD_TIP]) {
-        self.showTips = NO;
-        [(id)self.parentViewController.parentViewController tip:self];
-    }
+//    if (self.tipView.alpha < 0.5) return [(id)self.parentViewController.parentViewController nextTip];
+//
+//    BRBubbleView *tipView = self.tipView;
+//
+//    self.tipView = nil;
+//    [tipView popOut];
+//
+//    if ([tipView.text hasPrefix:SCAN_TIP]) {
+//        self.tipView = [BRBubbleView viewWithText:CLIPBOARD_TIP
+//                                         tipPoint:CGPointMake(self.clipboardButton.center.x, self.clipboardButton.center.y + 10.0)
+//                                     tipDirection:BRBubbleTipDirectionDown];
+//        self.tipView.backgroundColor = tipView.backgroundColor;
+//        self.tipView.font = tipView.font;
+//        self.tipView.userInteractionEnabled = NO;
+//        [self.view addSubview:[self.tipView popIn]];
+//    }
+//    else if (self.showTips && [tipView.text hasPrefix:CLIPBOARD_TIP]) {
+//        self.showTips = NO;
+//        [(id)self.parentViewController.parentViewController tip:self];
+//    }
     
     return YES;
 }
@@ -932,9 +932,9 @@ static NSString *sanitizeString(NSString *s)
                 self.shapeshiftLabel.text = shapeshift.shapeshiftStatusString;
                 self.shapeshiftView.hidden = TRUE;
             }
-            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Shapeshift succeeded", nil)
-                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                   popOutAfterDelay:2.0]];
+//            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"Shapeshift succeeded", nil)
+//                                                        center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+//                                   popOutAfterDelay:2.0]];
             break;
         }
         case eShapeshiftAddressStatus_Received:
@@ -957,18 +957,18 @@ static NSString *sanitizeString(NSString *s)
 
 - (IBAction)tip:(id)sender
 {
-    if ([self nextTip]) return;
-    
-    if (! [sender isKindOfClass:[UIGestureRecognizer class]] || ! [[sender view] isKindOfClass:[UILabel class]]) {
-        if (! [sender isKindOfClass:[UIViewController class]]) return;
-        self.showTips = YES;
-    }
-    
-    self.tipView = [BRBubbleView viewWithText:SCAN_TIP
-                                     tipPoint:CGPointMake(self.scanButton.center.x, self.scanButton.center.y - 10.0)
-                                 tipDirection:BRBubbleTipDirectionDown];
-    self.tipView.font = [UIFont systemFontOfSize:14.0];
-    [self.view addSubview:[self.tipView popIn]];
+//    if ([self nextTip]) return;
+//
+//    if (! [sender isKindOfClass:[UIGestureRecognizer class]] || ! [[sender view] isKindOfClass:[UILabel class]]) {
+//        if (! [sender isKindOfClass:[UIViewController class]]) return;
+//        self.showTips = YES;
+//    }
+//
+//    self.tipView = [BRBubbleView viewWithText:SCAN_TIP
+//                                     tipPoint:CGPointMake(self.scanButton.center.x, self.scanButton.center.y - 10.0)
+//                                 tipDirection:BRBubbleTipDirectionDown];
+//    self.tipView.font = [UIFont systemFontOfSize:14.0];
+//    [self.view addSubview:[self.tipView popIn]];
 }
 
 - (IBAction)scanQR:(id)sender

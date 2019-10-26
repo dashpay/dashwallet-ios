@@ -20,9 +20,11 @@
 #import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
+#import "DWNavigationController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "DWUIKit.h"
+#import "DWURLParser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,11 +38,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (readonly, nonatomic, strong) DWRootModel *model;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 
-@property (null_resettable, nonatomic, strong) UIViewController *mainController;
+@property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
 
 @property (nonatomic, strong) UIImageView *overlayImageView;
 @property (nonatomic, strong) UIWindow *lockWindow;
-@property (nullable, nonatomic, weak) UIViewController *displayedLockController;
+@property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
+@property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -60,6 +63,22 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)setLaunchingAsDeferredController {
     self.launchingWasDeferred = YES;
+}
+
+- (void)handleURL:(NSURL *)url {
+    DWURLAction *action = [DWURLParser actionForURL:url];
+    if (!action) {
+        return;
+    }
+
+    if ([action isKindOfClass:DWURLScanQRAction.class]) {
+        if (self.lockController) {
+            [self.lockController performScanQRCodeAction];
+        }
+        else {
+            [self.mainController performScanQRCodeAction];
+        }
+    }
 }
 
 #pragma mark - Life Cycle
@@ -160,7 +179,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWLockScreenViewControllerDelegate
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
-    NSParameterAssert(self.displayedLockController);
+    NSParameterAssert(self.displayedLockNavigationController);
     self.overlayImageView.hidden = YES;
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
         animations:^{
@@ -186,7 +205,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - Private
 
 - (void)showLockControllerIfNeeded {
-    if (self.displayedLockController) {
+    if (self.displayedLockNavigationController) {
         return;
     }
 
@@ -218,7 +237,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     return controller;
 }
 
-- (UIViewController *)mainController {
+- (DWMainTabbarViewController *)mainController {
     if (_mainController == nil) {
         DWHomeModel *homeModel = self.model.homeModel;
         DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
@@ -231,22 +250,27 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
-    NSAssert(self.displayedLockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
 
     DWHomeModel *homeModel = self.model.homeModel;
     DWPayModel *payModel = homeModel.payModel;
     DWReceiveModel *receiveModel = homeModel.receiveModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
-    UIViewController *controller = [DWLockScreenViewController lockNavigationWithDelegate:self
-                                                                               unlockMode:mode
-                                                                                 payModel:payModel
-                                                                             receiveModel:receiveModel
-                                                                             dataProvider:dataProvider];
+    DWLockScreenViewController *controller = [DWLockScreenViewController lockScreenWithUnlockMode:mode
+                                                                                         payModel:payModel
+                                                                                     receiveModel:receiveModel
+                                                                                     dataProvider:dataProvider];
+    controller.delegate = self;
 
-    self.lockWindow.rootViewController = controller;
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+
+    self.lockWindow.rootViewController = navigationController;
     [self.lockWindow makeKeyAndVisible];
 
-    self.displayedLockController = controller;
+    self.lockController = controller;
+    self.displayedLockNavigationController = navigationController;
 }
 
 - (void)displayViewController:(UIViewController *)controller {

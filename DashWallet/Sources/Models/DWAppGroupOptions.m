@@ -19,6 +19,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// DWAppGroupOptions is used in App and extensions
+// Re-define DW_KEYPATH here to not include prefix.pch
+
+// Compile-time check for keypaths
+// More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
+#if DEBUG
+#define DW_KEYPATH(object, property) ((void)(NO && ((void)object.property, NO)), @ #property)
+#else
+#define DW_KEYPATH(object, property) @ #property
+#endif
+
 static NSString *const DW_APP_GROUP = @"group.org.dashfoundation.dash";
 
 @implementation DWAppGroupOptions

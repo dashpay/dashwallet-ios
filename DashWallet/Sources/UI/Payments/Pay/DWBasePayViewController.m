@@ -57,6 +57,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)performScanQRCodeAction {
+    if ([self.presentedViewController isKindOfClass:DWQRScanViewController.class]) {
+        return;
+    }
+
+    NSAssert(self.presentedViewController == nil, @"Attempt to present on VC which is already presenting %@",
+             self.presentedViewController);
+
     DWQRScanViewController *controller = [[DWQRScanViewController alloc] init];
     controller.model.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
