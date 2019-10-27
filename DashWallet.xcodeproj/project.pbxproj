@@ -3263,9 +3263,21 @@
 			path = FBShimmering;
 			sourceTree = SOURCE_ROOT;
 		};
+		FB3E9F622365D55700C09C5C /* Signing */ = {
+			isa = PBXGroup;
+			children = (
+				FB1BF8C522C6F4B7003413C6 /* DWSignMessageViewController.h */,
+				FB1BF8C622C6F4B7003413C6 /* DWSignMessageViewController.m */,
+				FB31C24F223BD3F500BD0868 /* DWSignPayloadViewController.h */,
+				FB31C246223BD3F200BD0868 /* DWSignPayloadViewController.m */,
+			);
+			path = Signing;
+			sourceTree = "<group>";
+		};
 		FB3FF0B0222641210059A9A5 /* Masternode Keys */ = {
 			isa = PBXGroup;
 			children = (
+				FB3E9F622365D55700C09C5C /* Signing */,
 				FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */,
 				FB31C23A223BCFAA00BD0868 /* DWMasternodeRootViewController.h */,
 				FB31C23B223BCFAA00BD0868 /* DWMasternodeRootViewController.m */,
@@ -3281,8 +3293,6 @@
 				FB31C23D223BD3F000BD0868 /* DWReclaimMasternodeViewController.m */,
 				FB31C23F223BD3F100BD0868 /* DWRegisterMasternodeViewController.h */,
 				FB31C247223BD3F200BD0868 /* DWRegisterMasternodeViewController.m */,
-				FB31C24F223BD3F500BD0868 /* DWSignPayloadViewController.h */,
-				FB31C246223BD3F200BD0868 /* DWSignPayloadViewController.m */,
 				FB31C241223BD3F100BD0868 /* DWUpdateMasternodeRegistrarViewController.h */,
 				FB31C250223BD3F500BD0868 /* DWUpdateMasternodeRegistrarViewController.m */,
 				FB31C244223BD3F200BD0868 /* DWUpdateMasternodeRevocationViewController.h */,
@@ -3293,8 +3303,6 @@
 				2AE125F7224113C600379C6F /* DWBaseMasternodeViewController.m */,
 				2AE125FE2241342900379C6F /* DWResultsMasternodeViewController.h */,
 				2AE125FF2241342900379C6F /* DWResultsMasternodeViewController.m */,
-				FB1BF8C522C6F4B7003413C6 /* DWSignMessageViewController.h */,
-				FB1BF8C622C6F4B7003413C6 /* DWSignMessageViewController.m */,
 				2AB66E0823572389007BE825 /* DerivationPathKeys */,
 				2AB66E0723572379007BE825 /* Overview */,
 			);

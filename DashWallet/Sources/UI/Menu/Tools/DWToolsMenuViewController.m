@@ -20,6 +20,7 @@
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWKeysOverviewViewController.h"
+#import "DWMasternodeViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
 
@@ -148,8 +149,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showMasternodeControl {
-    DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
-    [self.navigationController pushViewController:keysViewController animated:YES];
+    DWMasternodeViewController *masternodeViewController = [[DWMasternodeViewController alloc] init];
+    [self.navigationController pushViewController:masternodeViewController animated:YES];
 }
 
 @end
