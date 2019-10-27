@@ -18,82 +18,149 @@
 #import "DWKeysOverviewViewController.h"
 
 #import "DWDerivationPathKeysViewController.h"
+#import "DWFormTableViewController.h"
+#import "DWUIKit.h"
+#import "DWWalletKeysOverviewModel.h"
 #import <DashSync/DSAuthenticationKeysDerivationPath.h>
 #import <DashSync/DSDerivationPathFactory.h>
 #import <DashSync/DashSync.h>
 
-static NSString *const OwnerKeysSegueId = @"OwnerKeysSegue";
-static NSString *const VotingKeysSegueId = @"VotingKeysSegue";
-static NSString *const OperatorKeysSegueId = @"OperatorKeysSegue";
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWKeysOverviewViewController ()
 
-@property (strong, nonatomic) IBOutlet UILabel *ownerKeysTitleLabel;
-@property (strong, nonatomic) IBOutlet UILabel *votingKeysTitleLabel;
-@property (strong, nonatomic) IBOutlet UILabel *operatorKeysTitleLabel;
-@property (strong, nonatomic) IBOutlet UILabel *ownerKeysDetailLabel;
-@property (strong, nonatomic) IBOutlet UILabel *votingKeysDetailLabel;
-@property (strong, nonatomic) IBOutlet UILabel *operatorKeysDetailLabel;
-
-@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
-@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *votingDerivationPath;
-@property (strong, nonatomic) DSAuthenticationKeysDerivationPath *operatorDerivationPath;
+@property (null_resettable, nonatomic, strong) DWWalletKeysOverviewModel *model;
+@property (nonatomic, strong) DWFormTableViewController *formController;
 
 @end
 
 @implementation DWKeysOverviewViewController
 
 
-+ (instancetype)controller {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Masternode" bundle:nil];
-    DWKeysOverviewViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"KeysOverviewViewControllerIdentifier"];
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
+    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+        self.title = NSLocalizedString(@"Wallet Keys", nil);
+        self.hidesBottomBarWhenPushed = YES;
+    }
 
-    return controller;
+    return self;
+}
+
+- (DWWalletKeysOverviewModel *)model {
+    if (_model == nil) {
+        _model = [[DWWalletKeysOverviewModel alloc] init];
+    }
+
+    return _model;
+}
+
+
+- (NSArray<DWBaseFormCellModel *> *)items {
+    __weak typeof(self) weakSelf = self;
+
+    NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Owner Keys", nil)];
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                                        self.model.ownerDerivationPath.usedAddresses.count];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showOwnerKeys];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Voting Keys", nil)];
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                                        self.model.votingDerivationPath.usedAddresses.count];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showVotingKeys];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Operator Keys", nil)];
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+                                                        self.model.operatorDerivationPath.usedAddresses.count];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showOperatorKeys];
+        };
+        [items addObject:cellModel];
+    }
+
+    return items;
+}
+
+- (NSArray<DWFormSectionModel *> *)sections {
+    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+    section.items = [self items];
+
+    return @[ section ];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Wallet Keys", nil);
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
 
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
-    self.ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:wallet];
-    self.votingDerivationPath = [factory providerVotingKeysDerivationPathForWallet:wallet];
-    self.operatorDerivationPath = [factory providerOperatorKeysDerivationPathForWallet:wallet];
+    DWFormTableViewController *formController = [[DWFormTableViewController alloc] initWithStyle:UITableViewStylePlain];
+    [formController setSections:[self sections] placeholderText:nil];
 
-    self.tableView.tableFooterView = [[UIView alloc] init];
-
-    self.ownerKeysTitleLabel.text = NSLocalizedString(@"Owner Keys", nil);
-    self.votingKeysTitleLabel.text = NSLocalizedString(@"Voting Keys", nil);
-    self.operatorKeysTitleLabel.text = NSLocalizedString(@"Operator Keys", nil);
-    self.ownerKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
-                                                                self.ownerDerivationPath.usedAddresses.count];
-    self.votingKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
-                                                                 self.votingDerivationPath.usedAddresses.count];
-    self.operatorKeysDetailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
-                                                                   self.operatorDerivationPath.usedAddresses.count];
+    [self addChildViewController:formController];
+    formController.view.frame = self.view.bounds;
+    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:formController.view];
+    [formController didMoveToParentViewController:self];
+    self.formController = formController;
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    DSAuthenticationKeysDerivationPath *derivationPath = nil;
-    NSString *title = nil;
-    if ([segue.identifier isEqualToString:OwnerKeysSegueId]) {
-        derivationPath = self.ownerDerivationPath;
-        title = NSLocalizedString(@"Owner Keys", nil);
-    }
-    else if ([segue.identifier isEqualToString:VotingKeysSegueId]) {
-        derivationPath = self.votingDerivationPath;
-        title = NSLocalizedString(@"Voting Keys", nil);
-    }
-    else if ([segue.identifier isEqualToString:OperatorKeysSegueId]) {
-        derivationPath = self.operatorDerivationPath;
-        title = NSLocalizedString(@"Operator Keys", nil);
-    }
-    NSParameterAssert(derivationPath);
-    DWDerivationPathKeysViewController *controller = (DWDerivationPathKeysViewController *)segue.destinationViewController;
-    controller.derivationPath = derivationPath;
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - Private
+
+- (void)showOwnerKeys {
+    [self showDerivationPathKeysViewControllerWithDerivationPath:self.model.ownerDerivationPath
+                                                           title:NSLocalizedString(@"Owner Keys", nil)];
+}
+
+- (void)showVotingKeys {
+    [self showDerivationPathKeysViewControllerWithDerivationPath:self.model.votingDerivationPath
+                                                           title:NSLocalizedString(@"Voting Keys", nil)];
+}
+
+- (void)showOperatorKeys {
+    [self showDerivationPathKeysViewControllerWithDerivationPath:self.model.operatorDerivationPath
+                                                           title:NSLocalizedString(@"Operator Keys", nil)];
+}
+
+- (void)showDerivationPathKeysViewControllerWithDerivationPath:(DSAuthenticationKeysDerivationPath *)derivationPath title:(NSString *)title {
+    DWDerivationPathKeysViewController *controller = [[DWDerivationPathKeysViewController alloc] initWithDerivationPath:derivationPath];
     controller.title = title;
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
