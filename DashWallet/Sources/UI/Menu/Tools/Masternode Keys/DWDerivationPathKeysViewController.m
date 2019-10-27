@@ -16,41 +16,61 @@
 //
 
 #import "DWDerivationPathKeysViewController.h"
-#import "DWSignMessageViewController.h"
 
-#import <DashSync/DSAuthenticationKeysDerivationPath.h>
-#import <DashSync/DashSync.h>
+#import "DWDerivationPathKeysModel.h"
+#import "DWDerivationPathKeysTableViewCell.h"
+#import "DWSelectorFormTableViewCell.h"
+#import "DWUIKit.h"
+#import "UIView+DWHUD.h"
 
-static NSString *const KeyInfoCellId = @"KeyInfoCell";
-static NSString *const LoadMoreCellId = @"LoadMoreCell";
-static NSString *const SignMessageCellId = @"SignMessageCell";
-
-typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
-    DWDerivationPathInfo_Address,
-    DWDerivationPathInfo_PublicKey,
-    DWDerivationPathInfo_PrivateKey,
-    DWDerivationPathInfo_UsedOrNot,
-    DWDerivationPathInfo_SignMessage,
-    _DWDerivationPathInfo_Count,
-};
+NS_ASSUME_NONNULL_BEGIN
 
 @interface DWDerivationPathKeysViewController ()
 
+@property (readonly, nonatomic, strong) DWDerivationPathKeysModel *model;
 @property (nonatomic, assign) NSInteger visibleIndexes;
 
 @end
 
 @implementation DWDerivationPathKeysViewController
 
+- (instancetype)initWithDerivationPath:(DSAuthenticationKeysDerivationPath *)derivationPath {
+    self = [super initWithStyle:UITableViewStylePlain];
+    if (self) {
+        _model = [[DWDerivationPathKeysModel alloc] initWithDerivationPath:derivationPath];
+        self.derivationPath = derivationPath;
+        self.hidesBottomBarWhenPushed = YES;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
+    self.tableView.sectionHeaderHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedSectionHeaderHeight = 30.0;
+
+    NSArray<Class> *cellClasses = @[
+        DWSelectorFormTableViewCell.class,
+        DWDerivationPathKeysTableViewCell.class,
+    ];
+
+    for (Class cellClass in cellClasses) {
+        [self.tableView registerClass:cellClass forCellReuseIdentifier:NSStringFromClass(cellClass)];
+    }
 
     self.visibleIndexes = [self.derivationPath firstUnusedIndex] + 1;
 }
 
-#pragma mark - Table view data source
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+#pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return self.visibleIndexes + 1;
@@ -65,110 +85,70 @@ typedef NS_ENUM(NSUInteger, DWDerivationPathInfo) {
     }
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UITextView *labelTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+    labelTextView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+    labelTextView.textColor = [UIColor dw_darkTitleColor];
+    labelTextView.userInteractionEnabled = FALSE;
+    labelTextView.font = [UIFont dw_fontForTextStyle:UIFontTextStyleHeadline];
+    labelTextView.adjustsFontForContentSizeCategory = YES;
+    labelTextView.textAlignment = NSTextAlignmentCenter;
+    labelTextView.textContainerInset = UIEdgeInsetsMake(10, 0, 10, 0);
     if (section == self.visibleIndexes) {
-        return @"";
+        labelTextView.text = @" ";
     }
     else {
-        return [NSString stringWithFormat:@"%ld", section];
+        labelTextView.text = [NSString stringWithFormat:NSLocalizedString(@"Keypair %ld", nil), section];
     }
+    return labelTextView;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == self.visibleIndexes) {
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:LoadMoreCellId forIndexPath:indexPath];
-        cell.textLabel.text = NSLocalizedString(@"Load more", nil);
+        NSString *cellId = DWSelectorFormTableViewCell.dw_reuseIdentifier;
+        DWSelectorFormTableViewCell *cell = (DWSelectorFormTableViewCell *)[tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
+        cell.cellModel = self.model.loadMoreItem;
         return cell;
     }
     else {
-        UITableViewCell *cell;
+        NSString *cellId = DWDerivationPathKeysTableViewCell.dw_reuseIdentifier;
+        DWDerivationPathKeysTableViewCell *cell =
+            (DWDerivationPathKeysTableViewCell *)[tableView dequeueReusableCellWithIdentifier:cellId
+                                                                                 forIndexPath:indexPath];
 
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
         NSInteger index = indexPath.section;
         DWDerivationPathInfo info = indexPath.row;
-        switch (info) {
-            case DWDerivationPathInfo_Address: {
-                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
-                cell.textLabel.text = NSLocalizedString(@"Address", nil);
-                cell.detailTextLabel.text = [self.derivationPath addressAtIndex:index];
-
-                break;
-            }
-            case DWDerivationPathInfo_PublicKey: {
-                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
-                cell.textLabel.text = NSLocalizedString(@"Public key", nil);
-                cell.detailTextLabel.text = [self.derivationPath publicKeyDataAtIndex:index].hexString;
-
-                break;
-            }
-            case DWDerivationPathInfo_PrivateKey: {
-                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
-                cell.textLabel.text = NSLocalizedString(@"Private key", nil);
-                @autoreleasepool {
-
-                    NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated withPassphrase:nil];
-                    DSKey *key = [self.derivationPath privateKeyAtIndex:index fromSeed:seed];
-                    if ([key isKindOfClass:[DSECDSAKey class]]) {
-                        cell.detailTextLabel.text = [((DSECDSAKey *)key) privateKeyStringForChain:self.derivationPath.chain];
-                    }
-                    else {
-                        cell.detailTextLabel.text = key.secretKeyString;
-                    }
-                }
-                break;
-            }
-            case DWDerivationPathInfo_UsedOrNot: {
-                cell = [tableView dequeueReusableCellWithIdentifier:KeyInfoCellId forIndexPath:indexPath];
-                BOOL used = [self.derivationPath addressIsUsedAtIndex:index];
-                cell.textLabel.text = used ? NSLocalizedString(@"Used", nil) : NSLocalizedString(@"Not used", nil);
-                if (used) {
-                    DSLocalMasternode *localMasternode = [self.derivationPath.chain.chainManager.masternodeManager localMasternodeUsingIndex:index atDerivationPath:self.derivationPath];
-                    cell.detailTextLabel.text = localMasternode.ipAddressString;
-                }
-                else {
-                    cell.detailTextLabel.text = nil;
-                }
-
-
-                break;
-            }
-            case DWDerivationPathInfo_SignMessage: {
-                cell = [tableView dequeueReusableCellWithIdentifier:SignMessageCellId forIndexPath:indexPath];
-                cell.textLabel.text = NSLocalizedString(@"Sign Message", nil);
-
-                break;
-            }
-
-            default:
-                break;
-        }
+        id<DWDerivationPathKeysItem> item = [self.model itemForInfo:info atIndex:index];
+        cell.item = item;
 
         return cell;
     }
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == self.visibleIndexes) {
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+#pragma mark - UITableViewDataDelegate
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+    if (indexPath.section == self.visibleIndexes) {
         self.visibleIndexes += 1;
+
         [tableView beginUpdates];
         [tableView insertSections:[NSIndexSet indexSetWithIndex:self.visibleIndexes - 1] withRowAnimation:UITableViewRowAnimationAutomatic];
         [tableView endUpdates];
 
         [tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:self.visibleIndexes - 1] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
     }
-}
+    else {
+        DWDerivationPathKeysTableViewCell *cell =
+            (DWDerivationPathKeysTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+        id<DWDerivationPathKeysItem> item = cell.item;
+        [UIPasteboard generalPasteboard].string = item.detail;
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"SignMessageSegue"]) {
-        DWSignMessageViewController *signMessageViewController = (DWSignMessageViewController *)segue.destinationViewController;
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated withPassphrase:nil];
-        DSKey *key = [self.derivationPath privateKeyAtIndex:self.tableView.indexPathForSelectedRow.section fromSeed:seed];
-        signMessageViewController.key = key;
+        [self.view dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
     }
 }
 
-
 @end
+
+NS_ASSUME_NONNULL_END
