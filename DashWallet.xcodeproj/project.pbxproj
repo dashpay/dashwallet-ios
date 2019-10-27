@@ -1313,10 +1313,10 @@
 		FB31C268223BD9F400BD0868 /* DWMasternodeTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWMasternodeTableViewCell.h; sourceTree = "<group>"; };
 		FB3E9F612365C8DE00C09C5C /* DWSeedPhraseView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseView.h; sourceTree = "<group>"; };
 		FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Masternode.storyboard; sourceTree = "<group>"; };
-		FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWKeysOverviewViewController.h; sourceTree = "<group>"; };
-		FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWKeysOverviewViewController.m; sourceTree = "<group>"; };
-		FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDerivationPathKeysViewController.h; sourceTree = "<group>"; };
-		FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDerivationPathKeysViewController.m; sourceTree = "<group>"; };
+		FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DWKeysOverviewViewController.h; path = ../DWKeysOverviewViewController.h; sourceTree = "<group>"; };
+		FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DWKeysOverviewViewController.m; path = ../DWKeysOverviewViewController.m; sourceTree = "<group>"; };
+		FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DWDerivationPathKeysViewController.h; path = Models/DWDerivationPathKeysViewController.h; sourceTree = "<group>"; };
+		FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DWDerivationPathKeysViewController.m; path = Models/DWDerivationPathKeysViewController.m; sourceTree = "<group>"; };
 		FB4310ED1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/BREventConfirmView.strings; sourceTree = "<group>"; };
 		FB4310EE1FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Main.strings; sourceTree = "<group>"; };
 		FB4310F01FA027DB00784EBC /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -2738,6 +2738,8 @@
 		2AB66E0723572379007BE825 /* Overview */ = {
 			isa = PBXGroup;
 			children = (
+				FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */,
+				FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */,
 				2AB66E00235711FA007BE825 /* DWWalletKeysOverviewModel.h */,
 				2AB66E01235711FA007BE825 /* DWWalletKeysOverviewModel.m */,
 			);
@@ -2747,6 +2749,8 @@
 		2AB66E0823572389007BE825 /* DerivationPathKeys */ = {
 			isa = PBXGroup;
 			children = (
+				FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */,
+				FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */,
 				2AB66E0923572572007BE825 /* Models */,
 				2AB66E03235722E0007BE825 /* Cells */,
 			);
@@ -3263,10 +3267,6 @@
 			isa = PBXGroup;
 			children = (
 				FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */,
-				FB3FF0B3222642FB0059A9A5 /* DWKeysOverviewViewController.h */,
-				FB3FF0B4222642FB0059A9A5 /* DWKeysOverviewViewController.m */,
-				FB3FF0B622264DC60059A9A5 /* DWDerivationPathKeysViewController.h */,
-				FB3FF0B722264DC60059A9A5 /* DWDerivationPathKeysViewController.m */,
 				FB31C23A223BCFAA00BD0868 /* DWMasternodeRootViewController.h */,
 				FB31C23B223BCFAA00BD0868 /* DWMasternodeRootViewController.m */,
 				FB31C251223BD3F600BD0868 /* DWMasternodeDetailViewController.h */,

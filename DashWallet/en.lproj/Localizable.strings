@@ -564,9 +564,6 @@
 "Not owner" = "Not owner";
 
 /* No comment provided by engineer. */
-"Not used" = "Not used";
-
-/* No comment provided by engineer. */
 "Not voter" = "Not voter";
 
 /* No comment provided by engineer. */
@@ -889,9 +886,6 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
-
-/* No comment provided by engineer. */
-"Sign Message" = "Sign Message";
 
 /* No comment provided by engineer. */
 "Size:" = "Size:";

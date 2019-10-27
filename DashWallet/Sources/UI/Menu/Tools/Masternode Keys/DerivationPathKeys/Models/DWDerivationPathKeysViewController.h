@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) DSAuthenticationKeysDerivationPath *derivationPath;
 
+- (instancetype)initWithDerivationPath:(DSAuthenticationKeysDerivationPath *)derivationPath;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END
