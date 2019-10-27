@@ -208,7 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
 
         {
-            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show masternode keys", nil)];
+            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode control", nil)];
             cellModel.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -474,7 +474,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showMasternodeKeys {
     [DSEventManager saveEvent:@"settings:show_masternode_keys"];
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Masternode control", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
 //            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
 //            [self.navigationController pushViewController:keysViewController animated:YES];

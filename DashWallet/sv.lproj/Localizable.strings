@@ -465,6 +465,12 @@
 "Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
+"Masternode control" = "Masternode control";
+
+/* No comment provided by engineer. */
+"Masternode Control" = "Masternode Control";
+
+/* No comment provided by engineer. */
 "Masternode holding address" = "Masternode holding address";
 
 /* No comment provided by engineer. */
@@ -475,6 +481,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* No comment provided by engineer. */
+"Masternodes" = "Masternodes";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -496,6 +505,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Moved to Address";
+
+/* No comment provided by engineer. */
+"My Masternodes" = "My Masternodes";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -550,6 +562,9 @@
 
 /* No comment provided by engineer. */
 "Not owner" = "Not owner";
+
+/* No comment provided by engineer. */
+"Not used" = "Not used";
 
 /* No comment provided by engineer. */
 "Not voter" = "Not voter";
@@ -867,9 +882,6 @@
 "Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Show masternode keys";
-
-/* No comment provided by engineer. */
 "show phrase" = "visa fras";
 
 /* No comment provided by engineer. */
@@ -877,6 +889,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
 
 /* No comment provided by engineer. */
 "Size:" = "Size:";

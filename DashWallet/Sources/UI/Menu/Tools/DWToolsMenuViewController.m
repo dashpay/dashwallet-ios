@@ -84,6 +84,20 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode Control", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showMasternodeControl];
+        };
+        [items addObject:cellModel];
+    }
+
     return items;
 }
 
@@ -129,6 +143,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showMasternodeKeys {
+    DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
+    [self.navigationController pushViewController:keysViewController animated:YES];
+}
+
+- (void)showMasternodeControl {
     DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
     [self.navigationController pushViewController:keysViewController animated:YES];
 }
