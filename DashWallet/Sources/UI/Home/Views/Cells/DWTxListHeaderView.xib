@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWTxListHeaderView">
+            <connections>
+                <outlet property="contentView" destination="iN0-l3-epB" id="bIN-I0-SrY"/>
+                <outlet property="filterButton" destination="4tg-cy-qVc" id="ksb-ga-dIe"/>
+                <outlet property="titleLabel" destination="ZC8-Jv-iMQ" id="zVR-5y-h90"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="359" height="91"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N7t-da-e4z">
+                    <rect key="frame" x="16" y="0.0" width="327" height="91"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="246" verticalHuggingPriority="251" horizontalCompressionResistancePriority="752" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZC8-Jv-iMQ">
+                            <rect key="frame" x="0.0" y="16" width="299" height="59"/>
+                            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
+                            <color key="textColor" name="DarkTitleColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4tg-cy-qVc" customClass="DWButton">
+                            <rect key="frame" x="315" y="8" width="12" height="75"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                            <color key="tintColor" name="DashBlueColor"/>
+                            <inset key="imageEdgeInsets" minX="0.0" minY="2" maxX="-8" maxY="0.0"/>
+                            <state key="normal" image="icon_dropdown_arrow"/>
+                            <connections>
+                                <action selector="filterButtonAction:" destination="-1" eventType="touchUpInside" id="D1D-po-u2g"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="4tg-cy-qVc" secondAttribute="trailing" id="0fi-eR-Ruz"/>
+                        <constraint firstItem="ZC8-Jv-iMQ" firstAttribute="leading" secondItem="N7t-da-e4z" secondAttribute="leading" id="4e8-Kl-bfp"/>
+                        <constraint firstItem="4tg-cy-qVc" firstAttribute="leading" secondItem="ZC8-Jv-iMQ" secondAttribute="trailing" constant="16" id="M4c-F2-LF7"/>
+                        <constraint firstAttribute="bottom" secondItem="4tg-cy-qVc" secondAttribute="bottom" constant="8" id="YjV-IP-CDJ"/>
+                        <constraint firstItem="ZC8-Jv-iMQ" firstAttribute="top" secondItem="N7t-da-e4z" secondAttribute="top" constant="16" id="bEM-AT-MAp"/>
+                        <constraint firstItem="4tg-cy-qVc" firstAttribute="top" secondItem="N7t-da-e4z" secondAttribute="top" constant="8" id="o1g-pa-Os5"/>
+                        <constraint firstAttribute="bottom" secondItem="ZC8-Jv-iMQ" secondAttribute="bottom" constant="16" id="qU7-y2-1jF"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+            <constraints>
+                <constraint firstItem="N7t-da-e4z" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leadingMargin" id="BDE-U5-Cih"/>
+                <constraint firstItem="N7t-da-e4z" firstAttribute="trailing" secondItem="iN0-l3-epB" secondAttribute="trailingMargin" id="CT2-yt-Tlv"/>
+                <constraint firstItem="N7t-da-e4z" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="topMargin" id="ncV-5B-Euh"/>
+                <constraint firstItem="N7t-da-e4z" firstAttribute="bottom" secondItem="iN0-l3-epB" secondAttribute="bottomMargin" id="x9h-9S-hFR"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <edgeInsets key="layoutMargins" top="0.0" left="16" bottom="0.0" right="16"/>
+            <variation key="widthClass=regular">
+                <edgeInsets key="layoutMargins" top="0.0" left="20" bottom="0.0" right="20"/>
+            </variation>
+            <point key="canvasLocation" x="34.057971014492757" y="67.96875"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_dropdown_arrow" width="12" height="7"/>
+        <namedColor name="DarkTitleColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="DashBlueColor">
+            <color red="0.0" green="0.55294117647058827" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

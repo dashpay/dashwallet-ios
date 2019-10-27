@@ -6,13 +6,13 @@
 "4rD-ne-4oP.title" = "Ακύρωση";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
-"Gat-bm-t3w.text" = "Ανοίξτε την εφαρμογή dashwallet για να διαμορφώσετε το πορτοφόλι σας";
+"Gat-bm-t3w.text" = "Ανοιξτε την εφαρμογή dashwallet iPhone app για να διαμρφωσετε το πορτοφόλι σας";
 
 /* Class = "WKInterfaceButton"; title = "OK"; ObjectID = "R3B-Zx-omu"; */
 "R3B-Zx-omu.title" = "OK";
 
 /* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
-"VXj-KF-nqM.text" = "Ανοίξτε την εφαρμογή dashwallet για να διαμορφώσετε το πορτοφόλι σας";
+"VXj-KF-nqM.text" = "Ανοιξτε την εφαρμογή dashwallet iPhone app για να διαμρφωσετε το πορτοφόλι σας";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
 "ZKF-gb-hhm.title" = "Υπόλοιπο";

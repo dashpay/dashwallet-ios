@@ -26,7 +26,7 @@
 
 #import "DWTxHistoryViewController.h"
 #import "DWRootViewController.h"
-#import "DWTxDetailViewController.h"
+#import "DWOLDTxDetailViewController.h"
 #import "DWSeedViewController.h"
 #import "UIImage+Utils.h"
 #import <WebKit/WebKit.h>
@@ -348,7 +348,7 @@ static NSString *dateFormat(NSString *template)
 
 - (IBAction)scanQR:(id)sender
 {
-    //TODO: show scanner in settings rather than dismissing
+    //OLDTODO: show scanner in settings rather than dismissing
     [DSEventManager saveEvent:@"tx_history:scan_qr"];
     UINavigationController *nav = (id)self.navigationController.presentingViewController;
     
@@ -363,7 +363,7 @@ static NSString *dateFormat(NSString *template)
 - (IBAction)showTx:(id)sender
 {
     [DSEventManager saveEvent:@"tx_history:show_tx"];
-    DWTxDetailViewController *detailController
+    DWOLDTxDetailViewController *detailController
     = [self.storyboard instantiateViewControllerWithIdentifier:@"TxDetailViewController"];
     detailController.transaction = sender;
     detailController.txDateString = [self dateForTx:sender];
@@ -470,7 +470,7 @@ static NSString *dateFormat(NSString *template)
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
                 DWActionTableViewCell * actionCell = (DWActionTableViewCell *)cell;
-                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
+                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"More...", nil) :
                 NSLocalizedString(@"Transaction history", nil);
                 actionCell.imageIcon = [UIImage imageNamed:@"transaction-history"];
                 actionCell.selectedImageIcon = [UIImage imageNamed:@"transaction-history-selected"];
@@ -551,7 +551,6 @@ static NSString *dateFormat(NSString *template)
     DSTransaction *tx = self.transactions[indexPath.row];
     BOOL instantSendReceived = tx.instantSendReceived;
     BOOL processingInstantSend = tx.hasUnverifiedInstantSendLock;
-    uint32_t transactionLocksCount = [tx.transactionLockVotes count];
     uint64_t received = [account amountReceivedFromTransaction:tx],
     sent = [account amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];
@@ -805,7 +804,7 @@ static NSString *dateFormat(NSString *template)
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    //TODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
+    //OLDTODO: include an option to generate a new wallet and sweep old balance if backup may have been compromized
     UIViewController *destinationController = nil;
     
     switch (indexPath.section) {

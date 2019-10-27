@@ -12,13 +12,10 @@
 "%d confirmations" = "%d potvrdení";
 
 /* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffov/bajt";
+"%d duffs/byte" = "%d duffs/byte";
 
 /* No comment provided by engineer. */
-"%d out of %d lock votes" = "%1$d z %2$d zamknutých hlasov";
-
-/* No comment provided by engineer. */
-"%ld used" = "%ld sa už používa";
+"%ld used" = "%ld used";
 
 /* No comment provided by engineer. */
 "0 confirmations" = "0 potvrdení";
@@ -27,13 +24,13 @@
 "1 confirmation" = "1 potvrdenie";
 
 /* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/bajt";
+"1 duff/byte" = "1 duff/byte";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" nie je slovom obnovenia";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nak niekedy stratíte váš telefón, budete ho potrebovať pre obnovenie vašej peňaženky";
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nak niekedy stratíte Váš telefón, budete ho potrebovať pre obnovenie Vašej peňaženky";
 
 /* No comment provided by engineer. */
 "\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nNa zabezpečenie vašej peňaženky je potrebný prístupový kód zariadenia. Ak chcete pokračovať, prejdite na nastavenia a zapnite prístupový kód.";
@@ -45,46 +42,73 @@
 "\ntry again in %@" = "\nskúsiť znova za %@";
 
 /* No comment provided by engineer. */
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+
+/* No comment provided by engineer. */
 "About" = "O programe";
 
 /* No comment provided by engineer. */
-"accepted by quorum" = "akceptované kvórom";
+"accepted by quorum" = "accepted by quorum";
 
 /* No comment provided by engineer. */
 "Action Needed" = "Vyžaduje sa akcia";
 
-/* No comment provided by engineer. */
-"Address" = "Adresa";
+/* Translate it as short as possible! (24 symbols max) */
+"Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
-"ADVANCED" = "POKROČILÉ";
+"Address" = "Address";
 
 /* No comment provided by engineer. */
-"always require passcode" = "vždy vyžadovať číselné heslo";
+"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
-"Amount" = "Suma";
+"All" = "All";
 
 /* No comment provided by engineer. */
-"amount too small" = "príliš malá suma";
+"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting a payment to" = "Aplikácia %@ požaduje platbu pre";
+"Always require passcode" = "Always require passcode";
 
 /* No comment provided by engineer. */
-"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Aplikácia %@ požaduje adresu, aby Vám mohla zaplatiť. Chcete to povoliť?";
+"Amount" = "Amount";
 
 /* No comment provided by engineer. */
-"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Aplikácia %@ by chcela získať váš hlavný verejný kľúč. Môže byť použitý na sledovanie peňaženky, ale nedá sa použiť na presun vašich Dashov.";
+"Amount Received" = "Amount Received";
+
+/* No comment provided by engineer. */
+"Amount Sent" = "Amount Sent";
+
+/* No comment provided by engineer. */
+"Amount too small" = "Amount too small";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
 
 /* No comment provided by engineer. */
 "Are you sure?" = "Ste si istý?";
 
 /* No comment provided by engineer. */
-"available" = "dostupné";
+"Authentication is unvailable" = "Authentication is unvailable";
 
 /* No comment provided by engineer. */
-"bad recovery phrase" = "zlá fráza pre obnovenie";
+"Available" = "Available";
+
+/* No comment provided by engineer. */
+"Available balance" = "Available balance";
+
+/* No comment provided by engineer. */
+"Backup Wallet" = "Backup Wallet";
+
+/* No comment provided by engineer. */
+"Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin adresa (shapeshift)";
@@ -93,124 +117,163 @@
 "block #%d of %d" = "blok #%1$d z %2$d";
 
 /* No comment provided by engineer. */
+"Buy & Sell Dash" = "Buy & Sell Dash";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Buy / Sell Dash" = "Buy / Sell Dash";
+
+/* No comment provided by engineer. */
 "Buy Dash" = "Kúpiť Dash";
 
 /* No comment provided by engineer. */
 "Buy dash in dashwallet!" = "Kúpiť Dash v Dash peňaženke!";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Kúpiť Dash s účtom na Upholde";
+"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Vyčistením tohto zariadenia už nebudete mať prístup k prostriedkom na tomto zariadení. Toto by sa malo robiť len vtedy, ak už nemáte prístup k vašej prístupovej fráze a zabudli ste aj váš PIN kód.";
-
-/* No comment provided by engineer. */
-"cancel" = "zrušiť";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Vyčistením tohto zariadenia už nebudete mať prístup k prostriedkom na tomto zariadení. Toto by sa malo robiť len vtedy, ak už nemáte prístup k vašej prístupovej fráze a zabudli ste aj Váš PIN kód.";
 
 /* No comment provided by engineer. */
 "Cancel" = "Zrušiť";
 
 /* No comment provided by engineer. */
-"change" = "zmeniť";
+"Change" = "Change";
 
 /* No comment provided by engineer. */
 "Change passcode" = "Zmeniť prístupový kód";
 
 /* No comment provided by engineer. */
-"change payment amount?" = "zmeniť sumu platby?";
+"Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
-"checking address balance..." = "kontrola zostatku adresy...";
+"Change PIN" = "Change PIN";
 
 /* No comment provided by engineer. */
-"checking private key balance..." = "kontrola zostatku súkromného kľúča...";
+"Check your connection" = "Check your connection";
 
 /* No comment provided by engineer. */
-"Classical Transaction" = "Klasická transakcia";
+"Checking address balance..." = "Checking address balance...";
 
 /* No comment provided by engineer. */
-"clear" = "vymazať";
+"Checking private key balance..." = "Checking private key balance...";
 
 /* No comment provided by engineer. */
-"clear trusted node?" = "zmazať dôveryhodný uzol?";
+"Classical Transaction" = "Classical Transaction";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash address" = "schránka neobsahuje platnú dash adresu";
+"Clear" = "Clear";
 
 /* No comment provided by engineer. */
-"clipboard doesn't contain a valid dash or bitcoin address" = "schránka neobsahuje platnú dash alebo bitcoin adresu";
+"Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"close app" = "ukončiť applikáciu";
+"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Coinbase transakcia";
+"Clipboard doesn't contain a valid dash or bitcoin address" = "Clipboard doesn't contain a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
+"Close" = "Close";
+
+/* No comment provided by engineer. */
+"Close app" = "Close app";
+
+/* No comment provided by engineer. */
+"Close App" = "Close App";
+
+/* No comment provided by engineer. */
+"Coinbase Transaction" = "Coinbase Transaction";
 
 /* Confirm */
 "Confirm" = "Potvrdiť";
 
 /* No comment provided by engineer. */
-"confirm" = "potvrdiť:";
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Potvrdiť transakciu";
+"Confirm transaction" = "Confirm transaction";
 
 /* No comment provided by engineer. */
 "confirmed in block #%d" = "potvrdené v bloku #%d";
 
 /* No comment provided by engineer. */
-"copied" = "skopírované";
+"Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
-"copy" = "skopírovať";
+"Contact Support" = "Contact Support";
 
 /* No comment provided by engineer. */
-"copy address to clipboard" = "kopírovať adresu do systémovej schránky";
+"Continue" = "Continue";
 
 /* No comment provided by engineer. */
-"copy request to clipboard" = "kopírovať požiadavok do systémovej schránky";
+"Copied" = "Copied";
 
 /* No comment provided by engineer. */
-"copy wallet addresses to clipboard?" = "kopírovať adresy peňaženky do systémovej schránky?";
+"Copy" = "Copy";
 
 /* No comment provided by engineer. */
-"couldn't check address balance" = "nedá sa skontrolovať zostatok na adrese";
+"Copy address to clipboard" = "Copy address to clipboard";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "platba sa nedá uskutočniť ";
+"Copy request to clipboard" = "Copy request to clipboard";
 
 /* No comment provided by engineer. */
-"couldn't sweep balance" = "nedá sa nečítať zostatok";
+"Copy wallet addresses to clipboard?" = "Copy wallet addresses to clipboard?";
 
 /* No comment provided by engineer. */
-"couldn't transmit payment to dash network" = "platba sa nedá preniesť do dash siete";
+"Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
+
+/* No comment provided by engineer. */
+"Couldn't check address balance" = "Couldn't check address balance";
+
+/* No comment provided by engineer. */
+"Couldn't make payment" = "Couldn't make payment";
+
+/* No comment provided by engineer. */
+"Couldn't sweep balance" = "Couldn't sweep balance";
+
+/* No comment provided by engineer. */
+"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+
+/* No comment provided by engineer. */
+"Create a New Wallet" = "Create a New Wallet";
 
 /* No comment provided by engineer. */
 "CRITICAL" = "KRITICKĚ";
 
 /* No comment provided by engineer. */
+"Customize Shortcuts" = "Customize Shortcuts";
+
+/* No comment provided by engineer. */
 "Dash address" = "Dash adresa";
 
 /* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash adresy môžu byť tiež skopírovať do schránky. Dash adresa začína vždy \"X\" alebo \"7\".";
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'.";
 
 /* No comment provided by engineer. */
-"dash network fee" = "sieťový poplatok Dash";
+"Dash network fee" = "Dash network fee";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash platby nemôžu byť menšie ako %@";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ZABEZPEČENIE ZARIADENIA KOMPROMITOVANÉ\nKaždá \"jailbreak\" aplikácia môže pristupovať k údajom o kľúčových reťazcoch každej inej aplikácie (a ukradnúť vaše dashe).";
+"Date" = "Date";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "ZABEZPEČENIE ZARIADENIA KOMPROMITOVANÉ\nKaždá \"jailbreak\" aplikácia môže pristupovať k údajom o kľúčových reťazcoch každej inej aplikácie (a ukradnúť vaše dash). Zmažte urýchlene túto peňaženku a obnovte zabezpečenie zariadenia.";
+"Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
 /* No comment provided by engineer. */
-"do it later" = "vykonať neskôr";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash).";
 
 /* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "NEDOVOĽTE, aby niekto videl vašu frázu pre obnovenie, lebo by mohol minúť vaše Dashe.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device.";
+
+/* No comment provided by engineer. */
+"Do it later" = "Do it later";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "NEDOVOĽTE, aby niekto videl Vašu frázu pre obnovenie, lebo by mohol minúť Vaše Dashe.";
 
 /* No comment provided by engineer. */
 "DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "Nepoužívajte snímku obrazovky. Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia.";
@@ -219,34 +282,52 @@
 "Done" = "Hotovo";
 
 /* No comment provided by engineer. */
-"double spend" = "dvojité minutie";
+"Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mailový klient nie je nakonfigurovaný. Pridajte váš e-mailový účet v časti Nastavenia";
+"double spend" = "double spend";
 
 /* No comment provided by engineer. */
-"email not configured" = "email nie je nastavený";
+"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
 
 /* No comment provided by engineer. */
-"Enable advanced features" = "Povoliť rozšírené funkcie";
+"Email not configured" = "Email not configured";
 
 /* No comment provided by engineer. */
-"Enable advanced features?" = "Povoliť rozšírené funkcie?";
+"Enable advanced features" = "Enable advanced features";
+
+/* No comment provided by engineer. */
+"Enable advanced features?" = "Enable advanced features?";
+
+/* No comment provided by engineer. */
+"Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
 "Enable receive notifications" = "Povoliť upozornenia pri prijatí";
 
 /* No comment provided by engineer. */
-"enter" = "zadať";
+"Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Nižšie zadajte sumu, ktorú chcete previesť";
+"Enable Touch ID" = "Enable Touch ID";
 
 /* No comment provided by engineer. */
-"Enter your 2FA code below" = "Nižšie zadajte váš 2FA kód";
+"Enter" = "Enter";
 
 /* No comment provided by engineer. */
-"exit" = "ukončiť";
+"Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
+"Enter Recovery Phrase" = "Enter Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Enter the amount to transfer below" = "Enter the amount to transfer below";
+
+/* No comment provided by engineer. */
+"Enter your 2FA code below" = "Enter your 2FA code below";
+
+/* No comment provided by engineer. */
+"Exit" = "Exit";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Limit pre Face ID";
@@ -258,40 +339,64 @@
 "Failed wallet update" = "Zlyhala aktualizácia peňaženky";
 
 /* No comment provided by engineer. */
-"Fee" = "Poplatok";
+"Fee" = "Fee";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Poplatok je väčší ako zostatok";
+"Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Poplatok bude odpočítaný z požadovanej sumy";
+"Fee will be deducted from requested amount" = "Fee will be deducted from requested amount";
 
 /* No comment provided by engineer. */
-"from:" = "od:";
+"Filter Transactions" = "Filter Transactions";
+
+/* No comment provided by engineer. */
+"Forgot PIN?" = "Forgot PIN?";
+
+/* No comment provided by engineer. */
+"From:" = "From:";
 
 /* No comment provided by engineer. */
 "GENERAL" = "VŠEOBECNÉ";
 
 /* No comment provided by engineer. */
-"Go to Website" = "Prejsť na webovú stránku";
+"Go to Website" = "Go to Website";
 
 /* No comment provided by engineer. */
-"holding funds index:" = "index držania zdrojov:";
+"Help us improve your experience" = "Help us improve your experience";
+
+/* No comment provided by engineer. */
+"History" = "History";
+
+/* No comment provided by engineer. */
+"Holding funds index:" = "Holding funds index:";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Akceptujem, že stratím svoje mince v prípade, že už nedržím frázu pre obnovenie";
 
 /* No comment provided by engineer. */
-"id:" = "id:";
+"I wrote it down" = "I wrote it down";
+
+/* No comment provided by engineer. */
+"ID:" = "ID:";
+
+/* No comment provided by engineer. */
+"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Ak si ju stále prajete zmazať, prosím zadajte: \"%@\"";
 
 /* No comment provided by engineer. */
-"ignore" = "ignorovať";
+"Ignore" = "Ignore";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
 "Import private key" = "Importovať privátny kľúč";
+
+/* No comment provided by engineer. */
+"Import private key…" = "Import private key…";
 
 /* No comment provided by engineer. */
 "IMPORTANT" = "DÔLEŽITÉ ";
@@ -300,76 +405,115 @@
 "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "V predchádzajúcej verzii Dash peňaženky, keď sme na začiatku zobrazovali prístupovú frázu na tomto zariadení, sme zistili, že táto aplikácia nesprávne zobrazila všetkých 12 slov. Znova zadajte úplnú prístupovú frázu.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Nedostatok prostriedkov";
+"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
+"Insufficient Funds" = "Insufficient Funds";
 
 /* No comment provided by engineer. */
 "INVALID" = "NEPLATNÉ";
 
 /* No comment provided by engineer. */
-"Invalid amount" = "Neplatná suma";
+"Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP adresa/port:";
+"IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Umožnite ostatným skenovať tento QR kód, aby získali vašu dash adresu. Ktokoľvek môže poslať dash do peňaženky tým, že ho presunie na vašu adresu.";
+"It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
-"Link Uphold Account" = "Pripojiť Uphold účet";
+"Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
-"Load more" = "Načítať viac";
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address.";
+
+/* No comment provided by engineer. */
+"Link Uphold Account" = "Link Uphold Account";
+
+/* No comment provided by engineer. */
+"Load more" = "Load more";
 
 /* No comment provided by engineer. */
 "Local currency" = "Miestna mena";
 
-/* No comment provided by engineer. */
-"Locked" = "Uzamknuté";
+/* Translate it as short as possible! (24 symbols max) */
+"Local Currency" = "Local Currency";
 
 /* No comment provided by engineer. */
-"locked with InstantSend" = "uzamknutá cez InstantSend";
+"Local requested amount: %@" = "Local requested amount: %@";
 
 /* No comment provided by engineer. */
-"Log Out" = "Odhlásiť";
+"Locked" = "Locked";
 
 /* No comment provided by engineer. */
-"Log out from Uphold" = "Odhlásiť s Upholdu";
+"locked with InstantSend" = "locked with InstantSend";
 
 /* No comment provided by engineer. */
-"masternode holding address" = "adresa držiteľa masternódu";
+"Log Out" = "Log Out";
 
 /* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Registračná transakcia Masternódu";
+"Log out from Uphold" = "Log out from Uphold";
 
 /* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Registračná transakcia aktualizácie Masternódu";
+"Login with Face ID" = "Login with Face ID";
 
 /* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Servisná transakcia aktualizácie Masternódu";
+"Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
-"Masternodes" = "Masternodes";
+"Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
-"more..." = "viac...";
+"Masternode holding address" = "Masternode holding address";
+
+/* No comment provided by engineer. */
+"Masternode Registration Transaction" = "Masternode Registration Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Registrar Transaction" = "Masternode Update Registrar Transaction";
+
+/* No comment provided by engineer. */
+"Masternode Update Service Transaction" = "Masternode Update Service Transaction";
+
+/* Contracted variant of 'Maximum' word */
+"Max" = "Max";
+
+/* No comment provided by engineer. */
+"More" = "More";
+
+/* No comment provided by engineer. */
+"More..." = "More...";
 
 /* No comment provided by engineer. */
 "Moved" = "Presunuté";
 
 /* No comment provided by engineer. */
-"My Masternodes" = "My Masternodes";
+"Moved from" = "Moved from";
 
 /* No comment provided by engineer. */
-"Network" = "Sieť";
+"Moved internally to" = "Moved internally to";
+
+/* No comment provided by engineer. */
+"Moved to Address" = "Moved to Address";
+
+/* No comment provided by engineer. */
+"Network" = "Network";
+
+/* No comment provided by engineer. */
+"Network fee" = "Network fee";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NIKDY nezadávajte frázu pre obnovenie do správcov hesiel alebo inde. Iné zariadenia môžu byť infikované.";
 
 /* No comment provided by engineer. */
-"new public key:" = "nový verejný kľúč:";
+"New public key:" = "New public key:";
 
 /* No comment provided by engineer. */
-"next, write down your recovery phrase" = "ako ďalšie si zapíšte svoju frázu pre obnovenie";
+"next, write down your recovery phrase" = "next, write down your recovery phrase";
+
+/* No comment provided by engineer. */
+"NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash address" = "NFC zariadenie nevyslalo validnú dash adresu";
@@ -378,295 +522,469 @@
 "NFC device didn't transmit a valid dash or bitcoin address" = "NFC zariadenie nevyslalo validnú dash alebo bitcoin adresu";
 
 /* No comment provided by engineer. */
-"no exchange rate data" = "žiadne údaje o výmenných kurzoch";
+"No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
-"node ip" = "ip uzla";
+"no exchange rate data" = "no exchange rate data";
 
 /* No comment provided by engineer. */
-"not a dash or bitcoin QR code" = "nie je to dash alebo bitcoin QR kód";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
-"not a dash QR code" = "nie je dash QR kód";
+"Not a dash URL" = "Not a dash URL";
 
 /* No comment provided by engineer. */
-"not a valid bitcoin address" = "nie je to platná bitcoinová adresa";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
-"not a valid dash address" = "nie je to platná dash adresa";
+"Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
-"not a valid dash or bitcoin address" = "nie je to platná dash alebo bitcoinová adresa";
+"Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
 
 /* No comment provided by engineer. */
-"not operator" = "nie je operátor";
+"not operator" = "not operator";
 
 /* No comment provided by engineer. */
-"not owner" = "nie je vlastník";
+"Not operator" = "Not operator";
 
 /* No comment provided by engineer. */
-"Not used" = "Not used";
+"Not owner" = "Not owner";
 
 /* No comment provided by engineer. */
-"not voter" = "nehlasuje";
+"Not voter" = "Not voter";
+
+/* No comment provided by engineer. */
+"not voter" = "not voter";
+
+/* No comment provided by engineer. */
+"Not yet used" = "Not yet used";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"ok" = "ok";
+"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Povolte pokročilé funkcie, iba ak ste oboznámení s technológiou blockchainu.\nAk sú povolené, používajte iba pokročilé funkcie, ktorým rozumiete.";
+"Operator key index:" = "Operator key index:";
 
 /* No comment provided by engineer. */
-"operator key index:" = "index kľúča operátora:";
+"Operator key:" = "Operator key:";
 
 /* No comment provided by engineer. */
-"operator key:" = "kľúč operátora:";
+"Operator Keys" = "Operator Keys";
 
 /* No comment provided by engineer. */
-"Operator Keys" = "Kľúče operátora";
+"Owner Address" = "Owner Address";
 
 /* No comment provided by engineer. */
-"owner key hash:" = "hash kľúča vlastníka:";
+"Owner key hash:" = "Owner key hash:";
 
 /* No comment provided by engineer. */
-"owner key index:" = "index kľúča vlastníka:";
+"Owner key index:" = "Owner key index:";
 
 /* No comment provided by engineer. */
-"Owner Keys" = "Kľúče vlastníka";
+"Owner Keys" = "Owner Keys";
+
+/* No comment provided by engineer. */
+"Paid successfully" = "Paid successfully";
 
 /* No comment provided by engineer. */
 "Pay" = "Zaplatiť";
 
-/* No comment provided by engineer. */
-"payload:" = "zaťaženie:";
+/* Pay by (scanning QR code) */
+"Pay by" = "Pay by";
 
 /* No comment provided by engineer. */
-"payment address" = "platobná adresa";
+"Pay to" = "Pay to";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay to Address" = "Pay to Address";
 
 /* No comment provided by engineer. */
-"payment output" = "platobný výstup";
+"Pay to copied address" = "Pay to copied address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Pay with NFC" = "Pay with NFC";
 
 /* No comment provided by engineer. */
-"payout Address" = "Adresa platby";
+"Payload:" = "Payload:";
 
 /* No comment provided by engineer. */
-"payout address:" = "adresa platby:";
+"Payment address" = "Payment address";
 
 /* No comment provided by engineer. */
-"Pending" = "Čakajúce";
+"Payment output" = "Payment output";
+
+/* No comment provided by engineer. */
+"Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payout Address" = "Payout Address";
+
+/* No comment provided by engineer. */
+"Payout address:" = "Payout address:";
 
 /* No comment provided by engineer. */
 "pending" = "čakajúce";
 
 /* No comment provided by engineer. */
+"Pending" = "Pending";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "Pre inováciu peňaženky zadajte pin";
 
 /* No comment provided by engineer. */
-"please enter pin to upgrade wallet" = "pre inováciu peňaženky zadajte pin";
+"Please place your phone near NFC device." = "Umiestnite Váš telefón blízko NFC zariadenia.";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Umiestnite váš telefón blízko NFC zariadenia.";
+"Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
 
 /* No comment provided by engineer. */
-"Private key" = "Privátny kľúč";
+"Please try again" = "Please try again";
 
 /* No comment provided by engineer. */
-"processing" = "spracováva sa";
+"Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
-"Processing" = "Spracováva sa";
+"Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
-"Public key" = "Verejný kľúč";
+"Previously last used at IP address" = "Previously last used at IP address";
 
 /* No comment provided by engineer. */
-"public key:" = "verejný kľúč:";
+"Previously used at IP address" = "Previously used at IP address";
 
 /* No comment provided by engineer. */
-"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "rýchlosť: %1$@ = %2$@\naktualizované: %3$@\nblok #%4$d z %5$d\npripojených uzlov: %6$d\ndl uzol: %7$@\npotvrdené kvórami: %8$d/%9$d";
+"Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "Prijať dash na tejto adrese: %@";
+"Processing" = "Processing";
+
+/* No comment provided by engineer. */
+"processing" = "processing";
+
+/* No comment provided by engineer. */
+"Provider Address" = "Provider Address";
+
+/* No comment provided by engineer. */
+"Public key" = "Public key";
+
+/* No comment provided by engineer. */
+"Public key:" = "Public key:";
+
+/* No comment provided by engineer. */
+"Quick Receive" = "Quick Receive";
+
+/* No comment provided by engineer. */
+"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "Rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+
+/* No comment provided by engineer. */
+"Receive" = "Receive";
+
+/* No comment provided by engineer. */
+"Receive dash at this address: %@" = "Receive dash at this address: %@";
 
 /* No comment provided by engineer. */
 "Received" = "Prijté";
 
 /* No comment provided by engineer. */
-"received %@ (%@)" = "prijaté %1$@ (%2$@)";
+"Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "nedávno vyťažené (zamknuté)";
+"Received at" = "Received at";
+
+/* No comment provided by engineer. */
+"Received from" = "Received from";
+
+/* No comment provided by engineer. */
+"recently mined (locked)" = "recently mined (locked)";
+
+/* No comment provided by engineer. */
+"Recover Wallet" = "Recover Wallet";
+
+/* No comment provided by engineer. */
+"Recovery Phrase" = "Recovery Phrase";
 
 /* Recovery phrase */
 "Recovery phrase" = "Fráza pre obnovenie";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "fráza pre obnovenie sa nezhoduje";
+"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
 
 /* No comment provided by engineer. */
-"recovery phrase must have %d words" = "fráza pre obnovenie musí mať %d slov";
+"Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
-"registration tx:" = "registračná tx:";
+"Registered from" = "Registered from";
+
+/* No comment provided by engineer. */
+"Registered Masternode" = "Registered Masternode";
+
+/* No comment provided by engineer. */
+"Registration tx:" = "Registration tx:";
 
 /* No comment provided by engineer. */
 "Remind me later" = "Pripomenúť neskôr";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Report an Issue" = "Report an Issue";
 
 /* No comment provided by engineer. */
 "Request" = "Požiadavok";
 
 /* No comment provided by engineer. */
-"request an amount" = "požiadať o čiastku";
+"Request an amount" = "Request an amount";
 
 /* No comment provided by engineer. */
-"rescan" = "pre-skenovať";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Rescan blockchain" = "Znova prehľadať blockchain";
+"Rescan blockchain" = "Znova prehľadať reťazec blokov";
 
 /* No comment provided by engineer. */
-"reset" = "vynulovať";
+"Rescan Blockchain" = "Rescan Blockchain";
+
+/* No comment provided by engineer. */
+"Reset" = "Reset";
+
+/* No comment provided by engineer. */
+"Reset Wallet" = "Reset Wallet";
+
+/* No comment provided by engineer. */
+"Review & Rate the app" = "Review & Rate the app";
+
+/* No comment provided by engineer. */
+"Scan" = "Scan";
+
+/* No comment provided by engineer. */
+"Scan Private Key" = "Scan Private Key";
+
+/* No comment provided by engineer. */
+"Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
 "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Skenovať niekoho iného QR kód, aby ste získali ich dash adresu. Platbu môžete poslať komukoľvek kto má adresu.";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Skenovať QR kód niekoho iného, aby ste získali ich dash alebo bitcoinovú adresu. Platbu môžete poslať komukoľvek, kto má adresu.";
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia. Vytvorte novú frázu obnovenia a držte ju v tajnosti.";
+"Scan this to Pay" = "Scan this to Pay";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Scan to Pay" = "Scan to Pay";
+
+/* (Pay by) Scanning QR code */
+"Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Snímky obrazovky sú viditeľné pre iné aplikácie a zariadenia. Vaše finančné prostriedky sú ohrozené. Preneste svoj zostatok do inej peňaženky.";
+"Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "Ukázať na Upholde";
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "videné %1$d z %2$d rovesníkov";
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet.";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Odoslať %1$@ (%2$@) z tohto privátneho kľúča do peňaženky? Sieť dash obdrží poplatok %3$@ (%4$@).";
+"Secure now" = "Secure now";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
-"send address as email" = "odoslať adresu ako e-mail";
+"Security" = "Security";
 
 /* No comment provided by engineer. */
-"send address as message" = "odoslať adresu ako správu";
+"See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
-"send crash report" = "poslať správu o chybe";
+"seen by %d of %d peers" = "seen by %1$d of %2$d peers";
 
 /* No comment provided by engineer. */
-"send request as email" = "odoslať žiadosť ako e-mail";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
-"send request as message" = "odoslať žiadosť ako správu";
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The dash network will receive a fee of %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"Send address as email" = "Send address as email";
+
+/* No comment provided by engineer. */
+"Send address as message" = "Send address as message";
+
+/* No comment provided by engineer. */
+"Send crash report" = "Send crash report";
+
+/* No comment provided by engineer. */
+"Send request as email" = "Send request as email";
+
+/* No comment provided by engineer. */
+"Send request as message" = "Send request as message";
 
 /* No comment provided by engineer. */
 "Sent" = "Poslané";
 
 /* No comment provided by engineer. */
-"sent!" = "poslané!";
+"Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
-"set a trusted node" = "nastaviť dôveryhodný uzol";
+"Sent to" = "Sent to";
+
+/* No comment provided by engineer. */
+"Sent!" = "Sent!";
+
+/* No comment provided by engineer. */
+"Set a trusted node" = "Set a trusted node";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "Nastavenia";
 
 /* No comment provided by engineer. */
-"shapeshift bitcoin id:" = "shapeshift bitcoin id:";
+"Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"shapeshift status:" = "shapeshift status:";
+"Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
 
 /* No comment provided by engineer. */
-"shapeshift succeeded" = "shapeshift úspešný";
+"Shapeshift status:" = "Shapeshift status:";
 
 /* No comment provided by engineer. */
-"show" = "zobraziť";
+"Shapeshift succeeded" = "Shapeshift succeeded";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Zobraziť kľúče masternódu";
+"Share" = "Share";
 
 /* No comment provided by engineer. */
-"show phrase" = "ukázať frázu";
+"Show" = "Show";
 
 /* No comment provided by engineer. */
-"Sign Message" = "Sign Message";
+"Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
-"size:" = "veľkosť:";
+"Show masternode keys" = "Show masternode keys";
 
 /* No comment provided by engineer. */
-"sms not currently available" = "sms nie je momentálne dostupná";
+"show phrase" = "show phrase";
 
 /* No comment provided by engineer. */
-"Something went wrong" = "Niečo sa pokazilo";
+"Show phrase" = "Show phrase";
 
 /* No comment provided by engineer. */
-"spent address" = "adresa pre míňanie";
+"Show Recovery Phrase" = "Show Recovery Phrase";
 
 /* No comment provided by engineer. */
-"spent input" = "minutý vstup";
+"Size:" = "Size:";
+
+/* No comment provided by engineer. */
+"Skip" = "Skip";
+
+/* No comment provided by engineer. */
+"SMS not currently available" = "SMS not currently available";
+
+/* No comment provided by engineer. */
+"Something went wrong" = "Something went wrong";
+
+/* No comment provided by engineer. */
+"Specify Amount" = "Specify Amount";
+
+/* No comment provided by engineer. */
+"Spent address" = "Spent address";
+
+/* No comment provided by engineer. */
+"Spent input" = "Spent input";
 
 /* No comment provided by engineer. */
 "Start / Recover another wallet" = "Spustiť/obnoviť ďalšiu peňaženku";
 
 /* No comment provided by engineer. */
-"status:" = "stav:";
+"Status:" = "Status:";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Kroky na reprodukciu chyby";
+"Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
-"Success" = "Úspešné";
+"Success" = "Success";
 
 /* No comment provided by engineer. */
-"swept!" = "načítať!";
+"Swept!" = "Swept!";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Mainnet" = "Switch to Mainnet";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch to Testnet" = "Switch to Testnet";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Synchronizuje sa:";
+"Sync Failed" = "Sync Failed";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Sync Now" = "Sync Now";
 
 /* No comment provided by engineer. */
-"the app will now close" = "aplikácia sa teraz ukončí";
+"Syncing" = "Syncing";
 
 /* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Toto je vaša dash adresa. Klepnutím ju skopírujete, alebo ju pošlite e-mailom či cez sms. Adresa sa zmení vždy, keď dostanete finančné prostriedky, ale staré adresy vždy ostanú funkčné.";
+"Syncing:" = "Syncing:";
 
 /* No comment provided by engineer. */
-"This is your dash balance." = "Toto je vaša dash bilancia";
+"The app will now close" = "The app will now close";
 
 /* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Toto je vaša dash bilancia. Dash je mena. Výmenný kurz sa mení podla situácie na trhu.";
+"There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle." = "Táto transakcia môže trvať niekoľko minút.";
+"This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Táto transakcia môže trvať niekoľko minút. Dokončiť okamžite za extra %@?";
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work.";
 
 /* No comment provided by engineer. */
-"This transaction should settle instantly at no extra fee" = "Táto transakcia by sa mala okamžite vyrovnať bez ďalších poplatkov";
+"This is your dash balance." = "This is your dash balance.";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Táto peňaženka nie je prázdna, alebo synchronizácia nie je dokončená. Nemali by ste ju vymazať bez frázy na obnovenie";
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "This is your dash balance. Dash is a currency. The exchange rate changes with the market.";
 
 /* No comment provided by engineer. */
-"to:" = "komu:";
+"This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
 
 /* No comment provided by engineer. */
-"to: %@" = "komu: %@";
+"This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
 
 /* No comment provided by engineer. */
-"topup amount:" = "suma dobitia:";
+"This transaction may take several minutes to settle." = "This transaction may take several minutes to settle.";
 
 /* No comment provided by engineer. */
-"Total" = "Celkovo";
+"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "This transaction may take several minutes to settle. Complete instantly for an extra %@?";
+
+/* No comment provided by engineer. */
+"This transaction should settle instantly at no extra fee" = "This transaction should settle instantly at no extra fee";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+
+/* No comment provided by engineer. */
+"This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
+
+/* No comment provided by engineer. */
+"To:" = "To:";
+
+/* No comment provided by engineer. */
+"To: %@" = "To: %@";
+
+/* No comment provided by engineer. */
+"Tools" = "Tools";
+
+/* No comment provided by engineer. */
+"Topup amount:" = "Topup amount:";
+
+/* No comment provided by engineer. */
+"Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limit pre Touch ID";
@@ -678,124 +996,181 @@
 "Transaction history" = "História transakcií";
 
 /* No comment provided by engineer. */
-"Transaction id" = "Id transakcie";
+"Transaction id" = "Transaction id";
 
 /* No comment provided by engineer. */
-"Transfer" = "Presun";
+"Transfer" = "Transfer";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Preneste Dash z vášho účtu na Upholde do tejto peňaženky";
+"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Presunúť s Upholdu";
+"Transfer from Uphold" = "Transfer from Uphold";
 
 /* No comment provided by engineer. */
-"trust" = "dôverovať";
+"Trust" = "Trust";
 
 /* No comment provided by engineer. */
-"try again" = "skúsiť znova";
+"Try again" = "Try again";
 
 /* No comment provided by engineer. */
-"Try It!" = "Vyskúšajte!";
+"Try It!" = "Try It!";
 
 /* No comment provided by engineer. */
-"turn device passcode on" = "zapnúť prístupový kód";
+"Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
-"type:" = "typ:";
+"Type:" = "Type:";
 
 /* No comment provided by engineer. */
-"Unable to get new qr code" = "Nepodarilo sa získať nový qr kód";
+"Unable to connect" = "Unable to connect";
 
 /* No comment provided by engineer. */
-"unknown address" = "neznáma adresa";
+"Unable to get new qr code" = "Unable to get new qr code";
 
 /* No comment provided by engineer. */
-"unsupported or corrupted document" = "nepodporovaný alebo poškodený dokument";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
-"unsupported url" = "nepodporovaná url";
+"Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
-"Unverified" = "Neoverené";
+"Unsupported url" = "Unsupported url";
+
+/* No comment provided by engineer. */
+"Unverified" = "Unverified";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* No comment provided by engineer. */
-"Uphold account" = "Účet na Upholde";
+"Uphold account" = "Uphold account";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
 
 /* No comment provided by engineer. */
-"User Registration Transaction" = "Používateľove registračné transakcie";
+"Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
-"User Reset Transaction" = "Používateľove resetovacie transakcie";
+"User Registration Transaction" = "User Registration Transaction";
 
 /* No comment provided by engineer. */
-"User Topup Transaction" = "Používateľove dobíjacie transakcie";
+"User Reset Transaction" = "User Reset Transaction";
 
 /* No comment provided by engineer. */
-"username:" = "meno používateľa:";
+"User Topup Transaction" = "User Topup Transaction";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "overené, čaká sa na potvrdenie";
+"Username:" = "Username:";
 
 /* No comment provided by engineer. */
-"verifying quorum" = "overovacie kvórum";
+"Verified Successfully" = "Verified Successfully";
 
 /* No comment provided by engineer. */
-"voting key hash:" = "hash hlasovacieho kľúča:";
+"verified, waiting for confirmation" = "verified, waiting for confirmation";
 
 /* No comment provided by engineer. */
-"voting key index:" = "index hlasovacieho kľúča:";
+"Verify" = "Verify";
 
 /* No comment provided by engineer. */
-"Voting Keys" = "Hlasovacie kľúče";
+"verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
-"wallet address" = "adresa peňaženky";
+"View in Explorer" = "View in Explorer";
 
 /* No comment provided by engineer. */
-"Wallet Keys" = "Kľúče peňaženky";
+"View passphrase, backup wallet…" = "View passphrase, backup wallet…";
+
+/* No comment provided by engineer. */
+"View Recovery Phrase" = "View Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Voting Address" = "Voting Address";
+
+/* No comment provided by engineer. */
+"Voting key hash:" = "Voting key hash:";
+
+/* No comment provided by engineer. */
+"Voting key index:" = "Voting key index:";
+
+/* No comment provided by engineer. */
+"Voting Keys" = "Voting Keys";
+
+/* No comment provided by engineer. */
+"Wallet address" = "Wallet address";
+
+/* No comment provided by engineer. */
+"Wallet disabled" = "Wallet disabled";
+
+/* No comment provided by engineer. */
+"Wallet Keys" = "Wallet Keys";
+
+/* No comment provided by engineer. */
+"Warning" = "Warning";
 
 /* No comment provided by engineer. */
 "WARNING" = "UPOZORNENIE";
 
 /* No comment provided by engineer. */
-"watch only" = "iba sledovať";
+"Watch only" = "Watch only";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Zistili sme, že Dashwallet zlyhal počas migrácie. Opätovné skenovanie blockchainu tento problém vyrieši, prípadne môžete skúsiť znova. Opätovné skenovanie by sa malo prednostne vykonávať na wifi a môže trvať zhruba pol hodiny. Vaše prostriedky budú k dispozícii po dokončení procesu synchronizácie.";
+"We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Zistili sme, že program Dashwallet sa naposledy neukončil správne. Chceli by ste nám pomôcť vyriešiť problém odoslaním údajov o zlyhaní? Vaša história transakcií ani akékoľvek ďalšie súkromné informácie NEBUDÚ zdieľané.";
+"We do not store this recovery phrase." = "We do not store this recovery phrase.";
 
 /* No comment provided by engineer. */
-"wipe" = "vymazať";
+"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
-"WRITE DOWN YOUR RECOVERY PHRASE" = "ZAPÍŠTE SI VAŠU FRÁZU PRE OBNOVENIE";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
-"yes" = "áno";
+"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Teraz si môžete zakúpiť dash cez\ndashwallet s hotovosťou alebo\nbankovým prevodom.";
+"Wipe" = "Wipe";
+
+/* No comment provided by engineer. */
+"Wipe Wallet" = "Wipe Wallet";
+
+/* No comment provided by engineer. */
+"with Dash blockchain" = "with Dash blockchain";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "WRITE DOWN YOUR RECOVERY PHRASE";
+
+/* No comment provided by engineer. */
+"Yes" = "Yes";
+
+/* No comment provided by engineer. */
+"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+
+/* No comment provided by engineer. */
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
+
+/* No comment provided by engineer. */
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
 
 /* No comment provided by engineer. */
 "You must enter your pin in order to enter dashwallet" = "Aby ste sprístupnili dash peňaženku, musíte zadať PIN";
 
 /* No comment provided by engineer. */
-"you received dash!" = "obdržali ste dash!";
+"You received dash!" = "You received dash!";
 
 /* No comment provided by engineer. */
-"You will also need to log out from the Uphold website using your browser" = "Budete sa tiež musieť odhlásiť z webovej stránky Upholdu pomocou svojho prehliadača";
+"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
-"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Vaša transakcia bola odoslaná a čiastka by sa mala objaviť vo vašej peňaženke v priebehu niekoľkých minút.";
+"You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Zostatok na vašom Uphold účte je";
+"Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
+
+/* No comment provided by engineer. */
+"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+
+/* No comment provided by engineer. */
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";

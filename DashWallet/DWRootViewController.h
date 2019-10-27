@@ -28,12 +28,12 @@
 
 #define PARALAX_RATIO    0.25
 
-@class DWReceiveViewController, DWSendViewController;
+@class DWOLDReceiveViewController, DWSendViewController;
 
 @interface DWRootViewController : DWBaseRootViewController <UIAlertViewDelegate, UIPageViewControllerDataSource, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
 UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 
-@property (nonatomic, strong) IBOutlet DWReceiveViewController *receiveViewController;
+@property (nonatomic, strong) IBOutlet DWOLDReceiveViewController *receiveViewController;
 @property (nonatomic, strong) IBOutlet DWSendViewController *sendViewController;
 @property (nonatomic, strong) IBOutlet UIPageViewController *pageViewController;
 

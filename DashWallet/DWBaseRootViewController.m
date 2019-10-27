@@ -52,13 +52,13 @@ NS_ASSUME_NONNULL_BEGIN
                                      alertControllerWithTitle:NSLocalizedString(@"Are you sure?", nil)
                                      message:NSLocalizedString(@"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.",nil)                                             preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * action) {
                                        [self protectedViewDidAppear];
                                    }];
     UIAlertAction* wipeButton = [UIAlertAction
-                                 actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                 actionWithTitle:NSLocalizedString(@"Wipe", nil)
                                  style:UIAlertActionStyleDestructive
                                  handler:^(UIAlertAction * action) {
                                      [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
@@ -81,13 +81,13 @@ NS_ASSUME_NONNULL_BEGIN
                  message:NSLocalizedString(@"You must enter your pin in order to enter dashwallet", nil)
                  preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *exitButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"exit", nil)
+                                     actionWithTitle:NSLocalizedString(@"Exit", nil)
                                      style:UIAlertActionStyleDefault
                                      handler:^(UIAlertAction *action) {
                                          [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
                                      }];
         UIAlertAction *enterButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"enter", nil)
+                                      actionWithTitle:NSLocalizedString(@"Enter", nil)
                                       style:UIAlertActionStyleDefault
                                       handler:^(UIAlertAction *action) {
                                           [self protectedViewDidAppear];
@@ -117,22 +117,22 @@ NS_ASSUME_NONNULL_BEGIN
             }];
         }
         UIAlertAction *resetButton = [UIAlertAction
-                                      actionWithTitle:NSLocalizedString(@"reset", nil)
+                                      actionWithTitle:NSLocalizedString(@"Reset", nil)
                                       style:UIAlertActionStyleDefault
                                       handler:^(UIAlertAction *action) {
                                           if (timer) {
                                               [timer invalidate];
                                           }
-                                          
-                                          [[DSAuthenticationManager sharedInstance]  showResetWalletWithWipeHandler:^{
-                                              [self wipeAlert];
-                                          } cancelHandler:^{
-                                              [self protectedViewDidAppear];
-                                          }];
+            
+                                            [[DSAuthenticationManager sharedInstance] resetAllWalletsWithWipeHandler:^{
+                                                [self wipeAlert];
+                                            } completion:^(BOOL success) {
+                                                [self protectedViewDidAppear];
+                                            }];
                                       }];
         if (waitTime) {
             UIAlertAction *exitButton = [UIAlertAction
-                                         actionWithTitle:NSLocalizedString(@"exit", nil)
+                                         actionWithTitle:NSLocalizedString(@"Exit", nil)
                                          style:UIAlertActionStyleDefault
                                          handler:^(UIAlertAction *action) {
                                              [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
             [alert addAction:exitButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
         } else {
             UIAlertAction *wipeButton = [UIAlertAction
-                                         actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                         actionWithTitle:NSLocalizedString(@"Wipe", nil)
                                          style:UIAlertActionStyleDestructive
                                          handler:^(UIAlertAction *action) {
                                              [self wipeAlert];

@@ -27,6 +27,7 @@
 #import "DWAppDelegate.h"
 
 #import <DashSync/DashSync.h>
+#import <BackgroundTasks/BackgroundTasks.h>
 #import <UserNotifications/UserNotifications.h>
 
 #import "DWDataMigrationManager.h"
@@ -51,6 +52,7 @@
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 @interface DWAppDelegate () <DWStartViewControllerDelegate>
+
 
 // the nsnotificationcenter observer for wallet balance
 @property id balanceObserver;
@@ -94,8 +96,20 @@
         [self performNormalStartWithLaunchOptions:launchOptions];
     }
     
+    if (@available(iOS 13.0,*)) {
+        [DashSync sharedSyncController];
+        BGAppRefreshTaskRequest * appRefresh = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:@"org.dashcore.dashsync.backgroundblocksync"];
+        NSError * error = nil;
+        [[BGTaskScheduler sharedScheduler] submitTaskRequest:appRefresh error:&error];
+        if (error) {
+            NSLog(@"Error scheduling background refresh");
+        }
+    }
+    
     NSParameterAssert(self.window.rootViewController);
     [self.window makeKeyAndVisible];
+    
+
     
     return YES;
 }
@@ -146,7 +160,7 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"ok", nil)
+                                       actionWithTitle:NSLocalizedString(@"OK", nil)
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
@@ -168,61 +182,7 @@ shouldAllowExtensionPointIdentifier:(NSString *)extensionPointIdentifier
 - (void)application:(UIApplication *)application
 performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    __block id protectedObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
-    __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    void (^cleanup)(void) = ^() {
-        completion = nil;
-        if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
-        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-        protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
-    };
-
-    // timeout after 25 seconds
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [DWEnvironment sharedInstance].currentChainManager.syncProgress);
-            completion(([DWEnvironment sharedInstance].currentChainManager.syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
-                       UIBackgroundFetchResultFailed);
-            cleanup();
-        }
-        //TODO: disconnect
-    });
-
-    protectedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch protected data available");
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-        }];
-
-    syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync finished");
-            if (completion) completion(UIBackgroundFetchResultNewData);
-            cleanup();
-        }];
-
-    syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
-        queue:nil usingBlock:^(NSNotification *note) {
-            NSLog(@"background fetch sync failed");
-            if (completion) completion(UIBackgroundFetchResultFailed);
-            cleanup();
-        }];
-
-    NSLog(@"background fetch starting");
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-
-    // sync events to the server
-    [[DSEventManager sharedEventManager] sync];
-    
-//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-//        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
-//        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
-//        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
-//    }
+    [[DashSync sharedSyncController] performFetchWithCompletionHandler:completionHandler];
 }
 
 - (void)performDeferredStartWithLaunchOptions:(NSDictionary *)launchOptions {
@@ -297,17 +257,17 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
     
-    //TODO: bitcoin protocol/payment protocol over multipeer connectivity
+    //OLDTODO: bitcoin protocol/payment protocol over multipeer connectivity
     
-    //TODO: accessibility for the visually impaired
+    //OLDTODO: accessibility for the visually impaired
     
-    //TODO: fast wallet restore using webservice and/or utxo p2p message
+    //OLDTODO: fast wallet restore using webservice and/or utxo p2p message
     
-    //TODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
+    //OLDTODO: ask user if they need to sweep to a new wallet when restoring because it was compromised
     
-    //TODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
+    //OLDTODO: figure out deterministic builds/removing app sigs: http://www.afp548.com/2012/06/05/re-signining-ios-apps/
     
-    //TODO: implement importing of private keys split with shamir's secret sharing:
+    //OLDTODO: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
     
 #ifndef IGNORE_WATCH_TARGET
@@ -333,7 +293,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         usingBlock:^(NSNotification * _Nonnull note) {
             if (self.balance < wallet.balance) {
                 BOOL send = [[NSUserDefaults standardUserDefaults] boolForKey:USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY];
-                NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"received %@ (%@)", nil),
+                NSString *noteText = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
                                       [priceManager stringForDashAmount:wallet.balance - self.balance],
                                       [priceManager localCurrencyStringForDashAmount:wallet.balance - self.balance]];
                 

@@ -23,6 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+
+// TODO: Remove this file. It's unused in the redesigned version.
+
 #ifndef DWUserDefaultsConstants_h
 #define DWUserDefaultsConstants_h
 

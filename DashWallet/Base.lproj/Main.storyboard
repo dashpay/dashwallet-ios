@@ -684,7 +684,7 @@
         <!--Receive View Controller-->
         <scene sceneID="qxd-iA-4Pl">
             <objects>
-                <viewController storyboardIdentifier="RequestViewController" id="Zni-gW-a05" customClass="DWReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="RequestViewController" id="Zni-gW-a05" customClass="DWOLDReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="eNl-J2-B2Z">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -795,7 +795,7 @@
         <!--Receive View Controller-->
         <scene sceneID="1OV-CI-Wjb">
             <objects>
-                <viewController storyboardIdentifier="ReceiveViewController" id="XLw-gP-lYw" customClass="DWReceiveViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ReceiveViewController" id="XLw-gP-lYw" customClass="DWOLDReceiveViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bFo-w9-Ygt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1446,7 +1446,7 @@
         <!--transaction details-->
         <scene sceneID="QQa-M8-H76">
             <objects>
-                <tableViewController storyboardIdentifier="TxDetailViewController" title="transaction details" id="s4T-yd-VfX" customClass="DWTxDetailViewController" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="TxDetailViewController" title="transaction details" id="s4T-yd-VfX" customClass="DWOLDTxDetailViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="9JG-Pq-5JX">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

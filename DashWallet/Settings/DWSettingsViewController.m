@@ -243,21 +243,21 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"GENERAL", nil);
+//        section.headerTitle = NSLocalizedString(@"GENERAL", nil);
         section.items = [self generalItems];
         [sections addObject:section];
     }
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"CRITICAL", nil);
+//        section.headerTitle = NSLocalizedString(@"CRITICAL", nil);
         section.items = [self criticalItems];
         [sections addObject:section];
     }
 
     {
         DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.headerTitle = NSLocalizedString(@"ADVANCED", nil);
+//        section.headerTitle = NSLocalizedString(@"ADVANCED", nil);
         section.items = [self advancedItems];
         [sections addObject:section];
     }
@@ -312,11 +312,11 @@ NS_ASSUME_NONNULL_BEGIN
                          message:message
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     UIAlertAction *showButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"show", nil)
+        actionWithTitle:NSLocalizedString(@"Show", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [wallet seedPhraseAfterAuthentication:^(NSString *_Nullable seedPhrase) {
@@ -346,19 +346,19 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWSelectorViewController *controller = [DWSelectorViewController controller];
-        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID spending limit", nil) : NSLocalizedString(@"Face ID spending limit", nil);
-        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
-        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setBiometricAuthSpendingLimitForOptionIndex:index];
-            [strongSelf updateBiometricAuthCellModel];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
+//        DWSelectorViewController *controller = [DWSelectorViewController controller];
+//        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID spending limit", nil) : NSLocalizedString(@"Face ID spending limit", nil);
+//        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
+//        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//
+//            [strongSelf.model setBiometricAuthSpendingLimitForOptionIndex:index];
+//            [strongSelf updateBiometricAuthCellModel];
+//        };
+//        [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
 }
 
@@ -371,20 +371,20 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWLocalCurrecnySelectorViewController *controller = [DWLocalCurrecnySelectorViewController controller];
-        [controller setItems:options
-               selectedIndex:selectedIndex
-             placeholderText:NSLocalizedString(@"no exchange rate data", nil)];
-        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setLocalCurrencyForOptionIndex:index];
-            [strongSelf updateLocalCurrencyCellModel];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
+//        DWLocalCurrecnySelectorViewController *controller = [DWLocalCurrecnySelectorViewController controller];
+//        [controller setItems:options
+//               selectedIndex:selectedIndex
+//             placeholderText:NSLocalizedString(@"no exchange rate data", nil)];
+//        controller.didSelectItemBlock = ^(NSString *_Nonnull item, NSUInteger index) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//
+//            [strongSelf.model setLocalCurrencyForOptionIndex:index];
+//            [strongSelf updateLocalCurrencyCellModel];
+//        };
+//        [strongSelf.navigationController pushViewController:controller animated:YES];
     }];
 }
 
@@ -415,11 +415,11 @@ NS_ASSUME_NONNULL_BEGIN
                          message:NSLocalizedString(@"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     UIAlertAction *yesButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"yes", nil)
+        actionWithTitle:NSLocalizedString(@"Yes", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self.model enableAdvancedFeatures];
@@ -458,7 +458,7 @@ NS_ASSUME_NONNULL_BEGIN
                 }];
 
     UIAlertAction *cancel = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"cancel", nil)
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     [actionSheet addAction:mainnet];
@@ -476,8 +476,8 @@ NS_ASSUME_NONNULL_BEGIN
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
-            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
-            [self.navigationController pushViewController:keysViewController animated:YES];
+//            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
+//            [self.navigationController pushViewController:keysViewController animated:YES];
         }
     }];
 }

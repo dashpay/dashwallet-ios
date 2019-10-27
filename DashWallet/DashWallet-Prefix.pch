@@ -4,12 +4,28 @@
 //  The contents of this file are implicitly included at the beginning of every source file.
 //
 
+#ifndef DashWallet_PrefixHeader_pch
+#define DashWallet_PrefixHeader_pch
+
+#ifdef __OBJC__
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 #include <Availability.h>
 #include "DWUserDefaultsConstants.h"
 
-#ifdef __OBJC__
-#import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
+// Compile-time check for keypaths
+// More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
+#if DEBUG
+#define DW_KEYPATH(object, property) ((void)(NO && ((void)object.property, NO)), @ #property)
+#else
+#define DW_KEYPATH(object, property) @ #property
+#endif
+
+
+// TODO: rm imports below (to not pollute the visible space):
+
 #import <DashSync/DashSync.h>
 #import <DashSync/DSLogger.h>
 #import "DWEnvironment.h"
@@ -38,3 +54,5 @@
 #if ! DEBUG
 #define NSLog(...)
 #endif
+
+#endif /* DashWallet_PrefixHeader_pch */
