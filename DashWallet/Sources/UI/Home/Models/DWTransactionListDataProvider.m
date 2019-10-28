@@ -153,7 +153,13 @@ static NSString *TxDateFormat(NSString *template) {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.directionText = NSLocalizedString(@"Received", nil);
+            if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+                dataItem.directionText = NSLocalizedString(@"Reward", nil);
+            }
+            else {
+                dataItem.directionText = NSLocalizedString(@"Received", nil);
+            }
+
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
@@ -172,8 +178,15 @@ static NSString *TxDateFormat(NSString *template) {
             break;
         }
     }
-
-    dataItem.inputSendAddresses = transaction.inputAddresses;
+    if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+        NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
+        [inputAddressesWithNulls removeObject:[NSNull null]];
+        dataItem.inputSendAddresses = [inputAddressesWithNulls copy];
+    }
+    else {
+        //Don't show input addresses for coinbase
+        dataItem.inputSendAddresses = [NSArray array];
+    }
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     const uint32_t blockHeight = [self blockHeight];
