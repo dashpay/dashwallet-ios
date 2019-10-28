@@ -24,35 +24,32 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1uJ-po-8L4" userLabel="Rounded View">
                                 <rect key="frame" x="0.0" y="0.0" width="288" height="70"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" image="icon_tx_list_dash" translatesAutoresizingMaskIntoConstraints="NO" id="KXm-ON-bYr">
-                                        <rect key="frame" x="10" y="0.0" width="72" height="70"/>
-                                    </imageView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kOJ-5O-jnp" userLabel="Center View">
-                                        <rect key="frame" x="94" y="2.5" width="182" height="65.5"/>
+                                        <rect key="frame" x="10" y="2.5" width="266" height="65.5"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JcG-Fh-4sJ" userLabel="Address Label">
-                                                <rect key="frame" x="0.0" y="17" width="135" height="15"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="248" verticalHuggingPriority="255" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JcG-Fh-4sJ" userLabel="Direction State Label">
+                                                <rect key="frame" x="0.0" y="17" width="219" height="15"/>
                                                 <color key="backgroundColor" name="BackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                 <color key="textColor" name="DarkTitleColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="246" verticalHuggingPriority="254" verticalCompressionResistancePriority="1000" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pNw-3q-KIq" userLabel="Date Label">
-                                                <rect key="frame" x="0.0" y="34" width="137.5" height="13.5"/>
+                                                <rect key="frame" x="0.0" y="34" width="221.5" height="13.5"/>
                                                 <color key="backgroundColor" name="BackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
                                                 <color key="textColor" name="TertiaryTextColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="1000" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="93j-8R-v9x" userLabel="Dash Label">
-                                                <rect key="frame" x="151" y="17" width="31" height="15"/>
+                                                <rect key="frame" x="235" y="17" width="31" height="15"/>
                                                 <color key="backgroundColor" name="BackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" horizontalCompressionResistancePriority="755" verticalCompressionResistancePriority="1000" text="Label" textAlignment="right" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BDI-0a-IA8" userLabel="Fiat Label">
-                                                <rect key="frame" x="153.5" y="34" width="28.5" height="13.5"/>
+                                                <rect key="frame" x="237.5" y="34" width="28.5" height="13.5"/>
                                                 <color key="backgroundColor" name="BackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
                                                 <color key="textColor" name="TertiaryTextColor"/>
@@ -81,13 +78,10 @@
                                 <color key="backgroundColor" name="BackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="kOJ-5O-jnp" firstAttribute="top" relation="greaterThanOrEqual" secondItem="1uJ-po-8L4" secondAttribute="top" id="3Ww-6L-Fop"/>
-                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="leading" secondItem="KXm-ON-bYr" secondAttribute="trailing" constant="12" id="I5y-u4-jpf"/>
                                     <constraint firstItem="kOJ-5O-jnp" firstAttribute="centerY" secondItem="1uJ-po-8L4" secondAttribute="centerY" id="LgL-Cu-vKT"/>
-                                    <constraint firstItem="KXm-ON-bYr" firstAttribute="leading" secondItem="1uJ-po-8L4" secondAttribute="leading" constant="10" id="Up7-dO-3m3"/>
                                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="kOJ-5O-jnp" secondAttribute="bottom" id="cCT-37-uiD"/>
-                                    <constraint firstAttribute="bottom" secondItem="KXm-ON-bYr" secondAttribute="bottom" id="eGf-cm-U7P"/>
                                     <constraint firstAttribute="trailing" secondItem="kOJ-5O-jnp" secondAttribute="trailing" constant="12" id="f8L-4c-pez"/>
-                                    <constraint firstItem="KXm-ON-bYr" firstAttribute="top" secondItem="1uJ-po-8L4" secondAttribute="top" id="tXn-j1-Fb7"/>
+                                    <constraint firstItem="kOJ-5O-jnp" firstAttribute="leading" secondItem="1uJ-po-8L4" secondAttribute="leading" constant="10" id="uac-C5-Jvk"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -117,16 +111,15 @@
             <color key="backgroundColor" name="SecondaryBackgroundColor"/>
             <viewLayoutGuide key="safeArea" id="aW0-zy-SZf"/>
             <connections>
-                <outlet property="addressLabel" destination="JcG-Fh-4sJ" id="YQE-Lh-mHU"/>
                 <outlet property="dashAmountLabel" destination="93j-8R-v9x" id="KGD-VG-TjG"/>
                 <outlet property="dateLabel" destination="pNw-3q-KIq" id="tNO-z2-W4g"/>
+                <outlet property="directionStateLabel" destination="JcG-Fh-4sJ" id="it8-Pc-Qut"/>
                 <outlet property="fiatAmountLabel" destination="BDI-0a-IA8" id="cwm-a2-aDR"/>
             </connections>
             <point key="canvasLocation" x="33.333333333333336" y="30.46875"/>
         </tableViewCell>
     </objects>
     <resources>
-        <image name="icon_tx_list_dash" width="36" height="36"/>
         <namedColor name="BackgroundColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
@@ -134,10 +127,10 @@
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
-            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.96899998188018799" green="0.96899998188018799" blue="0.96899998188018799" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="TertiaryTextColor">
-            <color red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.47099998593330383" green="0.47099998593330383" blue="0.47099998593330383" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

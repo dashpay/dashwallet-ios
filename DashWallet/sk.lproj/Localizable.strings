@@ -198,6 +198,9 @@
 "confirmed in block #%d" = "potvrdené v bloku #%d";
 
 /* No comment provided by engineer. */
+"Confirming" = "Confirming";
+
+/* No comment provided by engineer. */
 "Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
@@ -412,6 +415,9 @@
 
 /* No comment provided by engineer. */
 "INVALID" = "NEPLATNÉ";
+
+/* No comment provided by engineer. */
+"Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
 "Invalid amount" = "Invalid amount";

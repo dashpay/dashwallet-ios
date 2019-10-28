@@ -17,13 +17,46 @@
 
 #import "DWTxListTableViewCell.h"
 
+#import <DashSync/DSTransaction.h>
+
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSAttributedString *AttributedString(NSString *string, UIFont *font, UIColor *textColor) {
+    NSDictionary<NSAttributedStringKey, id> *attributes = @{
+        NSFontAttributeName : font,
+        NSForegroundColorAttributeName : textColor,
+    };
+    return [[NSAttributedString alloc] initWithString:string attributes:attributes];
+}
+
+static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> transactionData) {
+    UIFont *directionFont = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    UIColor *directionColor = [UIColor dw_darkTitleColor];
+
+
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] init];
+
+    [attributedString appendAttributedString:AttributedString(transactionData.directionText,
+                                                              directionFont,
+                                                              directionColor)];
+
+    if (transactionData.stateText) {
+        [attributedString appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+
+        UIFont *stateFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+        [attributedString appendAttributedString:AttributedString(transactionData.stateText,
+                                                                  stateFont,
+                                                                  transactionData.stateTintColor)];
+    }
+
+    return [attributedString copy];
+}
+
 @interface DWTxListTableViewCell ()
 
-@property (strong, nonatomic) IBOutlet UILabel *addressLabel;
+@property (strong, nonatomic) IBOutlet UILabel *directionStateLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dateLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
@@ -38,7 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)awakeFromNib {
     [super awakeFromNib];
 
-    self.addressLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.dateLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     self.dashAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.fiatAmountLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
@@ -62,7 +94,6 @@ NS_ASSUME_NONNULL_BEGIN
     self.dataProvider = dataProvider;
     self.transactionData = [self.dataProvider transactionDataForTransaction:transaction];
 
-    self.addressLabel.text = self.transactionData.outputReceiveAddresses.firstObject;
     self.dateLabel.text = [self.dataProvider dateForTransaction:transaction];
     self.fiatAmountLabel.text = self.transactionData.fiatAmount;
     [self reloadAttributedData];
@@ -85,6 +116,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reloadAttributedData {
     NSParameterAssert(self.dataProvider);
     NSParameterAssert(self.transactionData);
+
+    self.directionStateLabel.attributedText = DirectionStateString(self.transactionData);
 
     UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
     self.dashAmountLabel.attributedText = [self.dataProvider dashAmountStringFrom:self.transactionData
