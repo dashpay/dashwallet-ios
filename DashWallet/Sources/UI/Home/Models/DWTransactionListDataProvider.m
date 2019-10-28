@@ -46,9 +46,9 @@ static NSString *TxDateFormat(NSString *template) {
 
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
-@property (nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
-@property (nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
-@property (nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
+@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
 @property (nonatomic, strong) UIColor *dashAmountTintColor;
@@ -181,7 +181,7 @@ static NSString *TxDateFormat(NSString *template) {
     if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
         NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
         [inputAddressesWithNulls removeObject:[NSNull null]];
-        dataItem.inputSendAddresses = [inputAddressesWithNulls copy];
+        dataItem.inputSendAddresses = inputAddressesWithNulls;
     }
     else {
         //Don't show input addresses for coinbase

@@ -27,11 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DWTransactionListDataItem <NSObject>
 
 /// From (received)
-@property (readonly, nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
+@property (readonly, nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
 /// To (sent)
-@property (readonly, nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
+@property (readonly, nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
 
-@property (readonly, nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
+@property (readonly, nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
 @property (readonly, nonatomic, assign) uint64_t dashAmount;
 @property (readonly, nonatomic, assign) DSTransactionDirection direction;
 @property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
