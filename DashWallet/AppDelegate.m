@@ -101,6 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
+    [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
     DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
@@ -238,7 +239,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //        }
 //    }
     
-    [DashSync sharedSyncController];
+    [[DashSync sharedSyncController] setupDashSyncOnce];
     
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
     
