@@ -46,9 +46,9 @@ static NSString *TxDateFormat(NSString *template) {
 
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
-@property (nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
-@property (nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
-@property (nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
+@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
 @property (nonatomic, strong) UIColor *dashAmountTintColor;
@@ -153,7 +153,13 @@ static NSString *TxDateFormat(NSString *template) {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.directionText = NSLocalizedString(@"Received", nil);
+            if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+                dataItem.directionText = NSLocalizedString(@"Reward", nil);
+            }
+            else {
+                dataItem.directionText = NSLocalizedString(@"Received", nil);
+            }
+
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
@@ -172,8 +178,15 @@ static NSString *TxDateFormat(NSString *template) {
             break;
         }
     }
-
-    dataItem.inputSendAddresses = transaction.inputAddresses;
+    if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+        NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
+        [inputAddressesWithNulls removeObject:[NSNull null]];
+        dataItem.inputSendAddresses = inputAddressesWithNulls;
+    }
+    else {
+        //Don't show input addresses for coinbase
+        dataItem.inputSendAddresses = [NSArray array];
+    }
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
 
     const uint32_t blockHeight = [self blockHeight];
