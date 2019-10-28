@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) DSTransactionDirection direction;
 @property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
 @property (readonly, nonatomic, copy) NSString *fiatAmount;
+@property (readonly, nonatomic, copy) NSString *directionText;
+@property (readonly, nullable, nonatomic, copy) NSString *stateText;
+@property (readonly, nullable, nonatomic, strong) UIColor *stateTintColor;
 
 @end
 
