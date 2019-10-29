@@ -81,6 +81,9 @@ NS_ASSUME_NONNULL_BEGIN
         case DWHomeTxDisplayMode_Sent:
             [button setTitle:NSLocalizedString(@"Sent", nil) forState:UIControlStateNormal];
             break;
+        case DWHomeTxDisplayMode_Rewards:
+            [button setTitle:NSLocalizedString(@"Rewards", nil) forState:UIControlStateNormal];
+            break;
     }
 }
 

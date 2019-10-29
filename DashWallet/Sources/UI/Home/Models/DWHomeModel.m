@@ -320,7 +320,9 @@ static BOOL IsJailbroken(void) {
     dispatch_async(self.queue, ^{
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
-        NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO] ]];
+        NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey ascending:NO];
+        NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
         BOOL shouldAnimate = YES;
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;
