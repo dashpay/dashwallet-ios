@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self displaySafariControllerWithURL:url];
 }
 
-// TODO: enable copy logs button
+// TODO: <redesign> enable copy logs button
 
 //- (IBAction)logsCopyButtonAction:(id)sender {
 //    NSArray *dataToShare = [self.model logFiles];
@@ -131,7 +131,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    [self presentViewController:activityViewController animated:YES completion:nil];
 //}
 
-// TODO: set fixed peer
+// TODO: <redesign> set fixed peer
 
 - (IBAction)setFixedPeerButtonAction:(id)sender {
     if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
@@ -183,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)updateStatusNotification:(nullable NSNotification *)sender {
-    // TODO: put tech info somewhere else
+    // TODO: <redesign> put tech info somewhere else
     //    [self.statusButton setTitle:[self.model status] forState:UIControlStateNormal];
 }
 

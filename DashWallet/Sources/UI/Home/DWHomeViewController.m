@@ -134,12 +134,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setupView {
-    UIImage *logoImage = [UIImage imageNamed:@"dash_logo_template"];
+    UIImage *logoImage = nil;
+    CGFloat logoHeight;
+    if ([DWEnvironment sharedInstance].currentChain.chainType == DSChainType_TestNet) {
+        logoImage = [UIImage imageNamed:@"dash_logo_testnet"];
+        logoHeight = 43.0;
+    }
+    else {
+        logoImage = [UIImage imageNamed:@"dash_logo_template"];
+        logoHeight = 23.0;
+    }
     NSParameterAssert(logoImage);
     UIImageView *imageView = [[UIImageView alloc] initWithImage:logoImage];
     imageView.tintColor = [UIColor whiteColor];
     imageView.contentMode = UIViewContentModeScaleAspectFit;
-    const CGRect frame = CGRectMake(0.0, 0.0, 89.0, 23.0);
+    const CGRect frame = CGRectMake(0.0, 0.0, 89.0, logoHeight);
     imageView.frame = frame;
 
     UIView *contentView = [[UIView alloc] initWithFrame:frame];

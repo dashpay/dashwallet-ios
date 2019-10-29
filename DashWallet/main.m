@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
 {
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-        // TODO: rm old entry point, left for testing purposes
+        // TODO: <redesign> rm old entry point, left for testing purposes
 //        return UIApplicationMain(argc, argv, nil, NSStringFromClass([DWAppDelegate class]));
     }
 }

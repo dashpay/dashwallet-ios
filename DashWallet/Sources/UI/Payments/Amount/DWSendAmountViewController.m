@@ -54,24 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSAssert(self.model.inputIntent == DWAmountInputIntent_Send, @"Inconsistent state");
 
-    // TODO: fix me
-    // Workaround:
-    // Since our pin alert a bit hacky (it uses custom invisible UITextField added on the UIAlertController)
-    // we show it after a slight delay to prevent UI bug with wrong alert position because of active first responder
-    // on previous screen
-    self.view.userInteractionEnabled = NO;
-    self.actionButton.enabled = NO;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        const DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
-        const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
-                                     self.model.sendingOptions.useInstantSend;
-        [self.delegate sendAmountViewController:self
-                                 didInputAmount:self.model.amount.plainAmount
-                                usedInstantSend:usedInstantSend];
-
-        self.view.userInteractionEnabled = YES;
-        self.actionButton.enabled = YES;
-    });
+    const DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
+    const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
+                                 self.model.sendingOptions.useInstantSend;
+    [self.delegate sendAmountViewController:self
+                             didInputAmount:self.model.amount.plainAmount
+                            usedInstantSend:usedInstantSend];
 }
 
 @end

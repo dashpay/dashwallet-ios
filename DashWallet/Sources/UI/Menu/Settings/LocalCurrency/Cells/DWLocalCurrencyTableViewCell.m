@@ -108,7 +108,7 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         _accessoryImageView = accessoryImageView;
 
         const CGFloat margin = DWDefaultMargin();
-        const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING; // TODO should be less to fit 70pt
+        const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING;
 
         [NSLayoutConstraint activateConstraints:@[
             [codeLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor

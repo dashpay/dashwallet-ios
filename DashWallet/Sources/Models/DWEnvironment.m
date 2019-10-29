@@ -19,6 +19,8 @@
 
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
+NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
+
 @implementation DWEnvironment
 
 + (instancetype)sharedInstance {
@@ -111,6 +113,7 @@
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     DSChainType originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
     if (originalChainType == chainType) {
+        // Notification isn't send here as the chain remains the same
         completion(YES); //didn't really switch but good enough
         return;
     }
@@ -130,10 +133,13 @@
         [wallet copyForChain:destinationChain
                   completion:^(DSWallet *_Nullable copiedWallet) {
                       if (copiedWallet) {
+                          NSAssert([NSThread isMainThread], @"Main thread is assumed here");
                           [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
                           [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
                           [self reset];
                           [self.currentChainManager.peerManager connect];
+                          [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification
+                                                                              object:nil];
                           completion(YES);
                       }
                       else {
@@ -142,10 +148,13 @@
                   }];
     }
     else {
+        NSAssert([NSThread isMainThread], @"Main thread is assumed here");
         [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
         [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
         [self reset];
         [self.currentChainManager.peerManager connect];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification
+                                                            object:nil];
         completion(YES);
     }
 }
