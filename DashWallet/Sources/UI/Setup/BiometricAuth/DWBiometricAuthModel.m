@@ -75,8 +75,6 @@ NS_ASSUME_NONNULL_BEGIN
     [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
             localizedReason:reason
                       reply:^(BOOL success, NSError *_Nullable error) {
-                          // TODO: discuss how biometric Auth should work
-
                           [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
                           [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
 

@@ -259,11 +259,6 @@ static BOOL IsJailbroken(void) {
     DSChain *notificationChain = notification.userInfo[DSChainManagerNotificationChainKey];
     if (notificationChain && notificationChain == chain) {
         [self updateBalance];
-
-        // TODO: impl (perhaps, not here)
-        //        if (chain.wallets.count == 0) { //a wallet was deleted, we need to go back to wallet nav
-        //            [self showNewWalletController];
-        //        }
     }
 }
 
