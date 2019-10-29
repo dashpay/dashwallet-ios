@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRootModel ()
 
+@property (nonatomic, strong) DWHomeModel *homeModel;
 @property (nullable, nonatomic, strong) NSDate *lastActiveDate;
 
 @end
@@ -36,6 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _homeModel = [[DWHomeModel alloc] init];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(currentNetworkDidChangeNotification:)
+                                                     name:DWCurrentNetworkDidChangeNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -79,6 +85,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setupDidFinished {
     [self.homeModel.shortcutsModel reloadShortcuts];
+}
+
+#pragma mark - Notifications
+
+- (void)currentNetworkDidChangeNotification:(NSNotification *)notification {
+    self.homeModel = [[DWHomeModel alloc] init];
+
+    NSParameterAssert(self.currentNetworkDidChangeBlock);
+    if (self.currentNetworkDidChangeBlock) {
+        self.currentNetworkDidChangeBlock();
+    }
 }
 
 @end

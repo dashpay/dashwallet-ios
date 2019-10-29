@@ -24,6 +24,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
+
 @interface DWEnvironment : NSObject
 
 @property (nonatomic, strong, nonnull) DSChain *currentChain;

@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, strong) DWHomeModel *homeModel;
 
+@property (nullable, nonatomic, copy) void (^currentNetworkDidChangeBlock)(void);
+
 /**
  NO if running Dashwallet is not allowed on this device for security reasons
  */
