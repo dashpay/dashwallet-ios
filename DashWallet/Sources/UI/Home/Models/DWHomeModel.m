@@ -64,6 +64,7 @@ static BOOL IsJailbroken(void) {
 @property (nonatomic, strong) DWTransactionListDataSource *allDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
+@property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
 
 @end
 
@@ -168,6 +169,8 @@ static BOOL IsJailbroken(void) {
             return self.receivedDataSource;
         case DWHomeTxDisplayMode_Sent:
             return self.sentDataSource;
+        case DWHomeTxDisplayMode_Rewards:
+            return self.rewardsDataSource;
     }
 }
 
@@ -289,6 +292,17 @@ static BOOL IsJailbroken(void) {
     return _sentDataSource;
 }
 
+- (DWTransactionListDataSource *)rewardsDataSource {
+    if (_rewardsDataSource == nil) {
+        NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items
+                                                           forDisplayMode:DWHomeTxDisplayMode_Rewards];
+        _rewardsDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:transactions
+                                                                          dataProvider:self.dataProvider];
+    }
+
+    return _rewardsDataSource;
+}
+
 - (void)connectIfNeeded {
     // This method might be called from init. Don't use any instance variables
 
@@ -306,7 +320,9 @@ static BOOL IsJailbroken(void) {
     dispatch_async(self.queue, ^{
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
-        NSArray<DSTransaction *> *transactions = wallet.allTransactions;
+        NSString *sortKey = DW_KEYPATH(DSTransaction.new, timestamp);
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:sortKey ascending:NO];
+        NSArray<DSTransaction *> *transactions = [wallet.allTransactions sortedArrayUsingDescriptors:@[ sortDescriptor ]];
 
         BOOL shouldAnimate = YES;
         DSTransaction *prevTransaction = self.dataSource.items.firstObject;
@@ -325,6 +341,9 @@ static BOOL IsJailbroken(void) {
         }
         else if (self.displayMode == DWHomeTxDisplayMode_Sent) {
             [self sentDataSource];
+        }
+        else if (self.displayMode == DWHomeTxDisplayMode_Rewards) {
+            [self rewardsDataSource];
         }
 
         DWTransactionListDataSource *datasource = self.dataSource;
@@ -372,8 +391,13 @@ static BOOL IsJailbroken(void) {
 
     for (DSTransaction *tx in allTransactions) {
         uint64_t sent = [account amountSentByTransaction:tx];
-        if ((displayMode == DWHomeTxDisplayMode_Sent && sent > 0) ||
-            (displayMode == DWHomeTxDisplayMode_Received && sent == 0)) {
+        if (displayMode == DWHomeTxDisplayMode_Sent && sent > 0) {
+            [mutableTransactions addObject:tx];
+        }
+        else if (displayMode == DWHomeTxDisplayMode_Received && sent == 0 && ![tx isKindOfClass:[DSCoinbaseTransaction class]]) {
+            [mutableTransactions addObject:tx];
+        }
+        else if (displayMode == DWHomeTxDisplayMode_Rewards && sent == 0 && [tx isKindOfClass:[DSCoinbaseTransaction class]]) {
             [mutableTransactions addObject:tx];
         }
     }

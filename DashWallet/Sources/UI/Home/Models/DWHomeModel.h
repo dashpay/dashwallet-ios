@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
     DWHomeTxDisplayMode_All,
     DWHomeTxDisplayMode_Received,
     DWHomeTxDisplayMode_Sent,
+    DWHomeTxDisplayMode_Rewards,
 };
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
