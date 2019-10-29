@@ -198,11 +198,11 @@ static NSString *TxDateFormat(NSString *template) {
         dataItem.stateTintColor = [UIColor dw_redColor];
     }
     else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Pending", nil);
+        dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
         dataItem.stateTintColor = [UIColor dw_orangeColor];
     }
     else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Unverified", nil);
+        dataItem.stateText = NSLocalizedString(@"Processing", nil);
         dataItem.stateTintColor = [UIColor dw_orangeColor];
     }
     else if ([account transactionOutputsAreLocked:transaction]) {
