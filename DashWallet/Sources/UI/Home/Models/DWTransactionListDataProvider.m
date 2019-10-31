@@ -179,9 +179,9 @@ static NSString *TxDateFormat(NSString *template) {
         }
     }
     if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
-        NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
+        NSMutableSet *inputAddressesWithNulls = [NSMutableSet setWithArray:transaction.inputAddresses];
         [inputAddressesWithNulls removeObject:[NSNull null]];
-        dataItem.inputSendAddresses = inputAddressesWithNulls;
+        dataItem.inputSendAddresses = [inputAddressesWithNulls allObjects];
     }
     else {
         //Don't show input addresses for coinbase
