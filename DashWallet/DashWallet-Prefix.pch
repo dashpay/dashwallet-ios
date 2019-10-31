@@ -24,7 +24,7 @@
 #endif
 
 
-// TODO: rm imports below (to not pollute the visible space):
+// TODO: <redesign> rm imports below (to not pollute the visible space):
 
 #import <DashSync/DashSync.h>
 #import <DashSync/DSLogger.h>

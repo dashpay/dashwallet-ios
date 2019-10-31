@@ -198,6 +198,9 @@
 "confirmed in block #%d" = "confirmada no bloco #%d";
 
 /* No comment provided by engineer. */
+"Confirming" = "Confirming";
+
+/* No comment provided by engineer. */
 "Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
@@ -241,9 +244,6 @@
 
 /* No comment provided by engineer. */
 "CRITICAL" = "CRÍTICO";
-
-/* No comment provided by engineer. */
-"Customize Shortcuts" = "Customize Shortcuts";
 
 /* No comment provided by engineer. */
 "Dash address" = "Endereço Dash";
@@ -412,6 +412,9 @@
 
 /* No comment provided by engineer. */
 "INVALID" = "INVÁLIDO";
+
+/* No comment provided by engineer. */
+"Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
 "Invalid amount" = "Valor inválido";
@@ -766,6 +769,12 @@
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Review & Rate the app";
+
+/* No comment provided by engineer. */
+"Reward" = "Reward";
+
+/* No comment provided by engineer. */
+"Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
 "Scan" = "Scan";

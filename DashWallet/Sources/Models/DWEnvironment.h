@@ -19,10 +19,12 @@
 
 #import <DashSync/DashSync.h>
 
-// TODO: rm after redesign
+// TODO: <redesign> rm after redesign
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
 
 @interface DWEnvironment : NSObject
 

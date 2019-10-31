@@ -127,6 +127,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                            selector:@selector(applicationDidEnterBackgroundNotification)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+
+    __weak typeof(self) weakSelf = self;
+    self.model.currentNetworkDidChangeBlock = ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        // reset main controller stack
+        strongSelf->_mainController = nil;
+
+        UIViewController *controller = [strongSelf mainController];
+        [strongSelf performTransitionToViewController:controller];
+    };
 }
 
 - (nullable UIViewController *)childViewControllerForStatusBarStyle {

@@ -46,13 +46,16 @@ static NSString *TxDateFormat(NSString *template) {
 
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
-@property (nonatomic, strong) NSArray<NSString *> *outputReceiveAddresses;
-@property (nonatomic, strong) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
-@property (nonatomic, strong) NSArray<NSString *> *inputSendAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
+@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
+@property (nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
 @property (nonatomic, strong) UIColor *dashAmountTintColor;
 @property (nonatomic, copy) NSString *fiatAmount;
+@property (nonatomic, copy) NSString *directionText;
+@property (nullable, nonatomic, copy) NSString *stateText;
+@property (nullable, nonatomic, strong) UIColor *stateTintColor;
 
 @end
 
@@ -64,6 +67,7 @@ static NSString *TxDateFormat(NSString *template) {
 
 @interface DWTransactionListDataProvider ()
 
+@property (nonatomic, assign) uint32_t blockHeightValue;
 @property (nonatomic, strong) NSMutableDictionary *txDates;
 @property (nonatomic, strong) NSDateFormatter *monthDayHourFormatter;
 @property (nonatomic, strong) NSDateFormatter *yearMonthDayHourFormatter;
@@ -135,18 +139,27 @@ static NSString *TxDateFormat(NSString *template) {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_quaternaryTextColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+            dataItem.directionText = NSLocalizedString(@"Moved", nil);
             break;
         }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.dashAmountTintColor = [UIColor dw_darkTitleColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+            dataItem.directionText = NSLocalizedString(@"Sent", nil);
             break;
         }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
+            if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+                dataItem.directionText = NSLocalizedString(@"Reward", nil);
+            }
+            else {
+                dataItem.directionText = NSLocalizedString(@"Received", nil);
+            }
+
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
@@ -160,16 +173,51 @@ static NSString *TxDateFormat(NSString *template) {
                 DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
             }
+            dataItem.directionText = @"";
 
             break;
         }
     }
-
-    dataItem.inputSendAddresses = transaction.inputAddresses;
-
-
+    if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+        NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
+        [inputAddressesWithNulls removeObject:[NSNull null]];
+        dataItem.inputSendAddresses = inputAddressesWithNulls;
+    }
+    else {
+        //Don't show input addresses for coinbase
+        dataItem.inputSendAddresses = [NSArray array];
+    }
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
 
+    const uint32_t blockHeight = [self blockHeight];
+    const BOOL instantSendReceived = transaction.instantSendReceived;
+    const BOOL processingInstantSend = transaction.hasUnverifiedInstantSendLock;
+    uint32_t confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1;
+    if (confirms == 0 && ![account transactionIsValid:transaction]) {
+        dataItem.stateText = NSLocalizedString(@"Invalid", nil);
+        dataItem.stateTintColor = [UIColor dw_redColor];
+    }
+    else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
+        dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
+        dataItem.stateTintColor = [UIColor dw_orangeColor];
+    }
+    else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
+        dataItem.stateText = NSLocalizedString(@"Processing", nil);
+        dataItem.stateTintColor = [UIColor dw_orangeColor];
+    }
+    else if ([account transactionOutputsAreLocked:transaction]) {
+        dataItem.stateText = NSLocalizedString(@"Locked", nil);
+        dataItem.stateTintColor = [UIColor dw_orangeColor];
+    }
+    else if (!instantSendReceived && confirms < 6) {
+        if (confirms == 0 && processingInstantSend) {
+            dataItem.stateText = NSLocalizedString(@"Processing", nil);
+        }
+        else {
+            dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+        }
+        dataItem.stateTintColor = [UIColor dw_orangeColor];
+    }
 
     return dataItem;
 }
@@ -205,6 +253,17 @@ static NSString *TxDateFormat(NSString *template) {
 }
 
 #pragma mark - Private
+
+- (uint32_t)blockHeight {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    const uint32_t lastHeight = chain.lastBlockHeight;
+
+    if (lastHeight > self.blockHeightValue) {
+        self.blockHeightValue = lastHeight;
+    }
+
+    return self.blockHeightValue;
+}
 
 - (NSMutableArray<NSString *> *)inputsForTransaction:(DSTransaction *)transaction {
     NSMutableArray<NSString *> *inputs = [NSMutableArray array];

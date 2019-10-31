@@ -65,7 +65,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
 #pragma mark - Non-stored options
 
 - (NSTimeInterval)autoLockAppInterval {
-    // TODO: for debugging/testing purposes. set to 60
+    // TODO: <redesign> for debugging/testing purposes. set to 60
     return 3.0;
 }
 

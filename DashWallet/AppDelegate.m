@@ -30,7 +30,7 @@
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 
-// TODO: re-enable Watch App
+// TODO: <redesign> re-enable Watch App
 //#ifndef IGNORE_WATCH_TARGET
 //#import "DWPhoneWCSessionManager.h"
 //#endif /* IGNORE_WATCH_TARGET */
@@ -101,6 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
+    [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
     DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
@@ -228,7 +229,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-    // TODO: impl
+    // TODO: <redesign> impl
 //    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
 //        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
 //
@@ -238,7 +239,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 //        }
 //    }
     
-    [DashSync sharedSyncController];
+    [[DashSync sharedSyncController] setupDashSyncOnce];
     
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
     
@@ -262,7 +263,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // TODO_outdated: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
-    // TODO: Watch App
+    // TODO: <redesign> Watch App
 //#ifndef IGNORE_WATCH_TARGET
 //    [DWPhoneWCSessionManager sharedInstance];
 //#endif

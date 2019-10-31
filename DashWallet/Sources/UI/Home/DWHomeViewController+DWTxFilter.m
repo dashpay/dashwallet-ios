@@ -49,6 +49,18 @@ NS_ASSUME_NONNULL_BEGIN
         [alert addAction:action];
     }
 
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+
+    if ([account hasCoinbaseTransaction]) {
+        UIAlertAction *action = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"Rewards", nil)
+                      style:UIAlertActionStyleDefault
+                    handler:^(UIAlertAction *_Nonnull action) {
+                        self.model.displayMode = DWHomeTxDisplayMode_Rewards;
+                    }];
+        [alert addAction:action];
+    }
+
     {
         UIAlertAction *action = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"Sent", nil)
