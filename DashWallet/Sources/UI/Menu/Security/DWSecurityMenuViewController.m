@@ -239,7 +239,7 @@ NS_ASSUME_NONNULL_BEGIN
                                   return;
                               }
 
-                              if (success) {
+                              if (!success) {
                                   cellModel.on = !cellModel.on;
                               }
 
