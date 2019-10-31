@@ -168,20 +168,30 @@ static NSString *TxDateFormat(NSString *template) {
             if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};
+                dataItem.directionText = NSLocalizedString(@"Masternode Registration", nil);
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                 DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
+                dataItem.directionText = NSLocalizedString(@"Masternode Update", nil);
             }
-            dataItem.directionText = @"";
+            else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+                DSProviderUpdateServiceTransaction *updateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+                dataItem.directionText = NSLocalizedString(@"Masternode Update", nil);
+            }
+            else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+                DSProviderUpdateRevocationTransaction *updateServiceTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+                dataItem.directionText = NSLocalizedString(@"Masternode Revoked", nil);
+            }
+
 
             break;
         }
     }
     if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
-        NSMutableArray *inputAddressesWithNulls = [transaction.inputAddresses mutableCopy];
+        NSMutableSet *inputAddressesWithNulls = [NSMutableSet setWithArray:transaction.inputAddresses];
         [inputAddressesWithNulls removeObject:[NSNull null]];
-        dataItem.inputSendAddresses = inputAddressesWithNulls;
+        dataItem.inputSendAddresses = [inputAddressesWithNulls allObjects];
     }
     else {
         //Don't show input addresses for coinbase
