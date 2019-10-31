@@ -168,12 +168,22 @@ static NSString *TxDateFormat(NSString *template) {
             if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};
+                dataItem.directionText = @"Masternode Registration";
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                 DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
+                dataItem.directionText = @"Masternode Update";
             }
-            dataItem.directionText = @"";
+            else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+                DSProviderUpdateServiceTransaction *updateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+                dataItem.directionText = @"Masternode Update";
+            }
+            else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+                DSProviderUpdateRevocationTransaction *updateServiceTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+                dataItem.directionText = @"Masternode Revoked";
+            }
+
 
             break;
         }
