@@ -1,5 +1,5 @@
 //
-//  Created by Andrew Podkovyrin
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,40 +15,33 @@
 //  limitations under the License.
 //
 
-#import "DWToolsMenuViewController.h"
+#import "DWMasternodeFeaturesMenuViewController.h"
 
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
-#import "DWMasternodeFeaturesMenuViewController.h"
+#import "DWKeysOverviewViewController.h"
+#import "DWMasternodeViewController.h"
+#import "DWRegisterMasternodeViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWToolsMenuViewController () <DWImportWalletInfoViewControllerDelegate>
+@interface DWMasternodeFeaturesMenuViewController ()
 
-@property (null_resettable, nonatomic, strong) DWToolsMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 
 @end
 
-@implementation DWToolsMenuViewController
+@implementation DWMasternodeFeaturesMenuViewController
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.title = NSLocalizedString(@"Tools", nil);
+        self.title = NSLocalizedString(@"Masternode Features", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
 
     return self;
-}
-
-- (DWToolsMenuModel *)model {
-    if (!_model) {
-        _model = [[DWToolsMenuModel alloc] init];
-    }
-
-    return _model;
 }
 
 - (NSArray<DWBaseFormCellModel *> *)items {
@@ -57,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
     {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Import Private Key", nil)];
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show Masternode Keys", nil)];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -65,13 +58,13 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf showImportPrivateKey];
+            [strongSelf showMasternodeKeys];
         };
         [items addObject:cellModel];
     }
 
     {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode Features", nil)];
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Register Masternode", nil)];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -79,7 +72,21 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf showMasternodeFeatures];
+            [strongSelf showRegisterMasternode];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode List", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showMasternodeControl];
         };
         [items addObject:cellModel];
     }
@@ -114,23 +121,22 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
-#pragma mark - DWImportWalletInfoViewControllerDelegate
-
-- (void)importWalletInfoViewControllerScanPrivateKeyAction:(DWImportWalletInfoViewController *)controller {
-    [self.delegate toolsMenuViewControllerImportPrivateKey:self];
-}
-
 #pragma mark - Private
 
-- (void)showImportPrivateKey {
-    DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController controller];
-    controller.delegate = self;
-    [self.navigationController pushViewController:controller animated:YES];
+- (void)showMasternodeKeys {
+    DWKeysOverviewViewController *keysViewController = [[DWKeysOverviewViewController alloc] init];
+    [self.navigationController pushViewController:keysViewController animated:YES];
 }
 
-- (void)showMasternodeFeatures {
-    DWMasternodeFeaturesMenuViewController *masternodeFeaturesMenuViewController = [[DWMasternodeFeaturesMenuViewController alloc] init];
-    [self.navigationController pushViewController:masternodeFeaturesMenuViewController animated:YES];
+- (void)showRegisterMasternode {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Masternode" bundle:nil];
+    DWRegisterMasternodeViewController *registerMasternodeViewController = [storyboard instantiateViewControllerWithIdentifier:@"RegisterMasternodeViewControllerIdentifier"];
+    [self.navigationController pushViewController:registerMasternodeViewController animated:YES];
+}
+
+- (void)showMasternodeControl {
+    DWMasternodeViewController *masternodeViewController = [[DWMasternodeViewController alloc] init];
+    [self.navigationController pushViewController:masternodeViewController animated:YES];
 }
 
 @end

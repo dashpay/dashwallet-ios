@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) DSChain *chain;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 NS_ASSUME_NONNULL_END

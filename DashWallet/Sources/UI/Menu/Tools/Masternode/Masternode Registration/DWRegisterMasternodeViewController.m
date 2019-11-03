@@ -9,8 +9,14 @@
 #import "DWRegisterMasternodeViewController.h"
 #import "DWEnvironment.h"
 #import "DWKeyValueTableViewCell.h"
+#import "DWMasternodeRegistrationModel.h"
+#import "DWPublicKeyGenerationTableViewCell.h"
 #import "DWSignPayloadViewController.h"
+#import "DWUIKit.h"
 #include <arpa/inet.h>
+
+#define INPUT_CELL_HEIGHT 75
+#define PUBLIC_KEY_CELL_HEIGHT 150
 
 @interface DWRegisterMasternodeViewController ()
 
@@ -19,13 +25,14 @@
 @property (nonatomic, strong) DWKeyValueTableViewCell *ipAddressTableViewCell;
 @property (nonatomic, strong) DWKeyValueTableViewCell *portTableViewCell;
 @property (nonatomic, strong) DWKeyValueTableViewCell *payToAddressTableViewCell;
-@property (nonatomic, strong) DWKeyValueTableViewCell *ownerIndexTableViewCell;
-@property (nonatomic, strong) DWKeyValueTableViewCell *operatorIndexTableViewCell;
-@property (nonatomic, strong) DWKeyValueTableViewCell *votingIndexTableViewCell;
+@property (nonatomic, strong) DWPublicKeyGenerationTableViewCell *ownerIndexTableViewCell;
+@property (nonatomic, strong) DWPublicKeyGenerationTableViewCell *operatorIndexTableViewCell;
+@property (nonatomic, strong) DWPublicKeyGenerationTableViewCell *votingIndexTableViewCell;
 @property (nonatomic, strong) DSAccount *account;
 @property (nonatomic, strong) DSWallet *wallet;
 @property (nonatomic, strong) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 @property (nonatomic, strong) DSTransaction *collateralTransaction;
+@property (readonly, nonatomic, strong) DWMasternodeRegistrationModel *model;
 
 @end
 
@@ -33,6 +40,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    _model = [[DWMasternodeRegistrationModel alloc] initWithWallet:self.wallet];
+    self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
+
     self.payToAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodePayoutAddressCellIdentifier"];
     self.collateralTransactionTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeCollateralTransactionCellIdentifier"];
     self.collateralIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeCollateralIndexCellIdentifier"];
@@ -54,6 +65,32 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 8;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 0: {
+            switch (indexPath.row) {
+                case 0:
+                    return INPUT_CELL_HEIGHT;
+                case 1:
+                    return INPUT_CELL_HEIGHT;
+                case 2:
+                    return INPUT_CELL_HEIGHT;
+                case 3:
+                    return INPUT_CELL_HEIGHT;
+                case 4:
+                    return PUBLIC_KEY_CELL_HEIGHT;
+                case 5:
+                    return PUBLIC_KEY_CELL_HEIGHT;
+                case 6:
+                    return PUBLIC_KEY_CELL_HEIGHT;
+                case 7:
+                    return INPUT_CELL_HEIGHT;
+            }
+        }
+    }
+    return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -120,16 +157,16 @@
     uint32_t votingWalletIndex = UINT32_MAX;
     uint32_t operatorWalletIndex = UINT32_MAX;
 
-    if (self.ownerIndexTableViewCell.valueTextField.text && ![self.ownerIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
-        ownerWalletIndex = (uint32_t)[self.ownerIndexTableViewCell.valueTextField.text integerValue];
+    if (self.ownerIndexTableViewCell.publicKeyTextField.text && ![self.ownerIndexTableViewCell.publicKeyTextField.text isEqualToString:@""]) {
+        ownerWalletIndex = (uint32_t)[self.ownerIndexTableViewCell.publicKeyTextField.text integerValue];
     }
 
-    if (self.operatorIndexTableViewCell.valueTextField.text && ![self.operatorIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
-        operatorWalletIndex = (uint32_t)[self.operatorIndexTableViewCell.valueTextField.text integerValue];
+    if (self.operatorIndexTableViewCell.publicKeyTextField.text && ![self.operatorIndexTableViewCell.publicKeyTextField.text isEqualToString:@""]) {
+        operatorWalletIndex = (uint32_t)[self.operatorIndexTableViewCell.publicKeyTextField.text integerValue];
     }
 
-    if (self.votingIndexTableViewCell.valueTextField.text && ![self.votingIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
-        votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.valueTextField.text integerValue];
+    if (self.votingIndexTableViewCell.publicKeyTextField.text && ![self.votingIndexTableViewCell.publicKeyTextField.text isEqualToString:@""]) {
+        votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.publicKeyTextField.text integerValue];
     }
 
     DSLocalMasternode *masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
@@ -203,6 +240,10 @@
                      }];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"PayloadSigningSegue"]) {
         DWSignPayloadViewController *signPayloadSegue = (DWSignPayloadViewController *)segue.destinationViewController;
@@ -210,10 +251,6 @@
         signPayloadSegue.providerRegistrationTransaction = self.providerRegistrationTransaction;
         signPayloadSegue.delegate = self;
     }
-}
-
-- (IBAction)cancel {
-    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }
 
 - (void)viewController:(nonnull UIViewController *)controller didReturnSignature:(nonnull NSData *)signature {

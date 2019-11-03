@@ -471,13 +471,25 @@
 "Masternode control" = "Masternode control";
 
 /* No comment provided by engineer. */
-"Masternode Control" = "Masternode Control";
+"Masternode Features" = "Masternode Features";
 
 /* No comment provided by engineer. */
 "Masternode holding address" = "Masternode holding address";
 
 /* No comment provided by engineer. */
+"Masternode List" = "Masternode List";
+
+/* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
+
+/* No comment provided by engineer. */
 "Masternode Registration Transaction" = "マスターノードの取引の登録";
+
+/* No comment provided by engineer. */
+"Masternode Revoked" = "Masternode Revoked";
+
+/* No comment provided by engineer. */
+"Masternode Update" = "Masternode Update";
 
 /* No comment provided by engineer. */
 "Masternode Update Registrar Transaction" = "マスターノードの取引の登録のアップデート";
@@ -730,6 +742,9 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
+
+/* No comment provided by engineer. */
+"Register Masternode" = "Register Masternode";
 
 /* No comment provided by engineer. */
 "Registered from" = "Registered from";
