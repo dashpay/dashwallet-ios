@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,19 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWPublicKeyGenerationTableViewCell.h"
+#import "DWBaseFormCellModel.h"
 
-@implementation DWPublicKeyGenerationTableViewCell
+NS_ASSUME_NONNULL_BEGIN
 
-- (void)awakeFromNib {
-    [super awakeFromNib];
-    // Initialization code
-}
+@interface DWKeyValueFormCellModel : DWBaseFormCellModel
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
+@property (copy, nonatomic) NSString *valueText;
+@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWKeyValueFormCellModel *cellModel);
 
-    // Configure the view for the selected state
-}
+- (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText NS_DESIGNATED_INITIALIZER;
 
 @end
+
+NS_ASSUME_NONNULL_END

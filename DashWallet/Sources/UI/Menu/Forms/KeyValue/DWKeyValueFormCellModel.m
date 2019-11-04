@@ -15,13 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWKeyValueFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UIViewController
+@implementation DWKeyValueFormCellModel
 
-//+ (instancetype)controller;
+- (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText {
+    self = [super initWithTitle:title];
+    if (self) {
+        _valueText = valueText;
+    }
+    return self;
+}
+
+- (instancetype)initWithTitle:(nullable NSString *)title {
+    return [self initWithTitle:title valueText:@""];
+}
 
 @end
 

@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,24 +15,15 @@
 //  limitations under the License.
 //
 
+#import "DWBaseFormTableViewCell.h"
+#import "DWPublicKeyGenerationCellModel.h"
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWPublicKeyGenerationTableViewCellDelegate;
+@interface DWPublicKeyGenerationTableViewCell : DWBaseFormTableViewCell <UITextFieldDelegate>
 
-@interface DWPublicKeyGenerationTableViewCell : UITableViewCell
-@property (strong, nonatomic) IBOutlet UITextField *publicKeyTextField;
-@property (strong, nonatomic) IBOutlet UITextField *indexTextField;
-
-@property (weak, nonatomic) IBOutlet id<DWPublicKeyGenerationTableViewCellDelegate> generationDelegate;
-
-@end
-
-@protocol DWPublicKeyGenerationTableViewCellDelegate <NSObject>
-
--(void)publicKeyGenerationTableViewCell:(DWPublicKeyGenerationTableViewCell*)cell didChangeToIndex:(uint32_t)index;
--(void)publicKeyGenerationTableViewCell:(DWPublicKeyGenerationTableViewCell*)cell didInputPublicKeyString:(NSString*)publicKeyString;
+@property (nullable, strong, nonatomic) DWPublicKeyGenerationCellModel *cellModel;
 
 @end
 

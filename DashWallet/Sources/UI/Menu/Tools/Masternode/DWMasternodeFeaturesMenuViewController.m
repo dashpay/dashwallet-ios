@@ -129,8 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showRegisterMasternode {
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Masternode" bundle:nil];
-    DWRegisterMasternodeViewController *registerMasternodeViewController = [storyboard instantiateViewControllerWithIdentifier:@"RegisterMasternodeViewControllerIdentifier"];
+    DWRegisterMasternodeViewController *registerMasternodeViewController = [[DWRegisterMasternodeViewController alloc] init];
     [self.navigationController pushViewController:registerMasternodeViewController animated:YES];
 }
 

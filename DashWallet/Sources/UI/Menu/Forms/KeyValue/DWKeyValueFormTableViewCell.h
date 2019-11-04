@@ -15,13 +15,14 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseFormTableViewCell.h"
+#import "DWKeyValueFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UIViewController
+@interface DWKeyValueFormTableViewCell : DWBaseFormTableViewCell <UITextFieldDelegate>
 
-//+ (instancetype)controller;
+@property (nullable, strong, nonatomic) DWKeyValueFormCellModel *cellModel;
 
 @end
 

@@ -15,13 +15,18 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBaseFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UIViewController
+@interface DWPublicKeyGenerationCellModel : DWBaseFormCellModel
 
-//+ (instancetype)controller;
+@property (strong, nonatomic) NSData *publicKeyData;
+@property (assign, nonatomic) uint32_t keyIndex;
+
+@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWPublicKeyGenerationCellModel *cellModel);
+
+- (instancetype)initWithTitle:(nullable NSString *)title publicKeyData:(NSData *)publicKeyData withIndex:(uint32_t)keyIndex NS_DESIGNATED_INITIALIZER;
 
 @end
 

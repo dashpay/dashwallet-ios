@@ -15,13 +15,24 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWPublicKeyGenerationCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWKeysOverviewViewController : UIViewController
+@implementation DWPublicKeyGenerationCellModel
 
-//+ (instancetype)controller;
+- (instancetype)initWithTitle:(nullable NSString *)title publicKeyData:(NSData *)publicKeyData withIndex:(uint32_t)keyIndex {
+    self = [super initWithTitle:title];
+    if (self) {
+        _publicKeyData = publicKeyData;
+        _keyIndex = keyIndex;
+    }
+    return self;
+}
+
+- (instancetype)initWithTitle:(nullable NSString *)title {
+    return [self initWithTitle:title publicKeyData:[NSData data] withIndex:UINT32_MAX];
+}
 
 @end
 

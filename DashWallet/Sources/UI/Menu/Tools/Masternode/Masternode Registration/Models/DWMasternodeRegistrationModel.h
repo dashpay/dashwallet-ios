@@ -21,23 +21,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMasternodeRegistrationModel : NSObject
 
-@property (nonatomic,strong) NSData* ownerPublicKeyData;
-@property (nonatomic,strong) NSData* operatorPublicKeyData;
-@property (nonatomic,strong) NSData* votingPublicKeyData;
+@property (nonatomic, strong) NSData *ownerPublicKeyData;
+@property (nonatomic, strong) NSData *operatorPublicKeyData;
+@property (nonatomic, strong) NSData *votingPublicKeyData;
 
-@property (nonatomic,assign) uint32_t ownerPublicKeyIndex;
-@property (nonatomic,assign) uint32_t operatorPublicKeyIndex;
-@property (nonatomic,assign) uint32_t votingPublicKeyIndex;
+@property (nonatomic, assign) uint32_t ownerPublicKeyIndex;
+@property (nonatomic, assign) uint32_t operatorPublicKeyIndex;
+@property (nonatomic, assign) uint32_t votingPublicKeyIndex;
 
-@property (nonatomic,assign) NSString * ipAddress;
-@property (nonatomic,assign) uint16_t port;
+@property (nonatomic, assign) NSString *ipAddress;
+@property (nonatomic, assign) uint16_t port;
 
-@property (nonatomic,strong) NSData * collateralTransactionHashData;
-@property (nonatomic,assign) uint16_t collateralIndex;
+@property (nonatomic, strong) NSData *collateralTransactionHashData;
+@property (nonatomic, assign) uint16_t collateralIndex;
 
-@property (nonatomic,strong) NSString * payoutAddress;
+@property (nonatomic, strong) NSString *payoutAddress;
 
-- (instancetype)initForWallet:(DSWallet*)wallet NS_DESIGNATED_INITIALIZER;
+- (instancetype)initForWallet:(DSWallet *)wallet NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

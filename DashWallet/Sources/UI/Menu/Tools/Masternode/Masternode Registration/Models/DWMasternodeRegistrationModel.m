@@ -17,9 +17,9 @@
 
 #import "DWMasternodeRegistrationModel.h"
 
-@interface DWMasternodeRegistrationModel()
+@interface DWMasternodeRegistrationModel ()
 
-@property (nonatomic,strong) DSWallet* wallet;
+@property (nonatomic, strong) DSWallet *wallet;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *votingDerivationPath;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *operatorDerivationPath;
@@ -28,7 +28,7 @@
 
 @implementation DWMasternodeRegistrationModel
 
-- (instancetype)initForWallet:(DSWallet*)wallet {
+- (instancetype)initForWallet:(DSWallet *)wallet {
     self = [super init];
     if (self) {
         _wallet = wallet;
@@ -41,36 +41,36 @@
     return self;
 }
 
--(void)setOperatorPublicKeyIndex:(uint32_t)operatorPublicKeyIndex {
+- (void)setOperatorPublicKeyIndex:(uint32_t)operatorPublicKeyIndex {
     _operatorPublicKeyIndex = operatorPublicKeyIndex;
     _operatorPublicKeyData = [self.operatorDerivationPath publicKeyDataAtIndex:operatorPublicKeyIndex];
 }
 
--(void)setOwnerPublicKeyIndex:(uint32_t)ownerPublicKeyIndex {
+- (void)setOwnerPublicKeyIndex:(uint32_t)ownerPublicKeyIndex {
     _ownerPublicKeyIndex = ownerPublicKeyIndex;
     _ownerPublicKeyData = [self.ownerDerivationPath publicKeyDataAtIndex:ownerPublicKeyIndex];
 }
 
--(void)setVotingPublicKeyIndex:(uint32_t)votingPublicKeyIndex {
+- (void)setVotingPublicKeyIndex:(uint32_t)votingPublicKeyIndex {
     _votingPublicKeyIndex = votingPublicKeyIndex;
     _votingPublicKeyData = [self.votingDerivationPath publicKeyDataAtIndex:votingPublicKeyIndex];
 }
 
--(void)setOperatorPublicKeyData:(NSData *)operatorPublicKeyData {
+- (void)setOperatorPublicKeyData:(NSData *)operatorPublicKeyData {
     _operatorPublicKeyData = operatorPublicKeyData;
-    NSString * address = [DSKey addressWithPublicKeyData:operatorPublicKeyData forChain:_wallet.chain];
+    NSString *address = [DSKey addressWithPublicKeyData:operatorPublicKeyData forChain:_wallet.chain];
     _operatorPublicKeyIndex = [self.operatorDerivationPath indexOfKnownAddress:address];
 }
 
--(void)setOwnerPublicKeyData:(NSData *)ownerPublicKeyData {
+- (void)setOwnerPublicKeyData:(NSData *)ownerPublicKeyData {
     _ownerPublicKeyData = ownerPublicKeyData;
-    NSString * address = [DSKey addressWithPublicKeyData:ownerPublicKeyData forChain:_wallet.chain];
+    NSString *address = [DSKey addressWithPublicKeyData:ownerPublicKeyData forChain:_wallet.chain];
     _ownerPublicKeyIndex = [self.ownerDerivationPath indexOfKnownAddress:address];
 }
 
--(void)setVotingPublicKeyData:(NSData *)votingPublicKeyData {
+- (void)setVotingPublicKeyData:(NSData *)votingPublicKeyData {
     _votingPublicKeyData = votingPublicKeyData;
-    NSString * address = [DSKey addressWithPublicKeyData:votingPublicKeyData forChain:_wallet.chain];
+    NSString *address = [DSKey addressWithPublicKeyData:votingPublicKeyData forChain:_wallet.chain];
     _votingPublicKeyIndex = [self.votingDerivationPath indexOfKnownAddress:address];
 }
 

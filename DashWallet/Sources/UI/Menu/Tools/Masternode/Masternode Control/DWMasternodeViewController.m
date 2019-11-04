@@ -89,7 +89,6 @@ static UITextField *TextFieldSubviewOfView(UIView *view) {
     if ([segue.identifier isEqualToString:@"RegisterMasternodeSegue"]) {
         UINavigationController *navigationController = (UINavigationController *)segue.destinationViewController;
         DWRegisterMasternodeViewController *registerMasternodeViewController = (DWRegisterMasternodeViewController *)navigationController.topViewController;
-        registerMasternodeViewController.chain = self.chain;
     }
 }
 

@@ -17,7 +17,9 @@
 
 #import "DWFormTableViewController.h"
 
+#import "DWKeyValueFormTableViewCell.h"
 #import "DWPlaceholderFormTableViewCell.h"
+#import "DWPublicKeyGenerationTableViewCell.h"
 #import "DWSelectorFormTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWSwitcherFormTableViewCell.h"
@@ -26,6 +28,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
+static CGFloat const PUBLIC_KEY_GENERATION_CELL_HEIGHT = 124.0;
 
 @interface DWFormTableViewController ()
 
@@ -49,6 +52,8 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         DWSelectorFormTableViewCell.class,
         DWSwitcherFormTableViewCell.class,
         DWPlaceholderFormTableViewCell.class,
+        DWKeyValueFormTableViewCell.class,
+        DWPublicKeyGenerationTableViewCell.class,
     ];
 
     for (Class cellClass in cellClasses) {
@@ -114,6 +119,20 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         cell.cellModel = (DWSwitcherFormCellModel *)cellModel;
         return cell;
     }
+    else if ([cellModel isKindOfClass:DWKeyValueFormCellModel.class]) {
+        NSString *cellId = NSStringFromClass(DWKeyValueFormTableViewCell.class);
+        DWKeyValueFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                            forIndexPath:indexPath];
+        cell.cellModel = (DWKeyValueFormCellModel *)cellModel;
+        return cell;
+    }
+    else if ([cellModel isKindOfClass:DWPublicKeyGenerationCellModel.class]) {
+        NSString *cellId = NSStringFromClass(DWPublicKeyGenerationTableViewCell.class);
+        DWPublicKeyGenerationTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                                   forIndexPath:indexPath];
+        cell.cellModel = (DWPublicKeyGenerationCellModel *)cellModel;
+        return cell;
+    }
     else if ([cellModel isKindOfClass:DWPlaceholderFormCellModel.class]) {
         NSString *cellId = NSStringFromClass(DWPlaceholderFormTableViewCell.class);
         DWPlaceholderFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
@@ -137,6 +156,9 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
 
     if ([cellModel isKindOfClass:DWPlaceholderFormCellModel.class]) {
         return CGRectGetHeight(tableView.bounds);
+    }
+    else if ([cellModel isKindOfClass:DWPublicKeyGenerationTableViewCell.class]) {
+        return PUBLIC_KEY_GENERATION_CELL_HEIGHT;
     }
     else {
         return DEFAULT_CELL_HEIGHT;

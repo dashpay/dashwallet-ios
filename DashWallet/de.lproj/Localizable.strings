@@ -185,6 +185,12 @@
 /* No comment provided by engineer. */
 "Coinbase Transaction" = "Coinbase-Transaktion";
 
+/* No comment provided by engineer. */
+"Collateral Index" = "Collateral Index";
+
+/* No comment provided by engineer. */
+"Collateral Tx" = "Collateral Tx";
+
 /* Confirm */
 "Confirm" = "Bestätigen";
 
@@ -420,6 +426,9 @@
 "Invalid amount" = "Ungültiger Betrag";
 
 /* No comment provided by engineer. */
+"IP Address" = "IP Address";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP-Adresse/Port:";
 
 /* No comment provided by engineer. */
@@ -603,6 +612,9 @@
 "Operator Keys" = "Betreiber-Schlüssel";
 
 /* No comment provided by engineer. */
+"Operator Public Key" = "Operator Public Key";
+
+/* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
 
 /* No comment provided by engineer. */
@@ -613,6 +625,9 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Besitzer-Schlüssel";
+
+/* No comment provided by engineer. */
+"Owner Public Key" = "Owner Public Key";
 
 /* No comment provided by engineer. */
 "Paid successfully" = "Paid successfully";
@@ -676,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";
+
+/* No comment provided by engineer. */
+"Port" = "Port";
 
 /* No comment provided by engineer. */
 "Previously last used at IP address" = "Previously last used at IP address";
@@ -751,6 +769,9 @@
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
+
+/* No comment provided by engineer. */
+"Registration" = "Registration";
 
 /* No comment provided by engineer. */
 "Registration tx:" = "Registration tx:";
@@ -1129,6 +1150,9 @@
 
 /* No comment provided by engineer. */
 "Voting Keys" = "Abstimmungs-Schlüssel";
+
+/* No comment provided by engineer. */
+"Voting Public Key" = "Voting Public Key";
 
 /* No comment provided by engineer. */
 "Wallet address" = "Wallet address";

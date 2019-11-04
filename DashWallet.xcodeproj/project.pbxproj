@@ -420,6 +420,9 @@
 		FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		FB9CC2711F8E27B80079309F /* DWGenerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */; };
 		FBCFEDEE236E50CD0086DE07 /* DWMasternodeRegistrationModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FBCFEDED236E50CD0086DE07 /* DWMasternodeRegistrationModel.m */; };
+		FBCFEDF3236F8CF70086DE07 /* DWKeyValueFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FBCFEDF2236F8CF70086DE07 /* DWKeyValueFormCellModel.m */; };
+		FBCFEDF6236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBCFEDF5236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m */; };
+		FBCFEDFA236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FBCFEDF9236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m */; };
 		FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
 		FBF3F42B1E42AF8F00C7248E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */; };
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
@@ -1382,6 +1385,12 @@
 		FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWGenerateViewController.m; sourceTree = "<group>"; };
 		FBCFEDEC236E50CD0086DE07 /* DWMasternodeRegistrationModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMasternodeRegistrationModel.h; sourceTree = "<group>"; };
 		FBCFEDED236E50CD0086DE07 /* DWMasternodeRegistrationModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMasternodeRegistrationModel.m; sourceTree = "<group>"; };
+		FBCFEDF1236F8CF70086DE07 /* DWKeyValueFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWKeyValueFormCellModel.h; sourceTree = "<group>"; };
+		FBCFEDF2236F8CF70086DE07 /* DWKeyValueFormCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWKeyValueFormCellModel.m; sourceTree = "<group>"; };
+		FBCFEDF4236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWKeyValueFormTableViewCell.h; sourceTree = "<group>"; };
+		FBCFEDF5236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWKeyValueFormTableViewCell.m; sourceTree = "<group>"; };
+		FBCFEDF8236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPublicKeyGenerationCellModel.h; sourceTree = "<group>"; };
+		FBCFEDF9236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPublicKeyGenerationCellModel.m; sourceTree = "<group>"; };
 		FBEF3AED2182395800917AB6 /* DashSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DashSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWEnvironment.h; sourceTree = "<group>"; };
 		FBEF3AF021823CD800917AB6 /* DWEnvironment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWEnvironment.m; sourceTree = "<group>"; };
@@ -2480,6 +2489,8 @@
 		2A9FFE262230FF4600956D5F /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				FBCFEDF7236FCDE50086DE07 /* PublicKeyGeneration */,
+				FBCFEDF0236F8C770086DE07 /* KeyValue */,
 				2A9FFE382230FF4600956D5F /* Placeholder */,
 				2A9FFE272230FF4600956D5F /* Selector */,
 				2A9FFE2F2230FF4600956D5F /* Switcher */,
@@ -3352,8 +3363,6 @@
 				FB31C268223BD9F400BD0868 /* DWMasternodeTableViewCell.h */,
 				FB31C267223BD9F400BD0868 /* DWMasternodeTableViewCell.m */,
 				2AE125FB2241151B00379C6F /* DWMasternodeTableViewCell.xib */,
-				FB83F3DD236E4C9D0039ED1B /* DWPublicKeyGenerationTableViewCell.h */,
-				FB83F3DE236E4C9D0039ED1B /* DWPublicKeyGenerationTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -3399,6 +3408,7 @@
 		FBCFEDEA236E50410086DE07 /* Masternode Registration */ = {
 			isa = PBXGroup;
 			children = (
+				FBCFEDEF236E58940086DE07 /* Cells */,
 				FBCFEDEB236E50AF0086DE07 /* Models */,
 				FB31C23F223BD3F100BD0868 /* DWRegisterMasternodeViewController.h */,
 				FB31C247223BD3F200BD0868 /* DWRegisterMasternodeViewController.m */,
@@ -3413,6 +3423,35 @@
 				FBCFEDED236E50CD0086DE07 /* DWMasternodeRegistrationModel.m */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		FBCFEDEF236E58940086DE07 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		FBCFEDF0236F8C770086DE07 /* KeyValue */ = {
+			isa = PBXGroup;
+			children = (
+				FBCFEDF1236F8CF70086DE07 /* DWKeyValueFormCellModel.h */,
+				FBCFEDF2236F8CF70086DE07 /* DWKeyValueFormCellModel.m */,
+				FBCFEDF4236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.h */,
+				FBCFEDF5236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m */,
+			);
+			path = KeyValue;
+			sourceTree = "<group>";
+		};
+		FBCFEDF7236FCDE50086DE07 /* PublicKeyGeneration */ = {
+			isa = PBXGroup;
+			children = (
+				FBCFEDF8236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.h */,
+				FBCFEDF9236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m */,
+				FB83F3DD236E4C9D0039ED1B /* DWPublicKeyGenerationTableViewCell.h */,
+				FB83F3DE236E4C9D0039ED1B /* DWPublicKeyGenerationTableViewCell.m */,
+			);
+			path = PublicKeyGeneration;
 			sourceTree = "<group>";
 		};
 		FBFC2E9E21137A4200D20C57 /* Montserrat */ = {
@@ -4027,6 +4066,7 @@
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
+				FBCFEDFA236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
@@ -4123,6 +4163,7 @@
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
+				FBCFEDF6236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
@@ -4266,6 +4307,7 @@
 				2A392565234CD21300316EA6 /* DWTabBarButton.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
+				FBCFEDF3236F8CF70086DE07 /* DWKeyValueFormCellModel.m in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
