@@ -93,7 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self mvvm_observe:DW_KEYPATH(self, cellModel.on)
                   with:^(__typeof(self) self, NSNumber *value) {
                       const BOOL animated = self.window != nil;
-                      [self.switcher setOn:value.boolValue animated:animated];
+                      const BOOL on = value.boolValue;
+                      if (self.switcher.isOn != on) {
+                          [self.switcher setOn:on animated:animated];
+                      }
                   }];
 }
 
