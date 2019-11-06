@@ -4591,7 +4591,7 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -4622,7 +4622,7 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -4698,7 +4698,7 @@
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -4719,7 +4719,7 @@
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -4738,7 +4738,7 @@
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -4758,7 +4758,7 @@
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -4783,7 +4783,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4807,7 +4807,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4895,7 +4895,7 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -4921,7 +4921,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4969,7 +4969,7 @@
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -4988,7 +4988,7 @@
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
@@ -5083,7 +5083,7 @@
 				INFOPLIST_FILE = DashWallet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -5107,7 +5107,7 @@
 				INFOPLIST_FILE = TodayExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.TodayExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -5154,7 +5154,7 @@
 				IBSC_MODULE = WatchApp_Extension;
 				INFOPLIST_FILE = WatchApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -5173,7 +5173,7 @@
 				INFOPLIST_FILE = "WatchApp Extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.9.7;
+				MARKETING_VERSION = 3.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dashredesign2019.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
