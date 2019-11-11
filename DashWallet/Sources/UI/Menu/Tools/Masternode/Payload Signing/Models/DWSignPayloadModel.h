@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Created by Sam Westrich
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <KVO-MVVM/KVONSObject.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseFormCellModel : KVONSObject
+@interface DWSignPayloadModel : NSObject
 
-@property (nullable, copy, nonatomic) NSString *title;
-@property (assign, nonatomic) NSUInteger tag;
+@property (nonatomic, strong) NSString *collateralAddress;
+@property (nonatomic, strong) NSString *payloadCollateralString;
+@property (nonatomic, strong) NSData *signature;
 
-- (instancetype)initWithTitle:(nullable NSString *)title NS_DESIGNATED_INITIALIZER;
+- (instancetype)initForCollateralAddress:(NSString *)collateralAddress withPayloadCollateralString:(NSString *)payloadCollateralString NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

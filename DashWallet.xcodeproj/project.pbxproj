@@ -380,6 +380,8 @@
 		FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
 		FB031ADB2378832100EF564B /* DWActionFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031AD72378832100EF564B /* DWActionFormCellModel.m */; };
 		FB031ADE2378834200EF564B /* DWActionFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031ADD2378834200EF564B /* DWActionFormTableViewCell.m */; };
+		FB031AE32379003D00EF564B /* DWSignPayloadModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031AE22379003D00EF564B /* DWSignPayloadModel.m */; };
+		FB031AE7237911F200EF564B /* DWSignPayloadView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031AE6237911F200EF564B /* DWSignPayloadView.m */; };
 		FB1BF8C722C6F4B7003413C6 /* DWSignMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1BF8C622C6F4B7003413C6 /* DWSignMessageViewController.m */; };
 		FB1BF8C822C7FBD0003413C6 /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		FB1BF8C922C7FBD4003413C6 /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
@@ -1283,6 +1285,10 @@
 		FB031AD82378832100EF564B /* DWActionFormTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWActionFormTableViewCell.h; sourceTree = "<group>"; };
 		FB031AD92378832100EF564B /* DWActionFormCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWActionFormCellModel.h; sourceTree = "<group>"; };
 		FB031ADD2378834200EF564B /* DWActionFormTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWActionFormTableViewCell.m; sourceTree = "<group>"; };
+		FB031AE12379003D00EF564B /* DWSignPayloadModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSignPayloadModel.h; sourceTree = "<group>"; };
+		FB031AE22379003D00EF564B /* DWSignPayloadModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSignPayloadModel.m; sourceTree = "<group>"; };
+		FB031AE5237911F200EF564B /* DWSignPayloadView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSignPayloadView.h; sourceTree = "<group>"; };
+		FB031AE6237911F200EF564B /* DWSignPayloadView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSignPayloadView.m; sourceTree = "<group>"; };
 		FB0ACB9D1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Main.strings; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACB9F1F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Main.strings; sourceTree = "<group>"; };
@@ -3302,6 +3308,35 @@
 			path = Action;
 			sourceTree = "<group>";
 		};
+		FB031ADF2378FFAE00EF564B /* Payload Signing */ = {
+			isa = PBXGroup;
+			children = (
+				FB031AE42379118E00EF564B /* Views */,
+				FB031AE02379000400EF564B /* Models */,
+				FB31C24F223BD3F500BD0868 /* DWSignPayloadViewController.h */,
+				FB31C246223BD3F200BD0868 /* DWSignPayloadViewController.m */,
+			);
+			path = "Payload Signing";
+			sourceTree = "<group>";
+		};
+		FB031AE02379000400EF564B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FB031AE12379003D00EF564B /* DWSignPayloadModel.h */,
+				FB031AE22379003D00EF564B /* DWSignPayloadModel.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FB031AE42379118E00EF564B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FB031AE5237911F200EF564B /* DWSignPayloadView.h */,
+				FB031AE6237911F200EF564B /* DWSignPayloadView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		FB1C3DC1236AD2B1004C2B05 /* Masternode Control */ = {
 			isa = PBXGroup;
 			children = (
@@ -3334,6 +3369,7 @@
 		FB1C3DC2236AD3C7004C2B05 /* Masternode */ = {
 			isa = PBXGroup;
 			children = (
+				FB031ADF2378FFAE00EF564B /* Payload Signing */,
 				FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */,
 				FBCFEDEA236E50410086DE07 /* Masternode Registration */,
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
@@ -3349,8 +3385,6 @@
 			children = (
 				FB1BF8C522C6F4B7003413C6 /* DWSignMessageViewController.h */,
 				FB1BF8C622C6F4B7003413C6 /* DWSignMessageViewController.m */,
-				FB31C24F223BD3F500BD0868 /* DWSignPayloadViewController.h */,
-				FB31C246223BD3F200BD0868 /* DWSignPayloadViewController.m */,
 			);
 			path = Signing;
 			sourceTree = "<group>";
@@ -3426,7 +3460,6 @@
 		FBCFEDEA236E50410086DE07 /* Masternode Registration */ = {
 			isa = PBXGroup;
 			children = (
-				FBCFEDEF236E58940086DE07 /* Cells */,
 				FBCFEDEB236E50AF0086DE07 /* Models */,
 				FB31C23F223BD3F100BD0868 /* DWRegisterMasternodeViewController.h */,
 				FB31C247223BD3F200BD0868 /* DWRegisterMasternodeViewController.m */,
@@ -3441,13 +3474,6 @@
 				FBCFEDED236E50CD0086DE07 /* DWMasternodeRegistrationModel.m */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		FBCFEDEF236E58940086DE07 /* Cells */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Cells;
 			sourceTree = "<group>";
 		};
 		FBCFEDF0236F8C770086DE07 /* KeyValue */ = {
@@ -4084,6 +4110,7 @@
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
+				FB031AE7237911F200EF564B /* DWSignPayloadView.m in Sources */,
 				FBCFEDFA236FCE2E0086DE07 /* DWPublicKeyGenerationCellModel.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
@@ -4182,6 +4209,7 @@
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
 				FBCFEDF6236F8D3D0086DE07 /* DWKeyValueFormTableViewCell.m in Sources */,
+				FB031AE32379003D00EF564B /* DWSignPayloadModel.m in Sources */,
 				220460551BA0BEEE00D07B61 /* BREventConfirmView.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,

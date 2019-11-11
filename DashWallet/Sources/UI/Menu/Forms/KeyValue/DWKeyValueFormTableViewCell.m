@@ -119,6 +119,7 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
     return self;
 }
+
 - (void)setupObserving {
     [self mvvm_observe:DW_KEYPATH(self, cellModel.title)
                   with:^(__typeof(self) self, NSString *value) {
@@ -154,6 +155,14 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     self.cellModel.valueText = textField.text;
+}
+
+- (BOOL)resignFirstResponder {
+    BOOL resigned = [super resignFirstResponder];
+    if ([self.valueTextField isFirstResponder]) {
+        resigned |= [self.valueTextField resignFirstResponder];
+    }
+    return resigned;
 }
 
 @end

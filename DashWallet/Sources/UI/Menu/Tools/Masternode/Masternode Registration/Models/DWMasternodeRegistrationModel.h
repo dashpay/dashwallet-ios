@@ -34,6 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) DSUTXO collateral;
 
+@property (nonatomic, readonly) DSTransaction *collateralTransaction;
+@property (nonatomic, readonly) DSProviderRegistrationTransaction *providerRegistrationTransaction;
+
 @property (nonatomic, strong) NSString *payoutAddress;
 
 - (instancetype)initForAccount:(DSAccount *)account NS_DESIGNATED_INITIALIZER;
@@ -44,7 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion;
 
--(void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction* transaction, NSIndexSet *indexSet, NSError *error))completion;
+- (void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction *transaction, NSIndexSet *indexSet, NSError *error))completion;
+
+- (void)setIpAddressFromString:(NSString *)ipAddressString;
+
+- (void)findCollateralTransactionWithCompletion:(void (^_Nullable)(NSError *error))completion;
 
 @end
 

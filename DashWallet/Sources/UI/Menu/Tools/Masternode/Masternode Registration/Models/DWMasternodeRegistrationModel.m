@@ -24,8 +24,7 @@
 @property (nonatomic, strong) DSAccount *account;
 
 @property (nonatomic, strong) DSTransaction *collateralTransaction;
-
-@property (nonatomic, strong) DSTransaction *providerRegistrationTransaction;
+@property (nonatomic, strong) DSProviderRegistrationTransaction *providerRegistrationTransaction;
 
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *votingDerivationPath;
@@ -105,50 +104,70 @@
     self.ipAddress = ipAddress;
 }
 
--(void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction* transaction, NSIndexSet *indexSet, NSError *error))completion {
-    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:uint256_reverse(self.collateral.hash)
+- (void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction *transaction, NSIndexSet *indexSet, NSError *error))completion {
+    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:self.collateral.hash
                                                                   onChain:self.account.wallet.chain
                                                                completion:^(DSTransaction *transaction, NSError *error) {
-        if (error) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(transaction,nil,[NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Network error", nil)}]);
-            });
-            return;
-        }
-        if (!transaction) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(nil,nil,[NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction could not be found", nil)}]);
-            });
-            return;
-        }
-        NSIndexSet *indexSet = [[transaction outputAmounts] indexesOfObjectsPassingTest:^BOOL(id _Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-            if ([obj isEqual:@(MASTERNODE_COST)])
-                return TRUE;
-            return FALSE;
-        }];
-        if ([indexSet count]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(transaction,indexSet,nil);
-            });
-        }
-        else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(transaction,nil,nil);
-            });
-        }
-    }];
+                                                                   if (error) {
+                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                           completion(transaction, nil, [NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Network error", nil)}]);
+                                                                       });
+                                                                       return;
+                                                                   }
+                                                                   if (!transaction) {
+                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                           completion(nil, nil, [NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction could not be found", nil)}]);
+                                                                       });
+                                                                       return;
+                                                                   }
+                                                                   NSIndexSet *indexSet = [[transaction outputAmounts] indexesOfObjectsPassingTest:^BOOL(id _Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+                                                                       if ([obj isEqual:@(MASTERNODE_COST)])
+                                                                           return TRUE;
+                                                                       return FALSE;
+                                                                   }];
+                                                                   if ([indexSet count]) {
+                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                           completion(transaction, indexSet, nil);
+                                                                       });
+                                                                   }
+                                                                   else {
+                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                           completion(transaction, nil, nil);
+                                                                       });
+                                                                   }
+                                                               }];
+}
+
+- (void)findCollateralTransactionWithCompletion:(void (^_Nullable)(NSError *error))completion {
+    if (!dsutxo_is_zero(self.collateral)) {
+        [self lookupIndexesForCollateralHash:self.collateral.hash
+                                  completion:^(DSTransaction *_Nonnull transaction, NSIndexSet *_Nonnull indexSet, NSError *_Nonnull error) {
+                                      if (error) {
+                                          completion(error);
+                                          return;
+                                      }
+                                      if ([indexSet containsIndex:self.collateral.n]) {
+                                          self.collateralTransaction = transaction;
+                                      }
+                                      else {
+                                          if (completion) {
+                                              completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Incorrect collateral", nil)}]);
+                                          }
+                                      }
+                                  }];
+    }
 }
 
 - (void)registerMasternode:(id)sender requestsPayloadSigning:(void (^_Nullable)(void))payloadSigningRequest completion:(void (^_Nullable)(NSError *error))completion {
-    
-    
+
+
     DSMasternodeManager *masternodeManager = self.wallet.chain.chainManager.masternodeManager;
-    
+
     DSLocalMasternode *masternode = [masternodeManager createNewMasternodeWithIPAddress:self.ipAddress onPort:self.port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:self.operatorKeyIndex operatorPublicKey:self.operatorKey inOwnerWallet:self.wallet ownerWalletIndex:self.ownerKeyIndex ownerPrivateKey:self.ownerKey inVotingWallet:self.wallet votingWalletIndex:self.votingKeyIndex votingKey:self.votingKey];
-    
+
     //    NSString *payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain] ? self.payToAddressTableViewCell.textLabel.text : self.account.receiveAddress;
-    
-    
+
+
     //    DSUTXO collateral = DSUTXO_ZERO;
     //    UInt256 nonReversedCollateralHash = UINT256_ZERO;
     //    NSString *collateralTransactionHash = self.collateralTransactionTableViewCell.valueTextField.text;
@@ -161,61 +180,44 @@
     //        nonReversedCollateralHash = collateralTransactionHashData.UInt256;
     //        collateral.n = [self.collateralIndexTableViewCell.valueTextField.text integerValue];
     //    }
-    
-    
+
+
     [masternode registrationTransactionFundedByAccount:self.account
                                              toAddress:self.payoutAddress
                                         withCollateral:self.collateral
                                             completion:^(DSProviderRegistrationTransaction *_Nonnull providerRegistrationTransaction) {
-        if (providerRegistrationTransaction) {
-            if (dsutxo_is_zero(self.collateral)) {
-                [self signTransactionInputs:providerRegistrationTransaction completion:completion];
-            }
-            else {
-                [self lookupIndexesForCollateralHash:self.collateral.hash completion:^(DSTransaction * _Nonnull transaction, NSIndexSet * _Nonnull indexSet, NSError * _Nonnull error) {
-                    if (error) {
-                        completion(error);
-                        return;
-                    }
-                    if ([indexSet containsIndex:self.collateral.n]) {
-                        self.collateralTransaction = transaction;
-                        self.providerRegistrationTransaction = providerRegistrationTransaction;
-                        if (payloadSigningRequest) {
-                            payloadSigningRequest();
-                        }
-                    }
-                    else {
-                        if (completion) {
-                            completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Incorrect collateral index", nil)}]);
-                        }
-                    }
-                }];
-            }
-        }
-        else {
-            if (completion) {
-                completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Unable to create ProviderRegistrationTransaction.", nil)}]);
-            }
-        }
-    }];
+                                                if (providerRegistrationTransaction) {
+                                                    if (dsutxo_is_zero(self.collateral)) {
+                                                        [self signTransactionInputs:providerRegistrationTransaction completion:completion];
+                                                    }
+                                                    else {
+                                                        payloadSigningRequest();
+                                                    }
+                                                }
+                                                else {
+                                                    if (completion) {
+                                                        completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Unable to create ProviderRegistrationTransaction.", nil)}]);
+                                                    }
+                                                }
+                                            }];
 }
 
 - (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion {
     [self.account signTransaction:providerRegistrationTransaction
                        withPrompt:NSLocalizedString(@"Would you like to register this masternode?", nil)
                        completion:^(BOOL signedTransaction, BOOL cancelled) {
-        if (signedTransaction) {
-            [self.account.wallet.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction
-                                                                               completion:^(NSError *_Nullable error) {
-                completion(error);
-            }];
-        }
-        else {
-            if (completion) {
-                completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction was not signed.", nil)}]);
-            }
-        }
-    }];
+                           if (signedTransaction) {
+                               [self.account.wallet.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction
+                                                                                                  completion:^(NSError *_Nullable error) {
+                                                                                                      completion(error);
+                                                                                                  }];
+                           }
+                           else {
+                               if (completion) {
+                                   completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction was not signed.", nil)}]);
+                               }
+                           }
+                       }];
 }
 
 

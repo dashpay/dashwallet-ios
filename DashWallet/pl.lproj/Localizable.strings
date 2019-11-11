@@ -330,7 +330,7 @@
 "Enter Operator Public Key" = "Enter Operator Public Key";
 
 /* No comment provided by engineer. */
-"Enter Owner Public Key" = "Enter Owner Public Key";
+"Enter Owner Private Key" = "Enter Owner Private Key";
 
 /* No comment provided by engineer. */
 "Enter Payout Address" = "Enter Payout Address";
@@ -570,6 +570,9 @@
 "Network" = "Sieć";
 
 /* No comment provided by engineer. */
+"Network error" = "Network error";
+
+/* No comment provided by engineer. */
 "Network fee" = "Network fee";
 
 /* No comment provided by engineer. */
@@ -660,7 +663,7 @@
 "Owner Keys" = "Klucze właściciela";
 
 /* No comment provided by engineer. */
-"Owner Public Key" = "Owner Public Key";
+"Owner Private Key" = "Owner Private Key";
 
 /* No comment provided by engineer. */
 "Paid successfully" = "Paid successfully";
@@ -1083,6 +1086,9 @@
 "Touch ID spending limit" = "Limit wydatków Touch ID";
 
 /* No comment provided by engineer. */
+"Transaction could not be found" = "Transaction could not be found";
+
+/* No comment provided by engineer. */
 "Transaction history" = "Historia transakcji";
 
 /* No comment provided by engineer. */
@@ -1143,6 +1149,9 @@
 "Uphold account" = "Konto Uphold";
 
 /* No comment provided by engineer. */
+"Use Wallet" = "Use Wallet";
+
+/* No comment provided by engineer. */
 "Used" = "Used";
 
 /* No comment provided by engineer. */
@@ -1159,9 +1168,6 @@
 
 /* No comment provided by engineer. */
 "Username:" = "Username:";
-
-/* No comment provided by engineer. */
-"Using Index 0" = "Using Index 0";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";

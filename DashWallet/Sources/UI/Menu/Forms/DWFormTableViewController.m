@@ -193,6 +193,16 @@ static CGFloat const PUBLIC_KEY_GENERATION_CELL_HEIGHT = 124.0;
             actionCellModel.didSelectBlock(actionCellModel, indexPath);
         }
     }
+    else if ([cellModel isKindOfClass:DWKeyValueFormCellModel.class]) {
+        DWKeyValueFormCellModel *keyValueCellModel = (DWKeyValueFormCellModel *)cellModel;
+        DWKeyValueFormTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        if (cell) {
+            [cell resignFirstResponder];
+        }
+        if (keyValueCellModel.actionBlock) {
+            keyValueCellModel.actionBlock();
+        }
+    }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {
         DWSwitcherFormCellModel *switcherCellModel = (DWSwitcherFormCellModel *)cellModel;
         switcherCellModel.on = !switcherCellModel.on;

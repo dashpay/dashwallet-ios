@@ -12,6 +12,7 @@
 #import "DWKeyValueFormTableViewCell.h"
 #import "DWMasternodeRegistrationModel.h"
 #import "DWPublicKeyGenerationTableViewCell.h"
+#import "DWSignPayloadModel.h"
 #import "DWSignPayloadViewController.h"
 #import "DWUIKit.h"
 
@@ -37,9 +38,6 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 
 @interface DWRegisterMasternodeViewController ()
 
-@property (nonatomic, strong) DSAccount *account;
-@property (nonatomic, strong) DSProviderRegistrationTransaction *providerRegistrationTransaction;
-@property (nonatomic, strong) DSTransaction *collateralTransaction;
 @property (null_resettable, nonatomic, strong) DWMasternodeRegistrationModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 
@@ -49,7 +47,6 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.account = [DWEnvironment sharedInstance].currentAccount;
         self.title = NSLocalizedString(@"Registration", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -99,7 +96,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
         case DWMasternodeRegistrationCell_PayoutAddress:
             return NSLocalizedString(@"Payout Address", nil);
         case DWMasternodeRegistrationCell_OwnerKey:
-            return NSLocalizedString(@"Owner Public Key", nil);
+            return NSLocalizedString(@"Owner Private Key", nil);
         case DWMasternodeRegistrationCell_OperatorKey:
             return NSLocalizedString(@"Operator Public Key", nil);
         case DWMasternodeRegistrationCell_VotingKey:
@@ -121,7 +118,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
         case DWMasternodeRegistrationCell_PayoutAddress:
             return NSLocalizedString(@"Enter Payout Address", nil);
         case DWMasternodeRegistrationCell_OwnerKey:
-            return NSLocalizedString(@"Enter Owner Public Key", nil);
+            return NSLocalizedString(@"Enter Owner Private Key", nil);
         case DWMasternodeRegistrationCell_OperatorKey:
             return NSLocalizedString(@"Enter Operator Public Key", nil);
         case DWMasternodeRegistrationCell_VotingKey:
@@ -136,78 +133,212 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
             return NSLocalizedString(@"Lookup", nil);
         case DWMasternodeRegistrationCell_Port:
             return NSLocalizedString(@"Default", nil);
+        case DWMasternodeRegistrationCell_PayoutAddress:
+            return NSLocalizedString(@"Use Wallet", nil);
         case DWMasternodeRegistrationCell_OwnerKey:
-            return NSLocalizedString(@"Using Index 0", nil);
+            return NSLocalizedString(@"Use Wallet", nil);
         case DWMasternodeRegistrationCell_OperatorKey:
-            return NSLocalizedString(@"Using Index 0", nil);
+            return NSLocalizedString(@"Use Wallet", nil);
         case DWMasternodeRegistrationCell_VotingKey:
-            return NSLocalizedString(@"Using Index 0", nil);
+            return NSLocalizedString(@"Use Wallet", nil);
         default:
             return nil;
     }
 }
 
-- (DWMasternodeRegistrationCellType)typeForCellAtRow:(NSUInteger)row {
+- (void (^)(void))actionBlockForModel:(DWKeyValueFormCellModel *)model forCellAtRow:(NSUInteger)row {
+    __weak __typeof(self) weakSelf = self;
+    __weak __typeof(model) weakModel = model;
     switch (row) {
-        case DWMasternodeRegistrationCell_CollateralTx:
         case DWMasternodeRegistrationCell_CollateralIndex:
-        case DWMasternodeRegistrationCell_IPAddress:
+            return ^{
+                __strong __typeof(weakSelf) strongSelf = weakSelf;
+
+                if (!strongSelf) {
+                    return;
+                }
+                [[strongSelf.formController.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:DWMasternodeRegistrationCell_CollateralTx inSection:0]] resignFirstResponder];
+                [strongSelf.model lookupIndexesForCollateralHash:strongSelf.model.collateral.hash
+                                                      completion:^(DSTransaction *_Nonnull transaction, NSIndexSet *_Nonnull indexSet, NSError *_Nonnull error) {
+                                                          __strong __typeof(weakModel) strongModel = weakModel;
+                                                          if (!strongModel) {
+                                                              return;
+                                                          }
+                                                          if (error) {
+                                                              //todo display error message
+                                                          }
+                                                          else if ([indexSet count] == 0) {
+                                                          }
+                                                          else {
+                                                              strongModel.valueText = [NSString stringWithFormat:@"%lu", (unsigned long)[indexSet firstIndex]];
+                                                          }
+                                                      }];
+            };
         case DWMasternodeRegistrationCell_Port:
+            return ^{
+                __strong __typeof(weakModel) strongModel = weakModel;
+                if (!strongModel) {
+                    return;
+                }
+                strongModel.valueText = [NSString stringWithFormat:@"%d", [DWEnvironment sharedInstance].currentChain.standardPort];
+            };
         case DWMasternodeRegistrationCell_PayoutAddress:
-            return DWMasternodeRegistrationCellType_InputValue;
+            return ^{
+                __strong __typeof(weakModel) strongModel = weakModel;
+                if (!strongModel) {
+                    return;
+                }
+                strongModel.valueText = [[DWEnvironment sharedInstance].currentAccount receiveAddress];
+            };
         case DWMasternodeRegistrationCell_OwnerKey:
+            return ^{
+                __strong __typeof(weakModel) strongModel = weakModel;
+                if (!strongModel) {
+                    return;
+                }
+                @autoreleasepool {
+                    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+                    DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
+                    DSAuthenticationKeysDerivationPath *ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:wallet];
+                    NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:wallet.seedPhraseIfAuthenticated
+                                                                          withPassphrase:nil];
+                    DSKey *key = [ownerDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+                    if ([key isKindOfClass:[DSECDSAKey class]]) {
+                        strongModel.valueText = [((DSECDSAKey *)key) privateKeyStringForChain:ownerDerivationPath.chain];
+                    }
+                    else {
+                        strongModel.valueText = key.secretKeyString;
+                    }
+                }
+            };
         case DWMasternodeRegistrationCell_OperatorKey:
+            return ^{
+                __strong __typeof(weakModel) strongModel = weakModel;
+                if (!strongModel) {
+                    return;
+                }
+                DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+                DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
+                DSAuthenticationKeysDerivationPath *operatorDerivationPath = [factory providerOperatorKeysDerivationPathForWallet:wallet];
+                NSData *key = [operatorDerivationPath firstUnusedPublicKey];
+                strongModel.valueText = key.hexString;
+            };
         case DWMasternodeRegistrationCell_VotingKey:
-            return DWMasternodeRegistrationCellType_PublicKey;
+            return ^{
+                __strong __typeof(weakModel) strongModel = weakModel;
+                if (!strongModel) {
+                    return;
+                }
+                DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
+                DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
+                DSAuthenticationKeysDerivationPath *voterDerivationPath = [factory providerVotingKeysDerivationPathForWallet:wallet];
+                NSData *key = [voterDerivationPath firstUnusedPublicKey];
+                strongModel.valueText = key.hexString;
+            };
+        default:
+            return nil;
     }
-    return DWMasternodeRegistrationCellType_InputValue;
 }
 
 - (DWBaseFormCellModel *)modelForRow:(NSUInteger)row {
-    switch ([self typeForCellAtRow:row]) {
-        case DWMasternodeRegistrationCellType_InputValue: {
-            NSString *actionText = [self actionForCellAtRow:row];
-            DWKeyValueFormCellModel *model = [[DWKeyValueFormCellModel alloc] initWithTitle:[self titleForCellAtRow:row] valueText:@"" placeholderText:[self placeholderForCellAtRow:row] actionText:actionText ? [[NSAttributedString alloc] initWithString:actionText] : nil];
-            if (row == DWMasternodeRegistrationCell_Port) {
-                __weak __typeof(model) weakModel = model;
-                model.actionBlock = ^{
-                    __strong __typeof(weakModel) strongModel = weakModel;
-                    if (!strongModel) {
-                        return;
-                    }
-                    strongModel.valueText = [NSString stringWithFormat:@"%d", [DWEnvironment sharedInstance].currentChain.standardPort];
-                };
-            } else if (row == DWMasternodeRegistrationCell_CollateralIndex) {
-                __weak __typeof(self) weakSelf = self;
-                __weak __typeof(model) weakModel = model;
-                model.actionBlock = ^{
-                    __strong __typeof(weakSelf) strongSelf = weakSelf;
-                    
-                    if (!strongSelf) {
-                        return;
-                    }
-                    [strongSelf.model lookupIndexesForCollateralHash:strongSelf.model.collateral.hash completion:^(DSTransaction * _Nonnull transaction, NSIndexSet * _Nonnull indexSet, NSError * _Nonnull error) {
-                        __strong __typeof(weakModel) strongModel = weakModel;
-                        if (!strongModel) {
-                            return;
-                        }
-                        strongModel.valueText = [NSString stringWithFormat:@"%lu",(unsigned long)[indexSet firstIndex]];
-                    }];
-                    
-                };
-            }
-            return model;
+    NSString *actionText = [self actionForCellAtRow:row];
+    DWKeyValueFormCellModel *model = [[DWKeyValueFormCellModel alloc] initWithTitle:[self titleForCellAtRow:row] valueText:@"" placeholderText:[self placeholderForCellAtRow:row] actionText:actionText ? [[NSAttributedString alloc] initWithString:actionText] : nil];
+    if (actionText) {
+        model.actionBlock = [self actionBlockForModel:model forCellAtRow:row];
+    }
+    __weak __typeof(self.model) weakModel = self.model;
+    switch (row) {
+        case DWMasternodeRegistrationCell_CollateralTx: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.collateral = ((DSUTXO){.hash = [value hexToData].UInt256, .n = strongModel.collateral.n});
+                           }];
+            break;
         }
-        case DWMasternodeRegistrationCellType_PublicKey: {
-            NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-            attachment.image = [UIImage imageNamed:@"icon_disclosure_indicator"];
-
-            NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:attachment];
-            NSMutableAttributedString *indexString = [[NSMutableAttributedString alloc] initWithString:[self actionForCellAtRow:row]];
-            [indexString appendAttributedString:attachmentString];
-            return [[DWKeyValueFormCellModel alloc] initWithTitle:[self titleForCellAtRow:row] valueText:@"" placeholderText:[self placeholderForCellAtRow:row] actionText:indexString];
+        case DWMasternodeRegistrationCell_CollateralIndex: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.collateral = ((DSUTXO){.hash = strongModel.collateral.hash, .n = [value intValue]});
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_IPAddress: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               [strongModel setIpAddressFromString:value];
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_Port: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.port = value.intValue;
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_PayoutAddress: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.payoutAddress = value;
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_OwnerKey: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.ownerKey = [DSECDSAKey keyWithPrivateKey:value onChain:[[DWEnvironment sharedInstance] currentChain]];
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_OperatorKey: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.operatorKey = [DSBLSKey blsKeyWithPublicKey:[value hexToData].UInt384 onChain:[[DWEnvironment sharedInstance] currentChain]];
+                           }];
+            break;
+        }
+        case DWMasternodeRegistrationCell_VotingKey: {
+            [model mvvm_observe:DW_KEYPATH(model, valueText)
+                           with:^(__typeof(self) self, NSString *value) {
+                               __strong __typeof(weakModel) strongModel = weakModel;
+                               if (!strongModel) {
+                                   return;
+                               }
+                               strongModel.votingKey = [DSECDSAKey keyWithPublicKey:[value hexToData]];
+                           }];
+            break;
         }
     }
+
+    return model;
 }
 
 - (NSArray<DWBaseFormCellModel *> *)items {
@@ -224,7 +355,12 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 - (DWBaseFormCellModel *)registerActionModel {
     DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"Register", nil)];
     registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-        [self showPayloadSigning];
+        [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
+            if (error) {
+                return;
+            }
+            [self showPayloadSigning];
+        }];
     };
     return registerModel;
 }
@@ -254,9 +390,10 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 }
 
 - (void)showPayloadSigning {
+    DWSignPayloadModel *signPayloadModel = [[DWSignPayloadModel alloc] initForCollateralAddress:self.model.collateralTransaction.outputAddresses[self.model.providerRegistrationTransaction.collateralOutpoint.n] withPayloadCollateralString:self.model.providerRegistrationTransaction.payloadCollateralString];
     DWSignPayloadViewController *signPayloadViewController = [[DWSignPayloadViewController alloc] init];
-    signPayloadViewController.collateralAddress = self.collateralTransaction.outputAddresses[self.providerRegistrationTransaction.collateralOutpoint.n];
-    signPayloadViewController.providerRegistrationTransaction = self.providerRegistrationTransaction;
+    signPayloadViewController.collateralAddress =
+        signPayloadViewController.providerRegistrationTransaction = ;
     signPayloadViewController.delegate = self;
     [self.navigationController pushViewController:signPayloadViewController animated:YES];
 }

@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Created by Sam Westrich
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <KVO-MVVM/KVONSObject.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseFormCellModel : KVONSObject
-
-@property (nullable, copy, nonatomic) NSString *title;
-@property (assign, nonatomic) NSUInteger tag;
-
-- (instancetype)initWithTitle:(nullable NSString *)title NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+@interface DWSignPayloadView : UIView
 
 @end
 

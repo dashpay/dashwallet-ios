@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Created by Sam Westrich
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,19 +15,16 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <KVO-MVVM/KVONSObject.h>
+#import "DWSignPayloadView.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWSignPayloadView
 
-@interface DWBaseFormCellModel : KVONSObject
-
-@property (nullable, copy, nonatomic) NSString *title;
-@property (assign, nonatomic) NSUInteger tag;
-
-- (instancetype)initWithTitle:(nullable NSString *)title NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
 
 @end
-
-NS_ASSUME_NONNULL_END
