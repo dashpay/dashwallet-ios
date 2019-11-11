@@ -139,15 +139,26 @@
 }
 
 - (void)findCollateralTransactionWithCompletion:(void (^_Nullable)(NSError *error))completion {
+    if (self.collateralTransaction) {
+        if (completion) {
+            completion(nil);
+        }
+        return;
+    }
     if (!dsutxo_is_zero(self.collateral)) {
         [self lookupIndexesForCollateralHash:self.collateral.hash
                                   completion:^(DSTransaction *_Nonnull transaction, NSIndexSet *_Nonnull indexSet, NSError *_Nonnull error) {
                                       if (error) {
-                                          completion(error);
+                                          if (completion) {
+                                              completion(error);
+                                          }
                                           return;
                                       }
                                       if ([indexSet containsIndex:self.collateral.n]) {
                                           self.collateralTransaction = transaction;
+                                          if (completion) {
+                                              completion(nil);
+                                          }
                                       }
                                       else {
                                           if (completion) {

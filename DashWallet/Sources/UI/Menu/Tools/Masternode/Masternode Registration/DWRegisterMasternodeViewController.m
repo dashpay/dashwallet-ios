@@ -391,19 +391,17 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 
 - (void)showPayloadSigning {
     DWSignPayloadModel *signPayloadModel = [[DWSignPayloadModel alloc] initForCollateralAddress:self.model.collateralTransaction.outputAddresses[self.model.providerRegistrationTransaction.collateralOutpoint.n] withPayloadCollateralString:self.model.providerRegistrationTransaction.payloadCollateralString];
-    DWSignPayloadViewController *signPayloadViewController = [[DWSignPayloadViewController alloc] init];
-    signPayloadViewController.collateralAddress =
-        signPayloadViewController.providerRegistrationTransaction = ;
+    DWSignPayloadViewController *signPayloadViewController = [[DWSignPayloadViewController alloc] initWithModel:signPayloadModel];
     signPayloadViewController.delegate = self;
     [self.navigationController pushViewController:signPayloadViewController animated:YES];
 }
 
 - (void)viewController:(nonnull UIViewController *)controller didReturnSignature:(nonnull NSData *)signature {
-    self.providerRegistrationTransaction.payloadSignature = signature;
-    [self.model signTransactionInputs:self.providerRegistrationTransaction
-                           completion:^(NSError *_Nonnull error){
-
-                           }];
+    //    self.providerRegistrationTransaction.payloadSignature = signature;
+    //    [self.model signTransactionInputs:self.providerRegistrationTransaction
+    //                           completion:^(NSError *_Nonnull error){
+    //
+    //                           }];
 }
 
 

@@ -15,11 +15,17 @@
 //  limitations under the License.
 //
 
+#import "DWSignPayloadModel.h"
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSignPayloadView : UIView
+
+@property (nullable, nonatomic, strong) DWSignPayloadModel *model;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

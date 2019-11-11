@@ -16,15 +16,54 @@
 //
 
 #import "DWSignPayloadView.h"
+#import "DWUIKit.h"
+
+CGFloat const DW_SIGNED_PAYLOAD_TOP_PADDING = 12.0;
+CGFloat const DW_SIGNED_PAYLOAD_INTER_PADDING = 12.0;
+CGFloat const DW_SIGNED_PAYLOAD_BOTTOM_PADDING = 12.0;
+
+@interface DWSignPayloadView ()
+
+@property (nonatomic, strong) UITextView *messageToSignTextView;
+@property (nonatomic, strong) UITextView *signedMessageInputTextView;
+
+@end
+
 
 @implementation DWSignPayloadView
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor dw_backgroundColor];
+        UITextView *messageToSignTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+        messageToSignTextView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:messageToSignTextView];
+        _messageToSignTextView = messageToSignTextView;
+
+        UITextView *signedMessageInputTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+        signedMessageInputTextView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:signedMessageInputTextView];
+        _signedMessageInputTextView = signedMessageInputTextView;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [messageToSignTextView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                                            constant:DW_SIGNED_PAYLOAD_TOP_PADDING],
+            [messageToSignTextView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [messageToSignTextView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            
+            [messageToSignTextView.heightAnchor constraintEqualToAnchor:signedMessageInputTextView.heightAnchor multiplier:0.67 constant:0],
+
+            [signedMessageInputTextView.topAnchor constraintEqualToAnchor:messageToSignTextView.bottomAnchor
+                                                                 constant:DW_SIGNED_PAYLOAD_INTER_PADDING],
+            [signedMessageInputTextView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+            [signedMessageInputTextView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+            [signedMessageInputTextView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
+                                                                    constant:-DW_SIGNED_PAYLOAD_BOTTOM_PADDING],
+        ]];
+    }
+    return self;
 }
-*/
 
 @end

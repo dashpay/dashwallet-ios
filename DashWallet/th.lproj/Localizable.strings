@@ -363,6 +363,9 @@
 "Exit" = "Exit";
 
 /* No comment provided by engineer. */
+"External Sign" = "External Sign";
+
+/* No comment provided by engineer. */
 "Face ID limit" = "ขีดจำกัด Face ID";
 
 /* No comment provided by engineer. */
@@ -441,7 +444,7 @@
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
-"Incorrect collateral index" = "Incorrect collateral index";
+"Incorrect collateral" = "Incorrect collateral";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "กองทุนไม่เพียงพอ";
@@ -1177,6 +1180,9 @@
 
 /* No comment provided by engineer. */
 "Verify" = "Verify";
+
+/* No comment provided by engineer. */
+"Verify Signature" = "Verify Signature";
 
 /* No comment provided by engineer. */
 "verifying quorum" = "verifying quorum";

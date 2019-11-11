@@ -11,6 +11,7 @@
 #import "DSECDSAKey.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSWallet.h"
+#import "DWSignPayloadView.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSString+Dash.h"
@@ -21,22 +22,17 @@
 @property (strong, nonatomic) IBOutlet UIButton *signButton;
 
 @property (nonatomic, strong) DWSignPayloadModel *model;
+@property (nonatomic, strong) DWSignPayloadView *contentView;
 
 @end
 
 @implementation DWSignPayloadViewController
 
-//- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-//    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-//        self.title = NSLocalizedString(@"External Sign", nil);
-//        self.hidesBottomBarWhenPushed = YES;
-//    }
-//    return self;
-//}
 
 - (instancetype)initWithModel:(DWSignPayloadModel *)model {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        self.hidesBottomBarWhenPushed = YES;
         _model = model;
     }
     return self;
@@ -63,9 +59,9 @@
 
     NSParameterAssert(self.model);
 
-    DWSignPayloadView *contentView = [[DWSignPayloadView alloc] initWithModel:self.model];
+    DWSignPayloadView *contentView = [[DWSignPayloadView alloc] initWithFrame:CGRectZero];
+    contentView.model = self.model;
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    contentView.delegate = self;
     [self setupContentView:contentView];
     self.contentView = contentView;
 }
