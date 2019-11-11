@@ -17,6 +17,7 @@
 
 #import "DWFormTableViewController.h"
 
+#import "DWActionFormTableViewCell.h"
 #import "DWKeyValueFormTableViewCell.h"
 #import "DWPlaceholderFormTableViewCell.h"
 #import "DWPublicKeyGenerationTableViewCell.h"
@@ -54,6 +55,7 @@ static CGFloat const PUBLIC_KEY_GENERATION_CELL_HEIGHT = 124.0;
         DWPlaceholderFormTableViewCell.class,
         DWKeyValueFormTableViewCell.class,
         DWPublicKeyGenerationTableViewCell.class,
+        DWActionFormTableViewCell.class,
     ];
 
     for (Class cellClass in cellClasses) {
@@ -140,6 +142,13 @@ static CGFloat const PUBLIC_KEY_GENERATION_CELL_HEIGHT = 124.0;
         cell.cellModel = (DWPlaceholderFormCellModel *)cellModel;
         return cell;
     }
+    else if ([cellModel isKindOfClass:DWActionFormCellModel.class]) {
+        NSString *cellId = NSStringFromClass(DWActionFormTableViewCell.class);
+        DWActionFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                          forIndexPath:indexPath];
+        cell.cellModel = (DWActionFormCellModel *)cellModel;
+        return cell;
+    }
     else {
         NSAssert(NO, @"Unknown cell model %@", cellModel);
 
@@ -176,6 +185,12 @@ static CGFloat const PUBLIC_KEY_GENERATION_CELL_HEIGHT = 124.0;
         DWSelectorFormCellModel *selectorCellModel = (DWSelectorFormCellModel *)cellModel;
         if (selectorCellModel.didSelectBlock) {
             selectorCellModel.didSelectBlock(selectorCellModel, indexPath);
+        }
+    }
+    else if ([cellModel isKindOfClass:DWActionFormCellModel.class]) {
+        DWActionFormCellModel *actionCellModel = (DWActionFormCellModel *)cellModel;
+        if (actionCellModel.didSelectBlock) {
+            actionCellModel.didSelectBlock(actionCellModel, indexPath);
         }
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {

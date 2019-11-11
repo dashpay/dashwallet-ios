@@ -22,9 +22,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
+
 @interface DWKeyValueFormTableViewCell ()
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
+@property (readonly, nonatomic, strong) UILabel *actionLabel;
 @property (readonly, nonatomic, strong) UITextField *valueTextField;
 
 @end
@@ -56,28 +59,59 @@ NS_ASSUME_NONNULL_BEGIN
         UITextField *valueTextField = [[UITextField alloc] initWithFrame:CGRectZero];
         valueTextField.translatesAutoresizingMaskIntoConstraints = NO;
         valueTextField.backgroundColor = [UIColor dw_backgroundColor];
-        valueTextField.textColor = [UIColor dw_darkTitleColor];
-        valueTextField.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+        valueTextField.textColor = [UIColor dw_tertiaryTextColor];
+        valueTextField.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
         valueTextField.delegate = self;
         [contentView addSubview:valueTextField];
         _valueTextField = valueTextField;
 
+        UILabel *actionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        actionLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        actionLabel.backgroundColor = [UIColor dw_backgroundColor];
+        actionLabel.textAlignment = NSTextAlignmentRight;
+        actionLabel.textColor = [UIColor dw_dashBlueColor];
+        actionLabel.numberOfLines = 0;
+        actionLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        actionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+        actionLabel.adjustsFontForContentSizeCategory = YES;
+        actionLabel.minimumScaleFactor = 0.5;
+        actionLabel.adjustsFontSizeToFitWidth = YES;
+        [actionLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+                                                     forAxis:UILayoutConstraintAxisHorizontal];
+        [actionLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+                                                     forAxis:UILayoutConstraintAxisVertical];
+        [actionLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
+                                       forAxis:UILayoutConstraintAxisHorizontal];
+        [contentView addSubview:actionLabel];
+        _actionLabel = actionLabel;
+
         const CGFloat margin = DWDefaultMargin();
-        const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING;
+        const CGFloat padding = DW_FORM_CELL_TWOLINE_VERTICAL_PADDING;
 
         [NSLayoutConstraint activateConstraints:@[
             [titleLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
                                                  constant:padding],
             [titleLabel.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
                                                      constant:margin],
-            [titleLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                                    constant:-padding],
 
-            [valueTextField.leadingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor
-                                                         constant:DW_FORM_CELL_SPACING],
+            [valueTextField.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                                     constant:DW_FORM_CELL_TWOLINE_CONTENT_VERTICAL_SPACING - 4],
+            [valueTextField.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
+                                                         constant:margin],
+            [valueTextField.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                                        constant:-padding],
             [valueTextField.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
                                                           constant:-margin],
-            [valueTextField.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor],
+
+            [actionLabel.topAnchor constraintEqualToAnchor:titleLabel.topAnchor
+                                                  constant:0],
+            [actionLabel.leadingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor
+                                                      constant:DW_FORM_CELL_SPACING],
+            [actionLabel.bottomAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                                     constant:0],
+            [actionLabel.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
+                                                       constant:-margin],
+
         ]];
 
         [self setupObserving];
@@ -93,9 +127,23 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self mvvm_observe:DW_KEYPATH(self, cellModel.valueText)
                   with:^(__typeof(self) self, NSString *value) {
-                      const BOOL animated = self.window != nil;
                       [self.valueTextField setText:value];
                   }];
+
+    [self mvvm_observe:DW_KEYPATH(self, cellModel.actionText)
+                  with:^(__typeof(self) self, NSAttributedString *value) {
+                      [self.actionLabel setAttributedText:value];
+                  }];
+}
+
+- (void)setCellModel:(nullable DWKeyValueFormCellModel *)cellModel {
+    _cellModel = cellModel;
+    if (cellModel.placeholderText) {
+        [self.valueTextField setPlaceholder:cellModel.placeholderText];
+    }
+    if (cellModel.actionText) {
+        [self.actionLabel setAttributedText:cellModel.actionText];
+    }
 }
 
 - (BOOL)shouldAnimatePressWhenHighlighted {

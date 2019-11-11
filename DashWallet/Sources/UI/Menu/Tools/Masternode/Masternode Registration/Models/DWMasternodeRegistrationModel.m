@@ -16,10 +16,17 @@
 //
 
 #import "DWMasternodeRegistrationModel.h"
+#include <arpa/inet.h>
 
 @interface DWMasternodeRegistrationModel ()
 
 @property (nonatomic, strong) DSWallet *wallet;
+@property (nonatomic, strong) DSAccount *account;
+
+@property (nonatomic, strong) DSTransaction *collateralTransaction;
+
+@property (nonatomic, strong) DSTransaction *providerRegistrationTransaction;
+
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *ownerDerivationPath;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *votingDerivationPath;
 @property (readonly, nonatomic, strong) DSAuthenticationKeysDerivationPath *operatorDerivationPath;
@@ -28,50 +35,187 @@
 
 @implementation DWMasternodeRegistrationModel
 
-- (instancetype)initForWallet:(DSWallet *)wallet {
+- (instancetype)initForAccount:(DSAccount *)account {
     self = [super init];
     if (self) {
-        _wallet = wallet;
-        _port = wallet.chain.standardPort;
+        _wallet = account.wallet;
+        _account = account;
+        _port = _wallet.chain.standardPort;
         DSDerivationPathFactory *factory = [DSDerivationPathFactory sharedInstance];
-        _ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:wallet];
-        _votingDerivationPath = [factory providerVotingKeysDerivationPathForWallet:wallet];
-        _operatorDerivationPath = [factory providerOperatorKeysDerivationPathForWallet:wallet];
+        _ownerDerivationPath = [factory providerOwnerKeysDerivationPathForWallet:_wallet];
+        _votingDerivationPath = [factory providerVotingKeysDerivationPathForWallet:_wallet];
+        _operatorDerivationPath = [factory providerOperatorKeysDerivationPathForWallet:_wallet];
     }
     return self;
 }
 
-- (void)setOperatorPublicKeyIndex:(uint32_t)operatorPublicKeyIndex {
-    _operatorPublicKeyIndex = operatorPublicKeyIndex;
-    _operatorPublicKeyData = [self.operatorDerivationPath publicKeyDataAtIndex:operatorPublicKeyIndex];
+- (void)setOperatorKeyIndex:(uint32_t)operatorKeyIndex {
+    _operatorKeyIndex = operatorKeyIndex;
+    @autoreleasepool {
+        NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:_wallet.seedPhraseIfAuthenticated
+                                                              withPassphrase:nil];
+        _operatorKey = (DSBLSKey *)[self.operatorDerivationPath privateKeyAtIndex:operatorKeyIndex fromSeed:seed];
+    }
 }
 
-- (void)setOwnerPublicKeyIndex:(uint32_t)ownerPublicKeyIndex {
-    _ownerPublicKeyIndex = ownerPublicKeyIndex;
-    _ownerPublicKeyData = [self.ownerDerivationPath publicKeyDataAtIndex:ownerPublicKeyIndex];
+- (void)setOwnerKeyIndex:(uint32_t)ownerKeyIndex {
+    _ownerKeyIndex = ownerKeyIndex;
+    @autoreleasepool {
+        NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:_wallet.seedPhraseIfAuthenticated
+                                                              withPassphrase:nil];
+        _ownerKey = (DSECDSAKey *)[self.ownerDerivationPath privateKeyAtIndex:ownerKeyIndex fromSeed:seed];
+    }
 }
 
-- (void)setVotingPublicKeyIndex:(uint32_t)votingPublicKeyIndex {
-    _votingPublicKeyIndex = votingPublicKeyIndex;
-    _votingPublicKeyData = [self.votingDerivationPath publicKeyDataAtIndex:votingPublicKeyIndex];
+- (void)setVotingKeyIndex:(uint32_t)votingKeyIndex {
+    _votingKeyIndex = votingKeyIndex;
+    @autoreleasepool {
+        NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:_wallet.seedPhraseIfAuthenticated
+                                                              withPassphrase:nil];
+        _votingKey = (DSECDSAKey *)[self.votingDerivationPath privateKeyAtIndex:votingKeyIndex fromSeed:seed];
+    }
 }
 
-- (void)setOperatorPublicKeyData:(NSData *)operatorPublicKeyData {
-    _operatorPublicKeyData = operatorPublicKeyData;
-    NSString *address = [DSKey addressWithPublicKeyData:operatorPublicKeyData forChain:_wallet.chain];
-    _operatorPublicKeyIndex = [self.operatorDerivationPath indexOfKnownAddress:address];
+- (void)setOperatorKey:(DSBLSKey *)operatorKey {
+    _operatorKey = operatorKey;
+    NSString *address = [operatorKey addressForChain:_wallet.chain];
+    _operatorKeyIndex = [self.operatorDerivationPath indexOfKnownAddress:address];
 }
 
-- (void)setOwnerPublicKeyData:(NSData *)ownerPublicKeyData {
-    _ownerPublicKeyData = ownerPublicKeyData;
-    NSString *address = [DSKey addressWithPublicKeyData:ownerPublicKeyData forChain:_wallet.chain];
-    _ownerPublicKeyIndex = [self.ownerDerivationPath indexOfKnownAddress:address];
+- (void)setOwnerKey:(DSECDSAKey *)ownerKey {
+    _ownerKey = ownerKey;
+    NSString *address = [ownerKey addressForChain:_wallet.chain];
+    _ownerKeyIndex = [self.ownerDerivationPath indexOfKnownAddress:address];
 }
 
-- (void)setVotingPublicKeyData:(NSData *)votingPublicKeyData {
-    _votingPublicKeyData = votingPublicKeyData;
-    NSString *address = [DSKey addressWithPublicKeyData:votingPublicKeyData forChain:_wallet.chain];
-    _votingPublicKeyIndex = [self.votingDerivationPath indexOfKnownAddress:address];
+- (void)setVotingKey:(DSECDSAKey *)votingKey {
+    _votingKey = votingKey;
+    NSString *address = [votingKey addressForChain:_wallet.chain];
+    _votingKeyIndex = [self.votingDerivationPath indexOfKnownAddress:address];
+}
+
+- (void)setIpAddressFromString:(NSString *)ipAddressString {
+    UInt128 ipAddress = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
+    struct in_addr addrV4;
+    if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+        DSDLog(@"%08x", ip);
+    }
+    self.ipAddress = ipAddress;
+}
+
+-(void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction* transaction, NSIndexSet *indexSet, NSError *error))completion {
+    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:uint256_reverse(self.collateral.hash)
+                                                                  onChain:self.account.wallet.chain
+                                                               completion:^(DSTransaction *transaction, NSError *error) {
+        if (error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(transaction,nil,[NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Network error", nil)}]);
+            });
+            return;
+        }
+        if (!transaction) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(nil,nil,[NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction could not be found", nil)}]);
+            });
+            return;
+        }
+        NSIndexSet *indexSet = [[transaction outputAmounts] indexesOfObjectsPassingTest:^BOOL(id _Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+            if ([obj isEqual:@(MASTERNODE_COST)])
+                return TRUE;
+            return FALSE;
+        }];
+        if ([indexSet count]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(transaction,indexSet,nil);
+            });
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(transaction,nil,nil);
+            });
+        }
+    }];
+}
+
+- (void)registerMasternode:(id)sender requestsPayloadSigning:(void (^_Nullable)(void))payloadSigningRequest completion:(void (^_Nullable)(NSError *error))completion {
+    
+    
+    DSMasternodeManager *masternodeManager = self.wallet.chain.chainManager.masternodeManager;
+    
+    DSLocalMasternode *masternode = [masternodeManager createNewMasternodeWithIPAddress:self.ipAddress onPort:self.port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:self.operatorKeyIndex operatorPublicKey:self.operatorKey inOwnerWallet:self.wallet ownerWalletIndex:self.ownerKeyIndex ownerPrivateKey:self.ownerKey inVotingWallet:self.wallet votingWalletIndex:self.votingKeyIndex votingKey:self.votingKey];
+    
+    //    NSString *payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain] ? self.payToAddressTableViewCell.textLabel.text : self.account.receiveAddress;
+    
+    
+    //    DSUTXO collateral = DSUTXO_ZERO;
+    //    UInt256 nonReversedCollateralHash = UINT256_ZERO;
+    //    NSString *collateralTransactionHash = self.collateralTransactionTableViewCell.valueTextField.text;
+    //    if (![collateralTransactionHash isEqual:@""]) {
+    //        NSData *collateralTransactionHashData = [collateralTransactionHash hexToData];
+    //        if (collateralTransactionHashData.length != 32)
+    //            return;
+    //        collateral.hash = collateralTransactionHashData.reverse.UInt256;
+    //
+    //        nonReversedCollateralHash = collateralTransactionHashData.UInt256;
+    //        collateral.n = [self.collateralIndexTableViewCell.valueTextField.text integerValue];
+    //    }
+    
+    
+    [masternode registrationTransactionFundedByAccount:self.account
+                                             toAddress:self.payoutAddress
+                                        withCollateral:self.collateral
+                                            completion:^(DSProviderRegistrationTransaction *_Nonnull providerRegistrationTransaction) {
+        if (providerRegistrationTransaction) {
+            if (dsutxo_is_zero(self.collateral)) {
+                [self signTransactionInputs:providerRegistrationTransaction completion:completion];
+            }
+            else {
+                [self lookupIndexesForCollateralHash:self.collateral.hash completion:^(DSTransaction * _Nonnull transaction, NSIndexSet * _Nonnull indexSet, NSError * _Nonnull error) {
+                    if (error) {
+                        completion(error);
+                        return;
+                    }
+                    if ([indexSet containsIndex:self.collateral.n]) {
+                        self.collateralTransaction = transaction;
+                        self.providerRegistrationTransaction = providerRegistrationTransaction;
+                        if (payloadSigningRequest) {
+                            payloadSigningRequest();
+                        }
+                    }
+                    else {
+                        if (completion) {
+                            completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Incorrect collateral index", nil)}]);
+                        }
+                    }
+                }];
+            }
+        }
+        else {
+            if (completion) {
+                completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Unable to create ProviderRegistrationTransaction.", nil)}]);
+            }
+        }
+    }];
+}
+
+- (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion {
+    [self.account signTransaction:providerRegistrationTransaction
+                       withPrompt:NSLocalizedString(@"Would you like to register this masternode?", nil)
+                       completion:^(BOOL signedTransaction, BOOL cancelled) {
+        if (signedTransaction) {
+            [self.account.wallet.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction
+                                                                               completion:^(NSError *_Nullable error) {
+                completion(error);
+            }];
+        }
+        else {
+            if (completion) {
+                completion([NSError errorWithDomain:@"Dashwallet" code:500 userInfo:@{NSLocalizedDescriptionKey : NSLocalizedString(@"Transaction was not signed.", nil)}]);
+            }
+        }
+    }];
 }
 
 

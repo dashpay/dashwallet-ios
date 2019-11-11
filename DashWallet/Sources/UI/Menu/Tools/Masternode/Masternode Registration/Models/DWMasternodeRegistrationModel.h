@@ -21,25 +21,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWMasternodeRegistrationModel : NSObject
 
-@property (nonatomic, strong) NSData *ownerPublicKeyData;
-@property (nonatomic, strong) NSData *operatorPublicKeyData;
-@property (nonatomic, strong) NSData *votingPublicKeyData;
+@property (nonatomic, strong) DSECDSAKey *ownerKey;
+@property (nonatomic, strong) DSBLSKey *operatorKey;
+@property (nonatomic, strong) DSECDSAKey *votingKey;
 
-@property (nonatomic, assign) uint32_t ownerPublicKeyIndex;
-@property (nonatomic, assign) uint32_t operatorPublicKeyIndex;
-@property (nonatomic, assign) uint32_t votingPublicKeyIndex;
+@property (nonatomic, assign) uint32_t ownerKeyIndex;
+@property (nonatomic, assign) uint32_t operatorKeyIndex;
+@property (nonatomic, assign) uint32_t votingKeyIndex;
 
-@property (nonatomic, assign) NSString *ipAddress;
+@property (nonatomic, assign) UInt128 ipAddress;
 @property (nonatomic, assign) uint16_t port;
 
-@property (nonatomic, strong) NSData *collateralTransactionHashData;
-@property (nonatomic, assign) uint16_t collateralIndex;
+@property (nonatomic, assign) DSUTXO collateral;
 
 @property (nonatomic, strong) NSString *payoutAddress;
 
-- (instancetype)initForWallet:(DSWallet *)wallet NS_DESIGNATED_INITIALIZER;
+- (instancetype)initForAccount:(DSAccount *)account NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+- (void)registerMasternode:(id)sender requestsPayloadSigning:(void (^_Nullable)(void))payloadSigningRequest completion:(void (^_Nullable)(NSError *error))completion;
+
+- (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion;
+
+-(void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction* transaction, NSIndexSet *indexSet, NSError *error))completion;
 
 @end
 

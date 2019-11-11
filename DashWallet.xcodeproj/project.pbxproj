@@ -378,6 +378,8 @@
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
 		FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
 		FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
+		FB031ADB2378832100EF564B /* DWActionFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031AD72378832100EF564B /* DWActionFormCellModel.m */; };
+		FB031ADE2378834200EF564B /* DWActionFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB031ADD2378834200EF564B /* DWActionFormTableViewCell.m */; };
 		FB1BF8C722C6F4B7003413C6 /* DWSignMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1BF8C622C6F4B7003413C6 /* DWSignMessageViewController.m */; };
 		FB1BF8C822C7FBD0003413C6 /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		FB1BF8C922C7FBD4003413C6 /* DWAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EF22147A40009906DC /* DWAmountObject.m */; };
@@ -1277,6 +1279,10 @@
 		FB021E531E47E17200D17638 /* FBShimmeringLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringLayer.m; sourceTree = "<group>"; };
 		FB021E541E47E17200D17638 /* FBShimmeringView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringView.h; sourceTree = "<group>"; };
 		FB021E551E47E17200D17638 /* FBShimmeringView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringView.m; sourceTree = "<group>"; };
+		FB031AD72378832100EF564B /* DWActionFormCellModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWActionFormCellModel.m; sourceTree = "<group>"; };
+		FB031AD82378832100EF564B /* DWActionFormTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWActionFormTableViewCell.h; sourceTree = "<group>"; };
+		FB031AD92378832100EF564B /* DWActionFormCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWActionFormCellModel.h; sourceTree = "<group>"; };
+		FB031ADD2378834200EF564B /* DWActionFormTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWActionFormTableViewCell.m; sourceTree = "<group>"; };
 		FB0ACB9D1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Main.strings; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACB9F1F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Main.strings; sourceTree = "<group>"; };
@@ -2489,6 +2495,7 @@
 		2A9FFE262230FF4600956D5F /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				FB031AD62378832100EF564B /* Action */,
 				FBCFEDF7236FCDE50086DE07 /* PublicKeyGeneration */,
 				FBCFEDF0236F8C770086DE07 /* KeyValue */,
 				2A9FFE382230FF4600956D5F /* Placeholder */,
@@ -3283,6 +3290,17 @@
 			);
 			path = FBShimmering;
 			sourceTree = SOURCE_ROOT;
+		};
+		FB031AD62378832100EF564B /* Action */ = {
+			isa = PBXGroup;
+			children = (
+				FB031AD92378832100EF564B /* DWActionFormCellModel.h */,
+				FB031AD72378832100EF564B /* DWActionFormCellModel.m */,
+				FB031AD82378832100EF564B /* DWActionFormTableViewCell.h */,
+				FB031ADD2378834200EF564B /* DWActionFormTableViewCell.m */,
+			);
+			path = Action;
+			sourceTree = "<group>";
 		};
 		FB1C3DC1236AD2B1004C2B05 /* Masternode Control */ = {
 			isa = PBXGroup;
@@ -4200,6 +4218,7 @@
 				FB31C256223BD3F600BD0868 /* DWRegisterMasternodeViewController.m in Sources */,
 				2A9FFE8D2230FF4700956D5F /* DWSettingsViewController.m in Sources */,
 				2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */,
+				FB031ADB2378832100EF564B /* DWActionFormCellModel.m in Sources */,
 				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
 				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
@@ -4358,6 +4377,7 @@
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,
+				FB031ADE2378834200EF564B /* DWActionFormTableViewCell.m in Sources */,
 				2A4E534B22F03A9E00E5168A /* DWTxListHeaderView.m in Sources */,
 				759FBB37193290F600AB4465 /* DWSendViewController.m in Sources */,
 				2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */,

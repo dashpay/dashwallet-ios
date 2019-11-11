@@ -267,6 +267,9 @@
 "Date" = "Date";
 
 /* No comment provided by engineer. */
+"Default" = "Default";
+
+/* No comment provided by engineer. */
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
 /* No comment provided by engineer. */
@@ -321,13 +324,37 @@
 "Enter" = "Enter";
 
 /* No comment provided by engineer. */
+"Enter IP Address of Masternode" = "Enter IP Address of Masternode";
+
+/* No comment provided by engineer. */
+"Enter Operator Public Key" = "Enter Operator Public Key";
+
+/* No comment provided by engineer. */
+"Enter Owner Public Key" = "Enter Owner Public Key";
+
+/* No comment provided by engineer. */
+"Enter Payout Address" = "Enter Payout Address";
+
+/* No comment provided by engineer. */
 "Enter PIN" = "Enter PIN";
+
+/* No comment provided by engineer. */
+"Enter Port of Masternode" = "Enter Port of Masternode";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Aktarılacak tutarı aşağıya girin";
+
+/* No comment provided by engineer. */
+"Enter Transaction Hash" = "Enter Transaction Hash";
+
+/* No comment provided by engineer. */
+"Enter Transaction Index" = "Enter Transaction Index";
+
+/* No comment provided by engineer. */
+"Enter Voting Public Key" = "Enter Voting Public Key";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "2FA kodunu aşağıya girin";
@@ -414,6 +441,9 @@
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
+"Incorrect collateral index" = "Incorrect collateral index";
+
+/* No comment provided by engineer. */
 "Insufficient Funds" = "Yetersiz Bakiye";
 
 /* No comment provided by engineer. */
@@ -475,6 +505,9 @@
 
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
+
+/* No comment provided by engineer. */
+"Lookup" = "Lookup";
 
 /* No comment provided by engineer. */
 "Masternode control" = "Masternode control";
@@ -760,6 +793,9 @@
 
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
+
+/* No comment provided by engineer. */
+"Register" = "Register";
 
 /* No comment provided by engineer. */
 "Register Masternode" = "Register Masternode";
@@ -1053,6 +1089,9 @@
 "Transaction id" = "İşlem kimliği";
 
 /* No comment provided by engineer. */
+"Transaction was not signed." = "Transaction was not signed.";
+
+/* No comment provided by engineer. */
 "Transfer" = "Aktarma";
 
 /* No comment provided by engineer. */
@@ -1078,6 +1117,9 @@
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Unable to connect";
+
+/* No comment provided by engineer. */
+"Unable to create ProviderRegistrationTransaction." = "Unable to create ProviderRegistrationTransaction.";
 
 /* No comment provided by engineer. */
 "Unable to get new qr code" = "Yeni qr kod alınamıyor";
@@ -1117,6 +1159,9 @@
 
 /* No comment provided by engineer. */
 "Username:" = "Username:";
+
+/* No comment provided by engineer. */
+"Using Index 0" = "Using Index 0";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
@@ -1164,10 +1209,10 @@
 "Wallet Keys" = "Cüzdan Anahtarları";
 
 /* No comment provided by engineer. */
-"Warning" = "Warning";
+"WARNING" = "UYARI";
 
 /* No comment provided by engineer. */
-"WARNING" = "UYARI";
+"Warning" = "Warning";
 
 /* No comment provided by engineer. */
 "Watch only" = "Watch only";
@@ -1195,6 +1240,9 @@
 
 /* No comment provided by engineer. */
 "with Dash blockchain" = "with Dash blockchain";
+
+/* No comment provided by engineer. */
+"Would you like to register this masternode?" = "Would you like to register this masternode?";
 
 /* No comment provided by engineer. */
 "WRITE DOWN YOUR RECOVERY PHRASE" = "KURTARMA METNİNİZİ NOT EDİNİZ";

@@ -21,10 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWKeyValueFormCellModel : DWBaseFormCellModel
 
+@property (readonly, nonatomic) NSString *placeholderText;
 @property (copy, nonatomic) NSString *valueText;
+@property (copy, nonatomic) NSAttributedString *actionText;
 @property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWKeyValueFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void (^actionBlock)(void);
 
 - (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText placeholderText:(NSString *)placeholderText actionText:(NSAttributedString *)actionText;
 
 @end
 

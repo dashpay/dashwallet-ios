@@ -21,6 +21,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWKeyValueFormCellModel
 
+- (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText placeholderText:(NSString *)placeholderText actionText:(nonnull NSAttributedString *)actionText {
+    self = [self initWithTitle:title valueText:valueText];
+    if (self) {
+        _placeholderText = placeholderText;
+        _actionText = actionText;
+    }
+    return self;
+}
+
 - (instancetype)initWithTitle:(nullable NSString *)title valueText:(NSString *)valueText {
     self = [super initWithTitle:title];
     if (self) {

@@ -14,23 +14,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-#import <UIKit/UIKit.h>
 
 #import "DWActionFormCellModel.h"
-#import "DWFormSectionModel.h"
-#import "DWKeyValueFormCellModel.h"
-#import "DWPublicKeyGenerationCellModel.h"
-#import "DWSelectorFormCellModel.h"
-#import "DWSwitcherFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWFormTableViewController : UITableViewController
-
-@property (nullable, readonly, copy, nonatomic) NSArray<DWFormSectionModel *> *sections;
-
-- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
-    placeholderText:(nullable NSString *)placeholderText;
+@implementation DWActionFormCellModel
 
 @end
 
