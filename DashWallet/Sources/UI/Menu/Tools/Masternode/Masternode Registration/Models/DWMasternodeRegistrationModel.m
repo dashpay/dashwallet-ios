@@ -198,8 +198,9 @@
                                         withCollateral:self.collateral
                                             completion:^(DSProviderRegistrationTransaction *_Nonnull providerRegistrationTransaction) {
                                                 if (providerRegistrationTransaction) {
+                                                    self.providerRegistrationTransaction = providerRegistrationTransaction;
                                                     if (dsutxo_is_zero(self.collateral)) {
-                                                        [self signTransactionInputs:providerRegistrationTransaction completion:completion];
+                                                        [self signTransactionInputsWithCompletion:completion];
                                                     }
                                                     else {
                                                         payloadSigningRequest();
@@ -213,14 +214,16 @@
                                             }];
 }
 
-- (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion {
-    [self.account signTransaction:providerRegistrationTransaction
+- (void)signTransactionInputsWithCompletion:(void (^_Nullable)(NSError *error))completion {
+    [self.account signTransaction:self.providerRegistrationTransaction
                        withPrompt:NSLocalizedString(@"Would you like to register this masternode?", nil)
                        completion:^(BOOL signedTransaction, BOOL cancelled) {
                            if (signedTransaction) {
-                               [self.account.wallet.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction
+                               [self.account.wallet.chain.chainManager.transactionManager publishTransaction:self.providerRegistrationTransaction
                                                                                                   completion:^(NSError *_Nullable error) {
-                                                                                                      completion(error);
+                                                                                                      if (completion) {
+                                                                                                          completion(error);
+                                                                                                      }
                                                                                                   }];
                            }
                            else {

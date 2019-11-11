@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSignPayloadView : UIView
+@interface DWSignPayloadView : UIView <UITextViewDelegate>
 
 @property (nullable, nonatomic, strong) DWSignPayloadModel *model;
 

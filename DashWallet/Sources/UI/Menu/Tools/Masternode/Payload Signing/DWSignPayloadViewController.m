@@ -17,9 +17,6 @@
 #import "NSString+Dash.h"
 
 @interface DWSignPayloadViewController ()
-@property (strong, nonatomic) IBOutlet UITextView *signatureMessageInputTextView;
-@property (strong, nonatomic) IBOutlet UITextView *signatureMessageResultTextView;
-@property (strong, nonatomic) IBOutlet UIButton *signButton;
 
 @property (nonatomic, strong) DWSignPayloadModel *model;
 @property (nonatomic, strong) DWSignPayloadView *contentView;
@@ -50,6 +47,11 @@
 
 + (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Verify Signature", nil);
+}
+
+- (void)actionButtonAction:(id)sender {
+    [self.contentView resignFirstResponder];
+    [self.model verifySignature];
 }
 
 

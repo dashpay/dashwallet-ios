@@ -39,11 +39,14 @@ CGFloat const DW_SIGNED_PAYLOAD_BOTTOM_PADDING = 12.0;
         self.backgroundColor = [UIColor dw_backgroundColor];
         UITextView *messageToSignTextView = [[UITextView alloc] initWithFrame:CGRectZero];
         messageToSignTextView.translatesAutoresizingMaskIntoConstraints = NO;
+        messageToSignTextView.backgroundColor = [UIColor dw_backgroundColor];
+        messageToSignTextView.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
         [self addSubview:messageToSignTextView];
         _messageToSignTextView = messageToSignTextView;
 
         UITextView *signedMessageInputTextView = [[UITextView alloc] initWithFrame:CGRectZero];
         signedMessageInputTextView.translatesAutoresizingMaskIntoConstraints = NO;
+        signedMessageInputTextView.delegate = self;
         [self addSubview:signedMessageInputTextView];
         _signedMessageInputTextView = signedMessageInputTextView;
 
@@ -52,8 +55,10 @@ CGFloat const DW_SIGNED_PAYLOAD_BOTTOM_PADDING = 12.0;
                                                             constant:DW_SIGNED_PAYLOAD_TOP_PADDING],
             [messageToSignTextView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [messageToSignTextView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-            
-            [messageToSignTextView.heightAnchor constraintEqualToAnchor:signedMessageInputTextView.heightAnchor multiplier:0.67 constant:0],
+
+            [messageToSignTextView.heightAnchor constraintEqualToAnchor:signedMessageInputTextView.heightAnchor
+                                                             multiplier:0.67
+                                                               constant:0],
 
             [signedMessageInputTextView.topAnchor constraintEqualToAnchor:messageToSignTextView.bottomAnchor
                                                                  constant:DW_SIGNED_PAYLOAD_INTER_PADDING],
@@ -64,6 +69,23 @@ CGFloat const DW_SIGNED_PAYLOAD_BOTTOM_PADDING = 12.0;
         ]];
     }
     return self;
+}
+
+- (void)setModel:(DWSignPayloadModel *)model {
+    _model = model;
+    [self.messageToSignTextView setText:[NSString stringWithFormat:@"signmessage %@ %@", model.collateralAddress, model.payloadCollateralString]];
+}
+
+- (BOOL)resignFirstResponder {
+    BOOL resigned = [super resignFirstResponder];
+    resigned |= [self.signedMessageInputTextView resignFirstResponder];
+    return resigned;
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    if (textView == self.signedMessageInputTextView) {
+        self.model.unverifiedSignatureString = textView.text;
+    }
 }
 
 @end

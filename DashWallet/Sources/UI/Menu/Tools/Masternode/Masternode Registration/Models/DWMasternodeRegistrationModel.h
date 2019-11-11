@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)registerMasternode:(id)sender requestsPayloadSigning:(void (^_Nullable)(void))payloadSigningRequest completion:(void (^_Nullable)(NSError *error))completion;
 
-- (void)signTransactionInputs:(DSProviderRegistrationTransaction *)providerRegistrationTransaction completion:(void (^_Nullable)(NSError *error))completion;
+- (void)signTransactionInputsWithCompletion:(void (^_Nullable)(NSError *error))completion;
 
 - (void)lookupIndexesForCollateralHash:(UInt256)collateralHash completion:(void (^_Nullable)(DSTransaction *transaction, NSIndexSet *indexSet, NSError *error))completion;
 

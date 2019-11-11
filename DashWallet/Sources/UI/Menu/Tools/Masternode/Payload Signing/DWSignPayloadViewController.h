@@ -25,12 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWSignPayloadDelegate
-
-- (void)viewController:(UIViewController *)controller didReturnSignature:(NSData *)signature;
-
-@end
-
 @interface DWSignPayloadViewController : DWBaseActionButtonViewController
 
 @property (nonatomic, readonly) DWSignPayloadModel *model;
@@ -39,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 - (instancetype)initWithModel:(DWSignPayloadModel *)model NS_DESIGNATED_INITIALIZER;
-
-@property (nonatomic, weak) id<DWSignPayloadDelegate> delegate;
 
 @end
 

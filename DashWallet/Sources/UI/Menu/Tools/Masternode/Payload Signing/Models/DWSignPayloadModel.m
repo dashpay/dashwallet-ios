@@ -33,10 +33,15 @@
 }
 
 
-- (BOOL)verifySignature:(id)sender {
-    DSECDSAKey *key = [DSECDSAKey keyRecoveredFromCompactSig:self.signature andMessageDigest:[self.payloadCollateralString magicDigest]];
+- (BOOL)verifySignature {
+    NSData *unverifiedSignature = [[NSData alloc] initWithBase64EncodedString:self.unverifiedSignatureString options:0];
+    DSECDSAKey *key = [DSECDSAKey keyRecoveredFromCompactSig:unverifiedSignature andMessageDigest:[self.payloadCollateralString magicDigest]];
     NSString *address = [key addressForChain:[DWEnvironment sharedInstance].currentChain];
-    return [address isEqualToString:self.collateralAddress];
+    BOOL verified = [address isEqualToString:self.collateralAddress];
+    if (verified) {
+        self.signature = unverifiedSignature;
+    }
+    return verified;
 }
 
 

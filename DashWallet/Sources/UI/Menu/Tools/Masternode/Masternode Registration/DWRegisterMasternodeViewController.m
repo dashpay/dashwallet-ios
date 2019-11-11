@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 @interface DWRegisterMasternodeViewController ()
 
 @property (null_resettable, nonatomic, strong) DWMasternodeRegistrationModel *model;
+@property (nonatomic, strong) DWActionFormCellModel *registerActionModel;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 
 @end
@@ -353,15 +354,23 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 }
 
 - (DWBaseFormCellModel *)registerActionModel {
-    DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"Register", nil)];
+    DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
     registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
         [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
             if (error) {
                 return;
             }
+            [self.model registerMasternode:self
+                    requestsPayloadSigning:^{
+                        [self showPayloadSigning];
+                    }
+                                completion:^(NSError *_Nonnull error){
+
+                                }];
             [self showPayloadSigning];
         }];
     };
+    self.registerActionModel = registerModel;
     return registerModel;
 }
 
@@ -392,16 +401,28 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 - (void)showPayloadSigning {
     DWSignPayloadModel *signPayloadModel = [[DWSignPayloadModel alloc] initForCollateralAddress:self.model.collateralTransaction.outputAddresses[self.model.providerRegistrationTransaction.collateralOutpoint.n] withPayloadCollateralString:self.model.providerRegistrationTransaction.payloadCollateralString];
     DWSignPayloadViewController *signPayloadViewController = [[DWSignPayloadViewController alloc] initWithModel:signPayloadModel];
-    signPayloadViewController.delegate = self;
+    __weak __typeof(self.model) weakModel = self.model;
+    __weak __typeof(self) weakSelf = self;
+    [signPayloadModel mvvm_observe:DW_KEYPATH(signPayloadModel, signature)
+                              with:^(__typeof(self) self, NSData *signature) {
+                                  __strong __typeof(weakModel) strongModel = weakModel;
+                                  __strong __typeof(weakSelf) strongSelf = weakSelf;
+                                  if (!strongSelf || !strongModel) {
+                                      return;
+                                  }
+                                  strongModel.providerRegistrationTransaction.payloadSignature = signature;
+                                  strongSelf.registerActionModel.title = NSLocalizedString(@"Register", nil);
+                                  strongSelf.registerActionModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+                                      [strongModel signTransactionInputsWithCompletion:^(NSError *_Nonnull error) {
+                                          __strong __typeof(weakSelf) strongSelf = weakSelf;
+                                          if (!strongSelf) {
+                                              return;
+                                          }
+                                          [strongSelf.navigationController popViewControllerAnimated:YES];
+                                      }];
+                                  };
+                              }];
     [self.navigationController pushViewController:signPayloadViewController animated:YES];
-}
-
-- (void)viewController:(nonnull UIViewController *)controller didReturnSignature:(nonnull NSData *)signature {
-    //    self.providerRegistrationTransaction.payloadSignature = signature;
-    //    [self.model signTransactionInputs:self.providerRegistrationTransaction
-    //                           completion:^(NSError *_Nonnull error){
-    //
-    //                           }];
 }
 
 
