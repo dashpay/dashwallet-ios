@@ -51,7 +51,10 @@
 
 - (void)actionButtonAction:(id)sender {
     [self.contentView resignFirstResponder];
-    [self.model verifySignature];
+    BOOL signatureVerified = [self.model verifySignature];
+    if (signatureVerified) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
 
 

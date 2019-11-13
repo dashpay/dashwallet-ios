@@ -147,6 +147,14 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
     }
 }
 
+- (BOOL)resignCellsFirstResponders {
+    BOOL resigned = FALSE;
+    for (UITableViewCell *cell in self.formController.tableView.visibleCells) {
+        resigned |= [cell resignFirstResponder];
+    }
+    return resigned;
+}
+
 - (void (^)(void))actionBlockForModel:(DWKeyValueFormCellModel *)model forCellAtRow:(NSUInteger)row {
     __weak __typeof(self) weakSelf = self;
     __weak __typeof(model) weakModel = model;
@@ -158,7 +166,7 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
                 if (!strongSelf) {
                     return;
                 }
-                [[strongSelf.formController.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:DWMasternodeRegistrationCell_CollateralTx inSection:0]] resignFirstResponder];
+                [strongSelf resignCellsFirstResponders];
                 [strongSelf.model lookupIndexesForCollateralHash:strongSelf.model.collateral.hash
                                                       completion:^(DSTransaction *_Nonnull transaction, NSIndexSet *_Nonnull indexSet, NSError *_Nonnull error) {
                                                           __strong __typeof(weakModel) strongModel = weakModel;
@@ -343,19 +351,26 @@ typedef NS_ENUM(NSUInteger, DWMasternodeRegistrationCellType) {
 }
 
 - (NSArray<DWBaseFormCellModel *> *)items {
-    __weak typeof(self) weakSelf = self;
-
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
     for (NSUInteger i = 0; i < _DWMasternodeRegistrationCell_Count; i++) {
         [items addObject:[self modelForRow:i]];
     }
+
     return items;
 }
 
 - (DWBaseFormCellModel *)registerActionModel {
+    __weak typeof(self) weakSelf = self;
     DWActionFormCellModel *registerModel = [[DWActionFormCellModel alloc] initWithTitle:NSLocalizedString(@"View Signing Info", nil)];
     registerModel.didSelectBlock = ^(DWActionFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        [strongSelf resignCellsFirstResponders];
+
         [self.model findCollateralTransactionWithCompletion:^(NSError *_Nonnull error) {
             if (error) {
                 return;

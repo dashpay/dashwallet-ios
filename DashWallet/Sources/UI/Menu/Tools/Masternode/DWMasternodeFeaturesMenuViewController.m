@@ -20,7 +20,7 @@
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWKeysOverviewViewController.h"
-#import "DWMasternodeViewController.h"
+#import "DWMasternodeListViewController.h"
 #import "DWRegisterMasternodeViewController.h"
 #import "DWToolsMenuModel.h"
 #import "DWUIKit.h"
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode List", nil)];
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"My Masternodes", nil)];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -87,6 +87,20 @@ NS_ASSUME_NONNULL_BEGIN
             }
 
             [strongSelf showMasternodeControl];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode List", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showMasternodeList];
         };
         [items addObject:cellModel];
     }
@@ -134,7 +148,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showMasternodeControl {
-    DWMasternodeViewController *masternodeViewController = [[DWMasternodeViewController alloc] init];
+    DWMasternodeListViewController *masternodeViewController = [[DWMasternodeListViewController alloc] init];
+    [self.navigationController pushViewController:masternodeViewController animated:YES];
+}
+
+- (void)showMasternodeList {
+    DWMasternodeListViewController *masternodeViewController = [[DWMasternodeListViewController alloc] init];
     [self.navigationController pushViewController:masternodeViewController animated:YES];
 }
 

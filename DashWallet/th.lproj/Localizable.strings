@@ -714,7 +714,13 @@
 "Pending" = "Pending";
 
 /* No comment provided by engineer. */
+"Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral" = "Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral";
+
+/* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "โปรดใส่รหัสเพื่ออัพเกรด wallet";
+
+/* No comment provided by engineer. */
+"Please paste the signature from your wallet holding the 1000 Dash collateral below." = "Please paste the signature from your wallet holding the 1000 Dash collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";

@@ -403,7 +403,6 @@
 		FB31C25D223BD3F600BD0868 /* DWUpdateMasternodeRegistrarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB31C250223BD3F500BD0868 /* DWUpdateMasternodeRegistrarViewController.m */; };
 		FB31C262223BD62D00BD0868 /* DWProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB31C25F223BD62C00BD0868 /* DWProviderUpdateServiceTableViewCell.m */; };
 		FB31C263223BD62D00BD0868 /* DWProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB31C260223BD62C00BD0868 /* DWProviderUpdateRegistrarTableViewCell.m */; };
-		FB31C269223BD9F400BD0868 /* DWMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB31C267223BD9F400BD0868 /* DWMasternodeTableViewCell.m */; };
 		FB3E9F60236125F600C09C5C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		FB3FA3D61F2364140071FCC5 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
 		FB3FF0B22226416A0059A9A5 /* Masternode.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */; };
@@ -432,6 +431,9 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
+		FBF4DA06237B9DFA005493A6 /* DWMasternodeListModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF4DA05237B9DFA005493A6 /* DWMasternodeListModel.m */; };
+		FBF4DA09237BA341005493A6 /* DWMasternodeListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF4DA08237BA341005493A6 /* DWMasternodeListViewController.m */; };
+		FBF4DA0D237BA5BD005493A6 /* DWMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF4DA0C237BA5BD005493A6 /* DWMasternodeTableViewCell.m */; };
 		FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
 		FBFC2EC621137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
 		FBFC2EC721137A7A00D20C57 /* Montserrat-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */; };
@@ -1410,6 +1412,12 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		FBF4DA04237B9DFA005493A6 /* DWMasternodeListModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMasternodeListModel.h; sourceTree = "<group>"; };
+		FBF4DA05237B9DFA005493A6 /* DWMasternodeListModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMasternodeListModel.m; sourceTree = "<group>"; };
+		FBF4DA07237BA341005493A6 /* DWMasternodeListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMasternodeListViewController.h; sourceTree = "<group>"; };
+		FBF4DA08237BA341005493A6 /* DWMasternodeListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMasternodeListViewController.m; sourceTree = "<group>"; };
+		FBF4DA0B237BA5BD005493A6 /* DWMasternodeTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMasternodeTableViewCell.h; sourceTree = "<group>"; };
+		FBF4DA0C237BA5BD005493A6 /* DWMasternodeTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMasternodeTableViewCell.m; sourceTree = "<group>"; };
 		FBFC2EA421137A7900D20C57 /* Montserrat-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Regular.otf"; sourceTree = "<group>"; };
 		FBFC2EA821137A7900D20C57 /* Montserrat-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Medium.otf"; sourceTree = "<group>"; };
 		FBFC2EAC21137A7A00D20C57 /* Montserrat-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-SemiBold.otf"; sourceTree = "<group>"; };
@@ -3369,6 +3377,7 @@
 		FB1C3DC2236AD3C7004C2B05 /* Masternode */ = {
 			isa = PBXGroup;
 			children = (
+				FBF4DA02237B9D50005493A6 /* Masternode List */,
 				FB031ADF2378FFAE00EF564B /* Payload Signing */,
 				FB3FF0B12226416A0059A9A5 /* Masternode.storyboard */,
 				FBCFEDEA236E50410086DE07 /* Masternode Registration */,
@@ -3496,6 +3505,35 @@
 				FB83F3DE236E4C9D0039ED1B /* DWPublicKeyGenerationTableViewCell.m */,
 			);
 			path = PublicKeyGeneration;
+			sourceTree = "<group>";
+		};
+		FBF4DA02237B9D50005493A6 /* Masternode List */ = {
+			isa = PBXGroup;
+			children = (
+				FBF4DA0A237BA597005493A6 /* Cells */,
+				FBF4DA03237B9D73005493A6 /* Models */,
+				FBF4DA07237BA341005493A6 /* DWMasternodeListViewController.h */,
+				FBF4DA08237BA341005493A6 /* DWMasternodeListViewController.m */,
+			);
+			path = "Masternode List";
+			sourceTree = "<group>";
+		};
+		FBF4DA03237B9D73005493A6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FBF4DA04237B9DFA005493A6 /* DWMasternodeListModel.h */,
+				FBF4DA05237B9DFA005493A6 /* DWMasternodeListModel.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FBF4DA0A237BA597005493A6 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				FBF4DA0B237BA5BD005493A6 /* DWMasternodeTableViewCell.h */,
+				FBF4DA0C237BA5BD005493A6 /* DWMasternodeTableViewCell.m */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 		FBFC2E9E21137A4200D20C57 /* Montserrat */ = {
@@ -4107,6 +4145,7 @@
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
+				FBF4DA09237BA341005493A6 /* DWMasternodeListViewController.m in Sources */,
 				2A4E531522E9F0A200E5168A /* DWStartModel.m in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
@@ -4204,6 +4243,7 @@
 				2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
+				FBF4DA06237B9DFA005493A6 /* DWMasternodeListModel.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
@@ -4266,6 +4306,7 @@
 				2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */,
 				2A0C69D023143435001B8C90 /* DWModalDismissalAnimation.m in Sources */,
 				2A2CD72522FA05DD008C7BC9 /* DWPressableButton.m in Sources */,
+				FBF4DA0D237BA5BD005493A6 /* DWMasternodeTableViewCell.m in Sources */,
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
 				2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */,
@@ -4336,7 +4377,6 @@
 				2ACCD8E2231E507900A96B62 /* DWPinInputStepView.m in Sources */,
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
 				FB43BC81211D96C600BC9879 /* DWTransactionTableViewCell.m in Sources */,
-				FB31C269223BD9F400BD0868 /* DWMasternodeTableViewCell.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
 				2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */,
 				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,

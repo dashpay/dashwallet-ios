@@ -16,24 +16,18 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <KVO-MVVM/KVONSObject.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSignPayloadModel : KVONSObject
+@interface DWMasternodeListModel : NSObject
 
-@property (nonatomic, strong) NSString *collateralAddress;
-@property (nonatomic, strong) NSString *payloadCollateralString;
-@property (nonatomic, strong) NSString *unverifiedSignatureString;
-@property (nonatomic, strong) NSString *instructionStringForCopying;
-@property (nonatomic, strong) NSString *instructionStringForPasting;
-@property (nonatomic, strong) NSData *signature;
+@property (readonly, copy, nonatomic) NSArray<DSSimplifiedMasternodeEntry *> *items;
+@property (nullable, readonly, nonatomic, copy) NSString *trimmedQuery;
+@property (readonly, nonatomic, assign) NSUInteger selectedIndex;
 
-- (instancetype)initForCollateralAddress:(NSString *)collateralAddress withPayloadCollateralString:(NSString *)payloadCollateralString NS_DESIGNATED_INITIALIZER;
+- (void)selectItem:(DSSimplifiedMasternodeEntry *)item;
 
-- (instancetype)init NS_UNAVAILABLE;
-
-- (BOOL)verifySignature;
+- (void)filterItemsWithSearchQuery:(NSString *)query;
 
 @end
 
