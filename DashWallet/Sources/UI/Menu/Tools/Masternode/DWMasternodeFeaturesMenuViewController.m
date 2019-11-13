@@ -20,6 +20,7 @@
 #import "DWFormTableViewController.h"
 #import "DWImportWalletInfoViewController.h"
 #import "DWKeysOverviewViewController.h"
+#import "DWLocalMasternodeListViewController.h"
 #import "DWMasternodeListViewController.h"
 #import "DWRegisterMasternodeViewController.h"
 #import "DWToolsMenuModel.h"
@@ -148,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showMasternodeControl {
-    DWMasternodeListViewController *masternodeViewController = [[DWMasternodeListViewController alloc] init];
+    DWLocalMasternodeListViewController *masternodeViewController = [[DWLocalMasternodeListViewController alloc] init];
     [self.navigationController pushViewController:masternodeViewController animated:YES];
 }
 

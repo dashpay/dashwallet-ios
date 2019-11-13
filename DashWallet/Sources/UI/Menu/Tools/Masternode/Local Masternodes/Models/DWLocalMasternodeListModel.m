@@ -15,51 +15,44 @@
 //  limitations under the License.
 //
 
-#import "DWMasternodeListModel.h"
+#import "DWLocalMasternodeListModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWMasternodeListModel ()
+@interface DWLocalMasternodeListModel ()
 
-@property (readonly, copy, nonatomic) NSArray<DSSimplifiedMasternodeEntry *> *allItems;
-@property (nullable, copy, nonatomic) NSArray<DSSimplifiedMasternodeEntry *> *filteredItems;
+@property (readonly, copy, nonatomic) NSArray<DSLocalMasternode *> *allItems;
+@property (nullable, copy, nonatomic) NSArray<DSLocalMasternode *> *filteredItems;
 @property (nullable, nonatomic, copy) NSString *trimmedQuery;
 @property (nonatomic, assign, getter=isSearching) BOOL searching;
-@property (nonatomic, assign) NSUInteger selectedIndex;
 
 @end
 
-@implementation DWMasternodeListModel
+@implementation DWLocalMasternodeListModel
 
 - (instancetype)init {
     self = [super init];
     if (self) {
 
-        _selectedIndex = NSNotFound;
-
-        _allItems = [self currentMasternodeList].simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues;
+        _allItems = [self localMasternodes];
     }
 
     return self;
 }
 
-- (DSMasternodeList *)currentMasternodeList {
+- (NSArray<DSLocalMasternode *> *)localMasternodes {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSMasternodeManager *masternodeManager = chain.chainManager.masternodeManager;
-    return masternodeManager.currentMasternodeList;
+    return [masternodeManager localMasternodes];
 }
 
-- (NSArray<DSSimplifiedMasternodeEntry *> *)items {
+- (NSArray<DSLocalMasternode *> *)items {
     if (self.isSearching) {
         return self.filteredItems ?: @[];
     }
     else {
         return self.allItems;
     }
-}
-
-- (void)selectItem:(DSSimplifiedMasternodeEntry *)item {
-    self.selectedIndex = [_allItems indexOfObject:item];
 }
 
 - (void)filterItemsWithSearchQuery:(NSString *)query {
@@ -92,8 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSCompoundPredicate *)findMatchesForString:(NSString *)searchString {
     NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
 
-    DSSimplifiedMasternodeEntry *item = nil;
-    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, host) ];
+    DSLocalMasternode *item = nil;
+    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, ipAddressString) ];
 
     for (NSString *keyPath in searchKeyPaths) {
         NSExpression *leftExpression = [NSExpression expressionForKeyPath:keyPath];
