@@ -2,6 +2,7 @@ target 'dashwallet' do
   platform :ios, '11.0'
   
   pod 'DashSync', :path => '../DashSync/'
+  pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
   pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash_1.5.1', :commit => 'b472e89', :inhibit_warnings => true

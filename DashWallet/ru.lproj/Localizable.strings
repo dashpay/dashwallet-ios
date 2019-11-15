@@ -471,7 +471,16 @@
 "Masternode holding address" = "Masternode holding address";
 
 /* No comment provided by engineer. */
+"Masternode Registration" = "Masternode Registration";
+
+/* No comment provided by engineer. */
 "Masternode Registration Transaction" = "Транзакция регистрации мастерноды";
+
+/* No comment provided by engineer. */
+"Masternode Revoked" = "Masternode Revoked";
+
+/* No comment provided by engineer. */
+"Masternode Update" = "Masternode Update";
 
 /* No comment provided by engineer. */
 "Masternode Update Registrar Transaction" = "Транзакция обновления регистрации мастерноды";
