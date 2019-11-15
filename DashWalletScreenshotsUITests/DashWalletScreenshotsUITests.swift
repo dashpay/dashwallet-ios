@@ -18,37 +18,34 @@
 import XCTest
 
 class DashWalletScreenshotsUITests: XCTestCase {
-    
     override func setUp() {
         super.setUp()
-        
+
         continueAfterFailure = false
 
         // Set time in status bar to 9:41, full battery, wifi and carrier
         if _SNAPSHOT {
             SDStatusBarManager.sharedInstance()?.enableOverrides()
         }
-        
+
         let app = XCUIApplication()
         setupSnapshot(app)
         app.launch()
     }
-    
+
     func testTakeScreenshots() {
         if _SNAPSHOT {
             let app = XCUIApplication()
-            
+
             // Send screen
             //
             snapshot("1")
-            
 
             // Receive screen
             //
             app.pageIndicators.element(boundBy: 0).tap()
             snapshot("2")
-            
-            
+
             // Request amount screen
             //
             app.buttons["share_button"].tap()
@@ -61,7 +58,6 @@ class DashWalletScreenshotsUITests: XCTestCase {
             app.staticTexts["4"].tap()
             snapshot("3")
 
-            
             // Transactions screen
             //
             // press cancel button
@@ -69,7 +65,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
             // press menu button
             app.navigationBars["DWRootView"].children(matching: .button).element(boundBy: 0).tap()
             snapshot("4")
-            
+
             // About
             //
             app.tables.cells.element(boundBy: 5).tap()
@@ -77,5 +73,4 @@ class DashWalletScreenshotsUITests: XCTestCase {
             snapshot("5")
         }
     }
-    
 }

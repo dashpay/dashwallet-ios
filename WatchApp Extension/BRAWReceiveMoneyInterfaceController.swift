@@ -23,22 +23,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-import WatchKit
 import WatchConnectivity
+import WatchKit
 
-class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDelegate, BRAWKeypadDelegate {
-
-    @IBOutlet var loadingIndicator: WKInterfaceGroup!
-    @IBOutlet var imageContainer: WKInterfaceGroup!
-    @IBOutlet var qrCodeImage: WKInterfaceImage!
-    @IBOutlet var qrCodeButton: WKInterfaceButton!
+final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDelegate, BRAWKeypadDelegate {
+    @IBOutlet private var loadingIndicator: WKInterfaceGroup!
+    @IBOutlet private var imageContainer: WKInterfaceGroup!
+    @IBOutlet private var qrCodeImage: WKInterfaceImage!
+    @IBOutlet private var qrCodeButton: WKInterfaceButton!
     var customQR: UIImage?
-    
+
     @available(watchOSApplicationExtension 2.2, *)
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        
-    }
-    
+    func session(_ session: WCSession,
+                 activationDidCompleteWith activationState: WCSessionActivationState,
+                 error: Error?) {}
+
     override func awake(withContext context: Any?) {
         super.awake(withContext: context)
     }
@@ -47,34 +46,47 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
         super.willActivate()
         customQR = nil
         updateReceiveUI()
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(BRAWReceiveMoneyInterfaceController.updateReceiveUI),
-            name: NSNotification.Name(rawValue: BRAWWatchDataManager.ApplicationDataDidUpdateNotification), object: nil)
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(BRAWReceiveMoneyInterfaceController.txReceive(_:)), name: NSNotification.Name(rawValue: BRAWWatchDataManager.WalletTxReceiveNotification), object: nil)
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(BRAWReceiveMoneyInterfaceController.updateReceiveUI),
+            name: BRAWWatchDataManager.ApplicationDataDidUpdateNotification,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(BRAWReceiveMoneyInterfaceController.txReceive(_:)),
+            name: BRAWWatchDataManager.WalletTxReceiveNotification,
+            object: nil
+        )
     }
 
     override func didDeactivate() {
         super.didDeactivate()
         NotificationCenter.default.removeObserver(self)
     }
-    
-    @objc func txReceive(_ notification: Notification?) {
+
+    @objc
+    func txReceive(_ notification: Notification?) {
         print("receive view controller received notification: \(String(describing: notification))")
         if let userData = (notification as NSNotification?)?.userInfo,
             let noteString = userData[NSLocalizedDescriptionKey] as? String {
-                self.presentAlert(
-                    withTitle: noteString, message: nil, preferredStyle: .alert, actions: [
-                        WKAlertAction(title: NSLocalizedString("OK", comment: ""),
-                            style: .cancel, handler: { self.dismiss() })])
+            presentAlert(
+                withTitle: noteString, message: nil, preferredStyle: .alert, actions: [
+                    WKAlertAction(title: NSLocalizedString("OK", comment: ""),
+                                  style: .cancel, handler: { self.dismiss() }),
+                ]
+            )
         }
     }
-    
-    @objc func updateReceiveUI() {
+
+    @objc
+    func updateReceiveUI() {
         if BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage == nil {
             loadingIndicator.setHidden(false)
             qrCodeButton.setHidden(true)
-        } else {
+        }
+        else {
             loadingIndicator.setHidden(true)
             qrCodeButton.setHidden(false)
             var qrImg = BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage
@@ -85,26 +97,24 @@ class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDeleg
             qrCodeButton.setBackgroundImage(qrImg)
         }
     }
-    
-    @IBAction func qrCodeTap(_ sender: AnyObject?) {
+
+    @IBAction private func qrCodeTap(_ sender: AnyObject?) {
         let ctx = BRAWKeypadModel(delegate: self)
-        self.presentController(withName: "Keypad", context: ctx)
+        presentController(withName: "Keypad", context: ctx)
     }
-    
+
     // - MARK: Keypad delegate
-    
+
     func keypadDidFinish(_ stringValueBits: String) {
         qrCodeButton.setHidden(true)
         loadingIndicator.setHidden(false)
-        BRAWWatchDataManager.sharedInstance.requestQRCodeForBalance(stringValueBits) { (qrImage, error) -> Void in
+        BRAWWatchDataManager.sharedInstance.requestQRCodeForBalance(stringValueBits) { qrImage, error -> Void in
             if let qrImage = qrImage {
                 self.customQR = qrImage
             }
             self.updateReceiveUI()
             print("Got new qr image: \(String(describing: qrImage)) error: \(String(describing: error))")
         }
-        self.dismiss()
+        dismiss()
     }
-    
-    
 }
