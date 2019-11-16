@@ -28,8 +28,6 @@ import WatchKit
 
 final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessionDelegate, BRAWKeypadDelegate {
     @IBOutlet private var loadingIndicator: WKInterfaceGroup!
-    @IBOutlet private var imageContainer: WKInterfaceGroup!
-    @IBOutlet private var qrCodeImage: WKInterfaceImage!
     @IBOutlet private var qrCodeButton: WKInterfaceButton!
     var customQR: UIImage?
 
@@ -82,6 +80,14 @@ final class BRAWReceiveMoneyInterfaceController: WKInterfaceController, WCSessio
 
     @objc
     func updateReceiveUI() {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.updateReceiveUI()
+            }
+
+            return
+        }
+
         if BRAWWatchDataManager.sharedInstance.receiveMoneyQRCodeImage == nil {
             loadingIndicator.setHidden(false)
             qrCodeButton.setHidden(true)

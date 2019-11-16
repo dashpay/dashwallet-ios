@@ -133,11 +133,13 @@
             case AWSessionRquestDataTypeApplicationContextData:
                 [self handleApplicationContextDataRequest:message replyHandler:replyHandler];
                 // sync with peer whenever there is a request coming, so we can update watch side.
-                [(id<UIApplicationDelegate>)[UIApplication sharedApplication].delegate
-                                          application:[UIApplication sharedApplication]
-                    performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
-                        NSLog(@"watch triggered background fetch completed with result %lu", (unsigned long)result);
-                    }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[UIApplication sharedApplication].delegate
+                                              application:[UIApplication sharedApplication]
+                        performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
+                            NSLog(@"watch triggered background fetch completed with result %lu", (unsigned long)result);
+                        }];
+                });
                 break;
 
             case AWSessionRquestDataTypeQRCodeBits: {
@@ -155,13 +157,14 @@
                 }
 
                 if (!image && req.data) {
-                    image = [UIImage dw_imageWithQRCodeData:req.data color:[CIColor colorWithRed:0.0 green:141.0 / 255.0 blue:228.0 / 255.0]];
+                    image = [UIImage dw_imageWithQRCodeData:req.data color:[CIColor blackColor]];
                 }
 
                 UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
                 CGSize holeSize = CGSizeMake(40.0, 40.0);
                 resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
-                UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+                UIImage *overlayLogo = [UIImage imageNamed:@"dash_logo_qr"];
+                overlayLogo = [overlayLogo dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationHigh];
                 UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
                 replyHandler(result ? @{AW_QR_CODE_BITS_KEY : UIImagePNGRepresentation(result)} : @{});
                 break;
@@ -244,16 +247,16 @@
 
         switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
             case BRAWTransactionTypeSent:
-                transactionTypeString = @"sent";
+                transactionTypeString = NSLocalizedString(@"sent", nil);
                 break;
             case BRAWTransactionTypeReceive:
-                transactionTypeString = @"received";
+                transactionTypeString = NSLocalizedString(@"received", nil);
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = @"moved";
+                transactionTypeString = NSLocalizedString(@"moved", nil);
                 break;
             case BRAWTransactionTypeInvalid:
-                transactionTypeString = @"invalid transaction";
+                transactionTypeString = NSLocalizedString(@"invalid transaction", nil);
                 break;
         }
         NSString *amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
@@ -275,16 +278,7 @@
     if (date) {
         NSDate *now = [NSDate date];
         NSTimeInterval secondsSinceTransaction = [now timeIntervalSinceDate:date];
-
-        if (secondsSinceTransaction < 60) {
-            return @"just now";
-        }
-        else if (secondsSinceTransaction / 60 < 60) {
-            return [NSString stringWithFormat:@"%@ minutes ago", @((NSInteger)(secondsSinceTransaction / 60))];
-        }
-        else if (secondsSinceTransaction / 60 / 60 < 24) {
-            return [NSString stringWithFormat:@"%@ hours ago", @((NSInteger)(secondsSinceTransaction / 60 / 60))];
-        }
+        return [NSString waitTimeFromNow:secondsSinceTransaction];
     }
 
     return nil;
@@ -301,11 +295,12 @@
     }
 
     if (!image && req) {
-        image = [UIImage dw_imageWithQRCodeData:req color:[CIColor colorWithRed:0.0 green:141.0 / 255.0 blue:228.0 / 255.0]];
+        image = [UIImage dw_imageWithQRCodeData:req color:[CIColor blackColor]];
     }
 
     UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
-    UIImage *overlayLogo = [[UIImage imageNamed:@"dashQROverlay"] dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationMedium];
+    UIImage *overlayLogo = [UIImage imageNamed:@"dash_logo_qr"];
+    overlayLogo = [overlayLogo dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationHigh];
     CGSize holeSize = CGSizeMake(40.0, 40.0);
     resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
     UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];

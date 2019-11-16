@@ -420,6 +420,9 @@
 "Invalid amount" = "無効な金額";
 
 /* No comment provided by engineer. */
+"invalid transaction" = "invalid transaction";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP アドレス/ポート:";
 
 /* No comment provided by engineer. */
@@ -496,6 +499,9 @@
 
 /* No comment provided by engineer. */
 "More..." = "More...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "Moved" = "移動されました";
@@ -699,6 +705,9 @@
 "Receive dash at this address: %@" = "このアドレスでDashを受取る： %@";
 
 /* No comment provided by engineer. */
+"received" = "received";
+
+/* No comment provided by engineer. */
 "Received" = "受取済み";
 
 /* No comment provided by engineer. */
@@ -844,6 +853,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "送信済み";
+
+/* No comment provided by engineer. */
+"sent" = "sent";
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";
