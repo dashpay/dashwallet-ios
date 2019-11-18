@@ -141,13 +141,22 @@
 "Change" = "Change";
 
 /* No comment provided by engineer. */
+"Change Operator" = "Change Operator";
+
+/* No comment provided by engineer. */
 "Change passcode" = "Cambiar código de acceso";
 
 /* No comment provided by engineer. */
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
+"Change Payout Address" = "Change Payout Address";
+
+/* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* No comment provided by engineer. */
+"Change Voting Key" = "Change Voting Key";
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
@@ -189,6 +198,9 @@
 "Collateral Index" = "Collateral Index";
 
 /* No comment provided by engineer. */
+"Collateral Information" = "Collateral Information";
+
+/* No comment provided by engineer. */
 "Collateral Tx" = "Collateral Tx";
 
 /* Confirm */
@@ -214,6 +226,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Continue";
+
+/* No comment provided by engineer. */
+"Control" = "Control";
 
 /* No comment provided by engineer. */
 "Copied" = "Copied";
@@ -324,6 +339,9 @@
 "Enter" = "Enter";
 
 /* No comment provided by engineer. */
+"Enter a Nickname for this Masternode" = "Enter a Nickname for this Masternode";
+
+/* No comment provided by engineer. */
 "Enter IP Address of Masternode" = "Enter IP Address of Masternode";
 
 /* No comment provided by engineer. */
@@ -408,6 +426,9 @@
 "Holding funds index:" = "Holding funds index:";
 
 /* No comment provided by engineer. */
+"Host" = "Host";
+
+/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Acepto que perderé mis monedas si ya no tengo mi frase de recuperación";
 
 /* No comment provided by engineer. */
@@ -484,6 +505,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
+
+/* No comment provided by engineer. */
+"Local Name" = "Local Name";
 
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
@@ -598,6 +622,9 @@
 
 /* No comment provided by engineer. */
 "No address copied" = "No address copied";
+
+/* No comment provided by engineer. */
+"No Collateral Information" = "No Collateral Information";
 
 /* No comment provided by engineer. */
 "no exchange rate data" = "no hay datos de tasas de cambio";
@@ -981,6 +1008,9 @@
 "Show Recovery Phrase" = "Show Recovery Phrase";
 
 /* No comment provided by engineer. */
+"Sign Message" = "Sign Message";
+
+/* No comment provided by engineer. */
 "Size:" = "Size:";
 
 /* No comment provided by engineer. */
@@ -1143,6 +1173,21 @@
 "Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
+"Unknown Operator Public Key" = "Unknown Operator Public Key";
+
+/* No comment provided by engineer. */
+"Unknown Owner Private Key" = "Unknown Owner Private Key";
+
+/* No comment provided by engineer. */
+"Unknown Payout Address" = "Unknown Payout Address";
+
+/* No comment provided by engineer. */
+"Unknown Voting Public Key" = "Unknown Voting Public Key";
+
+/* No comment provided by engineer. */
+"Unnamed" = "Unnamed";
+
+/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
@@ -1150,6 +1195,9 @@
 
 /* No comment provided by engineer. */
 "Unverified" = "Sin verificar";
+
+/* No comment provided by engineer. */
+"Update Host" = "Update Host";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";

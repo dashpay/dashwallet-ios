@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
+static CGSize const ACCESSORY_SIZE = {10.0, 19.0};
 
 @interface DWLocalMasternodeTableViewCell ()
 
@@ -98,11 +98,9 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         [contentView addSubview:portLabel];
         portLabel = portLabel;
 
-        UIImage *image = [UIImage imageNamed:@"icon_checkbox"];
-        UIImage *highlightedImage = [UIImage imageNamed:@"icon_checkbox_checked"];
+        UIImage *image = [UIImage imageNamed:@"icon_disclosure_indicator"];
         NSParameterAssert(image);
-        NSParameterAssert(highlightedImage);
-        UIImageView *accessoryImageView = [[UIImageView alloc] initWithImage:image highlightedImage:highlightedImage];
+        UIImageView *accessoryImageView = [[UIImageView alloc] initWithImage:image];
         accessoryImageView.translatesAutoresizingMaskIntoConstraints = NO;
         [contentView addSubview:accessoryImageView];
         _accessoryImageView = accessoryImageView;
@@ -156,7 +154,16 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
     self.portLabel.text = model.ipAddressString;
 
+    [self setupObserving];
+
     [self reloadAttributedData];
+}
+
+- (void)setupObserving {
+    [self mvvm_observe:DW_KEYPATH(self, model.name)
+                  with:^(__typeof(self) self, NSString *value) {
+                      self.nameLabel.text = value ?: NSLocalizedString(@"Unnamed", nil);
+                  }];
 }
 
 - (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
@@ -177,7 +184,10 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
     UIFont *codeFont = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
     UIColor *codeColor = [UIColor dw_darkTitleColor];
-    self.nameLabel.attributedText = [NSAttributedString attributedText:self.model.ipAddressString
+    NSString *name = self.model.name;
+    if (!name)
+        name = NSLocalizedString(@"Unnamed", nil);
+    self.nameLabel.attributedText = [NSAttributedString attributedText:name
                                                                   font:codeFont
                                                              textColor:codeColor
                                                        highlightedText:highlightedText
@@ -185,11 +195,17 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
     UIFont *nameFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
     UIColor *nameColor = [UIColor dw_quaternaryTextColor];
-    self.addressLabel.attributedText = [NSAttributedString attributedText:self.model.ipAddressString
+    self.addressLabel.attributedText = [NSAttributedString attributedText:self.model.ipAddressAndIfNonstandardPortString
                                                                      font:nameFont
                                                                 textColor:nameColor
                                                           highlightedText:highlightedText
                                                      highlightedTextColor:highlightedTextColor];
+
+    self.portLabel.attributedText = [NSAttributedString attributedText:self.model.portString
+                                                                  font:nameFont
+                                                             textColor:nameColor
+                                                       highlightedText:highlightedText
+                                                  highlightedTextColor:highlightedTextColor];
 }
 
 @end

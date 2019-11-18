@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) NSString *placeholderText;
 @property (copy, nonatomic) NSString *valueText;
+@property (assign, nonatomic) BOOL editable;
 @property (copy, nonatomic) NSAttributedString *actionText;
 @property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWKeyValueFormCellModel *cellModel);
 @property (nullable, copy, nonatomic) void (^actionBlock)(void);

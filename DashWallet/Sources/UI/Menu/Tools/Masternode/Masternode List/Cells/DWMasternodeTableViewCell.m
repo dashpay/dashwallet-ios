@@ -27,9 +27,9 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 
 @interface DWMasternodeTableViewCell ()
 
-@property (readonly, strong, nonatomic) UILabel *codeLabel;
-@property (readonly, strong, nonatomic) UILabel *nameLabel;
-@property (readonly, strong, nonatomic) UILabel *priceLabel;
+@property (readonly, strong, nonatomic) UILabel *addressLabel;
+@property (readonly, strong, nonatomic) UILabel *portLabel;
+@property (readonly, strong, nonatomic) UILabel *availabilityLabel;
 @property (readonly, nonatomic, strong) UIImageView *accessoryImageView;
 
 @property (nullable, nonatomic, strong) DSSimplifiedMasternodeEntry *model;
@@ -46,57 +46,57 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         UIView *contentView = self.roundedContentView;
         NSParameterAssert(contentView);
 
-        UILabel *codeLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        codeLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        codeLabel.backgroundColor = [UIColor dw_backgroundColor];
-        codeLabel.textColor = [UIColor dw_darkTitleColor];
-        codeLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-        codeLabel.adjustsFontForContentSizeCategory = YES;
-        codeLabel.minimumScaleFactor = 0.5;
-        codeLabel.adjustsFontSizeToFitWidth = YES;
-        [codeLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                   forAxis:UILayoutConstraintAxisVertical];
-        [codeLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 30
-                                                   forAxis:UILayoutConstraintAxisHorizontal];
-        [codeLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 30
-                                     forAxis:UILayoutConstraintAxisHorizontal];
-        [contentView addSubview:codeLabel];
-        _codeLabel = codeLabel;
+        UILabel *addressLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        addressLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        addressLabel.backgroundColor = [UIColor dw_backgroundColor];
+        addressLabel.textColor = [UIColor dw_darkTitleColor];
+        addressLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+        addressLabel.adjustsFontForContentSizeCategory = YES;
+        addressLabel.minimumScaleFactor = 0.5;
+        addressLabel.adjustsFontSizeToFitWidth = YES;
+        [addressLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                                      forAxis:UILayoutConstraintAxisVertical];
+        [addressLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 30
+                                                      forAxis:UILayoutConstraintAxisHorizontal];
+        [addressLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 30
+                                        forAxis:UILayoutConstraintAxisHorizontal];
+        [contentView addSubview:addressLabel];
+        _addressLabel = addressLabel;
 
-        UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        nameLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        nameLabel.backgroundColor = [UIColor dw_backgroundColor];
-        nameLabel.textColor = [UIColor dw_quaternaryTextColor];
-        nameLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-        nameLabel.adjustsFontForContentSizeCategory = YES;
-        nameLabel.minimumScaleFactor = 0.5;
-        nameLabel.adjustsFontSizeToFitWidth = YES;
-        [nameLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+        UILabel *portLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        portLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        portLabel.backgroundColor = [UIColor dw_backgroundColor];
+        portLabel.textColor = [UIColor dw_quaternaryTextColor];
+        portLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+        portLabel.adjustsFontForContentSizeCategory = YES;
+        portLabel.minimumScaleFactor = 0.5;
+        portLabel.adjustsFontSizeToFitWidth = YES;
+        [portLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                    forAxis:UILayoutConstraintAxisVertical];
-        [nameLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 10
+        [portLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 10
                                                    forAxis:UILayoutConstraintAxisHorizontal];
-        [nameLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 20
+        [portLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 20
                                      forAxis:UILayoutConstraintAxisHorizontal];
-        [contentView addSubview:nameLabel];
-        _nameLabel = nameLabel;
+        [contentView addSubview:portLabel];
+        _portLabel = portLabel;
 
-        UILabel *priceLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        priceLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        priceLabel.backgroundColor = [UIColor dw_backgroundColor];
-        priceLabel.textAlignment = NSTextAlignmentRight;
-        priceLabel.textColor = [UIColor dw_secondaryTextColor];
-        priceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-        priceLabel.adjustsFontForContentSizeCategory = YES;
-        priceLabel.minimumScaleFactor = 0.5;
-        priceLabel.adjustsFontSizeToFitWidth = YES;
-        [priceLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                                    forAxis:UILayoutConstraintAxisVertical];
-        [priceLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 20
-                                                    forAxis:UILayoutConstraintAxisHorizontal];
-        [priceLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 10
-                                      forAxis:UILayoutConstraintAxisHorizontal];
-        [contentView addSubview:priceLabel];
-        _priceLabel = priceLabel;
+        UILabel *availabilityLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        availabilityLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        availabilityLabel.backgroundColor = [UIColor dw_backgroundColor];
+        availabilityLabel.textAlignment = NSTextAlignmentRight;
+        availabilityLabel.textColor = [UIColor dw_secondaryTextColor];
+        availabilityLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+        availabilityLabel.adjustsFontForContentSizeCategory = YES;
+        availabilityLabel.minimumScaleFactor = 0.5;
+        availabilityLabel.adjustsFontSizeToFitWidth = YES;
+        [availabilityLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                                           forAxis:UILayoutConstraintAxisVertical];
+        [availabilityLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 20
+                                                           forAxis:UILayoutConstraintAxisHorizontal];
+        [availabilityLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 10
+                                             forAxis:UILayoutConstraintAxisHorizontal];
+        [contentView addSubview:availabilityLabel];
+        _availabilityLabel = availabilityLabel;
 
         UIImage *image = [UIImage imageNamed:@"icon_checkbox"];
         UIImage *highlightedImage = [UIImage imageNamed:@"icon_checkbox_checked"];
@@ -111,26 +111,26 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING;
 
         [NSLayoutConstraint activateConstraints:@[
-            [codeLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                                constant:padding],
-            [codeLabel.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
-                                                    constant:margin],
-            [codeLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                                   constant:-padding],
+            [addressLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                                   constant:padding],
+            [addressLabel.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
+                                                       constant:margin],
+            [addressLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                                      constant:-padding],
 
-            [nameLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
+            [portLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
                                                 constant:padding],
-            [nameLabel.leadingAnchor constraintEqualToAnchor:codeLabel.trailingAnchor
+            [portLabel.leadingAnchor constraintEqualToAnchor:addressLabel.trailingAnchor
                                                     constant:DW_FORM_CELL_SPACING],
-            [nameLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+            [portLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
                                                    constant:-padding],
 
-            [priceLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                                 constant:padding],
-            [priceLabel.leadingAnchor constraintEqualToAnchor:nameLabel.trailingAnchor
-                                                     constant:DW_FORM_CELL_SPACING],
+            [availabilityLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                                        constant:padding],
+            [availabilityLabel.leadingAnchor constraintEqualToAnchor:portLabel.trailingAnchor
+                                                            constant:DW_FORM_CELL_SPACING],
 
-            [accessoryImageView.leadingAnchor constraintEqualToAnchor:priceLabel.trailingAnchor
+            [accessoryImageView.leadingAnchor constraintEqualToAnchor:availabilityLabel.trailingAnchor
                                                              constant:DW_FORM_CELL_SPACING],
             [accessoryImageView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
                                                               constant:-margin],
@@ -155,7 +155,6 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
     self.model = model;
     self.searchQuery = searchQuery;
 
-    self.priceLabel.text = model.host;
     self.accessoryImageView.highlighted = selected;
 
     [self reloadAttributedData];
@@ -177,21 +176,29 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
     NSString *highlightedText = self.searchQuery;
     UIColor *highlightedTextColor = [UIColor dw_dashBlueColor];
 
-    UIFont *codeFont = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
-    UIColor *codeColor = [UIColor dw_darkTitleColor];
-    self.codeLabel.attributedText = [NSAttributedString attributedText:self.model.host
-                                                                  font:codeFont
-                                                             textColor:codeColor
+    UIFont *addressFont = [UIFont dw_fontForTextStyle:UIFontTextStyleBody];
+    UIColor *addressColor = [UIColor dw_darkTitleColor];
+    self.addressLabel.attributedText = [NSAttributedString attributedText:self.model.ipAddressString
+                                                                     font:addressFont
+                                                                textColor:addressColor
+                                                          highlightedText:highlightedText
+                                                     highlightedTextColor:highlightedTextColor];
+
+    UIFont *portFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    UIColor *portColor = [UIColor dw_quaternaryTextColor];
+    self.portLabel.attributedText = [NSAttributedString attributedText:self.model.portString
+                                                                  font:portFont
+                                                             textColor:portColor
                                                        highlightedText:highlightedText
                                                   highlightedTextColor:highlightedTextColor];
 
-    UIFont *nameFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
-    UIColor *nameColor = [UIColor dw_quaternaryTextColor];
-    self.nameLabel.attributedText = [NSAttributedString attributedText:self.model.host
-                                                                  font:nameFont
-                                                             textColor:nameColor
-                                                       highlightedText:highlightedText
-                                                  highlightedTextColor:highlightedTextColor];
+    UIFont *availabilityFont = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
+    UIColor *availabilityColor = [UIColor dw_secondaryTextColor];
+    self.availabilityLabel.attributedText = [NSAttributedString attributedText:self.model.validString
+                                                                          font:availabilityFont
+                                                                     textColor:availabilityColor
+                                                               highlightedText:highlightedText
+                                                          highlightedTextColor:highlightedTextColor];
 }
 
 @end

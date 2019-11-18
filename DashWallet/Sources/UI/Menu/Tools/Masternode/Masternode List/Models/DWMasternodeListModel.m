@@ -37,9 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         _selectedIndex = NSNotFound;
 
-        _allItems = [self currentMasternodeList].simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues;
+        _allItems = [[self currentMasternodeList].simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"isValid" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"ipAddressString" ascending:YES] ]];
     }
-
     return self;
 }
 

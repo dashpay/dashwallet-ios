@@ -21,6 +21,7 @@
 
 #import "DWLocalMasternodeListModel.h"
 
+#import "DWLocalMasternodeControlViewController.h"
 #import "DWLocalMasternodeTableViewCell.h"
 #import "DWSharedUIConstants.h"
 #import "DWUIKit.h"
@@ -105,7 +106,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    DSLocalMasternode *item = self.model.items[indexPath.row];
+    DSLocalMasternode *localMasternode = self.model.items[indexPath.row];
+
+    DWLocalMasternodeControlViewController *localMasternodeControlViewController = [[DWLocalMasternodeControlViewController alloc] initWithLocalMasternode:localMasternode];
+    [self.navigationController pushViewController:localMasternodeControlViewController animated:YES];
 }
 
 #pragma mark - UISearchResultsUpdating

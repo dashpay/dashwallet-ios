@@ -145,6 +145,9 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
     if (cellModel.actionText) {
         [self.actionLabel setAttributedText:cellModel.actionText];
     }
+    if (!cellModel.editable) {
+        [self.valueTextField setUserInteractionEnabled:FALSE];
+    }
 }
 
 - (BOOL)shouldAnimatePressWhenHighlighted {

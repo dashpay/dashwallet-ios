@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithTitle:title];
     if (self) {
         _valueText = valueText;
+        _editable = YES;
     }
     return self;
 }
