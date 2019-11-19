@@ -32,6 +32,10 @@
 #import <DashSync/DashSync.h>
 #import <WatchConnectivity/WatchConnectivity.h>
 
+static CGSize const QR_SIZE = {240.0, 240.0};
+static CGSize const HOLE_SIZE = {58.0, 58.0};
+static CGSize const LOGO_SIZE = {54.0, 54.0};
+
 @interface DWPhoneWCSessionManager () <WCSessionDelegate>
 
 @property WCSession *session;
@@ -157,16 +161,9 @@
                 }
 
                 if (!image && req.data) {
-                    image = [UIImage dw_imageWithQRCodeData:req.data color:[CIColor blackColor]];
+                    image = [self qrCodeImageForData:req.data];
                 }
-
-                UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
-                CGSize holeSize = CGSizeMake(40.0, 40.0);
-                resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
-                UIImage *overlayLogo = [UIImage imageNamed:@"dash_logo_qr"];
-                overlayLogo = [overlayLogo dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationHigh];
-                UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
-                replyHandler(result ? @{AW_QR_CODE_BITS_KEY : UIImagePNGRepresentation(result)} : @{});
+                replyHandler(image ? @{AW_QR_CODE_BITS_KEY : UIImagePNGRepresentation(image)} : @{});
                 break;
             }
 
@@ -294,15 +291,22 @@
         image = [UIImage imageWithData:[defs objectForKey:APP_GROUP_QR_IMAGE_KEY]];
     }
 
-    if (!image && req) {
-        image = [UIImage dw_imageWithQRCodeData:req color:[CIColor blackColor]];
+    if (!image) {
+        image = [self qrCodeImageForData:req];
     }
 
-    UIImage *resizedImage = [image dw_resize:CGSizeMake(150, 150) withInterpolationQuality:kCGInterpolationNone];
+    return image;
+}
+
+- (UIImage *)qrCodeImageForData:(NSData *)imageData {
+    NSParameterAssert(imageData);
+
+    UIImage *image = [UIImage dw_imageWithQRCodeData:imageData color:[CIColor blackColor]];
+
+    UIImage *resizedImage = [image dw_resize:QR_SIZE withInterpolationQuality:kCGInterpolationNone];
+    resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:HOLE_SIZE];
     UIImage *overlayLogo = [UIImage imageNamed:@"dash_logo_qr"];
-    overlayLogo = [overlayLogo dw_resize:CGSizeMake(37.0, 37.0) withInterpolationQuality:kCGInterpolationHigh];
-    CGSize holeSize = CGSizeMake(40.0, 40.0);
-    resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:holeSize];
+    overlayLogo = [overlayLogo dw_resize:LOGO_SIZE withInterpolationQuality:kCGInterpolationHigh];
     UIImage *result = [resizedImage dw_imageByMergingWithImage:overlayLogo];
 
     return result;

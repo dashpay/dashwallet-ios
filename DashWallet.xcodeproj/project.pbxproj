@@ -3375,9 +3375,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BA913BFF1BD57E4E005A7C0E /* Build configuration list for PBXNativeTarget "WatchApp Extension" */;
 			buildPhases = (
+				A80531A10CF1AE66138E56C3 /* [CP] Check Pods Manifest.lock */,
 				2A858A15237EED350097A7B5 /* Swift Format */,
 				2A858A16237EED5D0097A7B5 /* Swift Lint */,
-				A80531A10CF1AE66138E56C3 /* [CP] Check Pods Manifest.lock */,
 				BA913BE61BD57E4D005A7C0E /* Sources */,
 				BA913BE71BD57E4D005A7C0E /* Frameworks */,
 				BA913BE81BD57E4D005A7C0E /* Resources */,
