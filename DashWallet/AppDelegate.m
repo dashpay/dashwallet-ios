@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
+#import <CloudInAppMessaging/CloudInAppMessaging.h>
 
 #import "DWAppRootViewController.h"
 #import "DWDataMigrationManager.h"
@@ -95,6 +96,8 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification
                                                object:nil];
+    
+    [CLMCloudInAppMessaging setupWithCloudKitContainerIdentifier:@"iCloud.org.dash.dashwallet"];
     
     self.window = [[DWWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
