@@ -93,6 +93,14 @@ final class BRAWWatchDataManager: NSObject, WCSessionDelegate {
 
     @objc
     func requestAllData() {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.requestAllData()
+            }
+
+            return
+        }
+
         if session.isReachable {
             // WKInterfaceDevice.currentDevice().playHaptic(WKHapticType.Click)
             let messageToSend = [

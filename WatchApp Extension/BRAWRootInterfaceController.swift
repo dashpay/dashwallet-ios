@@ -65,6 +65,14 @@ final class BRAWRootInterfaceController: WKInterfaceController {
 
     @objc
     func updateUI() {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.updateUI()
+            }
+
+            return
+        }
+
         switch BRAWWatchDataManager.sharedInstance.walletStatus {
         case .unknown:
             loadingIndicator.setHidden(false)
@@ -81,6 +89,14 @@ final class BRAWRootInterfaceController: WKInterfaceController {
 
     @objc
     func txReceive(_ notification: Notification?) {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.txReceive(notification)
+            }
+
+            return
+        }
+
         print("root view controller received notification: \(String(describing: notification))")
         if let userData = (notification as NSNotification?)?.userInfo,
             let noteString = userData[NSLocalizedDescriptionKey] as? String {

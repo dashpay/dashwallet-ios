@@ -62,6 +62,14 @@ final class BRAWGlanceInterfaceController: WKInterfaceController {
 
     @objc
     func updateUI() {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.updateUI()
+            }
+
+            return
+        }
+
         // when local currency rate is no avaliable, use empty string
         updateContainerVisibility()
 

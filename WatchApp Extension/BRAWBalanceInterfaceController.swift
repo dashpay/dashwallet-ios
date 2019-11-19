@@ -81,6 +81,14 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
 
     @objc
     func txReceive(_ notification: Notification?) {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.txReceive(notification)
+            }
+
+            return
+        }
+
         print("balance view controller received notification: \(String(describing: notification))")
         if let userData = (notification as NSNotification?)?.userInfo,
             let noteString = userData[NSLocalizedDescriptionKey] as? String {
@@ -97,6 +105,14 @@ final class BRAWBalanceInterfaceController: WKInterfaceController {
 
     @objc
     func updateUI() {
+        if Thread.current != .main {
+            DispatchQueue.main.async {
+                self.updateUI()
+            }
+
+            return
+        }
+
         updateBalance()
         updateTransactionList()
     }
