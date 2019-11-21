@@ -107,6 +107,20 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     {
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Hide Balance", nil)];
+        cellModel.on = self.model.balanceHidden;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            strongSelf.model.balanceHidden = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
+
+    {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Rescan Blockchain", nil)];
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

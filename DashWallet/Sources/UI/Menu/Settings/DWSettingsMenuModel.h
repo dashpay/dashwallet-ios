@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *localCurrencyCode;
 
 @property (assign, nonatomic) BOOL notificationsEnabled;
+@property (assign, nonatomic) BOOL balanceHidden;
 
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 + (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;

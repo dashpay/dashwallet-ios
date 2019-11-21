@@ -30,6 +30,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
 @dynamic shortcuts;
+@dynamic balanceHidden;
 
 #pragma mark - Init
 
@@ -77,6 +78,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     self.walletBackupReminderWasShown = NO;
     self.shortcuts = nil;
     self.localNotificationsEnabled = YES;
+    self.balanceHidden = NO;
 }
 
 @end

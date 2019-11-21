@@ -40,6 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].localNotificationsEnabled = notificationsEnabled;
 }
 
+- (BOOL)balanceHidden {
+    return [DWGlobalOptions sharedInstance].balanceHidden;
+}
+
+- (void)setBalanceHidden:(BOOL)balanceHidden {
+    [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
+}
+
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
     [[DWEnvironment sharedInstance] switchToMainnetWithCompletion:completion];
 }
