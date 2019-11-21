@@ -17,12 +17,27 @@
 
 #import "DWSettingsMenuModel.h"
 
+#import "DWBalanceDisplayOptions.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWSettingsMenuModel ()
+
+@property (readonly, strong, nonatomic) DWBalanceDisplayOptions *balanceDisplayOptions;
+
+@end
+
 @implementation DWSettingsMenuModel
+
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super init];
+    if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+    }
+    return self;
+}
 
 - (NSString *)networkName {
     return [DWEnvironment sharedInstance].currentChain.name;
@@ -46,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBalanceHidden:(BOOL)balanceHidden {
     [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
+    self.balanceDisplayOptions.balanceHidden = balanceHidden;
 }
 
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {

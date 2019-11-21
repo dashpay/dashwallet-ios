@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBalanceDisplayOptions;
+
 @interface DWSettingsMenuModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *networkName;
@@ -33,6 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
                                   sourceRect:(CGRect)sourceRect;
+
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

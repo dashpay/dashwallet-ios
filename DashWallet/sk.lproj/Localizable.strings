@@ -111,6 +111,9 @@
 "Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
+"Balance hidden" = "Balance hidden";
+
+/* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin adresa (shapeshift)";
 
 /* No comment provided by engineer. */
@@ -952,6 +955,12 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
+
+/* No comment provided by engineer. */
+"Tap to hide balance" = "Tap to hide balance";
+
+/* No comment provided by engineer. */
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "The app will now close" = "The app will now close";

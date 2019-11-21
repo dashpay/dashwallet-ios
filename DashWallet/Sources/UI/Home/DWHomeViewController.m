@@ -97,11 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeViewController:self receiveButtonAction:sender];
 }
 
-- (void)homeView:(DWHomeView *)homeView balanceButtonAction:(UIControl *)sender {
-    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
-    [self performActionForShortcut:action sender:sender];
-}
-
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {
     id<DWTransactionListDataProviderProtocol> dataProvider = [self.model getDataProvider];
     DWTxDetailPopupViewController *controller =
