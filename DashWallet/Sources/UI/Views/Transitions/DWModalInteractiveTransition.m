@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _presenting = YES;
         _originalTouchPoint = CGPointZero;
+        _interactiveTransitionAllowed = YES;
     }
     return self;
 }
@@ -140,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
                 finished = hasVelocity;
             }
 
-            if (finished) {
+            if (finished && self.interactiveTransitionAllowed) {
                 [self finishInteractiveTransition];
                 [self didUpdateProgress:1.0];
             }

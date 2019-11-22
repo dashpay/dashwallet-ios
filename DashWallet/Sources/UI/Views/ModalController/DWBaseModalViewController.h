@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBaseModalViewController : DWBaseActionButtonViewController <DWModalInteractiveTransitionProgressHandler>
 
+/// Defaults to `YES`.
+@property (nonatomic, assign) BOOL interactiveTransitionAllowed;
+
 - (void)setModalTitle:(NSString *)title;
 - (void)setupModalContentView:(UIView *)view;
 

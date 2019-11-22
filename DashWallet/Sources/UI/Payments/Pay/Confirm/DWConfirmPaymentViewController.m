@@ -39,17 +39,13 @@ NS_ASSUME_NONNULL_BEGIN
     switch (self.period) {
         case 1:
             return NSLocalizedString(@"Sending.", @"2 out of 4 in the Sending Animation");
-            break;
         case 2:
             return NSLocalizedString(@"Sending..", @"3 out of 4 in the Sending Animation");
-            break;
         case 3:
             return NSLocalizedString(@"Sending...", @"4 out of 4 in the Sending Animation");
-            break;
         default:
-            break;
+            return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
     }
-    return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
 }
 
 - (void)viewDidLoad {
@@ -67,12 +63,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setSendingEnabled:(BOOL)sendingEnabled {
     if (_sendingEnabled && !sendingEnabled) {
+        __weak typeof(self) weakSelf = self;
         self.sendingTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
                                                             repeats:YES
                                                               block:^(NSTimer *_Nonnull timer) {
-                                                                  self.period++;
-                                                                  self.period %= 4;
-                                                                  [self reloadActionButtonTitles];
+                                                                  __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                  if (!strongSelf) {
+                                                                      return;
+                                                                  }
+
+                                                                  strongSelf.period++;
+                                                                  strongSelf.period %= 4;
+                                                                  [strongSelf reloadActionButtonTitles];
                                                               }];
     }
     else if (!_sendingEnabled && sendingEnabled) {
@@ -80,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     _sendingEnabled = sendingEnabled;
     self.actionButton.enabled = sendingEnabled;
+    self.interactiveTransitionAllowed = sendingEnabled;
 }
 
 - (void)actionButtonAction:(id)sender {
