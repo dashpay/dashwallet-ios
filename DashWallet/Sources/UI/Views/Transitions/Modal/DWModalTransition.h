@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWModalTransition : NSObject <UIViewControllerTransitioningDelegate>
 
+/// Defaults to `YES`.
+@property (nonatomic, assign) BOOL interactiveTransitionAllowed;
+
 @end
 
 NS_ASSUME_NONNULL_END

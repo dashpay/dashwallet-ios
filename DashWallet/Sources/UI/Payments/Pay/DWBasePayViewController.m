@@ -173,7 +173,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController.view dw_hideProgressHUD];
     [self showAlertWithTitle:title message:message];
     if (self.confirmViewController) {
-        self.confirmViewController.actionButton.enabled = YES;
+        self.confirmViewController.sendingEnabled = YES;
     }
 }
 
