@@ -420,6 +420,9 @@
 "Invalid amount" = "Số tiền không hợp lệ";
 
 /* No comment provided by engineer. */
+"invalid transaction" = "invalid transaction";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "Địa chỉ IP/cổng:";
 
 /* No comment provided by engineer. */
@@ -496,6 +499,9 @@
 
 /* No comment provided by engineer. */
 "More..." = "More...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "Moved" = "Đã chuyển";
@@ -699,6 +705,9 @@
 "Receive dash at this address: %@" = "Nhận dash với địa chỉ này: %@";
 
 /* No comment provided by engineer. */
+"received" = "received";
+
+/* No comment provided by engineer. */
 "Received" = "Đã nhận";
 
 /* No comment provided by engineer. */
@@ -844,6 +853,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Đã gửi";
+
+/* No comment provided by engineer. */
+"sent" = "sent";
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";

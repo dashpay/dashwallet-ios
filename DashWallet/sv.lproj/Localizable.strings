@@ -420,6 +420,9 @@
 "Invalid amount" = "Invalid amount";
 
 /* No comment provided by engineer. */
+"invalid transaction" = "invalid transaction";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP address/port:";
 
 /* No comment provided by engineer. */
@@ -496,6 +499,9 @@
 
 /* No comment provided by engineer. */
 "More..." = "More...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "Moved" = "Moved";
@@ -699,6 +705,9 @@
 "Receive dash at this address: %@" = "Ta emot dash på denna adress: %@";
 
 /* No comment provided by engineer. */
+"received" = "received";
+
+/* No comment provided by engineer. */
 "Received" = "Received";
 
 /* No comment provided by engineer. */
@@ -844,6 +853,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "Sent";
+
+/* No comment provided by engineer. */
+"sent" = "sent";
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";

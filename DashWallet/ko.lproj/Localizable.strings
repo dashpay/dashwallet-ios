@@ -420,6 +420,9 @@
 "Invalid amount" = "유효하지 않은 금액";
 
 /* No comment provided by engineer. */
+"invalid transaction" = "invalid transaction";
+
+/* No comment provided by engineer. */
 "IP address/port:" = "IP 주소/포트:";
 
 /* No comment provided by engineer. */
@@ -496,6 +499,9 @@
 
 /* No comment provided by engineer. */
 "More..." = "More...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "Moved" = "이동 완료";
@@ -699,6 +705,9 @@
 "Receive dash at this address: %@" = "다음의 주소로 대시를 받습니다: %@";
 
 /* No comment provided by engineer. */
+"received" = "received";
+
+/* No comment provided by engineer. */
 "Received" = "받음";
 
 /* No comment provided by engineer. */
@@ -844,6 +853,9 @@
 
 /* No comment provided by engineer. */
 "Sent" = "보냄";
+
+/* No comment provided by engineer. */
+"sent" = "sent";
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";

@@ -25,35 +25,43 @@
 
 import WatchKit
 
-class BRAWTransactionRowControl: NSObject {
-    
-    @IBOutlet var statusIcon: WKInterfaceImage! {
+final class BRAWTransactionRowControl: NSObject {
+    @IBOutlet private var statusIcon: WKInterfaceImage! {
         didSet {
             statusIcon.setImage(nil)
         }
     }
-    @IBOutlet var amountLabel: WKInterfaceLabel!
-    @IBOutlet var dateLabel: WKInterfaceLabel!
-    @IBOutlet var seperatorGroup: WKInterfaceGroup!
-    @IBOutlet var localCurrencyAmount: WKInterfaceLabel!
+
+    @IBOutlet private var amountLabel: WKInterfaceLabel!
+    @IBOutlet private var dateLabel: WKInterfaceLabel!
+    @IBOutlet private var seperatorGroup: WKInterfaceGroup!
+    @IBOutlet private var localCurrencyAmount: WKInterfaceLabel!
+
     var type = BRAWTransactionTypeReceive {
         didSet {
             switch type {
-                case BRAWTransactionTypeReceive:
-                    statusIcon.setImageNamed("ReceiveMoneyIcon")
-                    break;
-                case BRAWTransactionTypeSent:
-                    statusIcon.setImageNamed("SentMoneyIcon")
-                    break;
-                case BRAWTransactionTypeMove:
-                    statusIcon.setImageNamed("MoveMoneyIcon")
-                    break;
-                case BRAWTransactionTypeInvalid:
-                    statusIcon.setImageNamed("InvalidTransactionIcon")
-                    break;
-                default:
-                    statusIcon.setImage(nil)
+            case BRAWTransactionTypeReceive:
+                statusIcon.setImageNamed("ReceiveMoneyIcon")
+            case BRAWTransactionTypeSent:
+                statusIcon.setImageNamed("SentMoneyIcon")
+            case BRAWTransactionTypeMove:
+                statusIcon.setImageNamed("MoveMoneyIcon")
+            case BRAWTransactionTypeInvalid:
+                statusIcon.setImageNamed("InvalidTransactionIcon")
+            default:
+                statusIcon.setImage(nil)
             }
         }
+    }
+
+    func update(with transaction: BRAppleWatchTransactionData) {
+        let localCurrencyAmountText = transaction.amountTextInLocalCurrency.count > 2
+            ? transaction.amountTextInLocalCurrency
+            : " "
+        amountLabel.setText(transaction.amountText)
+        localCurrencyAmount.setText(localCurrencyAmountText)
+        dateLabel.setText(transaction.dateText)
+        type = transaction.type
+        seperatorGroup.setHeight(0.5)
     }
 }
