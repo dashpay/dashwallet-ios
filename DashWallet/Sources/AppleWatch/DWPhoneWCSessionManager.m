@@ -222,7 +222,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     appleWatchData.balanceInLocalCurrency = [priceManager localCurrencyStringForDashAmount:42980000];
 #endif
     appleWatchData.receiveMoneyAddress = account.receiveAddress;
-    appleWatchData.transactions = [[self recentTransactionListFromTransactions:transactions] copy];
+    appleWatchData.transactions = [self recentTransactionListFromTransactions:transactions];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = !!account; //if there is no account there is no wallet
 
@@ -281,9 +281,17 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     return nil;
 }
 
-- (UIImage *)qrCode {
+- (nullable UIImage *)qrCode {
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    if (!account) {
+        return nil;
+    }
+
     NSData *req = [DSPaymentRequest requestWithString:account.receiveAddress onChain:account.wallet.chain].data;
+    if (!req) {
+        return nil;
+    }
+
     NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
     UIImage *image = nil;
 
@@ -345,7 +353,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 //    }
 #endif
 
-    return transactionListData;
+    return [transactionListData copy];
 }
 
 @end

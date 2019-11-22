@@ -27,15 +27,19 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface BRAppleWatchData : NSObject <NSCoding>
 
 @property (nonatomic, strong) NSString *balance;
 @property (nonatomic, strong) NSString *balanceInLocalCurrency;
-@property (nonatomic, strong) NSString *receiveMoneyAddress;
-@property (nonatomic, strong) NSString *lastestTransction;
+@property (nullable, nonatomic, strong) NSString *receiveMoneyAddress;
+@property (nullable, nonatomic, strong) NSString *lastestTransction;
 // There is no cifilter in watchOS 2, so we have to pass image over.
-@property (nonatomic, strong) UIImage *receiveMoneyQRCodeImage;
+@property (nullable, nonatomic, strong) UIImage *receiveMoneyQRCodeImage;
 @property (nonatomic, strong) NSArray<BRAppleWatchTransactionData *> *transactions;
 @property (nonatomic) BOOL hasWallet;
 
 @end
+
+NS_ASSUME_NONNULL_END

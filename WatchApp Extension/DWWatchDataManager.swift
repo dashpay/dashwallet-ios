@@ -45,9 +45,8 @@ final class DWWatchDataManager: NSObject {
     var receiveMoneyQRCodeImage: UIImage? { return appleWatchData?.receiveMoneyQRCodeImage }
     var lastestTransction: String? { return appleWatchData?.lastestTransction }
     var transactionHistory: [BRAppleWatchTransactionData] {
-        if let unwrappedAppleWatchData: BRAppleWatchData = appleWatchData,
-            let transactions: [BRAppleWatchTransactionData] = unwrappedAppleWatchData.transactions {
-            return transactions
+        if let unwrappedAppleWatchData: BRAppleWatchData = appleWatchData {
+            return unwrappedAppleWatchData.transactions
         }
         else {
             return [BRAppleWatchTransactionData]()
