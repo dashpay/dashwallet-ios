@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
+@property (nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 
 @end
 
@@ -40,9 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         self.title = NSLocalizedString(@"More", nil);
     }
     return self;
@@ -93,7 +96,8 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Settings: {
-            DWSettingsMenuViewController *controller = [[DWSettingsMenuViewController alloc] init];
+            DWSettingsMenuViewController *controller =
+                [[DWSettingsMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
             [self.navigationController pushViewController:controller animated:YES];
 
             break;

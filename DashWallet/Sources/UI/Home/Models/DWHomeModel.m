@@ -22,6 +22,7 @@
 
 #import <UIKit/UIApplication.h>
 
+#import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -96,6 +97,8 @@ static BOOL IsJailbroken(void) {
         _shortcutsModel = [[DWShortcutsModel alloc] init];
 
         _payModel = [[DWPayModel alloc] init];
+
+        _balanceDisplayOptions = [[DWBalanceDisplayOptions alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self

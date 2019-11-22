@@ -31,23 +31,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (strong, nonatomic) DWSelectorFormCellModel *localCurrencyCellModel;
 @property (strong, nonatomic) DWSelectorFormCellModel *switchNetworkCellModel;
+@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 
 @end
 
 @implementation DWSettingsMenuViewController
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         self.title = NSLocalizedString(@"Settings", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
-
     return self;
 }
 
 - (DWSettingsMenuModel *)model {
     if (!_model) {
-        _model = [[DWSettingsMenuModel alloc] init];
+        _model = [[DWSettingsMenuModel alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
     }
 
     return _model;
@@ -102,6 +105,20 @@ NS_ASSUME_NONNULL_BEGIN
             UITableView *tableView = self.formController.tableView;
             UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
             [strongSelf showChangeNetworkFromSourceView:tableView sourceRect:cell.frame];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Hide Balance", nil)];
+        cellModel.on = self.model.balanceHidden;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            strongSelf.model.balanceHidden = cellModel.on;
         };
         [items addObject:cellModel];
     }

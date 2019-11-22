@@ -15,20 +15,21 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWBalanceDisplayOptions.h"
+
+#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBalanceDisplayOptions;
+@implementation DWBalanceDisplayOptions
 
-@interface DWSettingsMenuViewController : UIViewController
-
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
-
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _balanceHidden = [DWGlobalOptions sharedInstance].balanceHidden;
+    }
+    return self;
+}
 
 @end
 

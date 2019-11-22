@@ -19,12 +19,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBalanceDisplayOptions;
+
 @interface DWSettingsMenuModel : NSObject
 
 @property (readonly, copy, nonatomic) NSString *networkName;
 @property (readonly, copy, nonatomic) NSString *localCurrencyCode;
 
 @property (assign, nonatomic) BOOL notificationsEnabled;
+@property (assign, nonatomic) BOOL balanceHidden;
 
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 + (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
@@ -32,6 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
                                   sourceRect:(CGRect)sourceRect;
+
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

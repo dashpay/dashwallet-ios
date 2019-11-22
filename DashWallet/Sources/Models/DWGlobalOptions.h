@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
 
+@property (nonatomic, assign) BOOL balanceHidden;
+
 // Non-stored options
 
 - (NSTimeInterval)autoLockAppInterval;

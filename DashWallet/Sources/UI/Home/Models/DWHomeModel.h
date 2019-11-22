@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWReceiveModel;
 @class DWShortcutsModel;
 @class DWPayModel;
+@class DWBalanceDisplayOptions;
 @protocol DWTransactionListDataProviderProtocol;
 
 typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
@@ -49,6 +50,7 @@ typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
 
 @property (readonly, nonatomic, strong) DWSyncModel *syncModel;
 @property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 @property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
 @property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 @property (readonly, nonatomic, strong) DWPayModel *payModel;
