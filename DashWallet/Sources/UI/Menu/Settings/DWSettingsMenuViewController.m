@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     {
-        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Hide Balance", nil)];
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Autohide Balance", nil)];
         cellModel.on = self.model.balanceHidden;
         cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;

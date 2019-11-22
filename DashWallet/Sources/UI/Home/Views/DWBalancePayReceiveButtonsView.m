@@ -96,7 +96,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    [self.payButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
+    [self.payButton setTitle:NSLocalizedString(@"Send", nil) forState:UIControlStateNormal];
     self.payButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
     [self.receiveButton setTitle:NSLocalizedString(@"Receive", nil) forState:UIControlStateNormal];

@@ -99,6 +99,9 @@
 "Authentication is unvailable" = "Authentication is unvailable";
 
 /* No comment provided by engineer. */
+"Autohide Balance" = "Autohide Balance";
+
+/* No comment provided by engineer. */
 "Available" = "Available";
 
 /* No comment provided by engineer. */
@@ -369,9 +372,6 @@
 "Help us improve your experience" = "Help us improve your experience";
 
 /* No comment provided by engineer. */
-"Hide Balance" = "Hide Balance";
-
-/* No comment provided by engineer. */
 "History" = "History";
 
 /* No comment provided by engineer. */
@@ -617,17 +617,8 @@
 /* No comment provided by engineer. */
 "Pay" = "Betala";
 
-/* Pay by (scanning QR code) */
-"Pay by" = "Pay by";
-
 /* No comment provided by engineer. */
 "Pay to" = "Pay to";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Pay to Address" = "Pay to Address";
-
-/* No comment provided by engineer. */
-"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -809,6 +800,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
 
+/* No comment provided by engineer. */
+"Scan to Send" = "Scan to Send";
+
 /* (Pay by) Scanning QR code */
 "Scanning QR code" = "Scanning QR code";
 
@@ -848,6 +842,9 @@
 /* No comment provided by engineer. */
 "Send address as message" = "Send address as message";
 
+/* Pay by (scanning QR code) */
+"Send by" = "Send by";
+
 /* No comment provided by engineer. */
 "Send crash report" = "Send crash report";
 
@@ -856,6 +853,12 @@
 
 /* No comment provided by engineer. */
 "Send request as message" = "Send request as message";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Address" = "Send to Address";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Send to copied address";
 
 /* No comment provided by engineer. */
 "Sent" = "Sent";

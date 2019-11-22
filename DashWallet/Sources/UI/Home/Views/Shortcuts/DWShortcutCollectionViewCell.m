@@ -32,7 +32,7 @@ static NSString *TitleForAction(DWShortcutAction *action) {
             return NSLocalizedString(@"Scan to Pay",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_PayToAddress:
-            return NSLocalizedString(@"Pay to Address",
+            return NSLocalizedString(@"Send to Address",
                                      @"Translate it as short as possible! (24 symbols max)");
         case DWShortcutActionType_BuySellDash:
             return NSLocalizedString(@"Buy / Sell Dash",

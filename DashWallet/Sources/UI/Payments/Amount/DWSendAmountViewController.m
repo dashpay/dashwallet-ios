@@ -35,13 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Pay", nil);
+    return NSLocalizedString(@"Send", nil);
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Pay", nil);
+    self.title = NSLocalizedString(@"Send", nil);
 }
 
 #pragma mark - Actions
