@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWConfirmPaymentViewControllerDelegate> delegate;
 @property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
+@property (nonatomic, assign) BOOL sendingEnabled;
 
 @end
 

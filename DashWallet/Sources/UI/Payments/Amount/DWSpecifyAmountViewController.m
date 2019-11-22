@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Receive", nil);
 }
 

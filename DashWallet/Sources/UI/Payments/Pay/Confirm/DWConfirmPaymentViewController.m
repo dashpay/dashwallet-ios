@@ -24,23 +24,67 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWConfirmPaymentViewController ()
 
 @property (null_resettable, nonatomic, strong) DWConfirmPaymentContentView *confirmPaymentView;
+@property (nonatomic, strong) NSTimer *sendingTimer;
+@property (nonatomic, assign) uint8_t period;
 
 @end
 
 @implementation DWConfirmPaymentViewController
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Send", nil);
+}
+
+- (NSString *)actionButtonDisabledTitle {
+    switch (self.period) {
+        case 1:
+            return NSLocalizedString(@"Sending.", nil);
+            break;
+        case 2:
+            return NSLocalizedString(@"Sending..", nil);
+            break;
+        case 3:
+            return NSLocalizedString(@"Sending...", nil);
+            break;
+        default:
+            break;
+    }
+    return NSLocalizedString(@"Sending", nil);
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    _period = 0;
+    _sendingEnabled = YES;
+
     [self setupView];
+}
+
+- (void)dealloc {
+    [self.sendingTimer invalidate];
+}
+
+- (void)setSendingEnabled:(BOOL)sendingEnabled {
+    if (_sendingEnabled && !sendingEnabled) {
+        self.sendingTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
+                                                            repeats:YES
+                                                              block:^(NSTimer *_Nonnull timer) {
+                                                                  self.period++;
+                                                                  self.period %= 4;
+                                                                  [self reloadActionButtonTitles];
+                                                              }];
+    }
+    else if (!_sendingEnabled && sendingEnabled) {
+        [self.sendingTimer invalidate];
+    }
+    _sendingEnabled = sendingEnabled;
+    self.actionButton.enabled = sendingEnabled;
 }
 
 - (void)actionButtonAction:(id)sender {
     [self.delegate confirmPaymentViewControllerDidConfirm:self];
+    [self setSendingEnabled:NO];
 }
 
 - (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {

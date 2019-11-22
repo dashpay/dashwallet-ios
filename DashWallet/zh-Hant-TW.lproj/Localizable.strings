@@ -861,6 +861,18 @@
 "Send to copied address" = "Send to copied address";
 
 /* No comment provided by engineer. */
+"Sending" = "Sending";
+
+/* No comment provided by engineer. */
+"Sending." = "Sending.";
+
+/* No comment provided by engineer. */
+"Sending.." = "Sending..";
+
+/* No comment provided by engineer. */
+"Sending..." = "Sending...";
+
+/* No comment provided by engineer. */
 "Sent" = "發送";
 
 /* No comment provided by engineer. */

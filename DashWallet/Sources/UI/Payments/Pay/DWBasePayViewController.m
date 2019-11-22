@@ -172,6 +172,9 @@ NS_ASSUME_NONNULL_BEGIN
                  message:(nullable NSString *)message {
     [self.navigationController.view dw_hideProgressHUD];
     [self showAlertWithTitle:title message:message];
+    if (self.confirmViewController) {
+        self.confirmViewController.actionButton.enabled = YES;
+    }
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
