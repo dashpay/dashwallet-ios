@@ -38,18 +38,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)actionButtonDisabledTitle {
     switch (self.period) {
         case 1:
-            return NSLocalizedString(@"Sending.", nil);
+            return NSLocalizedString(@"Sending.", @"2 out of 4 in the Sending Animation");
             break;
         case 2:
-            return NSLocalizedString(@"Sending..", nil);
+            return NSLocalizedString(@"Sending..", @"3 out of 4 in the Sending Animation");
             break;
         case 3:
-            return NSLocalizedString(@"Sending...", nil);
+            return NSLocalizedString(@"Sending...", @"4 out of 4 in the Sending Animation");
             break;
         default:
             break;
     }
-    return NSLocalizedString(@"Sending", nil);
+    return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
 }
 
 - (void)viewDidLoad {
