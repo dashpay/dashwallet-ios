@@ -33,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 
+
+/// This method is called after presentation of payment result controller.
+- (void)payViewControllerDidShowPaymentResult;
+
 @end
 
 NS_ASSUME_NONNULL_END
