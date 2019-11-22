@@ -142,7 +142,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     self.navigationTitleLabel.text = NSLocalizedString(@"Payments", nil);
 
     NSArray<NSString *> *items = @[
-        NSLocalizedString(@"Pay", nil),
+        NSLocalizedString(@"Send", nil),
         NSLocalizedString(@"Receive", nil),
     ];
     self.segmentedControl.shouldAnimateSelection = NO;

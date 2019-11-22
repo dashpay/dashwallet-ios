@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWConfirmPaymentViewController
 
 + (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Pay", nil);
+    return NSLocalizedString(@"Send", nil);
 }
 
 - (void)viewDidLoad {

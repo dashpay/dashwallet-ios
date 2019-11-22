@@ -296,7 +296,7 @@ static CGFloat ActionButtonsHeight(void) {
     }
     [self hideLoginButtonIfNeeded];
 
-    self.scanToPayButton.title = NSLocalizedString(@"Scan to Pay", nil);
+    self.scanToPayButton.title = NSLocalizedString(@"Scan to Send", nil);
     self.scanToPayButton.image = [UIImage imageNamed:@"icon_lock_scan_to_pay"];
 
     [self.keyboarView configureFunctionButtonAsHidden];
