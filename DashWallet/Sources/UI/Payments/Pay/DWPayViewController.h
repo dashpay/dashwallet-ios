@@ -20,8 +20,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPayModel;
+@class DWPayViewController;
+
+@protocol DWPayViewControllerDelegate <NSObject>
+
+- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller;
+
+@end
 
 @interface DWPayViewController : DWBasePayViewController
+
+@property (nullable, nonatomic, weak) id<DWPayViewControllerDelegate> delegate;
 
 + (instancetype)controllerWithModel:(DWPayModel *)payModel
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;

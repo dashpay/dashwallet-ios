@@ -18,6 +18,7 @@
 #import "DWBasePayViewController.h"
 
 #import "DWConfirmPaymentViewController.h"
+#import "DWHomeViewController.h"
 #import "DWPayModel.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
@@ -91,6 +92,10 @@ NS_ASSUME_NONNULL_BEGIN
         strongSelf.paymentProcessor = nil;
         [strongSelf.paymentProcessor processPaymentInput:paymentInput];
     }];
+}
+
+- (void)payViewControllerDidShowPaymentResult {
+    // to be overriden
 }
 
 #pragma mark - DWPaymentProcessorDelegate
@@ -190,7 +195,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWTxDetailFullscreenViewController *controller = [[DWTxDetailFullscreenViewController alloc] initWithTransaction:transaction
                                                                                                         dataProvider:self.dataProvider];
-    [self presentViewController:controller animated:YES completion:nil];
+    [self presentViewController:controller
+                       animated:YES
+                     completion:^{
+                         [self payViewControllerDidShowPaymentResult];
+                     }];
 }
 
 - (void)paymentProcessor:(nonnull DWPaymentProcessor *)processor

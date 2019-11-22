@@ -71,6 +71,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.payModel stopPasteboardIntervalObserving];
 }
 
+- (void)payViewControllerDidShowPaymentResult {
+    [self.delegate payViewControllerDidFinishPayment:self];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
