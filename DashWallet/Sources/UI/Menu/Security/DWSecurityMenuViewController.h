@@ -21,9 +21,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWBalanceDisplayOptions;
+
 @interface DWSecurityMenuViewController : UIViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
+
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
+
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

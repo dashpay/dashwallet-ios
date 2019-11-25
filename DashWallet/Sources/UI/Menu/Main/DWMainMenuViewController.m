@@ -89,15 +89,14 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWMainMenuItemType_Security: {
-            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
+            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
             controller.delegate = self.delegate;
             [self.navigationController pushViewController:controller animated:YES];
 
             break;
         }
         case DWMainMenuItemType_Settings: {
-            DWSettingsMenuViewController *controller =
-                [[DWSettingsMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
+            DWSettingsMenuViewController *controller = [[DWSettingsMenuViewController alloc] init];
             [self.navigationController pushViewController:controller animated:YES];
 
             break;

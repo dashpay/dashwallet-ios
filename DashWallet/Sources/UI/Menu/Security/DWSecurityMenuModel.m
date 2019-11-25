@@ -20,6 +20,7 @@
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
+#import "DWBalanceDisplayOptions.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,14 +54,17 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 @interface DWSecurityMenuModel ()
 
 @property (assign, nonatomic) BOOL biometricsEnabled;
+@property (readonly, strong, nonatomic) DWBalanceDisplayOptions *balanceDisplayOptions;
 
 @end
 
 @implementation DWSecurityMenuModel
 
-- (instancetype)init {
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
     self = [super init];
     if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         _hasTouchID = [DSAuthenticationManager sharedInstance].touchIdEnabled;
         _hasFaceID = [DSAuthenticationManager sharedInstance].faceIdEnabled;
     }
@@ -74,6 +78,15 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
     [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:biometricsEnabled ? DUFFS : BIOMETRICS_DISABLED_SPENDING_LIMIT];
+}
+
+- (BOOL)balanceHidden {
+    return [DWGlobalOptions sharedInstance].balanceHidden;
+}
+
+- (void)setBalanceHidden:(BOOL)balanceHidden {
+    [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
+    self.balanceDisplayOptions.balanceHidden = balanceHidden;
 }
 
 - (NSString *)biometricAuthSpendingLimit {
