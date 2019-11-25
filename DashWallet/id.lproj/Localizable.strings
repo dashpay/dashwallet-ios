@@ -372,6 +372,9 @@
 "Help us improve your experience" = "Help us improve your experience";
 
 /* No comment provided by engineer. */
+"High" = "High";
+
+/* No comment provided by engineer. */
 "History" = "History";
 
 /* No comment provided by engineer. */
@@ -499,6 +502,9 @@
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
+
+/* No comment provided by engineer. */
+"Medium" = "Medium";
 
 /* No comment provided by engineer. */
 "More" = "More";
@@ -666,6 +672,9 @@
 "Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
+"Poor" = "Poor";
+
+/* No comment provided by engineer. */
 "Previously last used at IP address" = "Previously last used at IP address";
 
 /* No comment provided by engineer. */
@@ -823,6 +832,9 @@
 
 /* No comment provided by engineer. */
 "Security" = "Security";
+
+/* No comment provided by engineer. */
+"Security Level" = "Security Level";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Lihat di Uphold";

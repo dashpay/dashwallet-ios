@@ -178,6 +178,9 @@
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
+		2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
+		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
+		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */; };
 		2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */; };
@@ -826,6 +829,12 @@
 		2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyModel.m; sourceTree = "<group>"; };
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
+		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
+		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
+		2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityStatusView.h; sourceTree = "<group>"; };
+		2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSecurityStatusView.m; sourceTree = "<group>"; };
+		2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWSecurityStatusView.xib; sourceTree = "<group>"; };
+		2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityLevel.h; sourceTree = "<group>"; };
 		2A858A05237EE89B0097A7B5 /* BRAppleWatchTransactionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchTransactionData.h; sourceTree = "<group>"; };
 		2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A858A07237EE89B0097A7B5 /* DWPhoneWCSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhoneWCSessionManager.h; sourceTree = "<group>"; };
@@ -2111,6 +2120,7 @@
 		2A7A7BCA2347EF7A00451078 /* Security */ = {
 			isa = PBXGroup;
 			children = (
+				2A7F3B18238C643D00DEA3EF /* Advanced Security */,
 				2A10EB3F2358D29500C38B61 /* ResetWalletInfo */,
 				2A7A7BCB2347F01B00451078 /* DWSecurityMenuViewController.h */,
 				2A7A7BCC2347F01B00451078 /* DWSecurityMenuViewController.m */,
@@ -2183,6 +2193,27 @@
 				2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		2A7F3B18238C643D00DEA3EF /* Advanced Security */ = {
+			isa = PBXGroup;
+			children = (
+				2A7F3B1C238C648200DEA3EF /* Views */,
+				2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */,
+				2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */,
+				2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */,
+			);
+			path = "Advanced Security";
+			sourceTree = "<group>";
+		};
+		2A7F3B1C238C648200DEA3EF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */,
+				2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */,
+				2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		2A858A04237EE89B0097A7B5 /* AppleWatch */ = {
@@ -3570,6 +3601,7 @@
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				755FC9ED1BF1DF1B00164ABB /* BREventConfirmView.xib in Resources */,
+				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
 				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
 				2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */,
@@ -4035,6 +4067,7 @@
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
+				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
 				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
@@ -4045,6 +4078,7 @@
 				2A4E534822F02E7A00E5168A /* UICollectionViewCell+DWReuseHelper.m in Sources */,
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
+				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
