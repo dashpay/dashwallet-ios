@@ -26,6 +26,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
+static CGFloat const SECTION_SPACING = 10.0;
 
 @interface DWFormTableViewController ()
 
@@ -44,6 +45,7 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
     self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+    self.tableView.sectionHeaderHeight = SECTION_SPACING;
 
     NSArray<Class> *cellClasses = @[
         DWSelectorFormTableViewCell.class,
@@ -99,12 +101,14 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
     DWFormSectionModel *sectionModel = self.internalDataSource[indexPath.section];
     NSArray<DWBaseFormCellModel *> *items = sectionModel.items;
     DWBaseFormCellModel *cellModel = items[indexPath.row];
+    DWFormCellRoundMask roundMask = [self maskForIndexPath:indexPath];
 
     if ([cellModel isKindOfClass:DWSelectorFormCellModel.class]) {
         NSString *cellId = NSStringFromClass(DWSelectorFormTableViewCell.class);
         DWSelectorFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                             forIndexPath:indexPath];
         cell.cellModel = (DWSelectorFormCellModel *)cellModel;
+        cell.roundMask = roundMask;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {
@@ -112,6 +116,7 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         DWSwitcherFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                             forIndexPath:indexPath];
         cell.cellModel = (DWSwitcherFormCellModel *)cellModel;
+        cell.roundMask = roundMask;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWPlaceholderFormCellModel.class]) {
@@ -163,6 +168,28 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
             switcherCellModel.didChangeValueBlock(switcherCellModel);
         }
     }
+}
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+
+#pragma mark - Private
+
+- (DWFormCellRoundMask)maskForIndexPath:(NSIndexPath *)indexPath {
+    DWFormCellRoundMask mask = 0;
+
+    if (indexPath.row == 0) {
+        mask |= DWFormCellRoundMask_Top;
+    }
+
+    DWFormSectionModel *sectionModel = self.internalDataSource[indexPath.section];
+    NSArray<DWBaseFormCellModel *> *items = sectionModel.items;
+    if (indexPath.row == items.count - 1) {
+        mask |= DWFormCellRoundMask_Bottom;
+    }
+
+    return mask;
 }
 
 @end

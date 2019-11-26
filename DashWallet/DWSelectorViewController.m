@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
         self.hidesBottomBarWhenPushed = YES;
     }
 
@@ -52,9 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     __weak __typeof(self) weakSelf = self;
 
-    NSMutableArray<DWSelectorFormCellModel *> *cellModels = [NSMutableArray array];
+    NSMutableArray<DWFormSectionModel *> *sections = [NSMutableArray array];
     NSUInteger index = 0;
     for (id<DWSelectorFormItem> item in items) {
+        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:item.title];
         cellModel.accessoryType = (index == selectedIndex) ? DWSelectorFormAccessoryType_CheckmarkSelected : DWSelectorFormAccessoryType_CheckmarkEmpty;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *cellModel, NSIndexPath *indexPath) {
@@ -63,16 +65,16 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf didSelectCellModel:cellModel];
+            [strongSelf didSelectCellModel:cellModel inSection:section];
         };
-        [cellModels addObject:cellModel];
+
+        section.items = @[ cellModel ];
+        [sections addObject:section];
 
         index += 1;
     }
 
-    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-    section.items = cellModels;
-    [self.formController setSections:@[ section ] placeholderText:placeholderText];
+    [self.formController setSections:sections placeholderText:placeholderText];
 }
 
 - (DWFormTableViewController *)formController {
@@ -103,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillAppear:animated];
 
     if (self.selectedIndex != NSNotFound) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.selectedIndex inSection:0];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:self.selectedIndex];
         [self.formController.tableView scrollToRowAtIndexPath:indexPath
                                              atScrollPosition:UITableViewScrollPositionMiddle
                                                      animated:NO];
@@ -112,15 +114,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)didSelectCellModel:(DWSelectorFormCellModel *)cellModel {
-    NSArray<DWSelectorFormCellModel *> *cellModels = (NSArray<DWSelectorFormCellModel *> *)self.formController.sections.firstObject.items;
-    NSParameterAssert(cellModels);
+- (void)didSelectCellModel:(DWSelectorFormCellModel *)cellModel inSection:(DWFormSectionModel *)section {
+    NSArray<DWFormSectionModel *> *sections = self.formController.sections;
+    NSParameterAssert(sections);
 
     if (self.selectedIndex != NSNotFound) {
-        DWSelectorFormCellModel *previousCellModel = cellModels[self.selectedIndex];
+        DWFormSectionModel *previousSection = sections[self.selectedIndex];
+        DWSelectorFormCellModel *previousCellModel = (DWSelectorFormCellModel *)previousSection.items.firstObject;
         previousCellModel.accessoryType = DWSelectorFormAccessoryType_CheckmarkEmpty;
     }
-    self.selectedIndex = [cellModels indexOfObject:cellModel];
+    self.selectedIndex = [sections indexOfObject:section];
     cellModel.accessoryType = DWSelectorFormAccessoryType_CheckmarkSelected;
 
     if (self.didSelectItemBlock) {

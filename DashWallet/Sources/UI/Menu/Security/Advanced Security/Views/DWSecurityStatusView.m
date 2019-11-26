@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.descriptionLabel.text = NSLocalizedString(@"Security Level", nil);
 
     self.levelLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
-    
+
     // configure with default level
     self.securityLevel = DWSecurityLevel_Poor;
 }

@@ -28,6 +28,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static CGFloat const SECTION_SPACING = 10.0;
+
 @interface DWLocalCurrencyViewController () <UISearchBarDelegate, UISearchResultsUpdating>
 
 @property (nonatomic, strong) DWLocalCurrencyModel *model;
@@ -66,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     const NSUInteger selectedIndex = self.model.selectedIndex;
     if (selectedIndex != NSNotFound) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:selectedIndex inSection:0];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:selectedIndex];
         [self.tableView scrollToRowAtIndexPath:indexPath
                               atScrollPosition:UITableViewScrollPositionMiddle
                                       animated:NO];
@@ -94,16 +96,23 @@ NS_ASSUME_NONNULL_BEGIN
     return UIStatusBarStyleLightContent;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+#pragma mark - UITableViewDataSource
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return self.model.items.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *cellId = DWLocalCurrencyTableViewCell.dw_reuseIdentifier;
     DWLocalCurrencyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId forIndexPath:indexPath];
 
-    id<DWCurrencyItem> item = self.model.items[indexPath.row];
-    const BOOL selected = indexPath.row == self.model.selectedIndex;
+    const NSInteger index = indexPath.section;
+    id<DWCurrencyItem> item = self.model.items[index];
+    const BOOL selected = index == self.model.selectedIndex;
     [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
 
     return cell;
@@ -114,13 +123,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    id<DWCurrencyItem> item = self.model.items[indexPath.row];
+    const NSInteger index = indexPath.section;
+    id<DWCurrencyItem> item = self.model.items[index];
     [self.model selectItem:item];
 
     [self.tableView reloadRowsAtIndexPaths:self.tableView.indexPathsForVisibleRows
                           withRowAnimation:UITableViewRowAnimationNone];
 
     [self.delegate localCurrencyViewControllerDidSelectCurrency:self];
+}
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
 }
 
 #pragma mark - UISearchResultsUpdating
@@ -173,6 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.tableView.estimatedRowHeight = 74.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+    self.tableView.sectionHeaderHeight = SECTION_SPACING;
 
     [self.tableView registerClass:DWLocalCurrencyTableViewCell.class
            forCellReuseIdentifier:DWLocalCurrencyTableViewCell.dw_reuseIdentifier];

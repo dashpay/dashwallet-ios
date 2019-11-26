@@ -178,6 +178,7 @@
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
+		2A7EBE44238D4D7000E68F67 /* DWSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7EBE43238D4D7000E68F67 /* DWSelectorViewController.m */; };
 		2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
 		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
@@ -236,7 +237,6 @@
 		2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3A2230FF4600956D5F /* DWPlaceholderFormTableViewCell.m */; };
 		2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3D2230FF4600956D5F /* DWPlaceholderFormCellModel.m */; };
 		2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */; };
-		2A9FFE8A2230FF4700956D5F /* DWSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3F2230FF4600956D5F /* DWSelectorViewController.m */; };
 		2A9FFE8B2230FF4700956D5F /* DWLocalCurrecnySelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE402230FF4600956D5F /* DWLocalCurrecnySelectorViewController.m */; };
 		2A9FFE8C2230FF4700956D5F /* DWSettingsControllerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE432230FF4600956D5F /* DWSettingsControllerModel.m */; };
 		2A9FFE8D2230FF4700956D5F /* DWSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE452230FF4600956D5F /* DWSettingsViewController.m */; };
@@ -829,6 +829,8 @@
 		2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyModel.m; sourceTree = "<group>"; };
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
+		2A7EBE42238D4D7000E68F67 /* DWSelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSelectorViewController.h; sourceTree = "<group>"; };
+		2A7EBE43238D4D7000E68F67 /* DWSelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSelectorViewController.m; sourceTree = "<group>"; };
 		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
 		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
 		2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityStatusView.h; sourceTree = "<group>"; };
@@ -944,10 +946,8 @@
 		2A9FFE3C2230FF4600956D5F /* DWPlaceholderFormTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPlaceholderFormTableViewCell.h; sourceTree = "<group>"; };
 		2A9FFE3D2230FF4600956D5F /* DWPlaceholderFormCellModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPlaceholderFormCellModel.m; sourceTree = "<group>"; };
 		2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFormSectionModel.m; sourceTree = "<group>"; };
-		2A9FFE3F2230FF4600956D5F /* DWSelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSelectorViewController.m; sourceTree = "<group>"; };
 		2A9FFE402230FF4600956D5F /* DWLocalCurrecnySelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrecnySelectorViewController.m; sourceTree = "<group>"; };
 		2A9FFE412230FF4600956D5F /* DWSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSettingsViewController.h; sourceTree = "<group>"; };
-		2A9FFE422230FF4600956D5F /* DWSelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSelectorViewController.h; sourceTree = "<group>"; };
 		2A9FFE432230FF4600956D5F /* DWSettingsControllerModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSettingsControllerModel.m; sourceTree = "<group>"; };
 		2A9FFE442230FF4600956D5F /* DWLocalCurrecnySelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrecnySelectorViewController.h; sourceTree = "<group>"; };
 		2A9FFE452230FF4600956D5F /* DWSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSettingsViewController.m; sourceTree = "<group>"; };
@@ -2492,8 +2492,6 @@
 				2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */,
 				2A9FFE362230FF4600956D5F /* DWFormTableViewController.h */,
 				2A9FFE2E2230FF4600956D5F /* DWFormTableViewController.m */,
-				2A9FFE422230FF4600956D5F /* DWSelectorViewController.h */,
-				2A9FFE3F2230FF4600956D5F /* DWSelectorViewController.m */,
 				2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */,
 			);
 			path = Forms;
@@ -3019,6 +3017,8 @@
 		75BA5D02192296010040304C /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				2A7EBE42238D4D7000E68F67 /* DWSelectorViewController.h */,
+				2A7EBE43238D4D7000E68F67 /* DWSelectorViewController.m */,
 				2A9FFE242230FF4600956D5F /* Settings */,
 				2AB231CF2196E23200A6E7E6 /* Start Controller */,
 				2AC92C811FEB0A32008CAEE0 /* QR Code Scanner */,
@@ -3998,6 +3998,7 @@
 				2A0C69B02312DD67001B8C90 /* DWSpecifyAmountViewController.m in Sources */,
 				2A4E534422F02BC300E5168A /* UITableViewCell+DWReuseHelper.m in Sources */,
 				2AB8CDDB220D879300A3D1DB /* DWOLDAmountViewController.m in Sources */,
+				2A7EBE44238D4D7000E68F67 /* DWSelectorViewController.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
 				2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */,
 				2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */,
@@ -4236,7 +4237,6 @@
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,
-				2A9FFE8A2230FF4700956D5F /* DWSelectorViewController.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
