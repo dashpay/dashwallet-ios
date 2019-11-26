@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
 
+@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (nonatomic, strong) DWSelectorFormCellModel *biometricLimitAuthCellModel;
@@ -39,18 +40,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWSecurityMenuViewController
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         self.title = NSLocalizedString(@"Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
-
     return self;
 }
 
 - (DWSecurityMenuModel *)model {
     if (!_model) {
-        _model = [[DWSecurityMenuModel alloc] init];
+        _model = [[DWSecurityMenuModel alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
     }
 
     return _model;
@@ -85,6 +88,20 @@ NS_ASSUME_NONNULL_BEGIN
             }
 
             [strongSelf changePinAction];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Autohide Balance", nil)];
+        cellModel.on = self.model.balanceHidden;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            strongSelf.model.balanceHidden = cellModel.on;
         };
         [items addObject:cellModel];
     }
