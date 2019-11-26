@@ -64,6 +64,9 @@
 		2A1B7DC0232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DBF232669FF00BA8C6A /* DWHomeViewController+DWBackupReminder.m */; };
 		2A1B7DC323266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */; };
 		2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DC52326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m */; };
+		2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
+		2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */; };
+		2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6411238D650200A9B505 /* DWSegmentSlider.m */; };
 		2A2120E72213201E009906DC /* DWAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E62213201E009906DC /* DWAmountModel.m */; };
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
@@ -613,6 +616,12 @@
 		2A1B7DC223266C8400BA8C6A /* DWHomeViewController+DWSecureWalletDelegateImpl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWHomeViewController+DWSecureWalletDelegateImpl.m"; sourceTree = "<group>"; };
 		2A1B7DC42326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSuccessfulTransactionAnimatedIconView.h; sourceTree = "<group>"; };
 		2A1B7DC52326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSuccessfulTransactionAnimatedIconView.m; sourceTree = "<group>"; };
+		2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormTableViewCell.h; sourceTree = "<group>"; };
+		2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormTableViewCell.m; sourceTree = "<group>"; };
+		2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormCellModel.h; sourceTree = "<group>"; };
+		2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormCellModel.m; sourceTree = "<group>"; };
+		2A1F6410238D650200A9B505 /* DWSegmentSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSlider.h; sourceTree = "<group>"; };
+		2A1F6411238D650200A9B505 /* DWSegmentSlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSlider.m; sourceTree = "<group>"; };
 		2A2120E52213201E009906DC /* DWAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountModel.h; sourceTree = "<group>"; };
 		2A2120E62213201E009906DC /* DWAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountModel.m; sourceTree = "<group>"; };
 		2A2120E82214566A009906DC /* DWAmountInputValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputValidator.h; sourceTree = "<group>"; };
@@ -2212,6 +2221,12 @@
 				2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */,
 				2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */,
 				2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */,
+				2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */,
+				2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */,
+				2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */,
+				2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */,
+				2A1F6410238D650200A9B505 /* DWSegmentSlider.h */,
+				2A1F6411238D650200A9B505 /* DWSegmentSlider.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3965,6 +3980,7 @@
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				2A4E532022EB2DF400E5168A /* DWHomeHeaderView.m in Sources */,
 				2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */,
+				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
 				2A7A7BD62348CB6600451078 /* DWSettingsMenuViewController.m in Sources */,
@@ -4038,6 +4054,7 @@
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
+				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,
 				2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */,
@@ -4234,6 +4251,7 @@
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
+				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,

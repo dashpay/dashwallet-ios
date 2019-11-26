@@ -189,6 +189,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_segmentSliderColor {
+    UIColor *color = [UIColor colorNamed:@"SegmentSliderColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END
