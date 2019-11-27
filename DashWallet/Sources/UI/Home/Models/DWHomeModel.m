@@ -250,6 +250,7 @@ static BOOL IsJailbroken(void) {
 
 - (void)applicationWillEnterForegroundNotification {
     [self connectIfNeeded];
+    [self.balanceDisplayOptions hideBalanceIfNeeded];
 }
 
 - (void)syncStateChangedNotification {
