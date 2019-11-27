@@ -365,6 +365,7 @@ static BOOL IsJailbroken(void) {
     uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
     if (self.balanceModel &&
         balanceValue > self.balanceModel.value &&
+        self.balanceModel.value > 0 &&
         [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
         [[UIDevice currentDevice] dw_playCoinSound];
     }
