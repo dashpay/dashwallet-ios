@@ -202,6 +202,7 @@ static NSString *TxDateFormat(NSString *template) {
     const uint32_t blockHeight = [self blockHeight];
     const BOOL instantSendReceived = transaction.instantSendReceived;
     const BOOL processingInstantSend = transaction.hasUnverifiedInstantSendLock;
+    const BOOL confirmed = transaction.confirmed;
     uint32_t confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1;
     if (confirms == 0 && ![account transactionIsValid:transaction]) {
         dataItem.stateText = NSLocalizedString(@"Invalid", nil);
@@ -219,11 +220,12 @@ static NSString *TxDateFormat(NSString *template) {
         dataItem.stateText = NSLocalizedString(@"Locked", nil);
         dataItem.stateTintColor = [UIColor dw_orangeColor];
     }
-    else if (!instantSendReceived && confirms < 6) {
+    else if (!instantSendReceived && !confirmed) {
         if (confirms == 0 && processingInstantSend) {
             dataItem.stateText = NSLocalizedString(@"Processing", nil);
         }
         else {
+            
             dataItem.stateText = NSLocalizedString(@"Confirming", nil);
         }
         dataItem.stateTintColor = [UIColor dw_orangeColor];
