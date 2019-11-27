@@ -103,6 +103,12 @@ float const DW_SYNCING_COMPLETED_PROGRESS = 0.995;
     [self syncLoop];
 }
 
+- (void)forceStartSyncingActivity {
+    DWSyncLog(@"[DW Sync] forceStartSyncingActivity");
+
+    [self startSyncingActivity];
+}
+
 #pragma mark Notifications
 
 - (void)transactionManagerSyncStartedNotification {

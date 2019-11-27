@@ -40,6 +40,7 @@ typedef NS_ENUM(NSUInteger, DWSyncModelState) {
 @property (readonly, nonatomic, assign) float progress;
 
 - (void)reachabilityStatusDidChange;
+- (void)forceStartSyncingActivity;
 
 - (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
 
