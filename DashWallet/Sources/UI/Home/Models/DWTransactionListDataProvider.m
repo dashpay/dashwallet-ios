@@ -225,7 +225,6 @@ static NSString *TxDateFormat(NSString *template) {
             dataItem.stateText = NSLocalizedString(@"Processing", nil);
         }
         else {
-            
             dataItem.stateText = NSLocalizedString(@"Confirming", nil);
         }
         dataItem.stateTintColor = [UIColor dw_orangeColor];
