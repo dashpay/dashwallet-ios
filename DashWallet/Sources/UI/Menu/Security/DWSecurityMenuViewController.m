@@ -17,6 +17,7 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -102,6 +103,20 @@ NS_ASSUME_NONNULL_BEGIN
             }
 
             strongSelf.model.balanceHidden = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Advanced Security", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showAdvancedSecurity];
         };
         [items addObject:cellModel];
     }
@@ -250,6 +265,12 @@ NS_ASSUME_NONNULL_BEGIN
         navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
         [self presentViewController:navigationController animated:YES completion:nil];
     }];
+}
+
+- (void)showAdvancedSecurity {
+    // TODO: ask for pin
+    DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {

@@ -35,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWToolsMenuViewController
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
         self.title = NSLocalizedString(@"Tools", nil);
         self.hidesBottomBarWhenPushed = YES;
     }

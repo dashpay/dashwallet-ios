@@ -24,7 +24,19 @@
 "1 confirmation" = "1 xác thực";
 
 /* No comment provided by engineer. */
+"1 day" = "1 day";
+
+/* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
+"1 hour" = "1 hour";
+
+/* Shorten version of minute */
+"1 min" = "1 min";
+
+/* Shorten version of minutes */
+"5 min" = "5 min";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" không phải là một cụm từ khôi phục";
@@ -61,6 +73,9 @@
 
 /* No comment provided by engineer. */
 "ADVANCED" = "NÂNG CAO";
+
+/* No comment provided by engineer. */
+"Advanced Security" = "Advanced Security";
 
 /* No comment provided by engineer. */
 "All" = "All";
@@ -438,6 +453,9 @@
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
+"Keep me logged in" = "Keep me logged in";
+
+/* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
@@ -532,6 +550,9 @@
 
 /* No comment provided by engineer. */
 "Network fee" = "Network fee";
+
+/* No comment provided by engineer. */
+"Never" = "Never";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "ĐỪNG BAO GIỜ ghi cụm từ phục hồi vào phần mềm quản lý mật khẩu hoặc nơi nào khác. Những thiết bị khác có thể bị nhiễm mã độc.";
@@ -634,6 +655,9 @@
 
 /* No comment provided by engineer. */
 "Payment address" = "Payment address";
+
+/* No comment provided by engineer. */
+"Payment Authentication" = "Payment Authentication";
 
 /* No comment provided by engineer. */
 "Payment output" = "Payment output";
@@ -1087,6 +1111,9 @@
 
 /* No comment provided by engineer. */
 "Unknown address" = "Unknown address";
+
+/* No comment provided by engineer. */
+"Unlimited" = "Unlimited";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";

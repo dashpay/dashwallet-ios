@@ -27,7 +27,7 @@ DEPENDENCIES:
   - DSDynamicOptions (= 0.1.0)
   - KVO-MVVM (= 0.5.6)
   - MBProgressHUD (= 1.1.0)
-  - MMSegmentSlider (from `https://github.com/QuantumExplorer/MMSegmentSlider`, commit `2a121ba`)
+  - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - SimulatorStatusMagic (= 2.4.1)
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
@@ -52,16 +52,16 @@ EXTERNAL SOURCES:
   DashSync:
     :path: "../DashSync/"
   MMSegmentSlider:
-    :commit: 2a121ba
-    :git: https://github.com/QuantumExplorer/MMSegmentSlider
+    :commit: 2d91366
+    :git: https://github.com/podkovyrin/MMSegmentSlider
 
 CHECKOUT OPTIONS:
   Dash-PLCrashReporter:
     :commit: b472e8926cc3668dcac4189666a64ae2d65d8af8
     :git: https://github.com/podkovyrin/plcrashreporter.git
   MMSegmentSlider:
-    :commit: 2a121ba
-    :git: https://github.com/QuantumExplorer/MMSegmentSlider
+    :commit: 2d91366
+    :git: https://github.com/podkovyrin/MMSegmentSlider
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
@@ -78,6 +78,6 @@ SPEC CHECKSUMS:
   SimulatorStatusMagic: 28d4a9d1a500ac7cea0b2b5a43c1c6ddb40ba56c
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 8ef60b0f9bafc3ba996cfbef034cb1d14874af2e
+PODFILE CHECKSUM: 40165155916933bbb3cc2a4d9377774365769e46
 
 COCOAPODS: 1.8.4

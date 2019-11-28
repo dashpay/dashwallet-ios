@@ -33,12 +33,16 @@ static CGFloat const SECTION_SPACING = 10.0;
 @property (nullable, copy, nonatomic) NSArray<DWFormSectionModel *> *sections;
 @property (nullable, copy, nonatomic) NSArray<DWFormSectionModel *> *internalDataSource;
 
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *customCellModels;
+
 @end
 
 @implementation DWFormTableViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    self.customCellModels = [NSMutableDictionary dictionary];
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
@@ -58,7 +62,14 @@ static CGFloat const SECTION_SPACING = 10.0;
     }
 }
 
-- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections placeholderText:(nullable NSString *)placeholderText {
+- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
+    placeholderText:(nullable NSString *)placeholderText {
+    [self setSections:sections placeholderText:placeholderText shouldReloadData:YES];
+}
+
+- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
+     placeholderText:(nullable NSString *)placeholderText
+    shouldReloadData:(BOOL)shouldReloadData {
     self.sections = sections;
 
     if (placeholderText) {
@@ -83,7 +94,22 @@ static CGFloat const SECTION_SPACING = 10.0;
         self.internalDataSource = self.sections;
     }
 
-    [self.tableView reloadData];
+    if (shouldReloadData) {
+        [self.tableView reloadData];
+    }
+}
+
+- (void)registerCustomCellModelClass:(Class)cellModelClass forCellClass:(Class)cellClass {
+    NSParameterAssert(cellModelClass);
+    NSParameterAssert(cellClass);
+
+    NSAssert([cellModelClass isSubclassOfClass:DWBaseFormCellModel.class], @"Unsupported cell model class");
+    NSAssert([cellClass isSubclassOfClass:DWBaseFormTableViewCell.class], @"Unsupported cell class");
+
+    NSString *cellId = NSStringFromClass(cellClass);
+    [self.tableView registerClass:cellClass forCellReuseIdentifier:cellId];
+
+    self.customCellModels[NSStringFromClass(cellModelClass)] = cellId;
 }
 
 #pragma mark UITableViewDataSource
@@ -127,9 +153,22 @@ static CGFloat const SECTION_SPACING = 10.0;
         return cell;
     }
     else {
-        NSAssert(NO, @"Unknown cell model %@", cellModel);
+        NSString *cellModelClass = NSStringFromClass(cellModel.class);
+        NSString *cellId = self.customCellModels[cellModelClass];
+        if (!cellId) {
+            NSAssert(NO, @"Unknown cell model %@", cellModel);
 
-        return [UITableViewCell new];
+            return [UITableViewCell new];
+        }
+
+        DWBaseFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                        forIndexPath:indexPath];
+
+        if ([cell respondsToSelector:@selector(setCellModel:)]) {
+            [cell performSelector:@selector(setCellModel:) withObject:cellModel];
+        }
+        cell.roundMask = roundMask;
+        return cell;
     }
 }
 
@@ -171,7 +210,9 @@ static CGFloat const SECTION_SPACING = 10.0;
 }
 
 - (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    return [[UIView alloc] init];
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = self.view.backgroundColor;
+    return view;
 }
 
 #pragma mark - Private

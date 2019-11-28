@@ -24,6 +24,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const LABELS_SPACING = 8.0;
+static CGFloat const SLIDER_HEIGHT = 40.0;
 
 @interface DWSegmentSlider ()
 
@@ -53,6 +54,14 @@ static CGFloat const LABELS_SPACING = 8.0;
     return self;
 }
 
++ (UIColor *)valuesTextColor {
+    return [UIColor dw_quaternaryTextColor];
+}
+
++ (UIFont *)valuesTextFont {
+    return [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+}
+
 - (void)dwSegmentSlider_commonInit {
     self.backgroundColor = [UIColor dw_backgroundColor];
 
@@ -68,15 +77,16 @@ static CGFloat const LABELS_SPACING = 8.0;
 
     MMSegmentSlider *segmentSlider = [[MMSegmentSlider alloc] initWithFrame:CGRectZero];
     segmentSlider.translatesAutoresizingMaskIntoConstraints = NO;
+    segmentSlider.backgroundColor = [UIColor dw_backgroundColor];
     segmentSlider.basicColor = [UIColor dw_segmentSliderColor];
     segmentSlider.selectedValueColor = [UIColor dw_dashBlueColor];
     segmentSlider.useCircles = NO;
     segmentSlider.stopItemHeight = 10.0;
     segmentSlider.stopItemWidth = 1.0;
-    segmentSlider.circlesRadiusForSelected = 30.0;
-    segmentSlider.hideInnerLabels = YES;
+    segmentSlider.sliderWidth = 1.0;
+    segmentSlider.horizontalInsets = 15.0;
+    segmentSlider.circlesRadiusForSelected = 15.0;
     segmentSlider.values = @[];
-    segmentSlider.labels = @[];
     [segmentSlider addTarget:self
                       action:@selector(segmentSliderAction:)
             forControlEvents:UIControlEventValueChanged];
@@ -98,6 +108,7 @@ static CGFloat const LABELS_SPACING = 8.0;
         [segmentSlider.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [segmentSlider.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         [segmentSlider.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [segmentSlider.heightAnchor constraintEqualToConstant:SLIDER_HEIGHT],
     ]];
 }
 
@@ -172,8 +183,8 @@ static CGFloat const LABELS_SPACING = 8.0;
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.backgroundColor = [UIColor dw_backgroundColor];
-    label.textColor = [UIColor dw_quaternaryTextColor];
-    label.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    label.textColor = [self valuesTextColor];
+    label.font = [self valuesTextFont];
     label.adjustsFontForContentSizeCategory = YES;
     label.minimumScaleFactor = 0.5;
     label.adjustsFontSizeToFitWidth = YES;

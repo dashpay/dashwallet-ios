@@ -19,19 +19,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NSAttributedString *_Nonnull (^DWAttributedStringBuilder)(UIFont *font, UIColor *color);
+
 @interface DWSegmentSliderFormCellModel : DWBaseFormCellModel
 
-@property (nullable, nonatomic, copy) NSAttributedString *detail;
+@property (nullable, nonatomic, copy) DWAttributedStringBuilder detailBuilder;
 
 @property (nullable, nonatomic, copy) NSString *sliderLeftText;
 @property (nullable, nonatomic, copy) NSString *sliderRightText;
-@property (nullable, nonatomic, copy) NSAttributedString *sliderLeftAttributedText;
-@property (nullable, nonatomic, copy) NSAttributedString *sliderRightAttributedText;
+@property (nullable, nonatomic, copy) DWAttributedStringBuilder sliderLeftAttributedTextBuilder;
+@property (nullable, nonatomic, copy) DWAttributedStringBuilder sliderRightAttributedTextBuilder;
 
 @property (nonatomic, copy) NSArray<id<NSCopying>> *sliderValues;
 @property (nonatomic, assign) NSInteger selectedItemIndex;
 
-@property (nullable, nonatomic, copy) NSAttributedString *descriptionText;
+@property (nullable, nonatomic, copy) DWAttributedStringBuilder descriptionTextBuilder;
 
 @property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWSegmentSliderFormCellModel *cellModel);
 

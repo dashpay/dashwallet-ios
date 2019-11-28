@@ -15,24 +15,19 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSegmentSlider : UIControl
+@interface DWAdvancedSecurityModel : NSObject
 
-@property (nullable, nonatomic, copy) NSString *leftText;
-@property (nullable, nonatomic, copy) NSString *rightText;
-@property (nullable, nonatomic, copy) NSAttributedString *leftAttributedText;
-@property (nullable, nonatomic, copy) NSAttributedString *rightAttributedText;
+@property (readonly, nonatomic, copy) NSArray<NSNumber *> *lockTimerTimeIntervals;
+@property (nonatomic, strong) NSNumber *lockTimerTimeInterval;
 
-@property (nonatomic, copy) NSArray<id<NSCopying>> *values;
-@property (nonatomic, assign) NSInteger selectedItemIndex;
+@property (nonatomic, assign) BOOL paymentAuthentication;
 
-+ (UIColor *)valuesTextColor;
-+ (UIFont *)valuesTextFont;
-
-- (void)setSelectedItemIndex:(NSInteger)selectedItemIndex animated:(BOOL)animated;
+- (NSString *)stringForLockTimerTimeInterval:(NSNumber *)number;
+- (NSAttributedString *)attributedStringForCurrentLockTimerTimeIntervalWithFont:(UIFont *)font;
 
 @end
 

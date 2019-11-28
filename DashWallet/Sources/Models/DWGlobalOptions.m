@@ -29,6 +29,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
 @dynamic walletBackupReminderWasShown;
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
+@dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
 
@@ -38,6 +39,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     NSDictionary *defaults = @{
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
+        DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -61,13 +63,6 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     }
 
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
-}
-
-#pragma mark - Non-stored options
-
-- (NSTimeInterval)autoLockAppInterval {
-    // TODO: <redesign> for debugging/testing purposes. set to 60
-    return 3.0;
 }
 
 #pragma mark - Methods

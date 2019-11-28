@@ -69,12 +69,14 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
         detailLabel.adjustsFontForContentSizeCategory = YES;
         detailLabel.minimumScaleFactor = 0.5;
         detailLabel.adjustsFontSizeToFitWidth = YES;
-        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                      forAxis:UILayoutConstraintAxisHorizontal];
-        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired - 1
+        [detailLabel setContentCompressionResistancePriority:UILayoutPriorityRequired
                                                      forAxis:UILayoutConstraintAxisVertical];
         [detailLabel setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
                                        forAxis:UILayoutConstraintAxisHorizontal];
+        [detailLabel setContentHuggingPriority:UILayoutPriorityDefaultLow + 1
+                                       forAxis:UILayoutConstraintAxisVertical];
         [contentView addSubview:detailLabel];
         _detailLabel = detailLabel;
 
@@ -107,9 +109,13 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
         const CGFloat margin = DWDefaultMargin();
         const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING;
 
+        NSLayoutConstraint *titleTopConstraint = [titleLabel.topAnchor constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
+                                                                                                   constant:padding];
+        titleTopConstraint.priority = UILayoutPriorityRequired - 1;
+
         [NSLayoutConstraint activateConstraints:@[
-            [titleLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                                 constant:padding],
+            titleTopConstraint,
+            [titleLabel.centerYAnchor constraintEqualToAnchor:detailLabel.centerYAnchor],
             [titleLabel.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
                                                      constant:margin],
 
@@ -120,14 +126,14 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
             [detailLabel.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
                                                        constant:-margin],
 
-            [segmentSlider.topAnchor constraintEqualToAnchor:detailLabel.bottomAnchor
-                                                    constant:padding],
-            [segmentSlider.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
-                                                        constant:margin],
-            [segmentSlider.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                                       constant:-padding],
-            [segmentSlider.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
-                                                         constant:-margin],
+            [stackView.topAnchor constraintEqualToAnchor:detailLabel.bottomAnchor
+                                                constant:padding],
+            [stackView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
+                                                    constant:margin],
+            [stackView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                                   constant:-padding],
+            [stackView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
+                                                     constant:-margin],
         ]];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -147,24 +153,13 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
                   with:^(__typeof(self) self, NSString *value) {
                       self.titleLabel.text = value ?: @" ";
                   }];
-
-    [self mvvm_observe:DW_KEYPATH(self, cellModel.detail)
-                  with:^(__typeof(self) self, NSAttributedString *value) {
-                      self.detailLabel.attributedText = value ?: [[NSAttributedString alloc] initWithString:@" "];
-                  }];
-
-    [self mvvm_observe:DW_KEYPATH(self, cellModel.descriptionText)
-                  with:^(__typeof(self) self, NSAttributedString *value) {
-                      self.descriptionLabel.hidden = value == nil;
-                      self.descriptionLabel.attributedText = value;
-                  }];
 }
 
 - (void)setCellModel:(nullable DWSegmentSliderFormCellModel *)cellModel {
     _cellModel = cellModel;
 
-    [self setupSliderValues];
-    [self updateSliderLabels];
+    [self setupSlider];
+    [self reloadAttributedData];
 }
 
 - (BOOL)shouldAnimatePressWhenHighlighted {
@@ -186,36 +181,58 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
 #pragma mark - Actions
 
 - (void)segmentSliderAction:(DWSegmentSlider *)sender {
+    self.cellModel.selectedItemIndex = sender.selectedItemIndex;
     self.cellModel.didChangeValueBlock(self.cellModel);
+
+    [self reloadAttributedData];
 }
 
 #pragma mark - Private
 
 - (void)reloadAttributedData {
-    //
+    DWSegmentSliderFormCellModel *cellModel = self.cellModel;
+    if (!cellModel) {
+        return;
+    }
+
+    UIFont *font = [DWSegmentSlider valuesTextFont];
+    UIColor *color = [DWSegmentSlider valuesTextColor];
+    if (cellModel.sliderLeftAttributedTextBuilder) {
+        self.segmentSlider.leftAttributedText = cellModel.sliderLeftAttributedTextBuilder(font, color);
+    }
+    if (cellModel.sliderRightAttributedTextBuilder) {
+        self.segmentSlider.rightAttributedText = cellModel.sliderRightAttributedTextBuilder(font, color);
+    }
+
+    if (cellModel.detailBuilder) {
+        UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle2];
+        UIColor *color = [UIColor dw_darkTitleColor];
+        self.detailLabel.attributedText = cellModel.detailBuilder(font, color);
+    }
+    else {
+        self.detailLabel.attributedText = nil;
+        self.detailLabel.text = @" ";
+    }
+
+    if (cellModel.descriptionTextBuilder) {
+        UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+        UIColor *color = [UIColor dw_quaternaryTextColor];
+        self.descriptionLabel.hidden = NO;
+        self.descriptionLabel.attributedText = cellModel.descriptionTextBuilder(font, color);
+    }
+    else {
+        self.descriptionLabel.hidden = YES;
+        self.descriptionLabel.attributedText = nil;
+    }
 }
 
-- (void)updateSliderLabels {
+- (void)setupSlider {
     DWSegmentSliderFormCellModel *cellModel = self.cellModel;
 
-    if (cellModel.sliderLeftAttributedText) {
-        self.segmentSlider.leftAttributedText = cellModel.sliderLeftAttributedText;
-    }
-    else if (cellModel.sliderLeftText) {
-        self.segmentSlider.leftText = cellModel.sliderLeftText;
-    }
-
-    if (cellModel.sliderRightAttributedText) {
-        self.segmentSlider.rightAttributedText = cellModel.sliderRightAttributedText;
-    }
-    else if (cellModel.sliderRightText) {
-        self.segmentSlider.rightText = cellModel.sliderRightText;
-    }
-}
-
-- (void)setupSliderValues {
-    DWSegmentSliderFormCellModel *cellModel = self.cellModel;
     self.segmentSlider.values = cellModel.sliderValues;
+    self.segmentSlider.selectedItemIndex = cellModel.selectedItemIndex;
+    self.segmentSlider.leftText = cellModel.sliderLeftText;
+    self.segmentSlider.rightText = cellModel.sliderRightText;
 }
 
 @end
