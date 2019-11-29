@@ -17,18 +17,36 @@
 
 #import "DWAdvancedSecurityModel.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWGlobalOptions.h"
+#import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
+
+@interface DWAdvancedSecurityModel ()
+
+@property (readonly, assign, nonatomic) BOOL hasTouchID;
+@property (readonly, assign, nonatomic) BOOL hasFaceID;
+
+@end
+
 @implementation DWAdvancedSecurityModel
+
+@synthesize lockTimerTimeIntervals = _lockTimerTimeIntervals;
+@synthesize spendingConfirmationValues = _spendingConfirmationValues;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
+        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+        _hasTouchID = authManager.touchIdEnabled;
+        _hasFaceID = authManager.faceIdEnabled;
 
+        DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
         _lockTimerTimeInterval = @(globalOptions.autoLockAppInterval);
         NSAssert([self.lockTimerTimeIntervals indexOfObject:_lockTimerTimeInterval] != NSNotFound,
                  @"Internal inconsistency");
@@ -36,11 +54,19 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-@synthesize lockTimerTimeIntervals = _lockTimerTimeIntervals;
+#pragma mark - Lock Screen
+
+- (BOOL)autoLogout {
+    return ![[DWGlobalOptions sharedInstance] lockScreenDisabled];
+}
+
+- (void)setAutoLogout:(BOOL)autoLogout {
+    [[DWGlobalOptions sharedInstance] setLockScreenDisabled:!autoLogout];
+}
 
 - (NSArray<NSNumber *> *)lockTimerTimeIntervals {
     if (!_lockTimerTimeIntervals) {
-        // Never (lock timer is off) / 1 min / 5 min / 1 hr / 1 day
+        // Immediately (lock timer is off) / 1 min / 5 min / 1 hr / 1 day
         _lockTimerTimeIntervals = @[ @0, @60, @(60 * 5), @(60 * 60), @(60 * 60 * 24) ];
     }
 
@@ -53,11 +79,20 @@ NS_ASSUME_NONNULL_BEGIN
     [DWGlobalOptions sharedInstance].autoLockAppInterval = lockTimerTimeInterval.integerValue;
 }
 
+- (NSString *)titleForCurrentLockTimerTimeInterval {
+    if (self.lockTimerTimeInterval.integerValue == 0) {
+        return NSLocalizedString(@"Logout", nil);
+    }
+    else {
+        return NSLocalizedString(@"Logout after", nil);
+    }
+}
+
 - (NSString *)stringForLockTimerTimeInterval:(NSNumber *)number {
-    NSInteger value = number.integerValue;
+    const NSInteger value = number.integerValue;
     switch (value) {
         case 0:
-            return NSLocalizedString(@"Never", nil);
+            return NSLocalizedString(@"Immediately", nil);
         case 60:
             return NSLocalizedString(@"1 min", @"Shorten version of minute");
         case (60 * 5):
@@ -65,26 +100,139 @@ NS_ASSUME_NONNULL_BEGIN
         case (60 * 60):
             return NSLocalizedString(@"1 hour", nil);
         case (60 * 60 * 24):
-            return NSLocalizedString(@"1 day", nil);
+            return NSLocalizedString(@"24 hours", nil);
         default:
             NSAssert(NO, @"Unhandled time interval");
             return @"Unknown";
     }
 }
 
-- (NSAttributedString *)attributedStringForCurrentLockTimerTimeIntervalWithFont:(UIFont *)font {
+- (NSAttributedString *)currentLockTimerTimeIntervalWithFont:(UIFont *)font
+                                                       color:(UIColor *)color {
     NSNumber *number = self.lockTimerTimeInterval;
     NSString *string = [self stringForLockTimerTimeInterval:number];
 
     NSDictionary<NSAttributedStringKey, id> *attributes = @{
         NSFontAttributeName : font,
-        NSForegroundColorAttributeName : [UIColor dw_dashBlueColor],
+        NSForegroundColorAttributeName : color,
     };
 
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string
                                                                            attributes:attributes];
 
     return attributedString;
+}
+
+#pragma mark - Spending Confirmation
+
+// TODO: impl
+
+//- (BOOL)spendingConfirmationEnabled {
+//
+//}
+//
+//- (void)setSpendingConfirmationEnabled:(BOOL)spendingConfirmationEnabled {
+//
+//}
+
+- (BOOL)canConfigureSpendingConfirmation {
+    NSAssert(self.hasTouchID || self.hasFaceID, @"Inconsistent state");
+    return [DWGlobalOptions sharedInstance].biometricAuthEnabled;
+}
+
+- (NSArray<NSNumber *> *)spendingConfirmationValues {
+    if (!_spendingConfirmationValues) {
+        // Dash values: 0 / 0.1 / 0.5 / 1 / 5
+        // BIOMETRICS_DISABLED_SPENDING_LIMIT is a hack here
+        _spendingConfirmationValues = @[ @(BIOMETRICS_ENABLED_SPENDING_LIMIT), @(DUFFS / 10), @(DUFFS / 2), @(DUFFS), @(DUFFS * 5) ];
+    }
+
+    return _spendingConfirmationValues;
+}
+
+- (NSNumber *)spendingConfirmationLimit {
+    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
+    uint64_t value = chainsManager.spendingLimit;
+    if (value == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+        // display it as 0
+        value = 0;
+    }
+
+    return @(value);
+}
+
+- (void)setSpendingConfirmationLimit:(NSNumber *)spendingConfirmationLimit {
+    const long long limit = spendingConfirmationLimit.longLongValue;
+    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
+}
+
+- (NSAttributedString *)spendingConfirmationString:(NSNumber *)number
+                                              font:(UIFont *)font
+                                             color:(UIColor *)color {
+    long long value = number.longLongValue;
+    if (value == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+        value = 0;
+    }
+    return [NSAttributedString dw_dashAttributedStringForAmount:value tintColor:color font:font];
+}
+
+- (NSAttributedString *)currentSpendingConfirmationWithFont:(UIFont *)font
+                                                      color:(UIColor *)color {
+    return [self spendingConfirmationString:self.spendingConfirmationLimit
+                                       font:font
+                                      color:color];
+}
+
+- (NSAttributedString *)currentSpendingConfirmationDescriptionWithFont:(UIFont *)font
+                                                                 color:(UIColor *)color {
+    NSDictionary<NSAttributedStringKey, id> *attributes = @{
+        NSFontAttributeName : font,
+        NSForegroundColorAttributeName : color,
+    };
+
+    if (self.spendingConfirmationLimit.longLongValue == 0) {
+        NSString *string = NSLocalizedString(@"PIN is always required to make a payment", nil);
+        string = [string stringByAppendingString:@"\n"]; // to force the same height of label in both cases
+
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:string
+                                                                               attributes:attributes];
+
+        return attributedString;
+    }
+    else {
+        NSString *string = nil;
+        if (self.hasTouchID) {
+            string = NSLocalizedString(@"You can authenticate with Touch ID for payments below", nil);
+        }
+        else if (self.hasFaceID) {
+            string = NSLocalizedString(@"You can authenticate with Face ID for payments below", nil);
+        }
+        NSParameterAssert(string);
+
+        string = [string stringByAppendingString:@" "];
+
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] init];
+        [attributedString appendAttributedString:[[NSAttributedString alloc] initWithString:string
+                                                                                 attributes:attributes]];
+
+        NSAttributedString *valueString = [self currentSpendingConfirmationWithFont:font
+                                                                              color:[UIColor dw_darkTitleColor]];
+        [attributedString appendAttributedString:valueString];
+
+        return [attributedString copy];
+    }
+}
+
+- (NSString *)titleForSpendingConfirmationOption {
+    if (self.hasTouchID) {
+        return NSLocalizedString(@"Touch ID limit", nil);
+    }
+    else if (self.hasFaceID) {
+        return NSLocalizedString(@"Face ID limit", nil);
+    }
+    else {
+        return @"";
+    }
 }
 
 @end

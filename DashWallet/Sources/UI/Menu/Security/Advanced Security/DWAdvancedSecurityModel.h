@@ -21,13 +21,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAdvancedSecurityModel : NSObject
 
+// Lock Screen Settings
+
+@property (nonatomic, assign) BOOL autoLogout;
 @property (readonly, nonatomic, copy) NSArray<NSNumber *> *lockTimerTimeIntervals;
 @property (nonatomic, strong) NSNumber *lockTimerTimeInterval;
 
-@property (nonatomic, assign) BOOL paymentAuthentication;
-
+- (NSString *)titleForCurrentLockTimerTimeInterval;
 - (NSString *)stringForLockTimerTimeInterval:(NSNumber *)number;
-- (NSAttributedString *)attributedStringForCurrentLockTimerTimeIntervalWithFont:(UIFont *)font;
+- (NSAttributedString *)currentLockTimerTimeIntervalWithFont:(UIFont *)font
+                                                       color:(UIColor *)color;
+
+// Spending Confirmation
+
+@property (nonatomic, assign) BOOL spendingConfirmationEnabled;
+@property (readonly, nonatomic, assign) BOOL canConfigureSpendingConfirmation;
+@property (readonly, nonatomic, copy) NSArray<NSNumber *> *spendingConfirmationValues;
+@property (nonatomic, strong) NSNumber *spendingConfirmationLimit;
+
+- (NSString *)titleForSpendingConfirmationOption;
+- (NSAttributedString *)spendingConfirmationString:(NSNumber *)number
+                                              font:(UIFont *)font
+                                             color:(UIColor *)color;
+- (NSAttributedString *)currentSpendingConfirmationWithFont:(UIFont *)font
+                                                      color:(UIColor *)color;
+- (NSAttributedString *)currentSpendingConfirmationDescriptionWithFont:(UIFont *)font
+                                                                 color:(UIColor *)color;
 
 @end
 

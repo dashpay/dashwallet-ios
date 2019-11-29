@@ -90,7 +90,7 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
         UILabel *descriptionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = NO;
         descriptionLabel.backgroundColor = [UIColor dw_backgroundColor];
-        descriptionLabel.textAlignment = NSTextAlignmentRight;
+        descriptionLabel.textAlignment = NSTextAlignmentLeft;
         descriptionLabel.textColor = [UIColor dw_quaternaryTextColor];
         descriptionLabel.numberOfLines = 0;
         descriptionLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -125,6 +125,7 @@ static CGFloat const SLIDER_DESCRIPTION_PADDING = 8.0;
                                                       constant:DW_FORM_CELL_SPACING],
             [detailLabel.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
                                                        constant:-margin],
+            [detailLabel.widthAnchor constraintEqualToAnchor:titleLabel.widthAnchor],
 
             [stackView.topAnchor constraintEqualToAnchor:detailLabel.bottomAnchor
                                                 constant:padding],

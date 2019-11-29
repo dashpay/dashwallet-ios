@@ -17,10 +17,13 @@
 
 #import "DWGlobalOptions.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 // backward compatibility
 static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY";
+static NSString *const LOCKSCREEN_DISABLED_KEY = @"org.dash.wallet.lockscreen-disabled";
 
 @implementation DWGlobalOptions
 
@@ -63,6 +66,22 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     }
 
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
+}
+
+#pragma mark - Non-dynamic
+
+- (BOOL)lockScreenDisabled {
+    NSError *error = nil;
+    int64_t lockscreenDisabled = getKeychainInt(LOCKSCREEN_DISABLED_KEY, &error);
+    if (error != nil) {
+        return NO;
+    }
+
+    return (lockscreenDisabled == 1);
+}
+
+- (void)setLockScreenDisabled:(BOOL)lockScreenDisabled {
+    setKeychainInt(lockScreenDisabled ? 1 : 0, LOCKSCREEN_DISABLED_KEY, NO);
 }
 
 #pragma mark - Methods

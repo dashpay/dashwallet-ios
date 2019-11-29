@@ -42,6 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL balanceHidden;
 
+// Non-dynamic
+
+- (BOOL)lockScreenDisabled;
+- (void)setLockScreenDisabled:(BOOL)lockScreenDisabled;
+
 // Methods
 
 - (void)restoreToDefaults;

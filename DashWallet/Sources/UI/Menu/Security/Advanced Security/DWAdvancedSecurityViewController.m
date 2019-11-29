@@ -60,22 +60,36 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
-    {
+    DWSwitcherFormCellModel *cellModel =
+        [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Auto Logout", nil)];
+    cellModel.on = self.model.autoLogout;
+    cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        strongSelf.model.autoLogout = cellModel.on;
+        [strongSelf showOrHideAdditionalOptions:cellModel forSection:0];
+    };
+    [items addObject:cellModel];
+
+    if (self.model.autoLogout) {
         DWSegmentSliderFormCellModel *cellModel =
-            [[DWSegmentSliderFormCellModel alloc] initWithTitle:NSLocalizedString(@"Keep me logged in", nil)];
+            [[DWSegmentSliderFormCellModel alloc] initWithTitle:[model titleForCurrentLockTimerTimeInterval]];
         cellModel.sliderLeftText = [model stringForLockTimerTimeInterval:model.lockTimerTimeIntervals.firstObject];
         cellModel.sliderRightText = [model stringForLockTimerTimeInterval:model.lockTimerTimeIntervals.lastObject];
         cellModel.sliderValues = model.lockTimerTimeIntervals;
         cellModel.selectedItemIndex = [model.lockTimerTimeIntervals indexOfObject:model.lockTimerTimeInterval];
-        cellModel.detailBuilder = ^NSAttributedString *_Nonnull(UIFont *_Nonnull font, UIColor *_Nonnull color) {
+        cellModel.detailBuilder = ^NSAttributedString *(UIFont *font, UIColor *color) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return [[NSAttributedString alloc] init];
             }
 
-            return [strongSelf.model attributedStringForCurrentLockTimerTimeIntervalWithFont:font];
+            return [strongSelf.model currentLockTimerTimeIntervalWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *_Nonnull cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -83,6 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             DWAdvancedSecurityModel *model = strongSelf.model;
             model.lockTimerTimeInterval = model.lockTimerTimeIntervals[cellModel.selectedItemIndex];
+            cellModel.title = [model titleForCurrentLockTimerTimeInterval];
         };
         [items addObject:cellModel];
     }
@@ -93,31 +108,79 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DWBaseFormCellModel *> *)secondSectionItems {
     __weak typeof(self) weakSelf = self;
 
+    DWAdvancedSecurityModel *model = self.model;
+
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
-    {
-        DWSwitcherFormCellModel *cellModel =
-            [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Payment Authentication", nil)];
-        cellModel.on = self.model.paymentAuthentication;
-        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+    DWSwitcherFormCellModel *cellModel =
+        [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Spending Confirmation", nil)];
+    cellModel.on = model.spendingConfirmationEnabled;
+    cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *cellModel) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        DWAdvancedSecurityModel *model = strongSelf.model;
+        model.spendingConfirmationEnabled = cellModel.on;
+
+        if (model.canConfigureSpendingConfirmation) {
+            [strongSelf showOrHideAdditionalOptions:cellModel forSection:1];
+        }
+    };
+    [items addObject:cellModel];
+
+    if (model.canConfigureSpendingConfirmation && model.spendingConfirmationEnabled) {
+        DWSegmentSliderFormCellModel *cellModel =
+            [[DWSegmentSliderFormCellModel alloc] initWithTitle:[model titleForSpendingConfirmationOption]];
+        cellModel.sliderValues = model.spendingConfirmationValues;
+        cellModel.selectedItemIndex = [model.spendingConfirmationValues indexOfObject:model.spendingConfirmationLimit];
+        cellModel.sliderLeftAttributedTextBuilder = ^NSAttributedString *(UIFont *font, UIColor *color) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return [[NSAttributedString alloc] init];
+            }
+
+            DWAdvancedSecurityModel *model = strongSelf.model;
+            return [model spendingConfirmationString:model.spendingConfirmationValues.firstObject
+                                                font:font
+                                               color:color];
+        };
+        cellModel.sliderRightAttributedTextBuilder = ^NSAttributedString *(UIFont *font, UIColor *color) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return [[NSAttributedString alloc] init];
+            }
+
+            DWAdvancedSecurityModel *model = strongSelf.model;
+            return [model spendingConfirmationString:model.spendingConfirmationValues.lastObject
+                                                font:font
+                                               color:color];
+        };
+        cellModel.detailBuilder = ^NSAttributedString *(UIFont *font, UIColor *color) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return [[NSAttributedString alloc] init];
+            }
+
+            return [strongSelf.model currentSpendingConfirmationWithFont:font color:color];
+        };
+        cellModel.descriptionTextBuilder = ^NSAttributedString *(UIFont *font, UIColor *color) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return [[NSAttributedString alloc] init];
+            }
+
+            return [strongSelf.model currentSpendingConfirmationDescriptionWithFont:font color:color];
+        };
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
 
-            strongSelf.model.paymentAuthentication = cellModel.on;
-            [strongSelf showOrHidePaymentAuthOptions:cellModel];
-        };
-        [items addObject:cellModel];
-    }
-
-    if (self.model.paymentAuthentication) {
-        DWSegmentSliderFormCellModel *cellModel = [[DWSegmentSliderFormCellModel alloc] initWithTitle:NSLocalizedString(@"Touch ID limit", nil)];
-        cellModel.sliderLeftText = @"0";
-        cellModel.sliderRightText = NSLocalizedString(@"Unlimited", nil);
-        cellModel.sliderValues = @[ @0, @1, @5, @60, @(60 * 4) ];
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *_Nonnull cellModel) {
-            NSLog(@">>>>>> %@", @(cellModel.selectedItemIndex));
+            DWAdvancedSecurityModel *model = strongSelf.model;
+            model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
         };
         [items addObject:cellModel];
     }
@@ -134,11 +197,9 @@ NS_ASSUME_NONNULL_BEGIN
         [sections addObject:section];
     }
 
-    {
-        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-        section.items = [self secondSectionItems];
-        [sections addObject:section];
-    }
+    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+    section.items = [self secondSectionItems];
+    [sections addObject:section];
 
     return [sections copy];
 }
@@ -189,18 +250,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)showOrHidePaymentAuthOptions:(DWSwitcherFormCellModel *)cellModel {
+- (void)showOrHideAdditionalOptions:(DWSwitcherFormCellModel *)cellModel forSection:(NSInteger)section {
     DWFormTableViewController *formController = self.formController;
     [formController setSections:[self sections] placeholderText:nil shouldReloadData:NO];
 
     UITableView *tableView = formController.tableView;
     [tableView
         performBatchUpdates:^{
-            NSIndexPath *firstIndexPath = [NSIndexPath indexPathForRow:0 inSection:1];
+            NSIndexPath *firstIndexPath = [NSIndexPath indexPathForRow:0 inSection:section];
             [tableView reloadRowsAtIndexPaths:@[ firstIndexPath ]
                              withRowAnimation:UITableViewRowAnimationNone];
 
-            NSIndexPath *secondIndexPath = [NSIndexPath indexPathForRow:1 inSection:1];
+            NSIndexPath *secondIndexPath = [NSIndexPath indexPathForRow:1 inSection:section];
             if (cellModel.on) {
                 [tableView insertRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];

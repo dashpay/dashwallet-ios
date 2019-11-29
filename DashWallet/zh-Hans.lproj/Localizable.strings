@@ -24,9 +24,6 @@
 "1 confirmation" = "1个确认";
 
 /* No comment provided by engineer. */
-"1 day" = "1 day";
-
-/* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
 
 /* No comment provided by engineer. */
@@ -34,6 +31,9 @@
 
 /* Shorten version of minute */
 "1 min" = "1 min";
+
+/* No comment provided by engineer. */
+"24 hours" = "24 hours";
 
 /* Shorten version of minutes */
 "5 min" = "5 min";
@@ -112,6 +112,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Authentication is unvailable";
+
+/* No comment provided by engineer. */
+"Auto Logout" = "Auto Logout";
 
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
@@ -413,6 +416,9 @@
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
 
+/* No comment provided by engineer. */
+"Immediately" = "Immediately";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
 
@@ -453,9 +459,6 @@
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
-"Keep me logged in" = "Keep me logged in";
-
-/* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
@@ -493,6 +496,12 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
+
+/* No comment provided by engineer. */
+"Logout" = "Logout";
+
+/* No comment provided by engineer. */
+"Logout after" = "Logout after";
 
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
@@ -550,9 +559,6 @@
 
 /* No comment provided by engineer. */
 "Network fee" = "Network fee";
-
-/* No comment provided by engineer. */
-"Never" = "Never";
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "永远不要将恢复密语输入到密码管理器或其他地方。其它设备都可能存在病毒软件。";
@@ -657,9 +663,6 @@
 "Payment address" = "Payment address";
 
 /* No comment provided by engineer. */
-"Payment Authentication" = "Payment Authentication";
-
-/* No comment provided by engineer. */
 "Payment output" = "Payment output";
 
 /* No comment provided by engineer. */
@@ -676,6 +679,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Pending";
+
+/* No comment provided by engineer. */
+"PIN is always required to make a payment" = "PIN is always required to make a payment";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
@@ -969,6 +975,9 @@
 "Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
+"Spending Confirmation" = "Spending Confirmation";
+
+/* No comment provided by engineer. */
 "Spent address" = "Spent address";
 
 /* No comment provided by engineer. */
@@ -1113,9 +1122,6 @@
 "Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
-"Unlimited" = "Unlimited";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
@@ -1234,6 +1240,12 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
+
+/* No comment provided by engineer. */
+"You can authenticate with Face ID for payments below" = "You can authenticate with Face ID for payments below";
+
+/* No comment provided by engineer. */
+"You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "你现在可以购买达世币\n在钱包中使用现金\n或者银行转账。";
