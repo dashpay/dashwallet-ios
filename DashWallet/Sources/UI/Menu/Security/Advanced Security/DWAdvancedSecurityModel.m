@@ -172,12 +172,7 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
 
 - (NSNumber *)spendingConfirmationLimit {
     DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-    uint64_t value = chainsManager.spendingLimit;
-    if (value == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-        // display it as 0
-        value = 0;
-    }
-
+    const uint64_t value = chainsManager.spendingLimit;
     return @(value);
 }
 
@@ -210,7 +205,7 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
         NSForegroundColorAttributeName : color,
     };
 
-    if (self.spendingConfirmationLimit.longLongValue == 0) {
+    if (self.spendingConfirmationLimit.longLongValue == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
         NSString *string = NSLocalizedString(@"PIN is always required to make a payment", nil);
         string = [string stringByAppendingString:@"\n"]; // to force the same height of label in both cases
 
