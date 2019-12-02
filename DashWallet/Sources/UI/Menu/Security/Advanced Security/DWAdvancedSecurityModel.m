@@ -265,27 +265,31 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
 /// Max value for a type considered as Disabled state
 - (DWSecurityLevel)securityLevelForLockTime:(NSInteger)lockTime
                        spendingConfirmation:(uint64_t)spendingConfirmation {
-    // Lock screen and spending confirmation BOTH are disabled
+    // Wallet Level Authentication | OFF / Spending Confirmation | OFF = NONE
     if (lockTime == NSIntegerMax && spendingConfirmation == UINT64_MAX) {
         return DWSecurityLevel_None;
     }
 
-    // Lock screen = Immediately AND Spending confirmation every time
+    // Wallet Level Authentication | ON / Spending Confirmation | ON / Lock Timer | OFF = VERY HIGH
     if (lockTime == 0 && spendingConfirmation <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
         return DWSecurityLevel_VeryHigh;
     }
 
-    // Lock screen is not disabled AND spending confirmation <= 0.5 Dash
-    if (lockTime != NSIntegerMax && spendingConfirmation <= DUFFS / 2) {
+    // Wallet Level Authentication | ON / Spending Confirmation | ON = HIGH
+    if (lockTime != NSIntegerMax && spendingConfirmation != UINT64_MAX) {
         return DWSecurityLevel_High;
     }
 
-    // Just spending confirmation enabled
-    if (spendingConfirmation != UINT64_MAX) {
-        return DWSecurityLevel_Medium;
+    // Wallet Level Authentication | ON / Spending Confirmation | OFF / Lock Timer | 1 hr-24 hr = LOW
+    if (lockTime >= 60 * 60 && spendingConfirmation == UINT64_MAX) {
+        return DWSecurityLevel_Low;
     }
 
-    return DWSecurityLevel_Low;
+    // Wallet Level Authentication | ON / Spending Confirmation | OFF / Lock Timer | OFF - <1 hr = MED
+    // Wallet Level Authentication | OFF / Spending Confirmation | ON = MED
+    // Wallet Level Authentication | ON / Spending Confirmation | OFF = MED
+
+    return DWSecurityLevel_Medium;
 }
 
 @end
