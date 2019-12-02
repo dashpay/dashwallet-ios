@@ -31,6 +31,7 @@ static CGFloat const SLIDER_HEIGHT = 40.0;
 @property (readonly, nonatomic, strong) UILabel *leftLabel;
 @property (readonly, nonatomic, strong) UILabel *rightLabel;
 @property (readonly, nonatomic, strong) MMSegmentSlider *segmentSlider;
+@property (readonly, nonatomic, strong) UISelectionFeedbackGenerator *feedbackGenerator;
 
 @end
 
@@ -92,6 +93,12 @@ static CGFloat const SLIDER_HEIGHT = 40.0;
             forControlEvents:UIControlEventValueChanged];
     [self addSubview:segmentSlider];
     _segmentSlider = segmentSlider;
+
+    UISelectionFeedbackGenerator *feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
+    [feedbackGenerator prepare];
+    _feedbackGenerator = feedbackGenerator;
+
+    // Layout
 
     [NSLayoutConstraint activateConstraints:@[
         [leftLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -174,6 +181,9 @@ static CGFloat const SLIDER_HEIGHT = 40.0;
 #pragma mark - Actions
 
 - (void)segmentSliderAction:(MMSegmentSlider *)sender {
+    [self.feedbackGenerator selectionChanged];
+    [self.feedbackGenerator prepare];
+
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
