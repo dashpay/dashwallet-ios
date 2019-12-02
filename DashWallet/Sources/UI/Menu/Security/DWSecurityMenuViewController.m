@@ -243,9 +243,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showAdvancedSecurity {
-    // TODO: ask for pin
-    DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
-    [self.navigationController pushViewController:controller animated:YES];
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager
+        authenticateWithPrompt:nil
+                    andTouchId:NO
+                alertIfLockout:YES
+                    completion:^(BOOL authenticated, BOOL cancelled) {
+                        if (!authenticated) {
+                            return;
+                        }
+
+                        DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
+                        [self.navigationController pushViewController:controller animated:YES];
+                    }];
 }
 
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {
