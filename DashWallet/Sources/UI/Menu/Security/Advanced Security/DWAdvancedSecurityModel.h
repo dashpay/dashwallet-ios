@@ -52,6 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSAttributedString *)currentSpendingConfirmationDescriptionWithFont:(UIFont *)font
                                                                  color:(UIColor *)color;
 
+// Actions
+
+- (void)resetToDefault;
+
 @end
 
 NS_ASSUME_NONNULL_END

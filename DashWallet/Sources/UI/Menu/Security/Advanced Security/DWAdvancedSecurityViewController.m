@@ -18,6 +18,7 @@
 #import "DWAdvancedSecurityViewController.h"
 
 #import "DWAdvancedSecurityModel.h"
+#import "DWBlueActionButton.h"
 #import "DWFormTableViewController.h"
 #import "DWSecurityStatusView.h"
 #import "DWSegmentSliderFormTableViewCell.h"
@@ -224,6 +225,14 @@ NS_ASSUME_NONNULL_BEGIN
     formController.tableView.tableHeaderView = securityStatusView;
     self.securityStatusView = securityStatusView;
 
+    // button width will be adjusted in viewDidLayoutSubviews
+    DWBlueActionButton *resetButton = [[DWBlueActionButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 54.0)];
+    resetButton.usedOnDarkBackground = NO;
+    resetButton.inverted = YES;
+    [resetButton setTitle:NSLocalizedString(@"Reset to Default", nil) forState:UIControlStateNormal];
+    [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
+    formController.tableView.tableFooterView = resetButton;
+
     [self addChildViewController:formController];
     formController.view.frame = self.view.bounds;
     formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -231,7 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
     [formController didMoveToParentViewController:self];
     self.formController = formController;
 
-    [formController setSections:[self sections] placeholderText:nil];
+    [self reloadData];
     [self updateSecurityLevel];
 
     // Notifications
@@ -262,6 +271,15 @@ NS_ASSUME_NONNULL_BEGIN
             tableView.tableHeaderView = headerView;
         }
     }
+
+    UIView *footerView = tableView.tableFooterView;
+    if (footerView) {
+        CGRect frame = footerView.frame;
+        frame.size.width = CGRectGetWidth(tableView.bounds);
+        footerView.frame = frame;
+
+        tableView.tableFooterView = footerView;
+    }
 }
 
 #pragma mark - Notifications
@@ -270,7 +288,19 @@ NS_ASSUME_NONNULL_BEGIN
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+#pragma mark - Actions
+
+- (void)resetButtonAction {
+    [self.model resetToDefault];
+    [self reloadData];
+    [self updateSecurityLevel];
+}
+
 #pragma mark - Private
+
+- (void)reloadData {
+    [self.formController setSections:[self sections] placeholderText:nil];
+}
 
 - (void)showOrHideAdditionalOptions:(DWSwitcherFormCellModel *)cellModel forSection:(NSInteger)section {
     DWFormTableViewController *formController = self.formController;

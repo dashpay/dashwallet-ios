@@ -810,6 +810,9 @@
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
+"Reset to Default" = "Reset to Default";
+
+/* No comment provided by engineer. */
 "Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
@@ -1203,10 +1206,10 @@
 "Wallet Keys" = "Portemonnee sleutels";
 
 /* No comment provided by engineer. */
-"Warning" = "Warning";
+"WARNING" = "WAARSCHUWING";
 
 /* No comment provided by engineer. */
-"WARNING" = "WAARSCHUWING";
+"Warning" = "Warning";
 
 /* No comment provided by engineer. */
 "Watch only" = "Watch only";

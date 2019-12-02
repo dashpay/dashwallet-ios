@@ -250,6 +250,16 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
     }
 }
 
+#pragma mark - Actions
+
+- (void)resetToDefault {
+    self.autoLogout = YES;
+    self.lockTimerTimeInterval = @(60);
+
+    self.spendingConfirmationEnabled = YES;
+    self.spendingConfirmationLimit = @(DUFFS / 2);
+}
+
 #pragma mark - Private
 
 /// Max value for a type considered as Disabled state
