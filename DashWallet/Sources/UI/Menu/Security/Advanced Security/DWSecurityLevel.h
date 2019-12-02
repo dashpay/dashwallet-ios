@@ -19,9 +19,11 @@
 #define DWSecurityLevel_h
 
 typedef NS_ENUM(NSUInteger, DWSecurityLevel) {
-    DWSecurityLevel_Poor,
+    DWSecurityLevel_None,
+    DWSecurityLevel_Low,
     DWSecurityLevel_Medium,
     DWSecurityLevel_High,
+    DWSecurityLevel_VeryHigh,
 };
 
 #endif /* DWSecurityLevel_h */

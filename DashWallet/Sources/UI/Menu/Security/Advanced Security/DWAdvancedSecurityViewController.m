@@ -71,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         strongSelf.model.autoLogout = cellModel.on;
         [strongSelf showOrHideAdditionalOptions:cellModel forSection:0];
+        [strongSelf updateSecurityLevel];
     };
     [items addObject:cellModel];
 
@@ -98,6 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
             DWAdvancedSecurityModel *model = strongSelf.model;
             model.lockTimerTimeInterval = model.lockTimerTimeIntervals[cellModel.selectedItemIndex];
             cellModel.title = [model titleForCurrentLockTimerTimeInterval];
+
+            [strongSelf updateSecurityLevel];
         };
         [items addObject:cellModel];
     }
@@ -127,6 +130,8 @@ NS_ASSUME_NONNULL_BEGIN
         if (model.canConfigureSpendingConfirmation) {
             [strongSelf showOrHideAdditionalOptions:cellModel forSection:1];
         }
+
+        [strongSelf updateSecurityLevel];
     };
     [items addObject:cellModel];
 
@@ -181,6 +186,8 @@ NS_ASSUME_NONNULL_BEGIN
 
             DWAdvancedSecurityModel *model = strongSelf.model;
             model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
+
+            [strongSelf updateSecurityLevel];
         };
         [items addObject:cellModel];
     }
@@ -225,6 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.formController = formController;
 
     [formController setSections:[self sections] placeholderText:nil];
+    [self updateSecurityLevel];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -272,6 +280,10 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
                  completion:nil];
+}
+
+- (void)updateSecurityLevel {
+    self.securityStatusView.securityLevel = self.model.securityLevel;
 }
 
 @end

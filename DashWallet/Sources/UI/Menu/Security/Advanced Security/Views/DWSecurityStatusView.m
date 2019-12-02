@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.levelLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
 
     // configure with default level
-    self.securityLevel = DWSecurityLevel_Poor;
+    self.securityLevel = DWSecurityLevel_None;
 }
 
 - (void)setSecurityLevel:(DWSecurityLevel)securityLevel {
@@ -75,10 +75,16 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSString *text = nil;
     UIColor *color = nil;
+    UIImage *image = [UIImage imageNamed:@"icon_security_ok"];
     switch (securityLevel) {
-        case DWSecurityLevel_Poor:
-            text = NSLocalizedString(@"Poor", nil);
+        case DWSecurityLevel_None:
+            text = NSLocalizedString(@"None", nil);
             color = [UIColor dw_redColor];
+            image = [UIImage imageNamed:@"icon_security_excl"];
+            break;
+        case DWSecurityLevel_Low:
+            text = NSLocalizedString(@"Low", nil);
+            color = [UIColor dw_orangeColor];
             break;
         case DWSecurityLevel_Medium:
             text = NSLocalizedString(@"Medium", nil);
@@ -86,10 +92,15 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         case DWSecurityLevel_High:
             text = NSLocalizedString(@"High", nil);
+            color = [UIColor dw_dashBlueColor];
+            break;
+        case DWSecurityLevel_VeryHigh:
+            text = NSLocalizedString(@"Very High", nil);
             color = [UIColor dw_greenColor];
             break;
     }
 
+    self.iconImageView.image = image;
     self.iconImageView.tintColor = color;
     self.levelLabel.textColor = color;
     self.levelLabel.text = text;

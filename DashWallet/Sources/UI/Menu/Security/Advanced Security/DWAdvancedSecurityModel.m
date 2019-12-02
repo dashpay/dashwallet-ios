@@ -54,6 +54,26 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
     return self;
 }
 
+- (DWSecurityLevel)securityLevel {
+    NSInteger lockTime;
+    if (!self.autoLogout) {
+        lockTime = NSIntegerMax;
+    }
+    else {
+        lockTime = self.lockTimerTimeInterval.integerValue;
+    }
+
+    uint64_t spendingConfirmation;
+    if (!self.spendingConfirmationEnabled) {
+        spendingConfirmation = UINT64_MAX;
+    }
+    else {
+        spendingConfirmation = self.spendingConfirmationLimit.longLongValue;
+    }
+
+    return [self securityLevelForLockTime:lockTime spendingConfirmation:spendingConfirmation];
+}
+
 #pragma mark - Lock Screen
 
 - (BOOL)autoLogout {
@@ -233,6 +253,34 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
     else {
         return @"";
     }
+}
+
+#pragma mark - Private
+
+/// Max value for a type considered as Disabled state
+- (DWSecurityLevel)securityLevelForLockTime:(NSInteger)lockTime
+                       spendingConfirmation:(uint64_t)spendingConfirmation {
+    // Lock screen and spending confirmation BOTH are disabled
+    if (lockTime == NSIntegerMax && spendingConfirmation == UINT64_MAX) {
+        return DWSecurityLevel_None;
+    }
+
+    // Lock screen = Immediately AND Spending confirmation every time
+    if (lockTime == 0 && spendingConfirmation <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+        return DWSecurityLevel_VeryHigh;
+    }
+
+    // Lock screen is not disabled AND spending confirmation <= 0.5 Dash
+    if (lockTime != NSIntegerMax && spendingConfirmation <= DUFFS / 2) {
+        return DWSecurityLevel_High;
+    }
+
+    // Just spending confirmation enabled
+    if (spendingConfirmation != UINT64_MAX) {
+        return DWSecurityLevel_Medium;
+    }
+
+    return DWSecurityLevel_Low;
 }
 
 @end

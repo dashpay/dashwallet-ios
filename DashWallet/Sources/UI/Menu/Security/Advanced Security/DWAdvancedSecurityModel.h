@@ -17,9 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWSecurityLevel.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAdvancedSecurityModel : NSObject
+
+@property (readonly, nonatomic, assign) DWSecurityLevel securityLevel;
 
 // Lock Screen Settings
 

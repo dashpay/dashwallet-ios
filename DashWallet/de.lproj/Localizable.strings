@@ -507,6 +507,9 @@
 "Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
+"Low" = "Low";
+
+/* No comment provided by engineer. */
 "Masternode holding address" = "Masternode holding address";
 
 /* No comment provided by engineer. */
@@ -586,6 +589,9 @@
 
 /* No comment provided by engineer. */
 "Node ip" = "Node ip";
+
+/* No comment provided by engineer. */
+"None" = "None";
 
 /* No comment provided by engineer. */
 "Not a dash URL" = "Not a dash URL";
@@ -700,9 +706,6 @@
 
 /* No comment provided by engineer. */
 "Please write it down" = "Please write it down";
-
-/* No comment provided by engineer. */
-"Poor" = "Poor";
 
 /* No comment provided by engineer. */
 "Previously last used at IP address" = "Previously last used at IP address";
@@ -1165,6 +1168,9 @@
 
 /* No comment provided by engineer. */
 "verifying quorum" = "prüfe Quorum";
+
+/* No comment provided by engineer. */
+"Very High" = "Very High";
 
 /* No comment provided by engineer. */
 "View in Explorer" = "View in Explorer";
