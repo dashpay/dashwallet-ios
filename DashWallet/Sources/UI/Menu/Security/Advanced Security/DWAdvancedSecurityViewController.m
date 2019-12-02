@@ -233,6 +233,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     [formController setSections:[self sections] placeholderText:nil];
     [self updateSecurityLevel];
+
+    // Notifications
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -254,6 +262,12 @@ NS_ASSUME_NONNULL_BEGIN
             tableView.tableHeaderView = headerView;
         }
     }
+}
+
+#pragma mark - Notifications
+
+- (void)applicationWillResignActiveNotification {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - Private
