@@ -156,7 +156,6 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
 //}
 
 - (BOOL)canConfigureSpendingConfirmation {
-    NSAssert(self.hasTouchID || self.hasFaceID, @"Inconsistent state");
     return [DWGlobalOptions sharedInstance].biometricAuthEnabled;
 }
 
