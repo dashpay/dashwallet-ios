@@ -123,6 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showBackupInfoController {
     DWBackupInfoViewController *controller = [DWBackupInfoViewController controllerWithModel:self.seedPhraseModel];
+    controller.shouldCreateNewWalletOnScreenshot = YES;
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
 }

@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)screenshotAlertOKAction {
+    if (self.shouldCreateNewWalletOnScreenshot == NO) {
+        return;
+    }
+
     [self.model clearAllWallets];
 
     [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];

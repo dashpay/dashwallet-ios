@@ -21,6 +21,7 @@
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "DWShortcutsModel.h"
+#import "DWSyncModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -96,6 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.currentNetworkDidChangeBlock) {
         self.currentNetworkDidChangeBlock();
     }
+
+    [self.homeModel.syncModel forceStartSyncingActivity];
 }
 
 @end
