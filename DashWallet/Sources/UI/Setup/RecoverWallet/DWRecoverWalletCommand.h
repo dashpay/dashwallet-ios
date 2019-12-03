@@ -17,37 +17,17 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRecoverAction.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const DW_WIPE;
-extern NSString *const DW_WATCH;
-extern NSInteger const DW_PHRASE_LENGTH;
+/// Recovers a wallet from a seed phrase and starts syncing
+@interface DWRecoverWalletCommand : NSObject
 
-@interface DWRecoverModel : NSObject
+- (instancetype)initWithPhrase:(NSString *)phrase;
 
-@property (readonly, nonatomic, assign) DWRecoverAction action;
-
-- (BOOL)hasWallet;
-- (BOOL)isWalletEmpty;
-
-- (NSString *)cleanupPhrase:(NSString *)phrase;
-- (nullable NSString *)normalizePhrase:(NSString *)phrase;
-
-- (BOOL)wordIsLocal:(NSString *)word;
-- (BOOL)wordIsValid:(NSString *)word;
-
-- (BOOL)phraseIsValid:(NSString *)phrase;
-
-- (void)wipeWallet;
-- (BOOL)canWipeWithPhrase:(NSString *)phrase;
-
-- (NSString *)wipeAcceptPhrase;
-
-- (instancetype)initWithAction:(DWRecoverAction)action;
+- (void)execute;
 
 - (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

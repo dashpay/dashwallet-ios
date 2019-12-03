@@ -44,6 +44,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *logoLayoutViewBottomContraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
+@property (nullable, nonatomic, strong) DWRecoverWalletCommand *recoverWalletCommand;
+
 @end
 
 @implementation DWSetupViewController
@@ -86,6 +88,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - Actions
 
 - (IBAction)createWalletButtonAction:(id)sender {
+    self.recoverWalletCommand = nil;
+
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
     UIViewController *newViewController = [self nextControllerForCreateWalletRoutine];
@@ -94,6 +98,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
+    self.recoverWalletCommand = nil;
+
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
     controller.action = DWRecoverAction_Recover;
     controller.delegate = self;
@@ -103,10 +109,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - DWSetPinViewControllerDelegate
 
 - (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
+    self.recoverWalletCommand = nil;
+
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
+    // In case we're recovering, we have a deferred command to create a new wallet.
+    // To avoid inconsistency create a new wallet after the pin has been set.
+    [self.recoverWalletCommand execute];
+    self.recoverWalletCommand = nil;
+
     [self continueOrCompleteWalletSetup];
 }
 
@@ -132,7 +145,11 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 #pragma mark - DWRecoverViewControllerDelegate
 
-- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller {
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
+                               recoverCommand:(nonnull DWRecoverWalletCommand *)recoverCommand {
+    // Defer recovering until a pin is set
+    self.recoverWalletCommand = recoverCommand;
+
     [DWGlobalOptions sharedInstance].walletNeedsBackup = NO;
 
     [self continueOrCompleteWalletSetup];

@@ -74,19 +74,6 @@ NSInteger const DW_PHRASE_LENGTH = 12;
     return [[DSBIP39Mnemonic sharedInstance] phraseIsValid:phrase];
 }
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase {
-    DSChain *chain = [[DWEnvironment sharedInstance] currentChain];
-    NSParameterAssert(chain);
-    [DSWallet standardWalletWithSeedPhrase:phrase
-                           setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME
-                                  forChain:chain
-                           storeSeedPhrase:YES
-                               isTransient:NO];
-
-    // START_SYNC_ENTRY_POINT
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-}
-
 - (void)wipeWallet {
     [[DWEnvironment sharedInstance] clearAllWallets];
 
