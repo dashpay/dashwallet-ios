@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBackupSeedPhraseViewController : DWPreviewSeedPhraseViewController
 
+@property (nonatomic, assign) BOOL shouldCreateNewWalletOnScreenshot;
+
 @end
 
 NS_ASSUME_NONNULL_END
