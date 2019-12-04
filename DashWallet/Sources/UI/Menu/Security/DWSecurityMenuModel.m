@@ -104,17 +104,17 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 
 - (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (continueBlock) {
-                            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-                            authManager.didAuthenticate = NO;
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (continueBlock) {
+                                  DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                                  authManager.didAuthenticate = NO;
 
-                            continueBlock(authenticated);
-                        }
-                    }];
+                                  continueBlock(authenticated);
+                              }
+                          }];
 }
 
 - (void)setupNewPin:(NSString *)pin {
@@ -127,7 +127,7 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
     if (enabled) {
         DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
         [authenticationManager authenticateWithPrompt:nil
-                                           andTouchId:NO
+                         usingBiometricAuthentication:NO
                                        alertIfLockout:YES
                                            completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
                                                if (authenticatedOrSuccess) {
@@ -152,30 +152,30 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
     DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
 
     [authenticationManager
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (authenticated) {
-                            NSArray<id<DWSelectorFormItem>> *options = [self biometricsSpendingLimitOptions];
-                            const uint64_t limit = chainsManager.spendingLimit;
-                            NSUInteger selectedIndex;
-                            if (limit <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-                                selectedIndex = 0;
-                            }
-                            else {
-                                selectedIndex = (NSUInteger)log10(limit) - 6;
-                            }
-                            if (completion) {
-                                completion(YES, options, selectedIndex);
-                            }
-                        }
-                        else {
-                            if (completion) {
-                                completion(NO, nil, NSNotFound);
-                            }
-                        }
-                    }];
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (authenticated) {
+                                  NSArray<id<DWSelectorFormItem>> *options = [self biometricsSpendingLimitOptions];
+                                  const uint64_t limit = chainsManager.spendingLimit;
+                                  NSUInteger selectedIndex;
+                                  if (limit <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+                                      selectedIndex = 0;
+                                  }
+                                  else {
+                                      selectedIndex = (NSUInteger)log10(limit) - 6;
+                                  }
+                                  if (completion) {
+                                      completion(YES, options, selectedIndex);
+                                  }
+                              }
+                              else {
+                                  if (completion) {
+                                      completion(NO, nil, NSNotFound);
+                                  }
+                              }
+                          }];
 }
 
 - (void)setBiometricsSpendingLimitForOption:(id<DWSelectorFormItem>)option {

@@ -146,7 +146,7 @@ static NSString *sanitizeString(NSString *s) {
         createdFromProtocolRequest:protocolRequest
         fromAccount:account
         toAddress:address
-        withPrompt:@""
+        withPrompt:nil
         forAmount:paymentOutput.amount
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType

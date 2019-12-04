@@ -74,17 +74,17 @@ NS_ASSUME_NONNULL_BEGIN
     switch (item.type) {
         case DWMainMenuItemType_BuySellDash: {
             [[DSAuthenticationManager sharedInstance]
-                authenticateWithPrompt:nil
-                            andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                        alertIfLockout:YES
-                            completion:^(BOOL authenticated, BOOL cancelled) {
-                                if (authenticated) {
-                                    UIViewController *controller = [DWUpholdViewController controller];
-                                    DWNavigationController *navigationController =
-                                        [[DWNavigationController alloc] initWithRootViewController:controller];
-                                    [self presentViewController:navigationController animated:YES completion:nil];
-                                }
-                            }];
+                      authenticateWithPrompt:nil
+                usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                              alertIfLockout:YES
+                                  completion:^(BOOL authenticated, BOOL cancelled) {
+                                      if (authenticated) {
+                                          UIViewController *controller = [DWUpholdViewController controller];
+                                          DWNavigationController *navigationController =
+                                              [[DWNavigationController alloc] initWithRootViewController:controller];
+                                          [self presentViewController:navigationController animated:YES completion:nil];
+                                      }
+                                  }];
 
             break;
         }

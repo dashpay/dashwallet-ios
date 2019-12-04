@@ -74,19 +74,19 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         [[DSAuthenticationManager sharedInstance]
-            authenticateWithPrompt:nil
-                        andTouchId:NO
-                    alertIfLockout:YES
-                        completion:^(BOOL authenticated, BOOL cancelled) {
-                            if (!authenticated) {
-                                return;
-                            }
+                  authenticateWithPrompt:nil
+            usingBiometricAuthentication:NO
+                          alertIfLockout:YES
+                              completion:^(BOOL authenticated, BOOL cancelled) {
+                                  if (!authenticated) {
+                                      return;
+                                  }
 
-                            self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
-                            [self.seedPhraseModel getOrCreateNewWallet];
+                                  self.seedPhraseModel = [[DWPreviewSeedPhraseModel alloc] init];
+                                  [self.seedPhraseModel getOrCreateNewWallet];
 
-                            [self showBackupInfoController];
-                        }];
+                                  [self showBackupInfoController];
+                              }];
     }
 }
 

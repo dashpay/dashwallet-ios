@@ -214,23 +214,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showSeedPharseAction {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (!authenticated) {
-                            return;
-                        }
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
 
-                        DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
-                        [model getOrCreateNewWallet];
+                              DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
+                              [model getOrCreateNewWallet];
 
-                        DWPreviewSeedPhraseViewController *controller =
-                            [[DWPreviewSeedPhraseViewController alloc] initWithModel:model];
-                        controller.hidesBottomBarWhenPushed = YES;
-                        controller.delegate = self;
-                        [self.navigationController pushViewController:controller animated:YES];
-                    }];
+                              DWPreviewSeedPhraseViewController *controller =
+                                  [[DWPreviewSeedPhraseViewController alloc] initWithModel:model];
+                              controller.hidesBottomBarWhenPushed = YES;
+                              controller.delegate = self;
+                              [self.navigationController pushViewController:controller animated:YES];
+                          }];
 }
 
 - (void)changePinAction {
