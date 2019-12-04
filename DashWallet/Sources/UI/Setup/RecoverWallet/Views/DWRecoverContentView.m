@@ -195,8 +195,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         else {
             if (self.model.action == DWRecoverAction_Recover) {
-                [self.model recoverWalletWithPhrase:phrase];
-                [self.delegate recoverContentViewDidRecoverWallet:self];
+                [self.delegate recoverContentViewDidRecoverWallet:self phrase:phrase];
             }
             else {
                 [self wipeWithPhrase:phrase];
