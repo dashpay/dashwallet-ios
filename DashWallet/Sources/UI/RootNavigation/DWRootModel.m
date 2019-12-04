@@ -68,6 +68,11 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
+    DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
+    if ([globalOptions lockScreenDisabled]) {
+        return NO;
+    }
+
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     const BOOL didAuthenticate = authManager.didAuthenticate;
     if (didAuthenticate) {
@@ -81,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSDate *now = [NSDate date];
     const NSTimeInterval interval = [now timeIntervalSince1970] - [self.lastActiveDate timeIntervalSince1970];
 
-    return (interval > [DWGlobalOptions sharedInstance].autoLockAppInterval);
+    return (interval > globalOptions.autoLockAppInterval);
 }
 
 - (void)setupDidFinished {

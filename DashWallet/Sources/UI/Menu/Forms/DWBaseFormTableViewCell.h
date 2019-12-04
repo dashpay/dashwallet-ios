@@ -22,9 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
 extern CGFloat const DW_FORM_CELL_VERTICAL_PADDING;
 extern CGFloat const DW_FORM_CELL_SPACING;
 
+typedef NS_ENUM(NSUInteger, DWFormCellRoundMask) {
+    DWFormCellRoundMask_Top = 1 << 0,
+    DWFormCellRoundMask_Bottom = 1 << 1,
+};
+
 @interface DWBaseFormTableViewCell : KVOUITableViewCell
 
 @property (readonly, nonatomic, strong) UIView *roundedContentView;
+@property (nonatomic, assign) DWFormCellRoundMask roundMask;
 
 /// Default is `YES`
 - (BOOL)shouldAnimatePressWhenHighlighted;

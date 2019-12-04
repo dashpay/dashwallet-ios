@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="PEk-iI-57W">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="PEk-iI-57W">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -23,9 +21,9 @@
                                 <rect key="frame" x="20" y="44" width="374" height="818"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cyD-gM-R0G" userLabel="Content View">
-                                        <rect key="frame" x="0.0" y="0.0" width="374" height="240.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="374" height="243"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_secure_wallet_big" translatesAutoresizingMaskIntoConstraints="NO" id="GJ9-4Z-JDo">
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_security" translatesAutoresizingMaskIntoConstraints="NO" id="GJ9-4Z-JDo">
                                                 <rect key="frame" x="149.5" y="0.0" width="75" height="96"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="75" id="XWX-T1-yIL"/>
@@ -33,21 +31,21 @@
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Kqh-mH-tqk" userLabel="Title Label">
-                                                <rect key="frame" x="0.0" y="124" width="374" height="24"/>
+                                                <rect key="frame" x="0.0" y="124" width="374" height="26.5"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
                                                 <color key="textColor" name="DarkTitleColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="253" verticalCompressionResistancePriority="1000" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8z5-yC-Rn6" userLabel="Description Label">
-                                                <rect key="frame" x="0.0" y="162" width="374" height="20.5"/>
+                                                <rect key="frame" x="0.0" y="164.5" width="374" height="20.5"/>
                                                 <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                 <color key="textColor" name="SecondaryTextColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jC3-Xp-Uc5" customClass="DWBlueActionButton">
-                                                <rect key="frame" x="160" y="206.5" width="54" height="34"/>
+                                                <rect key="frame" x="160" y="209" width="54" height="34"/>
                                                 <state key="normal" title="Button"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
@@ -97,6 +95,7 @@
                         <outlet property="continueButton" destination="jC3-Xp-Uc5" id="llf-BZ-HVR"/>
                         <outlet property="descriptionLabel" destination="8z5-yC-Rn6" id="c2s-x0-GSp"/>
                         <outlet property="scrollView" destination="70R-CV-sC3" id="E4G-9H-BxG"/>
+                        <outlet property="securityImageView" destination="GJ9-4Z-JDo" id="x5y-EI-Z2s"/>
                         <outlet property="titleLabel" destination="Kqh-mH-tqk" id="Kjd-8t-xPb"/>
                     </connections>
                 </viewController>
@@ -106,15 +105,15 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icon_secure_wallet_big" width="75" height="96"/>
+        <image name="icon_security" width="73" height="94"/>
         <namedColor name="DarkTitleColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryBackgroundColor">
-            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.96899998188018799" green="0.96899998188018799" blue="0.96899998188018799" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="SecondaryTextColor">
-            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.28627450980392155" green="0.28627450980392155" blue="0.28627450980392155" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

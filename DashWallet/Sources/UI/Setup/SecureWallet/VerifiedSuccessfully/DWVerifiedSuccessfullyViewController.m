@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWVerifiedSuccessfullyViewController ()
 
 @property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (strong, nonatomic) IBOutlet UIImageView *securityImageView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descriptionLabel;
 @property (strong, nonatomic) IBOutlet UIButton *continueButton;
@@ -68,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
+    self.securityImageView.tintColor = [UIColor dw_dashBlueColor];
     self.titleLabel.text = NSLocalizedString(@"Verified Successfully", nil);
     self.descriptionLabel.text = NSLocalizedString(@"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.", nil);
     [self.continueButton setTitle:NSLocalizedString(@"Continue", nil) forState:UIControlStateNormal];

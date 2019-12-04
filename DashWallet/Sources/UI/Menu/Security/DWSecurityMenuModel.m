@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Model
 
-static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
 static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 
 @interface DWSecurityMenuModel ()
@@ -77,7 +76,8 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:biometricsEnabled ? DUFFS : BIOMETRICS_DISABLED_SPENDING_LIMIT];
+    // 0.5 Dash is a default value
+    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:biometricsEnabled ? (DUFFS / 2) : BIOMETRICS_DISABLED_SPENDING_LIMIT];
 }
 
 - (BOOL)balanceHidden {
@@ -87,19 +87,6 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 - (void)setBalanceHidden:(BOOL)balanceHidden {
     [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
     self.balanceDisplayOptions.balanceHidden = balanceHidden;
-}
-
-- (NSString *)biometricAuthSpendingLimit {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-
-    uint64_t spendingLimit = chainsManager.spendingLimit;
-    if (spendingLimit == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-        // display it as 0
-        spendingLimit = 0;
-    }
-
-    return [priceManager stringForDashAmount:spendingLimit];
 }
 
 - (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock {
@@ -145,71 +132,6 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
             completion(YES);
         }
     }
-}
-
-- (void)requestBiometricsSpendingLimitOptions:(void (^)(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex))completion {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-
-    [authenticationManager
-              authenticateWithPrompt:nil
-        usingBiometricAuthentication:NO
-                      alertIfLockout:YES
-                          completion:^(BOOL authenticated, BOOL cancelled) {
-                              if (authenticated) {
-                                  NSArray<id<DWSelectorFormItem>> *options = [self biometricsSpendingLimitOptions];
-                                  const uint64_t limit = chainsManager.spendingLimit;
-                                  NSUInteger selectedIndex;
-                                  if (limit <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-                                      selectedIndex = 0;
-                                  }
-                                  else {
-                                      selectedIndex = (NSUInteger)log10(limit) - 6;
-                                  }
-                                  if (completion) {
-                                      completion(YES, options, selectedIndex);
-                                  }
-                              }
-                              else {
-                                  if (completion) {
-                                      completion(NO, nil, NSNotFound);
-                                  }
-                              }
-                          }];
-}
-
-- (void)setBiometricsSpendingLimitForOption:(id<DWSelectorFormItem>)option {
-    DWBiometricsOption *biometricOption = (DWBiometricsOption *)option;
-    NSAssert([biometricOption isKindOfClass:DWBiometricsOption.class], @"Invalid option");
-    const uint64_t limit = biometricOption.value;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
-}
-
-#pragma mark - Private
-
-- (void)resetCurrentPin {
-}
-
-- (NSArray<id<DWSelectorFormItem>> *)biometricsSpendingLimitOptions {
-    NSMutableArray<id<DWSelectorFormItem>> *options = [NSMutableArray array];
-
-    DWBiometricsOption *option =
-        [[DWBiometricsOption alloc] initWithTitle:NSLocalizedString(@"Always require passcode", nil)
-                                            value:BIOMETRICS_ENABLED_SPENDING_LIMIT];
-    [options addObject:option];
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    const uint64_t values[] = {DUFFS / 10, DUFFS, DUFFS * 10};
-    for (int i = 0; i < 3; i++) {
-        const uint64_t value = values[i];
-        NSString *title = [NSString stringWithFormat:@"%@ (%@)",
-                                                     [priceManager stringForDashAmount:value],
-                                                     [priceManager localCurrencyStringForDashAmount:value]];
-        DWBiometricsOption *option = [[DWBiometricsOption alloc] initWithTitle:title value:value];
-        [options addObject:option];
-    }
-
-    return [options copy];
 }
 
 @end

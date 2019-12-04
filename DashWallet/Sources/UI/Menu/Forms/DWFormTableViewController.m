@@ -26,11 +26,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
+static CGFloat const SECTION_SPACING = 10.0;
 
 @interface DWFormTableViewController ()
 
 @property (nullable, copy, nonatomic) NSArray<DWFormSectionModel *> *sections;
 @property (nullable, copy, nonatomic) NSArray<DWFormSectionModel *> *internalDataSource;
+
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *customCellModels;
 
 @end
 
@@ -39,11 +42,14 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.customCellModels = [NSMutableDictionary dictionary];
+
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.tableFooterView = [[UIView alloc] init];
     self.tableView.contentInset = UIEdgeInsetsMake(DWDefaultMargin(), 0.0, 0.0, 0.0);
+    self.tableView.sectionHeaderHeight = SECTION_SPACING;
 
     NSArray<Class> *cellClasses = @[
         DWSelectorFormTableViewCell.class,
@@ -56,7 +62,14 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
     }
 }
 
-- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections placeholderText:(nullable NSString *)placeholderText {
+- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
+    placeholderText:(nullable NSString *)placeholderText {
+    [self setSections:sections placeholderText:placeholderText shouldReloadData:YES];
+}
+
+- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
+     placeholderText:(nullable NSString *)placeholderText
+    shouldReloadData:(BOOL)shouldReloadData {
     self.sections = sections;
 
     if (placeholderText) {
@@ -81,7 +94,22 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         self.internalDataSource = self.sections;
     }
 
-    [self.tableView reloadData];
+    if (shouldReloadData) {
+        [self.tableView reloadData];
+    }
+}
+
+- (void)registerCustomCellModelClass:(Class)cellModelClass forCellClass:(Class)cellClass {
+    NSParameterAssert(cellModelClass);
+    NSParameterAssert(cellClass);
+
+    NSAssert([cellModelClass isSubclassOfClass:DWBaseFormCellModel.class], @"Unsupported cell model class");
+    NSAssert([cellClass isSubclassOfClass:DWBaseFormTableViewCell.class], @"Unsupported cell class");
+
+    NSString *cellId = NSStringFromClass(cellClass);
+    [self.tableView registerClass:cellClass forCellReuseIdentifier:cellId];
+
+    self.customCellModels[NSStringFromClass(cellModelClass)] = cellId;
 }
 
 #pragma mark UITableViewDataSource
@@ -99,12 +127,14 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
     DWFormSectionModel *sectionModel = self.internalDataSource[indexPath.section];
     NSArray<DWBaseFormCellModel *> *items = sectionModel.items;
     DWBaseFormCellModel *cellModel = items[indexPath.row];
+    DWFormCellRoundMask roundMask = [self maskForIndexPath:indexPath];
 
     if ([cellModel isKindOfClass:DWSelectorFormCellModel.class]) {
         NSString *cellId = NSStringFromClass(DWSelectorFormTableViewCell.class);
         DWSelectorFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                             forIndexPath:indexPath];
         cell.cellModel = (DWSelectorFormCellModel *)cellModel;
+        cell.roundMask = roundMask;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWSwitcherFormCellModel.class]) {
@@ -112,6 +142,7 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         DWSwitcherFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
                                                                             forIndexPath:indexPath];
         cell.cellModel = (DWSwitcherFormCellModel *)cellModel;
+        cell.roundMask = roundMask;
         return cell;
     }
     else if ([cellModel isKindOfClass:DWPlaceholderFormCellModel.class]) {
@@ -122,9 +153,22 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
         return cell;
     }
     else {
-        NSAssert(NO, @"Unknown cell model %@", cellModel);
+        NSString *cellModelClass = NSStringFromClass(cellModel.class);
+        NSString *cellId = self.customCellModels[cellModelClass];
+        if (!cellId) {
+            NSAssert(NO, @"Unknown cell model %@", cellModel);
 
-        return [UITableViewCell new];
+            return [UITableViewCell new];
+        }
+
+        DWBaseFormTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId
+                                                                        forIndexPath:indexPath];
+
+        if ([cell respondsToSelector:@selector(setCellModel:)]) {
+            [cell performSelector:@selector(setCellModel:) withObject:cellModel];
+        }
+        cell.roundMask = roundMask;
+        return cell;
     }
 }
 
@@ -163,6 +207,30 @@ static CGFloat const DEFAULT_CELL_HEIGHT = 74.0;
             switcherCellModel.didChangeValueBlock(switcherCellModel);
         }
     }
+}
+
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = self.view.backgroundColor;
+    return view;
+}
+
+#pragma mark - Private
+
+- (DWFormCellRoundMask)maskForIndexPath:(NSIndexPath *)indexPath {
+    DWFormCellRoundMask mask = 0;
+
+    if (indexPath.row == 0) {
+        mask |= DWFormCellRoundMask_Top;
+    }
+
+    DWFormSectionModel *sectionModel = self.internalDataSource[indexPath.section];
+    NSArray<DWBaseFormCellModel *> *items = sectionModel.items;
+    if (indexPath.row == items.count - 1) {
+        mask |= DWFormCellRoundMask_Bottom;
+    }
+
+    return mask;
 }
 
 @end

@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, assign, nonatomic) BOOL hasTouchID;
 @property (readonly, assign, nonatomic) BOOL hasFaceID;
-@property (readonly, copy, nonatomic) NSString *biometricAuthSpendingLimit;
 @property (readonly, assign, nonatomic) BOOL biometricsEnabled;
 @property (assign, nonatomic) BOOL balanceHidden;
 
@@ -35,9 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupNewPin:(NSString *)pin;
 
 - (void)setBiometricsEnabled:(BOOL)enabled completion:(void (^)(BOOL success))completion;
-
-- (void)requestBiometricsSpendingLimitOptions:(void (^)(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex))completion;
-- (void)setBiometricsSpendingLimitForOption:(id<DWSelectorFormItem>)option;
 
 - (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
 - (instancetype)init NS_UNAVAILABLE;

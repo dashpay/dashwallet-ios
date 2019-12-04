@@ -17,6 +17,7 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -34,7 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
-@property (nonatomic, strong) DWSelectorFormCellModel *biometricLimitAuthCellModel;
 
 @end
 
@@ -92,6 +92,21 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
+    if (self.model.hasTouchID || self.model.hasFaceID) {
+        NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Enable Touch ID", nil) : NSLocalizedString(@"Enable Face ID", nil);
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:title];
+        cellModel.on = self.model.biometricsEnabled;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf biometricSwitchAction:cellModel];
+        };
+        [items addObject:cellModel];
+    }
+
     {
         DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Autohide Balance", nil)];
         cellModel.on = self.model.balanceHidden;
@@ -106,39 +121,18 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
-    if (self.model.hasTouchID || self.model.hasFaceID) {
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Advanced Security", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
 
-        {
-            NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Enable Touch ID", nil) : NSLocalizedString(@"Enable Face ID", nil);
-            DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:title];
-            cellModel.on = self.model.biometricsEnabled;
-            cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-
-                [strongSelf biometricSwitchAction:cellModel];
-            };
-            [items addObject:cellModel];
-        }
-
-        if (self.model.biometricsEnabled) {
-            NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Touch ID limit", nil) : NSLocalizedString(@"Face ID limit", nil);
-            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:title];
-            cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
-            self.biometricLimitAuthCellModel = cellModel;
-            [self updateBiometricAuthCellModel];
-            cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-
-                [strongSelf setBiometricAuthSpendingLimit];
-            };
-            [items addObject:cellModel];
-        }
+            [strongSelf showAdvancedSecurity];
+        };
+        [items addObject:cellModel];
     }
 
     {
@@ -155,14 +149,19 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
-    return items;
+    return [items copy];
 }
 
 - (NSArray<DWFormSectionModel *> *)sections {
-    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-    section.items = [self items];
+    NSMutableArray<DWFormSectionModel *> *sections = [NSMutableArray array];
 
-    return @[ section ];
+    for (DWBaseFormCellModel *item in [self items]) {
+        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+        section.items = @[ item ];
+        [sections addObject:section];
+    }
+
+    return [sections copy];
 }
 
 - (void)viewDidLoad {
@@ -207,10 +206,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)updateBiometricAuthCellModel {
-    self.biometricLimitAuthCellModel.subTitle = self.model.biometricAuthSpendingLimit;
-}
-
 - (void)showSeedPharseAction {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager
@@ -247,6 +242,22 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)showAdvancedSecurity {
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
+
+                              DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
+                              [self.navigationController pushViewController:controller animated:YES];
+                          }];
+}
+
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {
     __weak typeof(self) weakSelf = self;
     [self.model setBiometricsEnabled:cellModel.on
@@ -262,36 +273,6 @@ NS_ASSUME_NONNULL_BEGIN
 
                               [strongSelf.formController setSections:[strongSelf sections] placeholderText:nil];
                           }];
-}
-
-- (void)setBiometricAuthSpendingLimit {
-    __weak typeof(self) weakSelf = self;
-    [self.model requestBiometricsSpendingLimitOptions:^(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        if (!authenticated) {
-            return;
-        }
-
-        DWSelectorViewController *controller = [DWSelectorViewController controller];
-        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID limit", nil) : NSLocalizedString(@"Face ID limit", nil);
-        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
-        controller.didSelectItemBlock = ^(id<DWSelectorFormItem> item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setBiometricsSpendingLimitForOption:item];
-            [strongSelf updateBiometricAuthCellModel];
-
-            [strongSelf.navigationController popViewControllerAnimated:YES];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
-    }];
 }
 
 - (void)resetWalletAction {

@@ -152,6 +152,8 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 - (void)configureWithModel:(id<DWCurrencyItem>)model
                   selected:(BOOL)selected
                searchQuery:(nullable NSString *)searchQuery {
+    self.roundMask = DWFormCellRoundMask_Top | DWFormCellRoundMask_Bottom;
+
     self.model = model;
     self.searchQuery = searchQuery;
 

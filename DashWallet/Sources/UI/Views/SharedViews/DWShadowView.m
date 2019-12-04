@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)shadowView_commonInit {
     self.backgroundColor = [UIColor clearColor];
 
-    [self.layer dw_applyShadowWithColor:[UIColor dw_shadowColor] alpha:0.04 x:2.0 y:2.0 blur:10.0];
+    [self.layer dw_applyShadowWithColor:[UIColor dw_shadowColor] alpha:0.02 x:0.0 y:0.0 blur:5.0];
     self.layer.shouldRasterize = YES;
     self.layer.rasterizationScale = [UIScreen mainScreen].scale;
 

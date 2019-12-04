@@ -17,10 +17,13 @@
 
 #import "DWGlobalOptions.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 // backward compatibility
 static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY";
+static NSString *const LOCKSCREEN_DISABLED_KEY = @"org.dash.wallet.lockscreen-disabled";
 
 @implementation DWGlobalOptions
 
@@ -29,6 +32,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
 @dynamic walletBackupReminderWasShown;
 @dynamic biometricAuthConfigured;
 @dynamic biometricAuthEnabled;
+@dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
 
@@ -38,6 +42,7 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     NSDictionary *defaults = @{
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
+        DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];
@@ -63,11 +68,20 @@ static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_N
     return [NSString stringWithFormat:@"DW_GLOB_%@", propertyName];
 }
 
-#pragma mark - Non-stored options
+#pragma mark - Non-dynamic
 
-- (NSTimeInterval)autoLockAppInterval {
-    // TODO: <redesign> for debugging/testing purposes. set to 60
-    return 3.0;
+- (BOOL)lockScreenDisabled {
+    NSError *error = nil;
+    int64_t lockscreenDisabled = getKeychainInt(LOCKSCREEN_DISABLED_KEY, &error);
+    if (error != nil) {
+        return NO;
+    }
+
+    return (lockscreenDisabled == 1);
+}
+
+- (void)setLockScreenDisabled:(BOOL)lockScreenDisabled {
+    setKeychainInt(lockScreenDisabled ? 1 : 0, LOCKSCREEN_DISABLED_KEY, NO);
 }
 
 #pragma mark - Methods
