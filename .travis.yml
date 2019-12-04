@@ -1,12 +1,9 @@
-osx_image: xcode11
+osx_image: xcode11.2
 language: objective-c
 
 cache: cocoapods
 
 before_install:
-  - brew install cmake # for compiling BLS
-  - gem install cocoapods --version 1.8.1
-  - gem install fastlane
   - set -o pipefail
   - DW_DIR=`pwd` && pushd .. && git clone https://github.com/dashevo/dashsync-iOS.git DashSync && pushd DashSync && git checkout `cat "$DW_DIR/DashSyncCurrentCommit"` && popd && popd
   - travis_wait 55 pod install --repo-update
