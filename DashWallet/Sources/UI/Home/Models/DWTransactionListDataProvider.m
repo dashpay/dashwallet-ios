@@ -208,26 +208,28 @@ static NSString *TxDateFormat(NSString *template) {
         dataItem.stateText = NSLocalizedString(@"Invalid", nil);
         dataItem.stateTintColor = [UIColor dw_redColor];
     }
-    else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Processing", nil);
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if ([account transactionOutputsAreLocked:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Locked", nil);
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if (!instantSendReceived && !confirmed) {
-        if (confirms == 0 && processingInstantSend) {
+    else if (transactionDirection == DSTransactionDirection_Received) {
+        if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
+            dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
+        }
+        else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
             dataItem.stateText = NSLocalizedString(@"Processing", nil);
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
-        else {
-            dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+        else if ([account transactionOutputsAreLocked:transaction]) {
+            dataItem.stateText = NSLocalizedString(@"Locked", nil);
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
+        else if (!instantSendReceived && !confirmed) {
+            if (confirms == 0 && processingInstantSend) {
+                dataItem.stateText = NSLocalizedString(@"Processing", nil);
+            }
+            else {
+                dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+            }
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
+        }
     }
 
     return dataItem;
