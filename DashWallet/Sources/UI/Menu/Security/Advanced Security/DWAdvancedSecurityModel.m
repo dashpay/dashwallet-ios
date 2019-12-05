@@ -25,8 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
-
 @interface DWAdvancedSecurityModel ()
 
 @property (readonly, assign, nonatomic) BOOL hasTouchID;
@@ -163,7 +161,7 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
     if (!_spendingConfirmationValues) {
         // Dash values: 0 / 0.1 / 0.5 / 1 / 5
         // BIOMETRICS_DISABLED_SPENDING_LIMIT is a hack here
-        _spendingConfirmationValues = @[ @(BIOMETRICS_ENABLED_SPENDING_LIMIT), @(DUFFS / 10), @(DUFFS / 2), @(DUFFS), @(DUFFS * 5) ];
+        _spendingConfirmationValues = @[ @(0), @(DUFFS / 10), @(DUFFS / 2), @(DUFFS), @(DUFFS * 5) ];
     }
 
     return _spendingConfirmationValues;
@@ -184,9 +182,6 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
                                               font:(UIFont *)font
                                              color:(UIColor *)color {
     long long value = number.longLongValue;
-    if (value == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-        value = 0;
-    }
     return [NSAttributedString dw_dashAttributedStringForAmount:value tintColor:color font:font];
 }
 
@@ -204,7 +199,7 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
         NSForegroundColorAttributeName : color,
     };
 
-    if (self.spendingConfirmationLimit.longLongValue == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+    if (self.spendingConfirmationLimit.longLongValue == 0) {
         NSString *string = NSLocalizedString(@"PIN is always required to make a payment", nil);
         string = [string stringByAppendingString:@"\n"]; // to force the same height of label in both cases
 
@@ -270,7 +265,7 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
     }
 
     // Wallet Level Authentication | ON / Spending Confirmation | ON / Lock Timer | OFF = VERY HIGH
-    if (lockTime == 0 && spendingConfirmation <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
+    if (lockTime == 0 && spendingConfirmation == 0) {
         return DWSecurityLevel_VeryHigh;
     }
 
