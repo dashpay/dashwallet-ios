@@ -147,13 +147,13 @@ static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
 
 // TODO: impl
 
-//- (BOOL)spendingConfirmationEnabled {
-//
-//}
-//
-//- (void)setSpendingConfirmationEnabled:(BOOL)spendingConfirmationEnabled {
-//
-//}
+- (BOOL)spendingConfirmationEnabled {
+    return ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
+}
+
+- (void)setSpendingConfirmationEnabled:(BOOL)spendingConfirmationEnabled {
+    [[DWGlobalOptions sharedInstance] setSpendingConfirmationDisabled:!spendingConfirmationEnabled];
+}
 
 - (BOOL)canConfigureSpendingConfirmation {
     return [DWGlobalOptions sharedInstance].biometricAuthEnabled;

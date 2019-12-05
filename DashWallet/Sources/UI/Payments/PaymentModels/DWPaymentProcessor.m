@@ -18,6 +18,7 @@
 #import "DWPaymentProcessor.h"
 
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentOutput+Private.h"
 
@@ -140,13 +141,15 @@ static NSString *sanitizeString(NSString *s) {
 
     self.didSendRequestDelegateNotified = NO;
 
+    const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
+
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
     [chainManager.transactionManager
         signAndPublishTransaction:paymentOutput.tx
         createdFromProtocolRequest:protocolRequest
         fromAccount:account
         toAddress:address
-        requiresSpendingAuthenticationPrompt:YES //todo
+        requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
         promptMessage:nil
         forAmount:paymentOutput.amount
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {

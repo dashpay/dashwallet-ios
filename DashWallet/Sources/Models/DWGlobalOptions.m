@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 // backward compatibility
 static NSString *const LOCAL_NOTIFICATIONS_ENABLED_KEY = @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY";
 static NSString *const LOCKSCREEN_DISABLED_KEY = @"org.dash.wallet.lockscreen-disabled";
+static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.spending-confirmation-disabled";
 
 @implementation DWGlobalOptions
 
@@ -72,16 +73,30 @@ static NSString *const LOCKSCREEN_DISABLED_KEY = @"org.dash.wallet.lockscreen-di
 
 - (BOOL)lockScreenDisabled {
     NSError *error = nil;
-    int64_t lockscreenDisabled = getKeychainInt(LOCKSCREEN_DISABLED_KEY, &error);
+    int64_t result = getKeychainInt(LOCKSCREEN_DISABLED_KEY, &error);
     if (error != nil) {
         return NO;
     }
 
-    return (lockscreenDisabled == 1);
+    return (result == 1);
 }
 
 - (void)setLockScreenDisabled:(BOOL)lockScreenDisabled {
     setKeychainInt(lockScreenDisabled ? 1 : 0, LOCKSCREEN_DISABLED_KEY, NO);
+}
+
+- (BOOL)spendingConfirmationDisabled {
+    NSError *error = nil;
+    int64_t result = getKeychainInt(SPENDING_CONFIRMATION_DISABLED_KEY, &error);
+    if (error != nil) {
+        return NO;
+    }
+
+    return (result == 1);
+}
+
+- (void)setSpendingConfirmationDisabled:(BOOL)spendingConfirmationDisabled {
+    setKeychainInt(spendingConfirmationDisabled ? 1 : 0, SPENDING_CONFIRMATION_DISABLED_KEY, NO);
 }
 
 #pragma mark - Methods

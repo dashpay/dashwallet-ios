@@ -47,6 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)lockScreenDisabled;
 - (void)setLockScreenDisabled:(BOOL)lockScreenDisabled;
 
+- (BOOL)spendingConfirmationDisabled;
+- (void)setSpendingConfirmationDisabled:(BOOL)spendingConfirmationDisabled;
+
 // Methods
 
 - (void)restoreToDefaults;
