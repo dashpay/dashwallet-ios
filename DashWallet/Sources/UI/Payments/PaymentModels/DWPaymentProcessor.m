@@ -146,7 +146,8 @@ static NSString *sanitizeString(NSString *s) {
         createdFromProtocolRequest:protocolRequest
         fromAccount:account
         toAddress:address
-        withPrompt:nil
+        requiresSpendingAuthenticationPrompt:YES //todo
+        promptMessage:nil
         forAmount:paymentOutput.amount
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
@@ -242,6 +243,7 @@ static NSString *sanitizeString(NSString *s) {
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
+        requiresSpendingAuthenticationPrompt:YES
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];

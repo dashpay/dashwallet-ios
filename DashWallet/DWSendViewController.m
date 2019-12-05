@@ -432,7 +432,7 @@ static NSString *sanitizeString(NSString *s)
     
     __block BOOL displayedSentMessage = FALSE;
     
-    [chainManager.transactionManager confirmProtocolRequest:protoReq forAmount:self.amount fromAccount:account acceptInternalAddress:NO acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+    [chainManager.transactionManager confirmProtocolRequest:protoReq forAmount:self.amount fromAccount:account acceptInternalAddress:NO acceptReusingAddress:NO addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:NO requiresSpendingAuthenticationPrompt:YES requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         if (additionalInfoRequestType == DSRequestingAdditionalInfo_Amount) {
             self.request = protoReq;
             [self updateTitleView];
