@@ -3,7 +3,13 @@
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
+"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+
+/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ikke tilgang til kameraet";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
 /* No comment provided by engineer. */
 "%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
@@ -81,7 +87,13 @@
 "All" = "All";
 
 /* No comment provided by engineer. */
-"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+"Allow camera access in the Settings" = "Allow camera access in the Settings";
+
+/* No comment provided by engineer. */
+"Allow Face ID access in the Settings" = "Allow Face ID access in the Settings";
+
+/* No comment provided by engineer. */
+"Allow Touch ID access in the Settings" = "Allow Touch ID access in the Settings";
 
 /* No comment provided by engineer. */
 "Always require passcode" = "Always require passcode";

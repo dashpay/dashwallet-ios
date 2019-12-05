@@ -21,6 +21,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBalanceDisplayOptions.h"
+#import "DWBiometricAuthModel.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -48,12 +49,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Model
 
-static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
-
 @interface DWSecurityMenuModel ()
 
 @property (assign, nonatomic) BOOL biometricsEnabled;
 @property (readonly, strong, nonatomic) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (readonly, nonatomic, strong) DWBiometricAuthModel *biometricAuthModel;
 
 @end
 
@@ -64,8 +64,11 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;
 
-        _hasTouchID = [DSAuthenticationManager sharedInstance].touchIdEnabled;
-        _hasFaceID = [DSAuthenticationManager sharedInstance].faceIdEnabled;
+        _biometricAuthModel = [[DWBiometricAuthModel alloc] init];
+
+        const LABiometryType biometryType = _biometricAuthModel.biometryType;
+        _hasTouchID = biometryType == LABiometryTypeTouchID;
+        _hasFaceID = biometryType == LABiometryTypeFaceID;
     }
     return self;
 }
@@ -76,8 +79,6 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
-    // 0.5 Dash is a default value
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:biometricsEnabled ? (DUFFS / 2) : BIOMETRICS_DISABLED_SPENDING_LIMIT];
 }
 
 - (BOOL)balanceHidden {
@@ -118,11 +119,24 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
                                        alertIfLockout:YES
                                            completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
                                                if (authenticatedOrSuccess) {
-                                                   self.biometricsEnabled = YES;
-                                               }
+                                                   __weak typeof(self) weakSelf = self;
+                                                   [self.biometricAuthModel enableBiometricAuth:^(BOOL success) {
+                                                       __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                       if (!strongSelf) {
+                                                           return;
+                                                       }
 
-                                               if (completion) {
-                                                   completion(authenticatedOrSuccess);
+                                                       strongSelf.biometricsEnabled = success;
+
+                                                       if (completion) {
+                                                           completion(success);
+                                                       }
+                                                   }];
+                                               }
+                                               else {
+                                                   if (completion) {
+                                                       completion(NO);
+                                                   }
                                                }
                                            }];
     }

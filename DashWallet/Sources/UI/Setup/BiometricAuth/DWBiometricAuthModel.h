@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign) LABiometryType biometryType;
 
-- (void)enableBiometricAuth:(void (^)(void))completion;
+- (void)enableBiometricAuth:(void (^)(BOOL success))completion;
 - (void)disableBiometricAuth;
 
 @end

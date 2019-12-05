@@ -268,7 +268,13 @@ NS_ASSUME_NONNULL_BEGIN
                               }
 
                               if (!success) {
+                                  const BOOL wasEnabled = cellModel.on;
                                   cellModel.on = !cellModel.on;
+
+                                  // Face / Touch ID access was disabled but the user wants to enabled it
+                                  if (wasEnabled) {
+                                      [strongSelf showBiometricsAccessAlertRequest];
+                                  }
                               }
 
                               [strongSelf.formController setSections:[strongSelf sections] placeholderText:nil];
@@ -279,6 +285,49 @@ NS_ASSUME_NONNULL_BEGIN
     DWResetWalletInfoViewController *controller = [DWResetWalletInfoViewController controller];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)showBiometricsAccessAlertRequest {
+    NSString *displayName = [NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"];
+    NSString *titleString = nil;
+    NSString *messageString = nil;
+    if (self.model.hasTouchID) {
+        titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Touch ID", nil),
+                                                 displayName];
+        messageString = NSLocalizedString(@"Allow Touch ID access in the Settings", nil);
+    }
+    else if (self.model.hasFaceID) {
+        titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Face ID", nil),
+                                                 displayName];
+        messageString = NSLocalizedString(@"Allow Face ID access in the Settings", nil);
+    }
+    else {
+        NSAssert(NO, @"Inconsistent state");
+    }
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:titleString
+                                                                   message:messageString
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [alert addAction:okAction];
+
+    UIAlertAction *settingsAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Settings", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+                    if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
+                        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+                    }
+                }];
+    [alert addAction:settingsAction];
+
+    alert.preferredAction = settingsAction;
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end
