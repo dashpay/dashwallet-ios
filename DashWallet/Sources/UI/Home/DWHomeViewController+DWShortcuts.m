@@ -102,16 +102,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)secureWalletAction {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (!authenticated) {
-                            return;
-                        }
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
 
-                        [self secureWalletActionAuthenticated];
-                    }];
+                              [self secureWalletActionAuthenticated];
+                          }];
 }
 
 - (void)secureWalletActionAuthenticated {
@@ -126,14 +126,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)buySellDashAction {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (authenticated) {
-                            [self buySellDashActionAuthenticated];
-                        }
-                    }];
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (authenticated) {
+                                  [self buySellDashActionAuthenticated];
+                              }
+                          }];
 }
 
 - (void)buySellDashActionAuthenticated {

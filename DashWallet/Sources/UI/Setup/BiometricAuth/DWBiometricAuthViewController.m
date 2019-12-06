@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.userInteractionEnabled = NO;
 
     __weak typeof(self) weakSelf = self;
-    [self.model enableBiometricAuth:^{
+    [self.model enableBiometricAuth:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

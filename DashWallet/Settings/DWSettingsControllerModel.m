@@ -85,7 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
 
-    [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+    [authenticationManager authenticateWithPrompt:nil usingBiometricAuthentication:NO alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
             NSArray<NSString *> *options = [self biometricAuthSpendingLimitOptions];
             NSUInteger selectedIndex = (log10(chainsManager.spendingLimit) < 6) ? 0 : (NSUInteger)log10(chainsManager.spendingLimit) - 6;
