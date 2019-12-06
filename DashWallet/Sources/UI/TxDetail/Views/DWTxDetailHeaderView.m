@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
         case DWTxDetailDisplayType_Paid: {
             [self setupAnimatedIconView];
 
-            title = NSLocalizedString(@"Paid successfully", nil);
+            title = NSLocalizedString(@"Sent successfully", nil);
 
             break;
         }
