@@ -66,11 +66,16 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.userInteractionEnabled = NO;
 
     __weak typeof(self) weakSelf = self;
-    [self.model enableBiometricAuth:^{
+    [self.model enableBiometricAuth:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
+
+        // We don't want to navigate the user to the app settings in case of failure during
+        // the biometrics enable process.
+        // Because if settings were made the app would be killed by iOS
+        // and setup process would be interrupted.
 
         [strongSelf.delegate biometricAuthViewControllerDidFinish:strongSelf];
     }];

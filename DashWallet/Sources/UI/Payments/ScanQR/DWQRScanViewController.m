@@ -84,15 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *titleString =
             [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
                                        displayName];
-        NSString *messageString =
-            [NSString stringWithFormat:
-                          NSLocalizedString(@"Allow camera access in\nSettings->Privacy->Camera->%@", nil),
-                          displayName];
+        NSString *messageString = NSLocalizedString(@"Allow camera access in Settings", nil);
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:titleString
                                                                        message:messageString
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *okAction = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"OK", nil)
+            actionWithTitle:NSLocalizedString(@"Cancel", nil)
                       style:UIAlertActionStyleCancel
                     handler:nil];
         [alert addAction:okAction];
@@ -107,6 +104,8 @@ NS_ASSUME_NONNULL_BEGIN
                         }
                     }];
         [alert addAction:settingsAction];
+
+        alert.preferredAction = settingsAction;
 
         [self presentViewController:alert animated:YES completion:nil];
     }

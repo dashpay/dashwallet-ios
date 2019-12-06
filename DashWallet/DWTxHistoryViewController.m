@@ -322,7 +322,7 @@ static NSString *dateFormat(NSString *template)
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     if (sender) [DSEventManager saveEvent:@"tx_history:unlock"];
     if (!authenticationManager.didAuthenticate) {
-        [authenticationManager authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+        [authenticationManager authenticateWithPrompt:nil usingBiometricAuthentication:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
                 if (sender) [DSEventManager saveEvent:@"tx_history:unlock_success"];
                 
@@ -839,7 +839,7 @@ static NSString *dateFormat(NSString *template)
                         [self.navigationController pushViewController:upholdController animated:YES];
                     }
                     else {
-                        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+                        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil usingBiometricAuthentication:YES alertIfLockout:YES completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
                             if (authenticatedOrSuccess) {
                                 UIViewController *upholdController = [DWUpholdViewController controller];
                                 [self.navigationController pushViewController:upholdController animated:YES];

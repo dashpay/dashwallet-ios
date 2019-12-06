@@ -474,7 +474,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showMasternodeKeys {
     [DSEventManager saveEvent:@"settings:show_masternode_keys"];
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
+    [authenticationManager authenticateWithPrompt:NSLocalizedString(@"Show masternode keys", nil) usingBiometricAuthentication:YES alertIfLockout:YES completion:^(BOOL authenticated, BOOL cancelled) {
         if (authenticated) {
 //            DWKeysOverviewViewController *keysViewController = [DWKeysOverviewViewController controller];
 //            [self.navigationController pushViewController:keysViewController animated:YES];

@@ -623,7 +623,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
                             
                             if (!authenticated) {
                                 if ([defs doubleForKey:PIN_UNLOCK_TIME_KEY] + WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
-                                    [authenticationManager authenticateWithPrompt:nil andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                                    [authenticationManager authenticateWithPrompt:nil usingBiometricAuthentication:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
                                         if (authenticated) {
                                             [self unlock:nil];
                                         }
@@ -1106,7 +1106,7 @@ static double const SYNCING_COMPLETED_PROGRESS = 0.995;
         [self.navigationItem setRightBarButtonItem:nil animated:(sender) ? YES : NO];
     } else {
         [DSEventManager saveEvent:@"root:unlock"];
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil andTouchId:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil usingBiometricAuthentication:YES alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 [DSEventManager saveEvent:@"root:unlock_success"];
                 [self updateTitleViewBalance];
