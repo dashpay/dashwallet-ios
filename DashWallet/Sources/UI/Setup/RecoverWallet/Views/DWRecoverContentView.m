@@ -150,7 +150,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverWalletWithCurrentSeedPhrase {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
-        BOOL isLocal = YES;
         NSString *phrase = [self.model cleanupPhrase:textView.text];
         NSString *incorrectWord = nil;
 
@@ -166,9 +165,6 @@ NS_ASSUME_NONNULL_BEGIN
                 CFSTR(" ")));
 
         for (NSString *word in words) {
-            if (![[DSBIP39Mnemonic sharedInstance] wordIsLocal:word]) {
-                isLocal = NO;
-            }
             if ([[DSBIP39Mnemonic sharedInstance] wordIsValid:word]) {
                 continue;
             }
@@ -187,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
         else if (words.count != DW_PHRASE_LENGTH) {
             [self.delegate recoverContentView:self invalidWordsCountInsteadOf:DW_PHRASE_LENGTH];
         }
-        else if (isLocal && ![self.model phraseIsValid:phrase]) {
+        else if (![self.model phraseIsValid:phrase]) {
             [self.delegate recoverContentViewBadRecoveryPhrase:self];
         }
         else if ([self.model hasWallet]) {
