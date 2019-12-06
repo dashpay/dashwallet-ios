@@ -294,12 +294,12 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.model.hasTouchID) {
         titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Touch ID", nil),
                                                  displayName];
-        messageString = NSLocalizedString(@"Allow Touch ID access in the Settings", nil);
+        messageString = NSLocalizedString(@"Allow Touch ID access in Settings", nil);
     }
     else if (self.model.hasFaceID) {
         titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Face ID", nil),
                                                  displayName];
-        messageString = NSLocalizedString(@"Allow Face ID access in the Settings", nil);
+        messageString = NSLocalizedString(@"Allow Face ID access in Settings", nil);
     }
     else {
         NSAssert(NO, @"Inconsistent state");
