@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *titleString =
             [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access the camera", nil),
                                        displayName];
-        NSString *messageString = NSLocalizedString(@"Allow camera access in the Settings", nil);
+        NSString *messageString = NSLocalizedString(@"Allow camera access in Settings", nil);
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:titleString
                                                                        message:messageString
                                                                 preferredStyle:UIAlertControllerStyleAlert];
