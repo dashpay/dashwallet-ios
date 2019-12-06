@@ -663,9 +663,6 @@
 "Owner Keys" = "Owner Keys";
 
 /* No comment provided by engineer. */
-"Paid successfully" = "Paid successfully";
-
-/* No comment provided by engineer. */
 "Pay" = "Betala";
 
 /* No comment provided by engineer. */
@@ -928,6 +925,9 @@
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";
+
+/* No comment provided by engineer. */
+"Sent successfully" = "Sent successfully";
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";
