@@ -22,6 +22,7 @@
 #import "DWBackupInfoViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
+#import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWNavigationController.h"
@@ -73,6 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ImportPrivateKey: {
+            [self showImportPrivateKey];
             break;
         }
         case DWShortcutActionType_SwitchToTestnet: {
@@ -100,16 +102,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)secureWalletAction {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (!authenticated) {
-                            return;
-                        }
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
 
-                        [self secureWalletActionAuthenticated];
-                    }];
+                              [self secureWalletActionAuthenticated];
+                          }];
 }
 
 - (void)secureWalletActionAuthenticated {
@@ -119,27 +121,19 @@ NS_ASSUME_NONNULL_BEGIN
     DWBackupInfoViewController *controller =
         [DWBackupInfoViewController controllerWithModel:model];
     controller.delegate = self;
-    UIBarButtonItem *cancelButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                      target:self
-                                                      action:@selector(secureWalletCancelButtonAction:)];
-    controller.navigationItem.leftBarButtonItem = cancelButton;
-
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-    [self presentViewController:navigationController animated:YES completion:nil];
+    [self presentControllerModallyInNavigationController:controller];
 }
 
 - (void)buySellDashAction {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (authenticated) {
-                            [self buySellDashActionAuthenticated];
-                        }
-                    }];
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (authenticated) {
+                                  [self buySellDashActionAuthenticated];
+                              }
+                          }];
 }
 
 - (void)buySellDashActionAuthenticated {
@@ -152,15 +146,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showLocalCurrencyAction {
     DWLocalCurrencyViewController *controller = [[DWLocalCurrencyViewController alloc] init];
     controller.delegate = self;
-    UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                             target:self
-                             action:@selector(cancelLocalCurrencyScreen)];
-    controller.navigationItem.leftBarButtonItem = cancelButton;
+    [self presentControllerModallyInNavigationController:controller];
+}
 
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-    [self presentViewController:navigationController animated:YES completion:nil];
+- (void)showImportPrivateKey {
+    DWImportWalletInfoViewController *controller = [DWImportWalletInfoViewController controller];
+    controller.delegate = self;
+    [self presentControllerModallyInNavigationController:controller];
 }
 
 - (void)payToAddressAction:(UIView *)sender {
@@ -223,15 +215,23 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)secureWalletCancelButtonAction:(id)sender {
+- (void)presentControllerModallyInNavigationController:(UIViewController *)controller {
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                      target:self
+                                                      action:@selector(dismissModalControllerBarButtonAction:)];
+    controller.navigationItem.leftBarButtonItem = cancelButton;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)dismissModalControllerBarButtonAction:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - DWLocalCurrencyViewControllerDelegate
-
-- (void)cancelLocalCurrencyScreen {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
 
 - (void)localCurrencyViewControllerDidSelectCurrency:(DWLocalCurrencyViewController *)controller {
     [controller.navigationController dismissViewControllerAnimated:YES completion:nil];

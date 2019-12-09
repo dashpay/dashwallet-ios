@@ -40,8 +40,6 @@ extern NSInteger const DW_PHRASE_LENGTH;
 
 - (BOOL)phraseIsValid:(NSString *)phrase;
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase;
-
 - (void)wipeWallet;
 - (BOOL)canWipeWithPhrase:(NSString *)phrase;
 

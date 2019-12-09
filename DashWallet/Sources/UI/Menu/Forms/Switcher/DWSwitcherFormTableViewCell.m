@@ -84,6 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     return self;
 }
+
 - (void)setupObserving {
     [self mvvm_observe:DW_KEYPATH(self, cellModel.title)
                   with:^(__typeof(self) self, NSString *value) {

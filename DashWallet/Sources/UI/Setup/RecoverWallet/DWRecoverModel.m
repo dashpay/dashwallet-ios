@@ -74,19 +74,6 @@ NSInteger const DW_PHRASE_LENGTH = 12;
     return [[DSBIP39Mnemonic sharedInstance] phraseIsValid:phrase];
 }
 
-- (void)recoverWalletWithPhrase:(NSString *)phrase {
-    DSChain *chain = [[DWEnvironment sharedInstance] currentChain];
-    NSParameterAssert(chain);
-    [DSWallet standardWalletWithSeedPhrase:phrase
-                           setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME
-                                  forChain:chain
-                           storeSeedPhrase:YES
-                               isTransient:NO];
-
-    // START_SYNC_ENTRY_POINT
-    [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-}
-
 - (void)wipeWallet {
     [[DWEnvironment sharedInstance] clearAllWallets];
 
@@ -103,13 +90,17 @@ NSInteger const DW_PHRASE_LENGTH = 12;
                                                             forChain:chain
                                                      storeSeedPhrase:NO
                                                          isTransient:YES];
-    DSAccount *testingAccount = [wallet accountWithNumber:0];
+    DSAccount *testingAccount = [testingWallet accountWithNumber:0];
     DSAccount *ourAccount = [DWEnvironment sharedInstance].currentAccount;
 
-    return ([testingAccount.bip32DerivationPath.extendedPublicKey
-                isEqual:ourAccount.bip32DerivationPath.extendedPublicKey] ||
-            [testingAccount.bip44DerivationPath.extendedPublicKey
-                isEqual:ourAccount.bip44DerivationPath.extendedPublicKey] ||
+    NSData *testingExtended32Data = testingAccount.bip32DerivationPath.extendedPublicKey;
+    NSData *accountExtended32Data = ourAccount.bip32DerivationPath.extendedPublicKey;
+
+    NSData *testingExtended44Data = testingAccount.bip44DerivationPath.extendedPublicKey;
+    NSData *accountExtended44Data = ourAccount.bip44DerivationPath.extendedPublicKey;
+
+    return ([testingExtended32Data isEqual:accountExtended32Data] ||
+            [testingExtended44Data isEqual:accountExtended44Data] ||
             [phrase isEqual:DW_WIPE]);
 }
 

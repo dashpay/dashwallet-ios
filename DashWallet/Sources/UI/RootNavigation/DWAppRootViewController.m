@@ -40,7 +40,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
 
-@property (nonatomic, strong) UIImageView *overlayImageView;
+@property (nullable, nonatomic, strong) UIImageView *overlayImageView;
 @property (nonatomic, strong) UIWindow *lockWindow;
 @property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
@@ -109,7 +109,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         // INFO: If we make the lockWindow key and visisble before our main window gets properly initialized
         // it will lead to weird bugs with keyboard (lockWindow will be visible, but main window remain key).
         //
-        // Temporary cover root controller with overlay. It will be hidden after unlocking
+        // Temporary cover root controller with overlay. It will be hidden after unlocking or
+        // when unlocking is not needed
         UIImageView *overlayImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"image_bg"]];
         overlayImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         overlayImageView.frame = screenBounds;
@@ -194,7 +195,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)lockScreenViewControllerDidUnlock:(DWLockScreenViewController *)controller {
     NSParameterAssert(self.displayedLockNavigationController);
-    self.overlayImageView.hidden = YES;
+
+    [self hideAndRemoveOverlayImageView];
+
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
         animations:^{
             self.lockWindow.alpha = 0.0;
@@ -224,10 +227,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (![self.model shouldShowLockScreen]) {
+        [self hideAndRemoveOverlayImageView];
+
         return;
     }
 
     [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
+}
+
+- (void)hideAndRemoveOverlayImageView {
+    self.overlayImageView.hidden = YES;
+    [self.overlayImageView removeFromSuperview];
+    self.overlayImageView = nil;
 }
 
 - (void)showDevicePasscodeAlert {

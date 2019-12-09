@@ -86,7 +86,7 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
     const BOOL canConfigureShortcuts = !walletNeedsBackup;
     if (canConfigureShortcuts) {
-        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_AddShortcut]];
+        [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_ImportPrivateKey]];
     }
 
     return mutableItems;

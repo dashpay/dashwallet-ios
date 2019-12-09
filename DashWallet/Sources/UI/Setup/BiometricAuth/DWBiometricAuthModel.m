@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
 
+static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
+
 @implementation DWBiometricAuthModel
 
 - (void)dealloc {
@@ -55,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
-- (void)enableBiometricAuth:(void (^)(void))completion {
+- (void)enableBiometricAuth:(void (^)(BOOL success))completion {
     NSParameterAssert(completion);
 
     LAContext *context = [[LAContext alloc] init];
@@ -78,9 +80,12 @@ NS_ASSUME_NONNULL_BEGIN
                           [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
                           [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
 
-                          [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:success ? DUFFS : 0];
+                          const uint64_t spendingLimit = success ? DEFAULT_BIOMETRIC_SPENDING_LIMIT : 0;
+                          [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:spendingLimit];
 
-                          dispatch_async(dispatch_get_main_queue(), completion);
+                          dispatch_async(dispatch_get_main_queue(), ^{
+                              completion(success);
+                          });
                       }];
 }
 
