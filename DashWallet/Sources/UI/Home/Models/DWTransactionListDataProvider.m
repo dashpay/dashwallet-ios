@@ -222,7 +222,8 @@ static NSString *TxDateFormat(NSString *template) {
             dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
         else if (!instantSendReceived && !confirmed) {
-            if (confirms == 0 && processingInstantSend) {
+            NSTimeInterval transactionAge = [NSDate timeIntervalSince1970] - transaction.timestamp; //we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
+            if (confirms == 0 && (processingInstantSend || transactionAge < 1.0)) {
                 dataItem.stateText = NSLocalizedString(@"Processing", nil);
             }
             else {
