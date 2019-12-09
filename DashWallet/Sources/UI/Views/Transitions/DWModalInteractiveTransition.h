@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign, getter=isPresenting) BOOL presenting;
 @property (nullable, weak, nonatomic) UIViewController<DWModalInteractiveTransitionProgressHandler> *presentedController;
+/// Defaults to `YES`.
+@property (nonatomic, assign) BOOL interactiveTransitionAllowed;
 
 @end
 

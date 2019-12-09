@@ -51,9 +51,13 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 @implementation DWBaseActionButtonViewController
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     NSAssert(NO, @"Must be overriden in subclass");
     return nil;
+}
+
+- (NSString *)actionButtonDisabledTitle {
+    return [self actionButtonTitle];
 }
 
 + (BOOL)showsActionButton {
@@ -73,6 +77,15 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     [self.stackView insertArrangedSubview:contentView atIndex:0];
 }
 
+- (void)reloadActionButtonTitles {
+    NSString *actionButtonTitle = [self actionButtonTitle];
+    NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
+    if (!IS_IPHONE_5_OR_LESS) {
+        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+        [(DWBlueActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
+    }
+}
+
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {
@@ -88,7 +101,8 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
     DWBlueActionButton *bottomActionButton = nil;
     if ([self.class showsActionButton]) {
-        NSString *actionButtonTitle = [self.class actionButtonTitle];
+        NSString *actionButtonTitle = [self actionButtonTitle];
+        NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
         NSParameterAssert(actionButtonTitle);
 
         if (IS_IPHONE_5_OR_LESS) {
@@ -104,6 +118,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
             bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
             bottomActionButton.translatesAutoresizingMaskIntoConstraints = NO;
             [bottomActionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
+            [bottomActionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
             [bottomActionButton addTarget:self
                                    action:@selector(actionButtonAction:)
                          forControlEvents:UIControlEventTouchUpInside];

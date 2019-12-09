@@ -172,9 +172,11 @@ static NSString *sanitizeString(NSString *s) {
         }
         signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
-            [self txManagerPublishedCompletion:address
-                                          sent:sent
-                                            tx:tx];
+            if (!error) {
+                [self txManagerPublishedCompletion:address
+                                              sent:sent
+                                                tx:tx];
+            }
         }
         requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
             [self txManagerRequestRelayCompletion:address

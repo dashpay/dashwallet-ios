@@ -24,23 +24,70 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWConfirmPaymentViewController ()
 
 @property (null_resettable, nonatomic, strong) DWConfirmPaymentContentView *confirmPaymentView;
+@property (nonatomic, strong) NSTimer *sendingTimer;
+@property (nonatomic, assign) uint8_t period;
 
 @end
 
 @implementation DWConfirmPaymentViewController
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Send", nil);
+}
+
+- (NSString *)actionButtonDisabledTitle {
+    switch (self.period) {
+        case 1:
+            return NSLocalizedString(@"Sending.", @"2 out of 4 in the Sending Animation");
+        case 2:
+            return NSLocalizedString(@"Sending..", @"3 out of 4 in the Sending Animation");
+        case 3:
+            return NSLocalizedString(@"Sending...", @"4 out of 4 in the Sending Animation");
+        default:
+            return NSLocalizedString(@"Sending", @"1 out of 4 in the Sending Animation");
+    }
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    _period = 0;
+    _sendingEnabled = YES;
+
     [self setupView];
+}
+
+- (void)dealloc {
+    [self.sendingTimer invalidate];
+}
+
+- (void)setSendingEnabled:(BOOL)sendingEnabled {
+    if (_sendingEnabled && !sendingEnabled) {
+        __weak typeof(self) weakSelf = self;
+        self.sendingTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
+                                                            repeats:YES
+                                                              block:^(NSTimer *_Nonnull timer) {
+                                                                  __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                  if (!strongSelf) {
+                                                                      return;
+                                                                  }
+
+                                                                  strongSelf.period++;
+                                                                  strongSelf.period %= 4;
+                                                                  [strongSelf reloadActionButtonTitles];
+                                                              }];
+    }
+    else if (!_sendingEnabled && sendingEnabled) {
+        [self.sendingTimer invalidate];
+    }
+    _sendingEnabled = sendingEnabled;
+    self.actionButton.enabled = sendingEnabled;
+    self.interactiveTransitionAllowed = sendingEnabled;
 }
 
 - (void)actionButtonAction:(id)sender {
     [self.delegate confirmPaymentViewControllerDidConfirm:self];
+    [self setSendingEnabled:NO];
 }
 
 - (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {

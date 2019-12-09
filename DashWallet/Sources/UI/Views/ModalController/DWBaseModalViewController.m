@@ -57,6 +57,14 @@ static CGFloat const CORNER_RADIUS = 8.0;
     [self.contentView setChevronViewFlattened:NO];
 }
 
+- (BOOL)interactiveTransitionAllowed {
+    return self.modalTransition.interactiveTransitionAllowed;
+}
+
+- (void)setInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed {
+    self.modalTransition.interactiveTransitionAllowed = interactiveTransitionAllowed;
+}
+
 - (void)setModalTitle:(NSString *)title {
     self.contentView.title = title;
 }
