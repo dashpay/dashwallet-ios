@@ -28,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
                      payButtonAction:(UIButton *)sender;
 - (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
                  receiveButtonAction:(UIButton *)sender;
-- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
-                 balanceButtonAction:(UIControl *)sender;
 
 @end
 

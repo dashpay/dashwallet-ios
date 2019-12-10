@@ -27,7 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @interface DWPaymentsViewController () <DWControllerCollectionViewDataSource,
-                                        UICollectionViewDelegateFlowLayout>
+                                        UICollectionViewDelegateFlowLayout,
+                                        DWPayViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *navigationTitleLabel;
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
@@ -142,7 +143,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     self.navigationTitleLabel.text = NSLocalizedString(@"Payments", nil);
 
     NSArray<NSString *> *items = @[
-        NSLocalizedString(@"Pay", nil),
+        NSLocalizedString(@"Send", nil),
         NSLocalizedString(@"Receive", nil),
     ];
     self.segmentedControl.shouldAnimateSelection = NO;
@@ -159,6 +160,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 - (void)setupControllers {
     self.payViewController = [DWPayViewController controllerWithModel:self.payModel
                                                          dataProvider:self.dataProvider];
+    self.payViewController.delegate = self;
     DWReceiveViewController *receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
     receiveViewController.viewType = DWReceiveViewType_Default;
     self.receiveViewController = receiveViewController;
@@ -224,6 +226,13 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
     const CGFloat percent = offset / pageWidth;
     self.segmentedControl.selectedSegmentIndexPercent = percent;
+}
+
+#pragma mark - DWPayViewControllerDelegate
+
+- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller {
+    // hide payments controller after successful payment
+    [self.delegate paymentsViewControllerDidCancel:self];
 }
 
 #pragma mark - Private

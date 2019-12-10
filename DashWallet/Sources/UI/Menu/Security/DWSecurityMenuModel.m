@@ -20,6 +20,8 @@
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
+#import "DWBalanceDisplayOptions.h"
+#import "DWBiometricAuthModel.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,22 +49,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Model
 
-static uint64_t const BIOMETRICS_ENABLED_SPENDING_LIMIT = 1; // 1 DUFF
-static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
-
 @interface DWSecurityMenuModel ()
 
 @property (assign, nonatomic) BOOL biometricsEnabled;
+@property (readonly, strong, nonatomic) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (readonly, nonatomic, strong) DWBiometricAuthModel *biometricAuthModel;
 
 @end
 
 @implementation DWSecurityMenuModel
 
-- (instancetype)init {
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
     self = [super init];
     if (self) {
-        _hasTouchID = [DSAuthenticationManager sharedInstance].touchIdEnabled;
-        _hasFaceID = [DSAuthenticationManager sharedInstance].faceIdEnabled;
+        _balanceDisplayOptions = balanceDisplayOptions;
+
+        _biometricAuthModel = [[DWBiometricAuthModel alloc] init];
+
+        const LABiometryType biometryType = _biometricAuthModel.biometryType;
+        _hasTouchID = biometryType == LABiometryTypeTouchID;
+        _hasFaceID = biometryType == LABiometryTypeFaceID;
     }
     return self;
 }
@@ -73,35 +79,30 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
 
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:biometricsEnabled ? DUFFS : BIOMETRICS_DISABLED_SPENDING_LIMIT];
 }
 
-- (NSString *)biometricAuthSpendingLimit {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
+- (BOOL)balanceHidden {
+    return [DWGlobalOptions sharedInstance].balanceHidden;
+}
 
-    uint64_t spendingLimit = chainsManager.spendingLimit;
-    if (spendingLimit == BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-        // display it as 0
-        spendingLimit = 0;
-    }
-
-    return [priceManager stringForDashAmount:spendingLimit];
+- (void)setBalanceHidden:(BOOL)balanceHidden {
+    [DWGlobalOptions sharedInstance].balanceHidden = balanceHidden;
+    self.balanceDisplayOptions.balanceHidden = balanceHidden;
 }
 
 - (void)changePinContinueBlock:(void (^)(BOOL allowed))continueBlock {
     [[DSAuthenticationManager sharedInstance]
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (continueBlock) {
-                            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-                            authManager.didAuthenticate = NO;
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (continueBlock) {
+                                  DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+                                  authManager.didAuthenticate = NO;
 
-                            continueBlock(authenticated);
-                        }
-                    }];
+                                  continueBlock(authenticated);
+                              }
+                          }];
 }
 
 - (void)setupNewPin:(NSString *)pin {
@@ -114,15 +115,28 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
     if (enabled) {
         DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
         [authenticationManager authenticateWithPrompt:nil
-                                           andTouchId:NO
+                         usingBiometricAuthentication:NO
                                        alertIfLockout:YES
                                            completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
                                                if (authenticatedOrSuccess) {
-                                                   self.biometricsEnabled = YES;
-                                               }
+                                                   __weak typeof(self) weakSelf = self;
+                                                   [self.biometricAuthModel enableBiometricAuth:^(BOOL success) {
+                                                       __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                       if (!strongSelf) {
+                                                           return;
+                                                       }
 
-                                               if (completion) {
-                                                   completion(authenticatedOrSuccess);
+                                                       strongSelf.biometricsEnabled = success;
+
+                                                       if (completion) {
+                                                           completion(success);
+                                                       }
+                                                   }];
+                                               }
+                                               else {
+                                                   if (completion) {
+                                                       completion(NO);
+                                                   }
                                                }
                                            }];
     }
@@ -132,71 +146,6 @@ static uint64_t const BIOMETRICS_DISABLED_SPENDING_LIMIT = 0;
             completion(YES);
         }
     }
-}
-
-- (void)requestBiometricsSpendingLimitOptions:(void (^)(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex))completion {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-
-    [authenticationManager
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (authenticated) {
-                            NSArray<id<DWSelectorFormItem>> *options = [self biometricsSpendingLimitOptions];
-                            const uint64_t limit = chainsManager.spendingLimit;
-                            NSUInteger selectedIndex;
-                            if (limit <= BIOMETRICS_ENABLED_SPENDING_LIMIT) {
-                                selectedIndex = 0;
-                            }
-                            else {
-                                selectedIndex = (NSUInteger)log10(limit) - 6;
-                            }
-                            if (completion) {
-                                completion(YES, options, selectedIndex);
-                            }
-                        }
-                        else {
-                            if (completion) {
-                                completion(NO, nil, NSNotFound);
-                            }
-                        }
-                    }];
-}
-
-- (void)setBiometricsSpendingLimitForOption:(id<DWSelectorFormItem>)option {
-    DWBiometricsOption *biometricOption = (DWBiometricsOption *)option;
-    NSAssert([biometricOption isKindOfClass:DWBiometricsOption.class], @"Invalid option");
-    const uint64_t limit = biometricOption.value;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
-}
-
-#pragma mark - Private
-
-- (void)resetCurrentPin {
-}
-
-- (NSArray<id<DWSelectorFormItem>> *)biometricsSpendingLimitOptions {
-    NSMutableArray<id<DWSelectorFormItem>> *options = [NSMutableArray array];
-
-    DWBiometricsOption *option =
-        [[DWBiometricsOption alloc] initWithTitle:NSLocalizedString(@"Always require passcode", nil)
-                                            value:BIOMETRICS_ENABLED_SPENDING_LIMIT];
-    [options addObject:option];
-
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    const uint64_t values[] = {DUFFS / 10, DUFFS, DUFFS * 10};
-    for (int i = 0; i < 3; i++) {
-        const uint64_t value = values[i];
-        NSString *title = [NSString stringWithFormat:@"%@ (%@)",
-                                                     [priceManager stringForDashAmount:value],
-                                                     [priceManager localCurrencyStringForDashAmount:value]];
-        DWBiometricsOption *option = [[DWBiometricsOption alloc] initWithTitle:title value:value];
-        [options addObject:option];
-    }
-
-    return [options copy];
 }
 
 @end

@@ -35,7 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWToolsMenuViewController
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
         self.title = NSLocalizedString(@"Tools", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
@@ -84,14 +85,19 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
-    return items;
+    return [items copy];
 }
 
 - (NSArray<DWFormSectionModel *> *)sections {
-    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-    section.items = [self items];
+    NSMutableArray<DWFormSectionModel *> *sections = [NSMutableArray array];
 
-    return @[ section ];
+    for (DWBaseFormCellModel *item in [self items]) {
+        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+        section.items = @[ item ];
+        [sections addObject:section];
+    }
+
+    return [sections copy];
 }
 
 - (void)viewDidLoad {

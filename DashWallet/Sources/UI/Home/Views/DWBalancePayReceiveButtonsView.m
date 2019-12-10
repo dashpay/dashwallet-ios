@@ -17,6 +17,7 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 
+#import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWHomeModel.h"
 #import "DWUIKit.h"
@@ -32,10 +33,16 @@ static CGFloat const BalanceButtonMinHeight(void) {
     }
 }
 
+static NSTimeInterval const ANIMATION_DURATION = 0.3;
+
 @interface DWBalancePayReceiveButtonsView ()
 
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+@property (strong, nonatomic) IBOutlet UIView *hidingView;
+@property (strong, nonatomic) IBOutlet UIImageView *eyeSlashImageView;
+@property (strong, nonatomic) IBOutlet UILabel *tapToUnhideLabel;
+@property (strong, nonatomic) IBOutlet UIView *amountsView;
 @property (strong, nonatomic) IBOutlet UILabel *dashBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fiatBalanceLabel;
 @property (strong, nonatomic) IBOutlet UIView *buttonsContainerView;
@@ -77,14 +84,19 @@ static CGFloat const BalanceButtonMinHeight(void) {
 
     self.backgroundColor = [UIColor dw_backgroundColor];
 
-    self.titleLabel.text = NSLocalizedString(@"Available balance", nil);
     self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-    self.titleLabel.textColor = [UIColor dw_lightTitleColor];
+    self.titleLabel.textColor = [UIColor dw_darkBlueColor];
+
+    self.eyeSlashImageView.tintColor = [UIColor dw_darkBlueColor];
+
+    self.tapToUnhideLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption2];
+    self.tapToUnhideLabel.textColor = [UIColor dw_lightTitleColor];
+    self.tapToUnhideLabel.alpha = 0.5;
 
     self.dashBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle1];
     self.fiatBalanceLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
 
-    [self.payButton setTitle:NSLocalizedString(@"Pay", nil) forState:UIControlStateNormal];
+    [self.payButton setTitle:NSLocalizedString(@"Send", nil) forState:UIControlStateNormal];
     self.payButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
 
     [self.receiveButton setTitle:NSLocalizedString(@"Receive", nil) forState:UIControlStateNormal];
@@ -102,6 +114,11 @@ static CGFloat const BalanceButtonMinHeight(void) {
     [self mvvm_observe:DW_KEYPATH(self, model.balanceModel)
                   with:^(typeof(self) self, id value) {
                       [self reloadAttributedData];
+                  }];
+
+    [self mvvm_observe:DW_KEYPATH(self, model.balanceDisplayOptions.balanceHidden)
+                  with:^(typeof(self) self, NSNumber *value) {
+                      [self hideBalance:self.model.balanceDisplayOptions.balanceHidden];
                   }];
 }
 
@@ -132,7 +149,8 @@ static CGFloat const BalanceButtonMinHeight(void) {
 }
 
 - (IBAction)balanceButtonAction:(UIControl *)sender {
-    [self.delegate balancePayReceiveButtonsView:self balanceButtonAction:sender];
+    DWBalanceDisplayOptions *balanceDisplayOptions = self.model.balanceDisplayOptions;
+    balanceDisplayOptions.balanceHidden = !balanceDisplayOptions.balanceHidden;
 }
 
 #pragma mark - Notifications
@@ -162,6 +180,24 @@ static CGFloat const BalanceButtonMinHeight(void) {
         self.dashBalanceLabel.text = NSLocalizedString(@"Please wait for the sync to complete", nil);
         self.fiatBalanceLabel.hidden = YES;
     }
+}
+
+- (void)hideBalance:(BOOL)hidden {
+    const BOOL animated = self.window != nil;
+
+    [UIView animateWithDuration:animated ? ANIMATION_DURATION : 0.0
+                     animations:^{
+                         self.hidingView.alpha = hidden ? 1.0 : 0.0;
+                         self.amountsView.alpha = hidden ? 0.0 : 1.0;
+
+                         self.tapToUnhideLabel.text = hidden
+                                                          ? NSLocalizedString(@"Tap to unhide balance", nil)
+                                                          : NSLocalizedString(@"Tap to hide balance", nil);
+
+                         self.titleLabel.text = hidden
+                                                    ? NSLocalizedString(@"Balance hidden", nil)
+                                                    : NSLocalizedString(@"Available balance", nil);
+                     }];
 }
 
 @end

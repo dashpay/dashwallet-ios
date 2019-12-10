@@ -18,6 +18,7 @@
 #import "DWPaymentProcessor.h"
 
 #import "DWEnvironment.h"
+#import "DWGlobalOptions.h"
 #import "DWPaymentInput.h"
 #import "DWPaymentOutput+Private.h"
 
@@ -140,13 +141,16 @@ static NSString *sanitizeString(NSString *s) {
 
     self.didSendRequestDelegateNotified = NO;
 
+    const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
+
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
     [chainManager.transactionManager
         signAndPublishTransaction:paymentOutput.tx
         createdFromProtocolRequest:protocolRequest
         fromAccount:account
         toAddress:address
-        withPrompt:@""
+        requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
+        promptMessage:nil
         forAmount:paymentOutput.amount
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
@@ -168,9 +172,11 @@ static NSString *sanitizeString(NSString *s) {
         }
         signedCompletion:self.signedCompletionBlock
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
-            [self txManagerPublishedCompletion:address
-                                          sent:sent
-                                            tx:tx];
+            if (!error) {
+                [self txManagerPublishedCompletion:address
+                                              sent:sent
+                                                tx:tx];
+            }
         }
         requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
             [self txManagerRequestRelayCompletion:address
@@ -242,6 +248,7 @@ static NSString *sanitizeString(NSString *s) {
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
+        requiresSpendingAuthenticationPrompt:YES
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];

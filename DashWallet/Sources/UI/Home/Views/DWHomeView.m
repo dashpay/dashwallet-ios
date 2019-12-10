@@ -203,10 +203,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate homeView:self receiveButtonAction:sender];
 }
 
-- (void)homeHeaderView:(DWHomeHeaderView *)view balanceButtonAction:(UIControl *)sender {
-    [self.delegate homeView:self balanceButtonAction:sender];
-}
-
 @end
 
 NS_ASSUME_NONNULL_END

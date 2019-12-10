@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBackupInfoViewController : DWBaseViewController
 
+@property (nonatomic, assign) BOOL shouldCreateNewWalletOnScreenshot;
 @property (nullable, nonatomic, weak) id<DWSecureWalletDelegate> delegate;
 
 + (instancetype)controllerWithModel:(DWPreviewSeedPhraseModel *)model;

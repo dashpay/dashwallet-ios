@@ -1,110 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="13771" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
-    <device id="watch38" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="15505" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="gzi-hr-984">
+    <device id="watch38"/>
     <dependencies>
         <deployment identifier="watchOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="13756"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="15501"/>
     </dependencies>
     <scenes>
         <!--Dash-->
+        <scene sceneID="uwH-eJ-M0n">
+            <objects>
+                <controller identifier="DWMainInterfaceController" title="Dash" id="gzi-hr-984" customClass="DWMainInterfaceController" customModule="WatchApp_Extension"/>
+            </objects>
+            <point key="canvasLocation" x="-348" y="318"/>
+        </scene>
+        <!--Dash Setup Info-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller title="Dash" id="AgC-eL-Hgc" customClass="BRAWRootInterfaceController" customModule="WatchApp_Extension">
+                <controller identifier="DWSetupInfoInterfaceController" title="Dash" hidesWhenLoading="NO" id="AgC-eL-Hgc" userLabel="Dash Setup Info" customClass="DWSetupInfoInterfaceController" customModule="WatchApp_Extension">
                     <items>
-                        <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="wKY-qb-B8a" userLabel="Loading indicator"/>
-                        <label alignment="center" verticalAlignment="center" text="Open DASH iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="VXj-KF-nqM"/>
+                        <label alignment="center" verticalAlignment="center" text="Open DashWallet iPhone app to setup" textAlignment="center" numberOfLines="0" id="VXj-KF-nqM"/>
                     </items>
-                    <connections>
-                        <outlet property="loadingIndicator" destination="wKY-qb-B8a" id="38C-SN-66a"/>
-                        <outlet property="setupWalletMessageLabel" destination="VXj-KF-nqM" id="Tnv-ma-LAe"/>
-                    </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="164" y="217"/>
-        </scene>
-        <!--BRAWGlanceInterfaceController-->
-        <scene sceneID="rjY-Ar-IMT">
-            <objects>
-                <glanceController identifier="BRAWGlanceInterfaceController" spacing="0.0" id="Sv0-Ai-Zie" customClass="BRAWGlanceInterfaceController" customModule="WatchApp_Extension">
-                    <items>
-                        <group alignment="left" id="gv7-I2-MZq" userLabel="Top group">
-                            <items>
-                                <group width="40" height="40" alignment="left" verticalAlignment="center" backgroundImage="GalanceIcon" radius="20" id="b9B-iF-yR2" userLabel="Icon group"/>
-                            </items>
-                        </group>
-                        <group alignment="left" layout="vertical" id="eew-Gs-W6Y" userLabel="Bottom group">
-                            <items>
-                                <group width="30" height="30" alignment="center" verticalAlignment="center" backgroundImage="LoadingIndicator" id="9vJ-Sn-Eit" userLabel="Loading indicator"/>
-                                <group width="1" alignment="left" id="7AP-2v-fcP" userLabel="Setup wallet message container">
-                                    <items>
-                                        <label alignment="center" verticalAlignment="center" text="Open DASH iPhone app to setup your wallet" textAlignment="left" numberOfLines="0" id="Gat-bm-t3w"/>
-                                    </items>
-                                </group>
-                                <group width="1" alignment="left" layout="vertical" id="z73-6R-jav" userLabel="Balance info container">
-                                    <items>
-                                        <group width="1" alignment="left" layout="vertical" spacing="0.0" id="DFe-EB-Agp" userLabel="Balance container">
-                                            <items>
-                                                <label alignment="left" text="ƀ802,130" minimumScaleFactor="0.10000000000000001" id="oAt-M3-LfO">
-                                                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <fontDescription key="font" type="system" weight="light" pointSize="34"/>
-                                                    <attributedString key="userComments">
-                                                        <fragment content="#bc-ignore!">
-                                                            <attributes>
-                                                                <font key="NSFont" metaFont="smallSystem"/>
-                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                            </attributes>
-                                                        </fragment>
-                                                    </attributedString>
-                                                </label>
-                                                <label alignment="left" text="$211.86" numberOfLines="0" id="6Qe-WS-tck" userLabel="Local currency amount label">
-                                                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <fontDescription key="font" type="system" pointSize="14"/>
-                                                    <attributedString key="userComments">
-                                                        <fragment content="#bc-ignore!">
-                                                            <attributes>
-                                                                <font key="NSFont" metaFont="smallSystem"/>
-                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                            </attributes>
-                                                        </fragment>
-                                                    </attributedString>
-                                                </label>
-                                            </items>
-                                        </group>
-                                        <label alignment="left" text="receive ƀ100, 5 days ago" numberOfLines="0" id="jqM-V4-RYz" userLabel="Last transaction label">
-                                            <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <fontDescription key="font" type="system" pointSize="14"/>
-                                            <attributedString key="userComments">
-                                                <fragment content="#bc-ignore!">
-                                                    <attributes>
-                                                        <font key="NSFont" metaFont="smallSystem"/>
-                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                    </attributes>
-                                                </fragment>
-                                            </attributedString>
-                                            <variation key="device=watch38mm">
-                                                <fontDescription key="font" type="system" pointSize="12"/>
-                                            </variation>
-                                        </label>
-                                    </items>
-                                </group>
-                            </items>
-                        </group>
-                    </items>
-                    <edgeInsets key="margins" left="0.0" right="0.0" top="0.0" bottom="14"/>
-                    <connections>
-                        <outlet property="balanceAmountLabel" destination="oAt-M3-LfO" id="KJX-NY-fKT"/>
-                        <outlet property="balanceInLocalCurrencyLabel" destination="6Qe-WS-tck" id="KVb-6e-hDL"/>
-                        <outlet property="balanceInfoContainer" destination="z73-6R-jav" id="VHP-7n-ewE"/>
-                        <outlet property="lastTransactionLabel" destination="jqM-V4-RYz" id="cHi-4e-bIN"/>
-                        <outlet property="loadingIndicator" destination="9vJ-Sn-Eit" id="Mhk-ud-QM2"/>
-                        <outlet property="setupWalletContainer" destination="7AP-2v-fcP" id="sk5-hX-hUI"/>
-                    </connections>
-                </glanceController>
-            </objects>
-            <point key="canvasLocation" x="164" y="926"/>
+            <point key="canvasLocation" x="-4" y="137"/>
         </scene>
         <!--Balance-->
         <scene sceneID="1F7-ti-8Wn">
@@ -124,7 +43,7 @@
                                                     <attributedString key="userComments">
                                                         <fragment content="#bc-ignore!">
                                                             <attributes>
-                                                                <font key="NSFont" metaFont="smallSystem"/>
+                                                                <font key="NSFont" metaFont="menu" size="11"/>
                                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                             </attributes>
                                                         </fragment>
@@ -137,7 +56,7 @@
                                                     <attributedString key="userComments">
                                                         <fragment content="#bc-ignore!">
                                                             <attributes>
-                                                                <font key="NSFont" metaFont="smallSystem"/>
+                                                                <font key="NSFont" metaFont="menu" size="11"/>
                                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                             </attributes>
                                                         </fragment>
@@ -190,7 +109,7 @@
                                                                 <attributedString key="userComments">
                                                                     <fragment content="#bc-ignore!">
                                                                         <attributes>
-                                                                            <font key="NSFont" metaFont="smallSystem"/>
+                                                                            <font key="NSFont" metaFont="menu" size="11"/>
                                                                             <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                         </attributes>
                                                                     </fragment>
@@ -207,7 +126,7 @@
                                                                 <attributedString key="userComments">
                                                                     <fragment content="#bc-ignore!">
                                                                         <attributes>
-                                                                            <font key="NSFont" metaFont="smallSystem"/>
+                                                                            <font key="NSFont" metaFont="menu" size="11"/>
                                                                             <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                         </attributes>
                                                                     </fragment>
@@ -219,7 +138,7 @@
                                                                 <attributedString key="userComments">
                                                                     <fragment content="#bc-ignore!">
                                                                         <attributes>
-                                                                            <font key="NSFont" metaFont="smallSystem"/>
+                                                                            <font key="NSFont" metaFont="menu" size="11"/>
                                                                             <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                                         </attributes>
                                                                     </fragment>
@@ -260,7 +179,7 @@
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="164" y="562.5"/>
+            <point key="canvasLocation" x="-4" y="563"/>
         </scene>
         <!--Receive Money-->
         <scene sceneID="wCU-y0-cjL">
@@ -286,12 +205,12 @@
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="369" y="562.5"/>
+            <point key="canvasLocation" x="332" y="562"/>
         </scene>
-        <!--Cancel-->
+        <!--Keypad-->
         <scene sceneID="Tcy-NT-aI2">
             <objects>
-                <controller identifier="Keypad" title="Cancel" id="4rD-ne-4oP" customClass="BRAWKeypad" customModule="WatchApp_Extension">
+                <controller identifier="Keypad" title="Cancel" id="4rD-ne-4oP" userLabel="Keypad" customClass="BRAWKeypad" customModule="WatchApp_Extension">
                     <items>
                         <group width="1" height="0.20000000000000001" alignment="left" id="7tF-UO-81W">
                             <items>
@@ -301,7 +220,7 @@
                                     <attributedString key="userComments">
                                         <fragment content="#bc-ignore!">
                                             <attributes>
-                                                <font key="NSFont" metaFont="smallSystem"/>
+                                                <font key="NSFont" metaFont="menu" size="11"/>
                                                 <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                             </attributes>
                                         </fragment>
@@ -400,7 +319,11 @@
                     </connections>
                 </controller>
             </objects>
-            <point key="canvasLocation" x="605" y="562"/>
+            <point key="canvasLocation" x="652" y="562"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="LoadingIndicator" width="16" height="16"/>
+        <image name="SentMoneyIcon" width="28" height="28"/>
+    </resources>
 </document>

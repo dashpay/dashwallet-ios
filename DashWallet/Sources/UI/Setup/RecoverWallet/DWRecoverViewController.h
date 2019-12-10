@@ -18,6 +18,7 @@
 #import "DWBaseSeedViewController.h"
 
 #import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,7 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWRecoverViewControllerDelegate <NSObject>
 
-- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller;
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
+                               recoverCommand:(DWRecoverWalletCommand *)recoverCommand;
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller;
 
 @end

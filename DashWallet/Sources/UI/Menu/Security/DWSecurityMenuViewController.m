@@ -17,6 +17,7 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
 #import "DWPreviewSeedPhraseModel.h"
@@ -31,26 +32,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
 
+@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 @property (null_resettable, nonatomic, strong) DWSecurityMenuModel *model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
-@property (nonatomic, strong) DWSelectorFormCellModel *biometricLimitAuthCellModel;
 
 @end
 
 @implementation DWSecurityMenuViewController
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         self.title = NSLocalizedString(@"Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
-
     return self;
 }
 
 - (DWSecurityMenuModel *)model {
     if (!_model) {
-        _model = [[DWSecurityMenuModel alloc] init];
+        _model = [[DWSecurityMenuModel alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
     }
 
     return _model;
@@ -90,38 +93,46 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.model.hasTouchID || self.model.hasFaceID) {
+        NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Enable Touch ID", nil) : NSLocalizedString(@"Enable Face ID", nil);
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:title];
+        cellModel.on = self.model.biometricsEnabled;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
 
-        {
-            NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Enable Touch ID", nil) : NSLocalizedString(@"Enable Face ID", nil);
-            DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:title];
-            cellModel.on = self.model.biometricsEnabled;
-            cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
+            [strongSelf biometricSwitchAction:cellModel];
+        };
+        [items addObject:cellModel];
+    }
 
-                [strongSelf biometricSwitchAction:cellModel];
-            };
-            [items addObject:cellModel];
-        }
+    {
+        DWSwitcherFormCellModel *cellModel = [[DWSwitcherFormCellModel alloc] initWithTitle:NSLocalizedString(@"Autohide Balance", nil)];
+        cellModel.on = self.model.balanceHidden;
+        cellModel.didChangeValueBlock = ^(DWSwitcherFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
 
-        if (self.model.biometricsEnabled) {
-            NSString *title = self.model.hasTouchID ? NSLocalizedString(@"Touch ID limit", nil) : NSLocalizedString(@"Face ID limit", nil);
-            DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:title];
-            cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
-            self.biometricLimitAuthCellModel = cellModel;
-            [self updateBiometricAuthCellModel];
-            cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
+            strongSelf.model.balanceHidden = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
 
-                [strongSelf setBiometricAuthSpendingLimit];
-            };
-            [items addObject:cellModel];
-        }
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Advanced Security", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showAdvancedSecurity];
+        };
+        [items addObject:cellModel];
     }
 
     {
@@ -138,14 +149,19 @@ NS_ASSUME_NONNULL_BEGIN
         [items addObject:cellModel];
     }
 
-    return items;
+    return [items copy];
 }
 
 - (NSArray<DWFormSectionModel *> *)sections {
-    DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
-    section.items = [self items];
+    NSMutableArray<DWFormSectionModel *> *sections = [NSMutableArray array];
 
-    return @[ section ];
+    for (DWBaseFormCellModel *item in [self items]) {
+        DWFormSectionModel *section = [[DWFormSectionModel alloc] init];
+        section.items = @[ item ];
+        [sections addObject:section];
+    }
+
+    return [sections copy];
 }
 
 - (void)viewDidLoad {
@@ -190,30 +206,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (void)updateBiometricAuthCellModel {
-    self.biometricLimitAuthCellModel.subTitle = self.model.biometricAuthSpendingLimit;
-}
-
 - (void)showSeedPharseAction {
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager
-        authenticateWithPrompt:nil
-                    andTouchId:NO
-                alertIfLockout:YES
-                    completion:^(BOOL authenticated, BOOL cancelled) {
-                        if (!authenticated) {
-                            return;
-                        }
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
 
-                        DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
-                        [model getOrCreateNewWallet];
+                              DWPreviewSeedPhraseModel *model = [[DWPreviewSeedPhraseModel alloc] init];
+                              [model getOrCreateNewWallet];
 
-                        DWPreviewSeedPhraseViewController *controller =
-                            [[DWPreviewSeedPhraseViewController alloc] initWithModel:model];
-                        controller.hidesBottomBarWhenPushed = YES;
-                        controller.delegate = self;
-                        [self.navigationController pushViewController:controller animated:YES];
-                    }];
+                              DWPreviewSeedPhraseViewController *controller =
+                                  [[DWPreviewSeedPhraseViewController alloc] initWithModel:model];
+                              controller.hidesBottomBarWhenPushed = YES;
+                              controller.delegate = self;
+                              [self.navigationController pushViewController:controller animated:YES];
+                          }];
 }
 
 - (void)changePinAction {
@@ -230,6 +242,22 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)showAdvancedSecurity {
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    [authenticationManager
+              authenticateWithPrompt:nil
+        usingBiometricAuthentication:NO
+                      alertIfLockout:YES
+                          completion:^(BOOL authenticated, BOOL cancelled) {
+                              if (!authenticated) {
+                                  return;
+                              }
+
+                              DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
+                              [self.navigationController pushViewController:controller animated:YES];
+                          }];
+}
+
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {
     __weak typeof(self) weakSelf = self;
     [self.model setBiometricsEnabled:cellModel.on
@@ -239,48 +267,67 @@ NS_ASSUME_NONNULL_BEGIN
                                   return;
                               }
 
-                              if (success) {
+                              if (!success) {
+                                  const BOOL wasEnabled = cellModel.on;
                                   cellModel.on = !cellModel.on;
+
+                                  // Face / Touch ID access was disabled but the user wants to enabled it
+                                  if (wasEnabled) {
+                                      [strongSelf showBiometricsAccessAlertRequest];
+                                  }
                               }
 
                               [strongSelf.formController setSections:[strongSelf sections] placeholderText:nil];
                           }];
 }
 
-- (void)setBiometricAuthSpendingLimit {
-    __weak typeof(self) weakSelf = self;
-    [self.model requestBiometricsSpendingLimitOptions:^(BOOL authenticated, NSArray<id<DWSelectorFormItem>> *_Nullable options, NSUInteger selectedIndex) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-
-        if (!authenticated) {
-            return;
-        }
-
-        DWSelectorViewController *controller = [DWSelectorViewController controller];
-        controller.title = strongSelf.model.hasTouchID ? NSLocalizedString(@"Touch ID limit", nil) : NSLocalizedString(@"Face ID limit", nil);
-        [controller setItems:options selectedIndex:selectedIndex placeholderText:nil];
-        controller.didSelectItemBlock = ^(id<DWSelectorFormItem> item, NSUInteger index) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.model setBiometricsSpendingLimitForOption:item];
-            [strongSelf updateBiometricAuthCellModel];
-
-            [strongSelf.navigationController popViewControllerAnimated:YES];
-        };
-        [strongSelf.navigationController pushViewController:controller animated:YES];
-    }];
-}
-
 - (void)resetWalletAction {
     DWResetWalletInfoViewController *controller = [DWResetWalletInfoViewController controller];
     controller.delegate = self.delegate;
     [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)showBiometricsAccessAlertRequest {
+    NSString *displayName = [NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"];
+    NSString *titleString = nil;
+    NSString *messageString = nil;
+    if (self.model.hasTouchID) {
+        titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Touch ID", nil),
+                                                 displayName];
+        messageString = NSLocalizedString(@"Allow Touch ID access in Settings", nil);
+    }
+    else if (self.model.hasFaceID) {
+        titleString = [NSString stringWithFormat:NSLocalizedString(@"%@ is not allowed to access Face ID", nil),
+                                                 displayName];
+        messageString = NSLocalizedString(@"Allow Face ID access in Settings", nil);
+    }
+    else {
+        NSAssert(NO, @"Inconsistent state");
+    }
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:titleString
+                                                                   message:messageString
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                  style:UIAlertActionStyleCancel
+                handler:nil];
+    [alert addAction:okAction];
+
+    UIAlertAction *settingsAction = [UIAlertAction
+        actionWithTitle:NSLocalizedString(@"Settings", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *_Nonnull action) {
+                    NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+                    if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
+                        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+                    }
+                }];
+    [alert addAction:settingsAction];
+
+    alert.preferredAction = settingsAction;
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

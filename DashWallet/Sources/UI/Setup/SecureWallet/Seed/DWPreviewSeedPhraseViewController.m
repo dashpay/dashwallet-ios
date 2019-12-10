@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Done", nil);
 }
 

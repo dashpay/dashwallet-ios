@@ -33,14 +33,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL biometricAuthConfigured;
 @property (nonatomic, assign) BOOL biometricAuthEnabled;
+/// Value in seconds
+@property (nonatomic, assign) NSInteger autoLockAppInterval;
 
 @property (nullable, nonatomic, copy) NSArray<NSNumber *> *shortcuts;
 
 @property (nonatomic, assign) BOOL localNotificationsEnabled;
 
-// Non-stored options
+@property (nonatomic, assign) BOOL balanceHidden;
 
-- (NSTimeInterval)autoLockAppInterval;
+// Non-dynamic
+
+- (BOOL)lockScreenDisabled;
+- (void)setLockScreenDisabled:(BOOL)lockScreenDisabled;
+
+- (BOOL)spendingConfirmationDisabled;
+- (void)setSpendingConfirmationDisabled:(BOOL)spendingConfirmationDisabled;
 
 // Methods
 

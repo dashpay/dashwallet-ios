@@ -1,5 +1,6 @@
 PODS:
   - bls-signatures-pod (0.2.9)
+  - CloudInAppMessaging (0.1.0)
   - CocoaLumberjack (3.6.0):
     - CocoaLumberjack/Core (= 3.6.0)
   - CocoaLumberjack/Core (3.6.0)
@@ -14,22 +15,26 @@ PODS:
   - DWAlertController (0.2.1)
   - KVO-MVVM (0.5.6)
   - MBProgressHUD (1.1.0)
+  - MMSegmentSlider (1.0.3)
   - secp256k1_dash (0.1.2)
   - SimulatorStatusMagic (2.4.1)
   - UIViewController-KeyboardAdditions (1.2.1)
 
 DEPENDENCIES:
+  - CloudInAppMessaging (= 0.1.0)
   - Dash-PLCrashReporter (from `https://github.com/podkovyrin/plcrashreporter.git`, commit `b472e89`, branch `dash_1.5.1`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.0)
   - KVO-MVVM (= 0.5.6)
   - MBProgressHUD (= 1.1.0)
+  - MMSegmentSlider (from `https://github.com/podkovyrin/MMSegmentSlider`, commit `2d91366`)
   - SimulatorStatusMagic (= 2.4.1)
   - UIViewController-KeyboardAdditions (= 1.2.1)
 
 SPEC REPOS:
   trunk:
     - bls-signatures-pod
+    - CloudInAppMessaging
     - CocoaLumberjack
     - DSDynamicOptions
     - DWAlertController
@@ -46,14 +51,21 @@ EXTERNAL SOURCES:
     :git: https://github.com/podkovyrin/plcrashreporter.git
   DashSync:
     :path: "../DashSync/"
+  MMSegmentSlider:
+    :commit: 2d91366
+    :git: https://github.com/podkovyrin/MMSegmentSlider
 
 CHECKOUT OPTIONS:
   Dash-PLCrashReporter:
     :commit: b472e8926cc3668dcac4189666a64ae2d65d8af8
     :git: https://github.com/podkovyrin/plcrashreporter.git
+  MMSegmentSlider:
+    :commit: 2d91366
+    :git: https://github.com/podkovyrin/MMSegmentSlider
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
+  CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   Dash-PLCrashReporter: c6f194c683685579f05bda3524893a7add0ec89a
   DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
@@ -61,10 +73,11 @@ SPEC CHECKSUMS:
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   KVO-MVVM: 756673a8e837d7f27ff904fe2883e225e261d8ac
   MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
+  MMSegmentSlider: db7ee0d6eb2eefbd511179195bf288ff2cebac0a
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
   SimulatorStatusMagic: 28d4a9d1a500ac7cea0b2b5a43c1c6ddb40ba56c
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: ac93d6cf2d52503c0ae5e8ee6760953fe25f1ac6
+PODFILE CHECKSUM: 40165155916933bbb3cc2a4d9377774365769e46
 
 COCOAPODS: 1.8.4

@@ -96,8 +96,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:nil message:message];
 }
 
-- (void)recoverContentViewDidRecoverWallet:(DWRecoverContentView *)view {
-    [self.delegate recoverViewControllerDidRecoverWallet:self];
+- (void)recoverContentViewDidRecoverWallet:(DWRecoverContentView *)view phrase:(NSString *)phrase {
+    DWRecoverWalletCommand *recoverCommand = [[DWRecoverWalletCommand alloc] initWithPhrase:phrase];
+    [self.delegate recoverViewControllerDidRecoverWallet:self recoverCommand:recoverCommand];
 }
 
 - (void)recoverContentViewPerformWipe:(DWRecoverContentView *)view {

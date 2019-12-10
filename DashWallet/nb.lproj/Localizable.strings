@@ -3,7 +3,13 @@
 "%@ is for 'mDASH'. %@ = 1 DASH." = "%@ is for 'mDASH'. %@ = 1 DASH.";
 
 /* No comment provided by engineer. */
+"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+
+/* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ har ikke tilgang til kameraet";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
 /* No comment provided by engineer. */
 "%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
@@ -25,6 +31,18 @@
 
 /* No comment provided by engineer. */
 "1 duff/byte" = "1 duff/byte";
+
+/* No comment provided by engineer. */
+"1 hour" = "1 hour";
+
+/* Shorten version of minute */
+"1 min" = "1 min";
+
+/* No comment provided by engineer. */
+"24 hours" = "24 hours";
+
+/* Shorten version of minutes */
+"5 min" = "5 min";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" er ikke et ord i gjenopprettingsfrasen";
@@ -63,10 +81,19 @@
 "ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
+"Advanced Security" = "Advanced Security";
+
+/* No comment provided by engineer. */
 "All" = "All";
 
 /* No comment provided by engineer. */
-"Allow camera access in\nSettings->Privacy->Camera->%@" = "Allow camera access in\nSettings->Privacy->Camera->%@";
+"Allow camera access in Settings" = "Allow camera access in Settings";
+
+/* No comment provided by engineer. */
+"Allow Face ID access in Settings" = "Allow Face ID access in Settings";
+
+/* No comment provided by engineer. */
+"Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
 "Always require passcode" = "Always require passcode";
@@ -99,6 +126,12 @@
 "Authentication is unvailable" = "Authentication is unvailable";
 
 /* No comment provided by engineer. */
+"Auto Logout" = "Auto Logout";
+
+/* No comment provided by engineer. */
+"Autohide Balance" = "Autohide Balance";
+
+/* No comment provided by engineer. */
 "Available" = "Available";
 
 /* No comment provided by engineer. */
@@ -109,6 +142,9 @@
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Bad recovery phrase";
+
+/* No comment provided by engineer. */
+"Balance hidden" = "Balance hidden";
 
 /* No comment provided by engineer. */
 "Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
@@ -420,6 +456,9 @@
 "Help us improve your experience" = "Help us improve your experience";
 
 /* No comment provided by engineer. */
+"High" = "High";
+
+/* No comment provided by engineer. */
 "History" = "History";
 
 /* No comment provided by engineer. */
@@ -445,6 +484,9 @@
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
+
+/* No comment provided by engineer. */
+"Immediately" = "Immediately";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Import Private Key" = "Import Private Key";
@@ -478,6 +520,9 @@
 
 /* No comment provided by engineer. */
 "Invalid amount" = "Invalid amount";
+
+/* No comment provided by engineer. */
+"invalid transaction" = "invalid transaction";
 
 /* No comment provided by engineer. */
 "IP Address" = "IP Address";
@@ -531,10 +576,19 @@
 "Login with Touch ID" = "Login with Touch ID";
 
 /* No comment provided by engineer. */
+"Logout" = "Logout";
+
+/* No comment provided by engineer. */
+"Logout after" = "Logout after";
+
+/* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
 
 /* No comment provided by engineer. */
 "Lookup" = "Lookup";
+
+/* No comment provided by engineer. */
+"Low" = "Low";
 
 /* No comment provided by engineer. */
 "Masternode control" = "Masternode control";
@@ -573,10 +627,16 @@
 "Max" = "Max";
 
 /* No comment provided by engineer. */
+"Medium" = "Medium";
+
+/* No comment provided by engineer. */
 "More" = "More";
 
 /* No comment provided by engineer. */
 "More..." = "More...";
+
+/* No comment provided by engineer. */
+"moved" = "moved";
 
 /* No comment provided by engineer. */
 "Moved" = "Moved";
@@ -631,6 +691,9 @@
 
 /* No comment provided by engineer. */
 "Node ip" = "Node ip";
+
+/* No comment provided by engineer. */
+"None" = "None";
 
 /* No comment provided by engineer. */
 "Not a dash URL" = "Not a dash URL";
@@ -696,22 +759,10 @@
 "Owner Private Key" = "Owner Private Key";
 
 /* No comment provided by engineer. */
-"Paid successfully" = "Paid successfully";
-
-/* No comment provided by engineer. */
 "Pay" = "Betal";
-
-/* Pay by (scanning QR code) */
-"Pay by" = "Pay by";
 
 /* No comment provided by engineer. */
 "Pay to" = "Pay to";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Pay to Address" = "Pay to Address";
-
-/* No comment provided by engineer. */
-"Pay to copied address" = "Pay to copied address";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Pay with NFC" = "Pay with NFC";
@@ -739,6 +790,9 @@
 
 /* No comment provided by engineer. */
 "Pending" = "Pending";
+
+/* No comment provided by engineer. */
+"PIN is always required to make a payment" = "PIN is always required to make a payment";
 
 /* No comment provided by engineer. */
 "Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral" = "Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral";
@@ -802,6 +856,9 @@
 
 /* No comment provided by engineer. */
 "Receive dash at this address: %@" = "Motta dash på denne adressen: %@";
+
+/* No comment provided by engineer. */
+"received" = "received";
 
 /* No comment provided by engineer. */
 "Received" = "Received";
@@ -876,6 +933,9 @@
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
+"Reset to Default" = "Reset to Default";
+
+/* No comment provided by engineer. */
 "Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
@@ -908,6 +968,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Scan to Pay" = "Scan to Pay";
 
+/* No comment provided by engineer. */
+"Scan to Send" = "Scan to Send";
+
 /* (Pay by) Scanning QR code */
 "Scanning QR code" = "Scanning QR code";
 
@@ -930,6 +993,9 @@
 "Security" = "Security";
 
 /* No comment provided by engineer. */
+"Security Level" = "Security Level";
+
+/* No comment provided by engineer. */
 "See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
@@ -947,6 +1013,9 @@
 /* No comment provided by engineer. */
 "Send address as message" = "Send address as message";
 
+/* Pay by (scanning QR code) */
+"Send by" = "Send by";
+
 /* No comment provided by engineer. */
 "Send crash report" = "Send crash report";
 
@@ -956,11 +1025,35 @@
 /* No comment provided by engineer. */
 "Send request as message" = "Send request as message";
 
+/* Translate it as short as possible! (24 symbols max) */
+"Send to Address" = "Send to Address";
+
+/* No comment provided by engineer. */
+"Send to copied address" = "Send to copied address";
+
+/* 1 out of 4 in the Sending Animation */
+"Sending" = "Sending";
+
+/* 2 out of 4 in the Sending Animation */
+"Sending." = "Sending.";
+
+/* 3 out of 4 in the Sending Animation */
+"Sending.." = "Sending..";
+
+/* 4 out of 4 in the Sending Animation */
+"Sending..." = "Sending...";
+
 /* No comment provided by engineer. */
 "Sent" = "Sent";
 
 /* No comment provided by engineer. */
+"sent" = "sent";
+
+/* No comment provided by engineer. */
 "Sent from" = "Sent from";
+
+/* No comment provided by engineer. */
+"Sent successfully" = "Sent successfully";
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";
@@ -1026,6 +1119,9 @@
 "Specify Amount" = "Specify Amount";
 
 /* No comment provided by engineer. */
+"Spending Confirmation" = "Spending Confirmation";
+
+/* No comment provided by engineer. */
 "Spent address" = "Spent address";
 
 /* No comment provided by engineer. */
@@ -1063,6 +1159,12 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
+
+/* No comment provided by engineer. */
+"Tap to hide balance" = "Tap to hide balance";
+
+/* No comment provided by engineer. */
+"Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
 "The app will now close" = "The app will now close";
@@ -1242,6 +1344,9 @@
 "verifying quorum" = "verifying quorum";
 
 /* No comment provided by engineer. */
+"Very High" = "Very High";
+
+/* No comment provided by engineer. */
 "View in Explorer" = "View in Explorer";
 
 /* No comment provided by engineer. */
@@ -1324,6 +1429,12 @@
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
+
+/* No comment provided by engineer. */
+"You can authenticate with Face ID for payments below" = "You can authenticate with Face ID for payments below";
+
+/* No comment provided by engineer. */
+"You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
 "You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";

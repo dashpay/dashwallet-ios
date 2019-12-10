@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
+@property (nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 
 @end
 
@@ -40,9 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _balanceDisplayOptions = balanceDisplayOptions;
+
         self.title = NSLocalizedString(@"More", nil);
     }
     return self;
@@ -71,22 +74,22 @@ NS_ASSUME_NONNULL_BEGIN
     switch (item.type) {
         case DWMainMenuItemType_BuySellDash: {
             [[DSAuthenticationManager sharedInstance]
-                authenticateWithPrompt:nil
-                            andTouchId:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                        alertIfLockout:YES
-                            completion:^(BOOL authenticated, BOOL cancelled) {
-                                if (authenticated) {
-                                    UIViewController *controller = [DWUpholdViewController controller];
-                                    DWNavigationController *navigationController =
-                                        [[DWNavigationController alloc] initWithRootViewController:controller];
-                                    [self presentViewController:navigationController animated:YES completion:nil];
-                                }
-                            }];
+                      authenticateWithPrompt:nil
+                usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                              alertIfLockout:YES
+                                  completion:^(BOOL authenticated, BOOL cancelled) {
+                                      if (authenticated) {
+                                          UIViewController *controller = [DWUpholdViewController controller];
+                                          DWNavigationController *navigationController =
+                                              [[DWNavigationController alloc] initWithRootViewController:controller];
+                                          [self presentViewController:navigationController animated:YES completion:nil];
+                                      }
+                                  }];
 
             break;
         }
         case DWMainMenuItemType_Security: {
-            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] init];
+            DWSecurityMenuViewController *controller = [[DWSecurityMenuViewController alloc] initWithBalanceDisplayOptions:self.balanceDisplayOptions];
             controller.delegate = self.delegate;
             [self.navigationController pushViewController:controller animated:YES];
 

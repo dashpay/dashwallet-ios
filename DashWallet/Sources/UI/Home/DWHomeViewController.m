@@ -18,6 +18,7 @@
 #import "DWHomeViewController.h"
 
 #import "AppDelegate.h"
+#import "DWBalanceDisplayOptions.h"
 #import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
@@ -83,6 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
     [[AppDelegate appDelegate] registerForPushNotifications];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self.model.balanceDisplayOptions hideBalanceIfNeeded];
+}
+
 #pragma mark - DWHomeViewDelegate
 
 - (void)homeView:(DWHomeView *)homeView showTxFilter:(UIView *)sender {
@@ -95,11 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)homeView:(DWHomeView *)homeView receiveButtonAction:(UIButton *)sender {
     [self.delegate homeViewController:self receiveButtonAction:sender];
-}
-
-- (void)homeView:(DWHomeView *)homeView balanceButtonAction:(UIControl *)sender {
-    DWShortcutAction *action = [DWShortcutAction action:DWShortcutActionType_LocalCurrency];
-    [self performActionForShortcut:action sender:sender];
 }
 
 - (void)homeView:(DWHomeView *)homeView didSelectTransaction:(DSTransaction *)transaction {

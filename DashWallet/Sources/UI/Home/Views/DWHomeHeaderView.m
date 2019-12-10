@@ -25,8 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const SYNCVIEW_SHOW_DELAY = 1.0;
-
 @interface DWHomeHeaderView () <DWBalancePayReceiveButtonsViewDelegate,
                                 DWShortcutsViewDelegate,
                                 DWSyncViewDelegate>
@@ -82,18 +80,10 @@ static NSTimeInterval const SYNCVIEW_SHOW_DELAY = 1.0;
                           [self.syncView setSyncState:state];
 
                           if (state == DWSyncModelState_SyncDone) {
-                              [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                                                       selector:@selector(showSyncView)
-                                                                         object:nil];
-
                               [self hideSyncView];
                           }
                           else {
-                              if (self.syncView.hidden) {
-                                  [self performSelector:@selector(showSyncView)
-                                             withObject:nil
-                                             afterDelay:SYNCVIEW_SHOW_DELAY];
-                              }
+                              [self showSyncView];
                           }
                       }];
 
@@ -138,11 +128,6 @@ static NSTimeInterval const SYNCVIEW_SHOW_DELAY = 1.0;
 - (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
                  receiveButtonAction:(UIButton *)sender {
     [self.delegate homeHeaderView:self receiveButtonAction:sender];
-}
-
-- (void)balancePayReceiveButtonsView:(DWBalancePayReceiveButtonsView *)view
-                 balanceButtonAction:(UIControl *)sender {
-    [self.delegate homeHeaderView:self balanceButtonAction:sender];
 }
 
 #pragma mark - DWShortcutsViewDelegate

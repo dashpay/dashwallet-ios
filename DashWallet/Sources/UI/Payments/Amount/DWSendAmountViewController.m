@@ -34,14 +34,14 @@ NS_ASSUME_NONNULL_BEGIN
     return controller;
 }
 
-+ (NSString *)actionButtonTitle {
-    return NSLocalizedString(@"Pay", nil);
+- (NSString *)actionButtonTitle {
+    return NSLocalizedString(@"Send", nil);
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Pay", nil);
+    self.title = NSLocalizedString(@"Send", nil);
 }
 
 #pragma mark - Actions

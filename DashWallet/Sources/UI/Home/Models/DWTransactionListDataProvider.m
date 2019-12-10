@@ -202,31 +202,35 @@ static NSString *TxDateFormat(NSString *template) {
     const uint32_t blockHeight = [self blockHeight];
     const BOOL instantSendReceived = transaction.instantSendReceived;
     const BOOL processingInstantSend = transaction.hasUnverifiedInstantSendLock;
+    const BOOL confirmed = transaction.confirmed;
     uint32_t confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1;
     if (confirms == 0 && ![account transactionIsValid:transaction]) {
         dataItem.stateText = NSLocalizedString(@"Invalid", nil);
         dataItem.stateTintColor = [UIColor dw_redColor];
     }
-    else if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Processing", nil);
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if ([account transactionOutputsAreLocked:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Locked", nil);
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
-    }
-    else if (!instantSendReceived && confirms < 6) {
-        if (confirms == 0 && processingInstantSend) {
+    else if (transactionDirection == DSTransactionDirection_Received) {
+        if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
+            dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
+        }
+        else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
             dataItem.stateText = NSLocalizedString(@"Processing", nil);
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
-        else {
-            dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+        else if ([account transactionOutputsAreLocked:transaction]) {
+            dataItem.stateText = NSLocalizedString(@"Locked", nil);
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
-        dataItem.stateTintColor = [UIColor dw_orangeColor];
+        else if (!instantSendReceived && !confirmed) {
+            NSTimeInterval transactionAge = [NSDate timeIntervalSince1970] - transaction.timestamp; //we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
+            if (confirms == 0 && (processingInstantSend || transactionAge < 1.0)) {
+                dataItem.stateText = NSLocalizedString(@"Processing", nil);
+            }
+            else {
+                dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+            }
+            dataItem.stateTintColor = [UIColor dw_orangeColor];
+        }
     }
 
     return dataItem;

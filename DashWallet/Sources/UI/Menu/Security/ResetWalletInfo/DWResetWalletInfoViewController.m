@@ -68,7 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWRecoverViewControllerDelegate
 
-- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller {
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
+                               recoverCommand:(nonnull DWRecoverWalletCommand *)recoverCommand {
     NSAssert(NO, @"Inconsistent state");
 }
 

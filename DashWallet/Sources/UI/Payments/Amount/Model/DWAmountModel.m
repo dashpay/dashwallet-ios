@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
             }
             case DWAmountInputIntent_Send: {
                 NSParameterAssert(sendingDestination);
-                _actionButtonTitle = NSLocalizedString(@"Pay", nil);
+                _actionButtonTitle = NSLocalizedString(@"Send", nil);
                 _sendingOptions = [[DWAmountSendingOptionsModel alloc]
                     initWithSendingDestination:sendingDestination
                                 paymentDetails:paymentDetails];
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unlock {
     const BOOL biometricsEnabled = [DWGlobalOptions sharedInstance].biometricAuthEnabled;
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
-                                                          andTouchId:biometricsEnabled
+                                        usingBiometricAuthentication:biometricsEnabled
                                                       alertIfLockout:YES
                                                           completion:^(BOOL authenticated, BOOL cancelled) {
                                                               self.locked = !authenticated;
@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         [authManager authenticateWithPrompt:nil
-                                 andTouchId:YES
+               usingBiometricAuthentication:YES
                              alertIfLockout:YES
                                  completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
                                      if (authenticatedOrSuccess) {

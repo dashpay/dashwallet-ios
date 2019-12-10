@@ -32,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
     placeholderText:(nullable NSString *)placeholderText;
 
+- (void)setSections:(nullable NSArray<DWFormSectionModel *> *)sections
+     placeholderText:(nullable NSString *)placeholderText
+    shouldReloadData:(BOOL)shouldReloadData;
+
+- (void)registerCustomCellModelClass:(Class)cellModelClass forCellClass:(Class)cellClass;
+
 @end
 
 NS_ASSUME_NONNULL_END

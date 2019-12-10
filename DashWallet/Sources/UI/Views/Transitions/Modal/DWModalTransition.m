@@ -40,6 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (BOOL)interactiveTransitionAllowed {
+    return self.interactiveTransition.interactiveTransitionAllowed;
+}
+
+- (void)setInteractiveTransitionAllowed:(BOOL)interactiveTransitionAllowed {
+    self.interactiveTransition.interactiveTransitionAllowed = interactiveTransitionAllowed;
+}
+
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (nullable id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {

@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
+#import <CloudInAppMessaging/CloudInAppMessaging.h>
 
 #import "DWAppRootViewController.h"
 #import "DWDataMigrationManager.h"
@@ -30,10 +31,9 @@
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
 
-// TODO: <redesign> re-enable Watch App
-//#ifndef IGNORE_WATCH_TARGET
-//#import "DWPhoneWCSessionManager.h"
-//#endif /* IGNORE_WATCH_TARGET */
+#ifndef IGNORE_WATCH_TARGET
+#import "DWPhoneWCSessionManager.h"
+#endif /* IGNORE_WATCH_TARGET */
 
 #if DASH_TESTNET
 #pragma message "testnet build"
@@ -95,6 +95,8 @@ NS_ASSUME_NONNULL_BEGIN
                                              selector:@selector(dsApplicationTerminationRequestNotification:)
                                                  name:DSApplicationTerminationRequestNotification
                                                object:nil];
+    
+    [CLMCloudInAppMessaging setupWithCloudKitContainerIdentifier:@"iCloud.org.dash.dashwallet"];
     
     self.window = [[DWWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor blackColor];
@@ -263,10 +265,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     // TODO_outdated: implement importing of private keys split with shamir's secret sharing:
     //      https://github.com/cetuscetus/btctool/blob/bip/bip-xxxx.mediawiki
 
-    // TODO: <redesign> Watch App
-//#ifndef IGNORE_WATCH_TARGET
-//    [DWPhoneWCSessionManager sharedInstance];
-//#endif
+#ifndef IGNORE_WATCH_TARGET
+    [DWPhoneWCSessionManager sharedInstance];
+#endif
     
     [DSShapeshiftManager sharedInstance];
 
