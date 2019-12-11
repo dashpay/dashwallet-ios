@@ -121,6 +121,15 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 }
 
+- (void)handleFile:(NSData *)file {
+    if (self.lockController) {
+        [self.lockController handleFile:file];
+    }
+    else {
+        [self.mainController handleFile:file];
+    }
+}
+
 #pragma mark - Life Cycle
 
 - (void)viewDidLoad {

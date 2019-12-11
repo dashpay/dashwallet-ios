@@ -101,6 +101,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self.paymentProcessor processPaymentInput:paymentInput];
 }
 
+- (void)handleFile:(NSData *)file {
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processFile:file];
+}
+
 - (void)payViewControllerDidShowPaymentResult {
     // to be overriden
 }

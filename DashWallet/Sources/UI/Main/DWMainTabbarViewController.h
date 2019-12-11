@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performScanQRCodeAction;
 - (void)performPayToURL:(NSURL *)url;
 
+- (void)handleFile:(NSData *)file;
+
 + (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
 
 @end

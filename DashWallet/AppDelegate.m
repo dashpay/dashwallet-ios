@@ -235,15 +235,19 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-    // TODO: <redesign> impl
-//    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
-//        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
-//
-//        if (file.length > 0) {
-//            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
-//                                                              userInfo:@{@"file":file}];
-//        }
-//    }
+    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
+        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
+
+        if (file.length > 0) {
+            DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
+            if ([rootController isKindOfClass:DWAppRootViewController.class]) {
+                [rootController handleFile:file];
+            }
+            else {
+                NSAssert(NO, @"%@ can't handle file", self.window.rootViewController);
+            }
+        }
+    }
     
     [[DashSync sharedSyncController] setupDashSyncOnce];
     
