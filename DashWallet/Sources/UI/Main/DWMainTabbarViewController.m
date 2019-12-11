@@ -84,6 +84,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self.homeController performScanQRCodeAction];
 }
 
+- (void)performPayToURL:(NSURL *)url {
+    [self switchToViewController:self.homeNavigationController];
+    [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
+    [self.homeController performPayToURL:url];
+}
+
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {

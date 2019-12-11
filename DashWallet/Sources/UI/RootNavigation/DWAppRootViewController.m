@@ -17,6 +17,8 @@
 
 #import "DWAppRootViewController.h"
 
+#import <DashSync/UIWindow+DSUtils.h>
+
 #import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
@@ -25,6 +27,8 @@
 #import "DWSetupViewController.h"
 #import "DWUIKit.h"
 #import "DWURLParser.h"
+#import "DWURLRequestHandler.h"
+#import "DWUpholdAuthURLNotification.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -66,8 +70,25 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (void)handleURL:(NSURL *)url {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
     DWURLAction *action = [DWURLParser actionForURL:url];
     if (!action) {
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:NSLocalizedString(@"Unsupported URL", nil)
+                             message:url.absoluteString
+                      preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction
+            actionWithTitle:NSLocalizedString(@"OK", nil)
+                      style:UIAlertActionStyleCancel
+                    handler:nil];
+
+        [alert addAction:okAction];
+
+        UIApplication *application = [UIApplication sharedApplication];
+        UIViewController *presentingController = [application.keyWindow ds_presentingViewController];
+        [presentingController presentViewController:alert animated:YES completion:nil];
+
         return;
     }
 
@@ -78,6 +99,25 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         else {
             [self.mainController performScanQRCodeAction];
         }
+    }
+    else if ([action isKindOfClass:DWURLUpholdAction.class]) {
+        NSURL *url = [(DWURLUpholdAction *)action url];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DWUpholdAuthURLNotification object:url];
+    }
+    else if ([action isKindOfClass:DWURLRequestAction.class]) {
+        [DWURLRequestHandler handleURLRequest:(DWURLRequestAction *)action];
+    }
+    else if ([action isKindOfClass:DWURLPayAction.class]) {
+        NSURL *paymentURL = [(DWURLPayAction *)action paymentURL];
+        if (self.lockController) {
+            [self.lockController performPayToURL:paymentURL];
+        }
+        else {
+            [self.mainController performPayToURL:paymentURL];
+        }
+    }
+    else {
+        NSAssert(NO, @"Unhandled action", action);
     }
 }
 

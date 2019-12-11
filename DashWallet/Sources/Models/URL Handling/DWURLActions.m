@@ -15,42 +15,45 @@
 //  limitations under the License.
 //
 
-#import "DWURLParser.h"
+#import "DWURLActions.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-#pragma mark - Actions
 
 @implementation DWURLAction
 @end
 
+//
+
+@implementation DWURLUpholdAction
+@end
+
+//
+
 @implementation DWURLScanQRAction
 @end
 
-#pragma mark - Parser
+//
 
-@implementation DWURLParser
+@implementation DWURLRequestAction
 
-+ (BOOL)canHandleURL:(NSURL *)url {
-    if (!url) {
-        return NO;
+- (DWURLRequestActionType)type {
+    NSAssert(self.request != nil, @"Type is not available. Action is not configured");
+
+    if ([self.request isEqualToString:@"masterPublicKey"]) {
+        return DWURLRequestActionType_MasterPublicKey;
+    }
+    else if ([self.request isEqualToString:@"address"]) {
+        return DWURLRequestActionType_Address;
     }
 
-    return [url.scheme isEqual:@"dash"] || [url.scheme isEqual:@"dashwallet"];
+    return DWURLRequestActionType_Unknown;
 }
 
-+ (nullable DWURLAction *)actionForURL:(NSURL *)url {
-    if ([url.scheme isEqual:@"dashwallet"]) {
-        if ([url.host isEqual:@"scanqr"] || [url.path isEqual:@"/scanqr"]) {
-            return [[DWURLScanQRAction alloc] init];
-        }
-    }
+@end
 
-    // TODO: <redesign> impl other URL types
+//
 
-    return nil;
-}
-
+@implementation DWURLPayAction
 @end
 
 NS_ASSUME_NONNULL_END

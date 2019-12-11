@@ -19,23 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#pragma mark - Actions
+@class DWURLRequestAction;
 
-@interface DWURLAction : NSObject
-@end
+@interface DWURLRequestHandler : NSObject
 
-@interface DWURLScanQRAction : DWURLAction
-@end
-
-#pragma mark - Parser
-
-@interface DWURLParser : NSObject
-
-+ (BOOL)canHandleURL:(NSURL *)url;
-
-+ (nullable DWURLAction *)actionForURL:(NSURL *)url;
++ (void)handleURLRequest:(DWURLRequestAction *)action;
 
 - (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

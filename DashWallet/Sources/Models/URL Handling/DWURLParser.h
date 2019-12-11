@@ -17,25 +17,19 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWURLActions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPayOptionModel;
-@class DWPaymentInput;
+@interface DWURLParser : NSObject
 
-@interface DWPayModel : NSObject
++ (BOOL)allowsURLHandling;
++ (BOOL)canHandleURL:(NSURL *)url;
 
-@property (readonly, copy, nonatomic) NSArray<DWPayOptionModel *> *options;
++ (nullable DWURLAction *)actionForURL:(NSURL *)url;
 
-@property (readonly, nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
-
-- (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
-
-- (void)startPasteboardIntervalObserving;
-- (void)stopPasteboardIntervalObserving;
-
-- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
-
-- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 

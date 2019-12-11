@@ -91,6 +91,17 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    DSPaymentRequest *request = [DSPaymentRequest requestWithURL:url onChain:chain];
+
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_URL];
+    paymentInput.request = request;
+
+    return paymentInput;
+}
+
+
 @end
 
 NS_ASSUME_NONNULL_END

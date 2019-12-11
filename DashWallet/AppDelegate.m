@@ -178,9 +178,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if (![DWURLParser allowsURLHandling]) {
+        return NO;
+    }
+    
     if (![DWURLParser canHandleURL:url]) {
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a dash URL", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
@@ -201,7 +205,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [rootController handleURL:url];
     }
     else {
-        NSAssert(NO, @"%@ is not supports handling URL: %@", self.window.rootViewController, url);
+        NSAssert(NO, @"%@ can't handle URL: %@", self.window.rootViewController, url);
     }
 
     return YES;

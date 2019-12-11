@@ -26,6 +26,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
     DWPaymentInputSource_Pasteboard,
     DWPaymentInputSource_ScanQR,
     DWPaymentInputSource_NFC,
+    DWPaymentInputSource_URL,
 };
 
 @interface DWPaymentInput : NSObject

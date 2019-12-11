@@ -606,7 +606,7 @@
 "None" = "None";
 
 /* No comment provided by engineer. */
-"Not a dash URL" = "Not a dash URL";
+"Not a Dash URL" = "Not a Dash URL";
 
 /* No comment provided by engineer. */
 "Not a valid dash address" = "Not a valid dash address";
@@ -1153,6 +1153,9 @@
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
+
+/* No comment provided by engineer. */
+"Unsupported URL" = "Unsupported URL";
 
 /* No comment provided by engineer. */
 "Unsupported url" = "Unsupported url";

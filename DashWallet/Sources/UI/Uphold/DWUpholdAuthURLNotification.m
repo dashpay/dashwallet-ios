@@ -15,28 +15,10 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWUpholdAuthURLNotification.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPayOptionModel;
-@class DWPaymentInput;
-
-@interface DWPayModel : NSObject
-
-@property (readonly, copy, nonatomic) NSArray<DWPayOptionModel *> *options;
-
-@property (readonly, nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
-
-- (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
-
-- (void)startPasteboardIntervalObserving;
-- (void)stopPasteboardIntervalObserving;
-
-- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
-
-- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
-
-@end
+NSString *const DWUpholdAuthURLNotification = @"DWUpholdAuthURLNotification";
 
 NS_ASSUME_NONNULL_END
