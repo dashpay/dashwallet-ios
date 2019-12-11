@@ -178,9 +178,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if (![DWURLParser allowsURLHandling]) {
+        return NO;
+    }
+    
     if (![DWURLParser canHandleURL:url]) {
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a dash URL", nil)
+                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
                                      message:url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
@@ -201,7 +205,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         [rootController handleURL:url];
     }
     else {
-        NSAssert(NO, @"%@ is not supports handling URL: %@", self.window.rootViewController, url);
+        NSAssert(NO, @"%@ can't handle URL: %@", self.window.rootViewController, url);
     }
 
     return YES;
@@ -231,15 +235,19 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-    // TODO: <redesign> impl
-//    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
-//        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
-//
-//        if (file.length > 0) {
-//            [[NSNotificationCenter defaultCenter] postNotificationName:BRFileNotification object:nil
-//                                                              userInfo:@{@"file":file}];
-//        }
-//    }
+    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
+        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
+
+        if (file.length > 0) {
+            DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
+            if ([rootController isKindOfClass:DWAppRootViewController.class]) {
+                [rootController handleFile:file];
+            }
+            else {
+                NSAssert(NO, @"%@ can't handle file", self.window.rootViewController);
+            }
+        }
+    }
     
     [[DashSync sharedSyncController] setupDashSyncOnce];
     

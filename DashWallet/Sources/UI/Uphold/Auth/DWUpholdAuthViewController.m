@@ -21,6 +21,7 @@
 #import <SafariServices/SafariServices.h>
 
 #import "DWAppDelegate.h"
+#import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
 
@@ -53,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didReceiveURLNotification:)
-                                                 name:BRURLNotification
+                                                 name:DWUpholdAuthURLNotification
                                                object:nil];
 }
 
@@ -105,7 +106,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)didReceiveURLNotification:(NSNotification *)n {
-    NSURL *url = n.userInfo[@"url"];
+    NSURL *url = (NSURL *)n.object;
+    NSParameterAssert(url);
+    if (!url) {
+        return;
+    }
+
     [self handleCallbackURL:url];
 }
 

@@ -32,7 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performScanQRCodeAction;
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
+- (void)performPayToURL:(NSURL *)url;
 
+- (void)handleFile:(NSData *)file;
 
 /// This method is called after presentation of payment result controller.
 - (void)payViewControllerDidShowPaymentResult;

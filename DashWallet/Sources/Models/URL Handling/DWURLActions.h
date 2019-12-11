@@ -19,23 +19,43 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPayOptionModel;
-@class DWPaymentInput;
+@interface DWURLAction : NSObject
+@end
 
-@interface DWPayModel : NSObject
+//
 
-@property (readonly, copy, nonatomic) NSArray<DWPayOptionModel *> *options;
+@interface DWURLUpholdAction : DWURLAction
 
-@property (readonly, nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
+@property (nonatomic, strong) NSURL *url;
 
-- (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
+@end
 
-- (void)startPasteboardIntervalObserving;
-- (void)stopPasteboardIntervalObserving;
+//
 
-- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
+@interface DWURLScanQRAction : DWURLAction
+@end
 
-- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
+//
+
+typedef NS_ENUM(NSUInteger, DWURLRequestActionType) {
+    DWURLRequestActionType_Unknown,
+    DWURLRequestActionType_MasterPublicKey,
+    DWURLRequestActionType_Address,
+};
+
+@interface DWURLRequestAction : DWURLAction
+
+@property (readonly, nonatomic, assign) DWURLRequestActionType type;
+@property (nonatomic, copy) NSString *sender;
+@property (nonatomic, copy) NSString *request;
+
+@end
+
+//
+
+@interface DWURLPayAction : DWURLAction
+
+@property (nonatomic, strong) NSURL *paymentURL;
 
 @end
 

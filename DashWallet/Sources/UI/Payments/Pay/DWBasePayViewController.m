@@ -94,6 +94,18 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)performPayToURL:(NSURL *)url {
+    DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
+
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processPaymentInput:paymentInput];
+}
+
+- (void)handleFile:(NSData *)file {
+    self.paymentProcessor = nil;
+    [self.paymentProcessor processFile:file];
+}
+
 - (void)payViewControllerDidShowPaymentResult {
     // to be overriden
 }

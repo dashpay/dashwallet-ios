@@ -108,6 +108,10 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
+    return [self.inputBuilder paymentInputWithURL:url];
+}
+
 #pragma mark - Notifications
 
 - (void)pasteboardObserverNotification {
