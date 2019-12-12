@@ -219,6 +219,8 @@
 		2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6523A11DFE006A2A59 /* DWURLActions.m */; };
 		2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */; };
 		2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6A23A15419006A2A59 /* DWUpholdAuthURLNotification.m */; };
+		2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */; };
+		2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
@@ -913,6 +915,9 @@
 		2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWURLRequestHandler.m; sourceTree = "<group>"; };
 		2A913E6923A15419006A2A59 /* DWUpholdAuthURLNotification.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAuthURLNotification.h; sourceTree = "<group>"; };
 		2A913E6A23A15419006A2A59 /* DWUpholdAuthURLNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAuthURLNotification.m; sourceTree = "<group>"; };
+		2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingViewController.h; sourceTree = "<group>"; };
+		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
+		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainTabbarViewController.m; sourceTree = "<group>"; };
@@ -1889,6 +1894,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2A913E6C23A26469006A2A59 /* Onboarding */,
 				2A7A7BAF2347917800451078 /* Menu */,
 				2A6300402328CCAC00827825 /* LockScreen */,
 				2A1B7D7E232151B800BA8C6A /* TxDetail */,
@@ -2395,6 +2401,16 @@
 				2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */,
 			);
 			path = "URL Handling";
+			sourceTree = "<group>";
+		};
+		2A913E6C23A26469006A2A59 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */,
+				2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */,
+				2A913E7023A2667E006A2A59 /* Onboarding.storyboard */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		2A9CEBA322E1C25700A50237 /* SecureWallet */ = {
@@ -3650,6 +3666,7 @@
 				2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */,
 				75D5F3DE191EC270004AB296 /* Main.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
+				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
@@ -4081,6 +4098,7 @@
 				2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
+				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
