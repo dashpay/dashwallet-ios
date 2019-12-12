@@ -918,6 +918,13 @@
 		2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWOnboardingViewController.h; sourceTree = "<group>"; };
 		2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingViewController.m; sourceTree = "<group>"; };
 		2A913E7023A2667E006A2A59 /* Onboarding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Onboarding.storyboard; sourceTree = "<group>"; };
+		2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceProtocol.h; sourceTree = "<group>"; };
+		2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSyncProtocol.h; sourceTree = "<group>"; };
+		2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDisplayModeProtocol.h; sourceTree = "<group>"; };
+		2A913E7823A2F575006A2A59 /* DWShortcutsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutsProtocol.h; sourceTree = "<group>"; };
+		2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSyncContainerProtocol.h; sourceTree = "<group>"; };
+		2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWHomeProtocol.h; sourceTree = "<group>"; };
+		2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRootProtocol.h; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainTabbarViewController.m; sourceTree = "<group>"; };
@@ -1817,10 +1824,11 @@
 		2A44311B22CC9B2C009BAF7F /* RootNavigation */ = {
 			isa = PBXGroup;
 			children = (
-				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
-				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
 				2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */,
 				2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */,
+				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
+				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
+				2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */,
 				2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */,
 			);
 			path = RootNavigation;
@@ -2413,6 +2421,19 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		2A913E7223A2EAEF006A2A59 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				2A913E7323A2EB0E006A2A59 /* DWBalanceProtocol.h */,
+				2A913E7A23A2F7ED006A2A59 /* DWHomeProtocol.h */,
+				2A913E7823A2F575006A2A59 /* DWShortcutsProtocol.h */,
+				2A913E7923A2F637006A2A59 /* DWSyncContainerProtocol.h */,
+				2A913E7623A2EF06006A2A59 /* DWSyncProtocol.h */,
+				2A913E7723A2F2B6006A2A59 /* DWTxDisplayModeProtocol.h */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
 		2A9CEBA322E1C25700A50237 /* SecureWallet */ = {
 			isa = PBXGroup;
 			children = (
@@ -2464,6 +2485,7 @@
 		2A9CEBB622E1FA0000A50237 /* Home */ = {
 			isa = PBXGroup;
 			children = (
+				2A913E7223A2EAEF006A2A59 /* Protocols */,
 				2A2CD6E522F46D1A008C7BC9 /* Models */,
 				2A307CB322E6FA7F00A18347 /* Views */,
 				2A9CEBB722E1FA1000A50237 /* DWHomeViewController.h */,

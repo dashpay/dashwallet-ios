@@ -18,9 +18,7 @@
 #import "DWHomeHeaderView.h"
 
 #import "DWBalancePayReceiveButtonsView.h"
-#import "DWHomeModel.h"
 #import "DWShortcutsView.h"
-#import "DWSyncModel.h"
 #import "DWSyncView.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -99,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)setModel:(nullable DWHomeModel *)model {
+- (void)setModel:(nullable id<DWBalanceProtocol, DWSyncContainerProtocol, DWShortcutsProtocol>)model {
     _model = model;
 
     self.balancePayReceiveButtonsView.model = model;

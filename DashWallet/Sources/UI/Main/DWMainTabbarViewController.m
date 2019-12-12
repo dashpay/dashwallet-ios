@@ -17,7 +17,6 @@
 
 #import "DWMainTabbarViewController.h"
 
-#import "DWHomeModel.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWNavigationController.h"
@@ -36,7 +35,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWWipeDelegate,
                                           DWMainMenuViewControllerDelegate>
 
-@property (nonatomic, strong) DWHomeModel *homeModel;
+@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
 
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 @property (nullable, nonatomic, strong) UIViewController *modalController;
@@ -54,7 +53,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @implementation DWMainTabbarViewController
 
-+ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel {
++ (instancetype)controllerWithHomeModel:(id<DWHomeProtocol>)homeModel {
     DWMainTabbarViewController *controller = [[DWMainTabbarViewController alloc] init];
     controller.homeModel = homeModel;
 
@@ -252,7 +251,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     self.tabBarView.userInteractionEnabled = NO;
     [self.tabBarView setPaymentsButtonOpened:YES];
 
-    DWHomeModel *homeModel = self.homeModel;
+    id<DWHomeProtocol> homeModel = self.homeModel;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
     DWPayModel *payModel = homeModel.payModel;

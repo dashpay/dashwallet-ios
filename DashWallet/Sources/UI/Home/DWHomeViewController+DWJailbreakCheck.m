@@ -19,7 +19,6 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWHomeModel.h"
 #import "DWNavigationController.h"
 #import "DWRecoverViewController.h"
 

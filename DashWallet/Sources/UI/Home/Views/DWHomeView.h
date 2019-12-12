@@ -17,11 +17,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWHomeProtocol.h"
 #import "DWShortcutsActionDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
 @class DWHomeView;
 @class DSTransaction;
 
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeView : UIView
 
-@property (nonatomic, strong) DWHomeModel *model;
+@property (nonatomic, strong) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeViewDelegate> delegate;
 @property (nullable, nonatomic, weak) id<DWShortcutsActionDelegate> shortcutsDelegate;
 

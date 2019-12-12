@@ -71,6 +71,14 @@ static BOOL IsJailbroken(void) {
 
 @implementation DWHomeModel
 
+@synthesize balanceDisplayOptions = _balanceDisplayOptions;
+@synthesize displayMode = _displayMode;
+@synthesize payModel = _payModel;
+@synthesize receiveModel = _receiveModel;
+@synthesize shortcutsModel = _shortcutsModel;
+@synthesize syncModel = _syncModel;
+@synthesize updatesObserver = _updatesObserver;
+
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -226,6 +234,12 @@ static BOOL IsJailbroken(void) {
     options.walletBackupReminderWasShown = YES;
 }
 
+- (void)forceStartSyncingActivity {
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel forceStartSyncingActivity];
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
@@ -235,7 +249,9 @@ static BOOL IsJailbroken(void) {
         [self connectIfNeeded];
     }
 
-    [self.syncModel reachabilityStatusDidChange];
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel reachabilityStatusDidChange];
 }
 
 - (void)walletBalanceDidChangeNotification {

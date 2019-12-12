@@ -17,12 +17,12 @@
 
 #import "DWBasePayViewController.h"
 
+#import "DWHomeProtocol.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeViewController;
-@class DWHomeModel;
 
 @protocol DWHomeViewControllerDelegate <NSObject>
 
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeViewController : DWBasePayViewController
 
-@property (strong, nonatomic) DWHomeModel *model;
+@property (strong, nonatomic) id<DWHomeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWHomeViewControllerDelegate, DWWipeDelegate> delegate;
 
 @end

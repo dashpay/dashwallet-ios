@@ -19,7 +19,6 @@
 
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
-#import "DWHomeModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN

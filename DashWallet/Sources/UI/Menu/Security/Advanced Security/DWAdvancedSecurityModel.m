@@ -143,8 +143,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Spending Confirmation
 
-// TODO: impl
-
 - (BOOL)spendingConfirmationEnabled {
     return ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
 }

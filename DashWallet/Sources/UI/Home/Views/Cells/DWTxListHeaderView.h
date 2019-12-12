@@ -17,7 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWHomeModel.h"
+#import "DWTxDisplayModeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWTxListHeaderView : UIView
 
-@property (nullable, strong, nonatomic) DWHomeModel *model;
+@property (nullable, strong, nonatomic) id<DWTxDisplayModeProtocol> model;
 @property (nullable, nonatomic, weak) id<DWTxListHeaderViewDelegate> delegate;
 
 @end

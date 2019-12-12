@@ -19,7 +19,6 @@
 
 #import <DashSync/UIWindow+DSUtils.h>
 
-#import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWNavigationController.h"
@@ -39,7 +38,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                        DWWipeDelegate,
                                        DWLockScreenViewControllerDelegate>
 
-@property (readonly, nonatomic, strong) DWRootModel *model;
+@property (readonly, nonatomic, strong) id<DWRootProtocol> model;
 @property (nullable, nonatomic, strong) UIViewController *currentController;
 
 @property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
@@ -56,9 +55,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @implementation DWAppRootViewController
 
 - (instancetype)init {
+    return [self initWithModel:[[DWRootModel alloc] init]];
+}
+
+- (instancetype)initWithModel:(id<DWRootProtocol>)model {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWRootModel alloc] init];
+        _model = model;
     }
     return self;
 }
@@ -313,7 +316,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (DWMainTabbarViewController *)mainController {
     if (_mainController == nil) {
-        DWHomeModel *homeModel = self.model.homeModel;
+        id<DWHomeProtocol> homeModel = self.model.homeModel;
         DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
         controller.delegate = self;
 
@@ -326,7 +329,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
     NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
 
-    DWHomeModel *homeModel = self.model.homeModel;
+    id<DWHomeProtocol> homeModel = self.model.homeModel;
     DWPayModel *payModel = homeModel.payModel;
     DWReceiveModel *receiveModel = homeModel.receiveModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];

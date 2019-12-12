@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWSyncProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSReachabilityManager;
@@ -27,17 +29,13 @@ extern NSString *const DWSyncStateChangedFromStateKey;
 
 extern float const DW_SYNCING_COMPLETED_PROGRESS;
 
-typedef NS_ENUM(NSUInteger, DWSyncModelState) {
-    DWSyncModelState_Syncing,
-    DWSyncModelState_SyncDone,
-    DWSyncModelState_SyncFailed,
-    DWSyncModelState_NoConnection,
-};
+@interface DWSyncModel : NSObject <DWSyncProtocol>
 
-@interface DWSyncModel : NSObject
-
+// DWSyncViewProtocol
 @property (readonly, nonatomic, assign) DWSyncModelState state;
 @property (readonly, nonatomic, assign) float progress;
+
+// Other
 
 - (void)reachabilityStatusDidChange;
 - (void)forceStartSyncingActivity;

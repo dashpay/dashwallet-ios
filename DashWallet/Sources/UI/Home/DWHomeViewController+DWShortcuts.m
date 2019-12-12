@@ -21,7 +21,6 @@
 
 #import "DWBackupInfoViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWHomeModel.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"

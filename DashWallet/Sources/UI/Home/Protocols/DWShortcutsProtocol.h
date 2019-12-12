@@ -17,11 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModel : NSObject <DWRootProtocol>
+@class DWShortcutsModel;
+
+@protocol DWShortcutsProtocol <NSObject>
+
+@property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
 
 @end
 

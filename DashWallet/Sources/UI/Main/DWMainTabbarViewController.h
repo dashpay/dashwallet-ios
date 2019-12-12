@@ -17,6 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWHomeProtocol.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -32,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)handleFile:(NSData *)file;
 
-+ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
++ (instancetype)controllerWithHomeModel:(id<DWHomeProtocol>)homeModel;
 
 @end
 

@@ -17,11 +17,15 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModel : NSObject <DWRootProtocol>
+@class DWBalanceModel;
+@class DWBalanceDisplayOptions;
+
+@protocol DWBalanceProtocol <NSObject>
+
+@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
+@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
 
 @end
 

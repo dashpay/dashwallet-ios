@@ -17,11 +17,15 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
+#import "DWSyncProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModel : NSObject <DWRootProtocol>
+@protocol DWSyncContainerProtocol <NSObject>
+
+@property (readonly, nonatomic, strong) id<DWSyncProtocol> syncModel;
+
+- (void)retrySyncing;
 
 @end
 

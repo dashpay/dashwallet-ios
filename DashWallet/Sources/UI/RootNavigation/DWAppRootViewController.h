@@ -17,11 +17,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWRootProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAppRootViewController : UIViewController
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithModel:(id<DWRootProtocol>)model NS_DESIGNATED_INITIALIZER;
 
 - (void)setLaunchingAsDeferredController;
 

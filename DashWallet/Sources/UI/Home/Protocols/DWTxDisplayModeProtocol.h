@@ -17,11 +17,18 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModel : NSObject <DWRootProtocol>
+typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
+    DWHomeTxDisplayMode_All,
+    DWHomeTxDisplayMode_Received,
+    DWHomeTxDisplayMode_Sent,
+    DWHomeTxDisplayMode_Rewards,
+};
+
+@protocol DWTxDisplayModeProtocol <NSObject>
+
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 

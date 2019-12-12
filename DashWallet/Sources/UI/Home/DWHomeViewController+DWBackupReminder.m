@@ -17,7 +17,6 @@
 
 #import "DWHomeViewController+DWBackupReminder.h"
 
-#import "DWHomeModel.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWNavigationController.h"
 #import "DWSecureWalletInfoViewController.h"

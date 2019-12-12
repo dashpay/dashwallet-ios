@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.filterButton.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleFootnote];
 }
 
-- (void)setModel:(nullable DWHomeModel *)model {
+- (void)setModel:(nullable id<DWTxDisplayModeProtocol>)model {
     _model = model;
 
     UIButton *button = self.filterButton;

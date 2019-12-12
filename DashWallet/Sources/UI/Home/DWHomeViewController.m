@@ -19,7 +19,6 @@
 
 #import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
-#import "DWHomeModel.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -68,8 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                  name:DWDeviceDidShakeNotification
                                                object:nil];
 
-    // TODO: impl migration stuff from protectedViewDidAppear of DWRootViewController
-    // TODO: check if wallet is watchOnly and show info about it
+    // TODO: <redesign> impl migration stuff from protectedViewDidAppear of DWRootViewController
+    // TODO: <redesign> check if wallet is watchOnly and show info about it
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

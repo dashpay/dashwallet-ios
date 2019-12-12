@@ -17,11 +17,19 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModel : NSObject <DWRootProtocol>
+typedef NS_ENUM(NSUInteger, DWSyncModelState) {
+    DWSyncModelState_Syncing,
+    DWSyncModelState_SyncDone,
+    DWSyncModelState_SyncFailed,
+    DWSyncModelState_NoConnection,
+};
+
+@protocol DWSyncProtocol <NSObject>
+
+@property (readonly, nonatomic, assign) DWSyncModelState state;
+@property (readonly, nonatomic, assign) float progress;
 
 @end
 
