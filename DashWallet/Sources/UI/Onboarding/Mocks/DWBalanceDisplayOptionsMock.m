@@ -15,28 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWSyncProtocol.h"
+#import "DWBalanceDisplayOptionsMock.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
+@implementation DWBalanceDisplayOptionsMock
 
-extern NSString *const DWSyncStateChangedNotification;
-// `NSNumber` of previous state in notification `userInfo` dictionary
-extern NSString *const DWSyncStateChangedFromStateKey;
+@synthesize balanceHidden = _balanceHidden;
 
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _balanceHidden = NO;
+    }
+    return self;
+}
 
-@interface DWSyncModel : NSObject <DWSyncProtocol>
-
-- (void)reachabilityStatusDidChange;
-- (void)forceStartSyncingActivity;
-
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (void)hideBalanceIfNeeded {
+}
 
 @end
 

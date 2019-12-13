@@ -17,7 +17,7 @@
 
 #import "DWBalancePayReceiveButtonsView.h"
 
-#import "DWBalanceDisplayOptions.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBalanceModel.h"
 #import "DWUIKit.h"
 
@@ -148,7 +148,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.3;
 }
 
 - (IBAction)balanceButtonAction:(UIControl *)sender {
-    DWBalanceDisplayOptions *balanceDisplayOptions = self.model.balanceDisplayOptions;
+    id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions = self.model.balanceDisplayOptions;
     balanceDisplayOptions.balanceHidden = !balanceDisplayOptions.balanceHidden;
 }
 

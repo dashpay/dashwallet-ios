@@ -17,26 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWSyncProtocol.h"
+#import "DWHomeProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
-
-extern NSString *const DWSyncStateChangedNotification;
-// `NSNumber` of previous state in notification `userInfo` dictionary
-extern NSString *const DWSyncStateChangedFromStateKey;
-
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
-
-@interface DWSyncModel : NSObject <DWSyncProtocol>
-
-- (void)reachabilityStatusDidChange;
-- (void)forceStartSyncingActivity;
-
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+@interface DWHomeModelMock : NSObject <DWHomeProtocol>
 
 @end
 

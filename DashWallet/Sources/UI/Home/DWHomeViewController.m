@@ -18,7 +18,7 @@
 #import "DWHomeViewController.h"
 
 #import "AppDelegate.h"
-#import "DWBalanceDisplayOptions.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"

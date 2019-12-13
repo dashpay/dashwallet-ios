@@ -15,28 +15,47 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWRootModelMock.h"
 
-#import "DWSyncProtocol.h"
+#import "DWHomeModelMock.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
+@interface DWRootModelMock ()
 
-extern NSString *const DWSyncStateChangedNotification;
-// `NSNumber` of previous state in notification `userInfo` dictionary
-extern NSString *const DWSyncStateChangedFromStateKey;
+@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
 
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
+@end
 
-@interface DWSyncModel : NSObject <DWSyncProtocol>
+@implementation DWRootModelMock
 
-- (void)reachabilityStatusDidChange;
-- (void)forceStartSyncingActivity;
+@synthesize currentNetworkDidChangeBlock;
 
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _homeModel = [[DWHomeModelMock alloc] init];
+    }
+    return self;
+}
 
-- (instancetype)init NS_UNAVAILABLE;
+- (BOOL)hasAWallet {
+    return YES;
+}
+
+- (BOOL)walletOperationAllowed {
+    return YES;
+}
+
+- (void)applicationDidEnterBackground {
+}
+
+- (BOOL)shouldShowLockScreen {
+    return NO;
+}
+
+- (void)setupDidFinished {
+}
 
 @end
 

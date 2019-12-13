@@ -15,28 +15,19 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWSyncProtocol.h"
+#import "DWSyncModelMock.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
+@implementation DWSyncModelMock
 
-extern NSString *const DWSyncStateChangedNotification;
-// `NSNumber` of previous state in notification `userInfo` dictionary
-extern NSString *const DWSyncStateChangedFromStateKey;
+- (DWSyncModelState)state {
+    return DWSyncModelState_SyncDone;
+}
 
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
-
-@interface DWSyncModel : NSObject <DWSyncProtocol>
-
-- (void)reachabilityStatusDidChange;
-- (void)forceStartSyncingActivity;
-
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (float)progress {
+    return 1.0;
+}
 
 @end
 

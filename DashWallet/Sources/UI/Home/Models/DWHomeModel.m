@@ -284,7 +284,6 @@ static BOOL IsJailbroken(void) {
 
 #pragma mark - Private
 
-
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {
         NSArray<DSTransaction *> *transactions = [self filterTransactions:self.allDataSource.items

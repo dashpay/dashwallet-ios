@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMainMenuViewController () <DWMainMenuContentViewDelegate, DWToolsMenuViewControllerDelegate>
 
 @property (nonatomic, strong) DWMainMenuContentView *view;
-@property (nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
+@property (nonatomic, strong) id<DWBalanceDisplayOptionsProtocol> balanceDisplayOptions;
 
 @end
 
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @dynamic view;
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions {
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _balanceDisplayOptions = balanceDisplayOptions;

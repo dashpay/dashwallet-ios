@@ -17,26 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWSyncProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSReachabilityManager;
+@protocol DWBalanceDisplayOptionsProtocol <NSObject>
 
-extern NSString *const DWSyncStateChangedNotification;
-// `NSNumber` of previous state in notification `userInfo` dictionary
-extern NSString *const DWSyncStateChangedFromStateKey;
+@property (nonatomic, assign) BOOL balanceHidden;
 
-extern float const DW_SYNCING_COMPLETED_PROGRESS;
-
-@interface DWSyncModel : NSObject <DWSyncProtocol>
-
-- (void)reachabilityStatusDidChange;
-- (void)forceStartSyncingActivity;
-
-- (instancetype)initWithReachability:(DSReachabilityManager *)reachability;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (void)hideBalanceIfNeeded;
 
 @end
 

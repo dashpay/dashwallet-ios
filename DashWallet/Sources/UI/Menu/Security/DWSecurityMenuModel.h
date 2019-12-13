@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWBalanceDisplayOptions;
+@protocol DWBalanceDisplayOptionsProtocol;
 
 @interface DWSecurityMenuModel : NSObject
 
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBiometricsEnabled:(BOOL)enabled completion:(void (^)(BOOL success))completion;
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
