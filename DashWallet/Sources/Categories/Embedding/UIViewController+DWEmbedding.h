@@ -15,29 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWOnboardingViewController;
+@interface UIViewController (DWEmbedding)
 
-@protocol DWOnboardingViewControllerDelegate <NSObject>
+- (void)dw_embedChild:(UIViewController *)newChild;
+- (void)dw_embedChild:(UIViewController *)newChild inContainer:(nullable UIView *)container;
 
-- (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller;
-
-@end
-
-@interface DWOnboardingViewController : DWBaseViewController
-
-@property (nullable, nonatomic, weak) id<DWOnboardingViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (void)dw_detachFromParent;
 
 @end
 

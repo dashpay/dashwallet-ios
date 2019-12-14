@@ -15,29 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import "DWContainerViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWOnboardingViewController;
+@interface DWInitialViewController : DWContainerViewController
 
-@protocol DWOnboardingViewControllerDelegate <NSObject>
+- (void)setLaunchingAsDeferredController;
 
-- (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller;
-
-@end
-
-@interface DWOnboardingViewController : DWBaseViewController
-
-@property (nullable, nonatomic, weak) id<DWOnboardingViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (void)handleURL:(NSURL *)url;
+- (void)handleFile:(NSData *)file;
 
 @end
 

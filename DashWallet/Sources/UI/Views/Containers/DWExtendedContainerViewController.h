@@ -15,29 +15,16 @@
 //  limitations under the License.
 //
 
-#import "DWBaseViewController.h"
+#import "DWContainerViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWOnboardingViewController;
+@interface DWExtendedContainerViewController : DWContainerViewController
 
-@protocol DWOnboardingViewControllerDelegate <NSObject>
+@property (readonly, nullable, nonatomic, strong) UIViewController *modalController;
 
-- (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller;
-
-@end
-
-@interface DWOnboardingViewController : DWBaseViewController
-
-@property (nullable, nonatomic, weak) id<DWOnboardingViewControllerDelegate> delegate;
-
-+ (instancetype)controller;
-
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(nullable NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (void)displayModalViewController:(UIViewController *)modalController completion:(void (^)(void))completion;
+- (void)hideModalControllerCompletion:(void (^)(void))completion;
 
 @end
 

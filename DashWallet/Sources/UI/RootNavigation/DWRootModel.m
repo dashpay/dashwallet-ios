@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
     return (interval > globalOptions.autoLockAppInterval);
 }
 
-- (void)setupDidFinished {
+- (void)setupDidFinish {
     [self.homeModel.shortcutsModel reloadShortcuts];
 }
 

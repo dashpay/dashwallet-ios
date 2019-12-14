@@ -31,7 +31,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const TRANSITION_DURATION = 0.35;
 static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
@@ -39,7 +38,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                        DWLockScreenViewControllerDelegate>
 
 @property (readonly, nonatomic, strong) id<DWRootProtocol> model;
-@property (nullable, nonatomic, strong) UIViewController *currentController;
 
 @property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
 
@@ -192,16 +190,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         strongSelf->_mainController = nil;
 
         UIViewController *controller = [strongSelf mainController];
-        [strongSelf performTransitionToViewController:controller];
+        [strongSelf transitionToViewController:controller
+                                      withType:DWContainerTransitionType_ScaleAndCrossDissolve];
     };
-}
-
-- (nullable UIViewController *)childViewControllerForStatusBarStyle {
-    return self.currentController;
-}
-
-- (nullable UIViewController *)childViewControllerForStatusBarHidden {
-    return self.currentController;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -227,17 +218,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    [self.model setupDidFinished];
+    [self.model setupDidFinish];
 
     UIViewController *mainController = self.mainController;
-    [self performTransitionToViewController:mainController];
+    [self transitionToViewController:mainController
+                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
     UIViewController *setupController = [self setupController];
-    [self performTransitionToViewController:setupController];
+    [self transitionToViewController:setupController
+                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+
 
     // reset main controller stack
     _mainController = nil;
@@ -348,64 +342,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
-}
-
-- (void)displayViewController:(UIViewController *)controller {
-    NSParameterAssert(controller);
-
-    UIView *contentView = self.view;
-    UIView *childView = controller.view;
-
-    [self addChildViewController:controller];
-
-    childView.frame = contentView.bounds;
-    childView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:childView];
-
-    [controller didMoveToParentViewController:self];
-
-    self.currentController = controller;
-
-    [self setNeedsStatusBarAppearanceUpdate];
-}
-
-- (void)performTransitionToViewController:(UIViewController *)toViewController {
-    UIViewController *fromViewController = self.childViewControllers.firstObject;
-    NSAssert(fromViewController, @"To perform transition there should be child view controller. Use displayViewController: instead");
-
-    UIView *toView = toViewController.view;
-    UIView *fromView = fromViewController.view;
-    UIView *contentView = self.view;
-
-    self.currentController = toViewController;
-
-    [fromViewController willMoveToParentViewController:nil];
-    [self addChildViewController:toViewController];
-
-    toView.frame = contentView.bounds;
-    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:toView];
-
-    toView.alpha = 0.0;
-    toView.transform = CGAffineTransformMakeScale(1.25, 1.25);
-
-    [UIView animateWithDuration:TRANSITION_DURATION
-        delay:0.0
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
-        animations:^{
-            toView.alpha = 1.0;
-            toView.transform = CGAffineTransformIdentity;
-            fromView.alpha = 0.0;
-
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-        completion:^(BOOL finished) {
-            [fromView removeFromSuperview];
-            [fromViewController removeFromParentViewController];
-            [toViewController didMoveToParentViewController:self];
-        }];
 }
 
 @end

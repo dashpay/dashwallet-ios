@@ -19,9 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Deprecated, use +DWEmbedding.h
+/// (This category is used in the Uphold Screens)
 @interface UIViewController (DWChildControllers)
-
-@property (readonly, nullable, strong, nonatomic) UIViewController *dw_currentChildController;
 
 - (void)dw_displayViewController:(UIViewController *)controller;
 - (void)dw_performTransitionToViewController:(UIViewController *)toViewController

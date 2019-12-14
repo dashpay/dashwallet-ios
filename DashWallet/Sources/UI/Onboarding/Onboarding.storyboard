@@ -19,28 +19,38 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image_bg" translatesAutoresizingMaskIntoConstraints="NO" id="dxp-Sr-wRy">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                             </imageView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f1M-Np-sEe">
-                                <rect key="frame" x="87" y="384" width="240" height="128"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <viewLayoutGuide key="contentLayoutGuide" id="DL3-Df-DR2"/>
-                                <viewLayoutGuide key="frameLayoutGuide" id="4VV-FW-w0R"/>
-                            </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RB2-Fy-ILD">
                                 <rect key="frame" x="184" y="832" width="46" height="30"/>
                                 <state key="normal" title="Button"/>
+                                <connections>
+                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="xlR-po-XgS"/>
+                                </connections>
                             </button>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TZ0-fC-5QE" userLabel="Mini View">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="TZ0-fC-5QE" secondAttribute="trailing" id="2J1-OD-FGJ"/>
                             <constraint firstItem="RB2-Fy-ILD" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="B5Q-si-WEI"/>
                             <constraint firstAttribute="bottomMargin" secondItem="RB2-Fy-ILD" secondAttribute="bottom" id="LTH-Of-1Wq"/>
                             <constraint firstAttribute="trailing" secondItem="dxp-Sr-wRy" secondAttribute="trailing" id="R6O-0T-zTN"/>
+                            <constraint firstItem="TZ0-fC-5QE" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="em4-GA-e3M"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="fyt-Fw-ype"/>
+                            <constraint firstItem="TZ0-fC-5QE" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="jNw-4Z-JdX"/>
                             <constraint firstAttribute="bottom" secondItem="dxp-Sr-wRy" secondAttribute="bottom" id="prC-pl-4wC"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="rdM-Iq-JLX"/>
+                            <constraint firstAttribute="bottom" secondItem="TZ0-fC-5QE" secondAttribute="bottom" id="ztv-do-KPo"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Pqj-mv-iun"/>
                     </view>
+                    <connections>
+                        <outlet property="contentBottomConstraint" destination="LTH-Of-1Wq" id="Tn9-wu-2cn"/>
+                        <outlet property="miniWalletView" destination="TZ0-fC-5QE" id="n4P-aZ-MHX"/>
+                        <outlet property="skipButton" destination="RB2-Fy-ILD" id="HoB-wj-CM5"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hl3-0b-DB1" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

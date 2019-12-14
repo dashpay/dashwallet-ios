@@ -21,7 +21,7 @@
 #import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
 
-#import "DWAppRootViewController.h"
+#import "DWInitialViewController.h"
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
 #import "DWStartModel.h"
@@ -200,12 +200,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         return NO;
     }
     
-    DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
-    if ([rootController isKindOfClass:DWAppRootViewController.class]) {
-        [rootController handleURL:url];
+    DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
+    if ([controller isKindOfClass:DWInitialViewController.class]) {
+        [controller handleURL:url];
     }
     else {
-        NSAssert(NO, @"%@ can't handle URL: %@", self.window.rootViewController, url);
+        // TODO: defer action when start controller finish
+        DSLogVerbose(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
 
     return YES;
@@ -225,11 +226,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions wasDeferred:(BOOL)wasDeferred {
     [[DWCrashReporter sharedInstance] enableCrashReporter];
     
-    DWAppRootViewController *rootController = [[DWAppRootViewController alloc] init];
+    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
     if (wasDeferred) {
-        [rootController setLaunchingAsDeferredController];
+        [controller setLaunchingAsDeferredController];
     }
-    self.window.rootViewController = rootController;
+    self.window.rootViewController = controller;
     
     [self setupDashWalletComponentsWithOptions:launchOptions];
 }
@@ -239,12 +240,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
 
         if (file.length > 0) {
-            DWAppRootViewController *rootController = (DWAppRootViewController *)self.window.rootViewController;
-            if ([rootController isKindOfClass:DWAppRootViewController.class]) {
-                [rootController handleFile:file];
+            DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
+            if ([controller isKindOfClass:DWInitialViewController.class]) {
+                [controller handleFile:file];
             }
             else {
-                NSAssert(NO, @"%@ can't handle file", self.window.rootViewController);
+                // TODO: defer action when start controller finish
+                DSLogVerbose(@"Ignoring handle file. Root controller hasn't been set up yet");
             }
         }
     }

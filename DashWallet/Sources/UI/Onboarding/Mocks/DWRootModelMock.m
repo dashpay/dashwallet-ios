@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
-- (void)setupDidFinished {
+- (void)setupDidFinish {
 }
 
 @end

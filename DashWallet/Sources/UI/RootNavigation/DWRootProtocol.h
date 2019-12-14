@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationDidEnterBackground;
 - (BOOL)shouldShowLockScreen;
 
-- (void)setupDidFinished;
+- (void)setupDidFinish;
 
 @end
 

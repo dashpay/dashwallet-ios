@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWExtendedContainerViewController.h"
 
 #import "DWHomeProtocol.h"
 #import "DWWipeDelegate.h"
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeModel;
 
-@interface DWMainTabbarViewController : UIViewController
+@interface DWMainTabbarViewController : DWExtendedContainerViewController
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
 

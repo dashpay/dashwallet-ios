@@ -17,28 +17,70 @@
 
 #import "DWOnboardingViewController.h"
 
+#import "DWAppRootViewController.h"
+#import "DWRootModelMock.h"
+#import "UIViewController+DWEmbedding.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWOnboardingViewController ()
+
+@property (strong, nonatomic) IBOutlet UIView *miniWalletView;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
+@property (strong, nonatomic) IBOutlet UIButton *skipButton;
+
+@property (nonatomic, strong) DWAppRootViewController *rootController;
 
 @end
 
 @implementation DWOnboardingViewController
 
++ (instancetype)controller {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Onboarding" bundle:nil];
+    DWOnboardingViewController *controller = [storyboard instantiateInitialViewController];
+
+    return controller;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+
+    [self setupView];
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
 }
-*/
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
+    // There is an issue with layout margins of "minified" root controller
+    // When the scale transformation is applied to the hosted view safe area is ignored and layout margins of
+    // children views within root controller becomes invalid.
+    // Restore safe area insets and hack horizontal insets a bit so it's fine for both root and their children.
+    UIEdgeInsets insets = self.view.safeAreaInsets;
+    insets.left = 10.0;
+    insets.right = 10.0;
+    self.rootController.additionalSafeAreaInsets = insets;
+}
+
+#pragma mark - Actions
+
+- (IBAction)skipButtonAction:(id)sender {
+    [self.delegate onboardingViewControllerDidFinish:self];
+}
+
+#pragma mark - Private
+
+- (void)setupView {
+    self.miniWalletView.transform = CGAffineTransformMakeScale(0.65, 0.65);
+
+    DWRootModelMock *model = [[DWRootModelMock alloc] init];
+    DWAppRootViewController *controller = [[DWAppRootViewController alloc] initWithModel:model];
+    [self dw_embedChild:controller inContainer:self.miniWalletView];
+    self.rootController = controller;
+}
 
 @end
 

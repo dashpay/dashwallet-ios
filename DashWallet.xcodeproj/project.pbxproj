@@ -225,6 +225,11 @@
 		2A913E8223A30623006A2A59 /* DWHomeModelMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8123A30623006A2A59 /* DWHomeModelMock.m */; };
 		2A913E8523A309EA006A2A59 /* DWSyncModelMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8423A309EA006A2A59 /* DWSyncModelMock.m */; };
 		2A913E8923A30DA8006A2A59 /* DWBalanceDisplayOptionsMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsMock.m */; };
+		2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */; };
+		2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */; };
+		2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
+		2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9723A400D3006A2A59 /* DWContainerViewController.m */; };
+		2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */; };
 		2A9CEBA822E1D5A200A50237 /* DWMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		2A9CEBB522E1EAC900A50237 /* DWTabBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBB422E1EAC900A50237 /* DWTabBarView.m */; };
@@ -938,6 +943,17 @@
 		2A913E8623A30C2D006A2A59 /* DWBalanceDisplayOptionsProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsProtocol.h; sourceTree = "<group>"; };
 		2A913E8723A30DA8006A2A59 /* DWBalanceDisplayOptionsMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBalanceDisplayOptionsMock.h; sourceTree = "<group>"; };
 		2A913E8823A30DA8006A2A59 /* DWBalanceDisplayOptionsMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBalanceDisplayOptionsMock.m; sourceTree = "<group>"; };
+		2A913E8A23A3134E006A2A59 /* UIView+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWEmbedding.h"; sourceTree = "<group>"; };
+		2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWEmbedding.m"; sourceTree = "<group>"; };
+		2A913E8E23A31713006A2A59 /* UIViewController+DWEmbedding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+DWEmbedding.h"; sourceTree = "<group>"; };
+		2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+DWEmbedding.m"; sourceTree = "<group>"; };
+		2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInitialViewController.h; sourceTree = "<group>"; };
+		2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInitialViewController.m; sourceTree = "<group>"; };
+		2A913E9623A400D3006A2A59 /* DWContainerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWContainerViewController.h; sourceTree = "<group>"; };
+		2A913E9723A400D3006A2A59 /* DWContainerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWContainerViewController.m; sourceTree = "<group>"; };
+		2A913E9A23A53B8E006A2A59 /* DWExtendedContainerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWExtendedContainerViewController.h; sourceTree = "<group>"; };
+		2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWExtendedContainerViewController.m; sourceTree = "<group>"; };
+		2A913E9D23A53BDF006A2A59 /* DWContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBA622E1D5A200A50237 /* DWMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A9CEBA722E1D5A200A50237 /* DWMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWMainTabbarViewController.m; sourceTree = "<group>"; };
@@ -1795,6 +1811,7 @@
 		2A4430EF22CBC77A009BAF7F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2A913E9923A53AC6006A2A59 /* Containers */,
 				2A0C69D423143B17001B8C90 /* ModalController */,
 				2A0C69B62313EB4A001B8C90 /* Transitions */,
 				2A9CEBAE22E1DF7E00A50237 /* Navigation */,
@@ -1843,6 +1860,8 @@
 				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
 				2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */,
 				2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */,
+				2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */,
+				2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */,
 			);
 			path = RootNavigation;
 			sourceTree = "<group>";
@@ -2464,6 +2483,29 @@
 			path = Mocks;
 			sourceTree = "<group>";
 		};
+		2A913E8D23A31362006A2A59 /* Embedding */ = {
+			isa = PBXGroup;
+			children = (
+				2A913E8A23A3134E006A2A59 /* UIView+DWEmbedding.h */,
+				2A913E8B23A3134E006A2A59 /* UIView+DWEmbedding.m */,
+				2A913E8E23A31713006A2A59 /* UIViewController+DWEmbedding.h */,
+				2A913E8F23A31713006A2A59 /* UIViewController+DWEmbedding.m */,
+			);
+			path = Embedding;
+			sourceTree = "<group>";
+		};
+		2A913E9923A53AC6006A2A59 /* Containers */ = {
+			isa = PBXGroup;
+			children = (
+				2A913E9623A400D3006A2A59 /* DWContainerViewController.h */,
+				2A913E9723A400D3006A2A59 /* DWContainerViewController.m */,
+				2A913E9A23A53B8E006A2A59 /* DWExtendedContainerViewController.h */,
+				2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */,
+				2A913E9D23A53BDF006A2A59 /* DWContainerViewController+DWProtected.h */,
+			);
+			path = Containers;
+			sourceTree = "<group>";
+		};
 		2A9CEBA322E1C25700A50237 /* SecureWallet */ = {
 			isa = PBXGroup;
 			children = (
@@ -2999,6 +3041,7 @@
 		2AD1CE7D22DC928C00C99324 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				2A913E8D23A31362006A2A59 /* Embedding */,
 				2AD1CE7E22DC92BF00C99324 /* NSString+DWTextSize.h */,
 				2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */,
 				2A9FFDF12230FF1A00956D5F /* UIViewController+DWChildControllers.h */,
@@ -3478,6 +3521,7 @@
 				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
 				FB8ACEB722E054EA00EE5035 /* ShellScript */,
+				B0615F359AFA60194C5DCE93 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3948,6 +3992,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B0615F359AFA60194C5DCE93 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-frameworks.sh",
+				"${PODS_ROOT}/Reveal-SDK/RevealServer/iOS/RevealServer.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RevealServer.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		B6EBF47E898533CDA1B2A901 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -4080,6 +4142,7 @@
 				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */,
 				2A392768235732E9004E9A96 /* DWDerivationPathKeysModel.m in Sources */,
+				2A913E9523A3F75F006A2A59 /* DWInitialViewController.m in Sources */,
 				2A7A7BD62348CB6600451078 /* DWSettingsMenuViewController.m in Sources */,
 				2A2CD71B22F99EAC008C7BC9 /* DWShortcutsModel.m in Sources */,
 				2A2CD72922FA3017008C7BC9 /* DWPaymentsButton.m in Sources */,
@@ -4114,6 +4177,7 @@
 				2AB8CDDB220D879300A3D1DB /* DWOLDAmountViewController.m in Sources */,
 				2A7EBE44238D4D7000E68F67 /* DWSelectorViewController.m in Sources */,
 				FB43BC7E211D6AD000BC9879 /* DWShareActionButton.m in Sources */,
+				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
 				2A4E535022F19BE300E5168A /* DWSyncModel.m in Sources */,
 				2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */,
 				FB43BC7B211CE0F800BC9879 /* DWWhiteActionButton.m in Sources */,
@@ -4237,6 +4301,7 @@
 				2A4E533B22F0248D00E5168A /* DWTransactionListDataSource.m in Sources */,
 				2A913E6B23A15419006A2A59 /* DWUpholdAuthURLNotification.m in Sources */,
 				2A7A7BB6234792A600451078 /* DWMainMenuContentView.m in Sources */,
+				2A913E9023A31713006A2A59 /* UIViewController+DWEmbedding.m in Sources */,
 				2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */,
 				2A11F59821947CBE00E7B563 /* BRTxMetadataEntity.m in Sources */,
 				2A2120E72213201E009906DC /* DWAmountModel.m in Sources */,
@@ -4282,6 +4347,7 @@
 				FB3FF0B822264DC60059A9A5 /* DWDerivationPathKeysViewController.m in Sources */,
 				FB4AB41921CA760E001CC324 /* DWStoryboardSegueWithCompletion.m in Sources */,
 				FBFC2EFB211413EB00D20C57 /* DWWarningViewController.m in Sources */,
+				2A913E8C23A3134E006A2A59 /* UIView+DWEmbedding.m in Sources */,
 				2A2CD6E822F46D40008C7BC9 /* DWBalanceModel.m in Sources */,
 				2A6300492328EA8900827825 /* DWLockActionButton.m in Sources */,
 				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
@@ -4372,6 +4438,7 @@
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
 				2A9FFE9D2230FF4700956D5F /* DWUpholdTransferViewController.m in Sources */,
+				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
