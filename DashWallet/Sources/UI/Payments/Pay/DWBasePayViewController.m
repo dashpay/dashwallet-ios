@@ -19,7 +19,7 @@
 
 #import "DWConfirmPaymentViewController.h"
 #import "DWHomeViewController.h"
-#import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"

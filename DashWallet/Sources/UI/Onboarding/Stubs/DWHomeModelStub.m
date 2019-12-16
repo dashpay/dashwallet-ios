@@ -20,7 +20,7 @@
 #import "DWBalanceDisplayOptionsStub.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
-#import "DWPayModel.h"
+#import "DWPayModelStub.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModelStub.h"
@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
         _shortcutsModel = [[DWShortcutsModel alloc] init];
 
         // TODO: mock
-        _payModel = [[DWPayModel alloc] init];
+        _payModel = [[DWPayModelStub alloc] init];
 
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
     }

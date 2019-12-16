@@ -15,25 +15,27 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWPayModelProtocol;
-@class DWPayViewController;
+@class DWPayOptionModel;
+@class DWPaymentInput;
 
-@protocol DWPayViewControllerDelegate <NSObject>
+@protocol DWPayModelProtocol <NSObject>
 
-- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller;
+@property (readonly, copy, nonatomic) NSArray<DWPayOptionModel *> *options;
 
-@end
+@property (readonly, nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
 
-@interface DWPayViewController : DWBasePayViewController
+- (void)performNFCReadingWithCompletion:(void (^)(DWPaymentInput *paymentInput))completion;
 
-@property (nullable, nonatomic, weak) id<DWPayViewControllerDelegate> delegate;
+- (void)startPasteboardIntervalObserving;
+- (void)stopPasteboardIntervalObserving;
 
-+ (instancetype)controllerWithModel:(id<DWPayModelProtocol>)payModel
-                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+- (void)checkIfPayToAddressFromPasteboardAvailable:(void (^)(BOOL success))completion;
+
+- (DWPaymentInput *)paymentInputWithURL:(NSURL *)url;
 
 @end
 

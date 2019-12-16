@@ -15,25 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DWBasePayViewController.h"
+#import "DWPayModelProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWPayModelProtocol;
-@class DWPayViewController;
-
-@protocol DWPayViewControllerDelegate <NSObject>
-
-- (void)payViewControllerDidFinishPayment:(DWPayViewController *)controller;
-
-@end
-
-@interface DWPayViewController : DWBasePayViewController
-
-@property (nullable, nonatomic, weak) id<DWPayViewControllerDelegate> delegate;
-
-+ (instancetype)controllerWithModel:(id<DWPayModelProtocol>)payModel
-                       dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
+@interface DWPayModelStub : NSObject <DWPayModelProtocol>
 
 @end
 

@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (DWPayModel *)payModel {
+- (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;
 }
 

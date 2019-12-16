@@ -248,7 +248,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     id<DWHomeProtocol> homeModel = self.homeModel;
     NSParameterAssert(homeModel);
     DWReceiveModel *receiveModel = homeModel.receiveModel;
-    DWPayModel *payModel = homeModel.payModel;
+    id<DWPayModelProtocol> payModel = homeModel.payModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
                                                                                        payModel:payModel

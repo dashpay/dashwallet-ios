@@ -27,6 +27,7 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"

@@ -18,7 +18,7 @@
 #import "DWPayViewController.h"
 
 #import "DWConfirmPaymentViewController.h"
-#import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
 #import "DWPayTableViewCell.h"
 #import "DWPaymentInputBuilder.h"
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPayViewController
 
-+ (instancetype)controllerWithModel:(DWPayModel *)payModel
++ (instancetype)controllerWithModel:(id<DWPayModelProtocol>)payModel
                        dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Pay" bundle:nil];
     DWPayViewController *controller = [storyboard instantiateInitialViewController];

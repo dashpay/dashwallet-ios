@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, DWLockScreenViewControllerUnlockMode) {
 @property (nullable, nonatomic, weak) id<DWLockScreenViewControllerDelegate> delegate;
 
 + (instancetype)lockScreenWithUnlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
-                                payModel:(DWPayModel *)payModel
+                                payModel:(id<DWPayModelProtocol>)payModel
                             receiveModel:(DWReceiveModel *)receiveModel
                             dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 
