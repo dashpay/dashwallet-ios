@@ -25,18 +25,18 @@ NS_ASSUME_NONNULL_BEGIN
 static NSString *TitleForOptionType(DWPayOptionModelType type) {
     switch (type) {
         case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Send by", @"Pay by (scanning QR code)");
+            return NSLocalizedString(@"Send by", @"Send by (scanning QR code)");
         case DWPayOptionModelType_Pasteboard:
             return NSLocalizedString(@"Send to copied address", nil);
         case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Pay to", nil);
+            return NSLocalizedString(@"Send to", nil);
     }
 }
 
 static NSString *DescriptionForOptionType(DWPayOptionModelType type) {
     switch (type) {
         case DWPayOptionModelType_ScanQR:
-            return NSLocalizedString(@"Scanning QR code", @"(Pay by) Scanning QR code");
+            return NSLocalizedString(@"Scanning QR code", @"(Send by) Scanning QR code");
         case DWPayOptionModelType_Pasteboard:
             return NSLocalizedString(@"No address copied", nil);
         case DWPayOptionModelType_NFC:
@@ -61,7 +61,7 @@ static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_Pasteboard:
             return NSLocalizedString(@"Send", nil);
         case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Pay", nil);
+            return NSLocalizedString(@"Tap", nil);
     }
 }
 

@@ -663,15 +663,6 @@
 "Owner Keys" = "Owner Keys";
 
 /* No comment provided by engineer. */
-"Pay" = "Betal";
-
-/* No comment provided by engineer. */
-"Pay to" = "Pay to";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Pay with NFC" = "Pay with NFC";
-
-/* No comment provided by engineer. */
 "Payload:" = "Payload:";
 
 /* No comment provided by engineer. */
@@ -857,7 +848,7 @@
 /* No comment provided by engineer. */
 "Scan to Send" = "Scan to Send";
 
-/* (Pay by) Scanning QR code */
+/* (Send by) Scanning QR code */
 "Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
@@ -899,7 +890,7 @@
 /* No comment provided by engineer. */
 "Send address as message" = "Send address as message";
 
-/* Pay by (scanning QR code) */
+/* Send by (scanning QR code) */
 "Send by" = "Send by";
 
 /* No comment provided by engineer. */
@@ -911,11 +902,17 @@
 /* No comment provided by engineer. */
 "Send request as message" = "Send request as message";
 
+/* No comment provided by engineer. */
+"Send to" = "Send to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Send to copied address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send with NFC" = "Send with NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -1045,6 +1042,9 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Syncing:";
+
+/* No comment provided by engineer. */
+"Tap" = "Tap";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tap to hide balance";
