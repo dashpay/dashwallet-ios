@@ -39,17 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, copy) NSString *directionText;
 @property (readonly, nullable, nonatomic, copy) NSString *stateText;
 @property (readonly, nullable, nonatomic, strong) UIColor *stateTintColor;
-
-@end
-
-@protocol DWTransactionListDataProviderProtocol <NSObject>
-
-- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction;
-
-- (NSString *)dateForTransaction:(DSTransaction *)transaction;
-
-- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
-                                        font:(UIFont *)font;
+@property (readonly, nonatomic, copy) NSString *directionSymbol;
 
 @end
 

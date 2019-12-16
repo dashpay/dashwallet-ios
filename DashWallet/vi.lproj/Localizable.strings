@@ -531,7 +531,7 @@
 "Masternode Registration Transaction" = "Giao dịch đăng ký Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Revoked" = "Masternode Revoked";
+"Masternode Revoke" = "Masternode Revoke";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";

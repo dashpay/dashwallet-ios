@@ -15,23 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWBalanceDisplayOptionsMock.h"
+#import "DWSyncModelStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWBalanceDisplayOptionsMock
+@implementation DWSyncModelStub
 
-@synthesize balanceHidden = _balanceHidden;
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _balanceHidden = NO;
-    }
-    return self;
+- (DWSyncModelState)state {
+    return DWSyncModelState_SyncDone;
 }
 
-- (void)hideBalanceIfNeeded {
+- (float)progress {
+    return 1.0;
 }
 
 @end

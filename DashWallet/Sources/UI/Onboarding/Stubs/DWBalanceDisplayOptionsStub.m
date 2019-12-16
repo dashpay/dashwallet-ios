@@ -15,13 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWHomeProtocol.h"
+#import "DWBalanceDisplayOptionsStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelMock : NSObject <DWHomeProtocol>
+@implementation DWBalanceDisplayOptionsStub
+
+@synthesize balanceHidden = _balanceHidden;
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _balanceHidden = NO;
+    }
+    return self;
+}
+
+- (void)hideBalanceIfNeeded {
+}
 
 @end
 

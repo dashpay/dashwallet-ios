@@ -531,7 +531,7 @@
 "Masternode Registration Transaction" = "マスターノードの取引の登録";
 
 /* No comment provided by engineer. */
-"Masternode Revoked" = "Masternode Revoked";
+"Masternode Revoke" = "Masternode Revoke";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";

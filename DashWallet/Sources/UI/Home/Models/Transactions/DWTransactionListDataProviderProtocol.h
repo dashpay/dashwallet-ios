@@ -15,13 +15,18 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWSyncProtocol.h"
+#import "DWTransactionListDataItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWSyncModelMock : NSObject <DWSyncProtocol>
+@protocol DWTransactionListDataProviderProtocol <NSObject>
+
+- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction;
+
+- (NSString *)dateForTransaction:(DSTransaction *)transaction;
+
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font;
 
 @end
 

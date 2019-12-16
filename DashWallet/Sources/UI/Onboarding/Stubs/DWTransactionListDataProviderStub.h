@@ -15,13 +15,14 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWBalanceDisplayOptionsProtocol.h"
+#import "DWBaseTransactionListDataProvider.h"
+#import "DWTransactionListDataProviderProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBalanceDisplayOptionsMock : NSObject <DWBalanceDisplayOptionsProtocol>
+@class DWTransactionStub;
+
+@interface DWTransactionListDataProviderStub : DWBaseTransactionListDataProvider <DWTransactionListDataProviderProtocol>
 
 @end
 

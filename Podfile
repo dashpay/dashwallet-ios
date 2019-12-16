@@ -10,7 +10,8 @@ target 'dashwallet' do
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
 
-  # Pods for dashwallet
+  # Debugging purposes
+  pod 'Reveal-SDK', :configurations => ['Debug']
   
   target 'DashWalletTests' do
     inherit! :search_paths

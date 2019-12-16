@@ -15,19 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWSyncModelMock.h"
+#import <Foundation/Foundation.h>
+
+#import "DWSyncProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWSyncModelMock
-
-- (DWSyncModelState)state {
-    return DWSyncModelState_SyncDone;
-}
-
-- (float)progress {
-    return 1.0;
-}
+@interface DWSyncModelStub : NSObject <DWSyncProtocol>
 
 @end
 

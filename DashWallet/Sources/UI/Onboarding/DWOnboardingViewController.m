@@ -18,7 +18,7 @@
 #import "DWOnboardingViewController.h"
 
 #import "DWAppRootViewController.h"
-#import "DWRootModelMock.h"
+#import "DWRootModelStub.h"
 #import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupView {
     self.miniWalletView.transform = CGAffineTransformMakeScale(0.65, 0.65);
 
-    DWRootModelMock *model = [[DWRootModelMock alloc] init];
+    DWRootModelStub *model = [[DWRootModelStub alloc] init];
     DWAppRootViewController *controller = [[DWAppRootViewController alloc] initWithModel:model];
     [self dw_embedChild:controller inContainer:self.miniWalletView];
     self.rootController = controller;

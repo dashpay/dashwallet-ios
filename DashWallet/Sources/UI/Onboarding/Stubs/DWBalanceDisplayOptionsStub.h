@@ -15,47 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DWRootModelMock.h"
+#import <Foundation/Foundation.h>
 
-#import "DWHomeModelMock.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModelMock ()
-
-@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
-
-@end
-
-@implementation DWRootModelMock
-
-@synthesize currentNetworkDidChangeBlock;
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _homeModel = [[DWHomeModelMock alloc] init];
-    }
-    return self;
-}
-
-- (BOOL)hasAWallet {
-    return YES;
-}
-
-- (BOOL)walletOperationAllowed {
-    return YES;
-}
-
-- (void)applicationDidEnterBackground {
-}
-
-- (BOOL)shouldShowLockScreen {
-    return NO;
-}
-
-- (void)setupDidFinish {
-}
+@interface DWBalanceDisplayOptionsStub : NSObject <DWBalanceDisplayOptionsProtocol>
 
 @end
 

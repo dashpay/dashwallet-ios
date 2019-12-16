@@ -17,11 +17,19 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWRootProtocol.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWRootModelMock : NSObject <DWRootProtocol>
+@class UIFont;
+@protocol DWTransactionListDataItem;
+
+@interface DWBaseTransactionListDataProvider : NSObject
+
+@property (readonly, nonatomic, strong) NSMutableDictionary *txDates;
+
+- (NSString *)formattedTxDateForTimestamp:(NSTimeInterval)timestamp;
+
+- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
+                                        font:(UIFont *)font;
 
 @end
 

@@ -15,13 +15,20 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import <DashSync/DSAccount.h>
+#import <DashSync/DSTransaction.h>
 
-#import "DWTransactionListDataProviderProtocol.h"
+#import "DWTransactionListDataItemObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTransactionListDataProvider : NSObject <DWTransactionListDataProviderProtocol>
+@interface DWTransactionStub : DSTransaction
+
+@property (nonatomic, assign) uint64_t dashAmount;
+@property (nonatomic, assign) DSTransactionDirection direction;
+@property (nonatomic, assign) DWTransactionDetailedDirection detailedDirection;
+
++ (NSArray<DWTransactionStub *> *)stubs;
 
 @end
 

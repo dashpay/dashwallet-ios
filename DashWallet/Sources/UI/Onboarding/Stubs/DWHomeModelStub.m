@@ -15,23 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DWHomeModelMock.h"
+#import "DWHomeModelStub.h"
 
-#import "DWBalanceDisplayOptionsMock.h"
+#import "DWBalanceDisplayOptionsStub.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel+Private.h"
 #import "DWShortcutsModel.h"
-#import "DWSyncModelMock.h"
-#import "DWTransactionListDataProvider.h"
+#import "DWSyncModelStub.h"
+#import "DWTransactionListDataProviderStub.h"
 #import "DWTransactionListDataSource+DWProtected.h"
+#import "DWTransactionStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelMock ()
+@interface DWHomeModelStub ()
 
-@property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
+@property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
 
@@ -40,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWHomeModelMock
+@implementation DWHomeModelStub
 
 @synthesize balanceDisplayOptions = _balanceDisplayOptions;
 @synthesize displayMode = _displayMode;
@@ -53,13 +54,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _balanceModel = [[DWBalanceModel alloc] initWithValue:3.14 * DUFFS];
-        _syncModel = [[DWSyncModelMock alloc] init];
+        _balanceModel = [[DWBalanceModel alloc] initWithValue:42 * DUFFS];
+        _syncModel = [[DWSyncModelStub alloc] init];
 
-        _dataProvider = [[DWTransactionListDataProvider alloc] init];
+        _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
+
+        NSArray<DWTransactionStub *> *txs = [DWTransactionStub stubs];
 
         // set empty datasource
-        _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:@[]
+        _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:txs
                                                                       dataProvider:_dataProvider];
 
         // TODO: mock
@@ -71,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
         // TODO: mock
         _payModel = [[DWPayModel alloc] init];
 
-        _balanceDisplayOptions = [[DWBalanceDisplayOptionsMock alloc] init];
+        _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
     }
     return self;
 }
