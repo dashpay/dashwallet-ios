@@ -15,15 +15,18 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWReceiveModelProtocol;
+@interface DWBaseReceiveModel : NSObject
 
-@interface UIViewController (DWShareReceiveInfo)
+@property (readonly, nonatomic, assign) uint64_t amount;
+@property (readonly, nonatomic, assign) CGSize qrCodeSize;
 
-- (void)dw_shareReceiveInfo:(id<DWReceiveModelProtocol>)model sender:(UIButton *)sender;
+- (instancetype)initWithAmount:(uint64_t)amount NS_DESIGNATED_INITIALIZER;
+
+- (UIImage *)qrCodeImageWithRawQRImage:(UIImage *)rawQRImage hasAmount:(BOOL)hasAmount;
 
 @end
 

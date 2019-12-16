@@ -21,96 +21,23 @@
 
 #import "DWAppGroupOptions.h"
 #import "DWEnvironment.h"
-#import "DevicesCompatibility.h"
 #import "UIImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static CGSize QRCodeSizeBasic(void) {
-    if (IS_IPAD) {
-        return CGSizeMake(360.0, 360.0);
-    }
-    else {
-        const CGFloat screenWidth = CGRectGetWidth([UIScreen mainScreen].bounds);
-        const CGFloat padding = 38.0;
-        const CGFloat side = screenWidth - padding * 2;
-
-        return CGSizeMake(side, side);
-    }
-}
-
-static CGSize QRCodeSizeRequestAmount(void) {
-    if (IS_IPAD) {
-        return CGSizeMake(360.0, 360.0);
-    }
-    else {
-        return CGSizeMake(200.0, 200.0);
-    }
-}
-
-static CGSize HoleSize(BOOL hasAmount) {
-    if (IS_IPAD) {
-        return CGSizeMake(84.0, 84.0); // 2 + 80(logo size) + 2
-    }
-    else if (IS_IPHONE_5_OR_LESS) {
-        return CGSizeMake(58.0, 58.0);
-    }
-    else {
-        if (hasAmount) {
-            return CGSizeMake(58.0, 58.0);
-        }
-        else {
-            return CGSizeMake(84.0, 84.0);
-        }
-    }
-}
-
-static CGSize const LOGO_SMALL_SIZE = {54.0, 54.0};
-
-static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
-    if (IS_IPAD) {
-        return NO;
-    }
-    if (IS_IPHONE_5_OR_LESS) {
-        return YES;
-    }
-    else {
-        return hasAmount;
-    }
-}
 
 @interface DWReceiveModel ()
 
 @property (nullable, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, nonatomic, copy) NSString *paymentAddress;
 @property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
-@property (nonatomic, assign) CGSize qrCodeSize;
-@property (nonatomic, assign) CGSize holeSize;
 
 @end
 
 @implementation DWReceiveModel
 
-- (instancetype)init {
-    return [self initWithAmount:0];
-}
-
 - (instancetype)initWithAmount:(uint64_t)amount {
-    self = [super init];
+    self = [super initWithAmount:amount];
     if (self) {
-        _amount = amount;
-
-        DSLogVerbose(@"DWReceiveModel: Requesting %@", @(amount));
-
-        const BOOL hasAmount = amount > 0;
-        if (hasAmount) {
-            _qrCodeSize = QRCodeSizeRequestAmount();
-        }
-        else {
-            _qrCodeSize = QRCodeSizeBasic();
-        }
-        _holeSize = HoleSize(hasAmount);
-
         [self updateReceivingInfo];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -249,18 +176,7 @@ static BOOL ShouldResizeLogoToSmall(BOOL hasAmount) {
             rawQRImage = [UIImage dw_imageWithQRCodeData:paymentRequest.data color:[CIColor blackColor]];
         }
 
-        UIImage *overlayLogo = [UIImage imageNamed:@"dash_logo_qr"];
-        NSParameterAssert(overlayLogo);
-
-        if (ShouldResizeLogoToSmall(hasAmount)) {
-            overlayLogo = [overlayLogo dw_resize:LOGO_SMALL_SIZE
-                        withInterpolationQuality:kCGInterpolationHigh];
-        }
-
-        UIImage *resizedImage = [rawQRImage dw_resize:self.qrCodeSize withInterpolationQuality:kCGInterpolationNone];
-        resizedImage = [resizedImage dw_imageByCuttingHoleInCenterWithSize:self.holeSize];
-
-        UIImage *qrCodeImage = [resizedImage dw_imageByMergingWithImage:overlayLogo];
+        UIImage *qrCodeImage = [self qrCodeImageWithRawQRImage:rawQRImage hasAmount:hasAmount];
 
         NSData *rawQRImageData = UIImagePNGRepresentation(rawQRImage);
         if (paymentRequest && paymentRequest.isValid && rawQRImageData) {

@@ -21,11 +21,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 
 @interface DWQuickReceiveViewController : UIViewController <DWNavigationFullscreenable>
 
-+ (UIViewController *)controllerWithModel:(DWReceiveModel *)receiveModel;
++ (UIViewController *)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel;
 
 @end
 

@@ -21,7 +21,7 @@
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
-#import "DWReceiveModel+Private.h"
+#import "DWReceiveModelStub.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModelStub.h"
 #import "DWTransactionListDataProviderStub.h"
@@ -56,24 +56,15 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _balanceModel = [[DWBalanceModel alloc] initWithValue:42 * DUFFS];
         _syncModel = [[DWSyncModelStub alloc] init];
-
         _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
         NSArray<DWTransactionStub *> *txs = [DWTransactionStub stubs];
-
-        // set empty datasource
         _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:txs
                                                                       dataProvider:_dataProvider];
 
-        // TODO: mock
-        _receiveModel = [[DWReceiveModel alloc] init];
-        [_receiveModel updateReceivingInfo];
-
+        _receiveModel = [[DWReceiveModelStub alloc] init];
         _shortcutsModel = [[DWShortcutsModel alloc] init];
-
-        // TODO: mock
         _payModel = [[DWPayModelStub alloc] init];
-
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
     }
     return self;

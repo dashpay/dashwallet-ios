@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 @class DWRequestAmountViewController;
 
 @protocol DWRequestAmountViewControllerDelegate <NSObject>
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWRequestAmountViewControllerDelegate> delegate;
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)model;
++ (instancetype)controllerWithModel:(id<DWReceiveModelProtocol>)model;
 
 @end
 

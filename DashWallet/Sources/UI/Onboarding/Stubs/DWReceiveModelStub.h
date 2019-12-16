@@ -15,13 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWReceiveModel.h"
+#import "DWBaseReceiveModel.h"
+#import "DWReceiveModelProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWReceiveModel (Private)
-
-- (void)updateReceivingInfo;
+@interface DWReceiveModelStub : DWBaseReceiveModel <DWReceiveModelProtocol>
 
 @end
 

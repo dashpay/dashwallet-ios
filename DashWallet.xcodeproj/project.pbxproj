@@ -302,6 +302,8 @@
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
 		2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */; };
 		2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */; };
+		2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
+		2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */; };
 		2AB66DD223546746007BE825 /* DWTxDetailListView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DD123546746007BE825 /* DWTxDetailListView.m */; };
 		2AB66DFC2355BF59007BE825 /* DWTxDetailHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB66DFB2355BF59007BE825 /* DWTxDetailHeaderView.m */; };
 		2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AB66DFD2355BF67007BE825 /* DWTxDetailHeaderView.xib */; };
@@ -800,7 +802,6 @@
 		2A741DC123639A9700840ADF /* TodayExtension.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = TodayExtension.storyboard; sourceTree = "<group>"; };
 		2A741DC42363A06000840ADF /* DWURLParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLParser.h; sourceTree = "<group>"; };
 		2A741DC52363A06000840ADF /* DWURLParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWURLParser.m; sourceTree = "<group>"; };
-		2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWReceiveModel+Private.h"; sourceTree = "<group>"; };
 		2A74EFE72305264200C475EB /* DWBaseActionButtonViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseActionButtonViewController.h; sourceTree = "<group>"; };
 		2A74EFE82305264200C475EB /* DWBaseActionButtonViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseActionButtonViewController.m; sourceTree = "<group>"; };
 		2A74EFEB2305318000C475EB /* DWRecoverViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverViewController.h; sourceTree = "<group>"; };
@@ -1107,6 +1108,11 @@
 		2AB3415B23A81291004E37A7 /* DWPayModelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModelProtocol.h; sourceTree = "<group>"; };
 		2AB3415C23A8133A004E37A7 /* DWPayModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPayModelStub.h; sourceTree = "<group>"; };
 		2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPayModelStub.m; sourceTree = "<group>"; };
+		2AB3415F23A81BAD004E37A7 /* DWReceiveModelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModelProtocol.h; sourceTree = "<group>"; };
+		2AB3416023A81E8B004E37A7 /* DWReceiveModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveModelStub.h; sourceTree = "<group>"; };
+		2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModelStub.m; sourceTree = "<group>"; };
+		2AB3416323A8213C004E37A7 /* DWBaseReceiveModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseReceiveModel.h; sourceTree = "<group>"; };
+		2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseReceiveModel.m; sourceTree = "<group>"; };
 		2AB66DD023546746007BE825 /* DWTxDetailListView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailListView.h; sourceTree = "<group>"; };
 		2AB66DD123546746007BE825 /* DWTxDetailListView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailListView.m; sourceTree = "<group>"; };
 		2AB66DFA2355BF59007BE825 /* DWTxDetailHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailHeaderView.h; sourceTree = "<group>"; };
@@ -2419,9 +2425,11 @@
 		2A8B9E772302E66100FF8653 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2AB3416323A8213C004E37A7 /* DWBaseReceiveModel.h */,
+				2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */,
 				2A8B9E782302E67400FF8653 /* DWReceiveModel.h */,
 				2A8B9E792302E67400FF8653 /* DWReceiveModel.m */,
-				2A74EFDE2304028400C475EB /* DWReceiveModel+Private.h */,
+				2AB3415F23A81BAD004E37A7 /* DWReceiveModelProtocol.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -2495,6 +2503,8 @@
 				2A913E8123A30623006A2A59 /* DWHomeModelStub.m */,
 				2AB3415C23A8133A004E37A7 /* DWPayModelStub.h */,
 				2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */,
+				2AB3416023A81E8B004E37A7 /* DWReceiveModelStub.h */,
+				2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */,
 				2A913E7D23A30609006A2A59 /* DWRootModelStub.h */,
 				2A913E7E23A30609006A2A59 /* DWRootModelStub.m */,
 				2A913E8323A309EA006A2A59 /* DWSyncModelStub.h */,
@@ -4171,6 +4181,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */,
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
@@ -4257,6 +4268,7 @@
 				84F68C8A1975E9E2002FC300 /* DWScanViewController.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
+				2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */,
 				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */,
 				2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */,

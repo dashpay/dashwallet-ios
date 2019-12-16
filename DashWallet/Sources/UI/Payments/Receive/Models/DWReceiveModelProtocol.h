@@ -15,15 +15,28 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWReceiveModelProtocol;
+@class UIImage;
+@class DSPaymentRequest;
 
-@interface UIViewController (DWShareReceiveInfo)
+@protocol DWReceiveModelProtocol <NSObject>
 
-- (void)dw_shareReceiveInfo:(id<DWReceiveModelProtocol>)model sender:(UIButton *)sender;
+@property (nullable, readonly, nonatomic, strong) UIImage *qrCodeImage;
+@property (nullable, readonly, nonatomic, copy) NSString *paymentAddress;
+@property (readonly, nonatomic, assign) CGSize qrCodeSize;
+@property (readonly, nonatomic, assign) uint64_t amount;
+
+- (NSString *)paymentAddressOrRequestToShare;
+
+- (void)copyAddressToPasteboard;
+- (void)copyQRImageToPasteboard;
+
+- (nullable NSString *)requestAmountReceivedInfoIfReceived;
+
+- (void)updateReceivingInfo;
 
 @end
 

@@ -34,7 +34,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
-@property (nonatomic, strong) DWReceiveModel *receiveModel;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
@@ -48,7 +48,7 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
++ (instancetype)controllerWithReceiveModel:(id<DWReceiveModelProtocol>)receiveModel
                                   payModel:(id<DWPayModelProtocol>)payModel
                               dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];

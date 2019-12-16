@@ -17,6 +17,8 @@
 
 #import "DWPayModelStub.h"
 
+#import <CoreNFC/CoreNFC.h>
+
 #import "DWPayOptionModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -39,9 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
             initWithType:DWPayOptionModelType_Pasteboard];
         [options addObject:pasteboardOption];
 
-        DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
-            initWithType:DWPayOptionModelType_NFC];
-        [options addObject:nfcOption];
+        if ([NFCNDEFReaderSession readingAvailable]) {
+            DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
+                initWithType:DWPayOptionModelType_NFC];
+            [options addObject:nfcOption];
+        }
 
         _options = [options copy];
 

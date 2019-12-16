@@ -22,7 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWPaymentsViewController;
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
 
@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 @property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
 @property (nonatomic, assign) DWPaymentsViewControllerIndex currentIndex;
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
++ (instancetype)controllerWithReceiveModel:(id<DWReceiveModelProtocol>)receiveModel
                                   payModel:(id<DWPayModelProtocol>)payModel
                               dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider;
 

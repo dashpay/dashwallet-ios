@@ -325,7 +325,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     id<DWHomeProtocol> homeModel = self.model.homeModel;
     id<DWPayModelProtocol> payModel = homeModel.payModel;
-    DWReceiveModel *receiveModel = homeModel.receiveModel;
+    id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     DWLockScreenViewController *controller = [DWLockScreenViewController lockScreenWithUnlockMode:mode
                                                                                          payModel:payModel

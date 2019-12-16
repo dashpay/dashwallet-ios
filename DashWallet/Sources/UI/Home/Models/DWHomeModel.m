@@ -28,7 +28,7 @@
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWPayModelProtocol.h"
-#import "DWReceiveModel+Private.h"
+#import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
