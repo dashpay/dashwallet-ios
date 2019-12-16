@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeModelStub ()
 
+@property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
+
 @property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
 
 @property (nullable, nonatomic, strong) DWBalanceModel *balanceModel;
@@ -54,18 +56,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _balanceModel = [[DWBalanceModel alloc] initWithValue:42 * DUFFS];
         _syncModel = [[DWSyncModelStub alloc] init];
         _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
-        NSArray<DWTransactionStub *> *txs = [DWTransactionStub stubs];
-        _allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:txs
-                                                                      dataProvider:_dataProvider];
+        _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
         _shortcutsModel = [[DWShortcutsModel alloc] init];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
+
+        [self updateBalance];
+        [self reloadTxDataSource];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(walletBalanceDidChangeNotification)
+                                                     name:DSWalletBalanceDidChangeNotification
+                                                   object:nil];
     }
     return self;
 }
@@ -116,6 +123,25 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)walletBackupReminderWasShown {
+}
+
+#pragma mark - Private
+
+- (void)walletBalanceDidChangeNotification {
+    [self updateBalance];
+
+    [self reloadTxDataSource];
+}
+
+- (void)updateBalance {
+    self.balanceModel = [[DWBalanceModel alloc] initWithValue:42 * DUFFS];
+}
+
+- (void)reloadTxDataSource {
+    self.allDataSource = [[DWTransactionListDataSource alloc] initWithTransactions:self.stubTxs
+                                                                      dataProvider:self.dataProvider];
+
+    [self.updatesObserver homeModel:self didUpdateDataSource:self.dataSource shouldAnimate:NO];
 }
 
 @end
