@@ -27,13 +27,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSTimeInterval const ANIMATION_DURATION = 0.25;
+
 @interface DWOnboardingViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
+@property (strong, nonatomic) IBOutlet UIView *miniWalletView;
 @property (strong, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (strong, nonatomic) IBOutlet UIPageControl *pageControl;
-@property (strong, nonatomic) IBOutlet UIView *miniWalletView;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 @property (strong, nonatomic) IBOutlet UIButton *skipButton;
+@property (strong, nonatomic) IBOutlet UIButton *finishButton;
 
 @property (null_resettable, nonatomic, strong) DWOnboardingModel *model;
 
@@ -165,6 +168,13 @@ NS_ASSUME_NONNULL_BEGIN
             [navigationController pushViewController:controller animated:YES];
         }
     }
+
+    const BOOL canFinish = self.pageControl.currentPage == 2;
+    [UIView animateWithDuration:ANIMATION_DURATION
+                     animations:^{
+                         self.skipButton.alpha = canFinish ? 0.0 : 1.0;
+                         self.finishButton.alpha = canFinish ? 1.0 : 0.0;
+                     }];
 }
 
 #pragma mark - Private
@@ -183,6 +193,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.pageControl.currentPageIndicatorTintColor = [UIColor dw_dashBlueColor];
 
     [self.skipButton setTitle:NSLocalizedString(@"Skip", nil) forState:UIControlStateNormal];
+    [self.finishButton setTitle:NSLocalizedString(@"Done", nil) forState:UIControlStateNormal];
+    self.finishButton.alpha = 0.0;
 
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
     DWNavigationController *navigationController =

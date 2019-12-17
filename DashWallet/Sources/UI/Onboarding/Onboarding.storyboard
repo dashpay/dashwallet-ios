@@ -110,6 +110,20 @@
                                     <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="xlR-po-XgS"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="39" translatesAutoresizingMaskIntoConstraints="NO" id="oul-q7-isF" userLabel="Finish Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="107" y="827.5" width="200" height="39"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="39" id="K1j-dE-2o4"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="small" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="skipButtonAction:" destination="mfe-wo-u6J" eventType="touchUpInside" id="Zg3-2b-boJ"/>
+                                </connections>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -123,9 +137,11 @@
                             <constraint firstItem="TZ0-fC-5QE" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="em4-GA-e3M"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="fyt-Fw-ype"/>
                             <constraint firstItem="TZ0-fC-5QE" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="jNw-4Z-JdX"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="kej-qq-RQx"/>
                             <constraint firstItem="hHh-RO-hDv" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="topMargin" id="mCN-WQ-9vB"/>
                             <constraint firstAttribute="bottom" secondItem="dxp-Sr-wRy" secondAttribute="bottom" id="prC-pl-4wC"/>
                             <constraint firstItem="dxp-Sr-wRy" firstAttribute="top" secondItem="7uN-mz-x2B" secondAttribute="top" id="rdM-Iq-JLX"/>
+                            <constraint firstItem="oul-q7-isF" firstAttribute="centerY" secondItem="RB2-Fy-ILD" secondAttribute="centerY" id="wU8-oE-Fde"/>
                             <constraint firstItem="QG9-h2-t4z" firstAttribute="centerX" secondItem="7uN-mz-x2B" secondAttribute="centerX" id="y8g-vj-iCX"/>
                             <constraint firstItem="hHh-RO-hDv" firstAttribute="leading" secondItem="7uN-mz-x2B" secondAttribute="leading" id="ymy-bp-pPa"/>
                             <constraint firstAttribute="bottom" secondItem="TZ0-fC-5QE" secondAttribute="bottom" id="ztv-do-KPo"/>
@@ -135,6 +151,7 @@
                     <connections>
                         <outlet property="collectionView" destination="hHh-RO-hDv" id="SaQ-n9-Pqf"/>
                         <outlet property="contentBottomConstraint" destination="LTH-Of-1Wq" id="Tn9-wu-2cn"/>
+                        <outlet property="finishButton" destination="oul-q7-isF" id="krT-K0-2Jy"/>
                         <outlet property="miniWalletView" destination="TZ0-fC-5QE" id="n4P-aZ-MHX"/>
                         <outlet property="pageControl" destination="QG9-h2-t4z" id="nwz-i3-Mkr"/>
                         <outlet property="skipButton" destination="RB2-Fy-ILD" id="HoB-wj-CM5"/>
