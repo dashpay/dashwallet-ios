@@ -15,72 +15,32 @@
 //  limitations under the License.
 //
 
-#import "DWAdvancedSecurityModel.h"
+#import "DWBaseAdvancedSecurityModel.h"
 
-#import <DashSync/DashSync.h>
-
-#import "DWGlobalOptions.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAdvancedSecurityModel ()
-
-@property (readonly, assign, nonatomic) BOOL hasTouchID;
-@property (readonly, assign, nonatomic) BOOL hasFaceID;
-
-@end
-
-@implementation DWAdvancedSecurityModel
+@implementation DWBaseAdvancedSecurityModel
 
 @synthesize lockTimerTimeIntervals = _lockTimerTimeIntervals;
 @synthesize spendingConfirmationValues = _spendingConfirmationValues;
 
 - (instancetype)init {
+    return [self initWithHasTouchID:NO hasFaceID:NO];
+}
+
+- (instancetype)initWithHasTouchID:(BOOL)hasTouchID hasFaceID:(BOOL)hasFaceID {
     self = [super init];
     if (self) {
-        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-        _hasTouchID = authManager.touchIdEnabled;
-        _hasFaceID = authManager.faceIdEnabled;
-
-        DWGlobalOptions *globalOptions = [DWGlobalOptions sharedInstance];
-        _lockTimerTimeInterval = @(globalOptions.autoLockAppInterval);
-        NSAssert([self.lockTimerTimeIntervals indexOfObject:_lockTimerTimeInterval] != NSNotFound,
-                 @"Internal inconsistency");
+        _hasTouchID = hasTouchID;
+        _hasFaceID = hasFaceID;
     }
     return self;
 }
 
-- (DWSecurityLevel)securityLevel {
-    NSInteger lockTime;
-    if (!self.autoLogout) {
-        lockTime = NSIntegerMax;
-    }
-    else {
-        lockTime = self.lockTimerTimeInterval.integerValue;
-    }
-
-    uint64_t spendingConfirmation;
-    if (!self.spendingConfirmationEnabled) {
-        spendingConfirmation = UINT64_MAX;
-    }
-    else {
-        spendingConfirmation = self.spendingConfirmationLimit.longLongValue;
-    }
-
-    return [self securityLevelForLockTime:lockTime spendingConfirmation:spendingConfirmation];
-}
-
-#pragma mark - Lock Screen
-
-- (BOOL)autoLogout {
-    return ![[DWGlobalOptions sharedInstance] lockScreenDisabled];
-}
-
-- (void)setAutoLogout:(BOOL)autoLogout {
-    [[DWGlobalOptions sharedInstance] setLockScreenDisabled:!autoLogout];
-}
+#pragma mark - Lock Timer
 
 - (NSArray<NSNumber *> *)lockTimerTimeIntervals {
     if (!_lockTimerTimeIntervals) {
@@ -89,12 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return _lockTimerTimeIntervals;
-}
-
-- (void)setLockTimerTimeInterval:(NSNumber *)lockTimerTimeInterval {
-    _lockTimerTimeInterval = lockTimerTimeInterval;
-
-    [DWGlobalOptions sharedInstance].autoLockAppInterval = lockTimerTimeInterval.integerValue;
 }
 
 - (NSString *)titleForCurrentLockTimerTimeInterval {
@@ -143,18 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Spending Confirmation
 
-- (BOOL)spendingConfirmationEnabled {
-    return ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
-}
-
-- (void)setSpendingConfirmationEnabled:(BOOL)spendingConfirmationEnabled {
-    [[DWGlobalOptions sharedInstance] setSpendingConfirmationDisabled:!spendingConfirmationEnabled];
-}
-
-- (BOOL)canConfigureSpendingConfirmation {
-    return [DWGlobalOptions sharedInstance].biometricAuthEnabled;
-}
-
 - (NSArray<NSNumber *> *)spendingConfirmationValues {
     if (!_spendingConfirmationValues) {
         // Dash values: 0 / 0.1 / 0.5 / 1 / 5
@@ -165,15 +107,16 @@ NS_ASSUME_NONNULL_BEGIN
     return _spendingConfirmationValues;
 }
 
-- (NSNumber *)spendingConfirmationLimit {
-    DSChainsManager *chainsManager = [DSChainsManager sharedInstance];
-    const uint64_t value = chainsManager.spendingLimit;
-    return @(value);
-}
-
-- (void)setSpendingConfirmationLimit:(NSNumber *)spendingConfirmationLimit {
-    const long long limit = spendingConfirmationLimit.longLongValue;
-    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
+- (NSString *)titleForSpendingConfirmationOption {
+    if (self.hasTouchID) {
+        return NSLocalizedString(@"Touch ID limit", nil);
+    }
+    else if (self.hasFaceID) {
+        return NSLocalizedString(@"Face ID limit", nil);
+    }
+    else {
+        return @"";
+    }
 }
 
 - (NSAttributedString *)spendingConfirmationString:(NSNumber *)number
@@ -228,60 +171,6 @@ NS_ASSUME_NONNULL_BEGIN
 
         return [attributedString copy];
     }
-}
-
-- (NSString *)titleForSpendingConfirmationOption {
-    if (self.hasTouchID) {
-        return NSLocalizedString(@"Touch ID limit", nil);
-    }
-    else if (self.hasFaceID) {
-        return NSLocalizedString(@"Face ID limit", nil);
-    }
-    else {
-        return @"";
-    }
-}
-
-#pragma mark - Actions
-
-- (void)resetToDefault {
-    self.autoLogout = YES;
-    self.lockTimerTimeInterval = @(60);
-
-    self.spendingConfirmationEnabled = YES;
-    self.spendingConfirmationLimit = @(DUFFS / 2);
-}
-
-#pragma mark - Private
-
-/// Max value for a type considered as Disabled state
-- (DWSecurityLevel)securityLevelForLockTime:(NSInteger)lockTime
-                       spendingConfirmation:(uint64_t)spendingConfirmation {
-    // Wallet Level Authentication | OFF / Spending Confirmation | OFF = NONE
-    if (lockTime == NSIntegerMax && spendingConfirmation == UINT64_MAX) {
-        return DWSecurityLevel_None;
-    }
-
-    // Wallet Level Authentication | ON / Spending Confirmation | ON / Lock Timer | OFF = VERY HIGH
-    if (lockTime == 0 && spendingConfirmation == 0) {
-        return DWSecurityLevel_VeryHigh;
-    }
-
-    // Wallet Level Authentication | ON / Spending Confirmation | ON = HIGH
-    if (lockTime != NSIntegerMax && spendingConfirmation != UINT64_MAX) {
-        return DWSecurityLevel_High;
-    }
-
-    // Wallet Level Authentication | ON / Spending Confirmation | OFF / Lock Timer | 1 hr-24 hr = LOW
-    if (lockTime >= 60 * 60 && spendingConfirmation == UINT64_MAX) {
-        return DWSecurityLevel_Low;
-    }
-
-    // Wallet Level Authentication | ON / Spending Confirmation | OFF / Lock Timer | OFF - <1 hr = MED
-    // Wallet Level Authentication | OFF / Spending Confirmation | ON = MED
-    // Wallet Level Authentication | ON / Spending Confirmation | OFF = MED
-
-    return DWSecurityLevel_Medium;
 }
 
 @end

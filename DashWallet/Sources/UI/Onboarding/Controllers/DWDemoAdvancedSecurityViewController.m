@@ -15,19 +15,24 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWDemoAdvancedSecurityViewController.h"
+
+#import "DWAdvancedSecurityModelStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWAdvancedSecurityModelProtocol;
+@implementation DWDemoAdvancedSecurityViewController
 
-@interface DWAdvancedSecurityViewController : UIViewController
+- (instancetype)init {
+    self = [super initWithModel:[[DWAdvancedSecurityModelStub alloc] init]];
+    return self;
+}
 
-- (instancetype)initWithModel:(id<DWAdvancedSecurityModelProtocol>)model NS_DESIGNATED_INITIALIZER;
+- (void)viewDidLoad {
+    [super viewDidLoad];
 
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+    self.view.userInteractionEnabled = NO;
+}
 
 @end
 

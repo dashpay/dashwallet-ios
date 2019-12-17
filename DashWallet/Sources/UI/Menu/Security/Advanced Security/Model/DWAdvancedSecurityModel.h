@@ -15,19 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWAdvancedSecurityModelProtocol.h"
+#import "DWBaseAdvancedSecurityModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWAdvancedSecurityModelProtocol;
-
-@interface DWAdvancedSecurityViewController : UIViewController
-
-- (instancetype)initWithModel:(id<DWAdvancedSecurityModelProtocol>)model NS_DESIGNATED_INITIALIZER;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+@interface DWAdvancedSecurityModel : DWBaseAdvancedSecurityModel <DWAdvancedSecurityModelProtocol>
 
 @end
 

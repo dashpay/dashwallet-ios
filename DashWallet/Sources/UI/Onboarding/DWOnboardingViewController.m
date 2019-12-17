@@ -17,10 +17,11 @@
 
 #import "DWOnboardingViewController.h"
 
-#import "DWAppRootViewController.h"
+#import "DWDemoAdvancedSecurityViewController.h"
+#import "DWDemoAppRootViewController.h"
+#import "DWNavigationController.h"
 #import "DWOnboardingCollectionViewCell.h"
 #import "DWOnboardingModel.h"
-#import "DWRootModelStub.h"
 #import "DWUIKit.h"
 #import "UIViewController+DWEmbedding.h"
 
@@ -36,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (null_resettable, nonatomic, strong) DWOnboardingModel *model;
 
-@property (nonatomic, strong) DWAppRootViewController *rootController;
+@property (nonatomic, strong) DWDemoAppRootViewController *rootController;
 
 @end
 
@@ -76,7 +77,9 @@ NS_ASSUME_NONNULL_BEGIN
     UIEdgeInsets insets = self.view.safeAreaInsets;
     insets.left = 10.0;
     insets.right = 10.0;
-    self.rootController.additionalSafeAreaInsets = insets;
+    UINavigationController *navigationController = self.rootController.navigationController;
+    NSParameterAssert(navigationController);
+    navigationController.additionalSafeAreaInsets = insets;
 }
 
 #pragma mark - Actions
@@ -145,11 +148,22 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)scrollViewDidStop {
+    UINavigationController *navigationController = self.rootController.navigationController;
+    NSParameterAssert(navigationController);
+
     if (self.pageControl.currentPage == 0) {
+        [navigationController popToRootViewControllerAnimated:YES];
         [self.rootController closePaymentsScreen];
     }
     else if (self.pageControl.currentPage == 1) {
+        [navigationController popToRootViewControllerAnimated:YES];
         [self.rootController openPaymentsScreen];
+    }
+    else if (self.pageControl.currentPage == 2) {
+        if (navigationController.viewControllers.count == 1) {
+            DWDemoAdvancedSecurityViewController *controller = [[DWDemoAdvancedSecurityViewController alloc] init];
+            [navigationController pushViewController:controller animated:YES];
+        }
     }
 }
 
@@ -168,10 +182,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.pageControl.pageIndicatorTintColor = [UIColor dw_disabledButtonColor];
     self.pageControl.currentPageIndicatorTintColor = [UIColor dw_dashBlueColor];
 
-    DWRootModelStub *model = [[DWRootModelStub alloc] init];
-    DWAppRootViewController *controller = [[DWAppRootViewController alloc] initWithModel:model];
-    controller.view.userInteractionEnabled = NO;
-    [self dw_embedChild:controller inContainer:self.miniWalletView];
+    [self.skipButton setTitle:NSLocalizedString(@"Skip", nil) forState:UIControlStateNormal];
+
+    DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    [self dw_embedChild:navigationController inContainer:self.miniWalletView];
     self.rootController = controller;
 }
 

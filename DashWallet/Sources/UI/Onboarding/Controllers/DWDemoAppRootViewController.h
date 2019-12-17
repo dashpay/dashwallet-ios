@@ -15,19 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWAppRootViewController.h"
+
+#import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWAdvancedSecurityModelProtocol;
-
-@interface DWAdvancedSecurityViewController : UIViewController
-
-- (instancetype)initWithModel:(id<DWAdvancedSecurityModelProtocol>)model NS_DESIGNATED_INITIALIZER;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
-                         bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+@interface DWDemoAppRootViewController : DWAppRootViewController <DWNavigationFullscreenable>
 
 @end
 

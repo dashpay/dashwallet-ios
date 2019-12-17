@@ -21,7 +21,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAdvancedSecurityModel : NSObject
+@class UIColor;
+@class UIFont;
+
+@protocol DWAdvancedSecurityModelProtocol <NSObject>
 
 @property (readonly, nonatomic, assign) DWSecurityLevel securityLevel;
 
