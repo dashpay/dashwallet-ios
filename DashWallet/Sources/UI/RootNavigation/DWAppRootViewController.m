@@ -131,6 +131,26 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 }
 
+- (void)openPaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController openPaymentsScreen];
+}
+
+- (void)closePaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController closePaymentsScreen];
+}
+
 #pragma mark - Life Cycle
 
 - (void)viewDidLoad {

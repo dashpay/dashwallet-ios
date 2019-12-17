@@ -91,6 +91,14 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self.homeController handleFile:file];
 }
 
+- (void)openPaymentsScreen {
+    [self tabBarViewDidOpenPayments:self.tabBarView];
+}
+
+- (void)closePaymentsScreen {
+    [self tabBarViewDidClosePayments:self.tabBarView];
+}
+
 #pragma mark - DWTabBarViewDelegate
 
 - (void)tabBarView:(DWTabBarView *)tabBarView didTapButtonType:(DWTabBarViewButtonType)buttonType {

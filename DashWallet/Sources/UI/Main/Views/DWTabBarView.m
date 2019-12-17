@@ -171,6 +171,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
     self.paymentsButton.opened = opened;
 }
 
+- (void)togglePaymentsOpenState {
+    [self paymentsButtonAction:self.paymentsButton];
+}
+
 #pragma mark - Actions
 
 - (void)paymentsButtonAction:(DWPaymentsButton *)sender {

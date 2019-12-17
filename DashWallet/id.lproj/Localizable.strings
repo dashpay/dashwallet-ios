@@ -195,6 +195,9 @@
 "Checking private key balance..." = "Checking private key balance...";
 
 /* No comment provided by engineer. */
+"Checkout out the new design with improved and unified experience across all platforms" = "Checkout out the new design with improved and unified experience across all platforms";
+
+/* No comment provided by engineer. */
 "Classical Transaction" = "Transaksi Klasik";
 
 /* No comment provided by engineer. */
@@ -399,6 +402,9 @@
 "Go to Website" = "Pergi ke Situs Web";
 
 /* No comment provided by engineer. */
+"Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
+
+/* No comment provided by engineer. */
 "Help us improve your experience" = "Help us improve your experience";
 
 /* No comment provided by engineer. */
@@ -552,6 +558,9 @@
 "More" = "More";
 
 /* No comment provided by engineer. */
+"More Control" = "More Control";
+
+/* No comment provided by engineer. */
 "More..." = "More...";
 
 /* No comment provided by engineer. */
@@ -577,6 +586,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "JANGAN PERNAH mengetikkan frasa pemulihan Anda ke pengelola atau kata sandi lainnya. Perangkat lain mungkin terinfeksi.";
+
+/* No comment provided by engineer. */
+"New Experience" = "New Experience";
 
 /* No comment provided by engineer. */
 "New public key:" = "New public key:";
@@ -661,6 +673,12 @@
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Kunci Pemilik";
+
+/* No comment provided by engineer. */
+"Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
+
+/* No comment provided by engineer. */
+"Pay with Ease" = "Pay with Ease";
 
 /* No comment provided by engineer. */
 "Payload:" = "Payload:";

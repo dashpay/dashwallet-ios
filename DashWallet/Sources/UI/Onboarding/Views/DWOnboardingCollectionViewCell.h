@@ -15,28 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWExtendedContainerViewController.h"
+#import <UIKit/UIKit.h>
 
-#import "DWHomeProtocol.h"
-#import "DWWipeDelegate.h"
+#import "DWOnboardingPageProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@interface DWOnboardingCollectionViewCell : UICollectionViewCell
 
-@interface DWMainTabbarViewController : DWExtendedContainerViewController
-
-@property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
-
-- (void)performScanQRCodeAction;
-- (void)performPayToURL:(NSURL *)url;
-
-- (void)handleFile:(NSData *)file;
-
-- (void)openPaymentsScreen;
-- (void)closePaymentsScreen;
-
-+ (instancetype)controllerWithHomeModel:(id<DWHomeProtocol>)homeModel;
+@property (nullable, nonatomic, strong) id<DWOnboardingPageProtocol> model;
 
 @end
 
