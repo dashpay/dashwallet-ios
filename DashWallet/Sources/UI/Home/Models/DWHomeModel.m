@@ -22,6 +22,7 @@
 
 #import <UIKit/UIApplication.h>
 
+#import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
@@ -212,6 +213,10 @@ static BOOL IsJailbroken(void) {
 
 - (void)reloadShortcuts {
     [self.shortcutsModel reloadShortcuts];
+}
+
+- (void)registerForPushNotifications {
+    [[AppDelegate appDelegate] registerForPushNotifications];
 }
 
 - (void)retrySyncing {

@@ -54,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)walletBackupReminderWasShown;
 
+- (void)registerForPushNotifications;
+
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider;
 
 @end

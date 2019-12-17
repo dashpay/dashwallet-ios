@@ -118,6 +118,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)retrySyncing {
 }
 
+- (void)registerForPushNotifications {
+}
+
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider {
     return self.dataProvider;
 }

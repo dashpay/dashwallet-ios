@@ -17,7 +17,6 @@
 
 #import "DWHomeViewController.h"
 
-#import "AppDelegate.h"
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
@@ -80,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self showWalletBackupReminderIfNeeded];
 
-    [[AppDelegate appDelegate] registerForPushNotifications];
+    [self.model registerForPushNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
