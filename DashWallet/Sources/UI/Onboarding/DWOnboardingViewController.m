@@ -230,8 +230,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     self.pageControl.pageIndicatorTintColor = [UIColor dw_disabledButtonColor];
     self.pageControl.currentPageIndicatorTintColor = [UIColor dw_dashBlueColor];
 
-    [self.skipButton setTitle:NSLocalizedString(@"Skip", nil) forState:UIControlStateNormal];
-    [self.finishButton setTitle:NSLocalizedString(@"Done", nil) forState:UIControlStateNormal];
+    [self.skipButton setTitle:NSLocalizedString(@"skip", nil) forState:UIControlStateNormal];
+    [self.finishButton setTitle:NSLocalizedString(@"Get Started", nil) forState:UIControlStateNormal];
     self.finishButton.alpha = 0.0;
 
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
