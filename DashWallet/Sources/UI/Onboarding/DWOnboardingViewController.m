@@ -38,12 +38,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 @property (strong, nonatomic) IBOutlet UIButton *skipButton;
 @property (strong, nonatomic) IBOutlet UIButton *finishButton;
-
 @property (nonatomic, strong) UIImageView *bezelImageView;
 
 @property (null_resettable, nonatomic, strong) DWOnboardingModel *model;
 
 @property (nonatomic, strong) DWDemoAppRootViewController *rootController;
+@property (nullable, nonatomic, strong) NSIndexPath *prevIndexPathAtCenter;
 
 @end
 
@@ -69,13 +69,19 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 
+    self.prevIndexPathAtCenter = [self currentIndexPath];
+
     [coordinator
         animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
             const UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
             const CGAffineTransform bezelsTransform = [self transformForDeviceOrientation:deviceOrientation];
             self.bezelImageView.transform = bezelsTransform;
+
+            [self.collectionView.collectionViewLayout invalidateLayout];
         }
-                        completion:nil];
+        completion:^(id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
+            [self scrollToIndexPath:self.prevIndexPathAtCenter animated:NO];
+        }];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -156,6 +162,22 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                     layout:(UICollectionViewLayout *)collectionViewLayout
     sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     return collectionView.bounds.size;
+}
+
+- (CGPoint)collectionView:(UICollectionView *)collectionView targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset {
+    NSIndexPath *indexPath = self.prevIndexPathAtCenter;
+    if (!indexPath) {
+        return proposedContentOffset;
+    }
+
+    UICollectionViewLayoutAttributes *attributes =
+        [collectionView layoutAttributesForItemAtIndexPath:indexPath];
+    if (!attributes) {
+        return proposedContentOffset;
+    }
+
+    const CGPoint newOriginForOldCenter = attributes.frame.origin;
+    return newOriginForOldCenter;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -241,6 +263,24 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     self.rootController = controller;
 }
 
+- (nullable NSIndexPath *)currentIndexPath {
+    const CGPoint center = [self.view convertPoint:self.collectionView.center toView:self.collectionView];
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:center];
+
+    return indexPath;
+}
+
+- (void)scrollToIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    NSParameterAssert(indexPath);
+    if (!indexPath) {
+        return;
+    }
+
+    [self.collectionView scrollToItemAtIndexPath:indexPath
+                                atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
+                                        animated:animated];
+}
+
 - (UIImage *)bezelImageForCurrentDevice {
     if (IS_IPHONE) {
         if (IS_IPHONE_X_FAMILY) {
@@ -254,7 +294,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
         }
     }
     else {
-        if (IS_IPAD_PRO_10_5) {
+        if (IS_IPAD_PRO_11) {
             return [UIImage imageNamed:@"ipad_pro_11_bezel"];
         }
         else if (IS_IPAD_PRO_12_9) {
