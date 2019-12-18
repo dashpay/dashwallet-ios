@@ -46,19 +46,26 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @property (nullable, nonatomic, strong) DWRecoverWalletCommand *recoverWalletCommand;
 
+@property (nonatomic, assign) BOOL launchingWasDeferred;
+
 @end
 
 @implementation DWSetupViewController
 
-+ (UIViewController *)controllerEmbededInNavigationWithDelegate:(id<DWSetupViewControllerDelegate>)delegate {
++ (instancetype)controller {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Setup" bundle:nil];
     DWSetupViewController *controller = [storyboard instantiateInitialViewController];
-    controller.delegate = delegate;
 
-    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
-
-    return navigationController;
+    return controller;
 }
+
+#pragma mark - Public
+
+- (void)setLaunchingAsDeferredController {
+    self.launchingWasDeferred = YES;
+}
+
+#pragma mark - Life Cycle
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -74,7 +81,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
         self.logoLayoutViewBottomContraint.constant = CGRectGetHeight([UIScreen mainScreen].bounds) -
                                                       CGRectGetMinY(self.createWalletButton.frame);
-        [UIView animateWithDuration:ANIMATION_DURATION
+        [UIView animateWithDuration:self.launchingWasDeferred ? 0.0 : ANIMATION_DURATION
                          animations:^{
                              [self.view layoutIfNeeded];
                          }];

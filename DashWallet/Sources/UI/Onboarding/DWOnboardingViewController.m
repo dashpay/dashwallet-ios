@@ -23,6 +23,7 @@
 #import "DWOnboardingCollectionViewCell.h"
 #import "DWOnboardingModel.h"
 #import "DWUIKit.h"
+#import "DevicesCompatibility.h"
 #import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,6 +38,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 @property (strong, nonatomic) IBOutlet UIButton *skipButton;
 @property (strong, nonatomic) IBOutlet UIButton *finishButton;
+
+@property (nonatomic, strong) UIImageView *bezelImageView;
 
 @property (null_resettable, nonatomic, strong) DWOnboardingModel *model;
 
@@ -63,15 +66,44 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     return UIStatusBarStyleLightContent;
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    [coordinator
+        animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            const UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+            const CGAffineTransform bezelsTransform = [self transformForDeviceOrientation:deviceOrientation];
+            self.bezelImageView.transform = bezelsTransform;
+        }
+                        completion:nil];
+}
+
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
 
     const CGFloat height = CGRectGetHeight(self.view.bounds);
+    const CGFloat width = CGRectGetWidth(self.view.bounds);
+
     const CGFloat scale = 0.5;
     const CGFloat miniWalletHeight = height * scale;
     const CGFloat offset = (height - miniWalletHeight) / 2.0;
     const CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
-    self.miniWalletView.transform = CGAffineTransformTranslate(scaleTransform, 0.0, -offset);
+    const CGAffineTransform resultTransform = CGAffineTransformTranslate(scaleTransform, 0.0, -offset);
+    self.miniWalletView.transform = resultTransform;
+
+    const CGSize bezelSize = self.bezelImageView.image.size;
+    const CGSize scaledBezelSize = CGSizeMake(bezelSize.width * scale, bezelSize.height * scale);
+    const CGFloat bezelY = ((height - scaledBezelSize.height) / 2.0) - offset / 2.0;
+
+    self.bezelImageView.transform = CGAffineTransformIdentity;
+    self.bezelImageView.frame = CGRectMake((width - scaledBezelSize.width) / 2.0,
+                                           bezelY,
+                                           scaledBezelSize.width,
+                                           scaledBezelSize.height);
+
+    const UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    const CGAffineTransform bezelsTransform = [self transformForDeviceOrientation:deviceOrientation];
+    self.bezelImageView.transform = bezelsTransform;
 
     // There is an issue with layout margins of "minified" root controller
     // When the scale transformation is applied to the hosted view safe area is ignored and layout margins of
@@ -188,6 +220,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (void)setupView {
+    UIImage *bezelImage = [self bezelImageForCurrentDevice];
+    UIImageView *bezelImageView = [[UIImageView alloc] initWithImage:bezelImage];
+    bezelImageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.view insertSubview:bezelImageView aboveSubview:self.miniWalletView];
+    self.bezelImageView = bezelImageView;
+
     self.pageControl.numberOfPages = self.model.items.count;
     self.pageControl.pageIndicatorTintColor = [UIColor dw_disabledButtonColor];
     self.pageControl.currentPageIndicatorTintColor = [UIColor dw_dashBlueColor];
@@ -201,6 +239,45 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self dw_embedChild:navigationController inContainer:self.miniWalletView];
     self.rootController = controller;
+}
+
+- (UIImage *)bezelImageForCurrentDevice {
+    if (IS_IPHONE) {
+        if (IS_IPHONE_X_FAMILY) {
+            return [UIImage imageNamed:@"iphone_x_bezel"];
+        }
+        else if (IS_IPHONE_5_OR_LESS) {
+            return [UIImage imageNamed:@"iphone_5_bezel"];
+        }
+        else {
+            return [UIImage imageNamed:@"iphone_8_bezel"];
+        }
+    }
+    else {
+        if (IS_IPAD_PRO_10_5) {
+            return [UIImage imageNamed:@"ipad_pro_11_bezel"];
+        }
+        else if (IS_IPAD_PRO_12_9) {
+            return [UIImage imageNamed:@"ipad_pro_12_bezel"];
+        }
+        else {
+            return [UIImage imageNamed:@"ipad_regular_bezel"];
+        }
+    }
+}
+
+- (CGAffineTransform)transformForDeviceOrientation:(UIDeviceOrientation)orientation {
+    if (orientation == UIDeviceOrientationPortraitUpsideDown) {
+        return CGAffineTransformMakeRotation(M_PI * 180 / 180.0);
+    }
+    else if (orientation == UIDeviceOrientationLandscapeLeft) {
+        return CGAffineTransformMakeRotation(M_PI * 270 / 180.0);
+    }
+    else if (orientation == UIDeviceOrientationLandscapeRight) {
+        return CGAffineTransformMakeRotation(M_PI * 90 / 180.0);
+    }
+
+    return CGAffineTransformIdentity;
 }
 
 @end

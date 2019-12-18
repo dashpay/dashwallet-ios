@@ -323,9 +323,16 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (UIViewController *)setupController {
-    UIViewController *controller = [DWSetupViewController controllerEmbededInNavigationWithDelegate:self];
+    DWSetupViewController *controller = [DWSetupViewController controller];
+    controller.delegate = self;
 
-    return controller;
+    if (self.launchingWasDeferred) {
+        [controller setLaunchingAsDeferredController];
+    }
+
+    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
+
+    return navigationController;
 }
 
 - (DWMainTabbarViewController *)mainController {
