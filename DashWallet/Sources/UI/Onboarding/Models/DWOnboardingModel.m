@@ -19,6 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// use legacy User Defaults key to determine if this is an upgrade process
+static NSString *const HAS_WALLET_FLAG = @"BALANCE";
+
 @interface DWOnboardingPage : NSObject <DWOnboardingPageProtocol>
 
 @property (nonatomic, copy) NSString *title;
@@ -41,8 +44,14 @@ NS_ASSUME_NONNULL_BEGIN
 
         {
             DWOnboardingPage *page = [[DWOnboardingPage alloc] init];
-            page.title = NSLocalizedString(@"New Experience", nil);
-            page.detail = NSLocalizedString(@"Checkout out the new design with improved and unified experience across all platforms", nil);
+            const BOOL hasWallet = [[NSUserDefaults standardUserDefaults] objectForKey:HAS_WALLET_FLAG] != nil;
+            if (hasWallet) {
+                page.title = NSLocalizedString(@"We upgraded", nil);
+            }
+            else {
+                page.title = NSLocalizedString(@"Welcome", nil);
+            }
+            page.detail = NSLocalizedString(@"An intuitive and familiar experience across all your devices", nil);
             [items addObject:page];
         }
 

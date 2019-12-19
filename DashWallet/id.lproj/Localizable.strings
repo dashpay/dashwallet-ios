@@ -111,6 +111,9 @@
 "Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
+"An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+
+/* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Aplikasi %@ meminta pembayaran kepada";
 
 /* No comment provided by engineer. */
@@ -193,9 +196,6 @@
 
 /* No comment provided by engineer. */
 "Checking private key balance..." = "Checking private key balance...";
-
-/* No comment provided by engineer. */
-"Checkout out the new design with improved and unified experience across all platforms" = "Checkout out the new design with improved and unified experience across all platforms";
 
 /* No comment provided by engineer. */
 "Classical Transaction" = "Transaksi Klasik";
@@ -589,9 +589,6 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "JANGAN PERNAH mengetikkan frasa pemulihan Anda ke pengelola atau kata sandi lainnya. Perangkat lain mungkin terinfeksi.";
-
-/* No comment provided by engineer. */
-"New Experience" = "New Experience";
 
 /* No comment provided by engineer. */
 "New public key:" = "New public key:";
@@ -1276,6 +1273,12 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Kami telah mendeteksi bahwa Dashwallet macet saat terakhir kali dibuka. Apakah Anda ingin membantu kami menyelesaikan masalah dengan mengirimkan data laporan kerusakan kepada kami? Riwayat transaksi Anda dan informasi pribadi lainnya TIDAK AKAN dibagikan.";
+
+/* No comment provided by engineer. */
+"We upgraded" = "We upgraded";
+
+/* No comment provided by engineer. */
+"Welcome" = "Welcome";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";

@@ -111,6 +111,9 @@
 "Amount too small" = "Amount too small";
 
 /* No comment provided by engineer. */
+"An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+
+/* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Die Anwendung %@ fordert eine Zahlung an";
 
 /* No comment provided by engineer. */
@@ -193,9 +196,6 @@
 
 /* No comment provided by engineer. */
 "Checking private key balance..." = "Checking private key balance...";
-
-/* No comment provided by engineer. */
-"Checkout out the new design with improved and unified experience across all platforms" = "Checkout out the new design with improved and unified experience across all platforms";
 
 /* No comment provided by engineer. */
 "Classical Transaction" = "Klassische Transaktion";
@@ -589,9 +589,6 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Geben Sie NIEMALS Ihre Wiederherstellungs-Wortfolge in einen Passwort-Manager oder ähnliches ein. Andere Geräte könnten infiziert sein.";
-
-/* No comment provided by engineer. */
-"New Experience" = "New Experience";
 
 /* No comment provided by engineer. */
 "New public key:" = "New public key:";
@@ -1276,6 +1273,12 @@
 
 /* No comment provided by engineer. */
 "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Wir haben festgestellt, dass Dashwallet abgestürzt ist, nachdem es geöffnet wurde. Würdest du uns dabei helfen dieses Problem zu lösen, indem du uns den Absturzbericht zusendest? Dein Transaktionsverlauf und andere private Informationen WERDEN NICHT geteilt.";
+
+/* No comment provided by engineer. */
+"We upgraded" = "We upgraded";
+
+/* No comment provided by engineer. */
+"Welcome" = "Welcome";
 
 /* No comment provided by engineer. */
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
