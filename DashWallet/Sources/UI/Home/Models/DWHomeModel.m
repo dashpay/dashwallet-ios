@@ -34,6 +34,7 @@
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
 #import "DWTransactionListDataSource+DWProtected.h"
+#import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -68,6 +69,8 @@ static BOOL IsJailbroken(void) {
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *receivedDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *sentDataSource;
 @property (null_resettable, nonatomic, strong) DWTransactionListDataSource *rewardsDataSource;
+
+@property (nonatomic, assign) BOOL upgradedExtendedKeys;
 
 @end
 
@@ -238,6 +241,35 @@ static BOOL IsJailbroken(void) {
     NSAssert(options.walletBackupReminderWasShown == NO, @"Inconsistent state");
 
     options.walletBackupReminderWasShown = YES;
+}
+
+- (BOOL)performUpgradeOnce {
+    if (self.upgradedExtendedKeys) {
+        return NO;
+    }
+
+    self.upgradedExtendedKeys = YES;
+
+    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
+    NSArray *wallets = [DWEnvironment sharedInstance].allWallets;
+
+    [dashSyncVersionManager
+        upgradeExtendedKeysForWallets:wallets
+                          withMessage:NSLocalizedString(@"Please enter pin to upgrade wallet", nil)
+                       withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
+                           DWVersionManager *dashwalletVersionManager = [DWVersionManager sharedInstance];
+                           [dashwalletVersionManager
+                               checkPassphraseWasShownCorrectlyForWallet:wallets.firstObject
+                                                          withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase) {
+                                                              if (needsCheck) {
+                                                                  // Show backup reminder shortcut
+                                                                  [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
+                                                                  [self reloadShortcuts];
+                                                              }
+                                                          }];
+                       }];
+
+    return YES;
 }
 
 - (void)forceStartSyncingActivity {

@@ -15,27 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWBaseLegacyViewController.h"
+#import <KVO-MVVM/KVOUIViewController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWStartModel;
-@protocol DWStartViewControllerDelegate;
+@interface DWBaseLegacyViewController : KVOUIViewController
 
-@interface DWStartViewController : DWBaseLegacyViewController
+- (void)protectedViewDidAppear NS_REQUIRES_SUPER;
 
-@property (strong, nonatomic) DWStartModel *viewModel;
-@property (nullable, weak, nonatomic) id<DWStartViewControllerDelegate> delegate;
+- (void)forceUpdateWalletAuthentication:(BOOL)cancelled;
 
-+ (instancetype)controller;
-
-@end
-
-@protocol DWStartViewControllerDelegate <NSObject>
-
-- (void)startViewController:(DWStartViewController *)controller
-    didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions
-                shouldRescanBlockchain:(BOOL)shouldRescanBlockchain;
+- (void)showNewWalletController;
 
 @end
 

@@ -144,7 +144,7 @@
 		2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535222F1D0D900E5168A /* DWTxListTableViewCell.m */; };
 		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
-		2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */; };
+		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
 		2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
 		2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300442328D07500827825 /* DWLockPinInputView.m */; };
@@ -795,8 +795,8 @@
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
-		2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseRootViewController.h; sourceTree = "<group>"; };
-		2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseRootViewController.m; sourceTree = "<group>"; };
+		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
+		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
 		2A63003D2327B4BB00827825 /* DWPaymentOutput+DWView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPaymentOutput+DWView.h"; sourceTree = "<group>"; };
 		2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWPaymentOutput+DWView.m"; sourceTree = "<group>"; };
@@ -3338,8 +3338,8 @@
 				FB9CC2701F8E27B80079309F /* DWGenerateViewController.m */,
 				FBFC2EF9211413EB00D20C57 /* DWWarningViewController.h */,
 				FBFC2EFA211413EB00D20C57 /* DWWarningViewController.m */,
-				2A58815721A5906C00FD4D2C /* DWBaseRootViewController.h */,
-				2A58815821A5906C00FD4D2C /* DWBaseRootViewController.m */,
+				2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */,
+				2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */,
 				2AB8CDD9220D879300A3D1DB /* DWOLDAmountViewController.h */,
 				2AB8CDDA220D879300A3D1DB /* DWOLDAmountViewController.m */,
 			);
@@ -4567,7 +4567,7 @@
 				2A307CBF22E8A44200A18347 /* DWButton.m in Sources */,
 				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
-				2A58815921A5906C00FD4D2C /* DWBaseRootViewController.m in Sources */,
+				2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */,
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,

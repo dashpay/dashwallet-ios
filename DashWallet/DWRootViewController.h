@@ -24,13 +24,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DWBaseRootViewController.h"
+#import "DWBaseLegacyViewController.h"
 
 #define PARALAX_RATIO    0.25
 
 @class DWOLDReceiveViewController, DWSendViewController;
 
-@interface DWRootViewController : DWBaseRootViewController <UIAlertViewDelegate, UIPageViewControllerDataSource, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
+@interface DWRootViewController : DWBaseLegacyViewController <UIAlertViewDelegate, UIPageViewControllerDataSource, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate,
 UIViewControllerAnimatedTransitioning,UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) IBOutlet DWOLDReceiveViewController *receiveViewController;
