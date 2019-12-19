@@ -17,6 +17,7 @@
 
 #import "DWDemoAppRootViewController.h"
 
+#import "DWDemoMainTabbarViewController.h"
 #import "DWRootModelStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -32,6 +33,16 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.view.userInteractionEnabled = NO;
+}
+
++ (Class)mainControllerClass {
+    return [DWDemoMainTabbarViewController class];
+}
+
+#pragma mark - Demo Mode
+
+- (BOOL)demoMode {
+    return YES;
 }
 
 #pragma mark - DWNavigationFullscreenable

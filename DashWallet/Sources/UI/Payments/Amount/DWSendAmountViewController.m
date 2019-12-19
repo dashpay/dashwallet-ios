@@ -44,6 +44,19 @@ NS_ASSUME_NONNULL_BEGIN
     self.title = NSLocalizedString(@"Send", nil);
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+
+    if (self.demoMode) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.model updateAmountWithReplacementString:@"1" range:NSMakeRange(0, 1)];
+            id dummySender = nil;
+            [self actionButtonAction:dummySender];
+        });
+    }
+}
+
+
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {

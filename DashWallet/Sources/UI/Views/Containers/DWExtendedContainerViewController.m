@@ -15,18 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWExtendedContainerViewController.h"
+#import "DWExtendedContainerViewController+DWProtected.h"
 
 #import "DWContainerViewController+DWProtected.h"
 #import "UIView+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface DWExtendedContainerViewController ()
-
-@property (nullable, nonatomic, strong) UIViewController *modalController;
-
-@end
 
 @implementation DWExtendedContainerViewController
 

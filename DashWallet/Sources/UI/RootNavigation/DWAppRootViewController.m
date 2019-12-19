@@ -66,6 +66,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #pragma mark - Public
 
++ (Class)mainControllerClass {
+    return [DWMainTabbarViewController class];
+}
+
 - (void)setLaunchingAsDeferredController {
     self.launchingWasDeferred = YES;
 }
@@ -285,6 +289,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model applicationDidEnterBackground];
 }
 
+#pragma mark - Demo Mode
+
+- (BOOL)demoMode {
+    return NO;
+}
+
+- (void)setDemoDelegate:(nullable id<DWDemoDelegate>)demoDelegate {
+    NSAssert(self.demoMode, @"Invalid usage. Demo delegate is to be used in the onboarding");
+
+    _demoDelegate = demoDelegate;
+}
+
 #pragma mark - Private
 
 - (void)showLockControllerIfNeeded {
@@ -338,8 +354,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (DWMainTabbarViewController *)mainController {
     if (_mainController == nil) {
         id<DWHomeProtocol> homeModel = self.model.homeModel;
-        DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
+        Class klass = [self.class mainControllerClass];
+        DWMainTabbarViewController *controller = [[klass alloc] init];
+        controller.homeModel = homeModel;
         controller.delegate = self;
+        controller.demoMode = self.demoMode;
+        controller.demoDelegate = self.demoDelegate;
 
         _mainController = controller;
     }

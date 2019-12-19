@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupView {
     NSParameterAssert(self.model);
 
-    DWAmountView *contentView = [[DWAmountView alloc] initWithModel:self.model];
+    DWAmountView *contentView = [[DWAmountView alloc] initWithModel:self.model demoMode:self.demoMode];
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.delegate = self;
     [self setupContentView:contentView];

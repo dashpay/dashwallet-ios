@@ -29,6 +29,7 @@
 #import "DWTxDetailFullscreenViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
+#import "UIViewController+DWEmbedding.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -121,6 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
         [DWSendAmountViewController sendControllerWithDestination:sendingDestination
                                                    paymentDetails:nil];
     controller.delegate = self;
+    controller.demoMode = self.demoMode;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -171,7 +173,16 @@ NS_ASSUME_NONNULL_BEGIN
         DWConfirmPaymentViewController *controller = [[DWConfirmPaymentViewController alloc] init];
         controller.paymentOutput = paymentOutput;
         controller.delegate = self;
-        [self presentViewController:controller animated:YES completion:nil];
+
+        if (self.demoMode) {
+            controller.transitioningDelegate = nil;
+            controller.modalPresentationStyle = UIModalPresentationPageSheet;
+
+            [self.demoDelegate presentModalController:controller sender:self];
+        }
+        else {
+            [self presentViewController:controller animated:YES completion:nil];
+        }
 
         self.confirmViewController = controller;
     }

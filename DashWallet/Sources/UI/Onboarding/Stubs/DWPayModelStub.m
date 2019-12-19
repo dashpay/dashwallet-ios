@@ -20,17 +20,26 @@
 #import <CoreNFC/CoreNFC.h>
 
 #import "DWPayOptionModel.h"
+#import "DWPaymentInputBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface DWPayModelStub ()
+
+@property (readonly, nonatomic, strong) DWPaymentInputBuilder *inputBuilder;
+@property (nullable, nonatomic, strong) DWPaymentInput *pasteboardPaymentInput;
+
+@end
 
 @implementation DWPayModelStub
 
 @synthesize options = _options;
-@synthesize pasteboardPaymentInput = _pasteboardPaymentInput;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _inputBuilder = [[DWPaymentInputBuilder alloc] init];
+
         NSMutableArray<DWPayOptionModel *> *options = [NSMutableArray array];
 
         DWPayOptionModel *scanQROption = [[DWPayOptionModel alloc]
@@ -50,6 +59,18 @@ NS_ASSUME_NONNULL_BEGIN
         _options = [options copy];
 
         pasteboardOption.details = @"XrUv3aniSvZEKx2VoFe5fTqFfYL5JYFkbg";
+
+        __weak typeof(self) weakSelf = self;
+        [_inputBuilder payFirstFromArray:@[ pasteboardOption.details ]
+                                  source:DWPaymentInputSource_Pasteboard
+                              completion:^(DWPaymentInput *_Nonnull paymentInput) {
+                                  __strong typeof(weakSelf) strongSelf = weakSelf;
+                                  if (!strongSelf) {
+                                      return;
+                                  }
+
+                                  strongSelf.pasteboardPaymentInput = paymentInput;
+                              }];
     }
     return self;
 }

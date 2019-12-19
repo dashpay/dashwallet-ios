@@ -124,7 +124,6 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     }
 }
 
-
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
@@ -161,6 +160,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     self.payViewController = [DWPayViewController controllerWithModel:self.payModel
                                                          dataProvider:self.dataProvider];
     self.payViewController.delegate = self;
+    self.payViewController.demoMode = self.demoMode;
+    self.payViewController.demoDelegate = self.demoDelegate;
     DWReceiveViewController *receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
     receiveViewController.viewType = DWReceiveViewType_Default;
     self.receiveViewController = receiveViewController;

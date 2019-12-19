@@ -19,6 +19,7 @@
 
 #import "DWDemoAdvancedSecurityViewController.h"
 #import "DWDemoAppRootViewController.h"
+#import "DWModalPresentationController.h"
 #import "DWNavigationController.h"
 #import "DWOnboardingCollectionViewCell.h"
 #import "DWOnboardingModel.h"
@@ -30,7 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
-@interface DWOnboardingViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+static CGFloat const MINIVIEW_MARGIN = 10.0;
+
+@interface DWOnboardingViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, DWDemoDelegate>
 
 @property (strong, nonatomic) IBOutlet UIView *miniWalletView;
 @property (strong, nonatomic) IBOutlet UICollectionView *collectionView;
@@ -44,6 +47,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 @property (nonatomic, strong) DWDemoAppRootViewController *rootController;
 @property (nullable, nonatomic, strong) NSIndexPath *prevIndexPathAtCenter;
+
+@property (nullable, nonatomic, weak) UIView *modalDimmingView;
+@property (nullable, nonatomic, weak) UIView *modalContainerView;
+@property (nullable, nonatomic, weak) UIViewController *modalPresentingController;
 
 @end
 
@@ -116,8 +123,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     // children views within root controller becomes invalid.
     // Restore safe area insets and hack horizontal insets a bit so it's fine for both root and their children.
     UIEdgeInsets insets = self.view.safeAreaInsets;
-    insets.left = 10.0;
-    insets.right = 10.0;
+    insets.left = MINIVIEW_MARGIN;
+    insets.right = MINIVIEW_MARGIN;
     UINavigationController *navigationController = self.rootController.navigationController;
     NSParameterAssert(navigationController);
     navigationController.additionalSafeAreaInsets = insets;
@@ -209,14 +216,31 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     NSParameterAssert(navigationController);
 
     if (self.pageControl.currentPage == 0) {
+        self.view.userInteractionEnabled = NO;
+
         [navigationController popToRootViewControllerAnimated:YES];
+        [self dismissModalControllerCompletion:^{
+            self.view.userInteractionEnabled = YES;
+        }];
+
         [self.rootController closePaymentsScreen];
     }
     else if (self.pageControl.currentPage == 1) {
         [navigationController popToRootViewControllerAnimated:YES];
         [self.rootController openPaymentsScreen];
+
+        if (!self.modalPresentingController) {
+            // disable user interaction while "playing" animations.
+            // interaction will be enabled after presenting modal controller for this onboarding page
+            self.view.userInteractionEnabled = NO;
+        }
     }
     else if (self.pageControl.currentPage == 2) {
+        self.view.userInteractionEnabled = NO;
+        [self dismissModalControllerCompletion:^{
+            self.view.userInteractionEnabled = YES;
+        }];
+
         if (navigationController.viewControllers.count == 1) {
             DWDemoAdvancedSecurityViewController *controller = [[DWDemoAdvancedSecurityViewController alloc] init];
             [navigationController pushViewController:controller animated:YES];
@@ -229,6 +253,59 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
                          self.skipButton.alpha = canFinish ? 0.0 : 1.0;
                          self.finishButton.alpha = canFinish ? 1.0 : 0.0;
                      }];
+}
+
+#pragma mark - DWDemoDelegate
+
+- (void)presentModalController:(UIViewController *)controller sender:(UIViewController *)sender {
+    UIView *parentView = self.miniWalletView;
+
+    UIView *dimmingView = [[UIView alloc] initWithFrame:parentView.bounds];
+    dimmingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    dimmingView.backgroundColor = [UIColor dw_modalDimmingColor];
+    [parentView addSubview:dimmingView];
+    self.modalDimmingView = dimmingView;
+
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectZero];
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+    [parentView addSubview:containerView];
+    self.modalContainerView = containerView;
+
+    const CGFloat heightPercent = DWModalPresentedHeightPercent();
+
+    [NSLayoutConstraint activateConstraints:@[
+        [containerView.leadingAnchor constraintEqualToAnchor:parentView.leadingAnchor],
+        [parentView.trailingAnchor constraintEqualToAnchor:containerView.trailingAnchor],
+
+        [parentView.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+        [containerView.heightAnchor constraintEqualToAnchor:parentView.heightAnchor
+                                                 multiplier:heightPercent],
+    ]];
+
+    [self dw_embedChild:controller inContainer:containerView];
+
+    const UIEdgeInsets insets = UIEdgeInsetsMake(0.0,
+                                                 MINIVIEW_MARGIN,
+                                                 MINIVIEW_MARGIN * 2.0,
+                                                 MINIVIEW_MARGIN);
+    controller.additionalSafeAreaInsets = insets;
+
+    self.modalPresentingController = controller;
+
+    const CGSize size = self.view.bounds.size;
+    const CGFloat containerHeight = size.height * heightPercent;
+    containerView.frame = CGRectMake(0.0, size.height, size.width, containerHeight);
+
+    [UIView animateWithDuration:ANIMATION_DURATION
+        animations:^{
+            containerView.frame = CGRectMake(0.0,
+                                             size.height - containerHeight,
+                                             size.width,
+                                             containerHeight);
+        }
+        completion:^(BOOL finished) {
+            self.view.userInteractionEnabled = YES;
+        }];
 }
 
 #pragma mark - Private
@@ -257,6 +334,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     self.finishButton.alpha = 0.0;
 
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
+    controller.demoDelegate = self;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self dw_embedChild:navigationController inContainer:self.miniWalletView];
@@ -279,6 +357,24 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
     [self.collectionView scrollToItemAtIndexPath:indexPath
                                 atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
                                         animated:animated];
+}
+
+- (void)dismissModalControllerCompletion:(void (^)(void))completion {
+    [UIView animateWithDuration:ANIMATION_DURATION / 2.0
+        animations:^{
+            self.modalDimmingView.alpha = 0.0;
+            self.modalContainerView.alpha = 0.0;
+        }
+        completion:^(BOOL finished) {
+            [self.modalDimmingView removeFromSuperview];
+            [self.modalContainerView removeFromSuperview];
+
+            [self.modalPresentingController dw_detachFromParent];
+
+            if (completion) {
+                completion();
+            }
+        }];
 }
 
 - (UIImage *)bezelImageForCurrentDevice {

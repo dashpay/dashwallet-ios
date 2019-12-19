@@ -17,13 +17,19 @@
 
 #import "DWContainerViewController.h"
 
+#import "DWDemoDelegate.h"
 #import "DWRootProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAppRootViewController : DWContainerViewController
 
+@property (readonly, nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
+
 - (instancetype)initWithModel:(id<DWRootProtocol>)model NS_DESIGNATED_INITIALIZER;
+
++ (Class)mainControllerClass;
 
 - (void)setLaunchingAsDeferredController;
 

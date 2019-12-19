@@ -15,31 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DWExtendedContainerViewController.h"
-
-#import "DWDemoDelegate.h"
-#import "DWHomeProtocol.h"
-#import "DWWipeDelegate.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWHomeModel;
+@class UIViewController;
 
-@interface DWMainTabbarViewController : DWExtendedContainerViewController
+/// In Demo Mode we can't use default presenting logic since UIKit creates separate transition view for that
+/// outside of ours miniWalletView, so no transformation will be applied for presenting controller
+@protocol DWDemoDelegate <NSObject>
 
-@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
-@property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
-
-@property (nonatomic, assign) BOOL demoMode;
-@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
-
-- (void)performScanQRCodeAction;
-- (void)performPayToURL:(NSURL *)url;
-
-- (void)handleFile:(NSData *)file;
-
-- (void)openPaymentsScreen;
-- (void)closePaymentsScreen;
+- (void)presentModalController:(UIViewController *)controller sender:(UIViewController *)sender;
 
 @end
 

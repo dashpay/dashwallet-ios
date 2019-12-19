@@ -52,6 +52,7 @@
 		2A11F59C21947CBE00E7B563 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59221947CBE00E7B563 /* BRTransactionEntity.m */; };
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
+		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
 		2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */; };
 		2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */; };
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
@@ -618,6 +619,10 @@
 		2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDataMigrationManager.m; sourceTree = "<group>"; };
 		2A11F5A12194C1D800E7B563 /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
 		2A11F5A22194C1D800E7B563 /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
+		2A12E61623AB9B8D001CAF58 /* DWDemoDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoDelegate.h; sourceTree = "<group>"; };
+		2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoMainTabbarViewController.h; sourceTree = "<group>"; };
+		2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoMainTabbarViewController.m; sourceTree = "<group>"; };
+		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
 		2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		2A1B7D902322AE2200BA8C6A /* DWTitleDetailItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailItem.h; sourceTree = "<group>"; };
@@ -1899,12 +1904,12 @@
 			children = (
 				2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */,
 				2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */,
+				2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */,
+				2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */,
 				2A44313E22CF642C009BAF7F /* DWRootModel.h */,
 				2A44313F22CF642C009BAF7F /* DWRootModel.m */,
 				2A913E7B23A2FF4A006A2A59 /* DWRootProtocol.h */,
 				2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */,
-				2A913E9323A3F75F006A2A59 /* DWInitialViewController.h */,
-				2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */,
 			);
 			path = RootNavigation;
 			sourceTree = "<group>";
@@ -2500,6 +2505,7 @@
 				2A913E6D23A26663006A2A59 /* DWOnboardingViewController.h */,
 				2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */,
 				2A913E7023A2667E006A2A59 /* Onboarding.storyboard */,
+				2A12E61623AB9B8D001CAF58 /* DWDemoDelegate.h */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -2559,9 +2565,10 @@
 			children = (
 				2A913E9623A400D3006A2A59 /* DWContainerViewController.h */,
 				2A913E9723A400D3006A2A59 /* DWContainerViewController.m */,
+				2A913E9D23A53BDF006A2A59 /* DWContainerViewController+DWProtected.h */,
 				2A913E9A23A53B8E006A2A59 /* DWExtendedContainerViewController.h */,
 				2A913E9B23A53B8E006A2A59 /* DWExtendedContainerViewController.m */,
-				2A913E9D23A53BDF006A2A59 /* DWContainerViewController+DWProtected.h */,
+				2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */,
 			);
 			path = Containers;
 			sourceTree = "<group>";
@@ -2992,10 +2999,12 @@
 		2AB3417023A92661004E37A7 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */,
-				2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */,
 				2AB3417523A92978004E37A7 /* DWDemoAdvancedSecurityViewController.h */,
 				2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */,
+				2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */,
+				2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */,
+				2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */,
+				2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -4338,6 +4347,7 @@
 				7548CF3719556FD700EF827F /* BRCopyLabel.m in Sources */,
 				2A2CD71E22F99ED8008C7BC9 /* DWShortcutAction.m in Sources */,
 				2AB66E0623572358007BE825 /* DWDerivationPathKeysTableViewCell.m in Sources */,
+				2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */,
 				2A44312622CCC14F009BAF7F /* DWSetPinViewController.m in Sources */,
 				2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */,
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,

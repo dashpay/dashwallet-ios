@@ -17,6 +17,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDemoDelegate.h"
 #import "DWNavigationFullscreenable.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -42,6 +43,9 @@ typedef NS_ENUM(NSUInteger, DWPaymentsViewControllerIndex) {
 
 @property (nullable, nonatomic, weak) id<DWPaymentsViewControllerDelegate> delegate;
 @property (nonatomic, assign) DWPaymentsViewControllerIndex currentIndex;
+
+@property (nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 + (instancetype)controllerWithReceiveModel:(id<DWReceiveModelProtocol>)receiveModel
                                   payModel:(id<DWPayModelProtocol>)payModel

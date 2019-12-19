@@ -85,8 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)onboardingDidFinish {
-    // TODO: <redesign> uncomment
-    //    [DWGlobalOptions sharedInstance].shouldDisplayOnboarding = NO;
+    [DWGlobalOptions sharedInstance].shouldDisplayOnboarding = NO;
 }
 
 - (DWAppRootViewController *)createRootController {

@@ -35,8 +35,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWWipeDelegate,
                                           DWMainMenuViewControllerDelegate>
 
-@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
-
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *tabBarBottomConstraint;
@@ -49,13 +47,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @end
 
 @implementation DWMainTabbarViewController
-
-+ (instancetype)controllerWithHomeModel:(id<DWHomeProtocol>)homeModel {
-    DWMainTabbarViewController *controller = [[DWMainTabbarViewController alloc] init];
-    controller.homeModel = homeModel;
-
-    return controller;
-}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -92,10 +83,13 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 }
 
 - (void)openPaymentsScreen {
+    NSAssert(self.demoMode, @"Invalid usage. Should be used in Demo mode only");
     [self tabBarViewDidOpenPayments:self.tabBarView];
 }
 
 - (void)closePaymentsScreen {
+    NSAssert(self.demoMode, @"Invalid usage. Should be used in Demo mode only");
+
     [self tabBarViewDidClosePayments:self.tabBarView];
 }
 
@@ -263,6 +257,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                                                                    dataProvider:dataProvider];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
+    controller.demoMode = self.demoMode;
+    controller.demoDelegate = self.demoDelegate;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
