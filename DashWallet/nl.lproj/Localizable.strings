@@ -195,6 +195,9 @@
 "Checking private key balance..." = "Checking private key balance...";
 
 /* No comment provided by engineer. */
+"Checkout out the new design with improved and unified experience across all platforms" = "Checkout out the new design with improved and unified experience across all platforms";
+
+/* No comment provided by engineer. */
 "Classical Transaction" = "Klassieke Transactie";
 
 /* No comment provided by engineer. */
@@ -396,7 +399,13 @@
 "GENERAL" = "ALGEMEEN";
 
 /* No comment provided by engineer. */
+"Get Started" = "Get Started";
+
+/* No comment provided by engineer. */
 "Go to Website" = "Ga naar website";
+
+/* No comment provided by engineer. */
+"Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Help us improve your experience";
@@ -531,7 +540,7 @@
 "Masternode Registration Transaction" = "Masternode registratie transactie";
 
 /* No comment provided by engineer. */
-"Masternode Revoked" = "Masternode Revoked";
+"Masternode Revoke" = "Masternode Revoke";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";
@@ -550,6 +559,9 @@
 
 /* No comment provided by engineer. */
 "More" = "More";
+
+/* No comment provided by engineer. */
+"More Control" = "More Control";
 
 /* No comment provided by engineer. */
 "More..." = "More...";
@@ -577,6 +589,9 @@
 
 /* No comment provided by engineer. */
 "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "Voer je herstelzin NOOIT in in wachtwoordbeheerders of ergens anders. Andere apparaten kunnen geïnfecteerd zijn.";
+
+/* No comment provided by engineer. */
+"New Experience" = "New Experience";
 
 /* No comment provided by engineer. */
 "New public key:" = "New public key:";
@@ -663,13 +678,10 @@
 "Owner Keys" = "Eigenaar sleutels";
 
 /* No comment provided by engineer. */
-"Pay" = "Betaal";
+"Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
 
 /* No comment provided by engineer. */
-"Pay to" = "Pay to";
-
-/* Translate it as short as possible! (24 symbols max) */
-"Pay with NFC" = "Pay with NFC";
+"Pay with Ease" = "Pay with Ease";
 
 /* No comment provided by engineer. */
 "Payload:" = "Payload:";
@@ -857,7 +869,7 @@
 /* No comment provided by engineer. */
 "Scan to Send" = "Scan to Send";
 
-/* (Pay by) Scanning QR code */
+/* (Send by) Scanning QR code */
 "Scanning QR code" = "Scanning QR code";
 
 /* No comment provided by engineer. */
@@ -899,7 +911,7 @@
 /* No comment provided by engineer. */
 "Send address as message" = "Send address as message";
 
-/* Pay by (scanning QR code) */
+/* Send by (scanning QR code) */
 "Send by" = "Send by";
 
 /* No comment provided by engineer. */
@@ -911,11 +923,17 @@
 /* No comment provided by engineer. */
 "Send request as message" = "Send request as message";
 
+/* No comment provided by engineer. */
+"Send to" = "Send to";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
 /* No comment provided by engineer. */
 "Send to copied address" = "Send to copied address";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Send with NFC" = "Send with NFC";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
@@ -993,6 +1011,9 @@
 "Size:" = "Size:";
 
 /* No comment provided by engineer. */
+"skip" = "skip";
+
+/* No comment provided by engineer. */
 "Skip" = "Skip";
 
 /* No comment provided by engineer. */
@@ -1045,6 +1066,9 @@
 
 /* No comment provided by engineer. */
 "Syncing:" = "Bezig met synchroniseren:";
+
+/* No comment provided by engineer. */
+"Tap" = "Tap";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tap to hide balance";

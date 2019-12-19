@@ -17,10 +17,11 @@
 
 #import <KVO-MVVM/KVOUIView.h>
 
+#import "DWBalanceProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWBalancePayReceiveButtonsView;
-@class DWHomeModel;
 
 @protocol DWBalancePayReceiveButtonsViewDelegate <NSObject>
 
@@ -33,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBalancePayReceiveButtonsView : KVOUIView
 
-@property (nullable, nonatomic, strong) DWHomeModel *model;
+@property (nullable, nonatomic, strong) id<DWBalanceProtocol> model;
 @property (nullable, nonatomic, weak) id<DWBalancePayReceiveButtonsViewDelegate> delegate;
 
 - (void)parentScrollViewDidScroll:(UIScrollView *)scrollView;

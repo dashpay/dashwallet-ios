@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWAdvancedSecurityViewController ()
 
-@property (null_resettable, nonatomic, strong) DWAdvancedSecurityModel *model;
+@property (nonatomic, strong) id<DWAdvancedSecurityModelProtocol> model;
 @property (nonatomic, strong) DWFormTableViewController *formController;
 @property (nonatomic, strong) DWSecurityStatusView *securityStatusView;
 
@@ -36,28 +36,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAdvancedSecurityViewController
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+- (instancetype)init {
+    return [self initWithModel:[[DWAdvancedSecurityModel alloc] init]];
+}
+
+- (instancetype)initWithModel:(id<DWAdvancedSecurityModelProtocol>)model {
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _model = model;
+
         self.title = NSLocalizedString(@"Advanced Security", nil);
         self.hidesBottomBarWhenPushed = YES;
     }
-
     return self;
-}
-
-- (DWAdvancedSecurityModel *)model {
-    if (!_model) {
-        _model = [[DWAdvancedSecurityModel alloc] init];
-    }
-
-    return _model;
 }
 
 - (NSArray<DWBaseFormCellModel *> *)firstSectionItems {
     __weak typeof(self) weakSelf = self;
 
-    DWAdvancedSecurityModel *model = self.model;
+    id<DWAdvancedSecurityModelProtocol> model = self.model;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -97,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             model.lockTimerTimeInterval = model.lockTimerTimeIntervals[cellModel.selectedItemIndex];
             cellModel.title = [model titleForCurrentLockTimerTimeInterval];
 
@@ -112,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<DWBaseFormCellModel *> *)secondSectionItems {
     __weak typeof(self) weakSelf = self;
 
-    DWAdvancedSecurityModel *model = self.model;
+    id<DWAdvancedSecurityModelProtocol> model = self.model;
 
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
@@ -125,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        DWAdvancedSecurityModel *model = strongSelf.model;
+        id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
         model.spendingConfirmationEnabled = cellModel.on;
 
         if (model.canConfigureSpendingConfirmation) {
@@ -147,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return [[NSAttributedString alloc] init];
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             return [model spendingConfirmationString:model.spendingConfirmationValues.firstObject
                                                 font:font
                                                color:color];
@@ -158,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return [[NSAttributedString alloc] init];
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             return [model spendingConfirmationString:model.spendingConfirmationValues.lastObject
                                                 font:font
                                                color:color];
@@ -185,7 +182,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            DWAdvancedSecurityModel *model = strongSelf.model;
+            id<DWAdvancedSecurityModelProtocol> model = strongSelf.model;
             model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
 
             [strongSelf updateSecurityLevel];

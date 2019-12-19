@@ -45,6 +45,8 @@ extern CGFloat const DW_TABBAR_HEIGHT;
 - (void)setPaymentsButtonOpened:(BOOL)opened;
 - (void)updateSelectedTabButton:(DWTabBarViewButtonType)type;
 
+- (void)togglePaymentsOpenState;
+
 @end
 
 NS_ASSUME_NONNULL_END

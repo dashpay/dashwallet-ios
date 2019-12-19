@@ -21,12 +21,11 @@
 
 #import "DWBackupInfoViewController.h"
 #import "DWGlobalOptions.h"
-#import "DWHomeModel.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
 #import "DWLocalCurrencyViewController.h"
 #import "DWNavigationController.h"
-#import "DWPayModel.h"
+#import "DWPayModelProtocol.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSettingsMenuModel.h"
 #import "DWShortcutAction.h"
@@ -156,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)payToAddressAction:(UIView *)sender {
-    DWPayModel *payModel = self.model.payModel;
+    id<DWPayModelProtocol> payModel = self.model.payModel;
     __weak typeof(self) weakSelf = self;
     [payModel checkIfPayToAddressFromPasteboardAvailable:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;

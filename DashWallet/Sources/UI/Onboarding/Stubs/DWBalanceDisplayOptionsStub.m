@@ -15,13 +15,24 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DWTransactionListDataProviderProtocol.h"
+#import "DWBalanceDisplayOptionsStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWTransactionListDataProvider : NSObject <DWTransactionListDataProviderProtocol>
+@implementation DWBalanceDisplayOptionsStub
+
+@synthesize balanceHidden = _balanceHidden;
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _balanceHidden = NO;
+    }
+    return self;
+}
+
+- (void)hideBalanceIfNeeded {
+}
 
 @end
 

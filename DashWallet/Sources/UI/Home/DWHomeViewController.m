@@ -17,9 +17,7 @@
 
 #import "DWHomeViewController.h"
 
-#import "AppDelegate.h"
-#import "DWBalanceDisplayOptions.h"
-#import "DWHomeModel.h"
+#import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -68,8 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                  name:DWDeviceDidShakeNotification
                                                object:nil];
 
-    // TODO: impl migration stuff from protectedViewDidAppear of DWRootViewController
-    // TODO: check if wallet is watchOnly and show info about it
+    // TODO: <redesign> impl migration stuff from protectedViewDidAppear of DWRootViewController
+    // TODO: <redesign> check if wallet is watchOnly and show info about it
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -81,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self showWalletBackupReminderIfNeeded];
 
-    [[AppDelegate appDelegate] registerForPushNotifications];
+    [self.model registerForPushNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -127,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-- (DWPayModel *)payModel {
+- (id<DWPayModelProtocol>)payModel {
     return self.model.payModel;
 }
 

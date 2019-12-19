@@ -30,14 +30,14 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UIView *receiveContentView;
 
-@property (nonatomic, strong) DWReceiveModel *receiveModel;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 @property (nonatomic, strong) DWReceiveViewController *receiveController;
 
 @end
 
 @implementation DWQuickReceiveViewController
 
-+ (UIViewController *)controllerWithModel:(DWReceiveModel *)receiveModel {
++ (UIViewController *)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"QuickReceive" bundle:nil];
     DWQuickReceiveViewController *controller = [storyboard instantiateInitialViewController];
     controller.receiveModel = receiveModel;

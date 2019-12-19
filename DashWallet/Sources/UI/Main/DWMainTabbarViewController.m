@@ -17,7 +17,6 @@
 
 #import "DWMainTabbarViewController.h"
 
-#import "DWHomeModel.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWNavigationController.h"
@@ -36,11 +35,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                                           DWWipeDelegate,
                                           DWMainMenuViewControllerDelegate>
 
-@property (nonatomic, strong) DWHomeModel *homeModel;
-
-@property (nullable, nonatomic, strong) UIViewController *currentController;
-@property (nullable, nonatomic, strong) UIViewController *modalController;
-
 @property (nullable, nonatomic, strong) UIView *contentView;
 @property (nullable, nonatomic, strong) DWTabBarView *tabBarView;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *tabBarBottomConstraint;
@@ -54,13 +48,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 @implementation DWMainTabbarViewController
 
-+ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel {
-    DWMainTabbarViewController *controller = [[DWMainTabbarViewController alloc] init];
-    controller.homeModel = homeModel;
-
-    return controller;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -68,32 +55,42 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     [self setupControllers];
 }
 
-- (nullable UIViewController *)childViewControllerForStatusBarStyle {
-    return self.modalController ?: self.currentController;
-}
-
-- (nullable UIViewController *)childViewControllerForStatusBarHidden {
-    return self.modalController ?: self.currentController;
+- (UIView *)containerView {
+    return self.contentView;
 }
 
 #pragma mark - Public
 
 - (void)performScanQRCodeAction {
-    [self switchToViewController:self.homeNavigationController];
+    [self transitionToViewController:self.homeNavigationController
+                            withType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performScanQRCodeAction];
 }
 
 - (void)performPayToURL:(NSURL *)url {
-    [self switchToViewController:self.homeNavigationController];
+    [self transitionToViewController:self.homeNavigationController
+                            withType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController performPayToURL:url];
 }
 
 - (void)handleFile:(NSData *)file {
-    [self switchToViewController:self.homeNavigationController];
+    [self transitionToViewController:self.homeNavigationController
+                            withType:DWContainerTransitionType_WithoutAnimation];
     [self.tabBarView updateSelectedTabButton:DWTabBarViewButtonType_Home];
     [self.homeController handleFile:file];
+}
+
+- (void)openPaymentsScreen {
+    NSAssert(self.demoMode, @"Invalid usage. Should be used in Demo mode only");
+    [self tabBarViewDidOpenPayments:self.tabBarView];
+}
+
+- (void)closePaymentsScreen {
+    NSAssert(self.demoMode, @"Invalid usage. Should be used in Demo mode only");
+
+    [self tabBarViewDidClosePayments:self.tabBarView];
 }
 
 #pragma mark - DWTabBarViewDelegate
@@ -105,7 +102,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self switchToViewController:self.homeNavigationController];
+            [self transitionToViewController:self.homeNavigationController
+                                    withType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -114,7 +112,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
                 return;
             }
 
-            [self switchToViewController:self.menuNavigationController];
+            [self transitionToViewController:self.menuNavigationController
+                                    withType:DWContainerTransitionType_WithoutAnimation];
 
             break;
         }
@@ -134,13 +133,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     tabBarView.userInteractionEnabled = NO;
     [tabBarView setPaymentsButtonOpened:NO];
 
-    UIViewController *controller = self.modalController;
-    self.modalController = nil;
-
-    [self hideModalController:controller
-                   completion:^{
-                       tabBarView.userInteractionEnabled = YES;
-                   }];
+    [self hideModalControllerCompletion:^{
+        tabBarView.userInteractionEnabled = YES;
+    }];
 }
 
 #pragma mark - DWPaymentsViewControllerDelegate
@@ -252,20 +247,21 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     self.tabBarView.userInteractionEnabled = NO;
     [self.tabBarView setPaymentsButtonOpened:YES];
 
-    DWHomeModel *homeModel = self.homeModel;
+    id<DWHomeProtocol> homeModel = self.homeModel;
     NSParameterAssert(homeModel);
-    DWReceiveModel *receiveModel = homeModel.receiveModel;
-    DWPayModel *payModel = homeModel.payModel;
+    id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
+    id<DWPayModelProtocol> payModel = homeModel.payModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     DWPaymentsViewController *controller = [DWPaymentsViewController controllerWithReceiveModel:receiveModel
                                                                                        payModel:payModel
                                                                                    dataProvider:dataProvider];
     controller.delegate = self;
     controller.currentIndex = pageIndex;
+    controller.demoMode = self.demoMode;
+    controller.demoDelegate = self.demoDelegate;
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     navigationController.delegate = self;
-    self.modalController = navigationController;
 
     [self displayModalViewController:navigationController
                           completion:^{
@@ -276,135 +272,6 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 - (void)setupControllers {
     DWNavigationController *navigationController = self.homeNavigationController;
     [self displayViewController:navigationController];
-}
-
-- (void)displayViewController:(UIViewController *)controller {
-    NSParameterAssert(controller);
-    if (!controller) {
-        return;
-    }
-
-    UIView *contentView = self.contentView;
-    UIView *childView = controller.view;
-
-    [self addChildViewController:controller];
-
-    childView.frame = contentView.bounds;
-    childView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:childView];
-
-    [controller didMoveToParentViewController:self];
-
-    self.currentController = controller;
-
-    [self setNeedsStatusBarAppearanceUpdate];
-}
-
-- (void)switchToViewController:(UIViewController *)toViewController {
-    NSParameterAssert(toViewController);
-    if (!toViewController) {
-        return;
-    }
-
-    if (self.currentController == toViewController) {
-        return;
-    }
-
-    UIViewController *fromViewController = self.currentController;
-    self.currentController = toViewController;
-
-    UIView *toView = toViewController.view;
-    UIView *fromView = fromViewController.view;
-
-    [fromViewController willMoveToParentViewController:nil];
-    [self addChildViewController:toViewController];
-
-    UIView *contentView = self.contentView;
-    toView.frame = contentView.bounds;
-    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:toView];
-
-    [self setNeedsStatusBarAppearanceUpdate];
-
-    [fromView removeFromSuperview];
-    [fromViewController removeFromParentViewController];
-    [toViewController didMoveToParentViewController:self];
-}
-
-- (void)displayModalViewController:(UIViewController *)controller completion:(void (^)(void))completion {
-    NSParameterAssert(controller);
-    if (!controller) {
-        return;
-    }
-
-    [self.currentController beginAppearanceTransition:NO animated:YES];
-
-    UIView *contentView = self.contentView;
-    UIView *childView = controller.view;
-
-    [self addChildViewController:controller];
-
-    childView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:childView];
-
-    CGRect frame = contentView.bounds;
-    frame.origin.y = CGRectGetHeight(frame);
-    childView.frame = frame;
-
-    [UIView animateWithDuration:ANIMATION_DURATION
-        delay:0.0
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
-        animations:^{
-            childView.frame = contentView.bounds;
-
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-        completion:^(BOOL finished) {
-            [controller didMoveToParentViewController:self];
-
-            [self.currentController endAppearanceTransition];
-
-            if (completion) {
-                completion();
-            }
-        }];
-}
-
-- (void)hideModalController:(UIViewController *)controller completion:(void (^)(void))completion {
-    NSParameterAssert(controller);
-    if (!controller) {
-        return;
-    }
-
-    [self.currentController beginAppearanceTransition:YES animated:YES];
-
-    UIView *childView = controller.view;
-    [controller willMoveToParentViewController:nil];
-
-    [UIView animateWithDuration:ANIMATION_DURATION
-        delay:0.0
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
-        animations:^{
-            CGRect frame = childView.frame;
-            frame.origin.y = CGRectGetHeight(frame);
-            childView.frame = frame;
-
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-        completion:^(BOOL finished) {
-            [childView removeFromSuperview];
-            [controller removeFromParentViewController];
-
-            [self.currentController endAppearanceTransition];
-
-            if (completion) {
-                completion();
-            }
-        }];
 }
 
 - (void)setTabBarHiddenAnimated:(BOOL)hidden animated:(BOOL)animated {

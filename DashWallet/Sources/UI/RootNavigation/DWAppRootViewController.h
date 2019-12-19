@@ -15,18 +15,29 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWContainerViewController.h"
+
+#import "DWDemoDelegate.h"
+#import "DWRootProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAppRootViewController : UIViewController
+@interface DWAppRootViewController : DWContainerViewController
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@property (readonly, nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
+
+- (instancetype)initWithModel:(id<DWRootProtocol>)model NS_DESIGNATED_INITIALIZER;
+
++ (Class)mainControllerClass;
 
 - (void)setLaunchingAsDeferredController;
 
 - (void)handleURL:(NSURL *)url;
 - (void)handleFile:(NSData *)file;
+
+- (void)openPaymentsScreen;
+- (void)closePaymentsScreen;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;

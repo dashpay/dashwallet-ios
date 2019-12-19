@@ -15,24 +15,31 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWExtendedContainerViewController.h"
 
+#import "DWDemoDelegate.h"
+#import "DWHomeProtocol.h"
 #import "DWWipeDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWHomeModel;
 
-@interface DWMainTabbarViewController : UIViewController
+@interface DWMainTabbarViewController : DWExtendedContainerViewController
 
+@property (nonatomic, strong) id<DWHomeProtocol> homeModel;
 @property (nullable, nonatomic, weak) id<DWWipeDelegate> delegate;
+
+@property (nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 - (void)performScanQRCodeAction;
 - (void)performPayToURL:(NSURL *)url;
 
 - (void)handleFile:(NSData *)file;
 
-+ (instancetype)controllerWithHomeModel:(DWHomeModel *)homeModel;
+- (void)openPaymentsScreen;
+- (void)closePaymentsScreen;
 
 @end
 

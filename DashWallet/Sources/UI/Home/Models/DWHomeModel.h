@@ -17,58 +17,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWHomeProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTransactionListDataSource;
-@class DWSyncModel;
-@class DWHomeModel;
-@class DWBalanceModel;
-@class DWReceiveModel;
-@class DWShortcutsModel;
-@class DWPayModel;
-@class DWBalanceDisplayOptions;
-@protocol DWTransactionListDataProviderProtocol;
+@interface DWHomeModel : NSObject <DWHomeProtocol>
 
-typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
-    DWHomeTxDisplayMode_All,
-    DWHomeTxDisplayMode_Received,
-    DWHomeTxDisplayMode_Sent,
-    DWHomeTxDisplayMode_Rewards,
-};
-
-@protocol DWHomeModelUpdatesObserver <NSObject>
-
-- (void)homeModel:(DWHomeModel *)model
-    didUpdateDataSource:(DWTransactionListDataSource *)dataSource
-          shouldAnimate:(BOOL)shouldAnimate;
-
-@end
-
-@interface DWHomeModel : NSObject
-
-@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
-
-@property (readonly, nonatomic, strong) DWSyncModel *syncModel;
-@property (readonly, nullable, nonatomic, strong) DWBalanceModel *balanceModel;
-@property (readonly, nonatomic, strong) DWBalanceDisplayOptions *balanceDisplayOptions;
-@property (readonly, nonatomic, strong) DWReceiveModel *receiveModel;
-@property (readonly, nonatomic, strong) DWShortcutsModel *shortcutsModel;
-@property (readonly, nonatomic, strong) DWPayModel *payModel;
-
-@property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
-
-@property (nullable, nonatomic, weak) id<DWHomeModelUpdatesObserver> updatesObserver;
-
-@property (readonly, nonatomic, assign, getter=isJailbroken) BOOL jailbroken;
-@property (readonly, nonatomic, assign, getter=isWalletEmpty) BOOL walletEmpty;
-
-- (void)reloadShortcuts;
-
-- (void)retrySyncing;
-
-- (id<DWTransactionListDataProviderProtocol>)getDataProvider;
-
-- (void)walletBackupReminderWasShown;
+- (void)forceStartSyncingActivity;
 
 @end
 

@@ -22,12 +22,14 @@
 
 #import <UIKit/UIApplication.h>
 
+#import "AppDelegate.h"
 #import "DWBalanceDisplayOptions.h"
 #import "DWBalanceModel.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
-#import "DWReceiveModel+Private.h"
+#import "DWPayModelProtocol.h"
+#import "DWReceiveModel.h"
 #import "DWShortcutsModel.h"
 #import "DWSyncModel.h"
 #import "DWTransactionListDataProvider.h"
@@ -70,6 +72,14 @@ static BOOL IsJailbroken(void) {
 @end
 
 @implementation DWHomeModel
+
+@synthesize balanceDisplayOptions = _balanceDisplayOptions;
+@synthesize displayMode = _displayMode;
+@synthesize payModel = _payModel;
+@synthesize receiveModel = _receiveModel;
+@synthesize shortcutsModel = _shortcutsModel;
+@synthesize syncModel = _syncModel;
+@synthesize updatesObserver = _updatesObserver;
 
 - (instancetype)init {
     self = [super init];
@@ -205,6 +215,10 @@ static BOOL IsJailbroken(void) {
     [self.shortcutsModel reloadShortcuts];
 }
 
+- (void)registerForPushNotifications {
+    [[AppDelegate appDelegate] registerForPushNotifications];
+}
+
 - (void)retrySyncing {
     if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) {
         [self.reachability stopMonitoring];
@@ -226,6 +240,12 @@ static BOOL IsJailbroken(void) {
     options.walletBackupReminderWasShown = YES;
 }
 
+- (void)forceStartSyncingActivity {
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel forceStartSyncingActivity];
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
@@ -235,7 +255,9 @@ static BOOL IsJailbroken(void) {
         [self connectIfNeeded];
     }
 
-    [self.syncModel reachabilityStatusDidChange];
+    DWSyncModel *syncModel = (DWSyncModel *)self.syncModel;
+    NSAssert([syncModel isKindOfClass:DWSyncModel.class], @"Internal inconsistency");
+    [syncModel reachabilityStatusDidChange];
 }
 
 - (void)walletBalanceDidChangeNotification {
@@ -267,7 +289,6 @@ static BOOL IsJailbroken(void) {
 }
 
 #pragma mark - Private
-
 
 - (DWTransactionListDataSource *)receivedDataSource {
     if (_receivedDataSource == nil) {

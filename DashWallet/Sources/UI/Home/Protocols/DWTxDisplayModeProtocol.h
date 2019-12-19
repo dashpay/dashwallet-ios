@@ -15,13 +15,20 @@
 //  limitations under the License.
 //
 
-#import "DWReceiveModel.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWReceiveModel (Private)
+typedef NS_ENUM(NSUInteger, DWHomeTxDisplayMode) {
+    DWHomeTxDisplayMode_All,
+    DWHomeTxDisplayMode_Received,
+    DWHomeTxDisplayMode_Sent,
+    DWHomeTxDisplayMode_Rewards,
+};
 
-- (void)updateReceivingInfo;
+@protocol DWTxDisplayModeProtocol <NSObject>
+
+@property (nonatomic, assign) DWHomeTxDisplayMode displayMode;
 
 @end
 

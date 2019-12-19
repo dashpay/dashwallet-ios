@@ -42,13 +42,13 @@ static CGFloat TopPadding(void) {
 
 @property (nonatomic, strong) DWReceiveContentView *contentView;
 
-@property (nonatomic, strong) DWReceiveModel *model;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 
 @end
 
 @implementation DWReceiveViewController
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel {
++ (instancetype)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel {
     DWReceiveViewController *controller = [[DWReceiveViewController alloc] init];
     controller.model = receiveModel;
 

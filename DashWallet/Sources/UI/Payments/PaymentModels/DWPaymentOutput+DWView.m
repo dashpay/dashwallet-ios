@@ -54,7 +54,7 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font {
-    NSString *title = NSLocalizedString(@"Pay to", nil);
+    NSString *title = NSLocalizedString(@"Send to", nil);
 
     NSString *address = self.address;
     NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:self.address withFont:font];

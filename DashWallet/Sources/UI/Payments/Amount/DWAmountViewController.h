@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWAmountViewController : DWBaseActionButtonViewController
 
 @property (readonly, strong, nonatomic) DWAmountModel *model;
+@property (nonatomic, assign) BOOL demoMode;
 
 - (BOOL)validateInputAmount;
 

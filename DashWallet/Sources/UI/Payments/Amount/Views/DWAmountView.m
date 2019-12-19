@@ -46,7 +46,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
 @implementation DWAmountView
 
-- (instancetype)initWithModel:(DWAmountModel *)model {
+- (instancetype)initWithModel:(DWAmountModel *)model demoMode:(BOOL)demoMode {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _model = model;
@@ -90,9 +90,16 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         textField.spellCheckingType = UITextSpellCheckingTypeNo;
         CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-        DWNumberKeyboardInputViewAudioFeedback *inputView =
-            [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
-        textField.inputView = inputView;
+        // In Demo Mode we don't need any input clicks. But this inputView affects appearance
+        // by drawing a white line in the bottom of the screen.
+        if (demoMode == NO) {
+            DWNumberKeyboardInputViewAudioFeedback *inputView =
+                [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
+            textField.inputView = inputView;
+        }
+        else {
+            textField.inputView = [[UIView alloc] init];
+        }
         UITextInputAssistantItem *inputAssistantItem = textField.inputAssistantItem;
         inputAssistantItem.leadingBarButtonGroups = @[];
         inputAssistantItem.trailingBarButtonGroups = @[];

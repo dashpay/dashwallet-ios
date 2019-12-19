@@ -19,7 +19,6 @@
 
 #import <DashSync/UIWindow+DSUtils.h>
 
-#import "DWHomeModel.h"
 #import "DWLockScreenViewController.h"
 #import "DWMainTabbarViewController.h"
 #import "DWNavigationController.h"
@@ -32,15 +31,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSTimeInterval const TRANSITION_DURATION = 0.35;
 static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @interface DWAppRootViewController () <DWSetupViewControllerDelegate,
                                        DWWipeDelegate,
                                        DWLockScreenViewControllerDelegate>
 
-@property (readonly, nonatomic, strong) DWRootModel *model;
-@property (nullable, nonatomic, strong) UIViewController *currentController;
+@property (readonly, nonatomic, strong) id<DWRootProtocol> model;
 
 @property (null_resettable, nonatomic, strong) DWMainTabbarViewController *mainController;
 
@@ -56,14 +53,22 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @implementation DWAppRootViewController
 
 - (instancetype)init {
+    return [self initWithModel:[[DWRootModel alloc] init]];
+}
+
+- (instancetype)initWithModel:(id<DWRootProtocol>)model {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _model = [[DWRootModel alloc] init];
+        _model = model;
     }
     return self;
 }
 
 #pragma mark - Public
+
++ (Class)mainControllerClass {
+    return [DWMainTabbarViewController class];
+}
 
 - (void)setLaunchingAsDeferredController {
     self.launchingWasDeferred = YES;
@@ -130,6 +135,26 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 }
 
+- (void)openPaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController openPaymentsScreen];
+}
+
+- (void)closePaymentsScreen {
+    // This method is used to simulate user action in onboarding
+    // Root controller configured to be non-lockable, so these controllers should be nil
+    NSAssert(self.lockController == nil, @"Inconsistent state");
+    NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
+    NSAssert([self.model shouldShowLockScreen] == NO, @"Iconsistent state");
+
+    [self.mainController closePaymentsScreen];
+}
+
 #pragma mark - Life Cycle
 
 - (void)viewDidLoad {
@@ -189,16 +214,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         strongSelf->_mainController = nil;
 
         UIViewController *controller = [strongSelf mainController];
-        [strongSelf performTransitionToViewController:controller];
+        [strongSelf transitionToViewController:controller
+                                      withType:DWContainerTransitionType_ScaleAndCrossDissolve];
     };
-}
-
-- (nullable UIViewController *)childViewControllerForStatusBarStyle {
-    return self.currentController;
-}
-
-- (nullable UIViewController *)childViewControllerForStatusBarHidden {
-    return self.currentController;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -224,17 +242,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
-    [self.model setupDidFinished];
+    [self.model setupDidFinish];
 
     UIViewController *mainController = self.mainController;
-    [self performTransitionToViewController:mainController];
+    [self transitionToViewController:mainController
+                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
     UIViewController *setupController = [self setupController];
-    [self performTransitionToViewController:setupController];
+    [self transitionToViewController:setupController
+                            withType:DWContainerTransitionType_ScaleAndCrossDissolve];
+
 
     // reset main controller stack
     _mainController = nil;
@@ -266,6 +287,18 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)applicationDidEnterBackgroundNotification {
     [self.model applicationDidEnterBackground];
+}
+
+#pragma mark - Demo Mode
+
+- (BOOL)demoMode {
+    return NO;
+}
+
+- (void)setDemoDelegate:(nullable id<DWDemoDelegate>)demoDelegate {
+    NSAssert(self.demoMode, @"Invalid usage. Demo delegate is to be used in the onboarding");
+
+    _demoDelegate = demoDelegate;
 }
 
 #pragma mark - Private
@@ -306,16 +339,27 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 }
 
 - (UIViewController *)setupController {
-    UIViewController *controller = [DWSetupViewController controllerEmbededInNavigationWithDelegate:self];
+    DWSetupViewController *controller = [DWSetupViewController controller];
+    controller.delegate = self;
 
-    return controller;
+    if (self.launchingWasDeferred) {
+        [controller setLaunchingAsDeferredController];
+    }
+
+    DWNavigationController *navigationController = [[DWNavigationController alloc] initWithRootViewController:controller];
+
+    return navigationController;
 }
 
 - (DWMainTabbarViewController *)mainController {
     if (_mainController == nil) {
-        DWHomeModel *homeModel = self.model.homeModel;
-        DWMainTabbarViewController *controller = [DWMainTabbarViewController controllerWithHomeModel:homeModel];
+        id<DWHomeProtocol> homeModel = self.model.homeModel;
+        Class klass = [self.class mainControllerClass];
+        DWMainTabbarViewController *controller = [[klass alloc] init];
+        controller.homeModel = homeModel;
         controller.delegate = self;
+        controller.demoMode = self.demoMode;
+        controller.demoDelegate = self.demoDelegate;
 
         _mainController = controller;
     }
@@ -326,9 +370,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)showLockControllerWithMode:(DWLockScreenViewControllerUnlockMode)mode {
     NSAssert(self.displayedLockNavigationController == nil, @"Inconsistent state");
 
-    DWHomeModel *homeModel = self.model.homeModel;
-    DWPayModel *payModel = homeModel.payModel;
-    DWReceiveModel *receiveModel = homeModel.receiveModel;
+    id<DWHomeProtocol> homeModel = self.model.homeModel;
+    id<DWPayModelProtocol> payModel = homeModel.payModel;
+    id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
     id<DWTransactionListDataProviderProtocol> dataProvider = [homeModel getDataProvider];
     DWLockScreenViewController *controller = [DWLockScreenViewController lockScreenWithUnlockMode:mode
                                                                                          payModel:payModel
@@ -345,64 +389,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
-}
-
-- (void)displayViewController:(UIViewController *)controller {
-    NSParameterAssert(controller);
-
-    UIView *contentView = self.view;
-    UIView *childView = controller.view;
-
-    [self addChildViewController:controller];
-
-    childView.frame = contentView.bounds;
-    childView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:childView];
-
-    [controller didMoveToParentViewController:self];
-
-    self.currentController = controller;
-
-    [self setNeedsStatusBarAppearanceUpdate];
-}
-
-- (void)performTransitionToViewController:(UIViewController *)toViewController {
-    UIViewController *fromViewController = self.childViewControllers.firstObject;
-    NSAssert(fromViewController, @"To perform transition there should be child view controller. Use displayViewController: instead");
-
-    UIView *toView = toViewController.view;
-    UIView *fromView = fromViewController.view;
-    UIView *contentView = self.view;
-
-    self.currentController = toViewController;
-
-    [fromViewController willMoveToParentViewController:nil];
-    [self addChildViewController:toViewController];
-
-    toView.frame = contentView.bounds;
-    toView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:toView];
-
-    toView.alpha = 0.0;
-    toView.transform = CGAffineTransformMakeScale(1.25, 1.25);
-
-    [UIView animateWithDuration:TRANSITION_DURATION
-        delay:0.0
-        usingSpringWithDamping:1.0
-        initialSpringVelocity:0.0
-        options:UIViewAnimationOptionCurveEaseInOut
-        animations:^{
-            toView.alpha = 1.0;
-            toView.transform = CGAffineTransformIdentity;
-            fromView.alpha = 0.0;
-
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-        completion:^(BOOL finished) {
-            [fromView removeFromSuperview];
-            [fromViewController removeFromParentViewController];
-            [toViewController didMoveToParentViewController:self];
-        }];
 }
 
 @end

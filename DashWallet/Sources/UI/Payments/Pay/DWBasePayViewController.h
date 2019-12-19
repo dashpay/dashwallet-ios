@@ -17,17 +17,22 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWDemoDelegate.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPayModel;
 @class DWPaymentProcessor;
+@protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
 
 @interface DWBasePayViewController : UIViewController
 
-@property (nonatomic, strong) DWPayModel *payModel;
+@property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 @property (null_resettable, nonatomic, strong) DWPaymentProcessor *paymentProcessor;
+
+@property (nonatomic, assign) BOOL demoMode;
+@property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;
 
 - (void)performScanQRCodeAction;
 - (void)performPayToPasteboardAction;

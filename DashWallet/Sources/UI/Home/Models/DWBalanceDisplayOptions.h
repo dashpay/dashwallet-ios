@@ -17,13 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWBalanceDisplayOptionsProtocol.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBalanceDisplayOptions : NSObject
-
-@property (nonatomic, assign) BOOL balanceHidden;
-
-- (void)hideBalanceIfNeeded;
+@interface DWBalanceDisplayOptions : NSObject <DWBalanceDisplayOptionsProtocol>
 
 @end
 

@@ -69,7 +69,7 @@ static CGFloat ActionButtonsHeight(void) {
 @interface DWLockScreenViewController () <DWLockPinInputViewDelegate, DWLockScreenModelDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
-@property (nonatomic, strong) DWReceiveModel *receiveModel;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 
 @property (strong, nonatomic) IBOutlet DWLockPinInputView *pinInputView;
 @property (strong, nonatomic) IBOutlet UIButton *forgotPinButton;
@@ -89,8 +89,8 @@ static CGFloat ActionButtonsHeight(void) {
 @implementation DWLockScreenViewController
 
 + (instancetype)lockScreenWithUnlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
-                                payModel:(DWPayModel *)payModel
-                            receiveModel:(DWReceiveModel *)receiveModel
+                                payModel:(id<DWPayModelProtocol>)payModel
+                            receiveModel:(id<DWReceiveModelProtocol>)receiveModel
                             dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];

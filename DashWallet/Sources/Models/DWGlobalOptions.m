@@ -36,6 +36,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic autoLockAppInterval;
 @dynamic shortcuts;
 @dynamic balanceHidden;
+@dynamic shouldDisplayOnboarding;
 
 #pragma mark - Init
 
@@ -44,6 +45,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
         DW_KEYPATH(self, walletNeedsBackup) : @YES,
         DW_KEYPATH(self, localNotificationsEnabled) : @YES,
         DW_KEYPATH(self, autoLockAppInterval) : @60, // 1 min
+        DW_KEYPATH(self, shouldDisplayOnboarding) : @YES,
     };
 
     self = [super initWithUserDefaults:nil defaults:defaults];

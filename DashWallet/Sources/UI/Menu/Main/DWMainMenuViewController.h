@@ -22,7 +22,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWMainMenuViewController;
-@class DWBalanceDisplayOptions;
+@protocol DWBalanceDisplayOptionsProtocol;
 
 @protocol DWMainMenuViewControllerDelegate <NSObject>
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWWipeDelegate, DWMainMenuViewControllerDelegate> delegate;
 
-- (instancetype)initWithBalanceDisplayOptions:(DWBalanceDisplayOptions *)balanceDisplayOptions;
+- (instancetype)initWithBalanceDisplayOptions:(id<DWBalanceDisplayOptionsProtocol>)balanceDisplayOptions;
 
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

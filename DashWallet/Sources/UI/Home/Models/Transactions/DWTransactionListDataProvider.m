@@ -19,75 +19,17 @@
 
 #import <DashSync/DashSync.h>
 
-#import "NSAttributedString+DWBuilder.h"
-#import "UIColor+DWStyle.h"
+#import "DWTransactionListDataItemObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *TxDateFormat(NSString *template) {
-    NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
-
-    format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
-    format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
-    format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
-    format = [format stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"];
-    format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
-    format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
-    format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-    format = [format stringByReplacingOccurrencesOfString:@"H"
-                                               withString:@"H'h'"
-                                                  options:NSBackwardsSearch | NSAnchoredSearch
-                                                    range:NSMakeRange(0, format.length)];
-    return format;
-}
-
-#pragma mark - Data Item
-
-
-@interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
-
-@property (nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
-@property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
-@property (nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
-@property (nonatomic, assign) uint64_t dashAmount;
-@property (nonatomic, assign) DSTransactionDirection direction;
-@property (nonatomic, strong) UIColor *dashAmountTintColor;
-@property (nonatomic, copy) NSString *fiatAmount;
-@property (nonatomic, copy) NSString *directionText;
-@property (nullable, nonatomic, copy) NSString *stateText;
-@property (nullable, nonatomic, strong) UIColor *stateTintColor;
-
-@end
-
-@implementation DWTransactionListDataItemObject
-
-@end
-
-#pragma mark - Provider
 
 @interface DWTransactionListDataProvider ()
 
 @property (nonatomic, assign) uint32_t blockHeightValue;
-@property (nonatomic, strong) NSMutableDictionary *txDates;
-@property (nonatomic, strong) NSDateFormatter *monthDayHourFormatter;
-@property (nonatomic, strong) NSDateFormatter *yearMonthDayHourFormatter;
 
 @end
 
 @implementation DWTransactionListDataProvider
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _txDates = [NSMutableDictionary dictionary];
-
-        _monthDayHourFormatter = [NSDateFormatter new];
-        _monthDayHourFormatter.dateFormat = TxDateFormat(@"Mdjmma");
-        _yearMonthDayHourFormatter = [NSDateFormatter new];
-        _yearMonthDayHourFormatter.dateFormat = TxDateFormat(@"yyMdja");
-    }
-    return self;
-}
 
 - (void)dealloc {
     DSLogVerbose(@"☠️ %@", NSStringFromClass(self.class));
@@ -103,15 +45,8 @@ static NSString *TxDateFormat(NSString *template) {
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-
     NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
-    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
-    NSCalendar *calendar = [NSCalendar currentCalendar];
-    NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
-    NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:txDate];
-
-    NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.monthDayHourFormatter : self.yearMonthDayHourFormatter;
-    date = [desiredFormatter stringFromDate:txDate];
+    date = [self formattedTxDateForTimestamp:txTime];
 
     if (transaction.blockHeight != TX_UNCONFIRMED) {
         self.txDates[uint256_obj(transaction.txHash)] = date;
@@ -128,7 +63,6 @@ static NSString *TxDateFormat(NSString *template) {
 
     DSTransactionDirection transactionDirection = account ? [account directionOfTransaction:transaction] : DSTransactionDirection_NotAccountFunds;
     uint64_t dashAmount;
-    UIColor *tintColor = nil;
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
 
@@ -137,53 +71,48 @@ static NSString *TxDateFormat(NSString *template) {
     switch (transactionDirection) {
         case DSTransactionDirection_Moved: {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
-            dataItem.dashAmountTintColor = [UIColor dw_quaternaryTextColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.directionText = NSLocalizedString(@"Moved", nil);
+            dataItem.detailedDirection = DWTransactionDetailedDirection_Moved;
             break;
         }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
-            dataItem.dashAmountTintColor = [UIColor dw_darkTitleColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.directionText = NSLocalizedString(@"Sent", nil);
+            dataItem.detailedDirection = DWTransactionDetailedDirection_Sent;
             break;
         }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
-            dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
             if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
-                dataItem.directionText = NSLocalizedString(@"Reward", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_Reward;
             }
             else {
-                dataItem.directionText = NSLocalizedString(@"Received", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_Received;
             }
 
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
             dataItem.dashAmount = 0;
-            dataItem.dashAmountTintColor = [UIColor dw_dashBlueColor];
             if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};
-                dataItem.directionText = NSLocalizedString(@"Masternode Registration", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeRegistration;
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                 DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
-                dataItem.directionText = NSLocalizedString(@"Masternode Update", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeUpdate;
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
                 DSProviderUpdateServiceTransaction *updateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-                dataItem.directionText = NSLocalizedString(@"Masternode Update", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeUpdate;
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
                 DSProviderUpdateRevocationTransaction *updateServiceTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
-                dataItem.directionText = NSLocalizedString(@"Masternode Revoked", nil);
+                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeRevoke;
             }
-
 
             break;
         }
@@ -205,65 +134,31 @@ static NSString *TxDateFormat(NSString *template) {
     const BOOL confirmed = transaction.confirmed;
     uint32_t confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1;
     if (confirms == 0 && ![account transactionIsValid:transaction]) {
-        dataItem.stateText = NSLocalizedString(@"Invalid", nil);
-        dataItem.stateTintColor = [UIColor dw_redColor];
+        dataItem.state = DWTransactionState_Invalid;
     }
     else if (transactionDirection == DSTransactionDirection_Received) {
         if (!instantSendReceived && confirms == 0 && [account transactionIsPending:transaction]) {
-            dataItem.stateText = NSLocalizedString(@"Locked", nil); //should be very hard to get here, a miner would have to include a non standard transaction into a block
-            dataItem.stateTintColor = [UIColor dw_orangeColor];
+            //should be very hard to get here, a miner would have to include a non standard transaction into a block
+            dataItem.state = DWTransactionState_Locked;
         }
         else if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
-            dataItem.stateText = NSLocalizedString(@"Processing", nil);
-            dataItem.stateTintColor = [UIColor dw_orangeColor];
+            dataItem.state = DWTransactionState_Processing;
         }
         else if ([account transactionOutputsAreLocked:transaction]) {
-            dataItem.stateText = NSLocalizedString(@"Locked", nil);
-            dataItem.stateTintColor = [UIColor dw_orangeColor];
+            dataItem.state = DWTransactionState_Locked;
         }
         else if (!instantSendReceived && !confirmed) {
             NSTimeInterval transactionAge = [NSDate timeIntervalSince1970] - transaction.timestamp; //we check the transaction age, as we might still be waiting on a transaction lock, 1 second seems like a good wait time
             if (confirms == 0 && (processingInstantSend || transactionAge < 1.0)) {
-                dataItem.stateText = NSLocalizedString(@"Processing", nil);
+                dataItem.state = DWTransactionState_Processing;
             }
             else {
-                dataItem.stateText = NSLocalizedString(@"Confirming", nil);
+                dataItem.state = DWTransactionState_Confirming;
             }
-            dataItem.stateTintColor = [UIColor dw_orangeColor];
         }
     }
 
     return dataItem;
-}
-
-- (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
-                                        font:(UIFont *)font {
-    const uint64_t dashAmount = transactionData.dashAmount;
-    UIColor *tintColor = transactionData.dashAmountTintColor;
-
-    NSNumberFormatter *numberFormatter = [DSPriceManager sharedInstance].dashFormat;
-
-    NSNumber *number = [(id)[NSDecimalNumber numberWithLongLong:dashAmount]
-        decimalNumberByMultiplyingByPowerOf10:-numberFormatter.maximumFractionDigits];
-    NSString *formattedNumber = [numberFormatter stringFromNumber:number];
-    NSString *symbol = nil;
-    switch (transactionData.direction) {
-        case DSTransactionDirection_Moved:
-            symbol = @"⟲";
-            break;
-        case DSTransactionDirection_Received:
-            symbol = @"+";
-            break;
-        case DSTransactionDirection_Sent:
-            symbol = @"-";
-            break;
-        case DSTransactionDirection_NotAccountFunds:
-            symbol = @"";
-            break;
-    }
-    NSString *string = [symbol stringByAppendingString:formattedNumber];
-
-    return [NSAttributedString dw_dashAttributedStringForFormattedAmount:string tintColor:tintColor font:font];
 }
 
 #pragma mark - Private

@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWReceiveModel;
+@protocol DWReceiveModelProtocol;
 @class DWReceiveViewController;
 
 /**
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) DWReceiveViewType viewType;
 @property (nullable, nonatomic, weak) id<DWReceiveViewControllerDelegate> delegate;
 
-+ (instancetype)controllerWithModel:(DWReceiveModel *)receiveModel;
++ (instancetype)controllerWithModel:(id<DWReceiveModelProtocol>)receiveModel;
 
 @end
 

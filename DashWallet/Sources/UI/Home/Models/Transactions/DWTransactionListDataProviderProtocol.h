@@ -15,32 +15,9 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIColor.h>
-
-#import <DashSync/DSAccount.h>
+#import "DWTransactionListDataItem.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-@class DSTransaction;
-
-@protocol DWTransactionListDataItem <NSObject>
-
-/// From (received)
-@property (readonly, nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
-/// To (sent)
-@property (readonly, nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
-
-@property (readonly, nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;
-@property (readonly, nonatomic, assign) uint64_t dashAmount;
-@property (readonly, nonatomic, assign) DSTransactionDirection direction;
-@property (readonly, nonatomic, strong) UIColor *dashAmountTintColor;
-@property (readonly, nonatomic, copy) NSString *fiatAmount;
-@property (readonly, nonatomic, copy) NSString *directionText;
-@property (readonly, nullable, nonatomic, copy) NSString *stateText;
-@property (readonly, nullable, nonatomic, strong) UIColor *stateTintColor;
-
-@end
 
 @protocol DWTransactionListDataProviderProtocol <NSObject>
 

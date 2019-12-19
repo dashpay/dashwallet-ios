@@ -17,7 +17,7 @@
 
 #import "DWReceiveContentView.h"
 
-#import "DWReceiveModel.h"
+#import "DWReceiveModelProtocol.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,7 +33,7 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 @interface DWReceiveContentView ()
 
-@property (nonatomic, strong) DWReceiveModel *model;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> model;
 
 @property (strong, nonatomic) IBOutlet UIView *contentView;
 @property (strong, nonatomic) IBOutlet UIButton *qrCodeButton;
@@ -48,7 +48,7 @@ static CGFloat ActionButtonsTopPadding(void) {
 
 @implementation DWReceiveContentView
 
-- (instancetype)initWithModel:(DWReceiveModel *)model {
+- (instancetype)initWithModel:(id<DWReceiveModelProtocol>)model {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _model = model;

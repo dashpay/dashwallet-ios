@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPayModel
 
+@synthesize options = _options;
+
 - (instancetype)init {
     self = [super init];
     if (self) {

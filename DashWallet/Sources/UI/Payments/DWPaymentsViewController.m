@@ -34,8 +34,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 @property (strong, nonatomic) IBOutlet DWSegmentedControl *segmentedControl;
 @property (strong, nonatomic) IBOutlet DWControllerCollectionView *controllerCollectionView;
 
-@property (nonatomic, strong) DWReceiveModel *receiveModel;
-@property (nonatomic, strong) DWPayModel *payModel;
+@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
+@property (nonatomic, strong) id<DWPayModelProtocol> payModel;
 @property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (nonatomic, strong) DWPayViewController *payViewController;
@@ -48,8 +48,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @implementation DWPaymentsViewController
 
-+ (instancetype)controllerWithReceiveModel:(DWReceiveModel *)receiveModel
-                                  payModel:(DWPayModel *)payModel
++ (instancetype)controllerWithReceiveModel:(id<DWReceiveModelProtocol>)receiveModel
+                                  payModel:(id<DWPayModelProtocol>)payModel
                               dataProvider:(id<DWTransactionListDataProviderProtocol>)dataProvider {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Payments" bundle:nil];
     DWPaymentsViewController *controller = [storyboard instantiateInitialViewController];
@@ -124,7 +124,6 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     }
 }
 
-
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
@@ -161,6 +160,8 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
     self.payViewController = [DWPayViewController controllerWithModel:self.payModel
                                                          dataProvider:self.dataProvider];
     self.payViewController.delegate = self;
+    self.payViewController.demoMode = self.demoMode;
+    self.payViewController.demoDelegate = self.demoDelegate;
     DWReceiveViewController *receiveViewController = [DWReceiveViewController controllerWithModel:self.receiveModel];
     receiveViewController.viewType = DWReceiveViewType_Default;
     self.receiveViewController = receiveViewController;
