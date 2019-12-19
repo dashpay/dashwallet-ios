@@ -25,15 +25,11 @@
 //  THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-
-#import "DWAppDelegate.h"
 #import "AppDelegate.h"
 
 int main(int argc, char * argv[])
 {
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-        // TODO: <redesign> rm old entry point, left for testing purposes
-//        return UIApplicationMain(argc, argv, nil, NSStringFromClass([DWAppDelegate class]));
     }
 }

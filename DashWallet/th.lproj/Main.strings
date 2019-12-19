@@ -2,14 +2,8 @@
 /* Class = "UIButton"; normalTitle = "Recover Wallet"; ObjectID = "4w7-k8-9wY"; */
 "4w7-k8-9wY.normalTitle" = "กู้คืน wallet";
 
-/* Class = "UILabel"; text = "Local currency"; ObjectID = "8e2-ar-Ehc"; */
-"8e2-ar-Ehc.text" = "สกุลเงินท้องถิ่น";
-
 /* Class = "UIButton"; normalTitle = "Generate Recovery Phrase"; ObjectID = "A4M-yq-26d"; */
 "A4M-yq-26d.normalTitle" = "สร้างวลีกู้คืน";
-
-/* Class = "UILabel"; text = "Start / Recover another wallet"; ObjectID = "D1b-HB-lKH"; */
-"D1b-HB-lKH.text" = "เริ่ม/กู้คืน wallet อื่น";
 
 /* Class = "UILabel"; text = "if you ever lose your phone, you will need this phrase to recover your wallet"; ObjectID = "EQG-Km-ZKY"; */
 "EQG-Km-ZKY.text" = "หากคุณโทรศัพท์หาย คุณจำต้องใช้วลีนี้เพื่อกู้คืน wallet ของคุณ";
@@ -22,9 +16,6 @@
 
 /* Class = "UILabel"; text = "not connected"; ObjectID = "UyF-OV-QVY"; */
 "UyF-OV-QVY.text" = "ไม่เชื่อมต่อ";
-
-/* Class = "UINavigationItem"; title = "Settings"; ObjectID = "W8m-Eh-Nf9"; */
-"W8m-Eh-Nf9.title" = "ตั้งค่า";
 
 /* Class = "UILabel"; text = "Enter this wallet's recovery phrase to wipe it and start/recover another. Your current balance remains on this phrase."; ObjectID = "YC6-rN-4P5"; */
 "YC6-rN-4P5.text" = "ป้อนวลีกู้คืน wallet ของคุณ เพื่อลบและสร้าง / เรียกคืนข้อมูลใหม่ ยอดคงเหลือปัจจุบันยังคงใช้วลีกู้คืนนนี้";

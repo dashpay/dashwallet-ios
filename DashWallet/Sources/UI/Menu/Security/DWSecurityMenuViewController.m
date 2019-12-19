@@ -24,7 +24,6 @@
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWResetWalletInfoViewController.h"
 #import "DWSecurityMenuModel.h"
-#import "DWSelectorViewController.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 
