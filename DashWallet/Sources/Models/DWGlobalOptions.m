@@ -37,6 +37,7 @@ static NSString *const SPENDING_CONFIRMATION_DISABLED_KEY = @"org.dash.wallet.sp
 @dynamic shortcuts;
 @dynamic balanceHidden;
 @dynamic shouldDisplayOnboarding;
+@dynamic paymentsScreenCurrentTab;
 
 #pragma mark - Init
 

@@ -181,39 +181,6 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
-- (void)debug_wipeWallet {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"DEBUG MODE"
-                                                                   message:@"YOU ARE ABOUT TO ERASE YOUR WALLET!\n\n☠️☠️☠️\n\nYour seed phrase will be erased forever and wallet quit. Run it again to start from scratch."
-                                                            preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *ok = [UIAlertAction
-        actionWithTitle:@"OK ☠️"
-                  style:UIAlertActionStyleDestructive
-                handler:^(UIAlertAction *_Nonnull action) {
-                    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-                    CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
-
-                    NSArray *secItemClasses = @[ (__bridge id)kSecClassGenericPassword,
-                                                 (__bridge id)kSecClassInternetPassword,
-                                                 (__bridge id)kSecClassCertificate,
-                                                 (__bridge id)kSecClassKey,
-                                                 (__bridge id)kSecClassIdentity ];
-                    for (id secItemClass in secItemClasses) {
-                        NSDictionary *spec = @{(__bridge id)kSecClass : secItemClass};
-                        SecItemDelete((__bridge CFDictionaryRef)spec);
-                    }
-
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        exit(0);
-                    });
-                }];
-    [alert addAction:ok];
-
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Please, no 😭" style:UIAlertActionStyleCancel handler:nil];
-    [alert addAction:cancel];
-
-    [self presentViewController:alert animated:YES completion:nil];
-}
-
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {
     UIBarButtonItem *cancelButton =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel

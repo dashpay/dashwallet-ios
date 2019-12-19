@@ -25,8 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performActionForShortcut:(DWShortcutAction *)action sender:(UIView *)sender;
 
-- (void)debug_wipeWallet;
-
 @end
 
 NS_ASSUME_NONNULL_END

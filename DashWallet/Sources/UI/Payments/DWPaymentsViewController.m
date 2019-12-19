@@ -18,13 +18,12 @@
 #import "DWPaymentsViewController.h"
 
 #import "DWControllerCollectionView.h"
+#import "DWGlobalOptions.h"
 #import "DWPayViewController.h"
 #import "DWReceiveViewController.h"
 #import "DWSegmentedControl.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 
 @interface DWPaymentsViewController () <DWControllerCollectionViewDataSource,
                                         UICollectionViewDelegateFlowLayout,
@@ -257,20 +256,12 @@ static NSString *const CURRENT_SELECTED_INDEX_KEY = @"DW_PAYMENTS_CURRENT_PAGE";
 }
 
 - (DWPaymentsViewControllerIndex)previouslySelectedPageIndex {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *currentPageNumber = [userDefaults objectForKey:CURRENT_SELECTED_INDEX_KEY];
-    if (currentPageNumber) {
-        return currentPageNumber.integerValue;
-    }
-    else {
-        return DWPaymentsViewControllerIndex_Pay;
-    }
+    return [DWGlobalOptions sharedInstance].paymentsScreenCurrentTab;
 }
 
 - (void)saveCurrentSelectedPageIndex {
     const NSInteger currentIndex = self.segmentedControl.selectedSegmentIndex;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setInteger:currentIndex forKey:CURRENT_SELECTED_INDEX_KEY];
+    [DWGlobalOptions sharedInstance].paymentsScreenCurrentTab = currentIndex;
 }
 
 @end

@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL shouldDisplayOnboarding;
 
+@property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
+
 // Non-dynamic
 
 - (BOOL)lockScreenDisabled;
