@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)registerForPushNotifications;
 
 /// Returns `YES` if the upgrade process was initiated
-- (BOOL)performUpgradeOnce;
+- (BOOL)performOnSetupUpgrades;
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider;
 

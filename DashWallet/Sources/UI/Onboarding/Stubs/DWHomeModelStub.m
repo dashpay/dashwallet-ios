@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletBackupReminderWasShown {
 }
 
-- (BOOL)performUpgradeOnce {
+- (BOOL)performOnSetupUpgrades {
     return NO;
 }
 

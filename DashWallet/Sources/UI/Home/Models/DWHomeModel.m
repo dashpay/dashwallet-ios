@@ -243,7 +243,7 @@ static BOOL IsJailbroken(void) {
     options.walletBackupReminderWasShown = YES;
 }
 
-- (BOOL)performUpgradeOnce {
+- (BOOL)performOnSetupUpgrades {
     if (self.upgradedExtendedKeys) {
         return NO;
     }
