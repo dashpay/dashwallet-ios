@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     UIView *toView = toViewController.view;
     UIView *fromView = fromViewController.view;
-    UIView *contentView = self.view;
+    UIView *contentView = self.containerView;
 
     self.currentController = toViewController;
 

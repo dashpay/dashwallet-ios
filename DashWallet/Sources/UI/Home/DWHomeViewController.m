@@ -72,7 +72,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self showWalletBackupReminderIfNeeded];
+    BOOL upgrading = [self.model performOnSetupUpgrades];
+    if (!upgrading) {
+        // since these both methods might display modals, don't allow running them simultaneously
+        [self showWalletBackupReminderIfNeeded];
+    }
 
     [self.model registerForPushNotifications];
 }

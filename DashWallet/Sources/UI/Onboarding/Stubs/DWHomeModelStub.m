@@ -128,6 +128,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletBackupReminderWasShown {
 }
 
+- (BOOL)performOnSetupUpgrades {
+    return NO;
+}
+
 #pragma mark - Private
 
 - (void)walletBalanceDidChangeNotification {

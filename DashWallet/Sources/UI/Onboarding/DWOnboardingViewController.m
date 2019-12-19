@@ -335,6 +335,7 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
 
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
     controller.demoDelegate = self;
+    [controller setLaunchingAsDeferredController];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     [self dw_embedChild:navigationController inContainer:self.miniWalletView];

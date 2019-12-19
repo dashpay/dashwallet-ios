@@ -1,22 +1,31 @@
 //
-//  DWBaseRootViewController.m
-//  dashwallet
+//  Created by Andrew Podkovyrin
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
-//  Created by Andrew Podkovyrin on 21/11/2018.
-//  Copyright © 2019 Dash Core. All rights reserved.
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 //
 
-#import "DWBaseRootViewController.h"
+#import "DWBaseLegacyViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBaseRootViewController ()
+@interface DWBaseLegacyViewController ()
 
 @property (nullable, nonatomic, strong) id protectedObserver;
 
 @end
 
-@implementation DWBaseRootViewController
+@implementation DWBaseLegacyViewController
 
 - (void)dealloc {
     if (self.protectedObserver) {
@@ -154,19 +163,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showNewWalletController {
-    UIViewController *a = self.navigationController.presentedViewController;
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-    UIViewController * walletCreationViewController = [storyboard instantiateViewControllerWithIdentifier:@"NewWalletNav"];
-    if (a) {
-        [a dismissViewControllerAnimated:NO completion:^{
-            [self presentViewController:walletCreationViewController animated:NO
-                             completion:nil];
-        }];
-    } else {
-        [self presentViewController:walletCreationViewController animated:NO
-                         completion:nil];
-    }
-    
+    // meant to be overridden
 }
 
 @end
