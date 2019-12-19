@@ -216,11 +216,11 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
     NSParameterAssert(navigationController);
 
     if (self.pageControl.currentPage == 0) {
-        self.view.userInteractionEnabled = NO;
+        self.collectionView.userInteractionEnabled = NO;
 
         [navigationController popToRootViewControllerAnimated:YES];
         [self dismissModalControllerCompletion:^{
-            self.view.userInteractionEnabled = YES;
+            self.collectionView.userInteractionEnabled = YES;
         }];
 
         [self.rootController closePaymentsScreen];
@@ -232,13 +232,13 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
         if (!self.modalPresentingController) {
             // disable user interaction while "playing" animations.
             // interaction will be enabled after presenting modal controller for this onboarding page
-            self.view.userInteractionEnabled = NO;
+            self.collectionView.userInteractionEnabled = NO;
         }
     }
     else if (self.pageControl.currentPage == 2) {
-        self.view.userInteractionEnabled = NO;
+        self.collectionView.userInteractionEnabled = NO;
         [self dismissModalControllerCompletion:^{
-            self.view.userInteractionEnabled = YES;
+            self.collectionView.userInteractionEnabled = YES;
         }];
 
         if (navigationController.viewControllers.count == 1) {
@@ -304,7 +304,7 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
                                              containerHeight);
         }
         completion:^(BOOL finished) {
-            self.view.userInteractionEnabled = YES;
+            self.collectionView.userInteractionEnabled = YES;
         }];
 }
 

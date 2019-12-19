@@ -84,7 +84,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 
 - (void)openPaymentsScreen {
     NSAssert(self.demoMode, @"Invalid usage. Should be used in Demo mode only");
-    [self tabBarViewDidOpenPayments:self.tabBarView];
+    [self showPaymentsControllerWithActivePage:DWPaymentsViewControllerIndex_Pay];
 }
 
 - (void)closePaymentsScreen {
