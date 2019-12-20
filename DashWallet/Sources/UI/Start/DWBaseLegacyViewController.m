@@ -17,6 +17,8 @@
 
 #import "DWBaseLegacyViewController.h"
 
+#import "DWGlobalOptions.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWBaseLegacyViewController ()
@@ -73,8 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
                 handler:^(UIAlertAction *action) {
                     [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                     [[DWEnvironment sharedInstance] clearAllWallets];
-                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:WALLET_NEEDS_BACKUP_KEY];
-                    [[NSUserDefaults standardUserDefaults] synchronize];
+                    [[DWGlobalOptions sharedInstance] restoreToDefaults];
 
                     [self showNewWalletController];
                 }];

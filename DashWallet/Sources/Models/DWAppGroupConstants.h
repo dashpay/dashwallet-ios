@@ -1,9 +1,9 @@
 //
-//  DWUserDefaultsConstants.h
+//  DWAppGroupConstants.h
 //  DashWallet
 //
-//  Created by Samuel Sutch on 12/29/15.
-//  Copyright (c) 2016 breadwallet LLC
+//  Created by Henry Tsai on 6/13/15.
+//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-
-// TODO: <redesign> Remove this file. It's unused in the redesigned version.
-
-#ifndef DWUserDefaultsConstants_h
-#define DWUserDefaultsConstants_h
-
-#define USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_KEY"
-#define USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY @"USER_DEFAULTS_LOCAL_NOTIFICATIONS_SWITCH_KEY"
-
-#define SETTINGS_MAX_DIGITS_KEY @"SETTINGS_MAX_DIGITS"
-
-#endif /* DWUserDefaultsConstants_h */
+#define APP_GROUP_ID @"group.org.dashfoundation.dash"
+#define APP_GROUP_REQUEST_DATA_KEY @"kBRSharedContainerDataWalletRequestDataKey"
+#define APP_GROUP_RECEIVE_ADDRESS_KEY @"kBRSharedContainerDataWalletReceiveAddressKey"
+#define APP_GROUP_QR_IMAGE_KEY @"kDSSharedContainerDataWalletQRImageKey"

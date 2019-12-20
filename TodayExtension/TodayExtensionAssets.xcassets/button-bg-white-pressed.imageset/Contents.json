@@ -8,19 +8,19 @@
       "resizing" : {
         "mode" : "9-part",
         "center" : {
-          "mode" : "fill",
+          "mode" : "tile",
           "width" : 1,
           "height" : 1
         },
-        "capInsets" : {
-          "bottom" : 11,
-          "top" : 11,
+        "cap-insets" : {
+          "bottom" : 10,
+          "top" : 10,
           "right" : 11,
           "left" : 10
         }
       },
       "idiom" : "universal",
-      "filename" : "button-bg-white.png",
+      "filename" : "button-bg-white-pressed.png",
       "scale" : "2x"
     },
     {

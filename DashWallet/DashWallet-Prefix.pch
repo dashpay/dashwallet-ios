@@ -13,7 +13,6 @@
 #import <UIKit/UIKit.h>
 
 #include <Availability.h>
-#include "DWUserDefaultsConstants.h"
 
 // Compile-time check for keypaths
 // More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
