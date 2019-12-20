@@ -33,6 +33,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 
 static CGFloat const MINIVIEW_MARGIN = 10.0;
 
+static CGFloat const SCALE_FACTOR = 0.5;
+
 @interface DWOnboardingViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, DWDemoDelegate>
 
 @property (strong, nonatomic) IBOutlet UIView *miniWalletView;
@@ -97,15 +99,16 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
     const CGFloat height = CGRectGetHeight(self.view.bounds);
     const CGFloat width = CGRectGetWidth(self.view.bounds);
 
-    const CGFloat scale = 0.5;
+    const CGFloat scale = SCALE_FACTOR;
     const CGFloat miniWalletHeight = height * scale;
     const CGFloat offset = (height - miniWalletHeight) / 2.0;
     const CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
     const CGAffineTransform resultTransform = CGAffineTransformTranslate(scaleTransform, 0.0, -offset);
     self.miniWalletView.transform = resultTransform;
 
+    const CGFloat bezelScale = [self bezelScaleFactor];
     const CGSize bezelSize = self.bezelImageView.image.size;
-    const CGSize scaledBezelSize = CGSizeMake(bezelSize.width * scale, bezelSize.height * scale);
+    const CGSize scaledBezelSize = CGSizeMake(bezelSize.width * bezelScale, bezelSize.height * bezelScale);
     const CGFloat bezelY = ((height - scaledBezelSize.height) / 2.0) - offset / 2.0;
 
     self.bezelImageView.transform = CGAffineTransformIdentity;
@@ -399,6 +402,26 @@ static CGFloat const MINIVIEW_MARGIN = 10.0;
         }
         else {
             return [UIImage imageNamed:@"ipad_regular_bezel"];
+        }
+    }
+}
+
+- (CGFloat)bezelScaleFactor {
+    const CGFloat defaultScale = SCALE_FACTOR;
+    if (IS_IPHONE) {
+        if (IS_IPHONE_6_PLUS) {
+            return defaultScale * 1.104; // = 414 / 375
+        }
+        else {
+            return defaultScale;
+        }
+    }
+    else {
+        if (IS_IPAD_7TH_GEN) {
+            return defaultScale * 1.0546875; // = 810 / 768
+        }
+        else {
+            return defaultScale;
         }
     }
 }
