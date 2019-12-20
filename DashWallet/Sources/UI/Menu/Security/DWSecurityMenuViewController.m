@@ -17,6 +17,8 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"

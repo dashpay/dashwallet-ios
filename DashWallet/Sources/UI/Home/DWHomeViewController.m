@@ -18,6 +18,7 @@
 #import "DWHomeViewController.h"
 
 #import "DWBalanceDisplayOptionsProtocol.h"
+#import "DWEnvironment.h"
 #import "DWHomeView.h"
 #import "DWHomeViewController+DWBackupReminder.h"
 #import "DWHomeViewController+DWJailbreakCheck.h"
@@ -60,9 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self setupView];
     [self performJailbreakCheck];
-
-    // TODO: <redesign> impl migration stuff from protectedViewDidAppear of DWRootViewController
-    // TODO: <redesign> check if wallet is watchOnly and show info about it
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

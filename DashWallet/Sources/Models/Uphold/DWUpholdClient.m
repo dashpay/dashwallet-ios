@@ -22,6 +22,7 @@
 #import "DWUpholdCardObject.h"
 #import "DWUpholdConstants.h"
 #import "DWUpholdTransactionObject.h"
+#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

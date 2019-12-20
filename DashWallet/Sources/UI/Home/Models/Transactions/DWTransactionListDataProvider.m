@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
 #import "DWTransactionListDataItemObject.h"
 
 NS_ASSUME_NONNULL_BEGIN

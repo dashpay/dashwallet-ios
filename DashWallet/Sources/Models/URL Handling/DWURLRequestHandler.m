@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 #import <UIKit/UIKit.h>
 
+#import "DWEnvironment.h"
 #import "DWURLActions.h"
 
 NS_ASSUME_NONNULL_BEGIN

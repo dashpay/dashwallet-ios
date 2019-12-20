@@ -20,6 +20,7 @@
 #import <StoreKit/StoreKit.h>
 
 #import "DWAboutModel.h"
+#import "DWEnvironment.h"
 #import "DWUIKit.h"
 #import "SFSafariViewController+DashWallet.h"
 

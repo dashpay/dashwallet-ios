@@ -21,6 +21,8 @@
 #import <netdb.h>
 #import <sys/socket.h>
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWAboutModel

@@ -17,6 +17,8 @@
 
 #import "DWBiometricAuthModel.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN

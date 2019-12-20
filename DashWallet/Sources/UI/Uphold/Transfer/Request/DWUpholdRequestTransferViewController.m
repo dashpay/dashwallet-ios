@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.availableLabel.attributedText = [self.model availableDashString];
 
-    UIImage *dashImage = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
+    UIImage *dashImage = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:[UIColor dw_dashBlueColor]];
     UIImageView *dashImageView = [[UIImageView alloc] initWithImage:dashImage];
     dashImageView.contentMode = UIViewContentModeRight;
     dashImageView.frame = CGRectMake(0.0, 0.0, 26.0, 30.0);

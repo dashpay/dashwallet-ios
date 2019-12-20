@@ -17,9 +17,8 @@
 
 #import "DWAmountModel.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWAmountInputValidator.h"
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN

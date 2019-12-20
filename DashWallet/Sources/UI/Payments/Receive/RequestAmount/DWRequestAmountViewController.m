@@ -17,6 +17,8 @@
 
 #import "DWRequestAmountViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWReceiveModelProtocol.h"
 #import "DWRequestAmountContentView.h"
 #import "UIViewController+DWShareReceiveInfo.h"

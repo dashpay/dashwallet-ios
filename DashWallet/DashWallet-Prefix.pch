@@ -12,7 +12,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#include <Availability.h>
+#import <DashSync/DSLogger.h>
 
 // Compile-time check for keypaths
 // More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/
@@ -20,29 +20,16 @@
 #define DW_KEYPATH(object, property) ((void)(NO && ((void)object.property, NO)), @ #property)
 #else
 #define DW_KEYPATH(object, property) @ #property
-#endif
+#endif /* DEBUG */
 
-
-// TODO: <redesign> rm imports below (to not pollute the visible space):
-
-#import <DashSync/DashSync.h>
-#import <DashSync/DSLogger.h>
-#import "DWEnvironment.h"
-
-#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
-
-#endif
-
-#ifndef __IPHONE_7_0
-#warning "This project uses features only available in iOS SDK 7.0 and later."
-#endif
+#endif /* __OBJC__ */
 
 // Uncomment this before running `fastlane snapshot`
 //#define SNAPSHOT 1
 
 #ifndef DASH_TESTNET
 #define DASH_TESTNET 0
-#endif
+#endif /* DASH_TESTNET */
 
 #define PEER_LOGGING    1
 #define EVENT_LOGGING   1
@@ -52,6 +39,6 @@
 
 #if ! DEBUG
 #define NSLog(...)
-#endif
+#endif /* ! DEBUG */
 
 #endif /* DashWallet_PrefixHeader_pch */

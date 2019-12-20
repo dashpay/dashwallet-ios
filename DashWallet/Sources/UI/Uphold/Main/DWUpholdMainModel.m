@@ -18,6 +18,7 @@
 #import "DWUpholdMainModel.h"
 
 #import "DWUpholdClient.h"
+#import "UIColor+DWStyle.h"
 #import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -62,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSTextAttachment *dashAttachmentSymbol = [[NSTextAttachment alloc] init];
     dashAttachmentSymbol.bounds = CGRectMake(0.0, -1.0, 14.0, 11.0);
-    dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:UIColorFromRGB(0x008DE4)];
+    dashAttachmentSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:[UIColor dw_dashBlueColor]];
     NSAttributedString *dashSymbol = [NSAttributedString attributedStringWithAttachment:dashAttachmentSymbol];
     NSString *available = [self.dashCard.available descriptionWithLocale:[NSLocale currentLocale]];
     NSString *availableFormatted = [NSString stringWithFormat:@" %@", available];

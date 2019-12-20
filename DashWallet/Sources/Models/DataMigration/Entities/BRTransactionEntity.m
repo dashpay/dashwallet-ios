@@ -24,6 +24,9 @@
 //  THE SOFTWARE.
 
 #import "BRTransactionEntity.h"
+
+#import <DashSync/DashSync.h>
+
 #import "BRAddressEntity.h"
 #import "BRTxInputEntity.h"
 #import "BRTxOutputEntity.h"

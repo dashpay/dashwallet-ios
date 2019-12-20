@@ -17,6 +17,8 @@
 
 #import "DWLockScreenViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"

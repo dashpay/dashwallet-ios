@@ -17,6 +17,8 @@
 
 #import "DWReceiveModelStub.h"
 
+#import <DashSync/DashSync.h>
+
 #import "UIImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
