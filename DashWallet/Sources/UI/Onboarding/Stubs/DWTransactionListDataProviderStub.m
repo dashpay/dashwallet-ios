@@ -17,6 +17,8 @@
 
 #import "DWTransactionListDataProviderStub.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWTransactionStub.h"
 
 NS_ASSUME_NONNULL_BEGIN

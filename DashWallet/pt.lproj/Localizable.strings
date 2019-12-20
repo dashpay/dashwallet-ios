@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ está para 'mDASH'. %@ = 1 DASH.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
 
 /* No comment provided by engineer. */
@@ -12,25 +9,7 @@
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
 /* No comment provided by engineer. */
-"%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
-
-/* No comment provided by engineer. */
-"%d confirmations" = "%d confirmações";
-
-/* No comment provided by engineer. */
-"%d duffs/byte" = "%d duffs/byte";
-
-/* No comment provided by engineer. */
 "%ld used" = "%Id utilizado";
-
-/* No comment provided by engineer. */
-"0 confirmations" = "0 confirmações";
-
-/* No comment provided by engineer. */
-"1 confirmation" = "1 confirmação";
-
-/* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 hour";
@@ -48,15 +27,6 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" não é uma palavra da frase de recuperação";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nse você perder seu telefone, você vai precisar dela para recuperar sua carteira";
-
-/* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nUma senha de dispositivo é necessária para proteger a sua carteira. Vá para Ajustes e ative o Código para continuar.";
-
-/* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\npermitir o acesso de câmera em\nAjustes->Privacidade->Câmera->%@";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\ntente novamente em %@";
 
 /* No comment provided by engineer. */
@@ -65,20 +35,11 @@
 /* No comment provided by engineer. */
 "About" = "Sobre";
 
-/* No comment provided by engineer. */
-"accepted by quorum" = "aceito pelo quorum";
-
-/* No comment provided by engineer. */
-"Action Needed" = "Ação necessária";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
 "Address" = "Endereço";
-
-/* No comment provided by engineer. */
-"ADVANCED" = "ADVANCED";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -94,9 +55,6 @@
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
-
-/* No comment provided by engineer. */
-"Always require passcode" = "Always require passcode";
 
 /* No comment provided by engineer. */
 "Amount" = "Valor";
@@ -150,9 +108,6 @@
 "Balance hidden" = "Balance hidden";
 
 /* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "Endereço de Bitcoin (shapeshift)";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "bloco #%1$d de %2$d";
 
 /* No comment provided by engineer. */
@@ -163,9 +118,6 @@
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Comprar Dash";
-
-/* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Compre Dash na dashwallet!";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Compre Dash com sua conta Uphold";
@@ -180,9 +132,6 @@
 "Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change passcode" = "Mudar senha";
-
-/* No comment provided by engineer. */
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
@@ -190,15 +139,6 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
-
-/* No comment provided by engineer. */
-"Checking address balance..." = "Checking address balance...";
-
-/* No comment provided by engineer. */
-"Checking private key balance..." = "Checking private key balance...";
-
-/* No comment provided by engineer. */
-"Classical Transaction" = "Transação Comum";
 
 /* No comment provided by engineer. */
 "Clear" = "Clear";
@@ -210,21 +150,12 @@
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash or bitcoin address" = "Clipboard doesn't contain a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
 "Close" = "Close";
-
-/* No comment provided by engineer. */
-"Close app" = "Close app";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Transação Minerada";
-
-/* Confirm */
 "Confirm" = "Confirme";
 
 /* No comment provided by engineer. */
@@ -232,9 +163,6 @@
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Confirmar transação";
-
-/* No comment provided by engineer. */
-"confirmed in block #%d" = "confirmada no bloco #%d";
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirming";
@@ -255,19 +183,7 @@
 "Copy" = "Copy";
 
 /* No comment provided by engineer. */
-"Copy address to clipboard" = "Copy address to clipboard";
-
-/* No comment provided by engineer. */
-"Copy request to clipboard" = "Copy request to clipboard";
-
-/* No comment provided by engineer. */
-"Copy wallet addresses to clipboard?" = "Copy wallet addresses to clipboard?";
-
-/* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
-
-/* No comment provided by engineer. */
-"Couldn't check address balance" = "Couldn't check address balance";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -280,18 +196,6 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
-
-/* No comment provided by engineer. */
-"CRITICAL" = "CRÍTICO";
-
-/* No comment provided by engineer. */
-"Dash address" = "Endereço Dash";
-
-/* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Endereços Dash também podem ser copiados para a área de transferência. Um endereço dash sempre começa com 'X' ou '7'.";
-
-/* No comment provided by engineer. */
-"Dash network fee" = "Dash network fee";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -309,40 +213,16 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "SEGURANÇA DO DISPOSITIVO COMPROMETIDA\nQualquer aplicativo \"jailbreak\" consegue acessar os dados de outros aplicativos (e roubar seus dash). Limpe essa carteira imediatamente e restaure em um dispositivo seguro.";
 
 /* No comment provided by engineer. */
-"Do it later" = "Do it later";
-
-/* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "NÃO deixe que ninguém veja sua frase de recuperação ou ele poderá gastar seu dash.";
-
-/* No comment provided by engineer. */
-"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "NÃO tire um print da tela. Prints são visíveis a outros apps ou dispositivos.";
-
-/* No comment provided by engineer. */
 "Done" = "Feito";
 
 /* No comment provided by engineer. */
 "Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
-"double spend" = "gasto duplo";
-
-/* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "E-mail não está configurado. Por favor, adicione sua conta de e-mail em Configurações";
 
 /* No comment provided by engineer. */
-"Email not configured" = "Email not configured";
-
-/* No comment provided by engineer. */
-"Enable advanced features" = "Ativar recursos avançados";
-
-/* No comment provided by engineer. */
-"Enable advanced features?" = "Ativar recursos avançados?";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
-
-/* No comment provided by engineer. */
-"Enable receive notifications" = "Habilitar recebimento de notificações";
 
 /* No comment provided by engineer. */
 "Enable Receive Notifications" = "Enable Receive Notifications";
@@ -372,9 +252,6 @@
 "Face ID limit" = "Limite de ID de face";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Limite de gastos por Face ID";
-
-/* No comment provided by engineer. */
 "Failed wallet update" = "Falha ao atualizar a carteira ";
 
 /* No comment provided by engineer. */
@@ -391,12 +268,6 @@
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Forgot PIN?";
-
-/* No comment provided by engineer. */
-"From:" = "From:";
-
-/* No comment provided by engineer. */
-"GENERAL" = "GERAL";
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
@@ -417,16 +288,10 @@
 "History" = "History";
 
 /* No comment provided by engineer. */
-"Holding funds index:" = "Holding funds index:";
-
-/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Eu aceito que perderei minhas moedas se eu não mais possuir a frase de recuperação";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "I wrote it down";
-
-/* No comment provided by engineer. */
-"ID:" = "ID:";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -444,25 +309,13 @@
 "Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
-"Import private key" = "Importe chave privada";
-
-/* No comment provided by engineer. */
 "Import private key…" = "Import private key…";
-
-/* No comment provided by engineer. */
-"IMPORTANT" = "IMPORTANTE";
-
-/* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Em uma versão anterior do Dashwallet, ao exibir inicialmente sua frase secreta neste dispositivo, determinamos que este aplicativo não exibiu corretamente todas as 12 palavras-semente. Por favor, anote sua senha completa novamente.";
 
 /* No comment provided by engineer. */
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Saldo Insuficiente";
-
-/* No comment provided by engineer. */
-"INVALID" = "INVÁLIDO";
 
 /* No comment provided by engineer. */
 "Invalid" = "Invalid";
@@ -474,25 +327,16 @@
 "invalid transaction" = "invalid transaction";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "IP endereço/porta:";
-
-/* No comment provided by engineer. */
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Compartilhe este código QR para outros obterem seu endereço dash. Qualquer um pode enviar dash para sua carteira ao transferí-los para seu endereço.";
-
-/* No comment provided by engineer. */
 "Link Uphold Account" = "Conectar Conta Uphold";
 
 /* No comment provided by engineer. */
 "Load more" = "Carregar mais";
-
-/* No comment provided by engineer. */
-"Local currency" = "Moeda local";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
@@ -502,9 +346,6 @@
 
 /* No comment provided by engineer. */
 "Locked" = "Bloqueado";
-
-/* No comment provided by engineer. */
-"locked with InstantSend" = "reservado para EnvioInstantâneo";
 
 /* No comment provided by engineer. */
 "Log Out" = "Sair";
@@ -531,25 +372,13 @@
 "Low" = "Low";
 
 /* No comment provided by engineer. */
-"Masternode holding address" = "Masternode holding address";
-
-/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
-
-/* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Transação para Registrar Masternode";
 
 /* No comment provided by engineer. */
 "Masternode Revoke" = "Masternode Revoke";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";
-
-/* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Atualizar Transação para Registrar Masternode";
-
-/* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Transação do Serviço de Atualização do Masternode";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -564,13 +393,10 @@
 "More Control" = "More Control";
 
 /* No comment provided by engineer. */
-"More..." = "More...";
+"Moved" = "Movido";
 
 /* No comment provided by engineer. */
 "moved" = "moved";
-
-/* No comment provided by engineer. */
-"Moved" = "Movido";
 
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
@@ -588,28 +414,13 @@
 "Network fee" = "Network fee";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NUNCA digite sua frase de recuperação em gerenciadores de senha ou em outro lugar. Outros dispositivos podem estar infectados.";
-
-/* No comment provided by engineer. */
-"New public key:" = "New public key:";
-
-/* No comment provided by engineer. */
-"next, write down your recovery phrase" = "em seguida, anote sua frase de recuperação";
-
-/* No comment provided by engineer. */
 "NFC device" = "NFC device";
-
-/* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "Dispositivo NFC não transmitiu um endereço válido de dash";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "Dispositivo NFC não transmitiu um endereço válido de dash ou bitcoin";
 
 /* No comment provided by engineer. */
 "No address copied" = "No address copied";
-
-/* No comment provided by engineer. */
-"no exchange rate data" = "não há dados da taxa de câmbio";
 
 /* No comment provided by engineer. */
 "Node ip" = "Node ip";
@@ -621,28 +432,10 @@
 "Not a Dash URL" = "Not a Dash URL";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
-
-/* No comment provided by engineer. */
 "Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
-"not operator" = "não é operador";
-
-/* No comment provided by engineer. */
-"Not operator" = "Not operator";
-
-/* No comment provided by engineer. */
-"Not owner" = "Not owner";
-
-/* No comment provided by engineer. */
-"Not voter" = "Not voter";
-
-/* No comment provided by engineer. */
-"not voter" = "não é eleitor";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Not yet used";
@@ -651,25 +444,10 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Ative somente recursos avançados se você tiver conhecimento da tecnologia blockchain.\nSe ativado, use somente recursos avançados que você entenda.";
-
-/* No comment provided by engineer. */
-"Operator key index:" = "Operator key index:";
-
-/* No comment provided by engineer. */
-"Operator key:" = "Operator key:";
-
-/* No comment provided by engineer. */
 "Operator Keys" = "Chaves do Operador";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
-
-/* No comment provided by engineer. */
-"Owner key hash:" = "Owner key hash:";
-
-/* No comment provided by engineer. */
-"Owner key index:" = "Owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Chaves do Proprietário";
@@ -681,28 +459,7 @@
 "Pay with Ease" = "Pay with Ease";
 
 /* No comment provided by engineer. */
-"Payload:" = "Payload:";
-
-/* No comment provided by engineer. */
-"Payment address" = "Payment address";
-
-/* No comment provided by engineer. */
-"Payment output" = "Payment output";
-
-/* No comment provided by engineer. */
 "Payments" = "Payments";
-
-/* No comment provided by engineer. */
-"Payout Address" = "Payout Address";
-
-/* No comment provided by engineer. */
-"Payout address:" = "Payout address:";
-
-/* No comment provided by engineer. */
-"pending" = "pendente";
-
-/* No comment provided by engineer. */
-"Pending" = "Pendente";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
@@ -738,16 +495,10 @@
 "Processing" = "Processando";
 
 /* No comment provided by engineer. */
-"processing" = "processando";
-
-/* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
 
 /* No comment provided by engineer. */
 "Public key" = "Chave pública";
-
-/* No comment provided by engineer. */
-"Public key:" = "Public key:";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Quick Receive";
@@ -759,13 +510,10 @@
 "Receive" = "Receive";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "Receber dash neste endereço: %@";
+"Received" = "Recebido";
 
 /* No comment provided by engineer. */
 "received" = "received";
-
-/* No comment provided by engineer. */
-"Received" = "Recebido";
 
 /* No comment provided by engineer. */
 "Received %@ (%@)" = "Received %1$@ (%2$@)";
@@ -777,16 +525,10 @@
 "Received from" = "Received from";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "minerado recentemente (não disponível)";
-
-/* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
-
-/* Recovery phrase */
-"Recovery phrase" = "Frase de recuperação";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -800,12 +542,6 @@
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
 
-/* No comment provided by engineer. */
-"Registration tx:" = "Registration tx:";
-
-/* No comment provided by engineer. */
-"Remind me later" = "Lembrar-me mais tarde";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Report an Issue";
 
@@ -813,13 +549,7 @@
 "Request" = "Pedido";
 
 /* No comment provided by engineer. */
-"Request an amount" = "Request an amount";
-
-/* No comment provided by engineer. */
 "Rescan" = "Rescan";
-
-/* No comment provided by engineer. */
-"Rescan blockchain" = "Reexaminar blockchain";
 
 /* No comment provided by engineer. */
 "Rescan Blockchain" = "Rescan Blockchain";
@@ -852,12 +582,6 @@
 "Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Jeśli chcesz poznać kogoś adres Dash przeskanuj ich kod QR. Możesz wysyłać Dash do kogolwiek z adresem Dash. ";
-
-/* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Digitalizar o código QR de outra pessoa para obter seu endereço dash ou bitcoin. Você pode enviar um pagamento para qualquer pessoa com um endereço.";
-
-/* No comment provided by engineer. */
 "Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -876,9 +600,6 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Gere uma nova frase de recuperação e a mantenha secreta.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Capturas de Tela são visíveis para outros dispositivos e aplicativos. Seus fundos estão em risco. Transfira seu saldo para outra carteira.";
-
-/* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -894,31 +615,16 @@
 "See on Uphold" = "Veja no Uphold";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "visto por %1$d de %2$d peers";
-
-/* No comment provided by engineer. */
 "Send" = "Send";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Enviar %1$@ (%2$@) desta chave privada para sua carteira? A rede dash receberá uma taxa de %3$@ (%4$@).";
-
-/* No comment provided by engineer. */
-"Send address as email" = "Send address as email";
-
-/* No comment provided by engineer. */
-"Send address as message" = "Send address as message";
 
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
 /* No comment provided by engineer. */
 "Send crash report" = "Send crash report";
-
-/* No comment provided by engineer. */
-"Send request as email" = "Send request as email";
-
-/* No comment provided by engineer. */
-"Send request as message" = "Send request as message";
 
 /* No comment provided by engineer. */
 "Send to" = "Send to";
@@ -960,9 +666,6 @@
 "Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
-"Sent!" = "Sent!";
-
-/* No comment provided by engineer. */
 "Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
@@ -975,46 +678,19 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
-
-/* No comment provided by engineer. */
-"Shapeshift status:" = "Shapeshift status:";
-
-/* No comment provided by engineer. */
-"Shapeshift succeeded" = "Shapeshift succeeded";
-
-/* No comment provided by engineer. */
 "Share" = "Share";
-
-/* No comment provided by engineer. */
-"Show" = "Show";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Mostrar chaves do masternode";
-
-/* No comment provided by engineer. */
-"show phrase" = "mostrar a frase";
-
-/* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
-
-/* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
-
-/* No comment provided by engineer. */
-"Size:" = "Size:";
-
-/* No comment provided by engineer. */
-"skip" = "skip";
 
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
 /* No comment provided by engineer. */
-"SMS not currently available" = "SMS not currently available";
+"skip" = "skip";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Algo deu errado";
@@ -1024,18 +700,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Spending Confirmation";
-
-/* No comment provided by engineer. */
-"Spent address" = "Spent address";
-
-/* No comment provided by engineer. */
-"Spent input" = "Spent input";
-
-/* No comment provided by engineer. */
-"Start / Recover another wallet" = "Iniciar / Recuperar outra carteira";
-
-/* No comment provided by engineer. */
-"Status:" = "Status:";
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Passos para reproduzir a falha";
@@ -1062,9 +726,6 @@
 "Syncing" = "Syncing";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Sincronizando:";
-
-/* No comment provided by engineer. */
 "Tap" = "Tap";
 
 /* No comment provided by engineer. */
@@ -1074,22 +735,10 @@
 "Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
-"The app will now close" = "The app will now close";
-
-/* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "This app is open source:";
-
-/* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Este é seu endereço dash. Toque para copiá-lo ou enviá-lo por e-mail ou sms. O endereço vai mudar cada vez que você receber fundos, mas endereços antigos sempre funcionam.";
-
-/* No comment provided by engineer. */
-"This is your dash balance." = "Esse é seu saldo em dash";
-
-/* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Este é o seu saldo de dash. Dash é uma moeda. A taxa de câmbio muda com o mercado.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
@@ -1101,9 +750,6 @@
 "This transaction may take several minutes to settle." = "Essa transação pode levar alguns minutos para ser confirmada.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Essa transação pode levar alguns minutos para ser confirmada. Confirmar instantaneamente por um adicional de %@?";
-
-/* No comment provided by engineer. */
 "This transaction should settle instantly at no extra fee" = "Essa transação pode ser confirmada instantaneamente sem taxa adicional";
 
 /* No comment provided by engineer. */
@@ -1113,28 +759,13 @@
 "This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
 
 /* No comment provided by engineer. */
-"To:" = "To:";
-
-/* No comment provided by engineer. */
-"To: %@" = "To: %@";
-
-/* No comment provided by engineer. */
 "Tools" = "Tools";
-
-/* No comment provided by engineer. */
-"Topup amount:" = "Topup amount:";
 
 /* No comment provided by engineer. */
 "Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "Limite de ID de toque";
-
-/* No comment provided by engineer. */
-"Touch ID spending limit" = "Limite de gastos por Touch ID";
-
-/* No comment provided by engineer. */
-"Transaction history" = "Histórico de transação";
 
 /* No comment provided by engineer. */
 "Transaction id" = "Id da transação";
@@ -1155,13 +786,7 @@
 "Try again" = "Try again";
 
 /* No comment provided by engineer. */
-"Try It!" = "Experimente!";
-
-/* No comment provided by engineer. */
 "Turn device passcode on" = "Turn device passcode on";
-
-/* No comment provided by engineer. */
-"Type:" = "Type:";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Unable to connect";
@@ -1170,25 +795,13 @@
 "Unable to get new qr code" = "Incapaz de pegar novo código qr";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
 
 /* No comment provided by engineer. */
-"Unsupported url" = "Unsupported url";
-
-/* No comment provided by engineer. */
-"Unverified" = "Não verificada";
-
-/* No comment provided by engineer. */
 "Uphold" = "Uphold";
-
-/* No comment provided by engineer. */
-"Uphold account" = "conta Uphold";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -1197,28 +810,10 @@
 "Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
-"User Registration Transaction" = "Transação de Registro de Usuário";
-
-/* No comment provided by engineer. */
-"User Reset Transaction" = "Transação para Redefinir Usuário";
-
-/* No comment provided by engineer. */
-"User Topup Transaction" = "Transação para Recarregar Usuário";
-
-/* No comment provided by engineer. */
-"Username:" = "Username:";
-
-/* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "verificada, à espera de confirmação";
-
-/* No comment provided by engineer. */
 "Verify" = "Verify";
-
-/* No comment provided by engineer. */
-"verifying quorum" = "verificando quorum";
 
 /* No comment provided by engineer. */
 "Very High" = "Very High";
@@ -1236,16 +831,7 @@
 "Voting Address" = "Voting Address";
 
 /* No comment provided by engineer. */
-"Voting key hash:" = "Voting key hash:";
-
-/* No comment provided by engineer. */
-"Voting key index:" = "Voting key index:";
-
-/* No comment provided by engineer. */
 "Voting Keys" = "Chaves de Votação";
-
-/* No comment provided by engineer. */
-"Wallet address" = "Wallet address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";
@@ -1254,13 +840,10 @@
 "Wallet Keys" = "Chaves da Carteira";
 
 /* No comment provided by engineer. */
-"WARNING" = "AVISO";
-
-/* No comment provided by engineer. */
 "Warning" = "Warning";
 
 /* No comment provided by engineer. */
-"Watch only" = "Watch only";
+"WARNING" = "AVISO";
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
@@ -1293,12 +876,6 @@
 "with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
-"WRITE DOWN YOUR RECOVERY PHRASE" = "ANOTE SUA FRASE DE RECUPERAÇÃO";
-
-/* No comment provided by engineer. */
-"Yes" = "Yes";
-
-/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
 
 /* No comment provided by engineer. */
@@ -1311,13 +888,7 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Agora você pode comprar dash em \ncarteira dash com dinheiro ou \ntransferência bancária.";
-
-/* No comment provided by engineer. */
 "You must enter your pin in order to enter dashwallet" = "Você deve inserir seu pin para entrar no dashwallet";
-
-/* No comment provided by engineer. */
-"You received dash!" = "You received dash!";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";

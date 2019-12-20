@@ -1,8 +1,5 @@
 
 /* No comment provided by engineer. */
-"%@ is for 'mDASH'. %@ = 1 DASH." = "%@ adalah untuk 'mDASH'. %@ = 1 DASH.";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
 
 /* No comment provided by engineer. */
@@ -12,25 +9,7 @@
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
 /* No comment provided by engineer. */
-"%@\n\nbalance: %@ (%@)" = "%1$@\n\nsaldo: %2$@ (%3$@)";
-
-/* No comment provided by engineer. */
-"%d confirmations" = "%d konfirmasi";
-
-/* No comment provided by engineer. */
-"%d duffs/byte" = "%dduffs/byte ";
-
-/* No comment provided by engineer. */
 "%ld used" = "%ld digunakan";
-
-/* No comment provided by engineer. */
-"0 confirmations" = "0 konfirmasi";
-
-/* No comment provided by engineer. */
-"1 confirmation" = "1 konfirmasi";
-
-/* No comment provided by engineer. */
-"1 duff/byte" = "1 duff/byte";
 
 /* No comment provided by engineer. */
 "1 hour" = "1 hour";
@@ -48,15 +27,6 @@
 "\"%@\" is not a recovery phrase word" = "\"%@\" bukan kata frasa pemulihan";
 
 /* No comment provided by engineer. */
-"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\njika Anda kehilangan ponsel, Anda akan membutuhkannya untuk memulihkan dompet Anda";
-
-/* No comment provided by engineer. */
-"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nKode akses perangkat diperlukan untuk melindungi dompet Anda. Buka pengaturan dan aktifkan kode akses untuk melanjutkan.";
-
-/* No comment provided by engineer. */
-"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nizinkan akses kamera masuk\nPengaturan-> Privasi-> Kamera->%@";
-
-/* No comment provided by engineer. */
 "\ntry again in %@" = "\ncoba lagi dalam %@";
 
 /* No comment provided by engineer. */
@@ -65,20 +35,11 @@
 /* No comment provided by engineer. */
 "About" = "Tentang";
 
-/* No comment provided by engineer. */
-"accepted by quorum" = "diterima oleh kuorum";
-
-/* No comment provided by engineer. */
-"Action Needed" = "Tindakan diperlukan";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
 "Address" = "Alamat";
-
-/* No comment provided by engineer. */
-"ADVANCED" = "TINGKAT LANJUT";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -94,9 +55,6 @@
 
 /* No comment provided by engineer. */
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
-
-/* No comment provided by engineer. */
-"Always require passcode" = "Always require passcode";
 
 /* No comment provided by engineer. */
 "Amount" = "Jumlah";
@@ -150,9 +108,6 @@
 "Balance hidden" = "Balance hidden";
 
 /* No comment provided by engineer. */
-"Bitcoin address (shapeshift)" = "Alamat Bitcoin (shapeshift)";
-
-/* No comment provided by engineer. */
 "block #%d of %d" = "blok #%1$d of %2$d";
 
 /* No comment provided by engineer. */
@@ -163,9 +118,6 @@
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Beli Dash";
-
-/* No comment provided by engineer. */
-"Buy dash in dashwallet!" = "Beli dash di dompet dash!";
 
 /* No comment provided by engineer. */
 "Buy Dash with Uphold account" = "Beli Dash dengan akun Uphold";
@@ -180,9 +132,6 @@
 "Change" = "Change";
 
 /* No comment provided by engineer. */
-"Change passcode" = "Ubah kode sandi";
-
-/* No comment provided by engineer. */
 "Change payment amount?" = "Change payment amount?";
 
 /* No comment provided by engineer. */
@@ -190,15 +139,6 @@
 
 /* No comment provided by engineer. */
 "Check your connection" = "Check your connection";
-
-/* No comment provided by engineer. */
-"Checking address balance..." = "Checking address balance...";
-
-/* No comment provided by engineer. */
-"Checking private key balance..." = "Checking private key balance...";
-
-/* No comment provided by engineer. */
-"Classical Transaction" = "Transaksi Klasik";
 
 /* No comment provided by engineer. */
 "Clear" = "Clear";
@@ -210,21 +150,12 @@
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash or bitcoin address" = "Clipboard doesn't contain a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
 "Close" = "Close";
-
-/* No comment provided by engineer. */
-"Close app" = "Close app";
 
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
 /* No comment provided by engineer. */
-"Coinbase Transaction" = "Transaksi Coinbase";
-
-/* Confirm */
 "Confirm" = "Memastikan";
 
 /* No comment provided by engineer. */
@@ -232,9 +163,6 @@
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Konfirmasi transaksi";
-
-/* No comment provided by engineer. */
-"confirmed in block #%d" = "dikonfirmasi dalam blok #%d";
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirming";
@@ -255,19 +183,7 @@
 "Copy" = "Copy";
 
 /* No comment provided by engineer. */
-"Copy address to clipboard" = "Copy address to clipboard";
-
-/* No comment provided by engineer. */
-"Copy request to clipboard" = "Copy request to clipboard";
-
-/* No comment provided by engineer. */
-"Copy wallet addresses to clipboard?" = "Copy wallet addresses to clipboard?";
-
-/* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
-
-/* No comment provided by engineer. */
-"Couldn't check address balance" = "Couldn't check address balance";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -280,18 +196,6 @@
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
-
-/* No comment provided by engineer. */
-"CRITICAL" = "KRITIS";
-
-/* No comment provided by engineer. */
-"Dash address" = "Alamat dash";
-
-/* No comment provided by engineer. */
-"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Alamat-alamat dash juga bisa disalin ke papan klip. Alamat dash selalu diawali dengan 'X' atau '7'.";
-
-/* No comment provided by engineer. */
-"Dash network fee" = "Dash network fee";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
@@ -309,40 +213,16 @@
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "KEAMANAN PERANGKAT MEMBAHAYAKAN\nAplikasi 'jailbreak' apa pun dapat mengakses data keychain aplikasi lain (dan mencuri dash Anda). Bersihkan dompet ini segera dan kembalikan pada perangkat yang aman.";
 
 /* No comment provided by engineer. */
-"Do it later" = "Do it later";
-
-/* No comment provided by engineer. */
-"DO NOT let anyone see your recovery phrase or they can spend your dash." = "JANGAN biarkan siapa pun melihat frasa pemulihan Anda atau mereka dapat menghabiskan dash Anda.";
-
-/* No comment provided by engineer. */
-"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "JANGAN ambil tangkapan layar. Tangkapan layar terlihat oleh aplikasi dan perangkat lain.";
-
-/* No comment provided by engineer. */
 "Done" = "Selesai";
 
 /* No comment provided by engineer. */
 "Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
-"double spend" = "pengiriman ganda";
-
-/* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "Klien email tidak dikonfigurasikan. Silakan tambahkan akun email Anda di Pengaturan";
 
 /* No comment provided by engineer. */
-"Email not configured" = "Email not configured";
-
-/* No comment provided by engineer. */
-"Enable advanced features" = "Aktifkan fitur lanjutan";
-
-/* No comment provided by engineer. */
-"Enable advanced features?" = "Aktifkan fitur lanjutan?";
-
-/* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
-
-/* No comment provided by engineer. */
-"Enable receive notifications" = "Aktifkan menerima pemberitahuan";
 
 /* No comment provided by engineer. */
 "Enable Receive Notifications" = "Enable Receive Notifications";
@@ -372,9 +252,6 @@
 "Face ID limit" = "Identitas wajah terbatas";
 
 /* No comment provided by engineer. */
-"Face ID spending limit" = "Identitas wajah pengiriman terbatas";
-
-/* No comment provided by engineer. */
 "Failed wallet update" = "Pembaruan dompet gagal";
 
 /* No comment provided by engineer. */
@@ -391,12 +268,6 @@
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Forgot PIN?";
-
-/* No comment provided by engineer. */
-"From:" = "From:";
-
-/* No comment provided by engineer. */
-"GENERAL" = "UMUM";
 
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
@@ -417,16 +288,10 @@
 "History" = "History";
 
 /* No comment provided by engineer. */
-"Holding funds index:" = "Holding funds index:";
-
-/* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Saya menerima bahwa saya akan kehilangan koin saya jika saya tidak lagi memiliki frasa pemulihan";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "I wrote it down";
-
-/* No comment provided by engineer. */
-"ID:" = "ID:";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -444,25 +309,13 @@
 "Import Private Key" = "Import Private Key";
 
 /* No comment provided by engineer. */
-"Import private key" = "Impor kunci pribadi";
-
-/* No comment provided by engineer. */
 "Import private key…" = "Import private key…";
-
-/* No comment provided by engineer. */
-"IMPORTANT" = "PENTING";
-
-/* No comment provided by engineer. */
-"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "Dalam versi dompet Dash sebelumnya, ketika awalnya menampilkan kata sandi Anda di perangkat ini, kami telah menetapkan bahwa Aplikasi ini tidak menampilkan semua 12 kata benih dengan benar. Silakan tuliskan kata sandi lengkap Anda lagi.";
 
 /* No comment provided by engineer. */
 "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Dana tidak mencukupi";
-
-/* No comment provided by engineer. */
-"INVALID" = "INVALID";
 
 /* No comment provided by engineer. */
 "Invalid" = "Invalid";
@@ -474,25 +327,16 @@
 "invalid transaction" = "invalid transaction";
 
 /* No comment provided by engineer. */
-"IP address/port:" = "Alamat IP/port:";
-
-/* No comment provided by engineer. */
 "It's Important" = "It's Important";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
 
 /* No comment provided by engineer. */
-"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Biarkan orang lain memindai kode QR ini untuk mendapatkan alamat dash Anda. Siapa pun dapat mengirim dash ke dompet Anda dengan mentransfernya ke alamat Anda.";
-
-/* No comment provided by engineer. */
 "Link Uphold Account" = "Tautkan Akun Uphold";
 
 /* No comment provided by engineer. */
 "Load more" = "Muat lebih";
-
-/* No comment provided by engineer. */
-"Local currency" = "Mata uang lokal";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
@@ -502,9 +346,6 @@
 
 /* No comment provided by engineer. */
 "Locked" = "Terkunci";
-
-/* No comment provided by engineer. */
-"locked with InstantSend" = "dikunci dengan InstantSend";
 
 /* No comment provided by engineer. */
 "Log Out" = "Keluar";
@@ -531,25 +372,13 @@
 "Low" = "Low";
 
 /* No comment provided by engineer. */
-"Masternode holding address" = "Masternode holding address";
-
-/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
-
-/* No comment provided by engineer. */
-"Masternode Registration Transaction" = "Transaksi Pendaftaran Masternode";
 
 /* No comment provided by engineer. */
 "Masternode Revoke" = "Masternode Revoke";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Masternode Update";
-
-/* No comment provided by engineer. */
-"Masternode Update Registrar Transaction" = "Perbarui Registrasi Pendaftar Masternode";
-
-/* No comment provided by engineer. */
-"Masternode Update Service Transaction" = "Transaksi Layanan Pembaruan Masternode";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -564,13 +393,10 @@
 "More Control" = "More Control";
 
 /* No comment provided by engineer. */
-"More..." = "More...";
+"Moved" = "Terpindah";
 
 /* No comment provided by engineer. */
 "moved" = "moved";
-
-/* No comment provided by engineer. */
-"Moved" = "Terpindah";
 
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
@@ -588,28 +414,13 @@
 "Network fee" = "Network fee";
 
 /* No comment provided by engineer. */
-"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "JANGAN PERNAH mengetikkan frasa pemulihan Anda ke pengelola atau kata sandi lainnya. Perangkat lain mungkin terinfeksi.";
-
-/* No comment provided by engineer. */
-"New public key:" = "New public key:";
-
-/* No comment provided by engineer. */
-"next, write down your recovery phrase" = "selanjutnya, tuliskan frasa pemulihan Anda";
-
-/* No comment provided by engineer. */
 "NFC device" = "NFC device";
-
-/* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash address" = "Perangkat NFC tidak mengirimkan alamat dash yang valid";
 
 /* No comment provided by engineer. */
 "NFC device didn't transmit a valid dash or bitcoin address" = "Perangkat NFC tidak mengirimkan alamat dash atau bitcoin yang valid";
 
 /* No comment provided by engineer. */
 "No address copied" = "No address copied";
-
-/* No comment provided by engineer. */
-"no exchange rate data" = "tidak ada data nilai tukar";
 
 /* No comment provided by engineer. */
 "Node ip" = "Node ip";
@@ -621,28 +432,10 @@
 "Not a Dash URL" = "Not a Dash URL";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
-
-/* No comment provided by engineer. */
 "Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash or bitcoin address" = "Not a valid dash or bitcoin address";
-
-/* No comment provided by engineer. */
-"not operator" = "bukan operator";
-
-/* No comment provided by engineer. */
-"Not operator" = "Not operator";
-
-/* No comment provided by engineer. */
-"Not owner" = "Not owner";
-
-/* No comment provided by engineer. */
-"Not voter" = "Not voter";
-
-/* No comment provided by engineer. */
-"not voter" = "bukan pemilih";
+"Not a valid dash address" = "Not a valid dash address";
 
 /* No comment provided by engineer. */
 "Not yet used" = "Not yet used";
@@ -651,25 +444,10 @@
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Only enable advanced features if you are knowledgeable in blockchain technology. \nIf enabled only use advanced features that you understand." = "Hanya aktifkan fitur-fitur canggih jika Anda berpengetahuan luas dalam teknologi blockchain. \nJika diaktifkan gunakan hanya fitur-fitur canggih yang Anda pahami.";
-
-/* No comment provided by engineer. */
-"Operator key index:" = "Operator key index:";
-
-/* No comment provided by engineer. */
-"Operator key:" = "Operator key:";
-
-/* No comment provided by engineer. */
 "Operator Keys" = "Kunci Operator";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
-
-/* No comment provided by engineer. */
-"Owner key hash:" = "Owner key hash:";
-
-/* No comment provided by engineer. */
-"Owner key index:" = "Owner key index:";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "Kunci Pemilik";
@@ -681,28 +459,7 @@
 "Pay with Ease" = "Pay with Ease";
 
 /* No comment provided by engineer. */
-"Payload:" = "Payload:";
-
-/* No comment provided by engineer. */
-"Payment address" = "Payment address";
-
-/* No comment provided by engineer. */
-"Payment output" = "Payment output";
-
-/* No comment provided by engineer. */
 "Payments" = "Payments";
-
-/* No comment provided by engineer. */
-"Payout Address" = "Payout Address";
-
-/* No comment provided by engineer. */
-"Payout address:" = "Payout address:";
-
-/* No comment provided by engineer. */
-"pending" = "tertunda";
-
-/* No comment provided by engineer. */
-"Pending" = "Tertunda";
 
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
@@ -738,16 +495,10 @@
 "Processing" = "Sedang diproses";
 
 /* No comment provided by engineer. */
-"processing" = "Sedang diproses";
-
-/* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
 
 /* No comment provided by engineer. */
 "Public key" = "Kunci publik";
-
-/* No comment provided by engineer. */
-"Public key:" = "Public key:";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Quick Receive";
@@ -759,13 +510,10 @@
 "Receive" = "Receive";
 
 /* No comment provided by engineer. */
-"Receive dash at this address: %@" = "Terima dash di alamat ini: %@";
+"Received" = "Diterima";
 
 /* No comment provided by engineer. */
 "received" = "received";
-
-/* No comment provided by engineer. */
-"Received" = "Diterima";
 
 /* No comment provided by engineer. */
 "Received %@ (%@)" = "Received %1$@ (%2$@)";
@@ -777,16 +525,10 @@
 "Received from" = "Received from";
 
 /* No comment provided by engineer. */
-"recently mined (locked)" = "baru saja ditambang (dikunci)";
-
-/* No comment provided by engineer. */
 "Recover Wallet" = "Recover Wallet";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
-
-/* Recovery phrase */
-"Recovery phrase" = "frasa pemulihan";
 
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
@@ -800,12 +542,6 @@
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
 
-/* No comment provided by engineer. */
-"Registration tx:" = "Registration tx:";
-
-/* No comment provided by engineer. */
-"Remind me later" = "Ingatkan saya nanti";
-
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Report an Issue";
 
@@ -813,13 +549,7 @@
 "Request" = "meminta";
 
 /* No comment provided by engineer. */
-"Request an amount" = "Request an amount";
-
-/* No comment provided by engineer. */
 "Rescan" = "Rescan";
-
-/* No comment provided by engineer. */
-"Rescan blockchain" = "memindai ulang blockchain";
 
 /* No comment provided by engineer. */
 "Rescan Blockchain" = "Rescan Blockchain";
@@ -852,12 +582,6 @@
 "Scan QR Code" = "Scan QR Code";
 
 /* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Pindai kode QR orang lain untuk mendapatkan alamat dash mereka. Anda dapat mengirim pembayaran kepada siapa pun yang memiliki alamat.";
-
-/* No comment provided by engineer. */
-"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Pindai kode QR orang lain untuk mendapatkan alamat dash atau bitcoin mereka. Anda dapat mengirim pembayaran kepada siapa pun yang memiliki alamat.";
-
-/* No comment provided by engineer. */
 "Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -876,9 +600,6 @@
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Tangkapan layar terlihat oleh aplikasi dan perangkat lain. Hasilkan frasa pemulihan baru dan jaga kerahasiaannya.";
 
 /* No comment provided by engineer. */
-"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Tangkapan layar terlihat oleh aplikasi dan perangkat lain. Dana Anda berisiko. Transfer saldo Anda ke dompet lain.";
-
-/* No comment provided by engineer. */
 "Secure now" = "Secure now";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -894,31 +615,16 @@
 "See on Uphold" = "Lihat di Uphold";
 
 /* No comment provided by engineer. */
-"seen by %d of %d peers" = "terlihat oleh %1$d dari %2$d peer";
-
-/* No comment provided by engineer. */
 "Send" = "Send";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "kirim %1$@ (%2$@) dari kunci pribadi ini ke dompet anda? Jaringan dash akan menerima biaya dari %3$@ (%4$@)";
-
-/* No comment provided by engineer. */
-"Send address as email" = "Send address as email";
-
-/* No comment provided by engineer. */
-"Send address as message" = "Send address as message";
 
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
 /* No comment provided by engineer. */
 "Send crash report" = "Send crash report";
-
-/* No comment provided by engineer. */
-"Send request as email" = "Send request as email";
-
-/* No comment provided by engineer. */
-"Send request as message" = "Send request as message";
 
 /* No comment provided by engineer. */
 "Send to" = "Send to";
@@ -960,9 +666,6 @@
 "Sent to" = "Sent to";
 
 /* No comment provided by engineer. */
-"Sent!" = "Sent!";
-
-/* No comment provided by engineer. */
 "Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
@@ -975,46 +678,19 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Shapeshift bitcoin id:" = "Shapeshift bitcoin id:";
-
-/* No comment provided by engineer. */
-"Shapeshift status:" = "Shapeshift status:";
-
-/* No comment provided by engineer. */
-"Shapeshift succeeded" = "Shapeshift succeeded";
-
-/* No comment provided by engineer. */
 "Share" = "Share";
-
-/* No comment provided by engineer. */
-"Show" = "Show";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
 
 /* No comment provided by engineer. */
-"Show masternode keys" = "Tampilkan kunci masternode";
-
-/* No comment provided by engineer. */
-"show phrase" = "tunjukkan frasa";
-
-/* No comment provided by engineer. */
-"Show phrase" = "Show phrase";
-
-/* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
-
-/* No comment provided by engineer. */
-"Size:" = "Size:";
-
-/* No comment provided by engineer. */
-"skip" = "skip";
 
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
 /* No comment provided by engineer. */
-"SMS not currently available" = "SMS not currently available";
+"skip" = "skip";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Ada yang salah";
@@ -1024,18 +700,6 @@
 
 /* No comment provided by engineer. */
 "Spending Confirmation" = "Spending Confirmation";
-
-/* No comment provided by engineer. */
-"Spent address" = "Spent address";
-
-/* No comment provided by engineer. */
-"Spent input" = "Spent input";
-
-/* No comment provided by engineer. */
-"Start / Recover another wallet" = "Mulai / Pulihkan dompet lain";
-
-/* No comment provided by engineer. */
-"Status:" = "Status:";
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Langkah-langkah untuk mereproduksi kerusakan";
@@ -1062,9 +726,6 @@
 "Syncing" = "Syncing";
 
 /* No comment provided by engineer. */
-"Syncing:" = "Sinkronisasi:";
-
-/* No comment provided by engineer. */
 "Tap" = "Tap";
 
 /* No comment provided by engineer. */
@@ -1074,22 +735,10 @@
 "Tap to unhide balance" = "Tap to unhide balance";
 
 /* No comment provided by engineer. */
-"The app will now close" = "The app will now close";
-
-/* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "This app is open source:";
-
-/* No comment provided by engineer. */
-"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Ini adalah alamat dash Anda. Ketuk untuk menyalin atau mengirimnya melalui email atau sms. Alamat akan berubah setiap kali Anda menerima dana, tetapi alamat lama selalu berfungsi.";
-
-/* No comment provided by engineer. */
-"This is your dash balance." = "Ini adalah saldo dash anda.";
-
-/* No comment provided by engineer. */
-"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Ini adalah saldo dash anda. dash adalah mata uang. Nila tukar berubah dengan pasar.";
 
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
@@ -1101,9 +750,6 @@
 "This transaction may take several minutes to settle." = "Transaksi ini mungkin perlu beberapa menit untuk diselesaikan.";
 
 /* No comment provided by engineer. */
-"This transaction may take several minutes to settle. Complete instantly for an extra %@?" = "Transaksi ini mungkin perlu beberapa menit untuk diselesaikan. Lengkap instan untuk tambahan %@?";
-
-/* No comment provided by engineer. */
 "This transaction should settle instantly at no extra fee" = "Transaksi ini harus diselesaikan secara instan tanpa biaya tambahan";
 
 /* No comment provided by engineer. */
@@ -1113,28 +759,13 @@
 "This will move all coins from that wallet to your wallet on this device." = "This will move all coins from that wallet to your wallet on this device.";
 
 /* No comment provided by engineer. */
-"To:" = "To:";
-
-/* No comment provided by engineer. */
-"To: %@" = "To: %@";
-
-/* No comment provided by engineer. */
 "Tools" = "Tools";
-
-/* No comment provided by engineer. */
-"Topup amount:" = "Topup amount:";
 
 /* No comment provided by engineer. */
 "Total" = "Total";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "ID sentuhan terbatas";
-
-/* No comment provided by engineer. */
-"Touch ID spending limit" = "ID sentuhan pengiriman terbatas";
-
-/* No comment provided by engineer. */
-"Transaction history" = "Riwayat transaksi";
 
 /* No comment provided by engineer. */
 "Transaction id" = "ID transaksi";
@@ -1155,13 +786,7 @@
 "Try again" = "Try again";
 
 /* No comment provided by engineer. */
-"Try It!" = "Cobalah!";
-
-/* No comment provided by engineer. */
 "Turn device passcode on" = "Turn device passcode on";
-
-/* No comment provided by engineer. */
-"Type:" = "Type:";
 
 /* No comment provided by engineer. */
 "Unable to connect" = "Unable to connect";
@@ -1170,25 +795,13 @@
 "Unable to get new qr code" = "Tiadak dapat mendapatkan kode qr baru";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
-
-/* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
 
 /* No comment provided by engineer. */
-"Unsupported url" = "Unsupported url";
-
-/* No comment provided by engineer. */
-"Unverified" = "Tidak diverifikasi";
-
-/* No comment provided by engineer. */
 "Uphold" = "Uphold";
-
-/* No comment provided by engineer. */
-"Uphold account" = "Akun Uphold";
 
 /* No comment provided by engineer. */
 "Used" = "Used";
@@ -1197,28 +810,10 @@
 "Used at IP address" = "Used at IP address";
 
 /* No comment provided by engineer. */
-"User Registration Transaction" = "Transaksi pendaftaran Pengguna";
-
-/* No comment provided by engineer. */
-"User Reset Transaction" = "Transaksi atur ulang Pengguna";
-
-/* No comment provided by engineer. */
-"User Topup Transaction" = "Transaksi isi ulang Pengguna";
-
-/* No comment provided by engineer. */
-"Username:" = "Username:";
-
-/* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
 
 /* No comment provided by engineer. */
-"verified, waiting for confirmation" = "diverifikasi, menunggu konfirmasi";
-
-/* No comment provided by engineer. */
 "Verify" = "Verify";
-
-/* No comment provided by engineer. */
-"verifying quorum" = "memverifikasi kuorum";
 
 /* No comment provided by engineer. */
 "Very High" = "Very High";
@@ -1236,16 +831,7 @@
 "Voting Address" = "Voting Address";
 
 /* No comment provided by engineer. */
-"Voting key hash:" = "Voting key hash:";
-
-/* No comment provided by engineer. */
-"Voting key index:" = "Voting key index:";
-
-/* No comment provided by engineer. */
 "Voting Keys" = "Kunci pemungutan suara";
-
-/* No comment provided by engineer. */
-"Wallet address" = "Wallet address";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";
@@ -1254,13 +840,10 @@
 "Wallet Keys" = "Kunci Dompet";
 
 /* No comment provided by engineer. */
-"WARNING" = "PERINGATAN";
-
-/* No comment provided by engineer. */
 "Warning" = "Warning";
 
 /* No comment provided by engineer. */
-"Watch only" = "Watch only";
+"WARNING" = "PERINGATAN";
 
 /* No comment provided by engineer. */
 "We are about to show you the secret key to your wallet." = "We are about to show you the secret key to your wallet.";
@@ -1293,12 +876,6 @@
 "with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
-"WRITE DOWN YOUR RECOVERY PHRASE" = "CATAT FRASA PEMULIHAN ANDA";
-
-/* No comment provided by engineer. */
-"Yes" = "Yes";
-
-/* No comment provided by engineer. */
 "You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
 
 /* No comment provided by engineer. */
@@ -1311,13 +888,7 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
-"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "Anda sekarang dapat membeli dash di\ndompet dash dengan uang tunai atau\ntranfer bank.";
-
-/* No comment provided by engineer. */
 "You must enter your pin in order to enter dashwallet" = "Anda harus memasukkan pin Anda untuk memasuki dompet dash";
-
-/* No comment provided by engineer. */
-"You received dash!" = "You received dash!";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";

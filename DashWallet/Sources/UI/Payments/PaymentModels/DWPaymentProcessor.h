@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWPaymentInput;
 @class DWPaymentProcessor;
 @class DSPaymentProtocolDetails;
+@class DSPaymentProtocolRequest;
+@class DSPaymentRequest;
+@class DSTransaction;
 @class DWPaymentOutput;
 
 @protocol DWPaymentProcessorDelegate <NSObject>

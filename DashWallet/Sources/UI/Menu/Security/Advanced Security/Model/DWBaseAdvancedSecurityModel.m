@@ -17,6 +17,8 @@
 
 #import "DWBaseAdvancedSecurityModel.h"
 
+#import <DashSync/DashSync.h>
+
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 

@@ -20,7 +20,6 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <SafariServices/SafariServices.h>
 
-#import "DWAppDelegate.h"
 #import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"

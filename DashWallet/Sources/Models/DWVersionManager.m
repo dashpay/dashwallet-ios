@@ -8,6 +8,7 @@
 
 #import "DWVersionManager.h"
 
+#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 
 #define IDEO_SP @"\xE3\x80\x80" // ideographic space (utf-8)

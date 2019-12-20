@@ -17,6 +17,7 @@
 
 #import "DWAppRootViewController.h"
 
+#import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 
 #import "DWLockScreenViewController.h"

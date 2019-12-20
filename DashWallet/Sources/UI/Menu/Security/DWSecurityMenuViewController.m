@@ -17,6 +17,8 @@
 
 #import "DWSecurityMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAdvancedSecurityViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWNavigationController.h"
@@ -24,7 +26,6 @@
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWResetWalletInfoViewController.h"
 #import "DWSecurityMenuModel.h"
-#import "DWSelectorViewController.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 

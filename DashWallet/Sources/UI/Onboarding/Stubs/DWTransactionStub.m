@@ -17,6 +17,8 @@
 
 #import "DWTransactionStub.h"
 
+#import <DashSync/DashSync.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 static UInt256 RandomUInt256() {

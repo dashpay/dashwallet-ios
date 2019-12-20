@@ -17,6 +17,8 @@
 
 #import "DWAdvancedSecurityModelStub.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWBiometricAuthModel.h"
 
 NS_ASSUME_NONNULL_BEGIN

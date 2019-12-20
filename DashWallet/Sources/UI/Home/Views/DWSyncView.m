@@ -17,6 +17,7 @@
 
 #import "DWSyncView.h"
 
+#import "DWEnvironment.h"
 #import "DWProgressView.h"
 #import "DWUIKit.h"
 

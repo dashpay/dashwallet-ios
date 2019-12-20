@@ -20,6 +20,8 @@
 #import <DashSync/DSNetworkActivityIndicatorManager.h>
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define LOG_SYNCING 0

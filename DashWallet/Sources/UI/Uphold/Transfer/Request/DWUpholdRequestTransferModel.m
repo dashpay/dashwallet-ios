@@ -18,6 +18,7 @@
 #import "DWUpholdRequestTransferModel.h"
 
 #import "DWDecimalInputValidator.h"
+#import "DWEnvironment.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdTransactionObject.h"
