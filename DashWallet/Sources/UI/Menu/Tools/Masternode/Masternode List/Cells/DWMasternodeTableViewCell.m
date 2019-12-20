@@ -23,14 +23,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
+static CGFloat const ACCESSORY_RADIUS = 6.0f;
+static CGSize const ACCESSORY_SIZE = {ACCESSORY_RADIUS * 2, ACCESSORY_RADIUS * 2};
 
 @interface DWMasternodeTableViewCell ()
 
 @property (readonly, strong, nonatomic) UILabel *addressLabel;
 @property (readonly, strong, nonatomic) UILabel *portLabel;
 @property (readonly, strong, nonatomic) UILabel *availabilityLabel;
-@property (readonly, nonatomic, strong) UIImageView *accessoryImageView;
+@property (readonly, nonatomic, strong) UIView *accessoryValidityView;
 
 @property (nullable, nonatomic, strong) DSSimplifiedMasternodeEntry *model;
 @property (nullable, nonatomic, copy) NSString *searchQuery;
@@ -84,7 +85,7 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         availabilityLabel.translatesAutoresizingMaskIntoConstraints = NO;
         availabilityLabel.backgroundColor = [UIColor dw_backgroundColor];
         availabilityLabel.textAlignment = NSTextAlignmentRight;
-        availabilityLabel.textColor = [UIColor dw_secondaryTextColor];
+        availabilityLabel.textColor = [UIColor dw_tertiaryTextColor];
         availabilityLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
         availabilityLabel.adjustsFontForContentSizeCategory = YES;
         availabilityLabel.minimumScaleFactor = 0.5;
@@ -98,14 +99,14 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
         [contentView addSubview:availabilityLabel];
         _availabilityLabel = availabilityLabel;
 
-        UIImage *image = [UIImage imageNamed:@"icon_checkbox"];
-        UIImage *highlightedImage = [UIImage imageNamed:@"icon_checkbox_checked"];
-        NSParameterAssert(image);
-        NSParameterAssert(highlightedImage);
-        UIImageView *accessoryImageView = [[UIImageView alloc] initWithImage:image highlightedImage:highlightedImage];
-        accessoryImageView.translatesAutoresizingMaskIntoConstraints = NO;
-        [contentView addSubview:accessoryImageView];
-        _accessoryImageView = accessoryImageView;
+        UIView *accessoryValidityView = [[UIView alloc] initWithFrame:CGRectMake(10, 20, 100, 100)];
+        accessoryValidityView.layer.cornerRadius = ACCESSORY_RADIUS;
+
+        accessoryValidityView.backgroundColor = [UIColor colorNamed:@"GreenColor"];
+
+        accessoryValidityView.translatesAutoresizingMaskIntoConstraints = NO;
+        [contentView addSubview:accessoryValidityView];
+        _accessoryValidityView = accessoryValidityView;
 
         const CGFloat margin = DWDefaultMargin();
         const CGFloat padding = DW_FORM_CELL_VERTICAL_PADDING;
@@ -118,25 +119,22 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
             [addressLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
                                                       constant:-padding],
 
-            [portLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                                constant:padding],
             [portLabel.leadingAnchor constraintEqualToAnchor:addressLabel.trailingAnchor
                                                     constant:DW_FORM_CELL_SPACING],
-            [portLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                                   constant:-padding],
+            [portLabel.firstBaselineAnchor constraintEqualToAnchor:addressLabel.firstBaselineAnchor],
 
-            [availabilityLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                                        constant:padding],
+            [availabilityLabel.firstBaselineAnchor constraintEqualToAnchor:addressLabel.firstBaselineAnchor],
             [availabilityLabel.leadingAnchor constraintEqualToAnchor:portLabel.trailingAnchor
                                                             constant:DW_FORM_CELL_SPACING],
 
-            [accessoryImageView.leadingAnchor constraintEqualToAnchor:availabilityLabel.trailingAnchor
-                                                             constant:DW_FORM_CELL_SPACING],
-            [accessoryImageView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
-                                                              constant:-margin],
-            [accessoryImageView.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor],
-            [accessoryImageView.widthAnchor constraintEqualToConstant:ACCESSORY_SIZE.width],
-            [accessoryImageView.heightAnchor constraintEqualToConstant:ACCESSORY_SIZE.height],
+            [accessoryValidityView.leadingAnchor constraintEqualToAnchor:availabilityLabel.trailingAnchor
+                                                                constant:DW_FORM_CELL_SPACING * 2 / 3],
+            [accessoryValidityView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor
+                                                                 constant:-margin],
+            [accessoryValidityView.centerYAnchor constraintEqualToAnchor:contentView.centerYAnchor
+                                                                constant:2],
+            [accessoryValidityView.widthAnchor constraintEqualToConstant:ACCESSORY_SIZE.width],
+            [accessoryValidityView.heightAnchor constraintEqualToConstant:ACCESSORY_SIZE.height],
         ]];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -150,12 +148,9 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
 }
 
 - (void)configureWithModel:(DSSimplifiedMasternodeEntry *)model
-                  selected:(BOOL)selected
                searchQuery:(nullable NSString *)searchQuery {
     self.model = model;
     self.searchQuery = searchQuery;
-
-    self.accessoryImageView.highlighted = selected;
 
     [self reloadAttributedData];
 }
@@ -192,13 +187,15 @@ static CGSize const ACCESSORY_SIZE = {26.0, 26.0};
                                                        highlightedText:highlightedText
                                                   highlightedTextColor:highlightedTextColor];
 
-    UIFont *availabilityFont = [UIFont dw_fontForTextStyle:UIFontTextStyleSubheadline];
-    UIColor *availabilityColor = [UIColor dw_secondaryTextColor];
-    self.availabilityLabel.attributedText = [NSAttributedString attributedText:self.model.validString
+    UIFont *availabilityFont = [UIFont dw_fontForTextStyle:UIFontTextStyleCaption1];
+    UIColor *availabilityColor = [UIColor dw_quaternaryTextColor];
+    self.availabilityLabel.attributedText = [NSAttributedString attributedText:self.model.validUppercaseString
                                                                           font:availabilityFont
                                                                      textColor:availabilityColor
                                                                highlightedText:highlightedText
                                                           highlightedTextColor:highlightedTextColor];
+
+    self.accessoryValidityView.backgroundColor = self.model.isValid ? [UIColor colorNamed:@"GreenColor"] : [UIColor colorNamed:@"RedColor"];
 }
 
 @end

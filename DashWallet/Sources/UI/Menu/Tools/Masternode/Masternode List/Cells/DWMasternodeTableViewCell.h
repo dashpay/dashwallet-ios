@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWMasternodeTableViewCell : DWBaseFormTableViewCell
 
 - (void)configureWithModel:(DSSimplifiedMasternodeEntry *)model
-                  selected:(BOOL)selected
                searchQuery:(nullable NSString *)searchQuery;
 
 @end

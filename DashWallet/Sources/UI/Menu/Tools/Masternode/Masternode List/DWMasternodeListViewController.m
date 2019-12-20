@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DSSimplifiedMasternodeEntry *item = self.model.items[indexPath.row];
     const BOOL selected = indexPath.row == self.model.selectedIndex;
-    [cell configureWithModel:item selected:selected searchQuery:self.model.trimmedQuery];
+    [cell configureWithModel:item searchQuery:self.model.trimmedQuery];
 
     return cell;
 }

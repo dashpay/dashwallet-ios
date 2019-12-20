@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         _selectedIndex = NSNotFound;
 
-        _allItems = [[self currentMasternodeList].simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"isValid" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"ipAddressString" ascending:YES] ]];
+        _allItems = [[self currentMasternodeList].simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"ipAddressIsValidIPV4" ascending:NO], [NSSortDescriptor sortDescriptorWithKey:@"ipAddressNumber" ascending:YES] ]];
     }
     return self;
 }
@@ -92,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<NSPredicate *> *searchItemsPredicate = [NSMutableArray array];
 
     DSSimplifiedMasternodeEntry *item = nil;
-    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, host) ];
+    NSArray<NSString *> *searchKeyPaths = @[ DW_KEYPATH(item, host), DW_KEYPATH(item, validString) ];
 
     for (NSString *keyPath in searchKeyPaths) {
         NSExpression *leftExpression = [NSExpression expressionForKeyPath:keyPath];
