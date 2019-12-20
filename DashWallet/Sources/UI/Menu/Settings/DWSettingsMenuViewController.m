@@ -17,6 +17,8 @@
 
 #import "DWSettingsMenuViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWAboutViewController.h"
 #import "DWFormTableViewController.h"
 #import "DWLocalCurrencyViewController.h"

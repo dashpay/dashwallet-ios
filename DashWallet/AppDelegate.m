@@ -30,6 +30,7 @@
 #import "DWWindow.h"
 #import "DWBalanceNotifier.h"
 #import "DWURLParser.h"
+#import "DWEnvironment.h"
 
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"

@@ -21,6 +21,8 @@
 #import <DashSync/DSDerivationPathFactory.h>
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWWalletKeysOverviewModel

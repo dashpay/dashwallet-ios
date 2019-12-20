@@ -12,6 +12,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSWallet;
+
 typedef void (^CheckPassphraseCompletionBlock)(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase);
 
 @interface DWVersionManager : NSObject

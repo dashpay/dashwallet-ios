@@ -16,6 +16,8 @@
 //
 
 #import "DWUpholdConstants.h"
+
+#import "DWEnvironment.h"
 #import "DWUpholdMainnetConstants.h"
 
 NS_ASSUME_NONNULL_BEGIN

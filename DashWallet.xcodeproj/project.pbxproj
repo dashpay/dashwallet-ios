@@ -362,9 +362,7 @@
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
 		2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
-		752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752E28F519235B3000DB5A3C /* FixedPeers.plist */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
-		7568FB5A1B5B5EC10000B652 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
 		75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D5F3DF191EC270004AB296 /* Images.xcassets */; };
@@ -389,8 +387,6 @@
 		CC5F88E358330F8EE192D5BE /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CDD4C961516ED20BC9F01FA /* libPods-DashWalletScreenshotsUITests.a */; };
 		DE3A167A235B79D705C0A962 /* libPods-dashwallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 982607F21196681DAC51A074 /* libPods-dashwallet.a */; };
 		EDB1F696FF79C137CE47192F /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C47D5A9D319D41B450A9B96B /* libPods-WatchApp Extension.a */; };
-		FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E531E47E17200D17638 /* FBShimmeringLayer.m */; };
-		FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB021E551E47E17200D17638 /* FBShimmeringView.m */; };
 		FB248B5D1F73803100405AE0 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B5C1F73803100405AE0 /* UserNotifications.framework */; };
 		FB248B631F79BB7C00405AE0 /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB248B621F79BB7C00405AE0 /* SafariServices.framework */; };
 		FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2E5536218BA161003A1B7C /* DWVersionManager.m */; };
@@ -510,7 +506,6 @@
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
-		22F45A0F1C3329EB00B07A15 /* DWUserDefaultsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUserDefaultsConstants.h; sourceTree = "<group>"; };
 		27E32267051844E3781129E8 /* Pods-dashwallet no watch.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.testflight.xcconfig"; sourceTree = "<group>"; };
 		29B232FD70BA2EDF87F86A56 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
 		2A0C699723103952001B8C90 /* DWMaxButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWMaxButton.h; sourceTree = "<group>"; };
@@ -1205,7 +1200,6 @@
 		7511E8D31AE5FF390025F1B3 /* ko */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7511E8E31AE5FFCC0025F1B3 /* nl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; lineEnding = 0; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		7511E8EB1AE600220025F1B3 /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		752E28F519235B3000DB5A3C /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		756A8F131CE566F6007893E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Interface.strings; sourceTree = "<group>"; };
 		757E09981ADB8EEB006FD352 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		759816E519357D6F005060EA /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
@@ -1268,11 +1262,6 @@
 		D58B25CB4DC36975E05D3C0A /* Pods-dashwallet no watch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.debug.xcconfig"; sourceTree = "<group>"; };
 		EA95ACF6CA2A73810B9BB451 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
 		F12049B257DDE750DE332799 /* Pods-WatchApp.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp/Pods-WatchApp.testflight.xcconfig"; sourceTree = "<group>"; };
-		FB021E511E47E17200D17638 /* FBShimmering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmering.h; sourceTree = "<group>"; };
-		FB021E521E47E17200D17638 /* FBShimmeringLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringLayer.h; sourceTree = "<group>"; };
-		FB021E531E47E17200D17638 /* FBShimmeringLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringLayer.m; sourceTree = "<group>"; };
-		FB021E541E47E17200D17638 /* FBShimmeringView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBShimmeringView.h; sourceTree = "<group>"; };
-		FB021E551E47E17200D17638 /* FBShimmeringView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FBShimmeringView.m; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACBA01F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB1212A91FFFB0F3000E407E /* dashwalletTodayExtension.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; name = dashwalletTodayExtension.entitlements; path = DashWallet/dashwalletTodayExtension.entitlements; sourceTree = SOURCE_ROOT; };
@@ -1757,6 +1746,8 @@
 			children = (
 				FBFC2E9E21137A4200D20C57 /* Montserrat */,
 				2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */,
+				75D5F3DF191EC270004AB296 /* Images.xcassets */,
+				75E83CF51B5F997A0038FB70 /* coinflip.aiff */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -1878,6 +1869,9 @@
 				2A7A7C0F234B591300451078 /* DWBalanceNotifier.m */,
 				2ACD53E9234BCFAA00650AD3 /* DWWeakContainer.h */,
 				2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */,
+				2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */,
+				2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */,
+				BA4EECDF1B351AE200D443A3 /* DWAppGroupConstants.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -2803,8 +2797,6 @@
 				2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */,
 				2AB231D52196E5CF00A6E7E6 /* DWStartModel.h */,
 				2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */,
-				2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */,
-				2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */,
 			);
 			path = Start;
 			sourceTree = "<group>";
@@ -3103,14 +3095,6 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		7579F7FE19231D4600CA56F4 /* ThirdParty */ = {
-			isa = PBXGroup;
-			children = (
-				FB021E501E47E17200D17638 /* FBShimmering */,
-			);
-			name = ThirdParty;
-			sourceTree = "<group>";
-		};
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
@@ -3180,13 +3164,7 @@
 			children = (
 				2A44313B22CF62FC009BAF7F /* Sources */,
 				2A4430F022CBD566009BAF7F /* Resources */,
-				BA4EECDF1B351AE200D443A3 /* DWAppGroupConstants.h */,
-				22F45A0F1C3329EB00B07A15 /* DWUserDefaultsConstants.h */,
-				75D5F3DF191EC270004AB296 /* Images.xcassets */,
-				752E28F519235B3000DB5A3C /* FixedPeers.plist */,
-				75E83CF51B5F997A0038FB70 /* coinflip.aiff */,
 				FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */,
-				7579F7FE19231D4600CA56F4 /* ThirdParty */,
 				75D5F3C8191EC270004AB296 /* Supporting Files */,
 				FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */,
 				2A4430E522CBB6EC009BAF7F /* AppDelegate.h */,
@@ -3297,18 +3275,6 @@
 			);
 			name = Pods;
 			sourceTree = "<group>";
-		};
-		FB021E501E47E17200D17638 /* FBShimmering */ = {
-			isa = PBXGroup;
-			children = (
-				FB021E511E47E17200D17638 /* FBShimmering.h */,
-				FB021E521E47E17200D17638 /* FBShimmeringLayer.h */,
-				FB021E531E47E17200D17638 /* FBShimmeringLayer.m */,
-				FB021E541E47E17200D17638 /* FBShimmeringView.h */,
-				FB021E551E47E17200D17638 /* FBShimmeringView.m */,
-			);
-			path = FBShimmering;
-			sourceTree = SOURCE_ROOT;
 		};
 		FB3FF0B0222641210059A9A5 /* Masternode Keys */ = {
 			isa = PBXGroup;
@@ -3604,7 +3570,6 @@
 				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
-				752E28F719235B3000DB5A3C /* FixedPeers.plist in Resources */,
 				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
 				2AB66DFE2355BF67007BE825 /* DWTxDetailHeaderView.xib in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
@@ -3665,7 +3630,6 @@
 				2A741DC223639A9700840ADF /* TodayExtension.storyboard in Resources */,
 				FBFC2EE621137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				FBFC2ED621137A7A00D20C57 /* Montserrat-Medium.otf in Resources */,
-				7568FB5A1B5B5EC10000B652 /* Images.xcassets in Resources */,
 				BA54D3CE1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets in Resources */,
 				2A741DC323639C7E00840ADF /* Localizable.strings in Resources */,
 				2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */,
@@ -4094,7 +4058,6 @@
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
-				FB021E561E47E17200D17638 /* FBShimmeringLayer.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				2ACCD85523191C8500A96B62 /* DWBasePayViewController.m in Sources */,
 				2A0C699923103952001B8C90 /* DWMaxButton.m in Sources */,
@@ -4175,7 +4138,6 @@
 				2A7A7BD92348CB7300451078 /* DWSettingsMenuModel.m in Sources */,
 				2A1B7DC62326775600BA8C6A /* DWSuccessfulTransactionAnimatedIconView.m in Sources */,
 				FB3FF0B5222642FB0059A9A5 /* DWKeysOverviewViewController.m in Sources */,
-				FB021E571E47E17200D17638 /* FBShimmeringView.m in Sources */,
 				2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */,
 				2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,

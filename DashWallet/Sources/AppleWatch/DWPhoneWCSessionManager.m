@@ -24,13 +24,15 @@
 //  THE SOFTWARE.
 
 #import "DWPhoneWCSessionManager.h"
+
+#import <WatchConnectivity/WatchConnectivity.h>
+
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
 #import "DSWatchTransactionDataObject.h"
 #import "DWAppGroupConstants.h"
+#import "DWEnvironment.h"
 #import "UIImage+Utils.h"
-#import <DashSync/DashSync.h>
-#import <WatchConnectivity/WatchConnectivity.h>
 
 static CGSize const QR_SIZE = {240.0, 240.0};
 static CGSize const HOLE_SIZE = {58.0, 58.0};

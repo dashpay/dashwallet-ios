@@ -15,6 +15,7 @@
 #import "BRTxInputEntity.h"
 #import "BRTxMetadataEntity.h"
 #import "BRTxOutputEntity.h"
+#import "DWEnvironment.h"
 
 #import <DashSync/DSAccountEntity+CoreDataClass.h>
 #import <DashSync/DSChain.h>

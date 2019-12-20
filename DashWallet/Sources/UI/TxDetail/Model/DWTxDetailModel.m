@@ -19,6 +19,7 @@
 
 #import <DashSync/DashSync.h>
 
+#import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTransactionListDataSource+DWProtected.h"
 #import "NSAttributedString+DWBuilder.h"

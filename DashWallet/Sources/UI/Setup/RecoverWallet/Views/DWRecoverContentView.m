@@ -17,6 +17,8 @@
 
 #import "DWRecoverContentView.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWRecoverModel.h"
 #import "DWRecoverTextView.h"
 #import "DWSeedUIConstants.h"
