@@ -30,7 +30,7 @@
 "\ntry again in %@" = "\nprobeer opnieuw over %@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Een toegangscode is nog om je portemonnee te beschermen. Ga naar de instellingen en zet de toegangscode aan om door te gaan.";
 
 /* No comment provided by engineer. */
 "About" = "Over";
@@ -45,7 +45,7 @@
 "Advanced Security" = "Advanced Security";
 
 /* No comment provided by engineer. */
-"All" = "All";
+"All" = "Alles";
 
 /* No comment provided by engineer. */
 "Allow camera access in Settings" = "Allow camera access in Settings";
@@ -60,13 +60,13 @@
 "Amount" = "Bedrag";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Amount Received";
+"Amount Received" = "Ontvangen bedrag";
 
 /* No comment provided by engineer. */
-"Amount Sent" = "Amount Sent";
+"Amount Sent" = "Verzonden bedrag";
 
 /* No comment provided by engineer. */
-"Amount too small" = "Amount too small";
+"Amount too small" = "Bedrag te klein";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
@@ -84,7 +84,7 @@
 "Are you sure?" = "Weet je het zeker?";
 
 /* No comment provided by engineer. */
-"Authentication is unvailable" = "Authentication is unvailable";
+"Authentication is unvailable" = "Authenticatie is niet beschikbaar";
 
 /* No comment provided by engineer. */
 "Auto Logout" = "Auto Logout";
@@ -93,16 +93,16 @@
 "Autohide Balance" = "Autohide Balance";
 
 /* No comment provided by engineer. */
-"Available" = "Available";
+"Available" = "Beschikbaar";
 
 /* No comment provided by engineer. */
-"Available balance" = "Available balance";
+"Available balance" = "Beschikbaar saldo";
 
 /* No comment provided by engineer. */
-"Backup Wallet" = "Backup Wallet";
+"Backup Wallet" = "Backup portemonnee";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"Bad recovery phrase" = "Incorrecte herstelzin";
 
 /* No comment provided by engineer. */
 "Balance hidden" = "Balance hidden";
@@ -111,10 +111,10 @@
 "block #%d of %d" = "blok #%1$d van %2$d";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Buy & Sell Dash";
+"Buy & Sell Dash" = "Koop & verkoop Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Buy / Sell Dash";
+"Buy / Sell Dash" = "Koop / verkoop Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Koop Dash";
@@ -129,64 +129,61 @@
 "Cancel" = "Annuleer";
 
 /* No comment provided by engineer. */
-"Change" = "Change";
+"Change" = "Wissel";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"Change payment amount?" = "Wijzig betalingsbedrag?";
 
 /* No comment provided by engineer. */
-"Change PIN" = "Change PIN";
+"Change PIN" = "Wijzig pin";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Check your connection";
+"Check your connection" = "Controleer je verbinding";
 
 /* No comment provided by engineer. */
-"Clear" = "Clear";
+"Clear" = "Wis";
 
 /* No comment provided by engineer. */
-"Clear trusted node?" = "Clear trusted node?";
+"Clear trusted node?" = "Wis vertrouwde node?";
 
 /* No comment provided by engineer. */
 "Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
 
 /* No comment provided by engineer. */
-"Close" = "Close";
+"Close" = "Sluit af";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close App" = "Sluit app af";
 
 /* No comment provided by engineer. */
 "Confirm" = "Bevestig";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Bevestig pin";
 
 /* No comment provided by engineer. */
 "Confirm transaction" = "Bevestig transactie";
 
 /* No comment provided by engineer. */
-"Confirming" = "Confirming";
+"Confirming" = "Aan het bevestigen";
 
 /* No comment provided by engineer. */
-"Connect with third party exchanges" = "Connect with third party exchanges";
+"Connect with third party exchanges" = "Verbind met beurzen van derden";
 
 /* No comment provided by engineer. */
-"Contact Support" = "Contact Support";
+"Contact Support" = "Contacteer ondersteuning";
 
 /* No comment provided by engineer. */
-"Continue" = "Continue";
+"Continue" = "Ga door";
 
 /* No comment provided by engineer. */
-"Copied" = "Copied";
+"Copied" = "Is gekopieerd";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "Kopieer";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
-
-/* No comment provided by engineer. */
-"Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
+"Copyright © 2019 Dash Core" = "Auteursrecht © 2019 Dash Core";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -261,7 +258,7 @@
 "Fee" = "Transactiekosten";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "De transactievergoeding is hoger dan het saldo";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "Transactiekosten worden van het gevraagde bedrag afgetrokken";
@@ -294,7 +291,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ik ga akkoord dat ik mijn munten kwijt raak als ik de herstelzin niet meer bezit";
 
 /* No comment provided by engineer. */
-"I wrote it down" = "I wrote it down";
+"I wrote it down" = "ik heb het opgeschreven";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -375,9 +372,6 @@
 "Low" = "Low";
 
 /* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
-
-/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
@@ -429,7 +423,7 @@
 "No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
 "None" = "None";

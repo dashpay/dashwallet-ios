@@ -9,7 +9,7 @@
 "R3B-Zx-omu.title" = "OK";
 
 /* Class = "WKInterfaceLabel"; text = "Open DashWallet iPhone app to setup"; ObjectID = "VXj-KF-nqM"; */
-"VXj-KF-nqM.text" = "Ανοιξτε την εφαρμογή dashwallet iPhone app για να διαμρφωσετε το πορτοφόλι σας";
+"VXj-KF-nqM.text" = "Ανοίξτε την εφαρμογή dashwallet για να διαμορφώσετε το πορτοφόλι σας";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
 "ZKF-gb-hhm.title" = "Υπόλοιπο";

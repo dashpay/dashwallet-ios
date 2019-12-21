@@ -30,7 +30,7 @@
 "\ntry again in %@" = "\ntry again in %@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Një kodkalim është i nevojshëm për sigurinë e kuletës suaj. Shko në konfigurimet dhe aktivizo kodkalimin dhe vazhdo.";
 
 /* No comment provided by engineer. */
 "About" = "About";
@@ -181,9 +181,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "Copy";
-
-/* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
 
 /* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
@@ -375,9 +372,6 @@
 "Low" = "Low";
 
 /* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
-
-/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
@@ -429,7 +423,7 @@
 "No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
 "None" = "None";
