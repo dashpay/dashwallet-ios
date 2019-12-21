@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="dG7-Yi-R4T">
+    <device id="retina5_9" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Setup View Controller-->
+        <scene sceneID="8qT-F9-KCc">
+            <objects>
+                <viewController id="dG7-Yi-R4T" customClass="DWSetupViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="CcN-xl-I4O">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="image_bg" translatesAutoresizingMaskIntoConstraints="NO" id="t1r-hq-hGl">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RtN-k1-BzT" userLabel="Layout View">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_with_tag" translatesAutoresizingMaskIntoConstraints="NO" id="s6Q-1B-DYH">
+                                        <rect key="frame" x="41" y="364.66666666666669" width="293" height="83"/>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="s6Q-1B-DYH" firstAttribute="centerY" secondItem="RtN-k1-BzT" secondAttribute="centerY" id="FVk-2m-3WU"/>
+                                    <constraint firstItem="s6Q-1B-DYH" firstAttribute="centerX" secondItem="RtN-k1-BzT" secondAttribute="centerX" id="afe-sf-IrJ"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZuB-Um-2ug" customClass="DWBlueActionButton">
+                                <rect key="frame" x="16" y="658" width="343" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="ZIu-Rx-s9o"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="createWalletButtonAction:" destination="dG7-Yi-R4T" eventType="touchUpInside" id="wxi-Dq-hQd"/>
+                                </connections>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8ou-NV-Pbn" userLabel="Recover Wallet Button" customClass="DWBlueActionButton">
+                                <rect key="frame" x="16" y="720" width="343" height="54"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="54" id="RVC-PD-ZtF"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="recoverWalletButtonAction:" destination="dG7-Yi-R4T" eventType="touchUpInside" id="rlr-TY-EqJ"/>
+                                </connections>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="RtN-k1-BzT" secondAttribute="trailing" id="94u-L2-EHo"/>
+                            <constraint firstItem="8ou-NV-Pbn" firstAttribute="top" secondItem="ZuB-Um-2ug" secondAttribute="bottom" constant="8" id="ABl-FG-Uux"/>
+                            <constraint firstItem="8ou-NV-Pbn" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leadingMargin" id="CMg-OA-yMi"/>
+                            <constraint firstItem="t1r-hq-hGl" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leading" id="Gga-d4-NwR"/>
+                            <constraint firstItem="RtN-k1-BzT" firstAttribute="top" secondItem="CcN-xl-I4O" secondAttribute="top" id="JA2-2Y-OHM"/>
+                            <constraint firstItem="8ou-NV-Pbn" firstAttribute="trailing" secondItem="CcN-xl-I4O" secondAttribute="trailingMargin" id="JWd-jo-Ps6"/>
+                            <constraint firstItem="t1r-hq-hGl" firstAttribute="top" secondItem="CcN-xl-I4O" secondAttribute="top" id="Ntm-1z-4oE"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="ZuB-Um-2ug" secondAttribute="trailing" id="O26-UI-DMI"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="8ou-NV-Pbn" secondAttribute="bottom" constant="4" id="WS4-F1-bRH"/>
+                            <constraint firstAttribute="bottom" secondItem="RtN-k1-BzT" secondAttribute="bottom" id="cDH-hf-sIY"/>
+                            <constraint firstItem="RtN-k1-BzT" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leading" id="dQE-1b-vbP"/>
+                            <constraint firstAttribute="bottom" secondItem="t1r-hq-hGl" secondAttribute="bottom" id="hxN-pm-SiQ"/>
+                            <constraint firstItem="ZuB-Um-2ug" firstAttribute="leading" secondItem="CcN-xl-I4O" secondAttribute="leadingMargin" id="iwy-Ca-Vl7"/>
+                            <constraint firstAttribute="trailing" secondItem="t1r-hq-hGl" secondAttribute="trailing" id="zIV-Q9-QfE"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="3fa-gZ-Ozx"/>
+                    </view>
+                    <connections>
+                        <outlet property="contentBottomConstraint" destination="WS4-F1-bRH" id="hq3-kj-rcj"/>
+                        <outlet property="createWalletButton" destination="ZuB-Um-2ug" id="GQF-wX-DOl"/>
+                        <outlet property="logoLayoutViewBottomContraint" destination="cDH-hf-sIY" id="5SH-fu-toN"/>
+                        <outlet property="recoverWalletButton" destination="8ou-NV-Pbn" id="ZSw-31-5fe"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fAB-BR-lAG" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-244" y="0.0"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="image_bg" width="750" height="1624"/>
+        <image name="logo_with_tag" width="293" height="83"/>
+    </resources>
+</document>

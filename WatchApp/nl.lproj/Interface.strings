@@ -5,17 +5,14 @@
 /* Class = "WKInterfaceController"; title = "Cancel"; ObjectID = "4rD-ne-4oP"; */
 "4rD-ne-4oP.title" = "Annuleer";
 
-/* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "Gat-bm-t3w"; */
-"Gat-bm-t3w.text" = "Open de iPhone-app dashwallet om je portemonnee aan te maken";
-
 /* Class = "WKInterfaceButton"; title = "OK"; ObjectID = "R3B-Zx-omu"; */
 "R3B-Zx-omu.title" = "Oké";
 
-/* Class = "WKInterfaceLabel"; text = "Open DASH iPhone app to setup your wallet"; ObjectID = "VXj-KF-nqM"; */
+/* Class = "WKInterfaceLabel"; text = "Open DashWallet iPhone app to setup"; ObjectID = "VXj-KF-nqM"; */
 "VXj-KF-nqM.text" = "Open de iPhone-app dashwallet om je portemonnee aan te maken";
 
 /* Class = "WKInterfaceController"; title = "Balance"; ObjectID = "ZKF-gb-hhm"; */
-"ZKF-gb-hhm.title" = "Balans";
+"ZKF-gb-hhm.title" = "Saldo";
 
 /* Class = "WKInterfaceLabel"; text = "Transactions"; ObjectID = "r80-H8-ngA"; */
 "r80-H8-ngA.text" = "Transacties";
@@ -55,3 +52,6 @@
 
 /* Class = "WKInterfaceButton"; title = "4"; ObjectID = "xFZ-Zc-8wy"; */
 "xFZ-Zc-8wy.title" = "4";
+
+/* Class = "WKInterfaceController"; title = "Dash"; ObjectID = "gzi-hr-984"; */
+"gzi-hr-984.title" = "Dash";

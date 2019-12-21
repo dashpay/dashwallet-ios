@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Utu-rb-kVa">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Set Pin View Controller-->
+        <scene sceneID="suy-zw-L9p">
+            <objects>
+                <viewController id="Utu-rb-kVa" customClass="DWSetPinViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="S7h-Wf-pds">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v2G-4u-CtF" userLabel="Top View">
+                                <rect key="frame" x="20" y="44" width="374" height="599"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Nx0-Xr-XMt" userLabel="Center View">
+                                        <rect key="frame" x="0.0" y="225.5" width="374" height="148.5"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" placeholderIntrinsicWidth="infinite" placeholderIntrinsicHeight="90" translatesAutoresizingMaskIntoConstraints="NO" id="wky-gc-BHo" customClass="DWPinView">
+                                                <rect key="frame" x="0.0" y="0.0" width="374" height="90"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                            </view>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="This PIN will be required to unlock your app everytime when you use it." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GGf-Za-9Cg">
+                                                <rect key="frame" x="0.0" y="106" width="374" height="42.5"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                                <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
+                                                <color key="textColor" name="SecondaryTextColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="wky-gc-BHo" secondAttribute="trailing" id="0lt-I9-sjb"/>
+                                            <constraint firstAttribute="trailing" secondItem="GGf-Za-9Cg" secondAttribute="trailing" id="14q-KV-Fd7"/>
+                                            <constraint firstItem="wky-gc-BHo" firstAttribute="leading" secondItem="Nx0-Xr-XMt" secondAttribute="leading" id="68g-ZZ-Z0U"/>
+                                            <constraint firstItem="wky-gc-BHo" firstAttribute="top" secondItem="Nx0-Xr-XMt" secondAttribute="top" id="JGr-ur-2up"/>
+                                            <constraint firstItem="GGf-Za-9Cg" firstAttribute="top" secondItem="wky-gc-BHo" secondAttribute="bottom" constant="16" id="Ko1-x9-Q3o"/>
+                                            <constraint firstItem="GGf-Za-9Cg" firstAttribute="leading" secondItem="Nx0-Xr-XMt" secondAttribute="leading" id="poS-Vz-fhT"/>
+                                            <constraint firstAttribute="bottom" secondItem="GGf-Za-9Cg" secondAttribute="bottom" id="yNt-5N-WK7"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="Nx0-Xr-XMt" secondAttribute="trailing" id="F4Q-qS-h3x"/>
+                                    <constraint firstItem="Nx0-Xr-XMt" firstAttribute="leading" secondItem="v2G-4u-CtF" secondAttribute="leading" id="VmA-cY-Xhk"/>
+                                    <constraint firstItem="Nx0-Xr-XMt" firstAttribute="centerY" secondItem="v2G-4u-CtF" secondAttribute="centerY" id="lao-Ct-zj1"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q99-sn-r0g" userLabel="Keyboard View" customClass="DWNumberKeyboard">
+                                <rect key="frame" x="20" y="643" width="374" height="215"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="215" id="lmc-OB-GmN"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="v2G-4u-CtF" firstAttribute="top" secondItem="S7h-Wf-pds" secondAttribute="topMargin" id="0uW-G3-rll"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="q99-sn-r0g" secondAttribute="trailing" id="3yX-LI-j55"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="q99-sn-r0g" secondAttribute="bottom" constant="4" id="LO1-hG-b3x"/>
+                            <constraint firstItem="v2G-4u-CtF" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="UEQ-JE-hj7"/>
+                            <constraint firstItem="q99-sn-r0g" firstAttribute="leading" secondItem="S7h-Wf-pds" secondAttribute="leadingMargin" id="kTa-PY-Fls"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="v2G-4u-CtF" secondAttribute="trailing" id="kb9-CR-E8Q"/>
+                            <constraint firstItem="q99-sn-r0g" firstAttribute="top" secondItem="v2G-4u-CtF" secondAttribute="bottom" id="rzO-TL-Hxu"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="sHo-4f-2nX"/>
+                    </view>
+                    <connections>
+                        <outlet property="contentBottomConstraint" destination="LO1-hG-b3x" id="O4f-rP-Yds"/>
+                        <outlet property="descriptionLabel" destination="GGf-Za-9Cg" id="xIn-72-una"/>
+                        <outlet property="keyboardView" destination="q99-sn-r0g" id="lTX-K9-9QX"/>
+                        <outlet property="pinView" destination="wky-gc-BHo" id="VVJ-hu-3Lh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gfI-yU-Ojw" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-336.80000000000001" y="34.729064039408868"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="SecondaryTextColor">
+            <color red="0.29019607843137257" green="0.29019607843137257" blue="0.29019607843137257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

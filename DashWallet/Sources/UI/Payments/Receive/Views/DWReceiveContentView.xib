@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DWReceiveContentView">
+            <connections>
+                <outlet property="actionButtonsTopPadding" destination="apf-TH-hls" id="thw-ac-Esk"/>
+                <outlet property="addressButton" destination="nPN-d1-Jpj" id="rgf-US-aTe"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="GXR-eF-bxe"/>
+                <outlet property="qrCodeButton" destination="CFm-0T-X0h" id="JRp-7E-Evl"/>
+                <outlet property="secondButton" destination="gvl-JP-3Ne" id="0Ko-ig-edq"/>
+                <outlet property="specifyAmountButton" destination="p3g-zW-TmS" id="epd-Z6-nAg"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="392"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="244" placeholderIntrinsicHeight="244" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CFm-0T-X0h" userLabel="QR Image Button">
+                    <rect key="frame" x="65.5" y="0.0" width="244" height="246"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <connections>
+                        <action selector="qrCodeButtonAction:" destination="-1" eventType="touchUpInside" id="nIm-Oi-hjy"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nPN-d1-Jpj" customClass="DWButton">
+                    <rect key="frame" x="65.5" y="250" width="244" height="42"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="42" id="96N-48-lEb"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption2"/>
+                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="-8" maxY="0.0"/>
+                    <state key="normal" image="icon_copy">
+                        <color key="titleColor" name="TertiaryTextColor"/>
+                    </state>
+                    <connections>
+                        <action selector="addressButtonAction:" destination="-1" eventType="touchUpInside" id="AA4-lq-Rth"/>
+                    </connections>
+                </button>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="CV1-lw-AkU">
+                    <rect key="frame" x="0.0" y="304" width="375" height="88"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="p3g-zW-TmS" userLabel="Specify Amount Button" customClass="DWBlueActionButton">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="44" id="OUI-Pe-6PC"/>
+                            </constraints>
+                            <viewLayoutGuide key="safeArea" id="CF7-eO-IBW"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="specifyAmountButtonAction:" destination="-1" eventType="touchUpInside" id="jDJ-im-xs3"/>
+                            </connections>
+                        </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gvl-JP-3Ne" userLabel="Second Button" customClass="DWBlueActionButton">
+                            <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="44" id="rnu-t8-kgV"/>
+                            </constraints>
+                            <viewLayoutGuide key="safeArea" id="nli-sl-H9E"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="inverted" value="YES"/>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="usedOnDarkBackground" value="NO"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="secondButtonAction:" destination="-1" eventType="touchUpInside" id="RDh-4D-VUC"/>
+                            </connections>
+                        </view>
+                    </subviews>
+                </stackView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="nPN-d1-Jpj" firstAttribute="top" secondItem="CFm-0T-X0h" secondAttribute="bottom" constant="4" id="6yV-Z9-R36"/>
+                <constraint firstItem="CFm-0T-X0h" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="Cbb-dT-FaE"/>
+                <constraint firstAttribute="trailing" secondItem="CV1-lw-AkU" secondAttribute="trailing" id="JqU-9l-gfQ"/>
+                <constraint firstAttribute="bottom" secondItem="CV1-lw-AkU" secondAttribute="bottom" id="KXp-eQ-8tM"/>
+                <constraint firstItem="nPN-d1-Jpj" firstAttribute="trailing" secondItem="CFm-0T-X0h" secondAttribute="trailing" id="UID-7t-iPF"/>
+                <constraint firstItem="CV1-lw-AkU" firstAttribute="top" secondItem="nPN-d1-Jpj" secondAttribute="bottom" constant="12" id="apf-TH-hls"/>
+                <constraint firstItem="nPN-d1-Jpj" firstAttribute="leading" secondItem="CFm-0T-X0h" secondAttribute="leading" id="iUy-ON-ZDC"/>
+                <constraint firstItem="CFm-0T-X0h" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="qUc-nO-XyM"/>
+                <constraint firstItem="CV1-lw-AkU" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="vMe-lR-gAM"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="-87.681159420289859" y="-178.125"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_copy" width="14" height="14"/>
+        <namedColor name="TertiaryTextColor">
+            <color red="0.47099998593330383" green="0.47099998593330383" blue="0.47099998593330383" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>
