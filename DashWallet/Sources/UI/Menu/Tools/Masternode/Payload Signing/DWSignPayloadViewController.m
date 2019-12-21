@@ -45,7 +45,7 @@
     [self setupView];
 }
 
-+ (NSString *)actionButtonTitle {
+- (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Verify Signature", nil);
 }
 

@@ -795,13 +795,13 @@
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
 
 /* No comment provided by engineer. */
-"Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral" = "Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral";
+"Please copy the following message." = "Please copy the following message.";
 
 /* No comment provided by engineer. */
 "Please enter pin to upgrade wallet" = "请输入Pin码以升级钱包";
 
 /* No comment provided by engineer. */
-"Please paste the signature from your wallet holding the 1000 Dash collateral below." = "Please paste the signature from your wallet holding the 1000 Dash collateral below.";
+"Please paste the signature response from your wallet holding the collateral below." = "Please paste the signature response from your wallet holding the collateral below.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "请将你的手机靠近NFC设备.";
@@ -1134,6 +1134,15 @@
 "Status:" = "Status:";
 
 /* No comment provided by engineer. */
+"Step 1" = "Step 1";
+
+/* No comment provided by engineer. */
+"Step 2" = "Step 2";
+
+/* No comment provided by engineer. */
+"Step 3" = "Step 3";
+
+/* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Steps to reproduce the crash";
 
 /* No comment provided by engineer. */
@@ -1450,6 +1459,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
+
+/* No comment provided by engineer. */
+"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet." = "You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";

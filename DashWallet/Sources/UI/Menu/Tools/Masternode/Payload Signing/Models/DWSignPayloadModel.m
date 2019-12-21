@@ -24,8 +24,9 @@
     if (self) {
         _collateralAddress = collateralAddress;
         _payloadCollateralString = payloadCollateralString;
-        _instructionStringForCopying = NSLocalizedString(@"Please copy the following and sign with the address in the wallet containing the 1000 Dash collateral", nil);
-        _instructionStringForPasting = NSLocalizedString(@"Please paste the signature from your wallet holding the 1000 Dash collateral below.", nil);
+        _instructionStringForCopying = NSLocalizedString(@"Please copy the following message.", nil);
+        _instructionStringForSigning = NSLocalizedString(@"You will need to sign that message with the address holding the 1000 Dash collateral. This is done in the holding wallet.", nil);
+        _instructionStringForPasting = NSLocalizedString(@"Please paste the signature response from your wallet holding the collateral below.", nil);
     }
     return self;
 }

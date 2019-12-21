@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray<DWBaseFormCellModel *> *items = [NSMutableArray array];
 
     {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show Masternode Keys", nil)];
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode List", nil)];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -59,21 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf showMasternodeKeys];
-        };
-        [items addObject:cellModel];
-    }
-
-    {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Register Masternode", nil)];
-        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
-        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf showRegisterMasternode];
+            [strongSelf showMasternodeList];
         };
         [items addObject:cellModel];
     }
@@ -93,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     {
-        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Masternode List", nil)];
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Register Masternode", nil)];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -101,7 +87,21 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
-            [strongSelf showMasternodeList];
+            [strongSelf showRegisterMasternode];
+        };
+        [items addObject:cellModel];
+    }
+
+    {
+        DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Show Masternode Keys", nil)];
+        cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
+        cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf showMasternodeKeys];
         };
         [items addObject:cellModel];
     }

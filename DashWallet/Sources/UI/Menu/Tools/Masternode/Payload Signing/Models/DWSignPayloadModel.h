@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *payloadCollateralString;
 @property (nonatomic, strong) NSString *unverifiedSignatureString;
 @property (nonatomic, strong) NSString *instructionStringForCopying;
+@property (nonatomic, strong) NSString *instructionStringForSigning;
 @property (nonatomic, strong) NSString *instructionStringForPasting;
 @property (nonatomic, strong) NSData *signature;
 
