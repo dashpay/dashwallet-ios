@@ -30,7 +30,7 @@
 "\ntry again in %@" = "\nопитай отново в %@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Необходима е парола на устройството за опазване на портфейла Ви. Отидете в настройки и включете използването на парола, за да продължите.";
 
 /* No comment provided by engineer. */
 "About" = "Относно";
@@ -114,7 +114,7 @@
 "Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Buy / Sell Dash";
+"Buy / Sell Dash" = "Купи/Продай Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Купи Dash";
@@ -171,7 +171,7 @@
 "Connect with third party exchanges" = "Connect with third party exchanges";
 
 /* No comment provided by engineer. */
-"Contact Support" = "Contact Support";
+"Contact Support" = "Връзка с поддръжката";
 
 /* No comment provided by engineer. */
 "Continue" = "Continue";
@@ -181,9 +181,6 @@
 
 /* No comment provided by engineer. */
 "Copy" = "Copy";
-
-/* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
 
 /* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
@@ -294,7 +291,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Приемам, че ще загубя монетите си, ако вече не притежавам фразата за възстановяване";
 
 /* No comment provided by engineer. */
-"I wrote it down" = "I wrote it down";
+"I wrote it down" = "Написах го долу";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -375,9 +372,6 @@
 "Low" = "Low";
 
 /* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
-
-/* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
 
 /* No comment provided by engineer. */
@@ -429,7 +423,7 @@
 "No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
 "None" = "None";
@@ -486,7 +480,7 @@
 "Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
-"Please write it down" = "Please write it down";
+"Please write it down" = "Моля запишете го долу";
 
 /* No comment provided by engineer. */
 "Previously last used at IP address" = "Previously last used at IP address";
@@ -579,13 +573,13 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
+"Scan" = "Сканирай";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
 
 /* No comment provided by engineer. */
-"Scan QR Code" = "Scan QR Code";
+"Scan QR Code" = "Сканирай QR кода";
 
 /* No comment provided by engineer. */
 "Scan this to Pay" = "Scan this to Pay";
@@ -621,7 +615,7 @@
 "See on Uphold" = "Виж Uphold";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "Изпрати";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Изпрати %1$@ (%2$@) от този частен ключ в твоят портфейл? Dash мрежата ще получи такса от %3$@ (%4$@).";
@@ -645,22 +639,22 @@
 "Send with NFC" = "Send with NFC";
 
 /* 1 out of 4 in the Sending Animation */
-"Sending" = "Sending";
+"Sending" = "Изпраща";
 
 /* 2 out of 4 in the Sending Animation */
-"Sending." = "Sending.";
+"Sending." = "Изпраща.";
 
 /* 3 out of 4 in the Sending Animation */
-"Sending.." = "Sending..";
+"Sending.." = "Изпраща..";
 
 /* 4 out of 4 in the Sending Animation */
-"Sending..." = "Sending...";
+"Sending..." = "Изпраща...";
 
 /* No comment provided by engineer. */
 "Sent" = "Изпратено";
 
 /* No comment provided by engineer. */
-"sent" = "sent";
+"sent" = "изпратено";
 
 /* No comment provided by engineer. */
 "Sent from" = "Sent from";
@@ -684,7 +678,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Share" = "Share";
+"Share" = "Сподели";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
@@ -729,7 +723,7 @@
 "Sync Now" = "Sync Now";
 
 /* No comment provided by engineer. */
-"Syncing" = "Syncing";
+"Syncing" = "Синхронизиране";
 
 /* No comment provided by engineer. */
 "Tap" = "Tap";
@@ -840,7 +834,7 @@
 "Voting Keys" = "Ключове за гласуване";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Портфейлът е изключен";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Ключове на портфейла";

@@ -183,9 +183,6 @@
 "Copy" = "Copy";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
-
-/* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
 
 /* No comment provided by engineer. */
@@ -222,7 +219,7 @@
 "Dot a Dash QR code" = "Dot a Dash QR code";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "Email client is not configured. Please add your email account in Settings";
+"Email client is not configured. Please add your email account in Settings" = "ไม่ได้กำหนดอีเมล กรุณาเพิ่มบัญชีอีเมลของคุณในการตั้งค่า";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
@@ -261,7 +258,7 @@
 "Fee" = "ค่าธรรมเนียม";
 
 /* No comment provided by engineer. */
-"Fee is greater than balance" = "Fee is greater than balance";
+"Fee is greater than balance" = "ค่าธรรมเนียมมากกว่ายอดคงเหลือ";
 
 /* No comment provided by engineer. */
 "Fee will be deducted from requested amount" = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
@@ -294,7 +291,7 @@
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
 
 /* No comment provided by engineer. */
-"I wrote it down" = "I wrote it down";
+"I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
 
 /* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
@@ -348,7 +345,7 @@
 "Local requested amount: %@" = "Local requested amount: %@";
 
 /* No comment provided by engineer. */
-"Locked" = "Locked";
+"Locked" = "ล็อค";
 
 /* No comment provided by engineer. */
 "Log Out" = "ออกจากระบบ";
@@ -373,9 +370,6 @@
 
 /* No comment provided by engineer. */
 "Low" = "Low";
-
-/* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Masternode Registration";
@@ -429,7 +423,7 @@
 "No address copied" = "No address copied";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node ip" = "Node ip";
 
 /* No comment provided by engineer. */
 "None" = "None";
@@ -498,7 +492,7 @@
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
-"Processing" = "Processing";
+"Processing" = "กำลังประมวลผล";
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
@@ -708,7 +702,7 @@
 "Spending Confirmation" = "Spending Confirmation";
 
 /* No comment provided by engineer. */
-"Steps to reproduce the crash" = "Steps to reproduce the crash";
+"Steps to reproduce the crash" = "ขั้นตอนในการทำให้เกิดความผิดพลาดซ้ำ";
 
 /* No comment provided by engineer. */
 "Success" = "สำเร็จ";
@@ -861,7 +855,7 @@
 "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "ตรวจพบว่า Dashwallet เกิดข้อผิดพลาดระหว่างการย้ายข้อมูล การสแกน Blockchain ใหม่อีกครั้งจะช่วยแก้ปัญหานี้หรือคุณอาจจะต้องลองอีกครั้ง  ควรทำการสแกนซ้ำโดยใช้ wifi โดยจะใช้เวลาประมาณครึ่งชั่วโมง  เงินของคุณจะสามารถใช้ได้เมื่อกระบวนการซิงค์เสร็จสมบูรณ์";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "เราตรวจพบว่า Dashwallet เกิดข้อผิดพลาดครั้งล่าสุดที่เปิดใช้งาน คุณต้องการช่วยเราแก้ไขปัญหาโดยส่งข้อมูลรายงานข้อขัดข้องให้เราหรือไม่ ประวัติการทำธุรกรรมของคุณและข้อมูลส่วนตัวอื่น ๆ จะไม่ถูกเผยแพร่";
 
 /* No comment provided by engineer. */
 "We upgraded" = "We upgraded";
