@@ -183,6 +183,9 @@
 "Copy" = "Copiar";
 
 /* No comment provided by engineer. */
+"Copy Logs" = "Copy Logs";
+
+/* No comment provided by engineer. */
 "Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
 
 /* No comment provided by engineer. */
@@ -214,9 +217,6 @@
 
 /* No comment provided by engineer. */
 "Done" = "Hecho";
-
-/* No comment provided by engineer. */
-"Dot a Dash QR code" = "No es un código QR de Dash";
 
 /* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "El email del cliente no está configurado. Por favor agregue una cuenta de email en Configuración";
@@ -372,6 +372,9 @@
 "Low" = "Bajo";
 
 /* No comment provided by engineer. */
+"Manage Trusted Node" = "Manage Trusted Node";
+
+/* No comment provided by engineer. */
 "Masternode Registration" = "Registro de Masternodo";
 
 /* No comment provided by engineer. */
@@ -423,10 +426,13 @@
 "No address copied" = "Ninguna dirección copiada";
 
 /* No comment provided by engineer. */
-"Node ip" = "IP del nodo";
+"Node IP" = "Node IP";
 
 /* No comment provided by engineer. */
 "None" = "Ninguna";
+
+/* No comment provided by engineer. */
+"Not a Dash QR code" = "Not a Dash QR code";
 
 /* No comment provided by engineer. */
 "Not a Dash URL" = "No es una dirección de Dash";
