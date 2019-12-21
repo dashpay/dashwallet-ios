@@ -105,6 +105,9 @@
 "Bad recovery phrase" = "Bad recovery phrase";
 
 /* No comment provided by engineer. */
+"Buy Dash with Uphold account" = "Αγορά Dash μεσώ Uphold λογαριασμού";
+
+/* No comment provided by engineer. */
 "Balance hidden" = "Balance hidden";
 
 /* No comment provided by engineer. */
@@ -252,6 +255,9 @@
 "Face ID limit" = "όριο Face ID ";
 
 /* No comment provided by engineer. */
+"Enter your 2FA code below" = "Εισάγετε τον 2FA κωδικό παρακάτω";
+
+/* No comment provided by engineer. */
 "Failed wallet update" = "Η ενημέρωση του πορτοφολιού απέτυχε";
 
 /* No comment provided by engineer. */
@@ -273,6 +279,12 @@
 "Get Started" = "Get Started";
 
 /* No comment provided by engineer. */
+"Fee is greater than balance" = "Τα τέλη είναι μεγαλύτερα από το υπόλοιπο";
+
+/* No comment provided by engineer. */
+"Fee will be deducted from requested amount" = "Τα τέλη θα αφαιρεθούν από το ποσό που ζητήσατε";
+
+/* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
 
 /* No comment provided by engineer. */
@@ -280,6 +292,9 @@
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Help us improve your experience";
+
+/* No comment provided by engineer. */
+"Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
 
 /* No comment provided by engineer. */
 "High" = "High";
@@ -321,10 +336,16 @@
 "Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
+"Insufficient Funds" = "Ανεπαρκή Χρήματα";
+
+/* No comment provided by engineer. */
 "Invalid amount" = "Ανεπαρκές ποσό";
 
 /* No comment provided by engineer. */
 "invalid transaction" = "invalid transaction";
+
+/* No comment provided by engineer. */
+"Invalid amount" = "Ανεπαρκές ποσό";
 
 /* No comment provided by engineer. */
 "It's Important" = "It's Important";
@@ -358,9 +379,6 @@
 
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
-
-/* No comment provided by engineer. */
-"Logout" = "Logout";
 
 /* No comment provided by engineer. */
 "Logout after" = "Logout after";
@@ -576,6 +594,9 @@
 "Scan" = "Scan";
 
 /* No comment provided by engineer. */
+"See on Uphold" = "Δείτε στο Uphold";
+
+/* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
 
 /* No comment provided by engineer. */
@@ -669,6 +690,9 @@
 "Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
+"Something went wrong" = "Κάτι πήγε στραβά";
+
+/* No comment provided by engineer. */
 "Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
@@ -685,6 +709,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Show Recovery Phrase";
+
+/* No comment provided by engineer. */
+"Success" = "Επιτυχία ";
 
 /* No comment provided by engineer. */
 "Skip" = "Skip";
@@ -738,6 +765,9 @@
 "There are no transactions to display" = "There are no transactions to display";
 
 /* No comment provided by engineer. */
+"Total" = "Σύνολο";
+
+/* No comment provided by engineer. */
 "This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
@@ -762,12 +792,6 @@
 "Tools" = "Tools";
 
 /* No comment provided by engineer. */
-"Total" = "Σύνολο";
-
-/* No comment provided by engineer. */
-"Touch ID limit" = "Όριο Touch ID ";
-
-/* No comment provided by engineer. */
 "Transaction id" = "Ταυτότητα συναλλαγής";
 
 /* No comment provided by engineer. */
@@ -778,6 +802,12 @@
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Μεταφορά από Uphold";
+
+/* No comment provided by engineer. */
+"Total" = "Σύνολο";
+
+/* No comment provided by engineer. */
+"Touch ID limit" = "Όριο Touch ID ";
 
 /* No comment provided by engineer. */
 "Trust" = "Trust";
@@ -805,6 +835,9 @@
 
 /* No comment provided by engineer. */
 "Used" = "Used";
+
+/* No comment provided by engineer. */
+"Uphold account" = "Λογαριασμός Uphold";
 
 /* No comment provided by engineer. */
 "Used at IP address" = "Used at IP address";
