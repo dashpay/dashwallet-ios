@@ -219,9 +219,6 @@
 "Done" = "Zrobione";
 
 /* No comment provided by engineer. */
-"Dot a Dash QR code" = "Użyj Dash QR kodu";
-
-/* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "Klient email nie jest skonfigurowany. Proszę dodaj konto email w Ustawieniach";
 
 /* No comment provided by engineer. */
@@ -433,6 +430,9 @@
 
 /* No comment provided by engineer. */
 "None" = "None";
+
+/* No comment provided by engineer. */
+"Not a Dash QR code" = "Not a Dash QR code";
 
 /* No comment provided by engineer. */
 "Not a Dash URL" = "Not a Dash URL";
