@@ -258,7 +258,7 @@ static NSTimeInterval const kResumeSearchTimeInterval = 1.0;
                                                            request.paymentAddress];
                         }
                         else {
-                            errorMessage = NSLocalizedString(@"Dot a Dash QR code", nil);
+                            errorMessage = NSLocalizedString(@"Not a Dash QR code", nil);
                         }
                         [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
 
