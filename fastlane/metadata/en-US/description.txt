@@ -1,20 +1,20 @@
-Dashwallet is the first iPhone wallet for Dash - Digital Cash - a better innovative alternative to bitcoin.
- 
-Dash is a crypto currency that seeks out fix the flaws that other crypto currencies suffer from.  It relies on a network of Masternodes to allow such things as anonymity, instant transaction, and direct funding mechanism to kickstart innovative ideas.
+Dash Wallet is the first iPhone wallet for Dash - Digital Cash - a better innovative alternative to bitcoin which is focused on payments.
 
-Intuitive and secure, dashwallet gives you complete control over your digital cash. Send and receive dash payments instantly, with the safest mobile wallet available.
+Dash is a cryptocurrency that seeks to fix the flaws that other cryptocurrencies suffer from. It relies on a network of Masternodes to allow such things as anonymity, instant transactions, and a direct funding mechanism to kickstart innovative ideas.
 
-Dashwallet is the first and only iPhone wallet which connects directly to the dash network. This means that there are no servers to get hacked or go down - your funds are always safe. Even if your phone is lost, damaged or stolen, you can easily recover your funds using your personal recovery phrase. 
+Intuitive and secure, Dash Wallet gives you complete control over your digital cash. Send and receive dash payments instantly, with the safest mobile wallet available.
+
+Dash Wallet is the first and only iPhone wallet that connects directly to the dash network. This means that there are no servers to get hacked or go down - your funds are always safe. Even if your phone is lost, damaged or stolen, you can easily recover your funds using your personal recovery phrase.
 
 Features:
 
-* Send and receive dash payments in seconds, online or in person
+* Send and receive dash payments in seconds, online or in-person
 * One button payments to dash-accepting merchants and websites
 * Pay quickly with Face ID recognition
-* Store your dash safely and securely using built in hardware encryption
+* Sweeping of paper wallets (e.g. those used for cold storage)
+* 3rd party integrations to allow users to buy and sell Dash
 * Simple recovery phrase enables you to recover funds when your device is lost or broken
-* Direct dash network client - no servers to get hacked or go down
+* Flexible settings to meet a range of custom security preferences
+* Direct dash network client - no central server to get hacked or go down
 
-Dashwallet is open source and free. There are no extra transaction fees or costs. Send any amount of money to anyone in the world instantly. This is how money should be.
-
-An earlier version of Dashwallet was a close descendant of breadwallet, a Bitcoin wallet for iPhone. This version has since heavily diverged. We would still like to commend Aaron Voisine, co-author of BIP 32 and creator of breadwallet, for his pioneering work in the field.
+Dash Wallet is open source and free. There are no extra transaction fees or costs. Send any amount of money to anyone in the world instantly. This is how money should be.
