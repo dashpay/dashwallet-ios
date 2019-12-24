@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBiometricAuthModel.h"
+#import "DevicesCompatibility.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,8 +29,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     DWBiometricAuthModel *authModel = [[DWBiometricAuthModel alloc] init];
     const LABiometryType biometryType = authModel.biometryType;
-    const BOOL hasTouchID = biometryType == LABiometryTypeTouchID;
-    const BOOL hasFaceID = biometryType == LABiometryTypeFaceID;
+    BOOL hasTouchID = biometryType == LABiometryTypeTouchID;
+    BOOL hasFaceID = biometryType == LABiometryTypeFaceID;
+#if SNAPSHOT
+    if (DEVICE_HAS_HOME_INDICATOR) {
+        hasTouchID = NO;
+        hasFaceID = YES;
+    }
+    else {
+        hasTouchID = YES;
+        hasFaceID = NO;
+    }
+#endif /* SNAPSHOT */
     self = [super initWithHasTouchID:hasTouchID hasFaceID:hasFaceID];
     return self;
 }
@@ -64,7 +75,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)canConfigureSpendingConfirmation {
+#if SNAPSHOT
+    return YES;
+#else
     return DWBiometricAuthModel.biometricAuthenticationAvailable;
+#endif /* SNAPSHOT */
 }
 
 - (NSNumber *)spendingConfirmationLimit {

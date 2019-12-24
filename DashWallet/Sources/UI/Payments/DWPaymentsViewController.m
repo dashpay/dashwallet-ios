@@ -153,6 +153,15 @@ NS_ASSUME_NONNULL_BEGIN
     self.controllerCollectionView.delegate = self;
     self.controllerCollectionView.controllerDataSource = self;
     self.controllerCollectionView.containerViewController = self;
+
+#if SNAPSHOT
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+    NSArray<UIControl *> *internalButtons = [(id)self.segmentedControl performSelector:@selector(buttons)];
+#pragma clang diagnostic pop
+
+    internalButtons.lastObject.accessibilityIdentifier = @"payments_receive_segment";
+#endif /* SNAPSHOT */
 }
 
 - (void)setupControllers {

@@ -22,6 +22,10 @@
 #import "DWOnboardingViewController.h"
 #import "DWUIKit.h"
 
+#if SNAPSHOT
+#import "DWDemoAppRootViewController.h"
+#endif /* SNAPSHOT */
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWInitialViewController () <DWOnboardingViewControllerDelegate>
@@ -40,6 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
+#if SNAPSHOT
+    DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];
+    [self displayViewController:controller];
+#else
     if ([self shouldDisplayOnboarding]) {
         DWOnboardingViewController *onboarding = [DWOnboardingViewController controller];
         onboarding.delegate = self;
@@ -50,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self displayViewController:rootController];
         self.rootController = rootController;
     }
+#endif /* SNAPSHOT */
 }
 
 #pragma mark - Public

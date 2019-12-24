@@ -52,6 +52,10 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
     [super viewDidLoad];
 
     [self setupView];
+
+#if SNAPSHOT
+    self.showRecoveryPhraseButton.accessibilityIdentifier = @"show_recovery_button";
+#endif /* SNAPSHOT */
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

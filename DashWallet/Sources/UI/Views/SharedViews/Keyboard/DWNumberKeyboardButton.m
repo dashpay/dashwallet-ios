@@ -94,7 +94,7 @@ static CGFloat const CORNER_RADIUS = 8.0;
         case DWNumberKeyboardButtonType_Separator: {
             self.titleLabel.text = [NSLocale currentLocale].decimalSeparator;
 #if SNAPSHOT
-            titleLabel.accessibilityIdentifier = @"amount_button_separator";
+            self.titleLabel.accessibilityIdentifier = @"amount_button_separator";
 #endif /* SNAPSHOT */
 
             break;

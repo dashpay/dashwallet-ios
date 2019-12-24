@@ -136,6 +136,9 @@ static UIImage *IconForOptionType(DWPayOptionModelType type) {
 
     if (type == DWPayOptionModelType_Pasteboard) {
         self.actionButton.enabled = !!details;
+#if SNAPSHOT
+        self.actionButton.accessibilityIdentifier = @"send_pasteboard_button";
+#endif /* SNAPSHOT */
     }
     else {
         self.actionButton.enabled = YES;
