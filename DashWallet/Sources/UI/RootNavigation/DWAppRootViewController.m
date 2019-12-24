@@ -169,15 +169,22 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     lockWindow.windowLevel = UIWindowLevelNormal;
     self.lockWindow = lockWindow;
 
+    // Display main controller initially if there is a wallet and lock screen is disabled
+    // Otherwise main controller will be set as current in `lockScreenViewControllerDidUnlock:`
     const BOOL hasAWallet = self.model.hasAWallet;
     UIViewController *controller = nil;
     if (hasAWallet) {
-        controller = [self mainController];
+        if (![self.model shouldShowLockScreen]) {
+            controller = [self mainController];
+        }
     }
     else {
         controller = [self setupController];
     }
-    [self displayViewController:controller];
+
+    if (controller) {
+        [self displayViewController:controller];
+    }
 
     if (hasAWallet) {
         // Lock controller will be shown in applicationDidBecomeActiveNotification.
@@ -268,6 +275,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     NSParameterAssert(self.displayedLockNavigationController);
 
     [self hideAndRemoveOverlayImageView];
+
+    if (self.currentController == nil) {
+        UIViewController *controller = [self mainController];
+        [self displayViewController:controller];
+    }
 
     [UIView animateWithDuration:UNLOCK_ANIMATION_DURATION
         animations:^{

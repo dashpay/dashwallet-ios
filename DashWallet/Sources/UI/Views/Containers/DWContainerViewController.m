@@ -34,6 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)displayViewController:(UIViewController *)controller {
     NSParameterAssert(controller);
+    if (!controller) {
+        return;
+    }
 
     [self dw_embedChild:controller inContainer:self.containerView];
     self.currentController = controller;
@@ -90,12 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable UIViewController *)childViewControllerForStatusBarHidden {
     return self.currentController;
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    NSAssert(self.currentController, @"Container controller should be configured with a child in viewDidLoad");
 }
 
 #pragma mark - Private
