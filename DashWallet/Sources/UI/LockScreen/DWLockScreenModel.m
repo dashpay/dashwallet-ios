@@ -30,7 +30,6 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 
 @interface DWLockScreenModel ()
 
-@property (nullable, nonatomic, strong) NSTimer *checkTimer;
 @property (nonatomic, assign) BOOL checkingAuth;
 
 @end
@@ -66,32 +65,15 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
     if (self.checkingAuth) {
         return;
     }
-
     self.checkingAuth = YES;
 
-    [self checkTimerAction];
-
-    // Edge case: pin was erased (by recovery pharse) but not set properly
-    // Don't run auth precheck more than once
-    if (![DSAuthenticationManager sharedInstance].usesAuthentication) {
-        return;
-    }
-
-    if (self.checkTimer) {
-        return;
-    }
-    self.checkTimer = [NSTimer scheduledTimerWithTimeInterval:CHECK_INTERVAL
-                                                       target:self
-                                                     selector:@selector(checkTimerAction)
-                                                     userInfo:nil
-                                                      repeats:YES];
+    [self checkAuthState];
 }
 
 - (void)stopCheckingAuthState {
     self.checkingAuth = NO;
 
-    [self.checkTimer invalidate];
-    self.checkTimer = nil;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkAuthState) object:nil];
 }
 
 - (BOOL)checkPin:(NSString *)inputPin {
@@ -137,7 +119,11 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 
 #pragma mark - Private
 
-- (void)checkTimerAction {
+- (void)checkAuthState {
+    if (!self.checkingAuth) {
+        return;
+    }
+
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
     [authManager
@@ -145,11 +131,19 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
                                         BOOL authenticated,
                                         BOOL shouldLockout,
                                         NSString *_Nullable attemptsMessage) {
+            if (!self.checkingAuth) {
+                return;
+            }
+
             [self.delegate lockScreenModel:self
                 shouldContinueAuthentication:shouldContinueAuthentication
                                authenticated:authenticated
                                shouldLockout:shouldLockout
                              attemptsMessage:attemptsMessage];
+
+            [self performSelector:@selector(checkAuthState)
+                       withObject:nil
+                       afterDelay:CHECK_INTERVAL];
         }];
 }
 
