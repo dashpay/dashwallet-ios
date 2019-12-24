@@ -290,18 +290,9 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
         return;
     }
 
-    if (@available(iOS 13.0, *)) {
-        // NOP
-    }
-    else {
-        [self.view layoutSubviews];
-    }
-
     [UIView animateWithDuration:animated ? ANIMATION_DURATION : 0.0
                      animations:^{
-                         if (@available(iOS 13.0, *)) {
-                             [self.view layoutSubviews];
-                         }
+                         [self.view layoutIfNeeded];
 
                          self.tabBarView.alpha = alpha;
                      }];
