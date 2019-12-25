@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.titleLabel.adjustsFontForContentSizeCategory = YES;
     self.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.titleLabel.minimumScaleFactor = 0.5;
+    self.titleLabel.lineBreakMode = NSLineBreakByClipping;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(setNeedsLayout)
