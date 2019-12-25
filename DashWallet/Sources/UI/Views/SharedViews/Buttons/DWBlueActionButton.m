@@ -164,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (UIEdgeInsets)smallButtonContentEdgeInsets {
-    return UIEdgeInsetsMake(10.0, 20.0, 10.0, 20.0);
+    return UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0);
 }
 
 + (CGFloat)cornerRadius {
