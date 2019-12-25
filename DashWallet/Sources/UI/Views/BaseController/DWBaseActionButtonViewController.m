@@ -51,6 +51,14 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 @implementation DWBaseActionButtonViewController
 
++ (BOOL)showsActionButton {
+    return YES;
+}
+
++ (BOOL)isActionButtonInNavigationBar {
+    return IS_IPHONE_5_OR_LESS;
+}
+
 - (NSString *)actionButtonTitle {
     NSAssert(NO, @"Must be overriden in subclass");
     return nil;
@@ -58,10 +66,6 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 - (NSString *)actionButtonDisabledTitle {
     return [self actionButtonTitle];
-}
-
-+ (BOOL)showsActionButton {
-    return YES;
 }
 
 - (void)viewDidLoad {
@@ -80,7 +84,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 - (void)reloadActionButtonTitles {
     NSString *actionButtonTitle = [self actionButtonTitle];
     NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
-    if (!IS_IPHONE_5_OR_LESS) {
+    if (![self.class isActionButtonInNavigationBar]) {
         [(DWBlueActionButton *)self.actionButton setTitle:actionButtonTitle forState:UIControlStateNormal];
         [(DWBlueActionButton *)self.actionButton setTitle:actionButtonDisabledTitle forState:UIControlStateDisabled];
     }
@@ -105,7 +109,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
         NSString *actionButtonDisabledTitle = [self actionButtonDisabledTitle];
         NSParameterAssert(actionButtonTitle);
 
-        if (IS_IPHONE_5_OR_LESS) {
+        if ([self.class isActionButtonInNavigationBar]) {
             UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc]
                 initWithTitle:actionButtonTitle
                         style:UIBarButtonItemStylePlain
@@ -161,7 +165,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 #pragma mark - Configuration
 
 + (CGFloat)deviceSpecificBottomPadding {
-    if (IS_IPHONE_5_OR_LESS) {
+    if ([self isActionButtonInNavigationBar]) {
         return 0.0;
     }
     else {

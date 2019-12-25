@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWConfirmPaymentViewController
 
++ (BOOL)isActionButtonInNavigationBar {
+    return NO;
+}
+
 - (NSString *)actionButtonTitle {
     return NSLocalizedString(@"Send", nil);
 }
