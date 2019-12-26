@@ -2,17 +2,50 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "shortcut_scanToPay.png",
+      "filename" : "scan_to_pay.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "shortcut_scanToPay@2x.png",
+      "filename" : "shortcut_scanToPay_dark.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "scan_to_pay@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "shortcut_scanToPay@3x.png",
+      "filename" : "shortcut_scanToPay_dark@2x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "scan_to_pay@3x.png",
+      "scale" : "3x"
+    },
+    {
+      "idiom" : "universal",
+      "filename" : "shortcut_scanToPay_dark@3x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
       "scale" : "3x"
     }
   ],
