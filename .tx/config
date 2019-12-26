@@ -8,6 +8,13 @@ source_file = DashWallet/en.lproj/Localizable.strings
 source_lang = en
 type = STRINGS
 
+[dash-mobile-wallets.app-localizable-strings-dict]
+file_filter = DashWallet/<lang>.lproj/Localizable.stringsdict
+minimum_perc = 0
+source_file = DashWallet/en.lproj/Localizable.stringsdict
+source_lang = en
+type = STRINGSDICT
+
 [dash-mobile-wallets.watch-interface-strings]
 file_filter = WatchApp/<lang>.lproj/Interface.strings
 minimum_perc = 0

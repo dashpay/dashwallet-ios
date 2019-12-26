@@ -217,7 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
         [alert addAction:cancelButton];
 
         UIAlertAction *trustButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Trust", nil)
+            actionWithTitle:NSLocalizedString(@"OK", nil)
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
                         UITextField *ipField = alert.textFields.firstObject;

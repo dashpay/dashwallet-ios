@@ -9,9 +9,6 @@
 "%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld kullanıldı";
-
-/* No comment provided by engineer. */
 "1 hour" = "1 hour";
 
 /* Shorten version of minute */
@@ -111,6 +108,9 @@
 "block #%d of %d" = "%2$d'in %1$d'ini engelle";
 
 /* No comment provided by engineer. */
+"Block #%d of %d" = "Block #%1$d of %2$d";
+
+/* No comment provided by engineer. */
 "Buy & Sell Dash" = "Buy & Sell Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -123,12 +123,12 @@
 "Buy Dash with Uphold account" = "Uphold hesabı ile Dash al";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Bu cihazı silerseniz bu cihazdaki paraya artık ulaşamazsınız. Bunu sadece parola cümlenize ulaşamıyorsanız ve pin kodunuzu unuttuysanız yapmalısınız.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
 
 /* No comment provided by engineer. */
 "Cancel" = "İptal";
 
-/* No comment provided by engineer. */
+/* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Change";
 
 /* No comment provided by engineer. */
@@ -147,7 +147,7 @@
 "Clear trusted node?" = "Clear trusted node?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "Clipboard doesn't contain a valid dash address";
+"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
 
 /* No comment provided by engineer. */
 "Close" = "Close";
@@ -169,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Connect with third party exchanges";
+
+/* No comment provided by engineer. */
+"Connected peers: %d" = "Connected peers: %d";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Contact Support";
@@ -217,6 +220,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Bitti";
+
+/* ex., Download peer: 127.0.0.1:9999 */
+"Download peer: %@" = "Download peer: %@";
 
 /* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "E-posta istemcisi yapılandırılmadı. Lütfen e-posta hesabınızı Ayarlar’a ekleyin.";
@@ -312,7 +318,7 @@
 "Import private key…" = "Import private key…";
 
 /* No comment provided by engineer. */
-"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds.";
+"In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Yetersiz Bakiye";
@@ -322,9 +328,6 @@
 
 /* No comment provided by engineer. */
 "Invalid amount" = "Geçersiz tutar";
-
-/* No comment provided by engineer. */
-"invalid transaction" = "invalid transaction";
 
 /* No comment provided by engineer. */
 "It's Important" = "It's Important";
@@ -399,9 +402,6 @@
 "Moved" = "Taşındı";
 
 /* No comment provided by engineer. */
-"moved" = "moved";
-
-/* No comment provided by engineer. */
 "Moved from" = "Moved from";
 
 /* No comment provided by engineer. */
@@ -441,9 +441,6 @@
 "Not a valid Dash address" = "Not a valid Dash address";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "Not a valid dash address";
-
-/* No comment provided by engineer. */
 "Not yet used" = "Not yet used";
 
 /* No comment provided by engineer. */
@@ -471,7 +468,7 @@
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Cüzdanı yükseltmek için lütfen pin kodunu girin";
+"Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Lütfen telefonunuzu bir NFC cihazının yakınına yerleştirin.";
@@ -510,16 +507,16 @@
 "Quick Receive" = "Quick Receive";
 
 /* No comment provided by engineer. */
-"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "Rate: %1$@ = %2$@\nupdated: %3$@\nblock #%4$d of %5$d\nconnected peers: %6$d\ndl peer: %7$@\nquorums validated: %8$d/%9$d";
+"Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+
+/* ex., Rate 1 US $ = 0.000009 Dash */
+"Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
 "Receive" = "Receive";
 
 /* No comment provided by engineer. */
 "Received" = "Alındı";
-
-/* No comment provided by engineer. */
-"received" = "received";
 
 /* No comment provided by engineer. */
 "Received %@ (%@)" = "Received %1$@ (%2$@)";
@@ -660,9 +657,6 @@
 "Sent" = "Gönderildi";
 
 /* No comment provided by engineer. */
-"sent" = "sent";
-
-/* No comment provided by engineer. */
 "Sent from" = "Sent from";
 
 /* No comment provided by engineer. */
@@ -786,9 +780,6 @@
 "Transfer from Uphold" = "Uphold'dan Aktar";
 
 /* No comment provided by engineer. */
-"Trust" = "Trust";
-
-/* No comment provided by engineer. */
 "Try again" = "Try again";
 
 /* No comment provided by engineer. */
@@ -798,13 +789,16 @@
 "Unable to connect" = "Unable to connect";
 
 /* No comment provided by engineer. */
-"Unable to get new qr code" = "Yeni qr kod alınamıyor";
+"Unable to get new QR code" = "Unable to get new QR code";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Unsupported or corrupted document";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
+
+/* ex., Updated: 27.12, 8:30 */
+"Updated: %@" = "Updated: %@";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -894,7 +888,7 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Dashwallet'a girmek için bir pin kodu girmelisiniz";
+"You must enter your PIN in order to enter dashwallet" = "You must enter your PIN in order to enter dashwallet";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";

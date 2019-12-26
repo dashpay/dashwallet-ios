@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf performPayToPasteboardAction];
         }
         else {
-            NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid dash address", nil);
+            NSString *message = NSLocalizedString(@"Clipboard doesn't contain a valid Dash address", nil);
             UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
                                                                            message:message
                                                                     preferredStyle:UIAlertControllerStyleAlert];

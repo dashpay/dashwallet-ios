@@ -106,7 +106,7 @@ final class DWWatchDataManager: NSObject {
                                         code: 500,
                                         userInfo: [
                                             NSLocalizedDescriptionKey:
-                                                "Unable to get new qr code",
+                                                "Unable to get new QR code",
                                         ])
                     responseHandler(nil, error)
                 }, errorHandler: { _ in
@@ -114,7 +114,7 @@ final class DWWatchDataManager: NSObject {
                                         code: 500,
                                         userInfo: [
                                             NSLocalizedDescriptionKey:
-                                                NSLocalizedString("Unable to get new qr code", comment: ""),
+                                                NSLocalizedString("Unable to get new QR code", comment: ""),
                                         ])
                     responseHandler(nil, error)
                 }

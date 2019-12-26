@@ -255,7 +255,7 @@ static BOOL IsJailbroken(void) {
 
     [dashSyncVersionManager
         upgradeExtendedKeysForWallets:wallets
-                          withMessage:NSLocalizedString(@"Please enter pin to upgrade wallet", nil)
+                          withMessage:NSLocalizedString(@"Please enter PIN to upgrade wallet", nil)
                        withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
                            DWVersionManager *dashwalletVersionManager = [DWVersionManager sharedInstance];
                            [dashwalletVersionManager
