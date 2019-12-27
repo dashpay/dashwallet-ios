@@ -100,13 +100,13 @@ NS_ASSUME_NONNULL_BEGIN
                          message:NSLocalizedString(@"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *migrateButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Try again", nil)
+        actionWithTitle:NSLocalizedString(@"Try again", @"An action")
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *_Nonnull action) {
                     [self performMigration];
                 }];
     UIAlertAction *rescanButton = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Rescan", nil)
+        actionWithTitle:NSLocalizedString(@"Rescan", @"An action")
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
                     [self performRescanBlockchain];
@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:migrateButton];
     if (self.viewModel.shouldHandleCrashReports) {
         UIAlertAction *crashReportButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Send crash report", nil)
+            actionWithTitle:NSLocalizedString(@"Send crash report", @"An action")
                       style:UIAlertActionStyleDefault
                     handler:^(UIAlertAction *action) {
                         [self performCrashReportingForced:YES];

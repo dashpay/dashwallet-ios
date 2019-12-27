@@ -548,7 +548,7 @@
 /* No comment provided by engineer. */
 "Request" = "Запрос";
 
-/* No comment provided by engineer. */
+/* An action */
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
@@ -623,7 +623,7 @@
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
-/* No comment provided by engineer. */
+/* An action */
 "Send crash report" = "Send crash report";
 
 /* No comment provided by engineer. */
@@ -776,10 +776,10 @@
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Перевести средства из Uphold";
 
-/* No comment provided by engineer. */
+/* An action */
 "Try again" = "Try again";
 
-/* No comment provided by engineer. */
+/* Alert title */
 "Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */

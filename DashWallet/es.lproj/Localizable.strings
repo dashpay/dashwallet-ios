@@ -548,7 +548,7 @@
 /* No comment provided by engineer. */
 "Request" = "Solicitar";
 
-/* No comment provided by engineer. */
+/* An action */
 "Rescan" = "Escanear nuevamente";
 
 /* No comment provided by engineer. */
@@ -623,7 +623,7 @@
 /* Send by (scanning QR code) */
 "Send by" = "Enviado por";
 
-/* No comment provided by engineer. */
+/* An action */
 "Send crash report" = "Enviar reporte de fallo";
 
 /* No comment provided by engineer. */
@@ -776,10 +776,10 @@
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transferencia desde Uphold";
 
-/* No comment provided by engineer. */
+/* An action */
 "Try again" = "Intente nuevamente";
 
-/* No comment provided by engineer. */
+/* Alert title */
 "Turn device passcode on" = "Habilite la clave de acceso de su dispositivo";
 
 /* No comment provided by engineer. */

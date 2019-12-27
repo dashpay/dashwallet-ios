@@ -338,7 +338,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)showDevicePasscodeAlert {
     UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", nil)
+        alertControllerWithTitle:NSLocalizedString(@"Turn device passcode on", @"Alert title")
                          message:NSLocalizedString(@"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *closeButton = [UIAlertAction
