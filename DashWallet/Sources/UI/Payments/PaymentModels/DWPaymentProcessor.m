@@ -197,7 +197,7 @@ static NSString *sanitizeString(NSString *s) {
             [self confirmSweep:request];
         }
         else {
-            [self failedWithTitle:NSLocalizedString(@"Not a valid dash address", nil) message:nil];
+            [self failedWithTitle:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
         }
     }
     else if (request.r.length > 0) { // payment protocol over HTTP
@@ -509,7 +509,7 @@ static NSString *sanitizeString(NSString *s) {
 
         [self requestUserActionTitle:NSLocalizedString(@"Change payment amount?", nil)
                              message:nil
-                         actionTitle:NSLocalizedString(@"Change", nil)
+                         actionTitle:NSLocalizedString(@"Change", @"A verb. Action button title for an alert 'Change payment amount?'")
                          cancelBlock:cancelBlock
                          actionBlock:changeBlock];
 

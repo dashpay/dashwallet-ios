@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSWallet *wallet = [[DWEnvironment sharedInstance] currentWallet];
     [dashSyncVersionManager upgradeVersion1ExtendedKeysForWallet:wallet
                                                            chain:[DWEnvironment sharedInstance].currentChain
-                                                     withMessage:NSLocalizedString(@"Please enter pin to upgrade wallet", nil)
+                                                     withMessage:NSLocalizedString(@"Please enter PIN to upgrade wallet", nil)
                                                   withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
                                                       if (!success && neededUpgrade && !authenticated) {
                                                           [self forceUpdateWalletAuthentication:cancelled];

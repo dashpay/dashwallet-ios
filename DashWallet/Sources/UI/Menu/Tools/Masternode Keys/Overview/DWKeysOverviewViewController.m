@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Owner Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.ownerDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Voting Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.votingDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {
@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     {
         DWSelectorFormCellModel *cellModel = [[DWSelectorFormCellModel alloc] initWithTitle:NSLocalizedString(@"Operator Keys", nil)];
-        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used", nil),
+        cellModel.subTitle = [NSString stringWithFormat:NSLocalizedString(@"%ld used(s)", @"#bc-ignore!"),
                                                         self.model.operatorDerivationPath.usedAddresses.count];
         cellModel.accessoryType = DWSelectorFormAccessoryType_DisclosureIndicator;
         cellModel.didSelectBlock = ^(DWSelectorFormCellModel *_Nonnull cellModel, NSIndexPath *_Nonnull indexPath) {

@@ -235,7 +235,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     return appleWatchData;
 }
 
-- (NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction {
+- (nullable NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction {
     if (transaction) {
         NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
         NSString *transactionTypeString;
@@ -246,16 +246,16 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
         switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
             case BRAWTransactionTypeSent:
-                transactionTypeString = NSLocalizedString(@"sent", nil);
+                transactionTypeString = NSLocalizedString(@"Sent", nil);
                 break;
             case BRAWTransactionTypeReceive:
-                transactionTypeString = NSLocalizedString(@"received", nil);
+                transactionTypeString = NSLocalizedString(@"Received", nil);
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = NSLocalizedString(@"moved", nil);
+                transactionTypeString = NSLocalizedString(@"Moved", nil);
                 break;
             case BRAWTransactionTypeInvalid:
-                transactionTypeString = NSLocalizedString(@"invalid transaction", nil);
+                transactionTypeString = NSLocalizedString(@"Invalid", nil);
                 break;
         }
         NSString *amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
@@ -270,7 +270,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                              timeDescriptionString];
     }
 
-    return @"no transaction";
+    return nil;
 }
 
 - (NSString *)timeDescriptionStringFrom:(NSDate *)date {

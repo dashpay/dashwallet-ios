@@ -9,9 +9,6 @@
 "%@ is not allowed to access Touch ID" = "%@ no está permitido a acceder al Touch ID";
 
 /* No comment provided by engineer. */
-"%ld used" = "%ld usada";
-
-/* No comment provided by engineer. */
 "1 hour" = "1 hora";
 
 /* Shorten version of minute */
@@ -111,6 +108,9 @@
 "block #%d of %d" = "bloque #%1$d de %2$d";
 
 /* No comment provided by engineer. */
+"Block #%d of %d" = "Block #%1$d of %2$d";
+
+/* No comment provided by engineer. */
 "Buy & Sell Dash" = "Comprar y Vender Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -123,12 +123,12 @@
 "Buy Dash with Uphold account" = "Comprar Dash con una cuenta de Uphold";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "Al limpiar este dispositivo, ya no tendrá acceso a los fondos en este dispositivo. Esto solo debe hacerse si ya no tiene acceso a su contraseña y también ha olvidado su código PIN.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancelar";
 
-/* No comment provided by engineer. */
+/* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Cambia";
 
 /* No comment provided by engineer. */
@@ -147,7 +147,7 @@
 "Clear trusted node?" = "¿Quitar nodo de confianza?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid dash address" = "El portapapeles no contiene una dirección de Dash válida";
+"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
 
 /* No comment provided by engineer. */
 "Close" = "Cerrar";
@@ -169,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "Connect with third party exchanges" = "Conectar con exchanges de terceros";
+
+/* No comment provided by engineer. */
+"Connected peers: %d" = "Connected peers: %d";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Contactar Soporte";
@@ -217,6 +220,9 @@
 
 /* No comment provided by engineer. */
 "Done" = "Hecho";
+
+/* ex., Download peer: 127.0.0.1:9999 */
+"Download peer: %@" = "Download peer: %@";
 
 /* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "El email del cliente no está configurado. Por favor agregue una cuenta de email en Configuración";
@@ -312,7 +318,7 @@
 "Import private key…" = "Importar Llave Privada...";
 
 /* No comment provided by engineer. */
-"Incase if this device is lost / damaged, incase if the dash wallet is uninstalled accidently from this device, you will need this recovery phrase to access your funds." = "Caso este dispositivo se pierda / sea danificado, caso la billetera sea desinstalada accidentalmente, necesitarás esta frase de recuperación para acceder a tus fondos.";
+"In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Fondos insuficientes";
@@ -322,9 +328,6 @@
 
 /* No comment provided by engineer. */
 "Invalid amount" = "Monto inválido";
-
-/* No comment provided by engineer. */
-"invalid transaction" = "Transacción inválida";
 
 /* No comment provided by engineer. */
 "It's Important" = "Es importante";
@@ -399,9 +402,6 @@
 "Moved" = "Movido";
 
 /* No comment provided by engineer. */
-"moved" = "movido";
-
-/* No comment provided by engineer. */
 "Moved from" = "Movido de";
 
 /* No comment provided by engineer. */
@@ -441,9 +441,6 @@
 "Not a valid Dash address" = "No es una dirección válida de Dash";
 
 /* No comment provided by engineer. */
-"Not a valid dash address" = "No es una dirección válida de Dash";
-
-/* No comment provided by engineer. */
 "Not yet used" = "No utilizada aún";
 
 /* No comment provided by engineer. */
@@ -471,7 +468,7 @@
 "PIN is always required to make a payment" = "PIN siempre será requerido para realizar un pago";
 
 /* No comment provided by engineer. */
-"Please enter pin to upgrade wallet" = "Por favor ingrese su pin para actualizar la billetera";
+"Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Coloca tu teléfono cerca del dispositivo NFC.";
@@ -510,16 +507,16 @@
 "Quick Receive" = "Recibir Rápidamente ";
 
 /* No comment provided by engineer. */
-"Rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@\nquorums validated: %d/%d" = "Tasa: %1$@ = %2$@\nactualizados: %3$@\nbloque #%4$d de %5$d\npares conectados: %6$d\npares descargados: %7$@\nquorums validados: %8$d/%9$d";
+"Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+
+/* ex., Rate 1 US $ = 0.000009 Dash */
+"Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
 "Receive" = "Recibir";
 
 /* No comment provided by engineer. */
 "Received" = "Recibido";
-
-/* No comment provided by engineer. */
-"received" = "recibido";
 
 /* No comment provided by engineer. */
 "Received %@ (%@)" = "Recibido %1$@ (%2$@)";
@@ -660,9 +657,6 @@
 "Sent" = "Enviado";
 
 /* No comment provided by engineer. */
-"sent" = "enviado";
-
-/* No comment provided by engineer. */
 "Sent from" = "Enviado de";
 
 /* No comment provided by engineer. */
@@ -786,9 +780,6 @@
 "Transfer from Uphold" = "Transferencia desde Uphold";
 
 /* No comment provided by engineer. */
-"Trust" = "Confiar";
-
-/* No comment provided by engineer. */
 "Try again" = "Intente nuevamente";
 
 /* No comment provided by engineer. */
@@ -798,13 +789,16 @@
 "Unable to connect" = "No fue posible conectarse";
 
 /* No comment provided by engineer. */
-"Unable to get new qr code" = "No se puede obtener un nuevo código QR";
+"Unable to get new QR code" = "Unable to get new QR code";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Documento no soportado o corrupto";
 
 /* No comment provided by engineer. */
 "Unsupported URL" = "Dirección no soportada";
+
+/* ex., Updated: 27.12, 8:30 */
+"Updated: %@" = "Updated: %@";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -894,7 +888,7 @@
 "You can authenticate with Touch ID for payments below" = "Puedes autenticar con Touch ID para pagos abajo de";
 
 /* No comment provided by engineer. */
-"You must enter your pin in order to enter dashwallet" = "Debe ingresar su pin para ingresar a la Dashwallet";
+"You must enter your PIN in order to enter dashwallet" = "You must enter your PIN in order to enter dashwallet";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, perderás sus fondos. Obtenga su LlaveÚnicaSecreta para que puedas restablecer su billetera en otro dispositivo.";

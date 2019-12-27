@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)wipeAlert {
     UIAlertController *wipeAlert = [UIAlertController
         alertControllerWithTitle:NSLocalizedString(@"Are you sure?", nil)
-                         message:NSLocalizedString(@"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.", nil)
+                         message:NSLocalizedString(@"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.", nil)
                   preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancelButton = [UIAlertAction
         actionWithTitle:NSLocalizedString(@"Cancel", nil)
@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (cancelled) {
         alert = [UIAlertController
             alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
-                             message:NSLocalizedString(@"You must enter your pin in order to enter dashwallet", nil)
+                             message:NSLocalizedString(@"You must enter your PIN in order to enter dashwallet", nil)
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *exitButton = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"Exit", nil)

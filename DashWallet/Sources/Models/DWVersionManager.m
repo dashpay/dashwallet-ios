@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
     CGRect screenRect = [[UIScreen mainScreen] bounds];
 
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"Please enter pin to upgrade wallet", nil))
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"Please enter PIN to upgrade wallet", nil))
                                         usingBiometricAuthentication:NO
                                                       alertIfLockout:NO
                                                           completion:^(BOOL authenticated, BOOL cancelled) {
