@@ -61,7 +61,7 @@ static NSString *ActionTitleForOptionType(DWPayOptionModelType type) {
         case DWPayOptionModelType_Pasteboard:
             return NSLocalizedString(@"Send", nil);
         case DWPayOptionModelType_NFC:
-            return NSLocalizedString(@"Tap", nil);
+            return NSLocalizedString(@"Tap", @"Pay using NFC (should be as short as possible)");
     }
 }
 
