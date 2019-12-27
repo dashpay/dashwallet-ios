@@ -156,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef DEBUG
     if (FALSE) {
         // this is kept here on purpose to keep the string in our localization script
-        __unused NSString *s = NSLocalizedString(@"NFC device didn't transmit a valid dash or bitcoin address", nil);
+        __unused NSString *s = NSLocalizedString(@"NFC device didn't transmit a valid Dash address", nil);
     }
 #endif
 
