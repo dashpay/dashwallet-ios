@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
                         item.detail = @"";
                     }
                     else {
-                        item.title = NSLocalizedString(@"Previously last used at IP address", nil);
+                        item.title = NSLocalizedString(@"Previously used at IP address", nil);
                         localMasternode = [localMasternodesArray lastObject];
                         item.detail = localMasternode.ipAddressAndIfNonstandardPortString;
                     }
