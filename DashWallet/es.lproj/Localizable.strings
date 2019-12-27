@@ -362,10 +362,10 @@
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login con Touch ID";
 
-/* No comment provided by engineer. */
+/* a verb, Logout Immediately */
 "Logout" = "Cerrar Sesión";
 
-/* No comment provided by engineer. */
+/* Logout after 5 min */
 "Logout after" = "Cerrar Sesión después de";
 
 /* No comment provided by engineer. */
