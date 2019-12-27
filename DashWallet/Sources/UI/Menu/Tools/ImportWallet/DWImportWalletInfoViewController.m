@@ -137,7 +137,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 - (NSArray<NSString *> *)items {
     if (!_items) {
         _items = @[
-            NSLocalizedString(@"You are about to sweep funds from another Dash wallet.", nil),
+            NSLocalizedString(@"You are about to sweep funds from another Dash Wallet.", nil),
             NSLocalizedString(@"This will move all coins from that wallet to your wallet on this device.", nil),
             NSLocalizedString(@"When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.", nil),
         ];

@@ -852,10 +852,10 @@
 "We do not store this recovery phrase." = "Nosotros no guardamos esta frase de recuperación.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Hemos detectado que Dashwallet se bloqueó durante la migración. Volver a escanear la cadena de bloques resolverá este problema o puedes intentarlo de nuevo. La reexploración debe realizarse preferiblemente en wifi y demorará hasta media hora. Tus fondos estarán disponibles una vez que se complete el proceso de sincronización.";
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Detectamos que la Dashwallet dejó de funcionar la última vez que se utilizó. ¿Le gustaría ayudarnos a resolver este problema enviándonos un reporte con los datos del fallo? Su historial de transacciones y cualquier otra información privada NO SERÁ compartida.";
+"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "We upgraded" = "Actualizamos";
@@ -876,7 +876,7 @@
 "with Dash blockchain" = "con la blockchain de Dash";
 
 /* No comment provided by engineer. */
-"You are about to sweep funds from another Dash wallet." = "Estás a punto de barrer los fondos de otra billetera Dash.";
+"You are about to sweep funds from another Dash Wallet." = "You are about to sweep funds from another Dash Wallet.";
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Estás a punto de limpiar esta billetera de este dispositivo. Fondos asociados a esta billetera solo podrán ser recuperados si tienes esta frase de recuperación.";
@@ -888,7 +888,7 @@
 "You can authenticate with Touch ID for payments below" = "Puedes autenticar con Touch ID para pagos abajo de";
 
 /* No comment provided by engineer. */
-"You must enter your PIN in order to enter dashwallet" = "You must enter your PIN in order to enter dashwallet";
+"You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
 
 /* No comment provided by engineer. */
 "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, perderás sus fondos. Obtenga su LlaveÚnicaSecreta para que puedas restablecer su billetera en otro dispositivo.";
