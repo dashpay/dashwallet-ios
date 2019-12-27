@@ -287,7 +287,7 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Help us improve your experience";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "High" = "High";
 
 /* No comment provided by engineer. */
@@ -371,7 +371,7 @@
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Low" = "Low";
 
 /* No comment provided by engineer. */
@@ -389,7 +389,7 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Medium" = "Medium";
 
 /* No comment provided by engineer. */
@@ -428,7 +428,7 @@
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "None" = "None";
 
 /* No comment provided by engineer. */
@@ -815,7 +815,7 @@
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Very High" = "Very High";
 
 /* No comment provided by engineer. */
