@@ -323,7 +323,7 @@
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Недостаточно средств";
 
-/* No comment provided by engineer. */
+/* Invalid transaction */
 "Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
@@ -398,7 +398,7 @@
 /* No comment provided by engineer. */
 "More Control" = "More Control";
 
-/* No comment provided by engineer. */
+/* Moved transaction */
 "Moved" = "Перемещено";
 
 /* No comment provided by engineer. */
@@ -515,7 +515,7 @@
 /* No comment provided by engineer. */
 "Receive" = "Receive";
 
-/* No comment provided by engineer. */
+/* Received transaction */
 "Received" = "Получено";
 
 /* No comment provided by engineer. */
@@ -653,7 +653,7 @@
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Sending...";
 
-/* No comment provided by engineer. */
+/* Sent transaction */
 "Sent" = "Отправлено";
 
 /* No comment provided by engineer. */

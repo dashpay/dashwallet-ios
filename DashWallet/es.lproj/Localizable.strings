@@ -323,7 +323,7 @@
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Fondos insuficientes";
 
-/* No comment provided by engineer. */
+/* Invalid transaction */
 "Invalid" = "Inválido";
 
 /* No comment provided by engineer. */
@@ -398,7 +398,7 @@
 /* No comment provided by engineer. */
 "More Control" = "Más Control";
 
-/* No comment provided by engineer. */
+/* Moved transaction */
 "Moved" = "Movido";
 
 /* No comment provided by engineer. */
@@ -515,7 +515,7 @@
 /* No comment provided by engineer. */
 "Receive" = "Recibir";
 
-/* No comment provided by engineer. */
+/* Received transaction */
 "Received" = "Recibido";
 
 /* No comment provided by engineer. */
@@ -653,7 +653,7 @@
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Enviando...";
 
-/* No comment provided by engineer. */
+/* Sent transaction */
 "Sent" = "Enviado";
 
 /* No comment provided by engineer. */
