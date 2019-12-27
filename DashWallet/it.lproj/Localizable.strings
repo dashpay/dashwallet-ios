@@ -300,7 +300,7 @@
 "I wrote it down" = "L'ho scritto";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Se desideri veramente cancellarlo, perfavore inserisci: \"%@\"";
@@ -891,7 +891,7 @@
 "You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Sarà inoltre necessario disconnettersi dal sito Web di Uphold utilizzando il browser";
