@@ -11,17 +11,14 @@ target 'dashwallet' do
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
 
   # Debugging purposes
-  pod 'Reveal-SDK', :configurations => ['Debug']
+#  pod 'Reveal-SDK', :configurations => ['Debug']
   
   target 'DashWalletTests' do
     inherit! :search_paths
-    # Pods for testing
   end
 
   target 'DashWalletScreenshotsUITests' do
     inherit! :search_paths
-    
-    pod 'SimulatorStatusMagic', '2.4.1'
   end
 
 end

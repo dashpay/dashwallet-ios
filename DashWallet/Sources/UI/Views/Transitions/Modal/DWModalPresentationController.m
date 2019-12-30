@@ -118,6 +118,10 @@ CGFloat DWModalPresentedHeightPercent(void) {
                                                     action:@selector(tapGestureRecognizerAction:)];
         [dimmingView addGestureRecognizer:tapGestureRecognizer];
 
+#if SNAPSHOT
+        dimmingView.accessibilityIdentifier = @"modal_dimming_view";
+#endif /* SNAPSHOT */
+
         _dimmingView = dimmingView;
     }
     return _dimmingView;

@@ -99,6 +99,13 @@ NS_ASSUME_NONNULL_BEGIN
                           [self.switcher setOn:on animated:animated];
                       }
                   }];
+
+#if SNAPSHOT
+    [self mvvm_observe:DW_KEYPATH(self, cellModel.accessibilityIdentifier)
+                  with:^(typeof(self) self, NSString *value) {
+                      self.accessibilityIdentifier = value;
+                  }];
+#endif /* SNAPSHOT */
 }
 
 - (BOOL)shouldAnimatePressWhenHighlighted {

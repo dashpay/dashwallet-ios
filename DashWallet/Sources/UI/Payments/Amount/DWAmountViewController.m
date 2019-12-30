@@ -43,6 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     [self setupView];
+
+#if SNAPSHOT
+    [(UIBarButtonItem *)self.actionButton setAccessibilityIdentifier:@"amount_send_button"];
+#endif /* SNAPSHOT */
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

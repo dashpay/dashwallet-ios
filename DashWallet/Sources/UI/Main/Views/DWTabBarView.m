@@ -94,6 +94,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             [self addSubview:button];
             [buttons addObject:button];
             _paymentsButton = button;
+
+#if SNAPSHOT
+            button.accessibilityIdentifier = @"tabbar_payments_button";
+#endif /* SNAPSHOT */
         }
 
         {
@@ -104,6 +108,10 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
             [self addSubview:button];
             [buttons addObject:button];
             _othersButton = button;
+
+#if SNAPSHOT
+            button.accessibilityIdentifier = @"tabbar_menu_button";
+#endif /* SNAPSHOT */
         }
 
         _buttons = [buttons copy];

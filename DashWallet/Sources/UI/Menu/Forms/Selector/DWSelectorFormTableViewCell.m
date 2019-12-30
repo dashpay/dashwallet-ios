@@ -163,6 +163,13 @@ static UIImage *_Nullable AccessoryImageForType(DWSelectorFormAccessoryType type
                       }
                       self.titleLabel.textColor = color;
                   }];
+
+#if SNAPSHOT
+    [self mvvm_observe:DW_KEYPATH(self, cellModel.accessibilityIdentifier)
+                  with:^(typeof(self) self, NSString *value) {
+                      self.accessibilityIdentifier = value;
+                  }];
+#endif /* SNAPSHOT */
 }
 
 @end

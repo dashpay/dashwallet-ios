@@ -76,6 +76,12 @@ NS_ASSUME_NONNULL_BEGIN
     id<DWMainMenuItem> menuItem = self.model.items[indexPath.row];
     cell.model = menuItem;
 
+#if SNAPSHOT
+    if (menuItem.type == DWMainMenuItemType_Security) {
+        cell.accessibilityIdentifier = @"menu_security_item";
+    }
+#endif /* SNAPSHOT */
+
     return cell;
 }
 

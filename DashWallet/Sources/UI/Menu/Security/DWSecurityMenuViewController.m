@@ -29,6 +29,10 @@
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 
+#if SNAPSHOT
+#import "DWDemoAdvancedSecurityViewController.h"
+#endif /* SNAPSHOT */
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWSecurityMenuViewController () <DWSetPinViewControllerDelegate, DWSecureWalletDelegate>
@@ -133,6 +137,9 @@ NS_ASSUME_NONNULL_BEGIN
 
             [strongSelf showAdvancedSecurity];
         };
+#if SNAPSHOT
+        cellModel.accessibilityIdentifier = @"menu_security_advanced_item";
+#endif /* SNAPSHOT */
         [items addObject:cellModel];
     }
 
@@ -244,6 +251,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showAdvancedSecurity {
+#if SNAPSHOT
+    DWDemoAdvancedSecurityViewController *controller = [[DWDemoAdvancedSecurityViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
+#else
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     [authenticationManager
               authenticateWithPrompt:nil
@@ -257,6 +268,7 @@ NS_ASSUME_NONNULL_BEGIN
                               DWAdvancedSecurityViewController *controller = [[DWAdvancedSecurityViewController alloc] init];
                               [self.navigationController pushViewController:controller animated:YES];
                           }];
+#endif /* SNAPSHOT */
 }
 
 - (void)biometricSwitchAction:(DWSwitcherFormCellModel *)cellModel {

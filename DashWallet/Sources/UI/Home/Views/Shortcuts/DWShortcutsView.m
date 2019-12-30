@@ -117,6 +117,12 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
     DWShortcutAction *action = self.model.items[indexPath.item];
     cell.model = action;
 
+#if SNAPSHOT
+    if (action.type == DWShortcutActionType_SecureWallet) {
+        cell.accessibilityIdentifier = @"shortcut_secure_wallet";
+    }
+#endif /* SNAPSHOT */
+
     return cell;
 }
 

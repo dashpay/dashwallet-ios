@@ -32,7 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+#if SNAPSHOT
+    // nop
+#else
     self.view.userInteractionEnabled = NO;
+#endif /* SNAPSHOT */
 }
 
 + (Class)mainControllerClass {
@@ -42,7 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Demo Mode
 
 - (BOOL)demoMode {
+#if SNAPSHOT
+    return NO;
+#else
     return YES;
+#endif /* SNAPSHOT */
 }
 
 #pragma mark - DWNavigationFullscreenable
