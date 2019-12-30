@@ -27,12 +27,6 @@ typedef NS_ENUM(NSUInteger, DWTransactionState) {
     DWTransactionState_Confirming,
 };
 
-typedef NS_ENUM(NSUInteger, DWTransactionDetailedDirection) {
-    DWTransactionDetailedDirection_Sent,
-    DWTransactionDetailedDirection_Received,
-    DWTransactionDetailedDirection_Moved,
-};
-
 typedef NS_ENUM(NSUInteger, DWTransactionType) {
     DWTransactionType_Classic,
     DWTransactionType_Reward,
@@ -44,7 +38,6 @@ typedef NS_ENUM(NSUInteger, DWTransactionType) {
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
 
 @property (nonatomic, assign) DWTransactionState state;
-@property (nonatomic, assign) DWTransactionDetailedDirection detailedDirection;
 
 @property (nonatomic, copy) NSArray<NSString *> *outputReceiveAddresses;
 @property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *specialInfoAddresses;

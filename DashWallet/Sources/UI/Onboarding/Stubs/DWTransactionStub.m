@@ -42,7 +42,7 @@ static UInt256 RandomUInt256() {
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 0 * 100000;
         tx.dashAmount = DUFFS * 3.140000000001;
-        tx.detailedDirection = DWTransactionDetailedDirection_Sent;
+        tx.direction = DSTransactionDirection_Sent;
         [stubs addObject:tx];
     }
 
@@ -51,7 +51,7 @@ static UInt256 RandomUInt256() {
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 1 * 100000;
         tx.dashAmount = DUFFS * 2.710000000001;
-        tx.detailedDirection = DWTransactionDetailedDirection_Received;
+        tx.direction = DSTransactionDirection_Received;
         [stubs addObject:tx];
     }
 
@@ -60,7 +60,7 @@ static UInt256 RandomUInt256() {
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 2 * 100000;
         tx.dashAmount = DUFFS * 1.6180000000001;
-        tx.detailedDirection = DWTransactionDetailedDirection_Sent;
+        tx.direction = DSTransactionDirection_Sent;
         [stubs addObject:tx];
     }
 
@@ -69,20 +69,11 @@ static UInt256 RandomUInt256() {
         tx.txHash = RandomUInt256();
         tx.timestamp = [NSDate timeIntervalSince1970] - 3 * 100000;
         tx.dashAmount = DUFFS * 44.0480000000001;
-        tx.detailedDirection = DWTransactionDetailedDirection_Received;
+        tx.direction = DSTransactionDirection_Received;
         [stubs addObject:tx];
     }
 
     return [stubs copy];
-}
-
-- (DSTransactionDirection)direction {
-    if (self.detailedDirection == DWTransactionDetailedDirection_Received) {
-        return DSTransactionDirection_Received;
-    }
-    else {
-        return DSTransactionDirection_Sent;
-    }
 }
 
 @end
