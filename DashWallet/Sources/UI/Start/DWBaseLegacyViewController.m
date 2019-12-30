@@ -90,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (cancelled) {
         alert = [UIAlertController
             alertControllerWithTitle:NSLocalizedString(@"Failed wallet update", nil)
-                             message:NSLocalizedString(@"You must enter your PIN in order to enter dashwallet", nil)
+                             message:NSLocalizedString(@"You must enter your PIN in order to enter Dash Wallet", nil)
                       preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction *exitButton = [UIAlertAction
             actionWithTitle:NSLocalizedString(@"Exit", nil)

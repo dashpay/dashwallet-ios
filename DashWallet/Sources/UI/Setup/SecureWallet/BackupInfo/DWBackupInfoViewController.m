@@ -147,7 +147,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
         _items = @[
             NSLocalizedString(@"This recovery phrase is your access to the funds in this wallet.", nil),
             NSLocalizedString(@"We do not store this recovery phrase.", nil),
-            NSLocalizedString(@"In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.", nil),
+            NSLocalizedString(@"In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.", nil),
         ];
     }
 

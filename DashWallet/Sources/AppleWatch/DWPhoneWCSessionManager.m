@@ -246,16 +246,16 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
         switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
             case BRAWTransactionTypeSent:
-                transactionTypeString = NSLocalizedString(@"Sent", nil);
+                transactionTypeString = NSLocalizedString(@"Sent", @"Sent transaction");
                 break;
             case BRAWTransactionTypeReceive:
-                transactionTypeString = NSLocalizedString(@"Received", nil);
+                transactionTypeString = NSLocalizedString(@"Received", @"Received transaction");
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = NSLocalizedString(@"Moved", nil);
+                transactionTypeString = NSLocalizedString(@"Moved", @"Moved transaction");
                 break;
             case BRAWTransactionTypeInvalid:
-                transactionTypeString = NSLocalizedString(@"Invalid", nil);
+                transactionTypeString = NSLocalizedString(@"Invalid", @"Invalid transaction");
                 break;
         }
         NSString *amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];

@@ -354,7 +354,7 @@ static NSString *sanitizeString(NSString *s) {
                     [errors valueForKeyPath:@"@distinctUnionOfObjects.localizedDescription"];
                 NSString *description = [errorsDescription componentsJoinedByString:@"\n"];
 
-                [self failedWithTitle:NSLocalizedString(@"Couldn't transmit payment to dash network", nil)
+                [self failedWithTitle:NSLocalizedString(@"Couldn't transmit payment to Dash network", nil)
                               message:description];
             }
 
@@ -538,7 +538,7 @@ static NSString *sanitizeString(NSString *s) {
         }
 
         NSString *format =
-            NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@).", nil);
+            NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
         NSString *message = [NSString stringWithFormat:format,
                                                        [priceManager stringForDashAmount:amount],
                                                        [priceManager localCurrencyStringForDashAmount:amount],

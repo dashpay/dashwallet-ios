@@ -55,10 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)titleForCurrentLockTimerTimeInterval {
     if (self.lockTimerTimeInterval.integerValue == 0) {
-        return NSLocalizedString(@"Logout", nil);
+        return NSLocalizedString(@"Logout", @"a verb, Logout Immediately");
     }
     else {
-        return NSLocalizedString(@"Logout after", nil);
+        return NSLocalizedString(@"Logout after", @"Logout after 5 min");
     }
 }
 

@@ -198,7 +198,7 @@
 "Couldn't sweep balance" = "Couldn't sweep balance";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to dash network" = "Couldn't transmit payment to dash network";
+"Couldn't transmit payment to Dash network" = "Couldn't transmit payment to Dash network";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Create a New Wallet";
@@ -213,10 +213,10 @@
 "Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "ENHETENS SÄKERHET ÄR KOMPRIMISSAD\n\"Jailbreakade\" appar kan läsa inuti andra appar (och stjäla dina dash). Radera omedelbart denna plånbok och återskapa den på en annan (säker) enhet.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
 
 /* No comment provided by engineer. */
 "Done" = "Done";
@@ -287,7 +287,7 @@
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Help us improve your experience";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "High" = "High";
 
 /* No comment provided by engineer. */
@@ -300,7 +300,7 @@
 "I wrote it down" = "Jag har skrivit ned den";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
@@ -318,12 +318,12 @@
 "Import private key…" = "Import private key…";
 
 /* No comment provided by engineer. */
-"In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the dash wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
+"In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Insufficient Funds";
 
-/* No comment provided by engineer. */
+/* Invalid transaction */
 "Invalid" = "Invalid";
 
 /* No comment provided by engineer. */
@@ -362,16 +362,16 @@
 /* No comment provided by engineer. */
 "Login with Touch ID" = "Login with Touch ID";
 
-/* No comment provided by engineer. */
+/* a verb, Logout Immediately */
 "Logout" = "Logout";
 
-/* No comment provided by engineer. */
+/* Logout after 5 min */
 "Logout after" = "Logout after";
 
 /* No comment provided by engineer. */
 "Long press to copy ID" = "Long press to copy ID";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Low" = "Low";
 
 /* No comment provided by engineer. */
@@ -389,7 +389,7 @@
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Medium" = "Medium";
 
 /* No comment provided by engineer. */
@@ -398,7 +398,7 @@
 /* No comment provided by engineer. */
 "More Control" = "More Control";
 
-/* No comment provided by engineer. */
+/* Moved transaction */
 "Moved" = "Moved";
 
 /* No comment provided by engineer. */
@@ -420,7 +420,7 @@
 "NFC device" = "NFC device";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+"NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
 
 /* No comment provided by engineer. */
 "No address copied" = "No address copied";
@@ -428,7 +428,7 @@
 /* No comment provided by engineer. */
 "Node IP" = "Node IP";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "None" = "None";
 
 /* No comment provided by engineer. */
@@ -486,9 +486,6 @@
 "Please write it down" = "Please write it down";
 
 /* No comment provided by engineer. */
-"Previously last used at IP address" = "Previously last used at IP address";
-
-/* No comment provided by engineer. */
 "Previously used at IP address" = "Previously used at IP address";
 
 /* No comment provided by engineer. */
@@ -515,7 +512,7 @@
 /* No comment provided by engineer. */
 "Receive" = "Receive";
 
-/* No comment provided by engineer. */
+/* Received transaction */
 "Received" = "Received";
 
 /* No comment provided by engineer. */
@@ -551,7 +548,7 @@
 /* No comment provided by engineer. */
 "Request" = "Request";
 
-/* No comment provided by engineer. */
+/* An action */
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
@@ -621,12 +618,12 @@
 "Send" = "Send";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Skicka %1$@ (%2$@) från denna privata nyckel till din plånbok? Bitcoin-nätverket erhåller en avgift på %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
 
 /* Send by (scanning QR code) */
 "Send by" = "Send by";
 
-/* No comment provided by engineer. */
+/* An action */
 "Send crash report" = "Send crash report";
 
 /* No comment provided by engineer. */
@@ -653,7 +650,7 @@
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Sending...";
 
-/* No comment provided by engineer. */
+/* Sent transaction */
 "Sent" = "Sent";
 
 /* No comment provided by engineer. */
@@ -725,7 +722,7 @@
 /* No comment provided by engineer. */
 "Syncing" = "Syncing";
 
-/* No comment provided by engineer. */
+/* Pay using NFC (should be as short as possible) */
 "Tap" = "Tap";
 
 /* No comment provided by engineer. */
@@ -779,10 +776,10 @@
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";
 
-/* No comment provided by engineer. */
+/* An action */
 "Try again" = "Try again";
 
-/* No comment provided by engineer. */
+/* Alert title */
 "Turn device passcode on" = "Turn device passcode on";
 
 /* No comment provided by engineer. */
@@ -815,7 +812,7 @@
 /* No comment provided by engineer. */
 "Verify" = "Verify";
 
-/* No comment provided by engineer. */
+/* adjective, security level */
 "Very High" = "Very High";
 
 /* No comment provided by engineer. */
@@ -852,10 +849,10 @@
 "We do not store this recovery phrase." = "We do not store this recovery phrase.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dashwallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
 
 /* No comment provided by engineer. */
-"We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dashwallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
 
 /* No comment provided by engineer. */
 "We upgraded" = "We upgraded";
@@ -876,7 +873,7 @@
 "with Dash blockchain" = "with Dash blockchain";
 
 /* No comment provided by engineer. */
-"You are about to sweep funds from another Dash wallet." = "You are about to sweep funds from another Dash wallet.";
+"You are about to sweep funds from another Dash Wallet." = "You are about to sweep funds from another Dash Wallet.";
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.";
@@ -888,10 +885,10 @@
 "You can authenticate with Touch ID for payments below" = "You can authenticate with Touch ID for payments below";
 
 /* No comment provided by engineer. */
-"You must enter your PIN in order to enter dashwallet" = "You must enter your PIN in order to enter dashwallet";
+"You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your UniqueSecretKey so that you can restore your wallet on another device.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "You will also need to log out from the Uphold website using your browser";
