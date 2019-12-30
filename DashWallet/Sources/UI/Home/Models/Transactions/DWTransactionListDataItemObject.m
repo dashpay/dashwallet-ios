@@ -62,7 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
         case DWTransactionState_Locked:
             return NSLocalizedString(@"Locked", nil);
         case DWTransactionState_Processing:
-            return NSLocalizedString(@"Processing", nil);
+            if (self.detailedDirection == DWTransactionDetailedDirection_Sent) {
+                return nil;
+            }
+            else {
+                return NSLocalizedString(@"Processing", nil);
+            }
         case DWTransactionState_Confirming:
             return NSLocalizedString(@"Confirming", nil);
     }
@@ -84,21 +89,32 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)directionText {
-    switch (self.detailedDirection) {
-        case DWTransactionDetailedDirection_Sent:
-            return NSLocalizedString(@"Sent", nil);
-        case DWTransactionDetailedDirection_Received:
-            return NSLocalizedString(@"Received", nil);
-        case DWTransactionDetailedDirection_Moved:
-            return NSLocalizedString(@"Moved", nil);
-        case DWTransactionDetailedDirection_Reward:
+    switch (self.transactionType) {
+        case DWTransactionType_Classic: {
+            switch (self.detailedDirection) {
+                case DWTransactionDetailedDirection_Sent:
+                    if (self.state == DWTransactionState_Processing) {
+                        return NSLocalizedString(@"Sending", nil);
+                    }
+                    else {
+                        return NSLocalizedString(@"Sent", nil);
+                    }
+                case DWTransactionDetailedDirection_Received:
+                    return NSLocalizedString(@"Received", nil);
+                case DWTransactionDetailedDirection_Moved:
+                    return NSLocalizedString(@"Moved", nil);
+            }
+        } break;
+        case DWTransactionType_Reward:
             return NSLocalizedString(@"Reward", nil);
-        case DWTransactionDetailedDirection_MasternodeRegistration:
+        case DWTransactionType_MasternodeRegistration:
             return NSLocalizedString(@"Masternode Registration", nil);
-        case DWTransactionDetailedDirection_MasternodeUpdate:
+        case DWTransactionType_MasternodeUpdate:
             return NSLocalizedString(@"Masternode Update", nil);
-        case DWTransactionDetailedDirection_MasternodeRevoke:
-            return NSLocalizedString(@"Masternode Revoke", nil);
+        case DWTransactionType_MasternodeRevoke:
+            return NSLocalizedString(@"Masternode Revocation", nil);
+        default:
+            break;
     }
 }
 

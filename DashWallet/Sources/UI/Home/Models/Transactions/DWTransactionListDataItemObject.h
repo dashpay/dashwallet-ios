@@ -31,10 +31,14 @@ typedef NS_ENUM(NSUInteger, DWTransactionDetailedDirection) {
     DWTransactionDetailedDirection_Sent,
     DWTransactionDetailedDirection_Received,
     DWTransactionDetailedDirection_Moved,
-    DWTransactionDetailedDirection_Reward,
-    DWTransactionDetailedDirection_MasternodeRegistration,
-    DWTransactionDetailedDirection_MasternodeUpdate,
-    DWTransactionDetailedDirection_MasternodeRevoke,
+};
+
+typedef NS_ENUM(NSUInteger, DWTransactionType) {
+    DWTransactionType_Classic,
+    DWTransactionType_Reward,
+    DWTransactionType_MasternodeRegistration,
+    DWTransactionType_MasternodeUpdate,
+    DWTransactionType_MasternodeRevoke,
 };
 
 @interface DWTransactionListDataItemObject : NSObject <DWTransactionListDataItem>
@@ -47,6 +51,7 @@ typedef NS_ENUM(NSUInteger, DWTransactionDetailedDirection) {
 @property (nonatomic, copy) NSArray<NSString *> *inputSendAddresses;
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
+@property (nonatomic, assign) DWTransactionType transactionType;
 @property (nonatomic, copy) NSString *fiatAmount;
 
 @end
