@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="YEX-OT-hZk">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
-    <customFonts key="customFonts">
-        <array key="Montserrat-Regular.otf">
-            <string>Montserrat-Regular</string>
-        </array>
-    </customFonts>
     <scenes>
         <!--Uphold Auth View Controller-->
         <scene sceneID="Sgi-4q-Mtc">
@@ -24,16 +18,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Bwv-Wn-hrH" userLabel="Info View">
-                                <rect key="frame" x="16" y="84" width="343" height="253.5"/>
+                                <rect key="frame" x="16" y="64" width="343" height="400.5"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold_logo" translatesAutoresizingMaskIntoConstraints="NO" id="g2S-Xe-WLc">
-                                        <rect key="frame" x="121.5" y="0.0" width="100" height="141"/>
+                                        <rect key="frame" x="71.5" y="0.0" width="200" height="282"/>
                                     </imageView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TJj-fr-ZH9" userLabel="Embed View">
-                                        <rect key="frame" x="0.0" y="173" width="343" height="80.5"/>
+                                        <rect key="frame" x="0.0" y="314" width="343" height="86.5"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MdV-BP-3Kw" userLabel="Center View">
-                                                <rect key="frame" x="0.0" y="0.0" width="343" height="80.5"/>
+                                                <rect key="frame" x="3" y="0.0" width="337" height="86.5"/>
                                                 <subviews>
                                                     <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="uphold-buy-dash-icon" translatesAutoresizingMaskIntoConstraints="NO" id="fgh-bY-Bhr">
                                                         <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
@@ -42,12 +36,12 @@
                                                             <constraint firstAttribute="width" constant="30" id="brv-rm-KH9"/>
                                                         </constraints>
                                                     </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
-                                                        <rect key="frame" x="38" y="0.0" width="305" height="30"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Buy Dash with Uphold account" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5q3-QS-3E4">
+                                                        <rect key="frame" x="38" y="0.0" width="299" height="30"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="SXM-ij-QIC"/>
                                                         </constraints>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                         <nil key="highlightedColor"/>
                                                         <attributedString key="userComments">
                                                             <fragment content="#bc-ignore!"/>
@@ -60,19 +54,19 @@
                                                             <constraint firstAttribute="width" constant="30" id="oL6-Zq-yxS"/>
                                                         </constraints>
                                                     </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
-                                                        <rect key="frame" x="38" y="46" width="305" height="34.5"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transfer Dash from your Uphold account to this wallet" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qxt-8C-MKW">
+                                                        <rect key="frame" x="38" y="46" width="299" height="40.5"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="pfN-YJ-oOo"/>
                                                         </constraints>
-                                                        <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
+                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                         <nil key="highlightedColor"/>
                                                         <attributedString key="userComments">
                                                             <fragment content="#bc-ignore!"/>
                                                         </attributedString>
                                                     </label>
                                                 </subviews>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                                 <constraints>
                                                     <constraint firstItem="5q3-QS-3E4" firstAttribute="top" secondItem="MdV-BP-3Kw" secondAttribute="top" id="0Yi-ky-rmR"/>
                                                     <constraint firstItem="qxt-8C-MKW" firstAttribute="top" secondItem="5q3-QS-3E4" secondAttribute="bottom" constant="16" id="Acm-oQ-aRr"/>
@@ -88,7 +82,7 @@
                                                 </constraints>
                                             </view>
                                         </subviews>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                         <constraints>
                                             <constraint firstItem="MdV-BP-3Kw" firstAttribute="centerX" secondItem="TJj-fr-ZH9" secondAttribute="centerX" id="0en-hf-JKY"/>
                                             <constraint firstAttribute="bottom" secondItem="MdV-BP-3Kw" secondAttribute="bottom" id="Ec3-14-SlX"/>
@@ -98,7 +92,7 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                                 <constraints>
                                     <constraint firstItem="g2S-Xe-WLc" firstAttribute="centerX" secondItem="Bwv-Wn-hrH" secondAttribute="centerX" id="6dh-Vs-OES"/>
                                     <constraint firstAttribute="trailing" secondItem="TJj-fr-ZH9" secondAttribute="trailing" id="Hcq-Zp-S4d"/>
@@ -126,7 +120,7 @@
                                 <rect key="frame" x="177.5" y="602" width="20" height="20"/>
                             </activityIndicatorView>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" name="SecondaryBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="Pcb-V0-Dcc" firstAttribute="centerX" secondItem="fmf-gf-ZKx" secondAttribute="centerX" id="5uk-bt-t0w"/>
                             <constraint firstItem="fmf-gf-ZKx" firstAttribute="leading" secondItem="ZjM-hb-2dB" secondAttribute="leading" constant="22" id="88x-YD-aUj"/>
@@ -155,5 +149,8 @@
         <image name="uphold-buy-dash-icon" width="25" height="30"/>
         <image name="uphold-transfer-icon" width="23" height="24"/>
         <image name="uphold_logo" width="100" height="141"/>
+        <namedColor name="SecondaryBackgroundColor">
+            <color red="0.96862745098039216" green="0.96862745098039216" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

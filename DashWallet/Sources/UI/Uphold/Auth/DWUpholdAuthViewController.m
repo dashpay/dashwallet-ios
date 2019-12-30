@@ -23,6 +23,8 @@
 #import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.firstDescriptionLabel.text = NSLocalizedString(@"Buy Dash with Uphold account", nil);
     self.secondDescriptionLabel.text = NSLocalizedString(@"Transfer Dash from your Uphold account to this wallet", nil);
+    self.firstDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
+    self.secondDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
+    self.firstDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    self.secondDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     [self.linkButton setTitle:NSLocalizedString(@"Link Uphold Account", nil) forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
