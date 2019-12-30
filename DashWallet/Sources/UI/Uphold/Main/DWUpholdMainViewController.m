@@ -17,6 +17,8 @@
 
 #import "DWUpholdMainViewController.h"
 
+#import "DWBaseViewController.h"
+#import "DWUIKit.h"
 #import "DWUpholdBuyViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
@@ -32,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) IBOutlet UIButton *retryButton;
 @property (strong, nonatomic) IBOutlet UIButton *transferButton;
 @property (strong, nonatomic) IBOutlet UIButton *buyButton;
+@property (strong, nonatomic) IBOutlet NSLayoutConstraint *contentBottomConstraint;
 
 @property (strong, nonatomic) DWUpholdMainModel *model;
 
@@ -54,23 +57,34 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+
+    [self.retryButton setTitle:NSLocalizedString(@"Retry", nil) forState:UIControlStateNormal];
     [self.transferButton setTitle:NSLocalizedString(@"Transfer from Uphold", nil) forState:UIControlStateNormal];
     [self.buyButton setTitle:NSLocalizedString(@"Buy Dash", nil) forState:UIControlStateNormal];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(upholdClientUserDidLogoutNotification:)
-                                                 name:DWUpholdClientUserDidLogoutNotification
-                                               object:nil];
+    self.contentBottomConstraint.constant = [DWBaseViewController deviceSpecificBottomPadding];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self.model
-                                             selector:@selector(fetch)
-                                                 name:UIApplicationDidBecomeActiveNotification
-                                               object:nil];
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(contentSizeCategoryDidChangeNotification)
+                               name:UIContentSizeCategoryDidChangeNotification
+                             object:nil];
+
+    [notificationCenter addObserver:self
+                           selector:@selector(upholdClientUserDidLogoutNotification:)
+                               name:DWUpholdClientUserDidLogoutNotification
+                             object:nil];
+
+    [notificationCenter addObserver:self.model
+                           selector:@selector(fetch)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
 
     [self mvvm_observe:@"self.model.state"
                   with:^(typeof(self) self, NSNumber *value) {
                       switch (self.model.state) {
-                          case DWUpholdMainModelStateLoading: {
+                          case DWUpholdMainModelState_Loading: {
                               self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
                               [self.balanceActivityIndicator startAnimating];
                               self.balanceLabel.hidden = YES;
@@ -80,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 
                               break;
                           }
-                          case DWUpholdMainModelStateDone: {
+                          case DWUpholdMainModelState_Done: {
                               self.titleLabel.text = NSLocalizedString(@"Your Uphold account Dash balance is", nil);
                               [self.balanceActivityIndicator stopAnimating];
                               self.balanceLabel.hidden = NO;
@@ -91,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 
                               break;
                           }
-                          case DWUpholdMainModelStateFailed: {
+                          case DWUpholdMainModelState_Failed: {
                               self.titleLabel.text = NSLocalizedString(@"Something went wrong", nil);
                               [self.balanceActivityIndicator stopAnimating];
                               self.balanceLabel.hidden = YES;
@@ -127,6 +141,18 @@ NS_ASSUME_NONNULL_BEGIN
 
     UINavigationItem *navigationItem = self.parentViewController.navigationItem;
     [navigationItem setRightBarButtonItem:nil animated:YES];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self reloadAttributedData];
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self reloadAttributedData];
 }
 
 #pragma mark - Actions
@@ -187,6 +213,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark - Private
+
+- (void)reloadAttributedData {
+    if (self.model.state == DWUpholdMainModelState_Done) {
+        self.balanceLabel.attributedText = [self.model availableDashString];
+    }
+}
 
 - (void)openSafariAppWithURL:(NSURL *)url {
     [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];

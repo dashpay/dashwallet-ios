@@ -22,9 +22,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWUpholdMainModelState) {
-    DWUpholdMainModelStateLoading,
-    DWUpholdMainModelStateDone,
-    DWUpholdMainModelStateFailed,
+    DWUpholdMainModelState_Loading,
+    DWUpholdMainModelState_Done,
+    DWUpholdMainModelState_Failed,
 };
 
 @interface DWUpholdMainModel : NSObject

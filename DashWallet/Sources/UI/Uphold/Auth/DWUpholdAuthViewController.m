@@ -20,11 +20,10 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <SafariServices/SafariServices.h>
 
+#import "DWUIKit.h"
 #import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
-#import "UIColor+DWStyle.h"
-#import "UIFont+DWFont.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
