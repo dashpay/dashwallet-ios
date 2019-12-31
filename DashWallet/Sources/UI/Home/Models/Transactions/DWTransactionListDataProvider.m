@@ -73,25 +73,16 @@ NS_ASSUME_NONNULL_BEGIN
         case DSTransactionDirection_Moved: {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Moved;
             break;
         }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Sent;
             break;
         }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
-                dataItem.detailedDirection = DWTransactionDetailedDirection_Reward;
-            }
-            else {
-                dataItem.detailedDirection = DWTransactionDetailedDirection_Received;
-            }
-
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
@@ -99,25 +90,34 @@ NS_ASSUME_NONNULL_BEGIN
             if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};
-                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeRegistration;
             }
             else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                 DSProviderUpdateRegistrarTransaction *updateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{updateRegistrarTransaction.operatorAddress : @1, updateRegistrarTransaction.votingAddress : @2};
-                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeUpdate;
             }
-            else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
-                DSProviderUpdateServiceTransaction *updateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeUpdate;
-            }
-            else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
-                DSProviderUpdateRevocationTransaction *updateServiceTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
-                dataItem.detailedDirection = DWTransactionDetailedDirection_MasternodeRevoke;
-            }
-
             break;
         }
     }
+
+    if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_Reward;
+    }
+    else if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_MasternodeRegistration;
+    }
+    else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_MasternodeUpdate;
+    }
+    else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_MasternodeUpdate;
+    }
+    else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        dataItem.transactionType = DWTransactionType_MasternodeRevoke;
+    }
+    else {
+        dataItem.transactionType = DWTransactionType_Classic;
+    }
+
     if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
         NSMutableSet *inputAddressesWithNulls = [NSMutableSet setWithArray:transaction.inputAddresses];
         [inputAddressesWithNulls removeObject:[NSNull null]];
@@ -134,7 +134,7 @@ NS_ASSUME_NONNULL_BEGIN
     const BOOL processingInstantSend = transaction.hasUnverifiedInstantSendLock;
     const BOOL confirmed = transaction.confirmed;
     uint32_t confirms = (transaction.blockHeight > blockHeight) ? 0 : (blockHeight - transaction.blockHeight) + 1;
-    if (confirms == 0 && ![account transactionIsValid:transaction]) {
+    if ((transactionDirection == DSTransactionDirection_Sent || transactionDirection == DSTransactionDirection_Moved) && confirms == 0 && ![account transactionIsValid:transaction]) {
         dataItem.state = DWTransactionState_Invalid;
     }
     else if (transactionDirection == DSTransactionDirection_Received) {
@@ -156,6 +156,11 @@ NS_ASSUME_NONNULL_BEGIN
             else {
                 dataItem.state = DWTransactionState_Confirming;
             }
+        }
+    }
+    else if (transactionDirection != DSTransactionDirection_NotAccountFunds) {
+        if (!instantSendReceived && confirms == 0 && ![account transactionIsVerified:transaction]) {
+            dataItem.state = DWTransactionState_Processing;
         }
     }
 

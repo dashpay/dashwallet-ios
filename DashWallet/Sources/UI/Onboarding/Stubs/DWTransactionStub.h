@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint64_t dashAmount;
 @property (nonatomic, assign) DSTransactionDirection direction;
-@property (nonatomic, assign) DWTransactionDetailedDirection detailedDirection;
 
 + (NSArray<DWTransactionStub *> *)stubs;
 

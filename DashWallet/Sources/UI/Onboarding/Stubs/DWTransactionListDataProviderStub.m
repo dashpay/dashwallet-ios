@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
     dataItem.direction = transaction.direction;
-    dataItem.detailedDirection = transaction.detailedDirection;
     dataItem.dashAmount = transaction.dashAmount;
     dataItem.fiatAmount = [priceManager localCurrencyStringForDashAmount:dataItem.dashAmount];
 
