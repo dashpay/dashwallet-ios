@@ -73,24 +73,20 @@ NS_ASSUME_NONNULL_BEGIN
         case DSTransactionDirection_Moved: {
             dataItem.dashAmount = [account amountReceivedFromTransactionOnExternalAddresses:transaction];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Moved;
             break;
         }
         case DSTransactionDirection_Sent: {
             dataItem.dashAmount = [account amountSentByTransaction:transaction] - [account amountReceivedFromTransaction:transaction] - transaction.feeUsed;
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Sent;
             break;
         }
         case DSTransactionDirection_Received: {
             dataItem.dashAmount = [account amountReceivedFromTransaction:transaction];
             dataItem.outputReceiveAddresses = [account externalAddressesOfTransaction:transaction];
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Received;
             break;
         }
         case DSTransactionDirection_NotAccountFunds: {
             dataItem.dashAmount = 0;
-            dataItem.detailedDirection = DWTransactionDetailedDirection_Received;
             if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction *registrationTransaction = (DSProviderRegistrationTransaction *)transaction;
                 dataItem.specialInfoAddresses = @{registrationTransaction.ownerAddress : @0, registrationTransaction.operatorAddress : @1, registrationTransaction.votingAddress : @2};

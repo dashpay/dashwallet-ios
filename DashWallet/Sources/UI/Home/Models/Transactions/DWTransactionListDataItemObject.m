@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
         case DWTransactionState_Locked:
             return NSLocalizedString(@"Locked", nil);
         case DWTransactionState_Processing:
-            if (self.detailedDirection == DWTransactionDetailedDirection_Sent) {
+            if (self.direction == DSTransactionDirection_Sent) {
                 return nil;
             }
             else {
@@ -91,20 +91,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)directionText {
     switch (self.transactionType) {
         case DWTransactionType_Classic: {
-            switch (self.detailedDirection) {
-                case DWTransactionDetailedDirection_Sent:
+            switch (self.direction) {
+                case DSTransactionDirection_Sent:
                     if (self.state == DWTransactionState_Processing) {
                         return NSLocalizedString(@"Sending", nil);
                     }
                     else {
                         return NSLocalizedString(@"Sent", nil);
                     }
-                case DWTransactionDetailedDirection_Received:
+                case DSTransactionDirection_Received:
+                case DSTransactionDirection_NotAccountFunds:
                     return NSLocalizedString(@"Received", nil);
-                case DWTransactionDetailedDirection_Moved:
+                case DSTransactionDirection_Moved:
                     return NSLocalizedString(@"Moved", nil);
             }
-        } break;
+        }
         case DWTransactionType_Reward:
             return NSLocalizedString(@"Reward", nil);
         case DWTransactionType_MasternodeRegistration:
@@ -116,6 +117,8 @@ NS_ASSUME_NONNULL_BEGIN
         default:
             break;
     }
+
+    return @"";
 }
 
 @end
