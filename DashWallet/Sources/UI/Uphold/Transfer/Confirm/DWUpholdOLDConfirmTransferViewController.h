@@ -24,17 +24,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
-@class DWUpholdConfirmTransferViewController;
+@class DWUpholdOLDConfirmTransferViewController;
 
 @protocol DWUpholdConfirmTransferViewControllerDelegate <NSObject>
 
-- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller;
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller
+- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdOLDConfirmTransferViewController *)controller;
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdOLDConfirmTransferViewController *)controller
                                          transaction:(DWUpholdTransactionObject *)transaction;
 
 @end
 
-@interface DWUpholdConfirmTransferViewController : KVOUIViewController
+@interface DWUpholdOLDConfirmTransferViewController : KVOUIViewController
 
 @property (readonly, copy, nonatomic) NSArray<DWAlertAction *> *providedActions;
 @property (readonly, strong, nonatomic) DWAlertAction *preferredAction;

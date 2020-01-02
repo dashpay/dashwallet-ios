@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdConfirmTransferViewController.h"
+#import "DWUpholdOLDConfirmTransferViewController.h"
 
 #import "DWUpholdConfirmTransferModel.h"
 
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16)) / 255.0 green:((float)((rgbValue & 0xFF00) >> 8)) / 255.0 blue:((float)(rgbValue & 0xFF)) / 255.0 alpha:1.0]
 
-@interface DWUpholdConfirmTransferViewController ()
+@interface DWUpholdOLDConfirmTransferViewController ()
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *amountTitleLabel;
@@ -40,13 +40,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation DWUpholdConfirmTransferViewController
+@implementation DWUpholdOLDConfirmTransferViewController
 
 @synthesize providedActions = _providedActions;
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"UpholdConfirmTransferStoryboard" bundle:nil];
-    DWUpholdConfirmTransferViewController *controller = [storyboard instantiateInitialViewController];
+    DWUpholdOLDConfirmTransferViewController *controller = [storyboard instantiateInitialViewController];
     controller.model = [[DWUpholdConfirmTransferModel alloc] initWithCard:card transaction:transaction];
 
     return controller;

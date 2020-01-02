@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="rhj-d5-cqP">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="rhj-d5-cqP">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -18,10 +14,10 @@
         </array>
     </customFonts>
     <scenes>
-        <!--Uphold Confirm Transfer View Controller-->
+        <!--UpholdOLD Confirm Transfer View Controller-->
         <scene sceneID="SCx-GK-5Qs">
             <objects>
-                <viewController id="rhj-d5-cqP" customClass="DWUpholdConfirmTransferViewController" sceneMemberID="viewController">
+                <viewController id="rhj-d5-cqP" customClass="DWUpholdOLDConfirmTransferViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Q8s-TY-jbk">
                         <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -30,7 +26,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="270" height="260"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="900" text="Confirm transaction" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="9AH-Eo-SmV">
-                                        <rect key="frame" x="0.0" y="0.0" width="270" height="22"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="270" height="21"/>
                                         <fontDescription key="fontDescription" name="Montserrat-Medium" family="Montserrat" pointSize="18"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -39,10 +35,10 @@
                                         </attributedString>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hlR-Qe-GFi" userLabel="Center View">
-                                        <rect key="frame" x="0.0" y="22" width="270" height="238"/>
+                                        <rect key="frame" x="0.0" y="21" width="270" height="239"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5oh-C9-uVH" userLabel="Content View">
-                                                <rect key="frame" x="0.0" y="36" width="270" height="166.5"/>
+                                                <rect key="frame" x="0.0" y="37" width="270" height="165"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ofB-mG-qeg">
                                                         <rect key="frame" x="0.0" y="0.0" width="270" height="96"/>
@@ -119,7 +115,7 @@
                                                         </constraints>
                                                     </stackView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="Fee will be deducted from requested amount" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="XLe-6W-dow">
-                                                        <rect key="frame" x="0.0" y="104" width="270" height="34.5"/>
+                                                        <rect key="frame" x="0.0" y="104" width="270" height="33"/>
                                                         <fontDescription key="fontDescription" name="Montserrat-Regular" family="Montserrat" pointSize="14"/>
                                                         <color key="textColor" red="0.47058823529411764" green="0.47058823529411764" blue="0.47058823529411764" alpha="1" colorSpace="calibratedRGB"/>
                                                         <nil key="highlightedColor"/>
@@ -128,7 +124,7 @@
                                                         </attributedString>
                                                     </label>
                                                     <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="3QM-J3-4Ue">
-                                                        <rect key="frame" x="125" y="146.5" width="20" height="20"/>
+                                                        <rect key="frame" x="125" y="145" width="20" height="20"/>
                                                     </activityIndicatorView>
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

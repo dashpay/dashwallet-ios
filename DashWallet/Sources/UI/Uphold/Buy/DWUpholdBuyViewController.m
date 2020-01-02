@@ -18,7 +18,7 @@
 #import "DWUpholdBuyViewController.h"
 
 #import "DWUpholdBuyInputViewController.h"
-#import "DWUpholdConfirmTransferViewController.h"
+#import "DWUpholdOLDConfirmTransferViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
 #import "DWUpholdSelectCardViewController.h"
@@ -108,9 +108,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdBuyInputViewController:(DWUpholdBuyInputViewController *)controller
                didProduceTransaction:(DWUpholdTransactionObject *)transaction {
-    DWUpholdConfirmTransferViewController *confirmController =
-        [DWUpholdConfirmTransferViewController controllerWithCard:self.dashCard
-                                                      transaction:transaction];
+    DWUpholdOLDConfirmTransferViewController *confirmController =
+        [DWUpholdOLDConfirmTransferViewController controllerWithCard:self.dashCard
+                                                         transaction:transaction];
     confirmController.delegate = self;
     confirmController.otpProvider = self;
 
@@ -125,11 +125,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWUpholdConfirmTransferViewControllerDelegate
 
-- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller {
+- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdOLDConfirmTransferViewController *)controller {
     [self showInputController];
 }
 
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdOLDConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
     [self.delegate upholdBuyViewControllerDidFinish:self];
 }
 

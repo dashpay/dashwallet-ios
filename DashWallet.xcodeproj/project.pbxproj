@@ -262,7 +262,7 @@
 		2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */; };
 		2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */; };
-		2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5B2230FF4600956D5F /* DWUpholdConfirmTransferViewController.m */; };
+		2A9FFE962230FF4700956D5F /* DWUpholdOLDConfirmTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */; };
 		2A9FFE972230FF4700956D5F /* UpholdConfirmTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */; };
 		2A9FFE982230FF4700956D5F /* UpholdRequestTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */; };
 		2A9FFE992230FF4700956D5F /* DWUpholdRequestTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */; };
@@ -1003,9 +1003,9 @@
 		2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdOTPStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE562230FF4600956D5F /* DWUpholdOTPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOTPViewController.h; sourceTree = "<group>"; };
 		2A9FFE582230FF4600956D5F /* DWUpholdConfirmTransferModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdConfirmTransferModel.h; sourceTree = "<group>"; };
-		2A9FFE592230FF4600956D5F /* DWUpholdConfirmTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdConfirmTransferViewController.h; sourceTree = "<group>"; };
+		2A9FFE592230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOLDConfirmTransferViewController.h; sourceTree = "<group>"; };
 		2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferModel.m; sourceTree = "<group>"; };
-		2A9FFE5B2230FF4600956D5F /* DWUpholdConfirmTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferViewController.m; sourceTree = "<group>"; };
+		2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdOLDConfirmTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdConfirmTransferStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOLDTransferViewController.h; sourceTree = "<group>"; };
 		2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdRequestTransferStoryboard.storyboard; sourceTree = "<group>"; };
@@ -2689,8 +2689,8 @@
 			children = (
 				2A9FFE582230FF4600956D5F /* DWUpholdConfirmTransferModel.h */,
 				2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */,
-				2A9FFE592230FF4600956D5F /* DWUpholdConfirmTransferViewController.h */,
-				2A9FFE5B2230FF4600956D5F /* DWUpholdConfirmTransferViewController.m */,
+				2A9FFE592230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.h */,
+				2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */,
 				2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */,
 			);
 			path = Confirm;
@@ -4077,7 +4077,7 @@
 				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
-				2A9FFE962230FF4700956D5F /* DWUpholdConfirmTransferViewController.m in Sources */,
+				2A9FFE962230FF4700956D5F /* DWUpholdOLDConfirmTransferViewController.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,

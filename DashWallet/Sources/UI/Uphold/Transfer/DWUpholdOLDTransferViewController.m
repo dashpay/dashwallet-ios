@@ -19,7 +19,7 @@
 
 #import <DWAlertController/DWAlertController.h>
 
-#import "DWUpholdConfirmTransferViewController.h"
+#import "DWUpholdOLDConfirmTransferViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
 #import "DWUpholdRequestTransferViewController.h"
@@ -83,9 +83,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdRequestTransferViewController:(DWUpholdRequestTransferViewController *)controller
                       didProduceTransaction:(DWUpholdTransactionObject *)transaction {
-    DWUpholdConfirmTransferViewController *confirmController =
-        [DWUpholdConfirmTransferViewController controllerWithCard:self.card
-                                                      transaction:transaction];
+    DWUpholdOLDConfirmTransferViewController *confirmController =
+        [DWUpholdOLDConfirmTransferViewController controllerWithCard:self.card
+                                                         transaction:transaction];
     confirmController.delegate = self;
     confirmController.otpProvider = self;
 
@@ -100,14 +100,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWUpholdConfirmTransferViewControllerDelegate
 
-- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller {
+- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdOLDConfirmTransferViewController *)controller {
     NSParameterAssert(self.contentController);
     [self performTransitionToContentController:self.requestController animated:YES];
     [self setupActions:self.requestController.providedActions];
     self.preferredAction = self.requestController.preferredAction;
 }
 
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
+- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdOLDConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
     DWUpholdSuccessTransferViewController *successController =
         [DWUpholdSuccessTransferViewController controllerWithTransaction:transaction];
     successController.delegate = self;
