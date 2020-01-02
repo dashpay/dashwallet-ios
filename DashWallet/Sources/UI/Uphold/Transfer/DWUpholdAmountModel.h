@@ -20,10 +20,33 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
+@class DWUpholdAmountModel;
+
+typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
+    DWUpholdRequestTransferModelState_None,
+    DWUpholdRequestTransferModelState_Loading,
+    DWUpholdRequestTransferModelState_Success,
+    DWUpholdRequestTransferModelState_Fail,
+    DWUpholdRequestTransferModelState_FailInsufficientFunds,
+    DWUpholdRequestTransferModelState_OTP,
+};
+
+@protocol DWUpholdAmountModelStateNotifier <NSObject>
+
+- (void)upholdAmountModel:(DWUpholdAmountModel *)model
+           didUpdateState:(DWUpholdRequestTransferModelState)state;
+
+@end
+
 
 @interface DWUpholdAmountModel : DWAmountModel
 
+@property (nullable, nonatomic, weak) id<DWUpholdAmountModelStateNotifier> stateNotifier;
+
 - (void)resetAttributedValues;
+
+- (void)createTransactionWithOTPToken:(nullable NSString *)otpToken;
+- (void)resetCreateTransactionState;
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card;
 

@@ -20,6 +20,8 @@
 #import "DWAmountModel+DWProtected.h"
 #import "DWEnvironment.h"
 #import "DWUpholdCardObject.h"
+#import "DWUpholdClient.h"
+#import "DWUpholdTransactionObject.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
@@ -31,6 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DWUpholdCardObject *card;
 @property (null_resettable, nonatomic, strong) DWAmountDescriptionViewModel *availableDescriptionModel;
 @property (null_resettable, nonatomic, strong) DWAmountDescriptionViewModel *insufficientFundsDescriptionModel;
+
+@property (assign, nonatomic) DWUpholdRequestTransferModelState transferState;
+@property (nullable, weak, nonatomic) DWUpholdCancellationToken createTransactionCancellationToken;
+@property (nullable, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
 @end
 
@@ -46,6 +52,10 @@ NS_ASSUME_NONNULL_END
         self.descriptionModel = self.availableDescriptionModel;
     }
     return self;
+}
+
+- (void)dealloc {
+    [self.createTransactionCancellationToken cancel];
 }
 
 - (BOOL)showsMaxButton {
@@ -100,7 +110,92 @@ NS_ASSUME_NONNULL_END
     _insufficientFundsDescriptionModel = nil;
 }
 
+- (void)createTransactionWithOTPToken:(nullable NSString *)otpToken {
+    NSParameterAssert(self.stateNotifier);
+
+    NSDecimalNumber *amountNumber = [self decimalAmountNumber];
+    NSString *amount = [amountNumber descriptionWithLocale:[NSLocale currentLocale]];
+
+    [self createTransactionForAmount:amount
+            feeWasDeductedFromAmount:NO
+                            otpToken:otpToken];
+}
+
+- (void)resetCreateTransactionState {
+    self.transaction = nil;
+    self.transferState = DWUpholdRequestTransferModelState_None;
+}
+
 #pragma mark - Private
+
+- (void)setTransferState:(DWUpholdRequestTransferModelState)transferState {
+    NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+    _transferState = transferState;
+
+    [self.stateNotifier upholdAmountModel:self didUpdateState:transferState];
+}
+
+- (void)createTransactionForAmount:(NSString *)amount feeWasDeductedFromAmount:(BOOL)feeWasDeductedFromAmount otpToken:(nullable NSString *)otpToken {
+    NSString *receiveAddress = [DWEnvironment sharedInstance].currentAccount.receiveAddress;
+    NSParameterAssert(receiveAddress);
+    if (!receiveAddress) {
+        return;
+    }
+
+    self.transferState = DWUpholdRequestTransferModelState_Loading;
+
+    [self.createTransactionCancellationToken cancel];
+    DWUpholdClient *client = [DWUpholdClient sharedInstance];
+    __weak typeof(self) weakSelf = self;
+    self.createTransactionCancellationToken = [client
+        createTransactionForDashCard:self.card
+                              amount:amount
+                             address:receiveAddress
+                            otpToken:otpToken
+                          completion:^(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired) {
+                              __strong typeof(weakSelf) strongSelf = weakSelf;
+                              if (!strongSelf) {
+                                  return;
+                              }
+
+                              strongSelf.createTransactionCancellationToken = nil;
+
+                              strongSelf.transaction = transaction;
+
+                              if (otpRequired) {
+                                  strongSelf.transferState = DWUpholdRequestTransferModelState_OTP;
+                              }
+                              else {
+                                  if (transaction) {
+                                      DWUpholdCardObject *card = strongSelf.card;
+                                      BOOL notSufficientFunds = ([transaction.total compare:card.available] == NSOrderedDescending);
+                                      if (notSufficientFunds) {
+                                          NSDecimalNumber *amountNumber = [NSDecimalNumber decimalNumberWithString:amount];
+                                          NSDecimalNumber *correctedAmountNumber = [amountNumber decimalNumberBySubtracting:transaction.fee];
+                                          NSString *correctedAmount = [correctedAmountNumber descriptionWithLocale:[NSLocale currentLocale]];
+
+                                          if (correctedAmountNumber.doubleValue <= 0.0) {
+                                              strongSelf.transferState = DWUpholdRequestTransferModelState_FailInsufficientFunds;
+                                          }
+                                          else {
+                                              [strongSelf createTransactionForAmount:correctedAmount
+                                                            feeWasDeductedFromAmount:YES
+                                                                            otpToken:nil];
+                                          }
+
+                                          return;
+                                      }
+
+                                      transaction.feeWasDeductedFromAmount = feeWasDeductedFromAmount;
+
+                                      strongSelf.transferState = DWUpholdRequestTransferModelState_Success;
+                                  }
+                                  else {
+                                      strongSelf.transferState = DWUpholdRequestTransferModelState_Fail;
+                                  }
+                              }
+                          }];
+}
 
 - (BOOL)isSufficientDashForInput {
     NSDecimalNumber *decimalDash = [self decimalAmountNumber];

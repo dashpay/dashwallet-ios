@@ -17,11 +17,15 @@
 
 #import "DWUpholdTransferViewController.h"
 
+#import <DWAlertController/DWAlertController.h>
+
 #import "DWUpholdAmountModel.h"
+#import "DWUpholdOTPProvider.h"
+#import "DWUpholdOTPViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdTransferViewController ()
+@interface DWUpholdTransferViewController () <DWUpholdAmountModelStateNotifier>
 
 @property (readonly, nonatomic, strong) DWUpholdAmountModel *upholdAmountModel;
 
@@ -53,6 +57,8 @@ NS_ASSUME_NONNULL_END
 
     self.title = NSLocalizedString(@"Uphold", nil);
 
+    self.upholdAmountModel.stateNotifier = self;
+
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
                            selector:@selector(contentSizeCategoryDidChangeNotification)
@@ -70,6 +76,109 @@ NS_ASSUME_NONNULL_END
 
 - (void)contentSizeCategoryDidChangeNotification {
     [self.upholdAmountModel resetAttributedValues];
+}
+
+#pragma mark - Actions
+
+- (void)actionButtonAction:(id)sender {
+    BOOL inputValid = [self validateInputAmount];
+    if (!inputValid) {
+        return;
+    }
+
+    [self.upholdAmountModel createTransactionWithOTPToken:nil];
+}
+
+#pragma mark - DWUpholdAmountModelStateNotifier
+
+- (void)upholdAmountModel:(DWUpholdAmountModel *)model
+           didUpdateState:(DWUpholdRequestTransferModelState)state {
+    switch (state) {
+        case DWUpholdRequestTransferModelState_None: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Loading: {
+            self.view.userInteractionEnabled = NO;
+            [self showActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Success: {
+            // TODO: show confirmation
+
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Fail: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+            [self showErrorWithMessage:NSLocalizedString(@"Something went wrong", nil)];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_FailInsufficientFunds: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+            [self showErrorWithMessage:NSLocalizedString(@"Fee is greater than balance", nil)];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_OTP: {
+            __weak typeof(self) weakSelf = self;
+            [self requestOTPWithCompletion:^(NSString *_Nullable otpToken) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                if (otpToken) {
+                    [strongSelf.upholdAmountModel createTransactionWithOTPToken:otpToken];
+                }
+                else {
+                    [strongSelf.upholdAmountModel resetCreateTransactionState];
+                }
+            }];
+
+            break;
+        }
+    }
+}
+
+#pragma mark - DWUpholdOTPProvider
+
+- (void)requestOTPWithCompletion:(void (^)(NSString *_Nullable otpToken))completion {
+    DWUpholdOTPViewController *otpController = [DWUpholdOTPViewController controllerWithCompletion:^(DWUpholdOTPViewController *_Nonnull controller, NSString *_Nullable otpToken) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
+
+        if (completion) {
+            completion(otpToken);
+        }
+    }];
+
+    DWAlertController *alertOTPController = [DWAlertController alertControllerWithContentController:otpController];
+    [alertOTPController setupActions:otpController.providedActions];
+    alertOTPController.preferredAction = otpController.preferredAction;
+
+    [self presentViewController:alertOTPController animated:YES completion:nil];
+}
+
+#pragma mark - Private
+
+- (void)showErrorWithMessage:(NSString *)message {
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
+                                            message:message
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:okAction];
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end
