@@ -362,6 +362,9 @@
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
 		2AF26F44230C2232007F9228 /* DWAmountDescriptionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */; };
+		2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */; };
+		2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */; };
+		2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -1189,6 +1192,13 @@
 		2AF26F40230C1F9D007F9228 /* DWAmountView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountView.m; sourceTree = "<group>"; };
 		2AF26F42230C2232007F9228 /* DWAmountDescriptionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountDescriptionView.h; sourceTree = "<group>"; };
 		2AF26F43230C2232007F9228 /* DWAmountDescriptionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountDescriptionView.m; sourceTree = "<group>"; };
+		2AFCB9A723BDEA1D00FF59A6 /* DWSendAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSendAmountModel.h; sourceTree = "<group>"; };
+		2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSendAmountModel.m; sourceTree = "<group>"; };
+		2AFCB9AA23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountDescriptionViewModel.h; sourceTree = "<group>"; };
+		2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountDescriptionViewModel.m; sourceTree = "<group>"; };
+		2AFCB9AD23BDEC6300FF59A6 /* DWAmountModel+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWAmountModel+DWProtected.h"; sourceTree = "<group>"; };
+		2AFCB9B223BDEEFE00FF59A6 /* DWReceiveAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveAmountModel.h; sourceTree = "<group>"; };
+		2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveAmountModel.m; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2965,12 +2975,15 @@
 		2ACED2A2230E6905003CB498 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				2AFCB9B123BDEEDE00FF59A6 /* Receive */,
+				2AFCB9B023BDEED900FF59A6 /* Send */,
+				2AFCB9AA23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.h */,
+				2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */,
 				2A2120E52213201E009906DC /* DWAmountModel.h */,
 				2A2120E62213201E009906DC /* DWAmountModel.m */,
+				2AFCB9AD23BDEC6300FF59A6 /* DWAmountModel+DWProtected.h */,
 				2A2120EE22147A40009906DC /* DWAmountObject.h */,
 				2A2120EF22147A40009906DC /* DWAmountObject.m */,
-				2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */,
-				2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -3095,6 +3108,26 @@
 				2ADF83FE23633116008459A7 /* SharedAssets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		2AFCB9B023BDEED900FF59A6 /* Send */ = {
+			isa = PBXGroup;
+			children = (
+				2AAEF54122175AC8000FC092 /* DWAmountSendingOptionsModel.h */,
+				2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */,
+				2AFCB9A723BDEA1D00FF59A6 /* DWSendAmountModel.h */,
+				2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */,
+			);
+			path = Send;
+			sourceTree = "<group>";
+		};
+		2AFCB9B123BDEEDE00FF59A6 /* Receive */ = {
+			isa = PBXGroup;
+			children = (
+				2AFCB9B223BDEEFE00FF59A6 /* DWReceiveAmountModel.h */,
+				2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */,
+			);
+			path = Receive;
 			sourceTree = "<group>";
 		};
 		75D5F3B5191EC270004AB296 = {
@@ -3996,6 +4029,7 @@
 				2A7A7BE02348DC1900451078 /* DWToolsMenuViewController.m in Sources */,
 				2A0C69BD23140779001B8C90 /* DWModalInteractiveTransition.m in Sources */,
 				2A11F59721947CBE00E7B563 /* BRTxInputEntity.m in Sources */,
+				2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */,
 				2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */,
 				BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */,
 				2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */,
@@ -4071,6 +4105,7 @@
 				2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
+				2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
@@ -4214,6 +4249,7 @@
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
 				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
+				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
 				2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */,
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,

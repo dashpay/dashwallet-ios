@@ -545,9 +545,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Report an Issue";
 
-/* No comment provided by engineer. */
-"Request" = "Anfrage";
-
 /* An action */
 "Rescan" = "Rescan";
 

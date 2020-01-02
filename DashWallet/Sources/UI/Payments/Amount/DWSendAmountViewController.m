@@ -17,7 +17,7 @@
 
 #import "DWSendAmountViewController.h"
 
-#import "DWAmountModel.h"
+#import "DWSendAmountModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,9 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
                                paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
-    DWAmountModel *model = [[DWAmountModel alloc] initWithInputIntent:DWAmountInputIntent_Send
-                                                   sendingDestination:sendingDestination
-                                                       paymentDetails:paymentDetails];
+    DWSendAmountModel *model = [[DWSendAmountModel alloc] initWithSendingDestination:sendingDestination
+                                                                      paymentDetails:paymentDetails];
 
     DWSendAmountViewController *controller = [[DWSendAmountViewController alloc] initWithModel:model];
 
@@ -65,11 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSAssert(self.model.inputIntent == DWAmountInputIntent_Send, @"Inconsistent state");
+    DWSendAmountModel *sendModel = (DWSendAmountModel *)self.model;
+    NSAssert([sendModel isKindOfClass:DWSendAmountModel.class], @"Inconsistent state");
 
-    const DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
+    const DWAmountSendOptionsModelState state = sendModel.sendingOptions.state;
     const BOOL usedInstantSend = state == DWAmountSendOptionsModelState_ProposeInstantSend &&
-                                 self.model.sendingOptions.useInstantSend;
+                                 sendModel.sendingOptions.useInstantSend;
     [self.delegate sendAmountViewController:self
                              didInputAmount:self.model.amount.plainAmount
                             usedInstantSend:usedInstantSend];

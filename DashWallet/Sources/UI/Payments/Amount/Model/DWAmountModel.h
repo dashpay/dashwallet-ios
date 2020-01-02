@@ -17,29 +17,19 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DWAmountDescriptionViewModel.h"
 #import "DWAmountInputControlSource.h"
 #import "DWAmountObject.h"
-#import "DWAmountSendingOptionsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
-    DWAmountInputIntent_Request,
-    DWAmountInputIntent_Send,
-};
-
 @interface DWAmountModel : NSObject
 
-@property (readonly, assign, nonatomic) DWAmountInputIntent inputIntent;
+@property (readonly, nonatomic, assign) BOOL showsMaxButton;
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
 @property (readonly, assign, nonatomic, getter=isLocked) BOOL locked;
-@property (readonly, copy, nonatomic) NSString *actionButtonTitle;
-@property (nullable, readonly, strong, nonatomic) DWAmountSendingOptionsModel *sendingOptions;
-
-- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
-                 sendingDestination:(nullable NSString *)sendingDestination
-                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails;
+@property (readonly, nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
 
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;
@@ -54,8 +44,6 @@ typedef NS_ENUM(NSUInteger, DWAmountInputIntent) {
 - (NSString *)minimumOutputAmountFormattedString;
 
 - (void)reloadAttributedData;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWReceiveAmountModel.h"
 
-NS_ASSUME_NONNULL_BEGIN
+@implementation DWReceiveAmountModel
 
-@class DWAmountDescriptionViewModel;
-
-@interface DWAmountDescriptionView : UIView
-
-@property (nullable, nonatomic, strong) DWAmountDescriptionViewModel *model;
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
+- (BOOL)showsMaxButton {
+    return NO;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
