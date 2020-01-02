@@ -86,7 +86,7 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
 #pragma mark - Private
 
 - (void)setupView {
-    self.titleLabel.text = NSLocalizedString(@"Scan this to Pay", nil);
+    self.titleLabel.text = NSLocalizedString(@"Scan this to Pay", @"A title of the quick receive screen");
 
     DWReceiveViewController *receiveController = [DWReceiveViewController controllerWithModel:self.receiveModel];
     receiveController.viewType = DWReceiveViewType_QuickReceive;
