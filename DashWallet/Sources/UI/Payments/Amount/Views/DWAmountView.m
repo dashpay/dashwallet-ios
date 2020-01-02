@@ -158,7 +158,8 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       with:^(__typeof(self) self, DWAmountObject *value) {
                           self.textField.text = value.amountInternalRepresentation;
                           self.inputControl.source = value;
-                          [self.delegate amountView:self setActionButtonEnabled:value.plainAmount > 0];
+                          [self.delegate amountView:self
+                              setActionButtonEnabled:self.model.amountIsValidForProceeding];
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.descriptionModel)

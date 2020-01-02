@@ -89,6 +89,9 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Autohide Balance";
 
+/* lowercase, ex. 4 Dash available */
+"available" = "available";
+
 /* No comment provided by engineer. */
 "Available" = "Available";
 
@@ -246,6 +249,9 @@
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
 
 /* No comment provided by engineer. */
+"Enter the amount to transfer" = "Enter the amount to transfer";
+
+/* No comment provided by engineer. */
 "Enter the amount to transfer below" = "Εισάγετε το πόσο για την μεταφορά παρακάτω";
 
 /* No comment provided by engineer. */
@@ -322,6 +328,9 @@
 
 /* No comment provided by engineer. */
 "Insufficient Funds" = "Ανεπαρκή Χρήματα";
+
+/* No comment provided by engineer. */
+"Insufficient funds" = "Insufficient funds";
 
 /* Invalid transaction */
 "Invalid" = "Invalid";
@@ -767,7 +776,7 @@
 /* No comment provided by engineer. */
 "Transaction id" = "Ταυτότητα συναλλαγής";
 
-/* No comment provided by engineer. */
+/* A verb, button title. */
 "Transfer" = "Μεταφορά";
 
 /* No comment provided by engineer. */

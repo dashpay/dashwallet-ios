@@ -23,6 +23,7 @@
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
 #import "DWUpholdOLDTransferViewController.h"
+#import "DWUpholdTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -162,9 +163,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)transferButtonAction:(id)sender {
-    DWUpholdOLDTransferViewController *controller = [DWUpholdOLDTransferViewController controllerWithCard:self.model.dashCard];
-    controller.delegate = self;
-    [self presentViewController:controller animated:YES completion:nil];
+    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:self.model.dashCard];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (IBAction)buyButtonAction:(id)sender {

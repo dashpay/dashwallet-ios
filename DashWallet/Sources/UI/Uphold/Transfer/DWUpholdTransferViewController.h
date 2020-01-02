@@ -15,25 +15,15 @@
 //  limitations under the License.
 //
 
-#import "DWAmountModel.h"
-
-#import "DWAmountInputValidator.h"
+#import "DWAmountViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountModel ()
+@class DWUpholdCardObject;
 
-@property (assign, nonatomic) DWAmountType activeType;
-@property (strong, nonatomic) DWAmountObject *amount;
+@interface DWUpholdTransferViewController : DWAmountViewController
 
-@property (nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
-
-@property (strong, nonatomic) DWAmountInputValidator *dashValidator;
-@property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInDash;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInLocalCurrency;
-
-- (void)updateCurrentAmount NS_REQUIRES_SUPER;
+- (instancetype)initWithCard:(DWUpholdCardObject *)card;
 
 @end
 

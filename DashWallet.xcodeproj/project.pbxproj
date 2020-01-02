@@ -365,6 +365,8 @@
 		2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9A823BDEA1D00FF59A6 /* DWSendAmountModel.m */; };
 		2AFCB9AC23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9AB23BDEB1400FF59A6 /* DWAmountDescriptionViewModel.m */; };
 		2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */; };
+		2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */; };
+		2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -1199,6 +1201,10 @@
 		2AFCB9AD23BDEC6300FF59A6 /* DWAmountModel+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWAmountModel+DWProtected.h"; sourceTree = "<group>"; };
 		2AFCB9B223BDEEFE00FF59A6 /* DWReceiveAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWReceiveAmountModel.h; sourceTree = "<group>"; };
 		2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveAmountModel.m; sourceTree = "<group>"; };
+		2AFCB9B523BDFF3600FF59A6 /* DWUpholdTransferViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdTransferViewController.h; sourceTree = "<group>"; };
+		2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdTransferViewController.m; sourceTree = "<group>"; };
+		2AFCB9B823BDFF5E00FF59A6 /* DWUpholdAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountModel.h; sourceTree = "<group>"; };
+		2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAmountModel.m; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2641,6 +2647,10 @@
 				2A9FFE4C2230FF4600956D5F /* DWUpholdOTPProvider.h */,
 				2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */,
 				2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */,
+				2AFCB9B523BDFF3600FF59A6 /* DWUpholdTransferViewController.h */,
+				2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */,
+				2AFCB9B823BDFF5E00FF59A6 /* DWUpholdAmountModel.h */,
+				2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */,
 			);
 			path = Transfer;
 			sourceTree = "<group>";
@@ -4087,6 +4097,7 @@
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
 				2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */,
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
+				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
 				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
@@ -4150,6 +4161,7 @@
 				2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */,
 				2A74F0012305C40F00C475EB /* DWHomeViewController+DWShortcuts.m in Sources */,
 				2A913E8223A30623006A2A59 /* DWHomeModelStub.m in Sources */,
+				2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */,
 				2A74F0042305C59700C475EB /* DWHomeViewController+DWTxFilter.m in Sources */,
 				2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */,
 				2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */,

@@ -28,15 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL showsMaxButton;
 @property (readonly, assign, nonatomic) DWAmountType activeType;
 @property (readonly, strong, nonatomic) DWAmountObject *amount;
-@property (readonly, assign, nonatomic, getter=isLocked) BOOL locked;
 @property (readonly, nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
 
+- (BOOL)amountIsValidForProceeding NS_REQUIRES_SUPER;
 - (BOOL)isSwapToLocalCurrencyAllowed;
 - (void)swapActiveAmountType;
 
 - (void)updateAmountWithReplacementString:(NSString *)string range:(NSRange)range;
-
-- (void)unlock;
 
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock;
 

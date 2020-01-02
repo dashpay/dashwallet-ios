@@ -34,17 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
         _amountEnteredInDash = amount;
         _amount = amount;
 
-        _locked = ![DSAuthenticationManager sharedInstance].didAuthenticate;
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(walletBalanceDidChangeNotification:)
-                                                     name:DSWalletBalanceDidChangeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationDidEnterBackgroundNotification:)
-                                                     name:UIApplicationDidEnterBackgroundNotification
-                                                   object:nil];
-
         [self updateCurrentAmount];
     }
     return self;
@@ -52,6 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)showsMaxButton {
     return NO;
+}
+
+- (BOOL)amountIsValidForProceeding {
+    return self.amount.plainAmount > 0;
 }
 
 - (BOOL)isSwapToLocalCurrencyAllowed {
@@ -104,16 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateCurrentAmount];
 }
 
-- (void)unlock {
-    const BOOL biometricsEnabled = [DWGlobalOptions sharedInstance].biometricAuthEnabled;
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
-                                        usingBiometricAuthentication:biometricsEnabled
-                                                      alertIfLockout:YES
-                                                          completion:^(BOOL authenticated, BOOL cancelled) {
-                                                              self.locked = !authenticated;
-                                                          }];
-}
-
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
     NSAssert(NO, @"To be overriden");
 }
@@ -159,14 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
         NSParameterAssert(self.amountEnteredInLocalCurrency);
         self.amount = self.amountEnteredInLocalCurrency;
     }
-}
-
-- (void)walletBalanceDidChangeNotification:(NSNotification *)n {
-    self.locked = ![[DSAuthenticationManager sharedInstance] didAuthenticate];
-}
-
-- (void)applicationDidEnterBackgroundNotification:(NSNotification *)n {
-    self.locked = YES;
 }
 
 @end

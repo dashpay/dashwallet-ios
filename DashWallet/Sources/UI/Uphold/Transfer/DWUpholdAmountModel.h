@@ -17,23 +17,18 @@
 
 #import "DWAmountModel.h"
 
-#import "DWAmountInputValidator.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountModel ()
+@class DWUpholdCardObject;
 
-@property (assign, nonatomic) DWAmountType activeType;
-@property (strong, nonatomic) DWAmountObject *amount;
+@interface DWUpholdAmountModel : DWAmountModel
 
-@property (nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
+- (void)resetAttributedValues;
 
-@property (strong, nonatomic) DWAmountInputValidator *dashValidator;
-@property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInDash;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInLocalCurrency;
+- (instancetype)initWithCard:(DWUpholdCardObject *)card;
 
-- (void)updateCurrentAmount NS_REQUIRES_SUPER;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
 
