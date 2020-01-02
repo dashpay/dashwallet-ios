@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdTransferViewController.h"
+#import "DWUpholdOLDTransferViewController.h"
 
 #import <DWAlertController/DWAlertController.h>
 
@@ -27,20 +27,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdTransferViewController () <DWUpholdOTPProvider,
-                                              DWUpholdRequestTransferViewControllerDelegate,
-                                              DWUpholdConfirmTransferViewControllerDelegate,
-                                              DWUpholdSuccessTransferViewControllerDelegate>
+@interface DWUpholdOLDTransferViewController () <DWUpholdOTPProvider,
+                                                 DWUpholdRequestTransferViewControllerDelegate,
+                                                 DWUpholdConfirmTransferViewControllerDelegate,
+                                                 DWUpholdSuccessTransferViewControllerDelegate>
 
 @property (readonly, strong, nonatomic) DWUpholdCardObject *card;
 @property (readonly, strong, nonatomic) DWUpholdRequestTransferViewController *requestController;
 
 @end
 
-@implementation DWUpholdTransferViewController
+@implementation DWUpholdOLDTransferViewController
 
 + (instancetype)controllerWithCard:(DWUpholdCardObject *)card {
-    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:card];
+    DWUpholdOLDTransferViewController *controller = [[DWUpholdOLDTransferViewController alloc] initWithCard:card];
     return controller;
 }
 

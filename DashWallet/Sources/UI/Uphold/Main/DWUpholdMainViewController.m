@@ -22,7 +22,7 @@
 #import "DWUpholdBuyViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
-#import "DWUpholdTransferViewController.h"
+#import "DWUpholdOLDTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -162,7 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)transferButtonAction:(id)sender {
-    DWUpholdTransferViewController *controller = [DWUpholdTransferViewController controllerWithCard:self.model.dashCard];
+    DWUpholdOLDTransferViewController *controller = [DWUpholdOLDTransferViewController controllerWithCard:self.model.dashCard];
     controller.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
 }
@@ -183,12 +183,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller {
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdOLDTransferViewController *)controller {
     [self.model fetch];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdOLDTransferViewController *)controller
                            openTransactionURL:(NSURL *)url {
     [self.model fetch];
     [controller dismissViewControllerAnimated:YES
@@ -197,7 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
                                    }];
 }
 
-- (void)upholdTransferViewControllerDidCancel:(DWUpholdTransferViewController *)controller {
+- (void)upholdTransferViewControllerDidCancel:(DWUpholdOLDTransferViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -225,7 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
-    if ([self.presentedViewController isKindOfClass:DWUpholdTransferViewController.class]) {
+    if ([self.presentedViewController isKindOfClass:DWUpholdOLDTransferViewController.class]) {
         [self dismissViewControllerAnimated:YES completion:nil];
     }
 }

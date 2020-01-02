@@ -269,7 +269,7 @@
 		2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */; };
 		2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
-		2A9FFE9D2230FF4700956D5F /* DWUpholdTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE682230FF4600956D5F /* DWUpholdTransferViewController.m */; };
+		2A9FFE9D2230FF4700956D5F /* DWUpholdOLDTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */; };
 		2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6A2230FF4600956D5F /* DWUpholdViewController.m */; };
 		2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */; };
 		2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */; };
@@ -1001,7 +1001,7 @@
 		2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferModel.m; sourceTree = "<group>"; };
 		2A9FFE5B2230FF4600956D5F /* DWUpholdConfirmTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdConfirmTransferStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFE5D2230FF4600956D5F /* DWUpholdTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdTransferViewController.h; sourceTree = "<group>"; };
+		2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOLDTransferViewController.h; sourceTree = "<group>"; };
 		2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdRequestTransferStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferModel.m; sourceTree = "<group>"; };
@@ -1010,7 +1010,7 @@
 		2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdLogoutTutorialViewController.m; sourceTree = "<group>"; };
 		2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdLogoutTutorialStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdLogoutTutorialViewController.h; sourceTree = "<group>"; };
-		2A9FFE682230FF4600956D5F /* DWUpholdTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdTransferViewController.m; sourceTree = "<group>"; };
+		2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdOLDTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE6A2230FF4600956D5F /* DWUpholdViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdViewController.m; sourceTree = "<group>"; };
 		2A9FFE6B2230FF4600956D5F /* DWUpholdViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdViewController.h; sourceTree = "<group>"; };
 		2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainModel.m; sourceTree = "<group>"; };
@@ -2603,6 +2603,7 @@
 				2A9FFE472230FF4600956D5F /* Auth */,
 				2A9FFE6C2230FF4600956D5F /* Main */,
 				2A9FFE692230FF4600956D5F /* Root */,
+				2A9FFE642230FF4600956D5F /* LogoutTutorial */,
 				2A9FFE4B2230FF4600956D5F /* Transfer */,
 				2A913E6923A15419006A2A59 /* DWUpholdAuthURLNotification.h */,
 				2A913E6A23A15419006A2A59 /* DWUpholdAuthURLNotification.m */,
@@ -2624,13 +2625,12 @@
 			isa = PBXGroup;
 			children = (
 				2A9FFE572230FF4600956D5F /* Confirm */,
-				2A9FFE642230FF4600956D5F /* LogoutTutorial */,
 				2A9FFE532230FF4600956D5F /* OTP */,
 				2A9FFE5E2230FF4600956D5F /* Request */,
 				2A9FFE4D2230FF4600956D5F /* Success */,
 				2A9FFE4C2230FF4600956D5F /* DWUpholdOTPProvider.h */,
-				2A9FFE5D2230FF4600956D5F /* DWUpholdTransferViewController.h */,
-				2A9FFE682230FF4600956D5F /* DWUpholdTransferViewController.m */,
+				2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */,
+				2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */,
 			);
 			path = Transfer;
 			sourceTree = "<group>";
@@ -4231,7 +4231,7 @@
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
-				2A9FFE9D2230FF4700956D5F /* DWUpholdTransferViewController.m in Sources */,
+				2A9FFE9D2230FF4700956D5F /* DWUpholdOLDTransferViewController.m in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
