@@ -21,6 +21,7 @@
 #import <UIKit/UIKit.h>
 
 #import "DWTitleDetailCellModel.h"
+#import "DWTitleDetailItem.h"
 #import "NSAttributedString+DWBuilder.h"
 
 NS_ASSUME_NONNULL_BEGIN

@@ -367,6 +367,7 @@
 		2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B323BDEEFE00FF59A6 /* DWReceiveAmountModel.m */; };
 		2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */; };
 		2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */; };
+		2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -1205,6 +1206,9 @@
 		2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdTransferViewController.m; sourceTree = "<group>"; };
 		2AFCB9B823BDFF5E00FF59A6 /* DWUpholdAmountModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountModel.h; sourceTree = "<group>"; };
 		2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAmountModel.m; sourceTree = "<group>"; };
+		2AFCB9BB23BE38DC00FF59A6 /* DWConfirmPaymentViewProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmPaymentViewProtocol.h; sourceTree = "<group>"; };
+		2AFCB9BC23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmSendPaymentViewController.h; sourceTree = "<group>"; };
+		2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmSendPaymentViewController.m; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -1491,6 +1495,9 @@
 				2A0C69EC2316B7E2001B8C90 /* Views */,
 				2A0C69E92316B344001B8C90 /* DWConfirmPaymentViewController.h */,
 				2A0C69EA2316B344001B8C90 /* DWConfirmPaymentViewController.m */,
+				2AFCB9BB23BE38DC00FF59A6 /* DWConfirmPaymentViewProtocol.h */,
+				2AFCB9BC23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.h */,
+				2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */,
 			);
 			path = Confirm;
 			sourceTree = "<group>";
@@ -4064,6 +4071,7 @@
 				2AD46232232A286000C71557 /* DWLockScreenModel.m in Sources */,
 				2AD1CE8A22DC9C6F00C99324 /* DWVerifySeedPhraseContentView.m in Sources */,
 				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
+				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
 				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,

@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,15 +15,27 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
-
-#import "DWConfirmPaymentViewProtocol.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWConfirmPaymentContentView : UIView
+@protocol DWTitleDetailItem;
+@class UIFont;
+@class UIColor;
 
-@property (nullable, nonatomic, strong) id<DWConfirmPaymentViewProtocol> model;
+@protocol DWConfirmPaymentViewProtocol <NSObject>
+
+- (uint64_t)amountToDisplay;
+- (nullable id<DWTitleDetailItem>)generalInfo;
+
+// Attributed data
+- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
+- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+
+// Actions
+
+- (BOOL)copyAddressToPasteboard;
 
 @end
 
