@@ -262,33 +262,20 @@
 		2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */; };
 		2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */; };
-		2A9FFE962230FF4700956D5F /* DWUpholdOLDConfirmTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */; };
-		2A9FFE972230FF4700956D5F /* UpholdConfirmTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */; };
 		2A9FFE982230FF4700956D5F /* UpholdRequestTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */; };
 		2A9FFE992230FF4700956D5F /* DWUpholdRequestTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */; };
 		2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */; };
 		2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
-		2A9FFE9D2230FF4700956D5F /* DWUpholdOLDTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */; };
 		2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6A2230FF4600956D5F /* DWUpholdViewController.m */; };
 		2A9FFE9F2230FF4700956D5F /* DWUpholdMainModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */; };
 		2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */; };
 		2A9FFEA12230FF4700956D5F /* DWUpholdMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */; };
 		2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */; };
-		2A9FFF1A2233E56E00956D5F /* DWUpholdCardTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF082233E56E00956D5F /* DWUpholdCardTableViewCell.m */; };
-		2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF0A2233E56E00956D5F /* DWUpholdSelectCardViewController.m */; };
-		2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF0B2233E56E00956D5F /* DWUpholdCardCellModel.m */; };
-		2A9FFF1D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF0D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard */; };
-		2A9FFF1E2233E56E00956D5F /* DWUpholdSelectCardModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF0E2233E56E00956D5F /* DWUpholdSelectCardModel.m */; };
-		2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */; };
-		2A9FFF202233E56E00956D5F /* DWUpholdBuyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */; };
-		2A9FFF222233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */; };
-		2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */; };
 		2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */; };
 		2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
 		2A9FFF2F223427AC00956D5F /* DWAmountInputControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */; };
 		2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */; };
-		2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */; };
 		2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AA08533237D6CF500797F95 /* CloudKit.framework */; };
 		2AAEF5402216BE77000FC092 /* DWAmountSendingOptionsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF53F2216BE77000FC092 /* DWAmountSendingOptionsModel.m */; };
 		2AAEF5432217EDDB000FC092 /* DWAmountObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AAEF5422217EDDB000FC092 /* DWAmountObjectTests.m */; };
@@ -368,6 +355,8 @@
 		2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */; };
 		2AFCB9BA23BDFF5E00FF59A6 /* DWUpholdAmountModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */; };
 		2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */; };
+		2AFCB9C123BE766D00FF59A6 /* DWUpholdConfirmViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9C023BE766D00FF59A6 /* DWUpholdConfirmViewController.m */; };
+		2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */; };
 		435AD52C799FC0B38E732134 /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07283055DE20FE578E399BE7 /* libPods-WatchApp.a */; };
 		754119E01CDA93FF0042DC51 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE12BE61B2DEE7F00895CC5 /* NotificationCenter.framework */; };
 		757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
@@ -1003,11 +992,7 @@
 		2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdOTPStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE562230FF4600956D5F /* DWUpholdOTPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOTPViewController.h; sourceTree = "<group>"; };
 		2A9FFE582230FF4600956D5F /* DWUpholdConfirmTransferModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdConfirmTransferModel.h; sourceTree = "<group>"; };
-		2A9FFE592230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOLDConfirmTransferViewController.h; sourceTree = "<group>"; };
 		2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferModel.m; sourceTree = "<group>"; };
-		2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdOLDConfirmTransferViewController.m; sourceTree = "<group>"; };
-		2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdConfirmTransferStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOLDTransferViewController.h; sourceTree = "<group>"; };
 		2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdRequestTransferStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferModel.m; sourceTree = "<group>"; };
@@ -1016,7 +1001,6 @@
 		2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdLogoutTutorialViewController.m; sourceTree = "<group>"; };
 		2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdLogoutTutorialStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdLogoutTutorialViewController.h; sourceTree = "<group>"; };
-		2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdOLDTransferViewController.m; sourceTree = "<group>"; };
 		2A9FFE6A2230FF4600956D5F /* DWUpholdViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdViewController.m; sourceTree = "<group>"; };
 		2A9FFE6B2230FF4600956D5F /* DWUpholdViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdViewController.h; sourceTree = "<group>"; };
 		2A9FFE6D2230FF4600956D5F /* DWUpholdMainModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainModel.m; sourceTree = "<group>"; };
@@ -1024,35 +1008,17 @@
 		2A9FFE6F2230FF4600956D5F /* DWUpholdMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainViewController.h; sourceTree = "<group>"; };
 		2A9FFE702230FF4600956D5F /* DWUpholdMainModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainModel.h; sourceTree = "<group>"; };
 		2A9FFE712230FF4600956D5F /* DWUpholdMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainViewController.m; sourceTree = "<group>"; };
-		2A9FFF032233E56E00956D5F /* DWUpholdBuyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyViewController.h; sourceTree = "<group>"; };
-		2A9FFF052233E56E00956D5F /* DWUpholdCardCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCardCellModel.h; sourceTree = "<group>"; };
-		2A9FFF062233E56E00956D5F /* DWUpholdSelectCardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSelectCardViewController.h; sourceTree = "<group>"; };
 		2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicTableView.m; sourceTree = "<group>"; };
-		2A9FFF082233E56E00956D5F /* DWUpholdCardTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdCardTableViewCell.m; sourceTree = "<group>"; };
-		2A9FFF0A2233E56E00956D5F /* DWUpholdSelectCardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdSelectCardViewController.m; sourceTree = "<group>"; };
-		2A9FFF0B2233E56E00956D5F /* DWUpholdCardCellModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdCardCellModel.m; sourceTree = "<group>"; };
 		2A9FFF0C2233E56E00956D5F /* DWIntrinsicTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicTableView.h; sourceTree = "<group>"; };
-		2A9FFF0D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdSelectCardStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFF0E2233E56E00956D5F /* DWUpholdSelectCardModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdSelectCardModel.m; sourceTree = "<group>"; };
-		2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyViewController.m; sourceTree = "<group>"; };
-		2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyInputViewController.m; sourceTree = "<group>"; };
-		2A9FFF132233E56E00956D5F /* DWUpholdBuyInputModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyInputModel.h; sourceTree = "<group>"; };
-		2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdBuyInputStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFF162233E56E00956D5F /* DWUpholdBuyInputViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdBuyInputViewController.h; sourceTree = "<group>"; };
-		2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdBuyInputModel.m; sourceTree = "<group>"; };
 		2A9FFF242233E5CF00956D5F /* DWDecimalInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDecimalInputValidator.h; sourceTree = "<group>"; };
 		2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDecimalInputValidator.m; sourceTree = "<group>"; };
 		2A9FFF262233E5D000956D5F /* DWInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInputValidator.h; sourceTree = "<group>"; };
 		2A9FFF282233E60F00956D5F /* DWUpholdAccountObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdAccountObject.h; sourceTree = "<group>"; };
 		2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAccountObject.m; sourceTree = "<group>"; };
-		2A9FFF2B223419A900956D5F /* DWUpholdSelectCardModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSelectCardModel.h; sourceTree = "<group>"; };
-		2A9FFF2C223419F600956D5F /* DWUpholdCardTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCardTableViewCell.h; sourceTree = "<group>"; };
 		2A9FFF2D223427AC00956D5F /* DWAmountInputControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControl.h; sourceTree = "<group>"; };
 		2A9FFF2E223427AC00956D5F /* DWAmountInputControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputControl.m; sourceTree = "<group>"; };
 		2A9FFF3022350CE500956D5F /* DWAmountInputControl.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWAmountInputControl.xib; sourceTree = "<group>"; };
 		2A9FFF352235570500956D5F /* DWAmountInputControlSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputControlSource.h; sourceTree = "<group>"; };
-		2A9FFF392235811400956D5F /* DWUpholdAmountObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdAmountObject.h; sourceTree = "<group>"; };
-		2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAmountObject.m; sourceTree = "<group>"; };
 		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -1209,6 +1175,10 @@
 		2AFCB9BB23BE38DC00FF59A6 /* DWConfirmPaymentViewProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmPaymentViewProtocol.h; sourceTree = "<group>"; };
 		2AFCB9BC23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmSendPaymentViewController.h; sourceTree = "<group>"; };
 		2AFCB9BD23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmSendPaymentViewController.m; sourceTree = "<group>"; };
+		2AFCB9BF23BE766D00FF59A6 /* DWUpholdConfirmViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUpholdConfirmViewController.h; sourceTree = "<group>"; };
+		2AFCB9C023BE766D00FF59A6 /* DWUpholdConfirmViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmViewController.m; sourceTree = "<group>"; };
+		2AFCB9C223BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWUpholdTransactionObject+DWView.h"; sourceTree = "<group>"; };
+		2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DWUpholdTransactionObject+DWView.m"; sourceTree = "<group>"; };
 		3410FBA3C9ECBF291385B203 /* Pods-dashwallet no watch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet no watch.release.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet no watch/Pods-dashwallet no watch.release.xcconfig"; sourceTree = "<group>"; };
 		362213F26B43E7CB81B2FCE2 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Pods/Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
 		556B5EBEBAEA571D74FF69A3 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Pods/Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -2622,7 +2592,6 @@
 		2A9FFE462230FF4600956D5F /* Uphold */ = {
 			isa = PBXGroup;
 			children = (
-				2A9FFF022233E56E00956D5F /* Buy */,
 				2A9FFE472230FF4600956D5F /* Auth */,
 				2A9FFE6C2230FF4600956D5F /* Main */,
 				2A9FFE692230FF4600956D5F /* Root */,
@@ -2652,8 +2621,6 @@
 				2A9FFE5E2230FF4600956D5F /* Request */,
 				2A9FFE4D2230FF4600956D5F /* Success */,
 				2A9FFE4C2230FF4600956D5F /* DWUpholdOTPProvider.h */,
-				2A9FFE5D2230FF4600956D5F /* DWUpholdOLDTransferViewController.h */,
-				2A9FFE682230FF4600956D5F /* DWUpholdOLDTransferViewController.m */,
 				2AFCB9B523BDFF3600FF59A6 /* DWUpholdTransferViewController.h */,
 				2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */,
 				2AFCB9B823BDFF5E00FF59A6 /* DWUpholdAmountModel.h */,
@@ -2689,9 +2656,10 @@
 			children = (
 				2A9FFE582230FF4600956D5F /* DWUpholdConfirmTransferModel.h */,
 				2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */,
-				2A9FFE592230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.h */,
-				2A9FFE5B2230FF4600956D5F /* DWUpholdOLDConfirmTransferViewController.m */,
-				2A9FFE5C2230FF4600956D5F /* UpholdConfirmTransferStoryboard.storyboard */,
+				2AFCB9BF23BE766D00FF59A6 /* DWUpholdConfirmViewController.h */,
+				2AFCB9C023BE766D00FF59A6 /* DWUpholdConfirmViewController.m */,
+				2AFCB9C223BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.h */,
+				2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */,
 			);
 			path = Confirm;
 			sourceTree = "<group>";
@@ -2737,47 +2705,6 @@
 				2A9FFE6E2230FF4600956D5F /* UpholdMainStoryboard.storyboard */,
 			);
 			path = Main;
-			sourceTree = "<group>";
-		};
-		2A9FFF022233E56E00956D5F /* Buy */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFF112233E56E00956D5F /* BuyInput */,
-				2A9FFF042233E56E00956D5F /* SelectCard */,
-				2A9FFF032233E56E00956D5F /* DWUpholdBuyViewController.h */,
-				2A9FFF102233E56E00956D5F /* DWUpholdBuyViewController.m */,
-			);
-			path = Buy;
-			sourceTree = "<group>";
-		};
-		2A9FFF042233E56E00956D5F /* SelectCard */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFF052233E56E00956D5F /* DWUpholdCardCellModel.h */,
-				2A9FFF0B2233E56E00956D5F /* DWUpholdCardCellModel.m */,
-				2A9FFF2C223419F600956D5F /* DWUpholdCardTableViewCell.h */,
-				2A9FFF082233E56E00956D5F /* DWUpholdCardTableViewCell.m */,
-				2A9FFF2B223419A900956D5F /* DWUpholdSelectCardModel.h */,
-				2A9FFF0E2233E56E00956D5F /* DWUpholdSelectCardModel.m */,
-				2A9FFF062233E56E00956D5F /* DWUpholdSelectCardViewController.h */,
-				2A9FFF0A2233E56E00956D5F /* DWUpholdSelectCardViewController.m */,
-				2A9FFF0D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard */,
-			);
-			path = SelectCard;
-			sourceTree = "<group>";
-		};
-		2A9FFF112233E56E00956D5F /* BuyInput */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFF132233E56E00956D5F /* DWUpholdBuyInputModel.h */,
-				2A9FFF172233E56E00956D5F /* DWUpholdBuyInputModel.m */,
-				2A9FFF162233E56E00956D5F /* DWUpholdBuyInputViewController.h */,
-				2A9FFF122233E56E00956D5F /* DWUpholdBuyInputViewController.m */,
-				2A9FFF152233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard */,
-				2A9FFF392235811400956D5F /* DWUpholdAmountObject.h */,
-				2A9FFF3A2235811400956D5F /* DWUpholdAmountObject.m */,
-			);
-			path = BuyInput;
 			sourceTree = "<group>";
 		};
 		2A9FFF3622357F2900956D5F /* Validation */ = {
@@ -3603,7 +3530,6 @@
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				2A2CD71022F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib in Resources */,
-				2A9FFE972230FF4700956D5F /* UpholdConfirmTransferStoryboard.storyboard in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
@@ -3613,7 +3539,6 @@
 				FBFC2EC521137A7A00D20C57 /* Montserrat-Regular.otf in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
-				2A9FFF1D2233E56E00956D5F /* UpholdSelectCardStoryboard.storyboard in Resources */,
 				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
 				2AB8CDE1220DC9D100A3D1DB /* AmountStoryboard.storyboard in Resources */,
 				2A4E531A22EA382B00E5168A /* DWSyncView.xib in Resources */,
@@ -3641,7 +3566,6 @@
 				2A7A7BBF2347950700451078 /* DWMainMenuTableViewCell.xib in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
-				2A9FFF222233E56E00956D5F /* UpholdBuyInputStoryboard.storyboard in Resources */,
 				2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */,
 				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 			);
@@ -4074,10 +3998,8 @@
 				2AFCB9BE23BE3C0800FF59A6 /* DWConfirmSendPaymentViewController.m in Sources */,
 				2AC92C8A1FEB0B8B008CAEE0 /* DWQRScanModel.m in Sources */,
 				2A3DC87123972331004B3DBA /* DWHomeViewController+DWImportPrivateKeyDelegateImpl.m in Sources */,
-				2A9FFF3B2235811400956D5F /* DWUpholdAmountObject.m in Sources */,
 				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
-				2A9FFE962230FF4700956D5F /* DWUpholdOLDConfirmTransferViewController.m in Sources */,
 				2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */,
 				2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
@@ -4107,10 +4029,8 @@
 				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				2AFCB9B723BDFF3600FF59A6 /* DWUpholdTransferViewController.m in Sources */,
 				2A0C69EF2316B7F5001B8C90 /* DWConfirmPaymentContentView.m in Sources */,
-				2A9FFF1B2233E56E00956D5F /* DWUpholdSelectCardViewController.m in Sources */,
 				2A1B7DBC2326187D00BA8C6A /* DWTxDetailFullscreenViewController.m in Sources */,
 				2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */,
-				2A9FFF1A2233E56E00956D5F /* DWUpholdCardTableViewCell.m in Sources */,
 				2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */,
 				2A8B9E4D22FEBF7A00FF8653 /* DWProgressAnimator.mm in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
@@ -4139,16 +4059,15 @@
 				2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */,
 				FB2E5537218BA161003A1B7C /* DWVersionManager.m in Sources */,
 				2A0C69C623142AA4001B8C90 /* DWModalPresentationController.m in Sources */,
-				2A9FFF1C2233E56E00956D5F /* DWUpholdCardCellModel.m in Sources */,
 				2ACCD86823195A3600A96B62 /* DWAmountPreviewView.m in Sources */,
 				2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */,
 				2A307CB622E7006600A18347 /* DWBalancePayReceiveButtonsView.m in Sources */,
 				2AB8CDE4220DCA7D00A3D1DB /* DWNumberKeyboard.m in Sources */,
 				2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */,
 				2A7A7BE42348E85400451078 /* DWActionButton.m in Sources */,
+				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
-				2A9FFF202233E56E00956D5F /* DWUpholdBuyInputViewController.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
 				2A9FFE992230FF4700956D5F /* DWUpholdRequestTransferViewController.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
@@ -4220,6 +4139,7 @@
 				2A74EFED2305318000C475EB /* DWRecoverViewController.m in Sources */,
 				2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */,
 				2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */,
+				2AFCB9C123BE766D00FF59A6 /* DWUpholdConfirmViewController.m in Sources */,
 				2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */,
 				2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
@@ -4228,7 +4148,6 @@
 				2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */,
 				2A6B8E542387056200A2E5FA /* DWBalanceDisplayOptions.m in Sources */,
 				2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */,
-				2A9FFF1F2233E56E00956D5F /* DWUpholdBuyViewController.m in Sources */,
 				2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */,
 				2A4E531822EA381F00E5168A /* DWSyncView.m in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
@@ -4239,9 +4158,7 @@
 				2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */,
 				2A11F59921947CBE00E7B563 /* BRAddressEntity.m in Sources */,
 				2A74F0072305C60B00C475EB /* DWHomeViewController+DWJailbreakCheck.m in Sources */,
-				2A9FFF232233E56E00956D5F /* DWUpholdBuyInputModel.m in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
-				2A9FFF1E2233E56E00956D5F /* DWUpholdSelectCardModel.m in Sources */,
 				2A7A7BC3234797FC00451078 /* DWMainMenuModel.m in Sources */,
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */,
@@ -4287,7 +4204,6 @@
 				2A7A7BE72348E9AA00451078 /* DWBorderedActionButton.m in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
 				2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */,
-				2A9FFE9D2230FF4700956D5F /* DWUpholdOLDTransferViewController.m in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,

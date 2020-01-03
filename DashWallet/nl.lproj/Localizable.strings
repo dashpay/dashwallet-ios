@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount" = "Bedrag";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Ontvangen bedrag";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Bevestig pin";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Bevestig transactie";
-
-/* No comment provided by engineer. */
 "Confirming" = "Aan het bevestigen";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "De transactievergoeding is hoger dan het saldo";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Transactiekosten worden van het gevraagde bedrag afgetrokken";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";

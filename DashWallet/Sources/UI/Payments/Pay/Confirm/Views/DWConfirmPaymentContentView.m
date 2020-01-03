@@ -127,7 +127,9 @@ NS_ASSUME_NONNULL_BEGIN
     UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     UIColor *color = [UIColor dw_secondaryTextColor];
 
-    self.addressRowView.model = [self.model addressWithFont:font];
+    id<DWTitleDetailItem> address = [self.model addressWithFont:font tintColor:color];
+    self.addressRowView.model = address;
+    self.addressRowView.hidden = (address == nil);
 
     id<DWTitleDetailItem> fee = [self.model feeWithFont:font tintColor:color];
     self.feeRowView.model = fee;

@@ -54,11 +54,11 @@ static NSString *sanitizeString(NSString *s) {
     return info;
 }
 
-- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font {
+- (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
     NSString *title = NSLocalizedString(@"Send to", nil);
 
     NSString *address = self.address;
-    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:self.address withFont:font];
+    NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
     DWTitleDetailCellModel *model =
         [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_TruncatedSingleLine
                                                 title:title

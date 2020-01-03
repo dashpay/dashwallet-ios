@@ -20,6 +20,7 @@
 #import <DWAlertController/DWAlertController.h>
 
 #import "DWUpholdAmountModel.h"
+#import "DWUpholdConfirmViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
 
@@ -107,7 +108,8 @@ NS_ASSUME_NONNULL_END
             break;
         }
         case DWUpholdRequestTransferModelState_Success: {
-            // TODO: show confirmation
+            DWUpholdConfirmViewController *controller = [[DWUpholdConfirmViewController alloc] initWithModel:[self.upholdAmountModel transferModel]];
+            [self presentViewController:controller animated:YES completion:nil];
 
             self.view.userInteractionEnabled = YES;
             [self hideActivityIndicator];

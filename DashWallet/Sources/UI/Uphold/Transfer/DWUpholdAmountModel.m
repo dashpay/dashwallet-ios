@@ -21,6 +21,7 @@
 #import "DWEnvironment.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdClient.h"
+#import "DWUpholdConfirmTransferModel.h"
 #import "DWUpholdTransactionObject.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
@@ -126,10 +127,25 @@ NS_ASSUME_NONNULL_END
     self.transferState = DWUpholdRequestTransferModelState_None;
 }
 
+- (DWUpholdConfirmTransferModel *)transferModel {
+    NSAssert(self.transferState == DWUpholdRequestTransferModelState_Success, @"Inconsistent state");
+    if (!self.transaction) {
+        return nil;
+    }
+
+    DWUpholdConfirmTransferModel *model = [[DWUpholdConfirmTransferModel alloc] initWithCard:self.card transaction:self.transaction];
+    return model;
+}
+
 #pragma mark - Private
 
 - (void)setTransferState:(DWUpholdRequestTransferModelState)transferState {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
+
+    if (_transferState == transferState) {
+        return;
+    }
+
     _transferState = transferState;
 
     [self.stateNotifier upholdAmountModel:self didUpdateState:transferState];

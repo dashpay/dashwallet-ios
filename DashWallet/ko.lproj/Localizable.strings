@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount" = "금액";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Amount Received";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "거래 확인";
-
-/* No comment provided by engineer. */
 "Confirming" = "Confirming";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "수수료가 잔고보다 큽니다";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "요청된 금액에서 수수료가 차감됩니다";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";

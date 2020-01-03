@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount" = "Kwota";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Ilość otrzymana";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Potwierdź kod PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Potwierdź transakcję";
-
-/* No comment provided by engineer. */
 "Confirming" = "Potwierdzam";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "Opłata jest wyższa niż saldo";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Opłata zostanie pobrana z żądanej kwoty";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtruj Transakcje";

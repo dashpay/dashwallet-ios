@@ -20,8 +20,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
+@class DWUpholdTransferViewController;
+
+@protocol DWUpholdTransferViewControllerDelegate <NSObject>
+
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller;
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
+                           openTransactionURL:(NSURL *)url;
+
+@end
 
 @interface DWUpholdTransferViewController : DWAmountViewController
+
+@property (nullable, nonatomic, weak) id<DWUpholdTransferViewControllerDelegate> delegate;
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card;
 

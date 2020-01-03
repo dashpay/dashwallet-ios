@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount" = "จำนวน";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Amount Received";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "ยืนยันธุรกรรม";
-
-/* No comment provided by engineer. */
 "Confirming" = "Confirming";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "ค่าธรรมเนียมมากกว่ายอดคงเหลือ";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";

@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdCardObject;
 @class DWUpholdAmountModel;
+@class DWUpholdConfirmTransferModel;
 
 typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
     DWUpholdRequestTransferModelState_None,
@@ -47,6 +48,8 @@ typedef NS_ENUM(NSUInteger, DWUpholdRequestTransferModelState) {
 
 - (void)createTransactionWithOTPToken:(nullable NSString *)otpToken;
 - (void)resetCreateTransactionState;
+
+- (DWUpholdConfirmTransferModel *)transferModel;
 
 - (instancetype)initWithCard:(DWUpholdCardObject *)card;
 

@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Permita acceso al Touch ID en Configuraciones";
 
 /* No comment provided by engineer. */
-"Amount" = "Monto";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Monto Recibido";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Confirmar PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Confirmar transacción";
-
-/* No comment provided by engineer. */
 "Confirming" = "Confirmando";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "La tarifa es mayor que el saldo";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "La tarifa se deducirá de la cantidad solicitada";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrar Transacciones";

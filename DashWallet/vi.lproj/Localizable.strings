@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
 
 /* No comment provided by engineer. */
-"Amount" = "Số tiền";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Amount Received";
 
 /* No comment provided by engineer. */
@@ -165,9 +162,6 @@
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"Confirm transaction" = "Xác thực giao dịch";
-
-/* No comment provided by engineer. */
 "Confirming" = "Confirming";
 
 /* No comment provided by engineer. */
@@ -273,7 +267,7 @@
 "Fee is greater than balance" = "Phí gửi lớn hơn số dư";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "Phí sẽ được trừ từ khoản tiền được nhận";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";

@@ -19,15 +19,13 @@
 
 #import "DWBaseViewController.h"
 #import "DWUIKit.h"
-#import "DWUpholdBuyViewController.h"
 #import "DWUpholdClient.h"
 #import "DWUpholdMainModel.h"
-#import "DWUpholdOLDTransferViewController.h"
 #import "DWUpholdTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate, DWUpholdBuyViewControllerDelegate>
+@interface DWUpholdMainViewController () <DWUpholdTransferViewControllerDelegate>
 
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
@@ -164,6 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)transferButtonAction:(id)sender {
     DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:self.model.dashCard];
+    controller.delegate = self;
     [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -183,33 +182,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdOLDTransferViewController *)controller {
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller {
     [self.model fetch];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdOLDTransferViewController *)controller
+- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
                            openTransactionURL:(NSURL *)url {
     [self.model fetch];
     [controller dismissViewControllerAnimated:YES
                                    completion:^{
                                        [self openSafariAppWithURL:url];
                                    }];
-}
-
-- (void)upholdTransferViewControllerDidCancel:(DWUpholdOLDTransferViewController *)controller {
-    [controller dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - DWUpholdBuyViewControllerDelegate
-
-- (void)upholdBuyViewControllerDidCancel:(DWUpholdBuyViewController *)controller {
-    [controller dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)upholdBuyViewControllerDidFinish:(DWUpholdBuyViewController *)controller {
-    [self.model fetch];
-    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private
@@ -225,8 +209,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
-    if ([self.presentedViewController isKindOfClass:DWUpholdOLDTransferViewController.class]) {
-        [self dismissViewControllerAnimated:YES completion:nil];
+    if ([self.presentedViewController isKindOfClass:DWUpholdTransferViewController.class]) {
+        // TODO: fix me
+
+        [self.navigationController popToRootViewControllerAnimated:YES];
+        //        [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 

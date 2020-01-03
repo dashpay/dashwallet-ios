@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable id<DWTitleDetailItem>)generalInfo;
 
 // Attributed data
-- (id<DWTitleDetailItem>)addressWithFont:(UIFont *)font;
+- (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 - (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
 
