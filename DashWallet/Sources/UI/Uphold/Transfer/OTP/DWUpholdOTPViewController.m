@@ -80,7 +80,11 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     self.titleLabel.text = NSLocalizedString(@"Enter your 2FA code below", nil);
+    self.titleLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleTitle3];
+    self.titleLabel.textColor = [UIColor dw_darkTitleColor];
 
+
+    self.textField.textColor = [UIColor dw_darkTitleColor];
     self.textField.delegate = self;
 
     self.pasteboardChangeCount = [UIPasteboard generalPasteboard].changeCount;
@@ -99,6 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidAppear:animated];
 
     [self.textField becomeFirstResponder];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    self.textField.textColor = [UIColor dw_darkTitleColor];
 }
 
 #pragma mark - Actions

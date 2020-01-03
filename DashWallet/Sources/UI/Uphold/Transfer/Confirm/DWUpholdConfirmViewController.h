@@ -22,10 +22,20 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWUpholdConfirmTransferModel;
+@class DWUpholdTransactionObject;
+@class DWUpholdConfirmViewController;
+
+@protocol DWUpholdConfirmViewControllerDelegate <NSObject>
+
+- (void)upholdConfirmViewController:(DWUpholdConfirmViewController *)controller
+                 didSendTransaction:(DWUpholdTransactionObject *)transaction;
+
+@end
 
 @interface DWUpholdConfirmViewController : DWConfirmPaymentViewController
 
 @property (nullable, weak, nonatomic) id<DWUpholdOTPProvider> otpProvider;
+@property (nullable, nonatomic, weak) id<DWUpholdConfirmViewControllerDelegate> resultDelegate;
 
 - (instancetype)initWithModel:(DWUpholdConfirmTransferModel *)transferModel;
 

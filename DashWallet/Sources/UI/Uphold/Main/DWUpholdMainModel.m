@@ -18,10 +18,10 @@
 #import "DWUpholdMainModel.h"
 
 #import "DWUpholdClient.h"
+#import "DWUpholdTransactionObject.h"
 #import "NSAttributedString+DWBuilder.h"
 #import "UIColor+DWStyle.h"
 #import "UIFont+DWFont.h"
-#import <DashSync/UIImage+DSUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -74,6 +74,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logOut {
     [[DWUpholdClient sharedInstance] logOut];
 }
+
+- (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
+    return [[DWUpholdClient sharedInstance] transactionURLForTransaction:transaction];
+}
+
+- (NSString *)successMessageTextForTransaction:(DWUpholdTransactionObject *)transaction {
+    return [NSString stringWithFormat:@"%@\n%@: %@",
+                                      NSLocalizedString(@"Your transaction was sent and the amount should appear in your wallet in a few minutes.", nil),
+                                      NSLocalizedString(@"Transaction id", nil),
+                                      transaction.identifier];
+}
+
 
 @end
 

@@ -17,6 +17,8 @@
 
 #import "DWUpholdMainViewController.h"
 
+#import <DWAlertController/DWAlertController.h>
+
 #import "DWBaseViewController.h"
 #import "DWUIKit.h"
 #import "DWUpholdClient.h"
@@ -182,18 +184,31 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWUpholdTransferViewControllerDelegate
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller {
-    [self.model fetch];
-    [controller dismissViewControllerAnimated:YES completion:nil];
-}
+- (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
+                  didSendTransaction:(DWUpholdTransactionObject *)transaction {
+    [self.navigationController popToRootViewControllerAnimated:YES];
 
-- (void)upholdTransferViewControllerDidFinish:(DWUpholdTransferViewController *)controller
-                           openTransactionURL:(NSURL *)url {
-    [self.model fetch];
-    [controller dismissViewControllerAnimated:YES
-                                   completion:^{
-                                       [self openSafariAppWithURL:url];
-                                   }];
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
+                                            message:[self.model successMessageTextForTransaction:transaction]
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *okAction =
+        [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                 style:UIAlertActionStyleCancel
+                               handler:nil];
+    [alert addAction:okAction];
+
+    UIAlertAction *openAction =
+        [UIAlertAction actionWithTitle:NSLocalizedString(@"See on Uphold", nil)
+                                 style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction *_Nonnull action) {
+                                   [self openSafariAppWithURL:[self.model transactionURLForTransaction:transaction]];
+                               }];
+    [alert addAction:openAction];
+    alert.preferredAction = openAction;
+
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Private
@@ -210,10 +225,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
     if ([self.presentedViewController isKindOfClass:DWUpholdTransferViewController.class]) {
-        // TODO: fix me
-
         [self.navigationController popToRootViewControllerAnimated:YES];
-        //        [self dismissViewControllerAnimated:YES completion:nil];
+        [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 

@@ -90,9 +90,6 @@
 "available" = "available";
 
 /* No comment provided by engineer. */
-"Available" = "Beschikbaar";
-
-/* No comment provided by engineer. */
 "Available balance" = "Beschikbaar saldo";
 
 /* No comment provided by engineer. */
@@ -246,9 +243,6 @@
 "Enter the amount to transfer" = "Enter the amount to transfer";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Voer hieronder het bedrag in dat moet worden overgemaakt";
-
-/* No comment provided by engineer. */
 "Enter your 2FA code below" = "Voer hieronder uw 2FA code in";
 
 /* No comment provided by engineer. */
@@ -321,16 +315,10 @@
 "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Saldo niet toereikend";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
 /* Invalid transaction */
 "Invalid" = "Invalid";
-
-/* No comment provided by engineer. */
-"Invalid amount" = "Ongeldig bedrag";
 
 /* No comment provided by engineer. */
 "It's Important" = "It's Important";
@@ -703,9 +691,6 @@
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "Steppen om crash te reproduceren";
-
-/* No comment provided by engineer. */
-"Success" = "Succes";
 
 /* No comment provided by engineer. */
 "Swept!" = "Swept!";

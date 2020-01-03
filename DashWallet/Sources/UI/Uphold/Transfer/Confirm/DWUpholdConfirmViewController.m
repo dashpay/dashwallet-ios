@@ -22,7 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdConfirmViewController () <DWUpholdConfirmTransferModelStateNotifier>
+@interface DWUpholdConfirmViewController () <DWUpholdConfirmTransferModelStateNotifier, DWConfirmPaymentViewControllerDelegate>
 
 @property (nonatomic, strong) DWUpholdConfirmTransferModel *transferModel;
 
@@ -43,7 +43,9 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.delegate = self;
     self.model = self.transferModel.transaction;
+    self.transferModel.stateNotifier = self;
 }
 
 #pragma mark - DWUpholdConfirmTransferModelStateNotifier
@@ -62,7 +64,11 @@ NS_ASSUME_NONNULL_END
             break;
         }
         case DWUpholdConfirmTransferModelState_Success: {
-            // TODO: show success dialog
+            [self dismissViewControllerAnimated:YES
+                                     completion:^{
+                                         [self.resultDelegate upholdConfirmViewController:self
+                                                                       didSendTransaction:self.transferModel.transaction];
+                                     }];
 
             break;
         }
@@ -94,6 +100,12 @@ NS_ASSUME_NONNULL_END
     if (state == DWUpholdConfirmTransferModelState_Fail) {
         [self showErrorWithMessage:NSLocalizedString(@"Something went wrong", nil)];
     }
+}
+
+#pragma mark - DWConfirmPaymentViewControllerDelegate
+
+- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller {
+    [self.transferModel confirmWithOTPToken:nil];
 }
 
 #pragma mark - Private

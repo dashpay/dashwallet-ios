@@ -256,15 +256,9 @@
 		2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */; };
 		2A9FFE8E2230FF4700956D5F /* DWUpholdAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE482230FF4600956D5F /* DWUpholdAuthViewController.m */; };
 		2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE492230FF4600956D5F /* UpholdAuthStoryboard.storyboard */; };
-		2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE502230FF4600956D5F /* UpholdSuccessTransferStoryboard.storyboard */; };
-		2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE512230FF4600956D5F /* DWUpholdSuccessTransferViewController.m */; };
-		2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE522230FF4600956D5F /* DWUpholdSuccessTransferModel.m */; };
 		2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */; };
 		2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		2A9FFE952230FF4700956D5F /* DWUpholdConfirmTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */; };
-		2A9FFE982230FF4700956D5F /* UpholdRequestTransferStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */; };
-		2A9FFE992230FF4700956D5F /* DWUpholdRequestTransferViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */; };
-		2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */; };
 		2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */; };
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE6A2230FF4600956D5F /* DWUpholdViewController.m */; };
@@ -983,21 +977,11 @@
 		2A9FFE492230FF4600956D5F /* UpholdAuthStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdAuthStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE4A2230FF4600956D5F /* DWUpholdAuthViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdAuthViewController.h; sourceTree = "<group>"; };
 		2A9FFE4C2230FF4600956D5F /* DWUpholdOTPProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOTPProvider.h; sourceTree = "<group>"; };
-		2A9FFE4E2230FF4600956D5F /* DWUpholdSuccessTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSuccessTransferViewController.h; sourceTree = "<group>"; };
-		2A9FFE4F2230FF4600956D5F /* DWUpholdSuccessTransferModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdSuccessTransferModel.h; sourceTree = "<group>"; };
-		2A9FFE502230FF4600956D5F /* UpholdSuccessTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdSuccessTransferStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFE512230FF4600956D5F /* DWUpholdSuccessTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdSuccessTransferViewController.m; sourceTree = "<group>"; };
-		2A9FFE522230FF4600956D5F /* DWUpholdSuccessTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdSuccessTransferModel.m; sourceTree = "<group>"; };
 		2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdOTPViewController.m; sourceTree = "<group>"; };
 		2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdOTPStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE562230FF4600956D5F /* DWUpholdOTPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdOTPViewController.h; sourceTree = "<group>"; };
 		2A9FFE582230FF4600956D5F /* DWUpholdConfirmTransferModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdConfirmTransferModel.h; sourceTree = "<group>"; };
 		2A9FFE5A2230FF4600956D5F /* DWUpholdConfirmTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConfirmTransferModel.m; sourceTree = "<group>"; };
-		2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdRequestTransferStoryboard.storyboard; sourceTree = "<group>"; };
-		2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferViewController.m; sourceTree = "<group>"; };
-		2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdRequestTransferModel.m; sourceTree = "<group>"; };
-		2A9FFE622230FF4600956D5F /* DWUpholdRequestTransferViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdRequestTransferViewController.h; sourceTree = "<group>"; };
-		2A9FFE632230FF4600956D5F /* DWUpholdRequestTransferModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdRequestTransferModel.h; sourceTree = "<group>"; };
 		2A9FFE652230FF4600956D5F /* DWUpholdLogoutTutorialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdLogoutTutorialViewController.m; sourceTree = "<group>"; };
 		2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UpholdLogoutTutorialStoryboard.storyboard; sourceTree = "<group>"; };
 		2A9FFE672230FF4600956D5F /* DWUpholdLogoutTutorialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdLogoutTutorialViewController.h; sourceTree = "<group>"; };
@@ -2618,8 +2602,6 @@
 			children = (
 				2A9FFE572230FF4600956D5F /* Confirm */,
 				2A9FFE532230FF4600956D5F /* OTP */,
-				2A9FFE5E2230FF4600956D5F /* Request */,
-				2A9FFE4D2230FF4600956D5F /* Success */,
 				2A9FFE4C2230FF4600956D5F /* DWUpholdOTPProvider.h */,
 				2AFCB9B523BDFF3600FF59A6 /* DWUpholdTransferViewController.h */,
 				2AFCB9B623BDFF3600FF59A6 /* DWUpholdTransferViewController.m */,
@@ -2627,18 +2609,6 @@
 				2AFCB9B923BDFF5E00FF59A6 /* DWUpholdAmountModel.m */,
 			);
 			path = Transfer;
-			sourceTree = "<group>";
-		};
-		2A9FFE4D2230FF4600956D5F /* Success */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFE4F2230FF4600956D5F /* DWUpholdSuccessTransferModel.h */,
-				2A9FFE522230FF4600956D5F /* DWUpholdSuccessTransferModel.m */,
-				2A9FFE4E2230FF4600956D5F /* DWUpholdSuccessTransferViewController.h */,
-				2A9FFE512230FF4600956D5F /* DWUpholdSuccessTransferViewController.m */,
-				2A9FFE502230FF4600956D5F /* UpholdSuccessTransferStoryboard.storyboard */,
-			);
-			path = Success;
 			sourceTree = "<group>";
 		};
 		2A9FFE532230FF4600956D5F /* OTP */ = {
@@ -2662,18 +2632,6 @@
 				2AFCB9C323BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m */,
 			);
 			path = Confirm;
-			sourceTree = "<group>";
-		};
-		2A9FFE5E2230FF4600956D5F /* Request */ = {
-			isa = PBXGroup;
-			children = (
-				2A9FFE632230FF4600956D5F /* DWUpholdRequestTransferModel.h */,
-				2A9FFE612230FF4600956D5F /* DWUpholdRequestTransferModel.m */,
-				2A9FFE622230FF4600956D5F /* DWUpholdRequestTransferViewController.h */,
-				2A9FFE602230FF4600956D5F /* DWUpholdRequestTransferViewController.m */,
-				2A9FFE5F2230FF4600956D5F /* UpholdRequestTransferStoryboard.storyboard */,
-			);
-			path = Request;
 			sourceTree = "<group>";
 		};
 		2A9FFE642230FF4600956D5F /* LogoutTutorial */ = {
@@ -3523,7 +3481,6 @@
 				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
 				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
 				75D5F3E0191EC270004AB296 /* Images.xcassets in Resources */,
-				2A9FFE982230FF4700956D5F /* UpholdRequestTransferStoryboard.storyboard in Resources */,
 				2A4E534D22F03AAC00E5168A /* DWTxListHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
@@ -3556,7 +3513,6 @@
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				2A9FFF3122350CE500956D5F /* DWAmountInputControl.xib in Resources */,
 				2A9FFE8F2230FF4700956D5F /* UpholdAuthStoryboard.storyboard in Resources */,
-				2A9FFE902230FF4700956D5F /* UpholdSuccessTransferStoryboard.storyboard in Resources */,
 				2A44311922CBF108009BAF7F /* Montserrat.plist in Resources */,
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
@@ -4069,7 +4025,6 @@
 				2A36A88B2350A05B0014DC60 /* DWBackupSeedPhraseViewController.m in Sources */,
 				2A9FFE9E2230FF4700956D5F /* DWUpholdViewController.m in Sources */,
 				2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */,
-				2A9FFE992230FF4700956D5F /* DWUpholdRequestTransferViewController.m in Sources */,
 				2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */,
 				2A8B9E2922FB1C5D00FF8653 /* DWSharedUIConstants.m in Sources */,
 				2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */,
@@ -4105,7 +4060,6 @@
 				2A307CBC22E8925100A18347 /* DWHomeView.m in Sources */,
 				2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */,
 				2A4431C322D4CAEA009BAF7F /* DWBackupInfoViewController.m in Sources */,
-				2A9FFE9A2230FF4700956D5F /* DWUpholdRequestTransferModel.m in Sources */,
 				2A7A7BB22347927700451078 /* DWMainMenuViewController.m in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
@@ -4184,7 +4138,6 @@
 				2A4E534022F025FE00E5168A /* DWTxListEmptyTableViewCell.m in Sources */,
 				2A8B9E6522FFE43500FF8653 /* DWPayModel.m in Sources */,
 				2A1B7DB423244CD700BA8C6A /* NSAttributedString+DWBuilder.m in Sources */,
-				2A9FFE912230FF4700956D5F /* DWUpholdSuccessTransferViewController.m in Sources */,
 				2A8B9E3B22FC817100FF8653 /* DWPaymentsViewController.m in Sources */,
 				2AFCB9A923BDEA1D00FF59A6 /* DWSendAmountModel.m in Sources */,
 				2A7A7BBE2347950700451078 /* DWMainMenuTableViewCell.m in Sources */,
@@ -4192,7 +4145,6 @@
 				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
-				2A9FFE922230FF4700956D5F /* DWUpholdSuccessTransferModel.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,

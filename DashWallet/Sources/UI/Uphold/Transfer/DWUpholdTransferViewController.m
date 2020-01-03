@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdTransferViewController () <DWUpholdAmountModelStateNotifier>
+@interface DWUpholdTransferViewController () <DWUpholdAmountModelStateNotifier, DWUpholdConfirmViewControllerDelegate, DWUpholdOTPProvider>
 
 @property (readonly, nonatomic, strong) DWUpholdAmountModel *upholdAmountModel;
 
@@ -109,6 +109,8 @@ NS_ASSUME_NONNULL_END
         }
         case DWUpholdRequestTransferModelState_Success: {
             DWUpholdConfirmViewController *controller = [[DWUpholdConfirmViewController alloc] initWithModel:[self.upholdAmountModel transferModel]];
+            controller.resultDelegate = self;
+            controller.otpProvider = self;
             [self presentViewController:controller animated:YES completion:nil];
 
             self.view.userInteractionEnabled = YES;
@@ -151,6 +153,13 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+#pragma mark - DWUpholdConfirmViewControllerDelegate
+
+- (void)upholdConfirmViewController:(DWUpholdConfirmViewController *)controller
+                 didSendTransaction:(DWUpholdTransactionObject *)transaction {
+    [self.delegate upholdTransferViewController:self didSendTransaction:transaction];
+}
+
 #pragma mark - DWUpholdOTPProvider
 
 - (void)requestOTPWithCompletion:(void (^)(NSString *_Nullable otpToken))completion {
@@ -166,7 +175,12 @@ NS_ASSUME_NONNULL_END
     [alertOTPController setupActions:otpController.providedActions];
     alertOTPController.preferredAction = otpController.preferredAction;
 
-    [self presentViewController:alertOTPController animated:YES completion:nil];
+    UIViewController *presenting = self;
+    if (self.presentedViewController) {
+        presenting = self.presentedViewController;
+    }
+
+    [presenting presentViewController:alertOTPController animated:YES completion:nil];
 }
 
 #pragma mark - Private
