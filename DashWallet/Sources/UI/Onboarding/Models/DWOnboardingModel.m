@@ -46,7 +46,7 @@ static NSString *const HAS_WALLET_FLAG = @"BALANCE";
             DWOnboardingPage *page = [[DWOnboardingPage alloc] init];
             const BOOL hasWallet = [[NSUserDefaults standardUserDefaults] objectForKey:HAS_WALLET_FLAG] != nil;
             if (hasWallet) {
-                page.title = NSLocalizedString(@"We upgraded", nil);
+                page.title = NSLocalizedString(@"We Upgraded", nil);
             }
             else {
                 page.title = NSLocalizedString(@"Welcome", nil);
