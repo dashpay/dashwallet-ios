@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,18 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWConfirmPaymentViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdTransactionObject;
+@class DWPaymentOutput;
 
-@interface DWUpholdSuccessTransferModel : NSObject
+@interface DWConfirmSendPaymentViewController : DWConfirmPaymentViewController
 
-- (instancetype)initWithTransaction:(DWUpholdTransactionObject *)transaction;
-
-- (NSString *)transactionText;
-- (NSURL *)transactionURL;
+@property (nullable, nonatomic, strong) DWPaymentOutput *paymentOutput;
 
 @end
 

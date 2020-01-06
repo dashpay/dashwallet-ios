@@ -18,7 +18,6 @@
 #import "DWConfirmPaymentContentView.h"
 
 #import "DWAmountPreviewView.h"
-#import "DWPaymentOutput+DWView.h"
 #import "DWTitleDetailCellView.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
@@ -85,12 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
 }
 
-- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
-    _paymentOutput = paymentOutput;
+- (void)setModel:(nullable id<DWConfirmPaymentViewProtocol>)model {
+    _model = model;
 
-    [self.amountView setAmount:[paymentOutput amountToDisplay]];
+    [self.amountView setAmount:[model amountToDisplay]];
 
-    id<DWTitleDetailItem> info = [self.paymentOutput generalInfo];
+    id<DWTitleDetailItem> info = [model generalInfo];
     self.infoRowView.model = info;
     self.infoRowView.hidden = (info == nil);
 
@@ -110,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    BOOL result = [self.paymentOutput copyAddressToPasteboard];
+    BOOL result = [self.model copyAddressToPasteboard];
     if (result) {
         [self dw_showInfoHUDWithText:NSLocalizedString(@"Copied", nil)];
     }
@@ -128,13 +127,15 @@ NS_ASSUME_NONNULL_BEGIN
     UIFont *font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     UIColor *color = [UIColor dw_secondaryTextColor];
 
-    self.addressRowView.model = [self.paymentOutput addressWithFont:font];
+    id<DWTitleDetailItem> address = [self.model addressWithFont:font tintColor:color];
+    self.addressRowView.model = address;
+    self.addressRowView.hidden = (address == nil);
 
-    id<DWTitleDetailItem> fee = [self.paymentOutput feeWithFont:font tintColor:color];
+    id<DWTitleDetailItem> fee = [self.model feeWithFont:font tintColor:color];
     self.feeRowView.model = fee;
     self.feeRowView.hidden = (fee == nil);
 
-    self.totalRowView.model = [self.paymentOutput totalWithFont:font tintColor:color];
+    self.totalRowView.model = [self.model totalWithFont:font tintColor:color];
 }
 
 @end

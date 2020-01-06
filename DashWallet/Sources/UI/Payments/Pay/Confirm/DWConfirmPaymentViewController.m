@@ -94,10 +94,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self setSendingEnabled:NO];
 }
 
-- (void)setPaymentOutput:(nullable DWPaymentOutput *)paymentOutput {
-    _paymentOutput = paymentOutput;
+- (nullable id<DWConfirmPaymentViewProtocol>)model {
+    return self.confirmPaymentView.model;
+}
 
-    [self.confirmPaymentView setPaymentOutput:paymentOutput];
+- (void)setModel:(nullable id<DWConfirmPaymentViewProtocol>)model {
+    self.confirmPaymentView.model = model;
 }
 
 #pragma mark - Private

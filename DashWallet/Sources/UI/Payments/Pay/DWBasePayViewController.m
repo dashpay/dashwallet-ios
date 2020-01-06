@@ -17,7 +17,7 @@
 
 #import "DWBasePayViewController.h"
 
-#import "DWConfirmPaymentViewController.h"
+#import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
 #import "DWPayOptionModel.h"
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        DWQRScanModelDelegate,
                                        DWConfirmPaymentViewControllerDelegate>
 
-@property (nullable, nonatomic, weak) DWConfirmPaymentViewController *confirmViewController;
+@property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
 
 @end
 
@@ -170,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.confirmViewController.paymentOutput = paymentOutput;
     }
     else {
-        DWConfirmPaymentViewController *controller = [[DWConfirmPaymentViewController alloc] init];
+        DWConfirmSendPaymentViewController *controller = [[DWConfirmSendPaymentViewController alloc] init];
         controller.paymentOutput = paymentOutput;
         controller.delegate = self;
 
@@ -272,7 +272,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWConfirmPaymentViewControllerDelegate
 
-- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmPaymentViewController *)controller {
+- (void)confirmPaymentViewControllerDidConfirm:(DWConfirmSendPaymentViewController *)controller {
     [self.paymentProcessor confirmPaymentOutput:controller.paymentOutput];
 }
 

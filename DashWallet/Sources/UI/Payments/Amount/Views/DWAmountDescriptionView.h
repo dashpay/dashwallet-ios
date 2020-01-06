@@ -19,9 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWAmountDescriptionViewModel;
+
 @interface DWAmountDescriptionView : UIView
 
-@property (nullable, nonatomic, copy) NSString *text;
+@property (nullable, nonatomic, strong) DWAmountDescriptionViewModel *model;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 

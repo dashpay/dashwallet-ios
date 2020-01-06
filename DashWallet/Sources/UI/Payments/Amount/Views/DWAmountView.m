@@ -64,7 +64,7 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
 
         DWMaxButton *maxButton = [[DWMaxButton alloc] initWithFrame:CGRectZero];
         maxButton.translatesAutoresizingMaskIntoConstraints = NO;
-        maxButton.hidden = model.inputIntent == DWAmountInputIntent_Request;
+        maxButton.hidden = !model.showsMaxButton;
         [maxButton addTarget:self
                       action:@selector(maxButtonAction:)
             forControlEvents:UIControlEventTouchUpInside];
@@ -158,35 +158,15 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       with:^(__typeof(self) self, DWAmountObject *value) {
                           self.textField.text = value.amountInternalRepresentation;
                           self.inputControl.source = value;
-                          [self.delegate amountView:self setActionButtonEnabled:value.plainAmount > 0];
+                          [self.delegate amountView:self
+                              setActionButtonEnabled:self.model.amountIsValidForProceeding];
                       }];
 
-
-        if (_model.inputIntent == DWAmountInputIntent_Send) {
-            [self mvvm_observe:DW_KEYPATH(self, model.sendingOptions.state)
-                          with:^(__typeof(self) self, NSNumber *value) {
-                              DWAmountSendOptionsModelState state = self.model.sendingOptions.state;
-                              switch (state) {
-                                  case DWAmountSendOptionsModelState_None: {
-                                      break;
-                                  }
-                                  case DWAmountSendOptionsModelState_Regular: {
-                                      self.descriptionView.text = NSLocalizedString(@"This transaction may take several minutes to settle.", nil);
-
-                                      break;
-                                  }
-                                  case DWAmountSendOptionsModelState_ProposeInstantSend:
-                                  case DWAmountSendOptionsModelState_AutoLocks: {
-                                      self.descriptionView.text = NSLocalizedString(@"This transaction should settle instantly at no extra fee", nil);
-
-                                      break;
-                                  }
-                              }
-                          }];
-        }
-        else {
-            _descriptionView.hidden = YES;
-        }
+        [self mvvm_observe:DW_KEYPATH(self, model.descriptionModel)
+                      with:^(typeof(self) self, id value) {
+                          self.descriptionView.hidden = value == nil;
+                          self.descriptionView.model = self.model.descriptionModel;
+                      }];
     }
     return self;
 }

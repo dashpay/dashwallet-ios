@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdCardTableViewCell.h"
-
-#import "DWUpholdAccountObject.h"
+#import "DWConfirmPaymentViewProtocol.h"
+#import "DWUpholdTransactionObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWUpholdCardTableViewCell
-
-- (void)setCellModel:(nullable DWUpholdCardCellModel *)cellModel {
-    _cellModel = cellModel;
-
-    self.textLabel.text = cellModel.titleText;
-    self.detailTextLabel.text = cellModel.detailText;
-}
+@interface DWUpholdTransactionObject (DWView) <DWConfirmPaymentViewProtocol>
 
 @end
 

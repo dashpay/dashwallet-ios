@@ -45,6 +45,10 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 @property (nullable, nonatomic, strong) UIStackView *stackView;
 @property (nullable, nonatomic, strong) id<DWActionButtonProtocol> actionButton;
 
+@property (nullable, nonatomic, strong) UIButton *bottomActionButton;
+@property (nullable, nonatomic, strong) UIBarButtonItem *barActionButton;
+@property (nullable, nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+
 @property (nullable, strong, nonatomic) NSLayoutConstraint *contentBottomConstraint;
 
 @end
@@ -90,6 +94,33 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     }
 }
 
+- (void)showActivityIndicator {
+    if ([self.class isActionButtonInNavigationBar]) {
+        UIActivityIndicatorView *activityIndicator = [self configuredActivityIndicator];
+        [activityIndicator startAnimating];
+        [activityIndicator sizeToFit];
+        UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:activityIndicator];
+        self.navigationItem.rightBarButtonItem = barButtonItem;
+    }
+    else {
+        NSParameterAssert(self.activityIndicatorView);
+        NSParameterAssert(self.bottomActionButton);
+        self.bottomActionButton.hidden = YES;
+        self.activityIndicatorView.hidden = NO;
+        [self.activityIndicatorView startAnimating];
+    }
+}
+
+- (void)hideActivityIndicator {
+    if ([self.class isActionButtonInNavigationBar]) {
+        self.navigationItem.rightBarButtonItem = self.barActionButton;
+    }
+    else {
+        self.activityIndicatorView.hidden = YES;
+        self.bottomActionButton.hidden = NO;
+    }
+}
+
 #pragma mark - Actions
 
 - (void)actionButtonAction:(id)sender {
@@ -117,6 +148,7 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
                        action:@selector(actionButtonAction:)];
             self.navigationItem.rightBarButtonItem = barButtonItem;
             self.actionButton = barButtonItem;
+            self.barActionButton = barButtonItem;
         }
         else {
             bottomActionButton = [[DWBlueActionButton alloc] initWithFrame:CGRectZero];
@@ -128,6 +160,13 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
                          forControlEvents:UIControlEventTouchUpInside];
             self.actionButton = bottomActionButton;
             [arrangedSubviews addObject:bottomActionButton];
+            self.bottomActionButton = bottomActionButton;
+
+            UIActivityIndicatorView *activityIndicatorView = [self configuredActivityIndicator];
+            activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
+            activityIndicatorView.hidden = YES;
+            [arrangedSubviews addObject:activityIndicatorView];
+            self.activityIndicatorView = activityIndicatorView;
         }
 
         self.actionButton.enabled = NO;
@@ -160,6 +199,22 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     if (bottomActionButton) {
         [bottomActionButton.heightAnchor constraintEqualToConstant:BOTTOM_BUTTON_HEIGHT].active = YES;
     }
+}
+
+- (UIActivityIndicatorView *)configuredActivityIndicator {
+    UIActivityIndicatorView *activityIndicatorView = nil;
+
+    if ([self.class isActionButtonInNavigationBar]) {
+        activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        activityIndicatorView.color = [UIColor dw_tintColor];
+    }
+    else {
+        activityIndicatorView =
+            [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        activityIndicatorView.color = [UIColor dw_iconTintColor];
+    }
+
+    return activityIndicatorView;
 }
 
 #pragma mark - Configuration

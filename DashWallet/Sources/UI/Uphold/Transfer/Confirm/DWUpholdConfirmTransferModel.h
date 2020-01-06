@@ -20,27 +20,34 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWUpholdConfirmTransferModelState) {
-    DWUpholdConfirmTransferModelStateNone,
-    DWUpholdConfirmTransferModelStateLoading,
-    DWUpholdConfirmTransferModelStateSuccess,
-    DWUpholdConfirmTransferModelStateFail,
-    DWUpholdConfirmTransferModelStateOTP,
+    DWUpholdConfirmTransferModelState_None,
+    DWUpholdConfirmTransferModelState_Loading,
+    DWUpholdConfirmTransferModelState_Success,
+    DWUpholdConfirmTransferModelState_Fail,
+    DWUpholdConfirmTransferModelState_OTP,
 };
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
+@class DWUpholdConfirmTransferModel;
+
+@protocol DWUpholdConfirmTransferModelStateNotifier <NSObject>
+
+- (void)upholdConfirmTransferModel:(DWUpholdConfirmTransferModel *)model
+                    didUpdateState:(DWUpholdConfirmTransferModelState)state;
+
+@end
 
 @interface DWUpholdConfirmTransferModel : NSObject
 
-@property (readonly, assign, nonatomic) DWUpholdConfirmTransferModelState state;
+@property (nullable, nonatomic, weak) id<DWUpholdConfirmTransferModelStateNotifier> stateNotifier;
 @property (readonly, strong, nonatomic) DWUpholdTransactionObject *transaction;
 
-- (instancetype)initWithCard:(DWUpholdCardObject *)card transaction:(DWUpholdTransactionObject *)transaction;
+- (instancetype)initWithCard:(DWUpholdCardObject *)card
+                 transaction:(DWUpholdTransactionObject *)transaction;
 
-- (NSAttributedString *)amountString;
-- (NSAttributedString *)feeString;
-- (NSAttributedString *)totalString;
-- (BOOL)feeWasDeductedFromAmount;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 - (void)confirmWithOTPToken:(nullable NSString *)otpToken;
 - (void)cancel;

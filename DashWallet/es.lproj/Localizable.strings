@@ -54,9 +54,6 @@
 "Allow Touch ID access in Settings" = "Permita acceso al Touch ID en Configuraciones";
 
 /* No comment provided by engineer. */
-"Amount" = "Monto";
-
-/* No comment provided by engineer. */
 "Amount Received" = "Monto Recibido";
 
 /* No comment provided by engineer. */
@@ -89,8 +86,8 @@
 /* No comment provided by engineer. */
 "Autohide Balance" = "Esconder Saldo Automáticamente";
 
-/* No comment provided by engineer. */
-"Available" = "Disponible";
+/* lowercase, ex. 4 Dash available */
+"available" = "available";
 
 /* No comment provided by engineer. */
 "Available balance" = "Saldo disponible";
@@ -160,9 +157,6 @@
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Confirmar PIN";
-
-/* No comment provided by engineer. */
-"Confirm transaction" = "Confirmar transacción";
 
 /* No comment provided by engineer. */
 "Confirming" = "Confirmando";
@@ -246,7 +240,7 @@
 "Enter Recovery Phrase" = "Ingresar Frase de Recuperación";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer below" = "Ingresa el monto a transferir debajo";
+"Enter the amount to transfer" = "Enter the amount to transfer";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Ingresa tu código 2FA debajo";
@@ -267,7 +261,7 @@
 "Fee is greater than balance" = "La tarifa es mayor que el saldo";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount" = "La tarifa se deducirá de la cantidad solicitada";
+"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrar Transacciones";
@@ -321,13 +315,10 @@
 "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
-"Insufficient Funds" = "Fondos insuficientes";
+"Insufficient funds" = "Insufficient funds";
 
 /* Invalid transaction */
 "Invalid" = "Inválido";
-
-/* No comment provided by engineer. */
-"Invalid amount" = "Monto inválido";
 
 /* No comment provided by engineer. */
 "It's Important" = "Es importante";
@@ -545,9 +536,6 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Report an Issue" = "Reportar un problema";
 
-/* No comment provided by engineer. */
-"Request" = "Solicitar";
-
 /* An action */
 "Rescan" = "Escanear nuevamente";
 
@@ -562,6 +550,9 @@
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "Restablecer Billetera";
+
+/* No comment provided by engineer. */
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Evaluar la app";
@@ -702,9 +693,6 @@
 "Steps to reproduce the crash" = "Pasos para reproducir el fallo";
 
 /* No comment provided by engineer. */
-"Success" = "Éxito";
-
-/* No comment provided by engineer. */
 "Swept!" = "¡Barrido!";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -767,7 +755,7 @@
 /* No comment provided by engineer. */
 "Transaction id" = "id de transacción";
 
-/* No comment provided by engineer. */
+/* A verb, button title. */
 "Transfer" = "Transferencia";
 
 /* No comment provided by engineer. */

@@ -17,6 +17,7 @@
 
 #import "DWAmountDescriptionView.h"
 
+#import "DWAmountDescriptionViewModel.h"
 #import "DWUIKit.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -79,12 +80,12 @@ static CALayer *SeparatorLineLayer(void) {
     self.topLineLayer.frame = CGRectMake(0.0, 0.0, size.width, SEPARATOR_HEIGHT);
 }
 
-- (nullable NSString *)text {
-    return self.descriptionLabel.text;
-}
+- (void)setModel:(nullable DWAmountDescriptionViewModel *)model {
+    _model = model;
 
-- (void)setText:(nullable NSString *)text {
-    self.descriptionLabel.text = text;
+    self.descriptionLabel.text = model.text;
+    self.descriptionLabel.attributedText = model.attributedText;
+
     [self invalidateIntrinsicContentSize];
 }
 

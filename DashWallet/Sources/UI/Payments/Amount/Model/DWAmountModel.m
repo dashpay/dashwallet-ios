@@ -15,36 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DWAmountModel.h"
+#import "DWAmountModel+DWProtected.h"
 
-#import "DWAmountInputValidator.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWAmountModel ()
-
-@property (assign, nonatomic) DWAmountType activeType;
-@property (strong, nonatomic) DWAmountObject *amount;
-@property (assign, nonatomic, getter=isLocked) BOOL locked;
-
-@property (strong, nonatomic) DWAmountInputValidator *dashValidator;
-@property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInDash;
-@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInLocalCurrency;
-
-@end
-
 @implementation DWAmountModel
 
-- (instancetype)initWithInputIntent:(DWAmountInputIntent)inputIntent
-                 sendingDestination:(nullable NSString *)sendingDestination
-                     paymentDetails:(nullable DSPaymentProtocolDetails *)paymentDetails {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _inputIntent = inputIntent;
-
         _dashValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeDash];
         _localCurrencyValidator = [[DWAmountInputValidator alloc] initWithType:DWAmountInputValidatorTypeLocalCurrency];
 
@@ -52,37 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
         _amountEnteredInDash = amount;
         _amount = amount;
 
-        _locked = ![DSAuthenticationManager sharedInstance].didAuthenticate;
-
-        switch (inputIntent) {
-            case DWAmountInputIntent_Request: {
-                _actionButtonTitle = NSLocalizedString(@"Request", nil);
-
-                break;
-            }
-            case DWAmountInputIntent_Send: {
-                NSParameterAssert(sendingDestination);
-                _actionButtonTitle = NSLocalizedString(@"Send", nil);
-                _sendingOptions = [[DWAmountSendingOptionsModel alloc]
-                    initWithSendingDestination:sendingDestination
-                                paymentDetails:paymentDetails];
-
-                break;
-            }
-        }
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(walletBalanceDidChangeNotification:)
-                                                     name:DSWalletBalanceDidChangeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationDidEnterBackgroundNotification:)
-                                                     name:UIApplicationDidEnterBackgroundNotification
-                                                   object:nil];
-
         [self updateCurrentAmount];
     }
     return self;
+}
+
+- (BOOL)showsMaxButton {
+    return NO;
+}
+
+- (BOOL)amountIsValidForProceeding {
+    return self.amount.plainAmount > 0;
 }
 
 - (BOOL)isSwapToLocalCurrencyAllowed {
@@ -135,45 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
     [self updateCurrentAmount];
 }
 
-- (void)unlock {
-    const BOOL biometricsEnabled = [DWGlobalOptions sharedInstance].biometricAuthEnabled;
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:nil
-                                        usingBiometricAuthentication:biometricsEnabled
-                                                      alertIfLockout:YES
-                                                          completion:^(BOOL authenticated, BOOL cancelled) {
-                                                              self.locked = !authenticated;
-                                                          }];
-}
-
 - (void)selectAllFundsWithPreparationBlock:(void (^)(void))preparationBlock {
-    void (^selectAllFundsBlock)(void) = ^{
-        preparationBlock();
-
-        DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
-
-        if (allAvailableFunds > 0) {
-            self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
-            self.amountEnteredInLocalCurrency = nil;
-            [self updateCurrentAmount];
-        }
-    };
-
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-    if (authManager.didAuthenticate) {
-        selectAllFundsBlock();
-    }
-    else {
-        [authManager authenticateWithPrompt:nil
-               usingBiometricAuthentication:YES
-                             alertIfLockout:YES
-                                 completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
-                                     if (authenticatedOrSuccess) {
-                                         selectAllFundsBlock();
-                                     }
-                                 }];
-    }
+    NSAssert(NO, @"To be overriden");
 }
 
 - (BOOL)isEnteredAmountLessThenMinimumOutputAmount {
@@ -217,19 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
         NSParameterAssert(self.amountEnteredInLocalCurrency);
         self.amount = self.amountEnteredInLocalCurrency;
     }
-
-    if (self.inputIntent == DWAmountInputIntent_Send) {
-        NSParameterAssert(self.sendingOptions);
-        [self.sendingOptions updateWithAmount:self.amount.plainAmount];
-    }
-}
-
-- (void)walletBalanceDidChangeNotification:(NSNotification *)n {
-    self.locked = ![[DSAuthenticationManager sharedInstance] didAuthenticate];
-}
-
-- (void)applicationDidEnterBackgroundNotification:(NSNotification *)n {
-    self.locked = YES;
 }
 
 @end

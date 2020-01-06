@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadActionButtonTitles;
 
+- (void)showActivityIndicator;
+- (void)hideActivityIndicator;
+
 @end
 
 NS_ASSUME_NONNULL_END

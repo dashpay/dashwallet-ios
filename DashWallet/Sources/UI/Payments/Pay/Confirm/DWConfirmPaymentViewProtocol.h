@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,18 +17,25 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWAmountInputControlSource.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdAmountObject : NSObject <DWAmountInputControlSource>
+@protocol DWTitleDetailItem;
+@class UIFont;
+@class UIColor;
 
-@property (readonly, copy, nonatomic) NSString *dashInternalRepresentation;
-@property (readonly, copy, nonatomic) NSString *localInternalRepresentation;
+@protocol DWConfirmPaymentViewProtocol <NSObject>
 
-- (instancetype)initWithDashInternalRepresentation:(NSString *)dashInternalRepresentation
-                       localInternalRepresentation:(NSString *)localInternalRepresentation
-                            localCurrencyFormatted:(NSString *)localCurrencyFormatted;
+- (uint64_t)amountToDisplay;
+- (nullable id<DWTitleDetailItem>)generalInfo;
+
+// Attributed data
+- (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+- (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor;
+
+// Actions
+
+- (BOOL)copyAddressToPasteboard;
 
 @end
 

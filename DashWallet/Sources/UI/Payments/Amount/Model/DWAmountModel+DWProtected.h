@@ -15,26 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DWAmountViewController.h"
+#import "DWAmountModel.h"
+
+#import "DWAmountInputValidator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWUpholdCardObject;
-@class DWUpholdTransactionObject;
-@class DWUpholdTransferViewController;
+@interface DWAmountModel ()
 
-@protocol DWUpholdTransferViewControllerDelegate <NSObject>
+@property (assign, nonatomic) DWAmountType activeType;
+@property (strong, nonatomic) DWAmountObject *amount;
 
-- (void)upholdTransferViewController:(DWUpholdTransferViewController *)controller
-                  didSendTransaction:(DWUpholdTransactionObject *)transaction;
+@property (nullable, nonatomic, strong) DWAmountDescriptionViewModel *descriptionModel;
 
-@end
+@property (strong, nonatomic) DWAmountInputValidator *dashValidator;
+@property (strong, nonatomic) DWAmountInputValidator *localCurrencyValidator;
+@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInDash;
+@property (nullable, strong, nonatomic) DWAmountObject *amountEnteredInLocalCurrency;
 
-@interface DWUpholdTransferViewController : DWAmountViewController
-
-@property (nullable, nonatomic, weak) id<DWUpholdTransferViewControllerDelegate> delegate;
-
-- (instancetype)initWithCard:(DWUpholdCardObject *)card;
+- (void)updateCurrentAmount NS_REQUIRES_SUPER;
 
 @end
 

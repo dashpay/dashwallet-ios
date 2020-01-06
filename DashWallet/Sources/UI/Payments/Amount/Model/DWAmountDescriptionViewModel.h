@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,26 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWUpholdSelectCardModel.h"
-
-#import "DWUpholdCardObject.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWUpholdSelectCardModel
+@interface DWAmountDescriptionViewModel : NSObject
 
-- (instancetype)initWithFiatCards:(NSArray<DWUpholdCardObject *> *)fiatCards {
-    self = [super init];
-    if (self) {
-        NSMutableArray<DWUpholdCardCellModel *> *items = [NSMutableArray array];
-        for (DWUpholdCardObject *card in fiatCards) {
-            DWUpholdCardCellModel *cellModel = [[DWUpholdCardCellModel alloc] initWithCard:card];
-            [items addObject:cellModel];
-        }
-        _items = [items copy];
-    }
-    return self;
-}
+@property (nullable, nonatomic, copy) NSString *text;
+@property (nullable, nonatomic, copy) NSAttributedString *attributedText;
 
 @end
 

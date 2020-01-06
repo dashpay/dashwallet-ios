@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -19,46 +19,145 @@
 
 #import <DWAlertController/DWAlertController.h>
 
-#import "DWUpholdConfirmTransferViewController.h"
+#import "DWUpholdAmountModel.h"
+#import "DWUpholdConfirmViewController.h"
 #import "DWUpholdOTPProvider.h"
 #import "DWUpholdOTPViewController.h"
-#import "DWUpholdRequestTransferViewController.h"
-#import "DWUpholdSuccessTransferViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdTransferViewController () <DWUpholdOTPProvider,
-                                              DWUpholdRequestTransferViewControllerDelegate,
-                                              DWUpholdConfirmTransferViewControllerDelegate,
-                                              DWUpholdSuccessTransferViewControllerDelegate>
+@interface DWUpholdTransferViewController () <DWUpholdAmountModelStateNotifier, DWUpholdConfirmViewControllerDelegate, DWUpholdOTPProvider>
 
-@property (readonly, strong, nonatomic) DWUpholdCardObject *card;
-@property (readonly, strong, nonatomic) DWUpholdRequestTransferViewController *requestController;
+@property (readonly, nonatomic, strong) DWUpholdAmountModel *upholdAmountModel;
 
 @end
 
+NS_ASSUME_NONNULL_END
+
 @implementation DWUpholdTransferViewController
 
-+ (instancetype)controllerWithCard:(DWUpholdCardObject *)card {
-    DWUpholdTransferViewController *controller = [[DWUpholdTransferViewController alloc] initWithCard:card];
-    return controller;
-}
-
 - (instancetype)initWithCard:(DWUpholdCardObject *)card {
-    DWUpholdRequestTransferViewController *requestController = [DWUpholdRequestTransferViewController controllerWithCard:card];
+    DWUpholdAmountModel *model = [[DWUpholdAmountModel alloc] initWithCard:card];
 
-    self = [super initWithContentController:requestController];
+    self = [super initWithModel:model];
     if (self) {
-        _card = card;
-
-        _requestController = requestController;
-        _requestController.delegate = self;
-        _requestController.otpProvider = self;
-
-        [self setupActions:requestController.providedActions];
-        self.preferredAction = requestController.preferredAction;
     }
     return self;
+}
+
+- (DWUpholdAmountModel *)upholdAmountModel {
+    return (DWUpholdAmountModel *)self.model;
+}
+
+- (NSString *)actionButtonTitle {
+    return NSLocalizedString(@"Transfer", @"A verb, button title.");
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.title = NSLocalizedString(@"Uphold", nil);
+
+    self.upholdAmountModel.stateNotifier = self;
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(contentSizeCategoryDidChangeNotification)
+                               name:UIContentSizeCategoryDidChangeNotification
+                             object:nil];
+}
+
+- (void)traitCollectionDidChange:(nullable UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self.upholdAmountModel resetAttributedValues];
+}
+
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChangeNotification {
+    [self.upholdAmountModel resetAttributedValues];
+}
+
+#pragma mark - Actions
+
+- (void)actionButtonAction:(id)sender {
+    BOOL inputValid = [self validateInputAmount];
+    if (!inputValid) {
+        return;
+    }
+
+    [self.upholdAmountModel createTransactionWithOTPToken:nil];
+}
+
+#pragma mark - DWUpholdAmountModelStateNotifier
+
+- (void)upholdAmountModel:(DWUpholdAmountModel *)model
+           didUpdateState:(DWUpholdRequestTransferModelState)state {
+    switch (state) {
+        case DWUpholdRequestTransferModelState_None: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Loading: {
+            self.view.userInteractionEnabled = NO;
+            [self showActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Success: {
+            DWUpholdConfirmViewController *controller = [[DWUpholdConfirmViewController alloc] initWithModel:[self.upholdAmountModel transferModel]];
+            controller.resultDelegate = self;
+            controller.otpProvider = self;
+            [self presentViewController:controller animated:YES completion:nil];
+
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_Fail: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+            [self showErrorWithMessage:NSLocalizedString(@"Something went wrong", nil)];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_FailInsufficientFunds: {
+            self.view.userInteractionEnabled = YES;
+            [self hideActivityIndicator];
+            [self showErrorWithMessage:NSLocalizedString(@"Fee is greater than balance", nil)];
+
+            break;
+        }
+        case DWUpholdRequestTransferModelState_OTP: {
+            __weak typeof(self) weakSelf = self;
+            [self requestOTPWithCompletion:^(NSString *_Nullable otpToken) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                if (otpToken) {
+                    [strongSelf.upholdAmountModel createTransactionWithOTPToken:otpToken];
+                }
+                else {
+                    [strongSelf.upholdAmountModel resetCreateTransactionState];
+                }
+            }];
+
+            break;
+        }
+    }
+}
+
+#pragma mark - DWUpholdConfirmViewControllerDelegate
+
+- (void)upholdConfirmViewController:(DWUpholdConfirmViewController *)controller
+                 didSendTransaction:(DWUpholdTransactionObject *)transaction {
+    [self.delegate upholdTransferViewController:self didSendTransaction:transaction];
 }
 
 #pragma mark - DWUpholdOTPProvider
@@ -76,58 +175,26 @@ NS_ASSUME_NONNULL_BEGIN
     [alertOTPController setupActions:otpController.providedActions];
     alertOTPController.preferredAction = otpController.preferredAction;
 
-    [self presentViewController:alertOTPController animated:YES completion:nil];
+    UIViewController *presenting = self;
+    if (self.presentedViewController) {
+        presenting = self.presentedViewController;
+    }
+
+    [presenting presentViewController:alertOTPController animated:YES completion:nil];
 }
 
-#pragma mark - DWUpholdRequestTransferViewControllerDelegate
+#pragma mark - Private
 
-- (void)upholdRequestTransferViewController:(DWUpholdRequestTransferViewController *)controller
-                      didProduceTransaction:(DWUpholdTransactionObject *)transaction {
-    DWUpholdConfirmTransferViewController *confirmController =
-        [DWUpholdConfirmTransferViewController controllerWithCard:self.card
-                                                      transaction:transaction];
-    confirmController.delegate = self;
-    confirmController.otpProvider = self;
+- (void)showErrorWithMessage:(NSString *)message {
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Uphold", nil)
+                                            message:message
+                                     preferredStyle:UIAlertControllerStyleAlert];
 
-    [self performTransitionToContentController:confirmController animated:YES];
-    [self setupActions:confirmController.providedActions];
-    self.preferredAction = confirmController.preferredAction;
-}
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+    [alert addAction:okAction];
 
-- (void)upholdRequestTransferViewControllerDidCancel:(DWUpholdRequestTransferViewController *)controller {
-    [self.delegate upholdTransferViewControllerDidCancel:self];
-}
-
-#pragma mark - DWUpholdConfirmTransferViewControllerDelegate
-
-- (void)upholdConfirmTransferViewControllerDidCancel:(DWUpholdConfirmTransferViewController *)controller {
-    NSParameterAssert(self.contentController);
-    [self performTransitionToContentController:self.requestController animated:YES];
-    [self setupActions:self.requestController.providedActions];
-    self.preferredAction = self.requestController.preferredAction;
-}
-
-- (void)upholdConfirmTransferViewControllerDidFinish:(DWUpholdConfirmTransferViewController *)controller transaction:(DWUpholdTransactionObject *)transaction {
-    DWUpholdSuccessTransferViewController *successController =
-        [DWUpholdSuccessTransferViewController controllerWithTransaction:transaction];
-    successController.delegate = self;
-
-    [self performTransitionToContentController:successController animated:YES];
-    [self setupActions:successController.providedActions];
-    self.preferredAction = successController.preferredAction;
-}
-
-#pragma mark - DWUpholdSuccessTransferViewControllerDelegate
-
-- (void)upholdSuccessTransferViewControllerDidFinish:(DWUpholdSuccessTransferViewController *)controller {
-    [self.delegate upholdTransferViewControllerDidFinish:self];
-}
-
-- (void)upholdSuccessTransferViewControllerDidFinish:(DWUpholdSuccessTransferViewController *)controller
-                                  openTransactionURL:(NSURL *)url {
-    [self.delegate upholdTransferViewControllerDidFinish:self openTransactionURL:url];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end
-
-NS_ASSUME_NONNULL_END

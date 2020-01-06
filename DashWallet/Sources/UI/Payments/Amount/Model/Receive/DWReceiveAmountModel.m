@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,20 +15,12 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DWReceiveAmountModel.h"
 
-#import "DWUpholdCardCellModel.h"
+@implementation DWReceiveAmountModel
 
-NS_ASSUME_NONNULL_BEGIN
-
-@class DWUpholdCardObject;
-
-@interface DWUpholdSelectCardModel : NSObject
-
-@property (readonly, copy, nonatomic) NSArray<DWUpholdCardCellModel *> *items;
-
-- (instancetype)initWithFiatCards:(NSArray<DWUpholdCardObject *> *)fiatCards;
+- (BOOL)showsMaxButton {
+    return NO;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

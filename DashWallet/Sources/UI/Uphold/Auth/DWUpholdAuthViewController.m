@@ -20,13 +20,14 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <SafariServices/SafariServices.h>
 
+#import "DWUIKit.h"
 #import "DWUpholdAuthURLNotification.h"
 #import "DWUpholdClient.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdAuthViewController ()
+@interface DWUpholdAuthViewController () <ASWebAuthenticationPresentationContextProviding>
 
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicatorView;
 @property (strong, nonatomic) IBOutlet UILabel *firstDescriptionLabel;
@@ -49,6 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.firstDescriptionLabel.text = NSLocalizedString(@"Buy Dash with Uphold account", nil);
     self.secondDescriptionLabel.text = NSLocalizedString(@"Transfer Dash from your Uphold account to this wallet", nil);
+    self.firstDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
+    self.secondDescriptionLabel.textColor = [UIColor dw_darkTitleColor];
+    self.firstDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
+    self.secondDescriptionLabel.font = [UIFont dw_fontForTextStyle:UIFontTextStyleCallout];
     [self.linkButton setTitle:NSLocalizedString(@"Link Uphold Account", nil) forState:UIControlStateNormal];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -87,6 +92,9 @@ NS_ASSUME_NONNULL_BEGIN
             [[ASWebAuthenticationSession alloc] initWithURL:url
                                           callbackURLScheme:callbackURLScheme
                                           completionHandler:completionHandler];
+        if (@available(iOS 13.0, *)) {
+            authenticationSession.presentationContextProvider = self;
+        }
         [authenticationSession start];
         self.authenticationSession = authenticationSession;
     }
@@ -145,6 +153,12 @@ NS_ASSUME_NONNULL_BEGIN
                                                              [strongSelf.activityIndicatorView stopAnimating];
                                                          }
                                                      }];
+}
+
+#pragma mark - ASWebAuthenticationPresentationContextProviding
+
+- (ASPresentationAnchor)presentationAnchorForWebAuthenticationSession:(ASWebAuthenticationSession *)session API_AVAILABLE(ios(13.0)) {
+    return self.view.window;
 }
 
 @end
