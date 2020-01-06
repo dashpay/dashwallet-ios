@@ -333,7 +333,6 @@
 		2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8EF231ECDE000A96B62 /* DWPinField.m */; };
 		2ACD53EB234BCFAA00650AD3 /* DWWeakContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */; };
 		2ACD53EE234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */; };
-		2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */; };
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
 		2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
@@ -1137,8 +1136,6 @@
 		2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWWeakContainer.m; sourceTree = "<group>"; };
 		2ACD53EC234C9D8E00650AD3 /* UIView+DWRecursiveSubview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWRecursiveSubview.h"; sourceTree = "<group>"; };
 		2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWRecursiveSubview.m"; sourceTree = "<group>"; };
-		2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCrashReporter.h; sourceTree = "<group>"; };
-		2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCrashReporter.m; sourceTree = "<group>"; };
 		2AD1CE5E22D8E9D900C99324 /* DWSeedPhraseView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseView.h; sourceTree = "<group>"; };
 		2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedPhraseView.m; sourceTree = "<group>"; };
 		2AD1CE6222D9127600C99324 /* DWSeedWordModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedWordModel.h; sourceTree = "<group>"; };
@@ -1871,8 +1868,6 @@
 				2A7A7C0F234B591300451078 /* DWBalanceNotifier.m */,
 				2ACD53E9234BCFAA00650AD3 /* DWWeakContainer.h */,
 				2ACD53EA234BCFAA00650AD3 /* DWWeakContainer.m */,
-				2ACE88B22265DA1600ED24B5 /* DWCrashReporter.h */,
-				2ACE88B32265DA1600ED24B5 /* DWCrashReporter.m */,
 				BA4EECDF1B351AE200D443A3 /* DWAppGroupConstants.h */,
 			);
 			path = Models;
@@ -3885,14 +3880,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
-				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report.proto",
-				"${PODS_ROOT}/Dash-PLCrashReporter/Resources/crash_report_v2.proto",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report.proto",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/crash_report_v2.proto",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4006,7 +3997,6 @@
 				2ACCD85D231939FE00A96B62 /* DWRequestAmountContentView.m in Sources */,
 				2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */,
 				2A9FFE882230FF4700956D5F /* DWPlaceholderFormCellModel.m in Sources */,
-				2ACE88B42265DA1600ED24B5 /* DWCrashReporter.m in Sources */,
 				2A8B9E4F22FED47E00FF8653 /* DWOverlapControl.m in Sources */,
 				2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */,
 				2A9FFE9B2230FF4700956D5F /* DWUpholdLogoutTutorialViewController.m in Sources */,

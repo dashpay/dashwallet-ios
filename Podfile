@@ -5,7 +5,6 @@ target 'dashwallet' do
   pod 'CloudInAppMessaging', '0.1.0'
   
   pod 'KVO-MVVM', '0.5.6'
-  pod 'Dash-PLCrashReporter', :git => 'https://github.com/podkovyrin/plcrashreporter.git', :branch => 'dash_1.5.1', :commit => 'b472e89', :inhibit_warnings => true
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
   pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
