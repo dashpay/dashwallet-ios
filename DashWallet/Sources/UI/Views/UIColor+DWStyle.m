@@ -111,6 +111,12 @@ NS_ASSUME_NONNULL_BEGIN
     return color;
 }
 
++ (UIColor *)dw_disabledButtonTextColor {
+    UIColor *color = [UIColor colorNamed:@"DisabledButtonTextColor"];
+    NSParameterAssert(color);
+    return color;
+}
+
 + (UIColor *)dw_pinBackgroundColor {
     UIColor *color = [UIColor colorNamed:@"PinBackgroundColor"];
     NSParameterAssert(color);
