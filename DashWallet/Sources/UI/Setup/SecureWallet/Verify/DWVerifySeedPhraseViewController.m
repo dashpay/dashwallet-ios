@@ -85,7 +85,7 @@ static UIEdgeInsets const SCROLL_INDICATOR_INSETS = {0.0, 0.0, 0.0, -3.0};
 #pragma mark - Private
 
 - (void)setupView {
-    self.title = NSLocalizedString(@"Backup Wallet", nil);
+    self.title = NSLocalizedString(@"Backup Wallet", @"A noun. Used as a title.");
 
     self.scrollView.scrollIndicatorInsets = SCROLL_INDICATOR_INSETS;
 

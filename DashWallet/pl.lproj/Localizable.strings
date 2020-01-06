@@ -95,7 +95,7 @@
 /* No comment provided by engineer. */
 "Available balance" = "Dostępne saldo";
 
-/* No comment provided by engineer. */
+/* A noun. Used as a title. */
 "Backup Wallet" = "Kopia zapasowa portfela";
 
 /* No comment provided by engineer. */
@@ -581,7 +581,7 @@
 /* No comment provided by engineer. */
 "Scan QR Code" = "Scan QR Code";
 
-/* No comment provided by engineer. */
+/* A title of the quick receive screen */
 "Scan this to Pay" = "Scan this to Pay";
 
 /* Translate it as short as possible! (24 symbols max) */
@@ -738,7 +738,7 @@
 "This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
-"This PIN will be required to unlock your app everytime when you use it." = "This PIN will be required to unlock your app everytime when you use it.";
+"This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
