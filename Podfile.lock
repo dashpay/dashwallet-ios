@@ -4,7 +4,6 @@ PODS:
   - CocoaLumberjack (3.6.0):
     - CocoaLumberjack/Core (= 3.6.0)
   - CocoaLumberjack/Core (3.6.0)
-  - Dash-PLCrashReporter (1.5.1)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - CocoaLumberjack (= 3.6.0)
@@ -21,7 +20,6 @@ PODS:
 
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
-  - Dash-PLCrashReporter (from `https://github.com/podkovyrin/plcrashreporter.git`, commit `b472e89`, branch `dash_1.5.1`)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.0)
   - KVO-MVVM (= 0.5.6)
@@ -42,10 +40,6 @@ SPEC REPOS:
     - UIViewController-KeyboardAdditions
 
 EXTERNAL SOURCES:
-  Dash-PLCrashReporter:
-    :branch: dash_1.5.1
-    :commit: b472e89
-    :git: https://github.com/podkovyrin/plcrashreporter.git
   DashSync:
     :path: "../DashSync/"
   MMSegmentSlider:
@@ -53,9 +47,6 @@ EXTERNAL SOURCES:
     :git: https://github.com/podkovyrin/MMSegmentSlider
 
 CHECKOUT OPTIONS:
-  Dash-PLCrashReporter:
-    :commit: b472e8926cc3668dcac4189666a64ae2d65d8af8
-    :git: https://github.com/podkovyrin/plcrashreporter.git
   MMSegmentSlider:
     :commit: 2d91366
     :git: https://github.com/podkovyrin/MMSegmentSlider
@@ -64,7 +55,6 @@ SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   CloudInAppMessaging: 5dde21e2e67e173e3803ca7532eacaa77e19d744
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  Dash-PLCrashReporter: c6f194c683685579f05bda3524893a7add0ec89a
   DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
   DSDynamicOptions: 6a37eb496daee3c067e086b5b236d77707e9a3ee
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
@@ -74,6 +64,6 @@ SPEC CHECKSUMS:
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: f9a188cf849406e22e791105d26edebd2e826c27
+PODFILE CHECKSUM: 5f3e477a2f3c60c08721f38936f878bcbaaaca02
 
 COCOAPODS: 1.8.4

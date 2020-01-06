@@ -8,7 +8,6 @@
 
 #import "DWStartModel.h"
 
-#import "DWCrashReporter.h"
 #import "DWDataMigrationManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -27,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
         _deferredLaunchOptions = [launchOptions copy];
         _shouldMigrate = [DWDataMigrationManager sharedInstance].shouldMigrate;
         _applicationCrashedDuringLastMigration = ![DWDataMigrationManager sharedInstance].migrationSuccessful;
-        _shouldHandleCrashReports = [DWCrashReporter sharedInstance].shouldHandleCrashReports;
+        _shouldHandleCrashReports = NO;
     }
     return self;
 }
@@ -73,19 +72,17 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Crash Reporting
 
 - (NSArray<NSString *> *)crashReportFiles {
-    return [[DWCrashReporter sharedInstance] crashReportFiles];
+    return @[];
 }
 
 - (void)removeCrashReportFiles {
-    [[DWCrashReporter sharedInstance] removeCrashReportFiles];
 }
 
 - (void)updateLastCrashReportAskDate {
-    [[DWCrashReporter sharedInstance] updateLastCrashReportAskDate];
 }
 
 - (NSString *)gatherUserDeviceInfo {
-    return [[DWCrashReporter sharedInstance] gatherUserDeviceInfo];
+    return @"";
 }
 
 - (void)finalizeCrashReporting {

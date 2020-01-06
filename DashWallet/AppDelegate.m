@@ -25,7 +25,6 @@
 #import "DWDataMigrationManager.h"
 #import "DWStartViewController.h"
 #import "DWStartModel.h"
-#import "DWCrashReporter.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
 #import "DWBalanceNotifier.h"
@@ -106,9 +105,8 @@ NS_ASSUME_NONNULL_BEGIN
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
-    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (migrationManager.shouldMigrate || crashReporter.shouldHandleCrashReports) {
+    if (migrationManager.shouldMigrate) {
         // start updating prices earlier than migration to update `secureTime`
         // otherwise, `startExchangeRateFetching` will be performed within DashSync initialization process
         if (migrationManager.shouldMigrate) {
@@ -138,9 +136,8 @@ NS_ASSUME_NONNULL_BEGIN
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     
     // Schedule background fetch if the wallet (DashSync) had been started
-    DWCrashReporter *crashReporter = [DWCrashReporter sharedInstance];
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (!migrationManager.shouldMigrate && !crashReporter.shouldHandleCrashReports) {
+    if (!migrationManager.shouldMigrate) {
         [[DashSync sharedSyncController] scheduleBackgroundFetch];
     }
 }
@@ -225,8 +222,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions wasDeferred:(BOOL)wasDeferred {
-    [[DWCrashReporter sharedInstance] enableCrashReporter];
-    
     DWInitialViewController *controller = [[DWInitialViewController alloc] init];
     if (wasDeferred) {
         [controller setLaunchingAsDeferredController];
