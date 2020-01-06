@@ -365,10 +365,6 @@ static BOOL IsJailbroken(void) {
 }
 
 - (void)reloadTxDataSource {
-    if (self.syncModel.state == DWSyncModelState_Syncing) {
-        return;
-    }
-
     dispatch_async(self.queue, ^{
         DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
 
