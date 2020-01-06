@@ -409,7 +409,7 @@ static CGFloat const SCALE_FACTOR = 0.5;
 - (CGFloat)bezelScaleFactor {
     const CGFloat defaultScale = SCALE_FACTOR;
     if (IS_IPHONE) {
-        if (IS_IPHONE_6_PLUS) {
+        if (IS_IPHONE_6_PLUS || IS_IPHONE_XSMAX_OR_XR) {
             return defaultScale * 1.104; // = 414 / 375
         }
         else {
