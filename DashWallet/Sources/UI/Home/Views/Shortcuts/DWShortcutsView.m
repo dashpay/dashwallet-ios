@@ -25,21 +25,35 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCategory) {
+    CGSize size;
     if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraSmall] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategorySmall] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryMedium] ||
         [contentSizeCategory isEqualToString:UIContentSizeCategoryLarge]) {
-        return CGSizeMake(79.0, 79.0);
+        size = CGSizeMake(79.0, 79.0);
     }
     else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraLarge]) {
-        return CGSizeMake(88.0, 88.0);
+        size = CGSizeMake(88.0, 88.0);
     }
     else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraLarge]) {
-        return CGSizeMake(100.0, 100.0);
+        size = CGSizeMake(100.0, 100.0);
     }
     else {
-        return CGSizeMake(116.0, 116.0);
+        size = CGSizeMake(116.0, 116.0);
     }
+
+    if (IS_IPHONE_6_PLUS || IS_IPHONE_XSMAX_OR_XR) {
+        const CGFloat width = [UIScreen mainScreen].bounds.size.width;
+        const CGFloat margin = 16.0;
+        const CGFloat minSpacing = 8.0; // min cell spacing, set in xib
+        const NSInteger visibleCells = 4.0;
+        const CGFloat cellWidth = (width - margin * 2.0 - minSpacing * (visibleCells - 1)) / visibleCells;
+        if (cellWidth > size.width) {
+            return CGSizeMake(cellWidth, cellWidth);
+        }
+    }
+
+    return size;
 }
 
 @interface DWShortcutsView () <UICollectionViewDataSource, UICollectionViewDelegate>
