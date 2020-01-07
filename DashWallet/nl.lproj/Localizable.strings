@@ -294,6 +294,9 @@
 "I wrote it down" = "ik heb het opgeschreven";
 
 /* No comment provided by engineer. */
+"If this device is lost / damaged, if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "If this device is lost / damaged, if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
+
+/* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
@@ -310,9 +313,6 @@
 
 /* No comment provided by engineer. */
 "Import private key…" = "Import private key…";
-
-/* No comment provided by engineer. */
-"In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "In case if this device is lost / damaged, in case if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
