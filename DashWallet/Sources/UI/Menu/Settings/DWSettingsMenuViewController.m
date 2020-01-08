@@ -228,12 +228,24 @@ NS_ASSUME_NONNULL_BEGIN
                     }];
                 }];
 
+    UIAlertAction *evonet = [UIAlertAction
+        actionWithTitle:DSLocalizedString(@"Evonet", nil)
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                    [DWSettingsMenuModel switchToEvonetWithCompletion:^(BOOL success) {
+                        if (success) {
+                            [self updateSwitchNetworkCellModel];
+                        }
+                    }];
+                }];
+
     UIAlertAction *cancel = [UIAlertAction
         actionWithTitle:NSLocalizedString(@"Cancel", nil)
                   style:UIAlertActionStyleCancel
                 handler:nil];
     [actionSheet addAction:mainnet];
     [actionSheet addAction:testnet];
+    [actionSheet addAction:evonet];
     [actionSheet addAction:cancel];
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         actionSheet.popoverPresentationController.sourceView = sourceView;

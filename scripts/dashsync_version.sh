@@ -6,4 +6,5 @@ puts data['CHECKOUT OPTIONS']['DashSync'][:'commit']
 END_RUBY_SCRIPT
 )
 
+echo "Updating DashSyncCurrentCommit..."
 cat Podfile.lock | ruby -ryaml -e "$RUBY_SCRIPT" > DashSyncCurrentCommit
