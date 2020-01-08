@@ -289,7 +289,8 @@ static NSArray<NSString *> *OldDataBaseFileNames(void) {
 
     DSAccount *currentAccount = [DWEnvironment sharedInstance].currentAccount;
     DSAccountEntity *accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:currentAccount.wallet.uniqueID
-                                                                               index:currentAccount.accountNumber];
+                                                                               index:currentAccount.accountNumber
+                                                                             onChain:[DWEnvironment sharedInstance].currentChain];
 
     NSManagedObjectContext *writeContext = [NSManagedObject context];
 

@@ -48,6 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
     [[DWEnvironment sharedInstance] switchToTestnetWithCompletion:completion];
 }
 
++ (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
+    [[DWEnvironment sharedInstance] switchToEvonetWithCompletion:completion];
+}
+
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
                                   sourceRect:(CGRect)sourceRect {

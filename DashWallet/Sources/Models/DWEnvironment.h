@@ -37,6 +37,7 @@ extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin;
 - (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 - (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
+- (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion;
 - (void)reset;
 
 @end

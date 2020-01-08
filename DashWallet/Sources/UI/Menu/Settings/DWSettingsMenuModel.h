@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
 + (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
++ (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion;
 
 + (void)rescanBlockchainActionFromController:(UIViewController *)controller
                                   sourceView:(UIView *)sourceView
