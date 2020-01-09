@@ -3255,17 +3255,15 @@
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
 				2A8F420721BED08700858B91 /* Run Script - DashSync Version */,
-				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
 				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
+				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
+				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
 				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
-				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
-				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
-				FB8ACEB722E054EA00EE5035 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3767,20 +3765,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CEE253DB1E26B3B400A25B15 /* Icon Versioning */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Icon Versioning";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"\n";
-		};
 		DD2839496F426BDB0829397D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3817,35 +3801,19 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {
+		FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Run Script - bartycrouch";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		FB8ACEB722E054EA00EE5035 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\necho \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\nexit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n# check if original file exist (in case it was moved or deleted while refactoring)\nif [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\necho \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\nexit 1\nfi\nfi\n";
+			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
