@@ -52,6 +52,8 @@
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
+		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
+		2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */; };
 		2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */; };
 		2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */; };
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
@@ -76,7 +78,6 @@
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
 		2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */; };
-		2A2CD71022F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */; };
 		2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
 		2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */; };
 		2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD71722F99CAE008C7BC9 /* DWShortcutsView.xib */; };
@@ -570,6 +571,8 @@
 		2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoMainTabbarViewController.m; sourceTree = "<group>"; };
 		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
+		2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~ipad.xib"; sourceTree = "<group>"; };
+		2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~iphone.xib"; sourceTree = "<group>"; };
 		2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		2A1B7D902322AE2200BA8C6A /* DWTitleDetailItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailItem.h; sourceTree = "<group>"; };
@@ -619,7 +622,6 @@
 		2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+DashWallet.m"; sourceTree = "<group>"; };
 		2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutCollectionViewCell.h; sourceTree = "<group>"; };
 		2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWShortcutCollectionViewCell.m; sourceTree = "<group>"; };
-		2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWShortcutCollectionViewCell.xib; sourceTree = "<group>"; };
 		2A2CD71122F97B65008C7BC9 /* CALayer+DWShadow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CALayer+DWShadow.h"; sourceTree = "<group>"; };
 		2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CALayer+DWShadow.m"; sourceTree = "<group>"; };
 		2A2CD71422F98FEA008C7BC9 /* DWShadowView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShadowView.h; sourceTree = "<group>"; };
@@ -1626,13 +1628,14 @@
 			isa = PBXGroup;
 			children = (
 				2A2CD71F22F9B1B7008C7BC9 /* Models */,
+				2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */,
+				2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */,
+				2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */,
+				2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */,
+				2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */,
 				2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */,
 				2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */,
 				2A2CD71722F99CAE008C7BC9 /* DWShortcutsView.xib */,
-				2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */,
-				2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */,
-				2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */,
-				2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */,
 			);
 			path = Shortcuts;
 			sourceTree = "<group>";
@@ -3255,17 +3258,15 @@
 			buildPhases = (
 				1B5D1A098C1ECFC62A9E06B1 /* [CP] Check Pods Manifest.lock */,
 				2A8F420721BED08700858B91 /* Run Script - DashSync Version */,
-				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
 				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
+				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
+				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
 				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
-				CEE253DB1E26B3B400A25B15 /* Icon Versioning */,
-				FB0ACB9A1F9A99E400F4AB52 /* ShellScript */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
-				FB8ACEB722E054EA00EE5035 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3467,7 +3468,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
+				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
@@ -3477,7 +3480,6 @@
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
-				2A2CD71022F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
@@ -3767,20 +3769,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CEE253DB1E26B3B400A25B15 /* Icon Versioning */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Icon Versioning";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/icon_versioning.sh\"\n";
-		};
 		DD2839496F426BDB0829397D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3817,35 +3805,19 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FB0ACB9A1F9A99E400F4AB52 /* ShellScript */ = {
+		FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Run Script - bartycrouch";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n# Incrementally update all Storyboards/XIBs strings files\nbartycrouch interfaces -b -p \"$PROJECT_DIR\"\n\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR\" -l \"$PROJECT_DIR\" -c -s -k\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		FB8ACEB722E054EA00EE5035 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\necho \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\nexit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n# check if original file exist (in case it was moved or deleted while refactoring)\nif [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\necho \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\nexit 1\nfi\nfi\n";
+			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

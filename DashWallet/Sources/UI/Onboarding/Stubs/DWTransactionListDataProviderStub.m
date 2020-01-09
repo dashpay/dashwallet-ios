@@ -25,8 +25,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWTransactionListDataProviderStub
 
-- (NSString *)dateForTransaction:(DWTransactionStub *)transaction {
-    return [self formattedTxDateForTimestamp:transaction.timestamp];
+- (NSString *)shortDateStringForTransaction:(DWTransactionStub *)transaction {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
+    return [self formattedShortTxDate:date];
+}
+
+- (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
+    return [NSDateFormatter localizedStringFromDate:date
+                                          dateStyle:NSDateFormatterMediumStyle
+                                          timeStyle:NSDateFormatterShortStyle];
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {

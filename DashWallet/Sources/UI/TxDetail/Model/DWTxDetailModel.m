@@ -224,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<DWTitleDetailItem>)date {
     NSString *title = NSLocalizedString(@"Date", nil);
-    NSString *detail = [self.dataProvider dateForTransaction:self.transaction];
+    NSString *detail = [self.dataProvider longDateStringForTransaction:self.transaction];
     DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithStyle:DWTitleDetailItem_Default
                                                                             title:title
                                                                       plainDetail:detail];

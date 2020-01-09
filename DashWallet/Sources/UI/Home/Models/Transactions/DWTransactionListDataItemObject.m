@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
                 case DSTransactionDirection_NotAccountFunds:
                     return NSLocalizedString(@"Received", nil);
                 case DSTransactionDirection_Moved:
-                    return NSLocalizedString(@"Moved", nil);
+                    return NSLocalizedString(@"Internal Transfer", @"Transaction within the wallet, transfer of own funds");
             }
         }
         case DWTransactionType_Reward:

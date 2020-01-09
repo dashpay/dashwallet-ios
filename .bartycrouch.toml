@@ -1,0 +1,26 @@
+[update]
+tasks = ["interfaces", "code", "normalize"]
+
+[update.interfaces]
+path = "."
+defaultToBase = true
+ignoreEmptyStrings = false
+unstripped = false
+
+[update.code]
+codePath = "."
+localizablePath = "."
+defaultToKeys = true
+additive = false
+unstripped = false
+
+[update.normalize]
+path = "."
+sourceLocale = "en"
+harmonizeWithSource = true
+sortByKeys = true
+
+[lint]
+path = "."
+duplicateKeys = true
+emptyValues = true

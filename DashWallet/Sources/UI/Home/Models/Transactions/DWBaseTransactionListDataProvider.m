@@ -57,19 +57,27 @@ static NSString *DWTxDateFormat(NSString *tmplate) {
         _monthDayHourFormatter = [NSDateFormatter new];
         _monthDayHourFormatter.dateFormat = DWTxDateFormat(@"Mdjmma");
         _yearMonthDayHourFormatter = [NSDateFormatter new];
-        _yearMonthDayHourFormatter.dateFormat = DWTxDateFormat(@"yyMdja");
+        _yearMonthDayHourFormatter.dateFormat = DWTxDateFormat(@"yyyyMdja");
     }
     return self;
 }
 
-- (NSString *)formattedTxDateForTimestamp:(NSTimeInterval)timestamp {
-    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:timestamp];
+- (NSDate *)dateForTransaction:(DSTransaction *)transaction {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
+    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
+    NSDate *txDate = [NSDate dateWithTimeIntervalSince1970:txTime];
+
+    return txDate;
+}
+
+- (NSString *)formattedShortTxDate:(NSDate *)date {
     NSCalendar *calendar = [NSCalendar currentCalendar];
     NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
-    NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:txDate];
+    NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:date];
 
     NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.monthDayHourFormatter : self.yearMonthDayHourFormatter;
-    return [desiredFormatter stringFromDate:txDate];
+    return [desiredFormatter stringFromDate:date];
 }
 
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData

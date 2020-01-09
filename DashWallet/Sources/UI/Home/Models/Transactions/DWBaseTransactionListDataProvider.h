@@ -20,13 +20,15 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class UIFont;
+@class DSTransaction;
 @protocol DWTransactionListDataItem;
 
 @interface DWBaseTransactionListDataProvider : NSObject
 
 @property (readonly, nonatomic, strong) NSMutableDictionary *txDates;
 
-- (NSString *)formattedTxDateForTimestamp:(NSTimeInterval)timestamp;
+- (NSDate *)dateForTransaction:(DSTransaction *)transaction;
+- (NSString *)formattedShortTxDate:(NSDate *)date;
 
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData
                                         font:(UIFont *)font;
