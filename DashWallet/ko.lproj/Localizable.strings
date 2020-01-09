@@ -294,9 +294,6 @@
 "I wrote it down" = "옮겨 적었습니다";
 
 /* No comment provided by engineer. */
-"If this device is lost / damaged, if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds." = "If this device is lost / damaged, if the Dash Wallet is uninstalled accidentally from this device, you will need this recovery phrase to access your funds.";
-
-/* No comment provided by engineer. */
 "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
 
 /* No comment provided by engineer. */
@@ -880,6 +877,9 @@
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "또한 당신의 브라우저를 이용하여 업홀드 웹사이트에서 로그아웃 하십시오.";
+
+/* No comment provided by engineer. */
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
