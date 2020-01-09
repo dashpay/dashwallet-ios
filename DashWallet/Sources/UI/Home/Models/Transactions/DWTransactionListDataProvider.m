@@ -38,22 +38,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - DWTransactionListDataProviderProtocol
 
-- (NSString *)dateForTransaction:(DSTransaction *)transaction {
-    NSString *date = self.txDates[uint256_obj(transaction.txHash)];
-    if (date) {
-        return date;
+- (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction {
+    NSString *dateString = self.txDates[uint256_obj(transaction.txHash)];
+    if (dateString) {
+        return dateString;
     }
 
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    NSTimeInterval now = [chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval txTime = (transaction.timestamp > 1) ? transaction.timestamp : now;
-    date = [self formattedTxDateForTimestamp:txTime];
+    NSDate *date = [self dateForTransaction:transaction];
+    dateString = [self formattedShortTxDate:date];
 
     if (transaction.blockHeight != TX_UNCONFIRMED) {
-        self.txDates[uint256_obj(transaction.txHash)] = date;
+        self.txDates[uint256_obj(transaction.txHash)] = dateString;
     }
 
-    return date;
+    return dateString;
+}
+
+- (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
+    NSDate *date = [self dateForTransaction:transaction];
+    return [NSDateFormatter localizedStringFromDate:date
+                                          dateStyle:NSDateFormatterMediumStyle
+                                          timeStyle:NSDateFormatterShortStyle];
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {

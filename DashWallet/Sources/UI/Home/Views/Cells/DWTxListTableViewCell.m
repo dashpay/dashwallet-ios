@@ -94,7 +94,7 @@ static NSAttributedString *DirectionStateString(id<DWTransactionListDataItem> tr
     self.dataProvider = dataProvider;
     self.transactionData = [self.dataProvider transactionDataForTransaction:transaction];
 
-    self.dateLabel.text = [self.dataProvider dateForTransaction:transaction];
+    self.dateLabel.text = [self.dataProvider shortDateStringForTransaction:transaction];
     self.fiatAmountLabel.text = self.transactionData.fiatAmount;
     [self reloadAttributedData];
 }
