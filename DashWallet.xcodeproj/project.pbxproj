@@ -52,6 +52,8 @@
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
 		2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F5A02194C1D800E7B563 /* DashWallet.xcdatamodeld */; };
 		2A12E61923ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */; };
+		2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
+		2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */; };
 		2A1B7D81232151D400BA8C6A /* DWTxDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */; };
 		2A1B7D932322AEE000BA8C6A /* DWTxDetailContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D922322AEE000BA8C6A /* DWTxDetailContentView.m */; };
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
@@ -76,7 +78,6 @@
 		2A2CD6EB22F47592008C7BC9 /* DWShortcutsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
 		2A2CD70F22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */; };
-		2A2CD71022F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */; };
 		2A2CD71322F97B65008C7BC9 /* CALayer+DWShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */; };
 		2A2CD71622F98FEA008C7BC9 /* DWShadowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD71522F98FEA008C7BC9 /* DWShadowView.m */; };
 		2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2CD71722F99CAE008C7BC9 /* DWShortcutsView.xib */; };
@@ -570,6 +571,8 @@
 		2A12E61723ABC7D3001CAF58 /* DWDemoMainTabbarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoMainTabbarViewController.h; sourceTree = "<group>"; };
 		2A12E61823ABC7D3001CAF58 /* DWDemoMainTabbarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoMainTabbarViewController.m; sourceTree = "<group>"; };
 		2A12E61A23ABC8E1001CAF58 /* DWExtendedContainerViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWExtendedContainerViewController+DWProtected.h"; sourceTree = "<group>"; };
+		2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~ipad.xib"; sourceTree = "<group>"; };
+		2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "DWShortcutCollectionViewCell~iphone.xib"; sourceTree = "<group>"; };
 		2A1B7D7F232151D400BA8C6A /* DWTxDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTxDetailViewController.h; sourceTree = "<group>"; };
 		2A1B7D80232151D400BA8C6A /* DWTxDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailViewController.m; sourceTree = "<group>"; };
 		2A1B7D902322AE2200BA8C6A /* DWTitleDetailItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailItem.h; sourceTree = "<group>"; };
@@ -619,7 +622,6 @@
 		2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+DashWallet.m"; sourceTree = "<group>"; };
 		2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShortcutCollectionViewCell.h; sourceTree = "<group>"; };
 		2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWShortcutCollectionViewCell.m; sourceTree = "<group>"; };
-		2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWShortcutCollectionViewCell.xib; sourceTree = "<group>"; };
 		2A2CD71122F97B65008C7BC9 /* CALayer+DWShadow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CALayer+DWShadow.h"; sourceTree = "<group>"; };
 		2A2CD71222F97B65008C7BC9 /* CALayer+DWShadow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CALayer+DWShadow.m"; sourceTree = "<group>"; };
 		2A2CD71422F98FEA008C7BC9 /* DWShadowView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWShadowView.h; sourceTree = "<group>"; };
@@ -1626,13 +1628,14 @@
 			isa = PBXGroup;
 			children = (
 				2A2CD71F22F9B1B7008C7BC9 /* Models */,
+				2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */,
+				2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */,
+				2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */,
+				2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */,
+				2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */,
 				2A2CD6E922F47592008C7BC9 /* DWShortcutsView.h */,
 				2A2CD6EA22F47592008C7BC9 /* DWShortcutsView.m */,
 				2A2CD71722F99CAE008C7BC9 /* DWShortcutsView.xib */,
-				2A2CD70C22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.h */,
-				2A2CD70D22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.m */,
-				2A2CD70E22F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib */,
-				2A2CD72622FA2028008C7BC9 /* DWShortcutsActionDelegate.h */,
 			);
 			path = Shortcuts;
 			sourceTree = "<group>";
@@ -3465,7 +3468,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A1AF6DE23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib in Resources */,
 				2AB231D42196E27300A6E7E6 /* StartStoryboard.storyboard in Resources */,
+				2A1AF6DF23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib in Resources */,
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				2A4E534122F025FE00E5168A /* DWTxListEmptyTableViewCell.xib in Resources */,
@@ -3475,7 +3480,6 @@
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				2A9FFEA02230FF4700956D5F /* UpholdMainStoryboard.storyboard in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
-				2A2CD71022F97AC6008C7BC9 /* DWShortcutCollectionViewCell.xib in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* DWShortcutsView.xib in Resources */,
 				FBFC2EE521137A7A00D20C57 /* Montserrat-SemiBold.otf in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,

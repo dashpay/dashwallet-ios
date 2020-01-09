@@ -53,6 +53,10 @@ static CGSize CellSizeForContentSizeCategory(UIContentSizeCategory contentSizeCa
         }
     }
 
+    if (IS_IPAD) {
+        return CGSizeMake(size.width * 2.0, size.height);
+    }
+
     return size;
 }
 
