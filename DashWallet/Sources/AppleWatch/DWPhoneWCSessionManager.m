@@ -252,7 +252,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                 transactionTypeString = NSLocalizedString(@"Received", @"Received transaction");
                 break;
             case BRAWTransactionTypeMove:
-                transactionTypeString = NSLocalizedString(@"Moved", @"Moved transaction");
+                transactionTypeString = NSLocalizedString(@"Internal Transfer", @"Transaction within the wallet, transfer of own funds");
                 break;
             case BRAWTransactionTypeInvalid:
                 transactionTypeString = NSLocalizedString(@"Invalid", @"Invalid transaction");

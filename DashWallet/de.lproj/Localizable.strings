@@ -317,6 +317,9 @@
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
+/* Transaction within the wallet, transfer of own funds */
+"Internal Transfer" = "Internal Transfer";
+
 /* Invalid transaction */
 "Invalid" = "Invalid";
 
@@ -388,9 +391,6 @@
 
 /* No comment provided by engineer. */
 "More Control" = "More Control";
-
-/* Moved transaction */
-"Moved" = "Verschoben";
 
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
