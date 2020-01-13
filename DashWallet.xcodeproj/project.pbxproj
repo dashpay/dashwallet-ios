@@ -3267,6 +3267,7 @@
 				BAE12BF71B2DEE7F00895CC5 /* Embed App Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
 				F36D90CA4FBC91B010670F81 /* [CP] Copy Pods Resources */,
+				2A1AF9FD23C86A4400442AF5 /* Run Script - Cleanup Uphold Constants */,
 			);
 			buildRules = (
 			);
@@ -3584,6 +3585,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		2A1AF9FD23C86A4400442AF5 /* Run Script - Cleanup Uphold Constants */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script - Cleanup Uphold Constants";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\n    echo \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\n    exit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
 		};
 		2A4431D722D6391F009BAF7F /* Run Script - clang-format */ = {
 			isa = PBXShellScriptBuildPhase;
