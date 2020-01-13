@@ -23,27 +23,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *DWTxDateFormat(NSString *tmplate) {
-    NSString *format = [NSDateFormatter dateFormatFromTemplate:tmplate options:0 locale:[NSLocale currentLocale]];
-
-    format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
-    format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];
-    format = [format stringByReplacingOccurrencesOfString:@"hh" withString:@"h"];
-    format = [format stringByReplacingOccurrencesOfString:@" ha" withString:@"@ha"];
-    format = [format stringByReplacingOccurrencesOfString:@"HH" withString:@"H"];
-    format = [format stringByReplacingOccurrencesOfString:@"H '" withString:@"H'"];
-    format = [format stringByReplacingOccurrencesOfString:@"H " withString:@"H'h' "];
-    format = [format stringByReplacingOccurrencesOfString:@"H"
-                                               withString:@"H'h'"
-                                                  options:NSBackwardsSearch | NSAnchoredSearch
-                                                    range:NSMakeRange(0, format.length)];
-    return format;
-}
-
 @interface DWBaseTransactionListDataProvider ()
 
-@property (readonly, nonatomic, strong) NSDateFormatter *monthDayHourFormatter;
-@property (readonly, nonatomic, strong) NSDateFormatter *yearMonthDayHourFormatter;
+@property (readonly, nonatomic, strong) NSDateFormatter *shortDateFormatter;
+@property (readonly, nonatomic, strong) NSDateFormatter *longDateFormatter;
 
 @end
 
@@ -54,10 +37,15 @@ static NSString *DWTxDateFormat(NSString *tmplate) {
     if (self) {
         _txDates = [NSMutableDictionary dictionary];
 
-        _monthDayHourFormatter = [NSDateFormatter new];
-        _monthDayHourFormatter.dateFormat = DWTxDateFormat(@"Mdjmma");
-        _yearMonthDayHourFormatter = [NSDateFormatter new];
-        _yearMonthDayHourFormatter.dateFormat = DWTxDateFormat(@"yyyyMdja");
+        NSLocale *locale = [NSLocale currentLocale];
+        _shortDateFormatter = [[NSDateFormatter alloc] init];
+        _shortDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMdjmma"
+                                                                         options:0
+                                                                          locale:locale];
+        _longDateFormatter = [[NSDateFormatter alloc] init];
+        _longDateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"yyyyMMMdjmma"
+                                                                        options:0
+                                                                         locale:locale];
     }
     return self;
 }
@@ -76,8 +64,12 @@ static NSString *DWTxDateFormat(NSString *tmplate) {
     NSInteger nowYear = [calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
     NSInteger txYear = [calendar component:NSCalendarUnitYear fromDate:date];
 
-    NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.monthDayHourFormatter : self.yearMonthDayHourFormatter;
+    NSDateFormatter *desiredFormatter = (nowYear == txYear) ? self.shortDateFormatter : self.longDateFormatter;
     return [desiredFormatter stringFromDate:date];
+}
+
+- (NSString *)formattedLongTxDate:(NSDate *)date {
+    return [self.longDateFormatter stringFromDate:date];
 }
 
 - (NSAttributedString *)dashAmountStringFrom:(id<DWTransactionListDataItem>)transactionData

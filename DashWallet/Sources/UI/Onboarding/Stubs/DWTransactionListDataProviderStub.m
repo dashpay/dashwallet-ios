@@ -32,9 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)longDateStringForTransaction:(DSTransaction *)transaction {
     NSDate *date = [NSDate dateWithTimeIntervalSince1970:transaction.timestamp];
-    return [NSDateFormatter localizedStringFromDate:date
-                                          dateStyle:NSDateFormatterMediumStyle
-                                          timeStyle:NSDateFormatterShortStyle];
+    return [self formattedLongTxDate:date];
 }
 
 - (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
