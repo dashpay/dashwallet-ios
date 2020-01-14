@@ -75,6 +75,8 @@ static NSInteger MAX_SHORTCUTS_COUNT = 4;
 
     NSMutableArray<DWShortcutAction *> *mutableItems = [NSMutableArray array];
 
+    [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_CreateUsername]];
+
     const BOOL walletNeedsBackup = options.walletNeedsBackup;
     if (walletNeedsBackup) {
         [mutableItems addObject:[DWShortcutAction action:DWShortcutActionType_SecureWallet]];
