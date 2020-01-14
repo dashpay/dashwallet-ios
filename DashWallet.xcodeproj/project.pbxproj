@@ -339,6 +339,9 @@
 		2ADF83FA23632D1C008459A7 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 759816E619357D6F005060EA /* BRBubbleView.m */; };
 		2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
 		2ADF840023633121008459A7 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
+		2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */; };
+		2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */; };
+		2AE8B64623CDC3190016F221 /* InputUsername.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AE8B64523CDC3190016F221 /* InputUsername.storyboard */; };
 		2AF26F3B230C0E4C007F9228 /* DWBaseSeedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */; };
 		2AF26F3E230C1F79007F9228 /* DWAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F3D230C1F79007F9228 /* DWAmountViewController.m */; };
 		2AF26F41230C1F9D007F9228 /* DWAmountView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF26F40230C1F9D007F9228 /* DWAmountView.m */; };
@@ -1134,6 +1137,11 @@
 		2AD46231232A286000C71557 /* DWLockScreenModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLockScreenModel.m; sourceTree = "<group>"; };
 		2ADC722823B5547000D9DD37 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2ADF83FE23633116008459A7 /* SharedAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SharedAssets.xcassets; sourceTree = "<group>"; };
+		2AE8B63F23CDB98A0016F221 /* DWCreateUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCreateUsernameViewController.h; sourceTree = "<group>"; };
+		2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCreateUsernameViewController.m; sourceTree = "<group>"; };
+		2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWInputUsernameViewController.h; sourceTree = "<group>"; };
+		2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWInputUsernameViewController.m; sourceTree = "<group>"; };
+		2AE8B64523CDC3190016F221 /* InputUsername.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = InputUsername.storyboard; sourceTree = "<group>"; };
 		2AF26F39230C0E4C007F9228 /* DWBaseSeedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseSeedViewController.h; sourceTree = "<group>"; };
 		2AF26F3A230C0E4C007F9228 /* DWBaseSeedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseSeedViewController.m; sourceTree = "<group>"; };
 		2AF26F3C230C1F79007F9228 /* DWAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountViewController.h; sourceTree = "<group>"; };
@@ -1811,6 +1819,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				2AE8B63D23CDB94E0016F221 /* DashPay */,
 				2AB231CF2196E23200A6E7E6 /* Start */,
 				2A913E6C23A26469006A2A59 /* Onboarding */,
 				2A7A7BAF2347917800451078 /* Menu */,
@@ -3005,6 +3014,26 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		2AE8B63D23CDB94E0016F221 /* DashPay */ = {
+			isa = PBXGroup;
+			children = (
+				2AE8B63E23CDB9570016F221 /* CreateUsername */,
+			);
+			path = DashPay;
+			sourceTree = "<group>";
+		};
+		2AE8B63E23CDB9570016F221 /* CreateUsername */ = {
+			isa = PBXGroup;
+			children = (
+				2AE8B64523CDC3190016F221 /* InputUsername.storyboard */,
+				2AE8B63F23CDB98A0016F221 /* DWCreateUsernameViewController.h */,
+				2AE8B64023CDB98A0016F221 /* DWCreateUsernameViewController.m */,
+				2AE8B64223CDC0F40016F221 /* DWInputUsernameViewController.h */,
+				2AE8B64323CDC0F50016F221 /* DWInputUsernameViewController.m */,
+			);
+			path = CreateUsername;
+			sourceTree = "<group>";
+		};
 		2AFCB9B023BDEED900FF59A6 /* Send */ = {
 			isa = PBXGroup;
 			children = (
@@ -3515,6 +3544,7 @@
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
 				2ACCD865231959CD00A96B62 /* DWAmountPreviewView.xib in Resources */,
+				2AE8B64623CDC3190016F221 /* InputUsername.storyboard in Resources */,
 				2A4431BE22D4ACDB009BAF7F /* SecureWalletInfo.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3960,6 +3990,7 @@
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
 				2AFCB9B423BDEEFE00FF59A6 /* DWReceiveAmountModel.m in Sources */,
+				2AE8B64423CDC0F50016F221 /* DWInputUsernameViewController.m in Sources */,
 				2A11F5A32194C1D800E7B563 /* DashWallet.xcdatamodeld in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
 				2A0C69D723143B2F001B8C90 /* DWBaseModalViewController.m in Sources */,
@@ -4105,6 +4136,7 @@
 				2A4431D522D52F67009BAF7F /* DWInfoTextCell.m in Sources */,
 				2A913E8523A309EA006A2A59 /* DWSyncModelStub.m in Sources */,
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
+				2AE8B64123CDB98A0016F221 /* DWCreateUsernameViewController.m in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				2A8F420F21BEE95D00858B91 /* DWAboutViewController.m in Sources */,
 				2A7A7BCD2347F01B00451078 /* DWSecurityMenuViewController.m in Sources */,

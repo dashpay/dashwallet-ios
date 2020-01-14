@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DWBackupInfoViewController.h"
+#import "DWCreateUsernameViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeViewController+DWImportPrivateKeyDelegateImpl.h"
 #import "DWHomeViewController+DWSecureWalletDelegateImpl.h"
@@ -89,6 +90,10 @@ NS_ASSUME_NONNULL_BEGIN
             break;
         }
         case DWShortcutActionType_ReportAnIssue: {
+            break;
+        }
+        case DWShortcutActionType_CreateUsername: {
+            [self showCreateUsername];
             break;
         }
         case DWShortcutActionType_AddShortcut: {
@@ -179,6 +184,11 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf presentViewController:alert animated:YES completion:nil];
         }
     }];
+}
+
+- (void)showCreateUsername {
+    DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc] init];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {

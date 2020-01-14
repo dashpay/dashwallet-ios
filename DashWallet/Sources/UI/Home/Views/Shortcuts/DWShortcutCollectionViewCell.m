@@ -58,6 +58,9 @@ static NSString *TitleForAction(DWShortcutAction *action) {
         case DWShortcutActionType_ReportAnIssue:
             return NSLocalizedString(@"Report an Issue",
                                      @"Translate it as short as possible! (24 symbols max)");
+        case DWShortcutActionType_CreateUsername:
+            // TODO: localize
+            return @"Create Username";
         case DWShortcutActionType_AddShortcut:
             return NSLocalizedString(@"Add Shortcut",
                                      @"Translate it as short as possible! (24 symbols max)");
@@ -121,6 +124,11 @@ static UIImage *_Nullable IconForAction(DWShortcutAction *action) {
             return image;
         }
         case DWShortcutActionType_ReportAnIssue: {
+            UIImage *image = [UIImage imageNamed:@"shortcut_reportAnIssue"];
+            NSCParameterAssert(image);
+            return image;
+        }
+        case DWShortcutActionType_CreateUsername: {
             UIImage *image = [UIImage imageNamed:@"shortcut_reportAnIssue"];
             NSCParameterAssert(image);
             return image;
