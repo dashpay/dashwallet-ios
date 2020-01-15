@@ -19,6 +19,7 @@
 
 #import "DWConfirmUsernameViewController.h"
 #import "DWInputUsernameViewController.h"
+#import "DWUsernamePendingViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
 @interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
@@ -78,6 +79,10 @@
 
 - (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller {
     [controller dismissViewControllerAnimated:YES completion:nil];
+
+    DWUsernamePendingViewController *pendingController = [[DWUsernamePendingViewController alloc] init];
+    pendingController.username = self.inputUsername.text;
+    [self.navigationController setViewControllers:@[ pendingController ] animated:YES];
 }
 
 @end

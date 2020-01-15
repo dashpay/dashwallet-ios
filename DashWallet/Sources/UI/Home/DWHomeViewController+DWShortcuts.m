@@ -188,10 +188,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)showCreateUsername {
     DWCreateUsernameViewController *controller = [[DWCreateUsernameViewController alloc] init];
-    [self.navigationController pushViewController:controller animated:YES];
+    [self presentControllerModallyInNavigationController:controller
+                                  modalPresentationStyle:UIModalPresentationFullScreen];
 }
 
 - (void)presentControllerModallyInNavigationController:(UIViewController *)controller {
+    if (@available(iOS 13.0, *)) {
+        [self presentControllerModallyInNavigationController:controller
+                                      modalPresentationStyle:UIModalPresentationAutomatic];
+    }
+    else {
+        // TODO: check on the iPad
+        [self presentControllerModallyInNavigationController:controller
+                                      modalPresentationStyle:UIModalPresentationFullScreen];
+    }
+}
+
+- (void)presentControllerModallyInNavigationController:(UIViewController *)controller
+                                modalPresentationStyle:(UIModalPresentationStyle)modalPresentationStyle {
     UIBarButtonItem *cancelButton =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                       target:self
@@ -200,6 +214,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = modalPresentationStyle;
     [self presentViewController:navigationController animated:YES completion:nil];
 }
 
