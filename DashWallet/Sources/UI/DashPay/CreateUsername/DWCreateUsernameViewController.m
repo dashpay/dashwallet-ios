@@ -17,10 +17,11 @@
 
 #import "DWCreateUsernameViewController.h"
 
+#import "DWConfirmUsernameViewController.h"
 #import "DWInputUsernameViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
-@interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate>
+@interface DWCreateUsernameViewController () <DWInputUsernameViewControllerDelegate, DWConfirmUsernameViewControllerDelegate>
 
 @property (nonatomic, strong) DWInputUsernameViewController *inputUsername;
 
@@ -61,7 +62,9 @@
 }
 
 - (void)actionButtonAction:(id)sender {
-    // TODO: impl
+    DWConfirmUsernameViewController *controller = [[DWConfirmUsernameViewController alloc] init];
+    controller.delegate = self;
+    [self presentViewController:controller animated:YES completion:nil];
 }
 
 #pragma mark - DWInputUsernameViewControllerDelegate
@@ -69,6 +72,12 @@
 - (void)inputUsernameViewControllerDidUpdateText:(DWInputUsernameViewController *)controller {
     // TODO: validation logic
     self.actionButton.enabled = controller.text.length > 0;
+}
+
+#pragma mark - DWConfirmUsernameViewControllerDelegate
+
+- (void)confirmUsernameViewControllerDidConfirm:(DWConfirmUsernameViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end
