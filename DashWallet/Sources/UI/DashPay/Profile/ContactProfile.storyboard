@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7ev-lc-g37">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Contact Profile View Controller-->
+        <scene sceneID="oGz-3J-yTm">
+            <objects>
+                <viewController id="7ev-lc-g37" customClass="DWContactProfileViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rSg-V7-PvM">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YkB-hU-dn6">
+                                <rect key="frame" x="16" y="88" width="382" height="33.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle1"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="bdo-YJ-5YR">
+                                <rect key="frame" x="16" y="153.5" width="382" height="80.5"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="acR-tv-4BS">
+                                        <rect key="frame" x="0.0" y="0.0" width="382" height="30"/>
+                                        <state key="normal" title="Pay"/>
+                                        <connections>
+                                            <action selector="payButtonAction:" destination="7ev-lc-g37" eventType="touchUpInside" id="38X-eg-jgH"/>
+                                        </connections>
+                                    </button>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="TeH-WP-jif">
+                                        <rect key="frame" x="0.0" y="30" width="382" height="30"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="to2-Pz-fiF">
+                                                <rect key="frame" x="0.0" y="0.0" width="191" height="30"/>
+                                                <state key="normal" title="Accept"/>
+                                                <connections>
+                                                    <action selector="acceptButtonAction:" destination="7ev-lc-g37" eventType="touchUpInside" id="0bp-v5-SQ2"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Qp-7m-29b">
+                                                <rect key="frame" x="191" y="0.0" width="191" height="30"/>
+                                                <state key="normal" title="Ignore"/>
+                                                <connections>
+                                                    <action selector="declineButtonAction:" destination="7ev-lc-g37" eventType="touchUpInside" id="tIT-IU-yhv"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pending" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H59-Vk-n4I">
+                                        <rect key="frame" x="0.0" y="60" width="382" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="jUT-27-hm0" firstAttribute="trailing" secondItem="bdo-YJ-5YR" secondAttribute="trailing" constant="16" id="5Kz-Nk-vcu"/>
+                            <constraint firstItem="YkB-hU-dn6" firstAttribute="leading" secondItem="jUT-27-hm0" secondAttribute="leading" constant="16" id="Awf-eB-oU4"/>
+                            <constraint firstItem="bdo-YJ-5YR" firstAttribute="top" secondItem="YkB-hU-dn6" secondAttribute="bottom" constant="32" id="YMH-Yw-adF"/>
+                            <constraint firstItem="bdo-YJ-5YR" firstAttribute="leading" secondItem="jUT-27-hm0" secondAttribute="leading" constant="16" id="b2B-tb-cbw"/>
+                            <constraint firstItem="jUT-27-hm0" firstAttribute="trailing" secondItem="YkB-hU-dn6" secondAttribute="trailing" constant="16" id="gnC-H1-Jr6"/>
+                            <constraint firstItem="YkB-hU-dn6" firstAttribute="top" secondItem="jUT-27-hm0" secondAttribute="top" constant="44" id="tBo-7c-jT9"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="jUT-27-hm0"/>
+                    </view>
+                    <connections>
+                        <outlet property="incomingContactActionsView" destination="TeH-WP-jif" id="cjl-Gh-fhL"/>
+                        <outlet property="outgoingStatusLabel" destination="H59-Vk-n4I" id="ZSG-r3-miE"/>
+                        <outlet property="payButton" destination="acR-tv-4BS" id="sWJ-v5-NSb"/>
+                        <outlet property="usernameLabel" destination="YkB-hU-dn6" id="mlo-YQ-xXJ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Qe0-ck-bTu" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-26" y="123"/>
+        </scene>
+    </scenes>
+</document>
