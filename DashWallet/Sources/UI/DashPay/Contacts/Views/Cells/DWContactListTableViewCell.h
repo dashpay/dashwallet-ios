@@ -17,21 +17,25 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWContactItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWTabBarButtonType) {
-    DWTabBarButtonType_Home,
-    DWTabBarButtonType_Contacts,
-    DWTabBarButtonType_Others,
-};
+@class DWContactListTableViewCell;
 
-@interface DWTabBarButton : UIControl
+@protocol DWContactListTableViewCellDelegate <NSObject>
 
-- (instancetype)initWithType:(DWTabBarButtonType)type;
+- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
+                didAcceptContact:(id<DWContactItem>)contact;
+- (void)contactListTableViewCell:(DWContactListTableViewCell *)cell
+               didDeclineContact:(id<DWContactItem>)contact;
 
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@end
+
+@interface DWContactListTableViewCell : UITableViewCell
+
+@property (nullable, nonatomic, strong) id<DWContactItem> contact;
+@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> delegate;
 
 @end
 

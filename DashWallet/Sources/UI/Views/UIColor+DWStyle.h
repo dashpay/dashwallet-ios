@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_segmentSliderColor;
 
++ (UIColor *)dw_declineButtonColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

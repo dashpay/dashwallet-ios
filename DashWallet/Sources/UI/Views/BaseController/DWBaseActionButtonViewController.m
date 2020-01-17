@@ -17,6 +17,8 @@
 
 #import "DWBaseActionButtonViewController.h"
 
+#import <UIViewController-KeyboardAdditions/UIViewController+KeyboardAdditions.h>
+
 #import "DWBlueActionButton.h"
 #import "DWUIKit.h"
 
@@ -78,6 +80,18 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
     [self baseActionButtonView_setup];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    [self ka_startObservingKeyboardNotifications];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+
+    [self ka_stopObservingKeyboardNotifications];
+}
+
 - (void)setupContentView:(UIView *)contentView {
     NSParameterAssert(self.stackView);
     NSParameterAssert(contentView);
@@ -125,6 +139,16 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 
 - (void)actionButtonAction:(id)sender {
     // NOP
+}
+
+#pragma mark - Keyboard
+
+- (void)ka_keyboardShowOrHideAnimationWithHeight:(CGFloat)height
+                               animationDuration:(NSTimeInterval)animationDuration
+                                  animationCurve:(UIViewAnimationCurve)animationCurve {
+    const CGFloat bottomPadding = [self.class deviceSpecificBottomPadding];
+    self.contentBottomConstraint.constant = height + bottomPadding;
+    [self.view layoutIfNeeded];
 }
 
 #pragma mark - Private

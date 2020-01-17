@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,23 +15,24 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWTabBarButtonType) {
-    DWTabBarButtonType_Home,
-    DWTabBarButtonType_Contacts,
-    DWTabBarButtonType_Others,
+typedef NS_ENUM(NSUInteger, DWContactItemDisplayType) {
+    DWContactItemDisplayType_Contact,
+    DWContactItemDisplayType_IncomingRequest,
+    DWContactItemDisplayType_OutgoingRequest,
 };
 
-@interface DWTabBarButton : UIControl
+@protocol DWContactItem <NSObject>
 
-- (instancetype)initWithType:(DWTabBarButtonType)type;
+// TODO: avatar
 
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+@property (readonly, nonatomic, assign) DWContactItemDisplayType displayType;
+@property (readonly, nonatomic, copy) NSString *username;
+@property (readonly, nullable, nonatomic, copy) NSString *tagline;
+@property (readonly, nullable, nonatomic, copy) NSString *dateString;
 
 @end
 
