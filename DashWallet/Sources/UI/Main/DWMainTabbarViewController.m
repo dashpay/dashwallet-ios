@@ -17,6 +17,7 @@
 
 #import "DWMainTabbarViewController.h"
 
+#import "DWContactsViewController.h"
 #import "DWHomeViewController.h"
 #import "DWMainMenuViewController.h"
 #import "DWNavigationController.h"
@@ -41,6 +42,7 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
 @property (nullable, nonatomic, strong) NSLayoutConstraint *contentBottomConstraint;
 
 @property (null_resettable, nonatomic, strong) DWNavigationController *homeNavigationController;
+@property (null_resettable, nonatomic, strong) DWNavigationController *contactsNavigationController;
 @property (null_resettable, nonatomic, strong) DWNavigationController *menuNavigationController;
 @property (nonatomic, weak) DWHomeViewController *homeController;
 
@@ -103,6 +105,16 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
             }
 
             [self transitionToViewController:self.homeNavigationController
+                                    withType:DWContainerTransitionType_WithoutAnimation];
+
+            break;
+        }
+        case DWTabBarViewButtonType_Contacts: {
+            if (self.currentController == self.contactsNavigationController) {
+                return;
+            }
+
+            [self transitionToViewController:self.contactsNavigationController
                                     withType:DWContainerTransitionType_WithoutAnimation];
 
             break;
@@ -194,6 +206,17 @@ static NSTimeInterval const ANIMATION_DURATION = 0.35;
     }
 
     return _homeNavigationController;
+}
+
+- (DWNavigationController *)contactsNavigationController {
+    if (!_contactsNavigationController) {
+        DWContactsViewController *contactsController = [[DWContactsViewController alloc] init];
+
+        _contactsNavigationController = [[DWNavigationController alloc] initWithRootViewController:contactsController];
+        _contactsNavigationController.delegate = self;
+    }
+
+    return _contactsNavigationController;
 }
 
 - (DWNavigationController *)menuNavigationController {

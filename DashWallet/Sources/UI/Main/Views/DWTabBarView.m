@@ -37,7 +37,9 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 
 @property (nonatomic, copy) NSArray<UIView *> *buttons;
 @property (nonatomic, strong) DWTabBarButton *homeButton;
+@property (nonatomic, strong) DWTabBarButton *contactsButton;
 @property (nonatomic, strong) DWPaymentsButton *paymentsButton;
+@property (nonatomic, strong) DWTabBarButton *discoverButton;
 @property (nonatomic, strong) DWTabBarButton *othersButton;
 
 @end
@@ -87,6 +89,16 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         }
 
         {
+            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
+            [self addSubview:button];
+            [buttons addObject:button];
+            _contactsButton = button;
+        }
+
+        {
             DWPaymentsButton *button = [[DWPaymentsButton alloc] initWithFrame:CGRectZero];
             [button addTarget:self
                           action:@selector(paymentsButtonAction:)
@@ -98,6 +110,17 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 #if SNAPSHOT
             button.accessibilityIdentifier = @"tabbar_payments_button";
 #endif /* SNAPSHOT */
+        }
+
+        {
+            // TODO: fix me
+            DWTabBarButton *button = [[DWTabBarButton alloc] initWithType:DWTabBarButtonType_Contacts];
+            [button addTarget:self
+                          action:@selector(tabBarButtonAction:)
+                forControlEvents:UIControlEventTouchUpInside];
+            [self addSubview:button];
+            [buttons addObject:button];
+            _discoverButton = button;
         }
 
         {
@@ -203,8 +226,15 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
         if (sender == self.homeButton) {
             type = DWTabBarViewButtonType_Home;
         }
+        else if (sender == self.contactsButton) {
+            type = DWTabBarViewButtonType_Contacts;
+        }
         else if (sender == self.othersButton) {
             type = DWTabBarViewButtonType_Others;
+        }
+        else if (sender == self.discoverButton) {
+            // TODO: fix me
+            type = DWTabBarViewButtonType_Contacts;
         }
         else {
             type = DWTabBarViewButtonType_Home;
@@ -216,16 +246,24 @@ static CGFloat const CENTER_CIRCLE_SIZE = 68.0;
 }
 
 - (void)updateSelectedTabButton:(DWTabBarViewButtonType)type {
+    self.othersButton.selected = NO;
+    self.contactsButton.selected = NO;
+    self.discoverButton.selected = NO;
+    self.homeButton.selected = NO;
+
     switch (type) {
         case DWTabBarViewButtonType_Home: {
-            self.othersButton.selected = NO;
             self.homeButton.selected = YES;
+
+            break;
+        }
+        case DWTabBarViewButtonType_Contacts: {
+            self.contactsButton.selected = YES;
 
             break;
         }
         case DWTabBarViewButtonType_Others: {
             self.othersButton.selected = YES;
-            self.homeButton.selected = NO;
 
             break;
         }

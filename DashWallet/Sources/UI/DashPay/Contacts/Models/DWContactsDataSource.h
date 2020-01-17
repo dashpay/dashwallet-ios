@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,21 +17,18 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWContactItem.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DWTabBarButtonType) {
-    DWTabBarButtonType_Home,
-    DWTabBarButtonType_Contacts,
-    DWTabBarButtonType_Others,
-};
+@protocol DWContactListTableViewCellDelegate;
 
-@interface DWTabBarButton : UIControl
+@protocol DWContactsDataSource <UITableViewDataSource>
 
-- (instancetype)initWithType:(DWTabBarButtonType)type;
+@property (readonly, nonatomic, assign, getter=isEmpty) BOOL empty;
+@property (nullable, nonatomic, weak) id<DWContactListTableViewCellDelegate> contactsDelegate;
 
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+- (id<DWContactItem>)contactAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
