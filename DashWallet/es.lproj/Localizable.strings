@@ -105,7 +105,7 @@
 "block #%d of %d" = "bloque #%1$d de %2$d";
 
 /* No comment provided by engineer. */
-"Block #%d of %d" = "Block #%1$d of %2$d";
+"Block #%d of %d" = "Bloque #%1$d de %2$d";
 
 /* No comment provided by engineer. */
 "Buy & Sell Dash" = "Comprar y Vender Dash";
@@ -120,7 +120,7 @@
 "Buy Dash with Uphold account" = "Comprar Dash con una cuenta de Uphold";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Al limpiar este dispositivo, ya no tendrá acceso a los fondos en este dispositivo. Esto solo debe hacerse si ya no tiene acceso a su contraseña y también ha olvidado su código PIN.";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancelar";
@@ -144,7 +144,7 @@
 "Clear trusted node?" = "¿Quitar nodo de confianza?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
+"Clipboard doesn't contain a valid Dash address" = "El portapapeles no contiene una dirección de Dash válida";
 
 /* No comment provided by engineer. */
 "Close" = "Cerrar";
@@ -180,10 +180,10 @@
 "Copy" = "Copiar";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
+"Copy Logs" = "Copiar logs";
 
 /* No comment provided by engineer. */
-"Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
+"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "No se pudo realizar el pago";
@@ -366,7 +366,7 @@
 "Low" = "Bajo";
 
 /* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
+"Manage Trusted Node" = "Gerenciar Nodo de Confianza";
 
 /* No comment provided by engineer. */
 "Masternode Registration" = "Registro de Masternodo";
@@ -414,13 +414,13 @@
 "No address copied" = "Ninguna dirección copiada";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node IP" = "IP del Nodo";
 
 /* adjective, security level */
 "None" = "Ninguna";
 
 /* No comment provided by engineer. */
-"Not a Dash QR code" = "Not a Dash QR code";
+"Not a Dash QR code" = "No es un código QR de Dash";
 
 /* No comment provided by engineer. */
 "Not a Dash URL" = "No es una dirección de Dash";
@@ -771,7 +771,7 @@
 "Unable to connect" = "No fue posible conectarse";
 
 /* No comment provided by engineer. */
-"Unable to get new QR code" = "Unable to get new QR code";
+"Unable to get new QR code" = "No se puede obtener un nuevo código QR";
 
 /* No comment provided by engineer. */
 "Unsupported or corrupted document" = "Documento no soportado o corrupto";

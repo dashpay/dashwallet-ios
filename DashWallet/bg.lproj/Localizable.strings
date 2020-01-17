@@ -1,24 +1,24 @@
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+"%@ is not allowed to access Face ID" = "%@ не е разрешен достъпа до Face ID";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ не е позволен достъп до камерата";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
+"%@ is not allowed to access Touch ID" = "%@ не е разрешен достъпа до Touch ID";
 
 /* No comment provided by engineer. */
-"1 hour" = "1 hour";
+"1 hour" = "1 час";
 
 /* Shorten version of minute */
-"1 min" = "1 min";
+"1 min" = "1 мин";
 
 /* No comment provided by engineer. */
-"24 hours" = "24 hours";
+"24 hours" = "24 часа";
 
 /* Shorten version of minutes */
-"5 min" = "5 min";
+"5 min" = "5 мин";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" не е фраза за възстановяване";
@@ -33,37 +33,37 @@
 "About" = "Относно";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "Add Shortcut";
+"Add Shortcut" = "Добави пряк път";
 
 /* No comment provided by engineer. */
 "Address" = "Адрес";
 
 /* No comment provided by engineer. */
-"Advanced Security" = "Advanced Security";
+"Advanced Security" = "Разширена сигурност";
 
 /* No comment provided by engineer. */
-"All" = "All";
+"All" = "Всички";
 
 /* No comment provided by engineer. */
-"Allow camera access in Settings" = "Allow camera access in Settings";
+"Allow camera access in Settings" = "Разреши достъпа до камерата в Настройки";
 
 /* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Allow Face ID access in Settings";
+"Allow Face ID access in Settings" = "Разреши достъпа до Face ID в Настройки";
 
 /* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
+"Allow Touch ID access in Settings" = "Разреши достъпа до Touch ID в Настройки";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Amount Received";
+"Amount Received" = "Получени суми";
 
 /* No comment provided by engineer. */
-"Amount Sent" = "Amount Sent";
+"Amount Sent" = "Изпратени суми";
 
 /* No comment provided by engineer. */
-"Amount too small" = "Amount too small";
+"Amount too small" = "Твърде малка сума";
 
 /* No comment provided by engineer. */
-"An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+"An intuitive and familiar experience across all your devices" = "Интуитивно и познато преживяване на всичките Ви устройства";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "Приложението %@ изисква плащане към";
@@ -78,37 +78,37 @@
 "Are you sure?" = "Сигурен ли си ?";
 
 /* No comment provided by engineer. */
-"Authentication is unvailable" = "Authentication is unvailable";
+"Authentication is unvailable" = "Удостоверяването не е налично";
 
 /* No comment provided by engineer. */
-"Auto Logout" = "Auto Logout";
+"Auto Logout" = "Автоматично излизане";
 
 /* No comment provided by engineer. */
-"Autohide Balance" = "Autohide Balance";
+"Autohide Balance" = "Автоматично скриване на баланса";
 
 /* lowercase, ex. 4 Dash available */
 "available" = "available";
 
 /* No comment provided by engineer. */
-"Available balance" = "Available balance";
+"Available balance" = "Наличен баланс";
 
 /* A noun. Used as a title. */
-"Backup Wallet" = "Backup Wallet";
+"Backup Wallet" = "Архивиране на портфейла";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"Bad recovery phrase" = "Грешна възстановяваща фраза";
 
 /* No comment provided by engineer. */
-"Balance hidden" = "Balance hidden";
+"Balance hidden" = "Скрит баланс";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "блок #%1$d от %2$d";
 
 /* No comment provided by engineer. */
-"Block #%d of %d" = "Block #%1$d of %2$d";
+"Block #%d of %d" = "Блок #%1$d от %2$d";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Buy & Sell Dash";
+"Buy & Sell Dash" = "Купи & Продай Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Buy / Sell Dash" = "Купи/Продай Dash";
@@ -120,94 +120,94 @@
 "Buy Dash with Uphold account" = "Купи Dash с Uphold акаунт";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Чрез изтриването на това устройство вече няма да имате достъп до средства на това устройство. Това трябва да се направи само, ако вече нямате достъп до фразата за възстановяване си и сте забравили своя ПИН код.";
 
 /* No comment provided by engineer. */
 "Cancel" = "Отказ";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "Change";
+"Change" = "Промяна";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"Change payment amount?" = "Промяна сумата за плащане?";
 
 /* No comment provided by engineer. */
-"Change PIN" = "Change PIN";
+"Change PIN" = "Промяна на ПИН";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Check your connection";
+"Check your connection" = "Проверете връзката";
 
 /* No comment provided by engineer. */
-"Clear" = "Clear";
+"Clear" = "Изчисти";
 
 /* No comment provided by engineer. */
-"Clear trusted node?" = "Clear trusted node?";
+"Clear trusted node?" = "Изчистване на познатите нодове?";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
+"Clipboard doesn't contain a valid Dash address" = "Клипборда не съдържа валиден Dash адрес";
 
 /* No comment provided by engineer. */
-"Close" = "Close";
+"Close" = "Затвори";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close App" = "Затвори приложението";
 
 /* No comment provided by engineer. */
 "Confirm" = "Потвърди";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Потвърди ПИН";
 
 /* No comment provided by engineer. */
-"Confirming" = "Confirming";
+"Confirming" = "Потвърждаване";
 
 /* No comment provided by engineer. */
-"Connect with third party exchanges" = "Connect with third party exchanges";
+"Connect with third party exchanges" = "Свързване към трета страна за обмяна";
 
 /* No comment provided by engineer. */
-"Connected peers: %d" = "Connected peers: %d";
+"Connected peers: %d" = "Свързани пиъри: %d";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Връзка с поддръжката";
 
 /* No comment provided by engineer. */
-"Continue" = "Continue";
+"Continue" = "Продължи";
 
 /* No comment provided by engineer. */
-"Copied" = "Copied";
+"Copied" = "Копирано";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "Копирай";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
+"Copy Logs" = "Копирай логовете";
 
 /* No comment provided by engineer. */
-"Copyright © 2019 Dash Core" = "Copyright © 2019 Dash Core";
+"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Плащането не може да се изпълни";
 
 /* No comment provided by engineer. */
-"Couldn't sweep balance" = "Couldn't sweep balance";
+"Couldn't sweep balance" = "Не може да бъде усвоен баланса";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to Dash network" = "Couldn't transmit payment to Dash network";
+"Couldn't transmit payment to Dash network" = "Не може да бъде излъчено плащането към Dash мрежата";
 
 /* No comment provided by engineer. */
-"Create a New Wallet" = "Create a New Wallet";
+"Create a New Wallet" = "Създай нов портфейл";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Dash плащанията не могат да бъдат по-малки от %@";
 
 /* No comment provided by engineer. */
-"Date" = "Date";
+"Date" = "Дата";
 
 /* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
+"Default currency, shortcuts, about…" = "Валута по подразбиране,преки пътища, относно...";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "КОМПРОМОМЕТИРАНА Е СИГУРНОСТТА НА УСТРОЙСТВОТО\nВсякакви 'jailbreak' приложения могат да получат ключови данни на други приложения (и да откраднат вашият Dash).";
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
@@ -222,13 +222,13 @@
 "Email client is not configured. Please add your email account in Settings" = "Електронната поща не е конфигурирана. Моля добавете вашата ел.поща в Настройки";
 
 /* No comment provided by engineer. */
-"Enable Face ID" = "Enable Face ID";
+"Enable Face ID" = "Включи Face ID";
 
 /* No comment provided by engineer. */
 "Enable Receive Notifications" = "Enable Receive Notifications";
 
 /* No comment provided by engineer. */
-"Enable Touch ID" = "Enable Touch ID";
+"Enable Touch ID" = "Включи Touch ID";
 
 /* No comment provided by engineer. */
 "Enter" = "Enter";
