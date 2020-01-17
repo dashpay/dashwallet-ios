@@ -45,7 +45,7 @@
 "UOC-wT-Oz1.title" = "3";
 
 /* Class = "WKInterfaceLabel"; text = "Open DashWallet iPhone app to setup"; ObjectID = "VXj-KF-nqM"; */
-"VXj-KF-nqM.text" = "Запустите приложение для настройки кошелька";
+"VXj-KF-nqM.text" = "Запустите iPhone приложение для настройки кошелька";
 
 /* Class = "WKInterfaceButton"; title = "5"; ObjectID = "WXs-5Q-Jgb"; */
 "WXs-5Q-Jgb.title" = "5";

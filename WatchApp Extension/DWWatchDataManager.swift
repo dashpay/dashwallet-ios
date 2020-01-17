@@ -210,11 +210,13 @@ final class DWWatchDataManager: NSObject {
         let attributedString = NSMutableAttributedString()
 
         attributedString.append(
-            NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]))
+            NSAttributedString(string: "Đ", attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray])
+        )
 
         attributedString.append(
             NSAttributedString(string: balance ?? "0", attributes:
-                [NSAttributedString.Key.foregroundColor: UIColor.white]))
+                [NSAttributedString.Key.foregroundColor: UIColor.white])
+        )
 
         return attributedString
     }

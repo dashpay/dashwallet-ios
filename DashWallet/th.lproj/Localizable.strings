@@ -1,24 +1,24 @@
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ is not allowed to access Face ID";
+"%@ is not allowed to access Face ID" = "%@ ไม่สามารถเข้าถึง Face ID";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ ไม่สามารถเข้าถึงกล้องถ่ายรูป";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Touch ID" = "%@ is not allowed to access Touch ID";
+"%@ is not allowed to access Touch ID" = "%@ ไม่สามารถเข้าถึง Touch ID";
 
 /* No comment provided by engineer. */
-"1 hour" = "1 hour";
+"1 hour" = "1 ชั่วโมง";
 
 /* Shorten version of minute */
-"1 min" = "1 min";
+"1 min" = "1 นาที";
 
 /* No comment provided by engineer. */
-"24 hours" = "24 hours";
+"24 hours" = "24 ชั่วโมง";
 
 /* Shorten version of minutes */
-"5 min" = "5 min";
+"5 min" = "5 นาที";
 
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
@@ -27,43 +27,43 @@
 "\ntry again in %@" = "\nลองเข้าอีกครั้ง%@";
 
 /* No comment provided by engineer. */
-"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
+"A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "การตั้งรหัสผ่านนั้นจำเป็นเพื่อป้องกันความปลอดภัยของ wallet ของคุณ เข้าไปที่การตั้งค่า และ เปิดรหัสผ่าน";
 
 /* No comment provided by engineer. */
 "About" = "เกี่ยวกับ";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Add Shortcut" = "Add Shortcut";
+"Add Shortcut" = "ใส่ทางลัด";
 
 /* No comment provided by engineer. */
 "Address" = "ที่อยู่";
 
 /* No comment provided by engineer. */
-"Advanced Security" = "Advanced Security";
+"Advanced Security" = "ความปลอดภัยขั้นสูง";
 
 /* No comment provided by engineer. */
-"All" = "All";
+"All" = "ทั้งหมด";
 
 /* No comment provided by engineer. */
-"Allow camera access in Settings" = "Allow camera access in Settings";
+"Allow camera access in Settings" = "อนุญาตการเข้าถึงกล้องถ่ายรูปใน Settings";
 
 /* No comment provided by engineer. */
-"Allow Face ID access in Settings" = "Allow Face ID access in Settings";
+"Allow Face ID access in Settings" = "อนุญาตการเข้าถึง Face ID ใน Settings";
 
 /* No comment provided by engineer. */
-"Allow Touch ID access in Settings" = "Allow Touch ID access in Settings";
+"Allow Touch ID access in Settings" = "อนุญาตการเข้าถึง Touch ID ใน Settings";
 
 /* No comment provided by engineer. */
-"Amount Received" = "Amount Received";
+"Amount Received" = "จำนวนเงินที่ได้รับ";
 
 /* No comment provided by engineer. */
-"Amount Sent" = "Amount Sent";
+"Amount Sent" = "จำนวนเงินที่ส่ง";
 
 /* No comment provided by engineer. */
-"Amount too small" = "Amount too small";
+"Amount too small" = "จำนวนเงินน้อยเกินไป";
 
 /* No comment provided by engineer. */
-"An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
+"An intuitive and familiar experience across all your devices" = "ประสบการณ์ที่ใช้งานง่ายและคุ้นเคย";
 
 /* No comment provided by engineer. */
 "Application %@ is requesting a payment to" = "แบบฟอร์ม%@ ชำระเงิน";
@@ -78,22 +78,22 @@
 "Are you sure?" = "คุณแน่ใจหรือไม่?";
 
 /* No comment provided by engineer. */
-"Authentication is unvailable" = "Authentication is unvailable";
+"Authentication is unvailable" = "ไม่สามารตรวจสอบสิทธิ์ได้";
 
 /* No comment provided by engineer. */
-"Auto Logout" = "Auto Logout";
+"Auto Logout" = "ออกจากระแบบอัตโนมัติ";
 
 /* No comment provided by engineer. */
-"Autohide Balance" = "Autohide Balance";
+"Autohide Balance" = "สมดุลอัตโนมัติ";
 
 /* lowercase, ex. 4 Dash available */
-"available" = "available";
+"available" = "ที่สามารถใช้ได้";
 
 /* No comment provided by engineer. */
-"Available balance" = "Available balance";
+"Available balance" = "ยอดเงินคงเหลือ";
 
 /* A noun. Used as a title. */
-"Backup Wallet" = "Backup Wallet";
+"Backup Wallet" = "Wallet สำรอง";
 
 /* No comment provided by engineer. */
 "Bad recovery phrase" = "Bad recovery phrase";
@@ -108,10 +108,10 @@
 "Block #%d of %d" = "Block #%1$d of %2$d";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Buy & Sell Dash";
+"Buy & Sell Dash" = "ซื้อ & ขาย Dash";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Buy / Sell Dash";
+"Buy / Sell Dash" = "ซื้อ / ขาย Dash";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "ขาย Dash";
@@ -120,133 +120,133 @@
 "Buy Dash with Uphold account" = "ซื้อ Dash ด้วยบัญชี Uphold";
 
 /* No comment provided by engineer. */
-"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "จากการกวาดล้างอุปกรณ์นี้คุณจะไม่สามารถเข้าถึงเงินทุนในอุปกรณ์นี้ได้อีกต่อไป สิ่งนี้ควรจะเกิดขึ้นได้ก็ต่อเมื่อคุณไม่สามารถเข้าถึงข้อความรหัสผ่านของคุณได้อีกต่อไปและยังลืมรหัส PIN ของคุณด้วย";
 
 /* No comment provided by engineer. */
 "Cancel" = "ยกเลิก";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
-"Change" = "Change";
+"Change" = "เปลี่ยนแปลง";
 
 /* No comment provided by engineer. */
-"Change payment amount?" = "Change payment amount?";
+"Change payment amount?" = "เปลี่ยนแปลงจำนวนเงิน";
 
 /* No comment provided by engineer. */
-"Change PIN" = "Change PIN";
+"Change PIN" = "เปลี่ยนแปลง PIN";
 
 /* No comment provided by engineer. */
-"Check your connection" = "Check your connection";
+"Check your connection" = "ตรวจสอบการเชื่อมต่อ";
 
 /* No comment provided by engineer. */
-"Clear" = "Clear";
+"Clear" = "ลบออก";
 
 /* No comment provided by engineer. */
-"Clear trusted node?" = "Clear trusted node?";
+"Clear trusted node?" = "ลบโหนดที่เชื่อถือได้";
 
 /* No comment provided by engineer. */
-"Clipboard doesn't contain a valid Dash address" = "Clipboard doesn't contain a valid Dash address";
+"Clipboard doesn't contain a valid Dash address" = "คลิปบอร์ดไม่มีที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Close" = "Close";
+"Close" = "ปิด";
 
 /* No comment provided by engineer. */
-"Close App" = "Close App";
+"Close App" = "ปิดแอพพลิเคชั่น";
 
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "ยืนยัน PIN";
 
 /* No comment provided by engineer. */
-"Confirming" = "Confirming";
+"Confirming" = "กำลังยืนยัน";
 
 /* No comment provided by engineer. */
-"Connect with third party exchanges" = "Connect with third party exchanges";
+"Connect with third party exchanges" = "เชื่อมต่อกับการแลกเปลี่ยนบุคคลที่สาม";
 
 /* No comment provided by engineer. */
-"Connected peers: %d" = "Connected peers: %d";
+"Connected peers: %d" = "เชื่อมต่อเพื่อน: %d";
 
 /* No comment provided by engineer. */
-"Contact Support" = "Contact Support";
+"Contact Support" = "ติดต่อฝ่ายสนับสนุน";
 
 /* No comment provided by engineer. */
-"Continue" = "Continue";
+"Continue" = "ดำเนินการต่อ";
 
 /* No comment provided by engineer. */
-"Copied" = "Copied";
+"Copied" = "คัดลอก";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "คัดลอก";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Copy Logs";
+"Copy Logs" = "คัดลอก logs";
 
 /* No comment provided by engineer. */
 "Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "ไม่สามารถชำระเงินได้";
 
 /* No comment provided by engineer. */
-"Couldn't sweep balance" = "Couldn't sweep balance";
+"Couldn't sweep balance" = "ไม่สามารถกวาดความสมดุลได้";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to Dash network" = "Couldn't transmit payment to Dash network";
+"Couldn't transmit payment to Dash network" = "ไม่สามารถส่งการชำระเงินไปยังเครือข่าย dash ได้";
 
 /* No comment provided by engineer. */
-"Create a New Wallet" = "Create a New Wallet";
+"Create a New Wallet" = "สร้าง wallet ใหม่";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
 
 /* No comment provided by engineer. */
-"Date" = "Date";
+"Date" = "วันที่";
 
 /* No comment provided by engineer. */
-"Default currency, shortcuts, about…" = "Default currency, shortcuts, about…";
+"Default currency, shortcuts, about…" = "สกุลเงินเริ่มต้น, ทางลัด, เกี่ยวกับ...";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น  สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "ความปลอดภัยของอุปกรณ์ \nการ 'jailbreak' แอพพลิเคชั่น สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้ )  ลบล้าง wallet นี้โดยทันทีและกู้คืนบนอุปกรณ์ที่ปลอดภัย";
 
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
 
 /* ex., Download peer: 127.0.0.1:9999 */
-"Download peer: %@" = "Download peer: %@";
+"Download peer: %@" = "เชื่อมต่อเพื่อน: %@";
 
 /* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "ไม่ได้กำหนดอีเมล กรุณาเพิ่มบัญชีอีเมลของคุณในการตั้งค่า";
 
 /* No comment provided by engineer. */
-"Enable Face ID" = "Enable Face ID";
+"Enable Face ID" = "เชื่อมต่อ Face ID";
 
 /* No comment provided by engineer. */
-"Enable Receive Notifications" = "Enable Receive Notifications";
+"Enable Receive Notifications" = "เปิดรับการแจ้งเตือน";
 
 /* No comment provided by engineer. */
-"Enable Touch ID" = "Enable Touch ID";
+"Enable Touch ID" = "เชื่อมต่อ touch ID";
 
 /* No comment provided by engineer. */
-"Enter" = "Enter";
+"Enter" = "เข้าสู่";
 
 /* No comment provided by engineer. */
-"Enter PIN" = "Enter PIN";
+"Enter PIN" = "ใส่รหัส PIN";
 
 /* No comment provided by engineer. */
-"Enter Recovery Phrase" = "Enter Recovery Phrase";
+"Enter Recovery Phrase" = "ใส่วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer" = "Enter the amount to transfer";
+"Enter the amount to transfer" = "ป้อนจำนวนเงินที่ต้องการโอน";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "ป้อนรหัส 2FA ของคุณด้านล่าง";
 
 /* No comment provided by engineer. */
-"Exit" = "Exit";
+"Exit" = "ออก";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "ขีดจำกัด Face ID";
@@ -261,31 +261,31 @@
 "Fee is greater than balance" = "ค่าธรรมเนียมมากกว่ายอดคงเหลือ";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
+"Fee will be deducted from requested amount." = "ค่าธรรมเนียมจะถูกหักออกจากจำนวนที่ต้องการ";
 
 /* No comment provided by engineer. */
-"Filter Transactions" = "Filter Transactions";
+"Filter Transactions" = "กรองธุรกรรม";
 
 /* No comment provided by engineer. */
-"Forgot PIN?" = "Forgot PIN?";
+"Forgot PIN?" = "ลืม PIN?";
 
 /* No comment provided by engineer. */
-"Get Started" = "Get Started";
+"Get Started" = "เริ่มต้น";
 
 /* No comment provided by engineer. */
 "Go to Website" = "ไปยังเว็บไซต์";
 
 /* No comment provided by engineer. */
-"Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
+"Have complete control and customize your wallet based on your needs" = "มีการควบคุมที่สมบูรณ์และกำหนดกระเป๋าเงินของคุณตามความต้องการของคุณ";
 
 /* No comment provided by engineer. */
-"Help us improve your experience" = "Help us improve your experience";
+"Help us improve your experience" = "ช่วยเราเพื่อพัฒนาประการณ์ของคุณ";
 
 /* adjective, security level */
-"High" = "High";
+"High" = "สูง";
 
 /* No comment provided by engineer. */
-"History" = "History";
+"History" = "ประวัติ";
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
@@ -294,34 +294,34 @@
 "I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "หากคุณทำอุปกรณ์นี้หาย เงินก็จะสูญหาย รับวลีการกู้คืนเพื่อให้คุณสามารถกู้คืนกระเป๋าเงินของคุณบนอุปกรณ์อื่น";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการลบล้าง กรุณาใส่: \"%@\"";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Ignore" = "เพิกเฉย";
 
 /* No comment provided by engineer. */
-"Immediately" = "Immediately";
+"Immediately" = "ทันที";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Import Private Key" = "Import Private Key";
+"Import Private Key" = "นำเข้าคีย์ส่วนตัว";
 
 /* No comment provided by engineer. */
-"Import private key…" = "Import private key…";
+"Import private key…" = "นำเข้าคีย์ส่วนตัว...";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "ยอดเงินไม่เพียงพอ";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "โอนเงินภายใน";
 
 /* Invalid transaction */
-"Invalid" = "Invalid";
+"Invalid" = "ไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"It's Important" = "It's Important";
+"It's Important" = "สำคัญ";
 
 /* No comment provided by engineer. */
 "Keypair %ld" = "Keypair %ld";
@@ -333,10 +333,10 @@
 "Load more" = "โหลดเพิ่ม";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Local Currency" = "Local Currency";
+"Local Currency" = "สกุลเงินท้องถิ่น";
 
 /* No comment provided by engineer. */
-"Local requested amount: %@" = "Local requested amount: %@";
+"Local requested amount: %@" = "จำนวนเงินที่ต้องการท้องถิ่น: %@";
 
 /* No comment provided by engineer. */
 "Locked" = "ล็อค";
@@ -348,88 +348,88 @@
 "Log out from Uphold" = "ออกจากระบบ Uphold";
 
 /* No comment provided by engineer. */
-"Login with Face ID" = "Login with Face ID";
+"Login with Face ID" = "เข้าสู่ระบบด้วย Face ID";
 
 /* No comment provided by engineer. */
-"Login with Touch ID" = "Login with Touch ID";
+"Login with Touch ID" = "เข้าสู่ระบบด้วย Touch ID";
 
 /* a verb, Logout Immediately */
-"Logout" = "Logout";
+"Logout" = "ออกจากระบบ";
 
 /* Logout after 5 min */
-"Logout after" = "Logout after";
+"Logout after" = "ออกจากระบบหลังจาก";
 
 /* No comment provided by engineer. */
-"Long press to copy ID" = "Long press to copy ID";
+"Long press to copy ID" = "กดค้างเพื่อคัดลอก ID";
 
 /* adjective, security level */
-"Low" = "Low";
+"Low" = "ต่ำ";
 
 /* No comment provided by engineer. */
-"Manage Trusted Node" = "Manage Trusted Node";
+"Manage Trusted Node" = "จัดการโหนดที่เชื่อถือได้";
 
 /* No comment provided by engineer. */
-"Masternode Registration" = "Masternode Registration";
+"Masternode Registration" = "การลงทะเบียน Masternode ";
 
 /* No comment provided by engineer. */
-"Masternode Revocation" = "Masternode Revocation";
+"Masternode Revocation" = "การเพิกถอน Masternode";
 
 /* No comment provided by engineer. */
-"Masternode Update" = "Masternode Update";
+"Masternode Update" = "อัพเดต Masternode";
 
 /* Contracted variant of 'Maximum' word */
-"Max" = "Max";
+"Max" = "สูงสุด";
 
 /* adjective, security level */
-"Medium" = "Medium";
+"Medium" = "ปานกลาง";
 
 /* No comment provided by engineer. */
-"More" = "More";
+"More" = "มากขึ้น";
 
 /* No comment provided by engineer. */
-"More Control" = "More Control";
+"More Control" = "ควบคุมมากขึ้น";
 
 /* No comment provided by engineer. */
-"Moved from" = "Moved from";
+"Moved from" = "เคลื่อนย้ายจาก";
 
 /* No comment provided by engineer. */
-"Moved internally to" = "Moved internally to";
+"Moved internally to" = "เคลื่อย้ายภายในไปสู่";
 
 /* No comment provided by engineer. */
-"Moved to Address" = "Moved to Address";
+"Moved to Address" = "ย้ายไปยังที่อยู่";
 
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
 
 /* No comment provided by engineer. */
-"Network fee" = "Network fee";
+"Network fee" = "ค่าธรรมเนียมเครือข่าย";
 
 /* No comment provided by engineer. */
-"NFC device" = "NFC device";
+"NFC device" = "อุปกรณ์ NFC";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
+"NFC device didn't transmit a valid Dash address" = "อุปกรณ์ NFC ไม่ได้ส่งที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"No address copied" = "No address copied";
+"No address copied" = "ไม่มีที่อยู่คัดลอก";
 
 /* No comment provided by engineer. */
-"Node IP" = "Node IP";
+"Node IP" = "โหนด IP";
 
 /* adjective, security level */
-"None" = "None";
+"None" = "ไม่มี";
 
 /* No comment provided by engineer. */
-"Not a Dash QR code" = "Not a Dash QR code";
+"Not a Dash QR code" = "ไม่ใช่ QR โค้ดของ Dash";
 
 /* No comment provided by engineer. */
-"Not a Dash URL" = "Not a Dash URL";
+"Not a Dash URL" = "ไม่ใช่ Dash URL";
 
 /* No comment provided by engineer. */
-"Not a valid Dash address" = "Not a valid Dash address";
+"Not a valid Dash address" = "ไม่ใช่ที่อยู่ dash ที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Not yet used" = "Not yet used";
+"Not yet used" = "ยังไม่ถูกใช้";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -438,43 +438,43 @@
 "Operator Keys" = "ตัวดำเนินการ Keys";
 
 /* No comment provided by engineer. */
-"Owner Address" = "Owner Address";
+"Owner Address" = "ที่อยู่เจ้าของ";
 
 /* No comment provided by engineer. */
 "Owner Keys" = "เจ้าของ Keys";
 
 /* No comment provided by engineer. */
-"Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
+"Pay and get paid instantly with easy to use payment flows" = "ชำระเงินและรับเงินทันทีด้วยกระบวนการชำระเงินที่ใช้งานง่าย";
 
 /* No comment provided by engineer. */
-"Pay with Ease" = "Pay with Ease";
+"Pay with Ease" = "ชำระเงินได้อย่างง่ายดาย";
 
 /* No comment provided by engineer. */
-"Payments" = "Payments";
+"Payments" = "การชำระเงิน";
 
 /* No comment provided by engineer. */
-"PIN is always required to make a payment" = "PIN is always required to make a payment";
+"PIN is always required to make a payment" = "ต้องระบุ PIN ทุกครั้งเพื่อชำระเงิน";
 
 /* No comment provided by engineer. */
-"Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+"Please enter PIN to upgrade wallet" = "โปรดป้อน PIN เพื่ออัปเกรด Wallet";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
 
 /* No comment provided by engineer. */
-"Please tap on the words from your recovery phrase in the right order" = "Please tap on the words from your recovery phrase in the right order";
+"Please tap on the words from your recovery phrase in the right order" = "โปรดแตะที่คำจากวลีการกู้คืนของคุณในลำดับที่ถูกต้อง";
 
 /* No comment provided by engineer. */
-"Please try again" = "Please try again";
+"Please try again" = "โปรดลองใหม่อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Please wait for the sync to complete" = "Please wait for the sync to complete";
+"Please wait for the sync to complete" = "โปรดรอจนกว่าการซิงค์จะเสร็จสมบูรณ์";
 
 /* No comment provided by engineer. */
-"Please write it down" = "Please write it down";
+"Please write it down" = "กรุณาเขียนลงไป";
 
 /* No comment provided by engineer. */
-"Previously used at IP address" = "Previously used at IP address";
+"Previously used at IP address" = "ใช้ก่อนหน้านี้ที่ที่อยู่ IP";
 
 /* No comment provided by engineer. */
 "Private key" = "Private key";
@@ -483,7 +483,7 @@
 "Processing" = "กำลังประมวลผล";
 
 /* No comment provided by engineer. */
-"Provider Address" = "Provider Address";
+"Provider Address" = "ที่อยู่ผู้จัดหา";
 
 /* No comment provided by engineer. */
 "Public key" = "Public key";
