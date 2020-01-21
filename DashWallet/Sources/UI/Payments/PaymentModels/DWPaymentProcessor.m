@@ -394,6 +394,7 @@ static NSString *sanitizeString(NSString *s) {
 
 - (BOOL)txManagerSignedCompletion:(BOOL)cancelled error:(NSError *_Nullable)error {
     if (cancelled) {
+        [self.delegate paymentProcessorDidCancelTransactionSigning:self];
         [self cancelOrChangeAmount];
     }
     else if (error) {

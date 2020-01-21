@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 
+- (void)paymentProcessorDidCancelTransactionSigning:(DWPaymentProcessor *)processor;
+
 // Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
