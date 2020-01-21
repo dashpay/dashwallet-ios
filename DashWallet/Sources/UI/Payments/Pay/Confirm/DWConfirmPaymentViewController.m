@@ -90,8 +90,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)actionButtonAction:(id)sender {
-    [self.delegate confirmPaymentViewControllerDidConfirm:self];
     [self setSendingEnabled:NO];
+    [self.delegate confirmPaymentViewControllerDidConfirm:self];
 }
 
 - (nullable id<DWConfirmPaymentViewProtocol>)model {

@@ -188,6 +188,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)paymentProcessorDidCancelTransactionSigning:(DWPaymentProcessor *)processor {
+    self.confirmViewController.sendingEnabled = YES;
+}
+
 // Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
