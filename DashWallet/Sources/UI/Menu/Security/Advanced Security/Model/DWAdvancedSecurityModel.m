@@ -23,6 +23,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
+
 @implementation DWAdvancedSecurityModel
 
 @synthesize lockTimerTimeInterval = _lockTimerTimeInterval;
@@ -108,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.lockTimerTimeInterval = @(60);
 
     self.spendingConfirmationEnabled = YES;
-    self.spendingConfirmationLimit = @(DUFFS / 2);
+    self.spendingConfirmationLimit = @(DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT);
 }
 
 #pragma mark - Private

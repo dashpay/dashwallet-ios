@@ -20,6 +20,7 @@
 #import <DashSync/DSAuthenticationManager+Private.h>
 #import <DashSync/DashSync.h>
 
+#import "DWAdvancedSecurityModel.h"
 #import "DWBalanceDisplayOptionsProtocol.h"
 #import "DWBiometricAuthModel.h"
 #import "DWGlobalOptions.h"
@@ -79,6 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setBiometricsEnabled:(BOOL)biometricsEnabled {
     [DWGlobalOptions sharedInstance].biometricAuthEnabled = biometricsEnabled;
+
+    const uint64_t limit = biometricsEnabled ? DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT : 0;
+    [[DSChainsManager sharedInstance] setSpendingLimitIfAuthenticated:limit];
 }
 
 - (BOOL)balanceHidden {
