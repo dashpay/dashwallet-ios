@@ -102,7 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSNumber *> *)spendingConfirmationValues {
     if (!_spendingConfirmationValues) {
         // Dash values: 0 / 0.1 / 0.5 / 1 / 5
-        // BIOMETRICS_DISABLED_SPENDING_LIMIT is a hack here
         _spendingConfirmationValues = @[ @(0), @(DUFFS / 10), @(DUFFS / 2), @(DUFFS), @(DUFFS * 5) ];
     }
 

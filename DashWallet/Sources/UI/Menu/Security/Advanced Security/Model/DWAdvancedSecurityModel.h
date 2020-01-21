@@ -20,6 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT;
+
 @interface DWAdvancedSecurityModel : DWBaseAdvancedSecurityModel <DWAdvancedSecurityModelProtocol>
 
 @end
