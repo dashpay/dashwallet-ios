@@ -25,7 +25,7 @@ Because Dash Wallet is [deterministic](https://dashpay.atlassian.net/wiki/displa
 
 ## Download
 
-<a href="https://apps.apple.com/app/dash-wallet/id1206647026?mt=8" style="display:inline-block;overflow:hidden;background:url(https://linkmaker.itunes.apple.com/en-gb/badge-lrg.svg?releaseDate=2017-07-19&kind=iossoftware&bubble=ios_apps) no-repeat;width:135px;height:40px;"></a>
+[![Download on the AppStore](https://linkmaker.itunes.apple.com/en-gb/badge-lrg.svg?releaseDate=2017-07-19&kind=iossoftware&bubble=ios_apps)](https://apps.apple.com/app/dash-wallet/id1206647026?mt=8)
 
 ## Getting Started
 
