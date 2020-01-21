@@ -128,7 +128,9 @@ CGFloat DWModalPresentedHeightPercent(void) {
 }
 
 - (void)tapGestureRecognizerAction:(id)sender {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    if (self.interactiveTransition.interactiveTransitionAllowed) {
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    }
 }
 
 - (void)performBlockAnimatedIfPossible:(void (^)(void))block {
