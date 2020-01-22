@@ -3,15 +3,15 @@
 [![Build Status](https://travis-ci.com/dashevo/dashwallet-ios.svg?branch=master)](https://travis-ci.com/dashevo/dashwallet-ios) [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/dashevo/dashwallet-ios/blob/master/LICENSE) [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20watchOS-blue)](https://github.com/dashevo/dashwallet-ios)
 
 <p align="center" >
-<img src="https://docs.dash.org/en/stable/_images/dash_logo.png" alt="Dash Wallet logo" title="Dash Wallet" style="max-width: 60%;">
+<img src="https://docs.dash.org/en/stable/_images/dash_logo.png" alt="Dash Wallet logo" title="Dash Wallet" width="300">
 </p>
 
-Dash Wallet (breadwallet fork) is a real standalone [Dash](https://dash.org) client. There is no server to get hacked or go down, so you can always access your money.
-Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, Dash Wallet connects directly to the Dash network with the fast performance you need on a mobile device.
-Dash Wallet is designed to protect you from malware, browser security holes, even physical theft. With AES hardware encryption, app sandboxing,
-keychain and code signatures, Dash Wallet represents a significant security advantage over web and desktop wallets, and other mobile platforms.
-Simplicity is Dash Wallet’s core design principle. A simple backup phrase is all you need to restore your wallet on another device if yours is ever lost or broken.
-Because Dash Wallet is [deterministic](https://dashpay.atlassian.net/wiki/display/DOC/Whitepaper), your balance and transaction history can be recovered from just your backup phrase.
+*Dash Wallet* (breadwallet fork) is a real standalone [Dash](https://dash.org) client. There is no server to get hacked or go down, so you can always access your money.
+Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, *Dash Wallet* connects directly to the Dash network with the fast performance you need on a mobile device.
+*Dash Wallet* is designed to protect you from malware, browser security holes, even physical theft. With AES hardware encryption, app sandboxing,
+keychain and code signatures, *Dash Wallet* represents a significant security advantage over web and desktop wallets, and other mobile platforms.
+Simplicity is *Dash Wallet*’s core design principle. A simple backup phrase is all you need to restore your wallet on another device if yours is ever lost or broken.
+Because *Dash Wallet* is [deterministic](https://dashpay.atlassian.net/wiki/display/DOC/Whitepaper), your balance and transaction history can be recovered from just your backup phrase.
 
 ## Features
 
@@ -29,7 +29,7 @@ Because Dash Wallet is [deterministic](https://dashpay.atlassian.net/wiki/displa
 
 ## Getting Started
 
-To run Dash Wallet iOS app on your device or simulator clone the repo and make sure you installed needed [Requirements](#Requirements).
+To run *Dash Wallet* iOS app on your device or simulator clone the repo and make sure you installed needed [Requirements](#Requirements).
 Then run `pod install` in the cloned directory.
 Open `DashWallet.xcworkspace` in Xcode and run the project.
 
@@ -76,5 +76,4 @@ Any jailbreak app can grant itself access to every other app's keychain data and
 
 ## License
 
-Dash Wallet is available under the MIT license. See the LICENSE file for more info.
-
+*Dash Wallet* is available under the MIT license. See the LICENSE file for more info.
