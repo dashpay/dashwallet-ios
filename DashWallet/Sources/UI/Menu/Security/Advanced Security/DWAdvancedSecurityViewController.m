@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentLockTimerTimeIntervalWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -99,6 +99,13 @@ NS_ASSUME_NONNULL_BEGIN
             cellModel.title = [model titleForCurrentLockTimerTimeInterval];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
@@ -176,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentSpendingConfirmationDescriptionWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -186,6 +193,13 @@ NS_ASSUME_NONNULL_BEGIN
             model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
