@@ -315,7 +315,7 @@
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "Interne transfer";
 
 /* Invalid transaction */
 "Invalid" = "Ongeldig";
@@ -879,7 +879,7 @@
 "You will also need to log out from the Uphold website using your browser" = "Je dient ook nog uit te loggen bij Uphold website in je webbrowser.";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "U hebt deze herstelzin nodig om toegang te krijgen tot uw saldo als dit apparaat is verloren of beschadigd, of als Dash Wallet ooit per ongeluk van dit apparaat wordt verwijderd.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "De transactie is verzonden en het bedrag verschijnt binnen een paar minuten in je de portemonnee.";

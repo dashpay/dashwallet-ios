@@ -489,7 +489,7 @@
 "Public key" = "Public key";
 
 /* No comment provided by engineer. */
-"Quick Receive" = "Quick Receive";
+"Quick Receive" = "ได้รับอย่างรวดเร็ว";
 
 /* No comment provided by engineer. */
 "Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
@@ -498,7 +498,7 @@
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
-"Receive" = "Receive";
+"Receive" = "ได้รับ";
 
 /* Received transaction */
 "Received" = "ได้รับ";
@@ -507,19 +507,19 @@
 "Received %@ (%@)" = "Received %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"Received at" = "Received at";
+"Received at" = "ได้รับที่";
 
 /* No comment provided by engineer. */
-"Received from" = "Received from";
+"Received from" = "ได้รับจาก";
 
 /* No comment provided by engineer. */
-"Recover Wallet" = "Recover Wallet";
+"Recover Wallet" = "กู้คืน wallet";
 
 /* No comment provided by engineer. */
-"Recovery Phrase" = "Recovery Phrase";
+"Recovery Phrase" = "วลีกู้คืน";
 
 /* No comment provided by engineer. */
-"Recovery phrase doesn't match" = "Recovery phrase doesn't match";
+"Recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
 
 /* No comment provided by engineer. */
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
@@ -528,115 +528,115 @@
 "Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
-"Registered Masternode" = "Registered Masternode";
+"Registered Masternode" = "Masternodes ที่ลงทะเบียน";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Report an Issue" = "Report an Issue";
+"Report an Issue" = "รายงานปัญหา";
 
 /* An action */
-"Rescan" = "Rescan";
+"Rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
-"Rescan Blockchain" = "Rescan Blockchain";
+"Rescan Blockchain" = "สแกน blockchain อีกครั้ง";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "ตั้งค่า";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
 
 /* No comment provided by engineer. */
-"Reset Wallet" = "Reset Wallet";
+"Reset Wallet" = "ตั้งค่า wallet";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "ลองอีกครั้ง";
 
 /* No comment provided by engineer. */
-"Review & Rate the app" = "Review & Rate the app";
+"Review & Rate the app" = "วิจารณ์และให้คะแนนแอพพลิเคชั่นนี้";
 
 /* No comment provided by engineer. */
-"Reward" = "Reward";
+"Reward" = "รางวัล";
 
 /* No comment provided by engineer. */
-"Rewards" = "Rewards";
+"Rewards" = "รางวัล";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
+"Scan" = "สแกน";
 
 /* No comment provided by engineer. */
-"Scan Private Key" = "Scan Private Key";
+"Scan Private Key" = "สแกนคีย์ส่วนตัว";
 
 /* No comment provided by engineer. */
-"Scan QR Code" = "Scan QR Code";
+"Scan QR Code" = "สแกนโค้ด QR";
 
 /* A title of the quick receive screen */
-"Scan this to Pay" = "Scan this to Pay";
+"Scan this to Pay" = "สแกนสิ่งนี้เพื่อจ่าย";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Scan to Pay";
+"Scan to Pay" = "สแกนเพื่อจ่าย";
 
 /* No comment provided by engineer. */
-"Scan to Send" = "Scan to Send";
+"Scan to Send" = "สแกนเพื่อส่ง";
 
 /* (Send by) Scanning QR code */
-"Scanning QR code" = "Scanning QR code";
+"Scanning QR code" = "สแกนโค้ด QR";
 
 /* No comment provided by engineer. */
-"Screenshot detected. New recovery phrase:" = "Screenshot detected. New recovery phrase:";
+"Screenshot detected. New recovery phrase:" = "เกิดการบันทึกภาพหน้าจอ. วลีกู้คืนใหม่:";
 
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การถ่ายภาพหน้าจอสามารถเข้าถึงแอพพลิเคชั่นและอุปกรณ์อื่นได้  สร้างวลีกู้คืนใหม่และเก็บเป็นความลับ";
 
 /* No comment provided by engineer. */
-"Secure now" = "Secure now";
+"Secure now" = "ปลอดภัย";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Secure Wallet Now" = "Secure Wallet Now";
 
 /* No comment provided by engineer. */
-"Security" = "Security";
+"Security" = "ความปลอดภัย";
 
 /* No comment provided by engineer. */
-"Security Level" = "Security Level";
+"Security Level" = "เลเวลความปลอดภัย";
 
 /* No comment provided by engineer. */
 "See on Uphold" = "เปิดดูที่ Uphold";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "ส่ง";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
 
 /* Send by (scanning QR code) */
-"Send by" = "Send by";
+"Send by" = "ส่งจาก";
 
 /* An action */
 "Send crash report" = "Send crash report";
 
 /* No comment provided by engineer. */
-"Send to" = "Send to";
+"Send to" = "ส่งไปยัง";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Send to Address" = "Send to Address";
+"Send to Address" = "ส่งไปยังที่อยู่";
 
 /* No comment provided by engineer. */
-"Send to copied address" = "Send to copied address";
+"Send to copied address" = "ส่งไปยังที่อยู่ที่คัดลอก";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Send with NFC" = "Send with NFC";
+"Send with NFC" = "ส่งกับ NFC";
 
 /* 1 out of 4 in the Sending Animation */
-"Sending" = "Sending";
+"Sending" = "กำลังส่ง";
 
 /* 2 out of 4 in the Sending Animation */
-"Sending." = "Sending.";
+"Sending." = "กำลังส่ง";
 
 /* 3 out of 4 in the Sending Animation */
-"Sending.." = "Sending..";
+"Sending.." = "กำลังส่ง..";
 
 /* 4 out of 4 in the Sending Animation */
-"Sending..." = "Sending...";
+"Sending..." = "กำลังส่ง..";
 
 /* Sent transaction */
 "Sent" = "ส่ง";
@@ -663,7 +663,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Share" = "Share";
+"Share" = "แบ่งปัน";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
@@ -816,7 +816,7 @@
 "Voting Keys" = "Voting Keys";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "wallet ถูกปิดการใช้งาน";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Wallet Keys";
@@ -849,7 +849,7 @@
 "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons." = "When the transaction is confirmed, the other wallet will be worthless and should not be re-used for safety reasons.";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "ลบล้าง";
 
 /* No comment provided by engineer. */
 "Wipe Wallet" = "Wipe Wallet";

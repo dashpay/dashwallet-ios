@@ -87,7 +87,7 @@
 "Autohide Balance" = "Esconder Saldo Automáticamente";
 
 /* lowercase, ex. 4 Dash available */
-"available" = "available";
+"available" = "disponible";
 
 /* No comment provided by engineer. */
 "Available balance" = "Saldo disponible";
@@ -261,7 +261,7 @@
 "Fee is greater than balance" = "La tarifa es mayor que el saldo";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
+"Fee will be deducted from requested amount." = "La comisión se deducirá de la cantidad solicitada.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filtrar Transacciones";
@@ -312,7 +312,7 @@
 "Import private key…" = "Importar Llave Privada...";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "Fondos insuficientes";
 
 /* Transaction within the wallet, transfer of own funds */
 "Internal Transfer" = "Internal Transfer";
@@ -549,7 +549,7 @@
 "Reset Wallet" = "Restablecer Billetera";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Reintentar";
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Evaluar la app";

@@ -30,13 +30,13 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
-"About" = "About";
+"About" = "Om";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Adress";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -177,7 +177,7 @@
 "Copied" = "Copied";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "Kopiera";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Copy Logs";
@@ -255,7 +255,7 @@
 "Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Avgift";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
@@ -402,7 +402,7 @@
 "Network" = "Network";
 
 /* No comment provided by engineer. */
-"Network fee" = "Network fee";
+"Network fee" = "Nätverksavgift";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -540,7 +540,7 @@
 "Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "Återställ";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
@@ -549,7 +549,7 @@
 "Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Försök igen";
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Review & Rate the app";
@@ -561,13 +561,13 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
+"Scan" = "Skanna";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
 
 /* No comment provided by engineer. */
-"Scan QR Code" = "Scan QR Code";
+"Scan QR Code" = "läs av QR-kod";
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Scan this to Pay";
@@ -603,7 +603,7 @@
 "See on Uphold" = "See on Uphold";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "Skicka";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
@@ -663,7 +663,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Share" = "Share";
+"Share" = "Dela";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";

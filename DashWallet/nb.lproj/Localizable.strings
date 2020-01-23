@@ -30,13 +30,13 @@
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
 /* No comment provided by engineer. */
-"About" = "About";
+"About" = "Om";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "Adresse";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -123,7 +123,7 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Avbryt";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Change";
@@ -177,7 +177,7 @@
 "Copied" = "Copied";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "Kopier";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Copy Logs";
@@ -255,7 +255,7 @@
 "Failed wallet update" = "Failed wallet update";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "Gebyr";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
@@ -402,7 +402,7 @@
 "Network" = "Network";
 
 /* No comment provided by engineer. */
-"Network fee" = "Network fee";
+"Network fee" = "Nettverksgebyr";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -540,7 +540,7 @@
 "Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "Nullstill";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
@@ -549,7 +549,7 @@
 "Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Prøv igjen";
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Review & Rate the app";
@@ -561,13 +561,13 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
+"Scan" = "Skann";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
 
 /* No comment provided by engineer. */
-"Scan QR Code" = "Scan QR Code";
+"Scan QR Code" = "skann QR-kode";
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Scan this to Pay";
@@ -663,7 +663,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Share" = "Share";
+"Share" = "Del";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";

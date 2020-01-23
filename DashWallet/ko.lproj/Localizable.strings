@@ -183,7 +183,7 @@
 "Copy Logs" = "로그 복사하기";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2020 Dash Core" = "Copyright © 2020 대시 코어";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "지불에 실패하였습니다";
@@ -315,7 +315,7 @@
 "Insufficient funds" = "잔액 부족";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "내부 송금";
 
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
@@ -879,7 +879,7 @@
 "You will also need to log out from the Uphold website using your browser" = "또한 당신의 브라우저를 이용하여 업홀드 웹사이트에서 로그아웃 하십시오.";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "이 기기를 분실하거나 기기가 파손되는 경우, 혹은 대시 지갑이 이 기기에서 실수로 삭제되는 경우에는 당신의 자금에 접근하기 위해서 이 복구 문구가 필요합니다.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "당신의 거래가 완료되었으며 수 분 이내에 당신의 지갑에 잔액이 표시될 예정입니다.";
