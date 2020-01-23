@@ -14,12 +14,12 @@ devices([
 languages([
   "en-US",
   "es-ES",
-  # "fr-FR",
+  "fr",
+  "de",
+  "ru",
+  "ko",
   # "ja",
-  # "ko",
   # "nl-NL",
-  # "ru",  
-  # "de-DE",
   # "zh-Hans",
   # "it",
   # "tr",
@@ -36,7 +36,7 @@ scheme("DashWalletScreenshotsUITests")
 
 output_directory("./fastlane/screenshots")
 
-clear_previous_screenshots(true)
+clear_previous_screenshots(false)
 
 number_of_retries 3
 reinstall_app true
