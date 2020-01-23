@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Used to save media data</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>org.dashcore.dashsync.backgroundblocksync</string>
@@ -123,6 +121,8 @@
 	<string>Used to authorize payments</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We will use your location to determine where you are. Your location will never be recorded or shared with anyone.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Used to save media data</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to save media data</string>
 	<key>UIAppFonts</key>
