@@ -1,0 +1,20 @@
+Dash cüzdanı, Bitcoin'den daha iyi ödeme odaklı yenilikçi alternatifler sunan Dash - Dijital Para - için geliştirilmiş ilk iPhone cüzdanıdır
+
+Dash is a cryptocurrency that seeks to fix the flaws that other cryptocurrencies suffer from. It relies on a network of Masternodes to allow such things as instant transactions, optional privacy features, and a direct funding mechanism to kickstart innovative ideas.
+
+Sezgisel ve güvenli, Dash Wallet gösterge paneli dijital paranızı üzerinde tam kontrol sağlar. Mevcut en güvenli mobil cüzdan ile, anında ödemeler gönderin ve alın.
+
+Dash Wallet, doğrudan Dash ağına bağlanan ilk ve tek iPhone cüzdanıdır. Bu, hacklenebilecek ya da çökebilecek hiçbir sunucu olmadığı anlamına gelir - fonlarınız her zaman güvenlidir. Telefonunuz kaybolsa, zarar görse veya çalınsa bile, kişisel kurtarma ifadenizi kullanarak fonlarınızı kolayca kurtarabilirsiniz.
+
+Özellikler:
+
+* Çevrimiçi veya şahsen saniyeler içinde Dash ödemeleri gönderin ve alın
+* Dash kabul eden satıcı ve websitelere tek tuşla ödeme yapın
+* Yüz tanıma ile hızlı ödeme yapın
+* Kağıt cüzdanların taranması (örn. soğuk depolama için kullanılan)
+* Kullanıcıların Dash alıp satmasını sağlayan 3. parti entegrasyonları
+* Basit kurtarma ifadesi, cihazınız kaybolduğunda veya bozulduğunda fonları kurtarmanıza olanak sağlar
+* Bir dizi özel güvenlik tercihini karşılamak için esnek ayarlar
+* Doğrudan Dash ağ istemcisi - hack edilenebilecek veya çökecek bir merkezi sunucu yok
+
+Dash Wallet açık kaynak kodlu ve ücretsizdir. Ek işlem ücreti veya maliyeti yoktur. Dünyanın herhangi bir yerine anında herhangi bir miktarda para gönderin. Para böyle olmalı.

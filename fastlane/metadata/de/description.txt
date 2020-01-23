@@ -1,0 +1,20 @@
+Dashwallet ist die erste iPhone Wallet für Dash - Digital Cash - eine innovative Alternative zu Bitcoin, die sich auf Zahlungen konzentriert.
+
+Dash ist eine Kryptowährung, die es sich zur Aufgabe gesetzt hat, jene Probleme zu lösen, unter denen andere Kryptowährungen leiden. Dash verwendet das Masternode-Netzwerk, um sekundenschnelle Transaktionen, einen optionalen Schutz der Privatsphäre und ein Finanzierungsmodell für innovative Ideen zu gewährleisten.
+
+Dash Wallet ist intuitiv und sicher, während es dir die vollständige Kontrolle über dein digitales Bargeld bietet. Sende und empfange Dash-Zahlungen sofort und mit der sichersten verfügbaren Wallet.
+
+Dash Wallet ist die erste und bisher einzige iPhone Wallet, die sich direkt mit dem Dash-Netzwerk verbindet. Dies bedeutet, dass sie unabhängig von Servern ist, die abstürzen oder gehackt werden können. Selbst wenn dein iPhone verloren geht, beschädigt wird oder gestohlen wird, kannst du deine Wallet mit der Wiederherstellungsphrase wiederherstellen.
+
+Funktionen:
+
+* Sende und empfange Dash-Zahlungen innerhalb von Sekunden, egal ob online oder vor Ort
+* Ein Klick entfernt von Händlern und Webseiten, die Dash akzeptieren
+* Zahle schnell per Face ID-Erkennung
+* Papier-Wallets leeren (z.B. eines, das als Cold Storage verwendet wird)
+* Drittanbieter-Integrationen, die es Nutzern erlauben, Dash zu kaufen und zu verkaufen
+* Einfache Wiederherstellungsphrase, die dir ermöglicht dein Guthaben wiederherzustellen, wenn du dein Gerät verloren oder beschädigt hast
+* Flexible Einstellungen, die verschiedene Sicherheitsvorkehrungen ermöglichen
+* Direkter Dash-Netzwerksclient - keine zentralen Server, die gehackt werden oder abstürzen können
+
+Dash Wallet ist Open-Source und kostenlos. Es fallen keine zusätzlichen Transaktionsgebühren oder Kosten an. Sende jeden beliebigen Betrag in sekundenschnelle und weltweit. So sollte Geld funktionieren.
