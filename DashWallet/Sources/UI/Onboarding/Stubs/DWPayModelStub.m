@@ -50,7 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
             initWithType:DWPayOptionModelType_Pasteboard];
         [options addObject:pasteboardOption];
 
-        if ([NFCNDEFReaderSession readingAvailable]) {
+        // CoreNFC is optional framework
+        Class NFCNDEFReaderSessionClass = NSClassFromString(@"NFCNDEFReaderSession");
+        if ([(id)NFCNDEFReaderSessionClass readingAvailable]) {
             DWPayOptionModel *nfcOption = [[DWPayOptionModel alloc]
                 initWithType:DWPayOptionModelType_NFC];
             [options addObject:nfcOption];

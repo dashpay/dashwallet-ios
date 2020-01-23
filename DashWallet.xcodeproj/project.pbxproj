@@ -144,6 +144,7 @@
 		2A4E535422F1D0D900E5168A /* DWTxListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535222F1D0D900E5168A /* DWTxListTableViewCell.m */; };
 		2A4E535522F1D0D900E5168A /* DWTxListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E535322F1D0D900E5168A /* DWTxListTableViewCell.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
+		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A58815921A5906C00FD4D2C /* DWBaseLegacyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
 		2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
@@ -744,6 +745,7 @@
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
+		2A5279BB23D994BC00F856D3 /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
 		2A58815721A5906C00FD4D2C /* DWBaseLegacyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseLegacyViewController.h; sourceTree = "<group>"; };
 		2A58815821A5906C00FD4D2C /* DWBaseLegacyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseLegacyViewController.m; sourceTree = "<group>"; };
 		2A5BB89B2350BA4F00C87CCE /* DWWipeDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWWipeDelegate.h; sourceTree = "<group>"; };
@@ -1298,6 +1300,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
 				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
 				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
@@ -3059,6 +3062,7 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2A5279BB23D994BC00F856D3 /* CoreNFC.framework */,
 				2AA08533237D6CF500797F95 /* CloudKit.framework */,
 				2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */,
 				FB3E9F5F236125F600C09C5C /* BackgroundTasks.framework */,
