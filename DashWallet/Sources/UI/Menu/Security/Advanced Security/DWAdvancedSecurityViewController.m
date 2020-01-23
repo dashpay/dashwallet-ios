@@ -307,11 +307,24 @@ NS_ASSUME_NONNULL_BEGIN
                              withRowAnimation:UITableViewRowAnimationNone];
 
             NSIndexPath *secondIndexPath = [NSIndexPath indexPathForRow:1 inSection:section];
+            UITableViewCell *animatedCell = [tableView cellForRowAtIndexPath:secondIndexPath];
+
             if (cellModel.on) {
+                animatedCell.contentView.alpha = 0.0;
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 1.0;
+                                 }];
+
                 [tableView insertRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }
             else {
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 0.0;
+                                 }];
+
                 [tableView deleteRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }
