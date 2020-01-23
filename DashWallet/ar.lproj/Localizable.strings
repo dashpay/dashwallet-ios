@@ -36,7 +36,7 @@
 "Add Shortcut" = "Add Shortcut";
 
 /* No comment provided by engineer. */
-"Address" = "Address";
+"Address" = "عنوان";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Advanced Security";
@@ -117,7 +117,7 @@
 "Buy Dash" = "شراء داش ";
 
 /* No comment provided by engineer. */
-"Buy Dash with Uphold account" = "Buy Dash with Uphold account";
+"Buy Dash with Uphold account" = "شراء داش من حساب أفلود";
 
 /* No comment provided by engineer. */
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code.";
@@ -177,7 +177,7 @@
 "Copied" = "Copied";
 
 /* No comment provided by engineer. */
-"Copy" = "Copy";
+"Copy" = "نسخ";
 
 /* No comment provided by engineer. */
 "Copy Logs" = "Copy Logs";
@@ -234,7 +234,7 @@
 "Enter" = "Enter";
 
 /* No comment provided by engineer. */
-"Enter PIN" = "Enter PIN";
+"Enter PIN" = "أدخل الرقم السري";
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Enter Recovery Phrase";
@@ -255,13 +255,13 @@
 "Failed wallet update" = "فشل في تحديث المحفظة";
 
 /* No comment provided by engineer. */
-"Fee" = "Fee";
+"Fee" = "رسوم";
 
 /* No comment provided by engineer. */
 "Fee is greater than balance" = "Fee is greater than balance";
 
 /* No comment provided by engineer. */
-"Fee will be deducted from requested amount." = "Fee will be deducted from requested amount.";
+"Fee will be deducted from requested amount." = "سيتم خصم الرسوم من الرصيد المطلوب.";
 
 /* No comment provided by engineer. */
 "Filter Transactions" = "Filter Transactions";
@@ -402,7 +402,7 @@
 "Network" = "Network";
 
 /* No comment provided by engineer. */
-"Network fee" = "Network fee";
+"Network fee" = "رسوم الشبكة";
 
 /* No comment provided by engineer. */
 "NFC device" = "NFC device";
@@ -471,7 +471,7 @@
 "Please wait for the sync to complete" = "Please wait for the sync to complete";
 
 /* No comment provided by engineer. */
-"Please write it down" = "Please write it down";
+"Please write it down" = "يرجى كتابتها";
 
 /* No comment provided by engineer. */
 "Previously used at IP address" = "Previously used at IP address";
@@ -513,7 +513,7 @@
 "Received from" = "Received from";
 
 /* No comment provided by engineer. */
-"Recover Wallet" = "Recover Wallet";
+"Recover Wallet" = "إسترجاع المحفظة";
 
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
@@ -540,7 +540,7 @@
 "Rescan Blockchain" = "Rescan Blockchain";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "إعادة تعيين";
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
@@ -549,7 +549,7 @@
 "Reset Wallet" = "Reset Wallet";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "إعادة المحاولة";
 
 /* No comment provided by engineer. */
 "Review & Rate the app" = "Review & Rate the app";
@@ -561,13 +561,13 @@
 "Rewards" = "Rewards";
 
 /* No comment provided by engineer. */
-"Scan" = "Scan";
+"Scan" = "مسح بصري";
 
 /* No comment provided by engineer. */
 "Scan Private Key" = "Scan Private Key";
 
 /* No comment provided by engineer. */
-"Scan QR Code" = "Scan QR Code";
+"Scan QR Code" = "الماسح الضوئي لرمز QR ";
 
 /* A title of the quick receive screen */
 "Scan this to Pay" = "Scan this to Pay";
@@ -600,10 +600,10 @@
 "Security Level" = "Security Level";
 
 /* No comment provided by engineer. */
-"See on Uphold" = "See on Uphold";
+"See on Uphold" = "مشاهدة في أفلود";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "إرسال";
 
 /* No comment provided by engineer. */
 "Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
@@ -663,7 +663,7 @@
 "Setup Wallet" = "Setup Wallet";
 
 /* No comment provided by engineer. */
-"Share" = "Share";
+"Share" = "نشر";
 
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Show Masternode Keys";
@@ -744,7 +744,7 @@
 "Tools" = "Tools";
 
 /* No comment provided by engineer. */
-"Total" = "Total";
+"Total" = "المجموع";
 
 /* No comment provided by engineer. */
 "Touch ID limit" = "إلمس لمعرفة الحد";
@@ -753,13 +753,13 @@
 "Transaction id" = "Transaction id";
 
 /* A verb, button title. */
-"Transfer" = "Transfer";
+"Transfer" = "نقل";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Transfer Dash from your Uphold account to this wallet";
+"Transfer Dash from your Uphold account to this wallet" = "نقل داش من حسابك في أفلود لهذه المحفظة";
 
 /* No comment provided by engineer. */
-"Transfer from Uphold" = "Transfer from Uphold";
+"Transfer from Uphold" = "نقل من أفلود";
 
 /* An action */
 "Try again" = "Try again";
@@ -816,7 +816,7 @@
 "Voting Keys" = "Voting Keys";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "المحفظة معطلة";
 
 /* No comment provided by engineer. */
 "Wallet Keys" = "Wallet Keys";
@@ -885,7 +885,7 @@
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
 /* No comment provided by engineer. */
-"Your Uphold account Dash balance is" = "Your Uphold account Dash balance is";
+"Your Uphold account Dash balance is" = "رصيد داش في حسابك في أفلود هو";
 
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
