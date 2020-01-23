@@ -19,6 +19,7 @@
 
 #import "DWModalNavigationController.h"
 #import "DWReceiveViewController.h"
+#import "DWUIKit.h"
 #import "SFSafariViewController+DashWallet.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -92,22 +93,7 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
     receiveController.viewType = DWReceiveViewType_QuickReceive;
     receiveController.delegate = self;
 
-    UIView *contentView = self.receiveContentView;
-    UIView *childView = receiveController.view;
-
-    [self addChildViewController:receiveController];
-    childView.translatesAutoresizingMaskIntoConstraints = NO;
-    [contentView addSubview:childView];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [childView.topAnchor constraintEqualToAnchor:contentView.topAnchor],
-        [childView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
-        [childView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
-        [childView.trailingAnchor constraintEqualToAnchor:contentView.trailingAnchor],
-    ]];
-
-    [receiveController didMoveToParentViewController:self];
-
+    [self dw_embedChild:receiveController inContainer:self.receiveContentView];
     self.receiveController = receiveController;
 }
 

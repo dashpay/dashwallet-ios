@@ -60,6 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
         // that transition stuff has already happened
         [targetContainer dw_embedSubview:newChild.view];
     }
+    newChild.view.preservesSuperviewLayoutMargins = YES;
 }
 
 - (void)dw_detachFromParent {

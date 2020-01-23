@@ -72,6 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self addChildViewController:toViewController];
 
     [contentView dw_embedSubview:toView];
+    toView.preservesSuperviewLayoutMargins = YES;
 
     [self prepareForTransitionWithType:transitionType fromView:fromView toView:toView];
 

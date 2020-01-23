@@ -33,9 +33,17 @@ NS_ASSUME_NONNULL_BEGIN
         [subview removeFromSuperview];
     }
 
-    subview.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    subview.translatesAutoresizingMaskIntoConstraints = NO;
     subview.frame = self.bounds;
     [self addSubview:subview];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [subview.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [self.trailingAnchor constraintEqualToAnchor:subview.trailingAnchor],
+
+        [subview.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [self.bottomAnchor constraintEqualToAnchor:subview.bottomAnchor],
+    ]];
 }
 
 - (BOOL)dw_isContainedWithinView:(UIView *)other {

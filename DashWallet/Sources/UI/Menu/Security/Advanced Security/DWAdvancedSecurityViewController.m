@@ -230,11 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     formController.tableView.tableFooterView = resetButton;
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 
     [self reloadData];
