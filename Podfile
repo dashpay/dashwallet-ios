@@ -39,8 +39,8 @@ target 'WatchApp Extension' do
 
 end
 
-# fixes warnings about unsupported Deployment Target in Xcode 10
 post_install do |installer|
     # update info about current DashSync version
-    system("bash ./scripts/dashsync_version.sh")
+    # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
+    system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
 end
