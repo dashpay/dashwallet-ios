@@ -5,7 +5,6 @@ cache: cocoapods
 
 before_install:
   - set -o pipefail
-  - DW_DIR=`pwd` && pushd .. && git clone https://github.com/dashevo/dashsync-iOS.git DashSync && pushd DashSync && git checkout `cat "$DW_DIR/DashSyncCurrentCommit"` && popd && popd
   - travis_wait 55 pod install --repo-update
 
 install: true # disable automatic `pod install`
