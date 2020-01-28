@@ -44,7 +44,7 @@
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
+        uint64_t allAvailableFunds = account.maxOutputAmount;
 
         if (allAvailableFunds > 0) {
             self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];

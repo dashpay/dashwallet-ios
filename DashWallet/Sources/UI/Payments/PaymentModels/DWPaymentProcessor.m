@@ -152,6 +152,7 @@ static NSString *sanitizeString(NSString *s) {
         requiresSpendingAuthenticationPrompt:requiresSpendingAuthenticationPrompt
         promptMessage:nil
         forAmount:paymentOutput.amount
+        keepAuthenticatedIfErrorAfterAuthentication:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];
@@ -249,6 +250,7 @@ static NSString *sanitizeString(NSString *s) {
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
         requiresSpendingAuthenticationPrompt:YES
+        keepAuthenticatedIfErrorAfterAuthentication:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];
