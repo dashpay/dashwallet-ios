@@ -45,11 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     // add the view controller as a child
     if (newChild.parentViewController != self) {
-        [newChild beginAppearanceTransition:YES animated:NO];
         [self addChildViewController:newChild];
         [targetContainer dw_embedSubview:newChild.view];
         [newChild didMoveToParentViewController:self];
-        [newChild endAppearanceTransition];
     }
     else {
         // the viewcontroller is already a child
@@ -70,11 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 + (void)dw_detachFromParent:(UIViewController *)controller {
-    [controller beginAppearanceTransition:NO animated:NO];
     [controller willMoveToParentViewController:nil];
-    [controller removeFromParentViewController];
     [controller.viewIfLoaded removeFromSuperview];
-    [controller endAppearanceTransition];
+    [controller removeFromParentViewController];
 }
 
 @end
