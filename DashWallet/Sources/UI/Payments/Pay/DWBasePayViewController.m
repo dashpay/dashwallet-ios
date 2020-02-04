@@ -17,6 +17,8 @@
 
 #import "DWBasePayViewController.h"
 
+#import <DashSync/DashSync.h>
+
 #import "DWConfirmSendPaymentViewController.h"
 #import "DWHomeViewController.h"
 #import "DWPayModelProtocol.h"
@@ -38,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        DWQRScanModelDelegate,
                                        DWConfirmPaymentViewControllerDelegate>
 
+@property (nullable, nonatomic, weak) DWSendAmountViewController *amountViewController;
 @property (nullable, nonatomic, weak) DWConfirmSendPaymentViewController *confirmViewController;
 
 @end
@@ -124,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
     controller.delegate = self;
     controller.demoMode = self.demoMode;
     [self.navigationController pushViewController:controller animated:YES];
+    self.amountViewController = controller;
 }
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
@@ -195,8 +199,14 @@ NS_ASSUME_NONNULL_BEGIN
 // Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-        didFailWithTitle:(nullable NSString *)title
+        didFailWithError:(nullable NSError *)error
+                   title:(nullable NSString *)title
                  message:(nullable NSString *)message {
+    if ([error.domain isEqual:DSErrorDomain] &&
+        (error.code == DSErrorInsufficientFunds || error.code == DSErrorInsufficientFundsForNetworkFee)) {
+        [self.amountViewController insufficientFundsErrorWasShown];
+    }
+
     [self.navigationController.view dw_hideProgressHUD];
     [self showAlertWithTitle:title message:message];
     if (self.confirmViewController) {
