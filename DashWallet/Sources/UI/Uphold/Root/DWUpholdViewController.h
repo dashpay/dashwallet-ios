@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWContainerViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWUpholdViewController : UIViewController
+@interface DWUpholdViewController : DWContainerViewController
 
 + (instancetype)controller;
 

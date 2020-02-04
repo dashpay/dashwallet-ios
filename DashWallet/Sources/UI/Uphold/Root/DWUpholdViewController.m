@@ -24,7 +24,6 @@
 #import "DWUpholdConstants.h"
 #import "DWUpholdLogoutTutorialViewController.h"
 #import "DWUpholdMainViewController.h"
-#import "UIViewController+DWChildControllers.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -55,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL authorized = [DWUpholdClient sharedInstance].authorized;
     UIViewController *controller = authorized ? [self mainController] : [self authController];
-    [self dw_displayViewController:controller];
+    [self displayViewController:controller];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -72,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdAuthViewControllerDidAuthorize:(DWUpholdAuthViewController *)controller {
     UIViewController *toController = [self mainController];
-    [self dw_performTransitionToViewController:toController completion:nil];
+    [self transitionToViewController:toController withType:DWContainerTransitionType_CrossDissolve];
 }
 
 #pragma mark - DWUpholdMainViewControllerDelegate
@@ -125,7 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)upholdClientUserDidLogoutNotification:(NSNotification *)notification {
     UIViewController *toController = [self authController];
-    [self dw_performTransitionToViewController:toController completion:nil];
+    [self transitionToViewController:toController withType:DWContainerTransitionType_CrossDissolve];
 }
 
 - (void)openSafariAppWithURL:(NSURL *)url {

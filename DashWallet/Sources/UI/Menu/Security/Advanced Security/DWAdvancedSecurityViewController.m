@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentLockTimerTimeIntervalWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -99,6 +99,13 @@ NS_ASSUME_NONNULL_BEGIN
             cellModel.title = [model titleForCurrentLockTimerTimeInterval];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
@@ -176,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return [strongSelf.model currentSpendingConfirmationDescriptionWithFont:font color:color];
         };
-        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel) {
+        cellModel.didChangeValueBlock = ^(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -186,6 +193,13 @@ NS_ASSUME_NONNULL_BEGIN
             model.spendingConfirmationLimit = model.spendingConfirmationValues[cellModel.selectedItemIndex];
 
             [strongSelf updateSecurityLevel];
+
+            UITableView *tableView = strongSelf.formController.tableView;
+            NSIndexPath *indexPath = [tableView indexPathForCell:cell];
+            if (indexPath) {
+                [tableView reloadRowsAtIndexPaths:@[ indexPath ]
+                                 withRowAnimation:UITableViewRowAnimationNone];
+            }
         };
         [items addObject:cellModel];
     }
@@ -230,11 +244,7 @@ NS_ASSUME_NONNULL_BEGIN
     [resetButton addTarget:self action:@selector(resetButtonAction) forControlEvents:UIControlEventTouchUpInside];
     formController.tableView.tableFooterView = resetButton;
 
-    [self addChildViewController:formController];
-    formController.view.frame = self.view.bounds;
-    formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:formController.view];
-    [formController didMoveToParentViewController:self];
+    [self dw_embedChild:formController];
     self.formController = formController;
 
     [self reloadData];
@@ -311,11 +321,24 @@ NS_ASSUME_NONNULL_BEGIN
                              withRowAnimation:UITableViewRowAnimationNone];
 
             NSIndexPath *secondIndexPath = [NSIndexPath indexPathForRow:1 inSection:section];
+            UITableViewCell *animatedCell = [tableView cellForRowAtIndexPath:secondIndexPath];
+
             if (cellModel.on) {
+                animatedCell.contentView.alpha = 0.0;
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 1.0;
+                                 }];
+
                 [tableView insertRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }
             else {
+                [UIView animateWithDuration:[CATransaction animationDuration]
+                                 animations:^{
+                                     animatedCell.contentView.alpha = 0.0;
+                                 }];
+
                 [tableView deleteRowsAtIndexPaths:@[ secondIndexPath ]
                                  withRowAnimation:UITableViewRowAnimationTop];
             }

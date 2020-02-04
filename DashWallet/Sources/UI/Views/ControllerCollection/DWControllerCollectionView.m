@@ -19,6 +19,8 @@
 
 #import <objc/runtime.h>
 
+#import "UIViewController+DWEmbedding.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString *const CELL_ID = @"DWControllerCollectionViewCell";
@@ -165,13 +167,7 @@ static NSString *const CELL_ID = @"DWControllerCollectionViewCell";
 
     NSParameterAssert(self.containerViewController);
 
-    [controller beginAppearanceTransition:YES animated:NO];
-    [self.containerViewController addChildViewController:controller];
-    controller.view.frame = contentView.bounds;
-    controller.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [contentView addSubview:controller.view];
-    [controller didMoveToParentViewController:self.containerViewController];
-    [controller endAppearanceTransition];
+    [self.containerViewController dw_embedChild:controller inContainer:contentView];
 
     if ([self.controllerDelegate respondsToSelector:@selector(controllerCollectionView:didShowController:)]) {
         [self.controllerDelegate controllerCollectionView:self didShowController:controller];

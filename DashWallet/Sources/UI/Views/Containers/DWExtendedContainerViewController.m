@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self addChildViewController:modalController];
 
     [contentView dw_embedSubview:childView];
+    childView.preservesSuperviewLayoutMargins = YES;
 
     CGRect frame = contentView.bounds;
     frame.origin.y = CGRectGetHeight(frame);

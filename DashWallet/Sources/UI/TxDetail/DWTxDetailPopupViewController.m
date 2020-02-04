@@ -94,6 +94,7 @@ static CGFloat VerticalPadding(void) {
     UIView *contentView = self.view;
 
     childView.translatesAutoresizingMaskIntoConstraints = NO;
+    childView.preservesSuperviewLayoutMargins = YES;
     [contentView addSubview:childView];
 
     const CGFloat padding = VerticalPadding();

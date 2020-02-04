@@ -20,6 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NSAttributedString *_Nonnull (^DWAttributedStringBuilder)(UIFont *font, UIColor *color);
+@class UITableViewCell;
 
 @interface DWSegmentSliderFormCellModel : DWBaseFormCellModel
 
@@ -35,7 +36,7 @@ typedef NSAttributedString *_Nonnull (^DWAttributedStringBuilder)(UIFont *font, 
 
 @property (nullable, nonatomic, copy) DWAttributedStringBuilder descriptionTextBuilder;
 
-@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWSegmentSliderFormCellModel *cellModel);
+@property (nullable, copy, nonatomic) void (^didChangeValueBlock)(DWSegmentSliderFormCellModel *cellModel, UITableViewCell *cell);
 
 @end
 
