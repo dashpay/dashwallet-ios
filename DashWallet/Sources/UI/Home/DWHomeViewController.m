@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
     CGFloat logoHeight;
     if ([DWEnvironment sharedInstance].currentChain.chainType == DSChainType_TestNet) {
         logoImage = [UIImage imageNamed:@"dash_logo_testnet"];
-        logoHeight = 43.0;
+        logoHeight = 40.0;
     }
     else {
         logoImage = [UIImage imageNamed:@"dash_logo_template"];

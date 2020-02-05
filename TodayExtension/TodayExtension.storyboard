@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="M4Y-Lb-cyx">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="M4Y-Lb-cyx">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -144,14 +144,14 @@
                                 </connections>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fyN-lX-mCe" userLabel="No data view container">
-                                <rect key="frame" x="32" y="23" width="256" height="114"/>
+                                <rect key="frame" x="41" y="23" width="238" height="114"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dash_logo_template" translatesAutoresizingMaskIntoConstraints="NO" id="NT7-zI-NmS">
-                                        <rect key="frame" x="0.0" y="0.0" width="256" height="66"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="238" height="66"/>
                                         <color key="tintColor" name="TintColor"/>
                                     </imageView>
                                     <visualEffectView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kfh-Uf-k2G">
-                                        <rect key="frame" x="48" y="82" width="160" height="32"/>
+                                        <rect key="frame" x="39" y="82" width="160" height="32"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="PkS-Pb-qBn">
                                             <rect key="frame" x="0.0" y="0.0" width="160" height="32"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -167,7 +167,7 @@
                                         </vibrancyEffect>
                                     </visualEffectView>
                                     <button opaque="NO" alpha="0.40000000596046448" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fgE-Q8-uG8">
-                                        <rect key="frame" x="48" y="82" width="160" height="32"/>
+                                        <rect key="frame" x="39" y="82" width="160" height="32"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="32" id="l01-D8-wDy"/>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="mQk-AW-Zfk"/>
@@ -248,7 +248,7 @@
     </scenes>
     <resources>
         <image name="button-bg-white-pressed" width="11" height="10.5"/>
-        <image name="dash_logo_template" width="128" height="33"/>
+        <image name="dash_logo_template" width="119" height="33"/>
         <namedColor name="TintColor">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
