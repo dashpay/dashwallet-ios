@@ -83,8 +83,13 @@ static CALayer *SeparatorLineLayer(void) {
 - (void)setModel:(nullable DWAmountDescriptionViewModel *)model {
     _model = model;
 
-    self.descriptionLabel.text = model.text;
-    self.descriptionLabel.attributedText = model.attributedText;
+    if (model.attributedText) {
+        self.descriptionLabel.attributedText = model.attributedText;
+    }
+    else {
+        self.descriptionLabel.textColor = [UIColor dw_darkTitleColor];
+        self.descriptionLabel.text = model.text;
+    }
 
     [self invalidateIntrinsicContentSize];
 }
