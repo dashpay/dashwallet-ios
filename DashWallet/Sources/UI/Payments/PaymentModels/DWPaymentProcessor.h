@@ -52,7 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Result
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-        didFailWithTitle:(nullable NSString *)title
+        didFailWithError:(nullable NSError *)error
+                   title:(nullable NSString *)title
                  message:(nullable NSString *)message;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor

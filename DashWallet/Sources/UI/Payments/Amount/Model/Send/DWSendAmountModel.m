@@ -19,6 +19,8 @@
 
 #import "DWAmountModel+DWProtected.h"
 #import "DWEnvironment.h"
+#import "UIColor+DWStyle.h"
+#import "UIFont+DWFont.h"
 
 @implementation DWSendAmountModel
 
@@ -44,7 +46,7 @@
 
         DSPriceManager *priceManager = [DSPriceManager sharedInstance];
         DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        uint64_t allAvailableFunds = [account maxOutputAmountUsingInstantSend:FALSE];
+        const uint64_t allAvailableFunds = account.maxOutputAmount;
 
         if (allAvailableFunds > 0) {
             self.amountEnteredInDash = [[DWAmountObject alloc] initWithPlainAmount:allAvailableFunds];
@@ -72,7 +74,9 @@
 - (void)updateCurrentAmount {
     [super updateCurrentAmount];
 
-    [self.sendingOptions updateWithAmount:self.amount.plainAmount];
+    const int64_t plainAmount = self.amount.plainAmount;
+
+    [self.sendingOptions updateWithAmount:plainAmount];
 
     NSString *descriptionText = nil;
     switch (self.sendingOptions.state) {
@@ -93,7 +97,29 @@
     }
 
     DWAmountDescriptionViewModel *descriptionModel = [[DWAmountDescriptionViewModel alloc] init];
-    descriptionModel.text = descriptionText;
+
+    // Insufficient funds message prioritized over other messages
+
+    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
+    const uint64_t allAvailableFunds = account.maxOutputAmount;
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    const BOOL canShowInsufficientFunds = (authenticationManager.didAuthenticate ||
+                                           self.insufficientFundsErrorWasShown);
+    if (canShowInsufficientFunds && plainAmount > allAvailableFunds) {
+        NSDictionary<NSAttributedStringKey, id> *attributes = @{
+            NSFontAttributeName : [UIFont dw_fontForTextStyle:UIFontTextStyleCallout],
+            NSForegroundColorAttributeName : [UIColor dw_redColor],
+        };
+        NSAttributedString *descriptionAttributed =
+            [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Insufficient funds", nil)
+                                            attributes:attributes];
+
+        descriptionModel.attributedText = descriptionAttributed;
+    }
+    else {
+        descriptionModel.text = descriptionText;
+    }
+
     self.descriptionModel = descriptionModel;
 }
 

@@ -21,6 +21,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWSendAmountViewController ()
+
+@property (readonly, strong, nonatomic) DWSendAmountModel *sendAmountModel;
+
+@end
+
 @implementation DWSendAmountViewController
 
 + (instancetype)sendControllerWithDestination:(NSString *)sendingDestination
@@ -31,6 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
     DWSendAmountViewController *controller = [[DWSendAmountViewController alloc] initWithModel:model];
 
     return controller;
+}
+
+- (DWSendAmountModel *)sendAmountModel {
+    return (DWSendAmountModel *)self.model;
 }
 
 - (NSString *)actionButtonTitle {
@@ -55,6 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (void)insufficientFundsErrorWasShown {
+    self.sendAmountModel.insufficientFundsErrorWasShown = YES;
+}
 
 #pragma mark - Actions
 

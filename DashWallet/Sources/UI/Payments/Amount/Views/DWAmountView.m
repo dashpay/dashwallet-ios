@@ -135,6 +135,8 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                                            forAxis:UILayoutConstraintAxisVertical];
 
         [NSLayoutConstraint activateConstraints:@[
+            [descriptionView.widthAnchor constraintEqualToAnchor:contentStackView.widthAnchor],
+
             [contentStackView.topAnchor constraintEqualToAnchor:self.topAnchor],
             [contentStackView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
             [contentStackView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
@@ -163,8 +165,10 @@ static CGFloat const INPUT_MAXBUTTON_PADDING = 16.0;
                       }];
 
         [self mvvm_observe:DW_KEYPATH(self, model.descriptionModel)
-                      with:^(typeof(self) self, id value) {
-                          self.descriptionView.hidden = value == nil;
+                      with:^(typeof(self) self, DWAmountDescriptionViewModel *value) {
+                          const BOOL isHidden = (value == nil ||
+                                                 (value.text == nil && value.attributedText == nil));
+                          self.descriptionView.hidden = isHidden;
                           self.descriptionView.model = self.model.descriptionModel;
                       }];
     }
