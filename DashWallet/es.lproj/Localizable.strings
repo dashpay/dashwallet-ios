@@ -165,7 +165,7 @@
 "Connect with third party exchanges" = "Conectar con exchanges de terceros";
 
 /* No comment provided by engineer. */
-"Connected peers: %d" = "Connected peers: %d";
+"Connected peers: %d" = "Pares conectados: %d";
 
 /* No comment provided by engineer. */
 "Contact Support" = "Contactar Soporte";
@@ -192,7 +192,7 @@
 "Couldn't sweep balance" = "No se pudo barrer el saldo";
 
 /* No comment provided by engineer. */
-"Couldn't transmit payment to Dash network" = "Couldn't transmit payment to Dash network";
+"Couldn't transmit payment to Dash network" = "No se pudo transmitir el pago a la red Dash";
 
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Crear una Nueva Billetera";
@@ -207,16 +207,16 @@
 "Default currency, shortcuts, about…" = "Moneda predeterminada, atajos, acerca...";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash)." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación de 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus Dash).";
 
 /* No comment provided by engineer. */
-"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DISPOSITIVO DE SEGURIDAD DUDOSA\nCualquier aplicación de 'jailbreak' puede acceder a la cadena de datos de otras aplicaciones (y robar tus Dash). Borra inmediatamente esta cartera para restablecerla en un dispositivo seguro.";
 
 /* No comment provided by engineer. */
 "Done" = "Hecho";
 
 /* ex., Download peer: 127.0.0.1:9999 */
-"Download peer: %@" = "Download peer: %@";
+"Download peer: %@" = "Par conectado: %@";
 
 /* No comment provided by engineer. */
 "Email client is not configured. Please add your email account in Settings" = "El email del cliente no está configurado. Por favor agregue una cuenta de email en Configuración";
@@ -240,7 +240,7 @@
 "Enter Recovery Phrase" = "Ingresar Frase de Recuperación";
 
 /* No comment provided by engineer. */
-"Enter the amount to transfer" = "Enter the amount to transfer";
+"Enter the amount to transfer" = "Ingresa la cantidad a transferir";
 
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Ingresa tu código 2FA debajo";
@@ -294,7 +294,7 @@
 "I wrote it down" = "Ya la escribí";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Si pierdes este dispositivo, podrás perder sus fondos. Obtenga su frase de recuperación para que puedas restaurar su billetera en otro dispositivo.";
 
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Si aún desea limpiar por favor introduce: \"%@\"";
@@ -315,7 +315,7 @@
 "Insufficient funds" = "Fondos insuficientes";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "Transferencia interna";
 
 /* Invalid transaction */
 "Invalid" = "Inválido";
@@ -372,7 +372,7 @@
 "Masternode Registration" = "Registro de Masternodo";
 
 /* No comment provided by engineer. */
-"Masternode Revocation" = "Masternode Revocation";
+"Masternode Revocation" = "Revocación de masternode";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Actualizar Masternodo";
@@ -408,7 +408,7 @@
 "NFC device" = "Dispositivo NFC";
 
 /* No comment provided by engineer. */
-"NFC device didn't transmit a valid Dash address" = "NFC device didn't transmit a valid Dash address";
+"NFC device didn't transmit a valid Dash address" = "El dispositivo NFC no transmitió una dirección válida de Dash";
 
 /* No comment provided by engineer. */
 "No address copied" = "Ninguna dirección copiada";
@@ -456,7 +456,7 @@
 "PIN is always required to make a payment" = "PIN siempre será requerido para realizar un pago";
 
 /* No comment provided by engineer. */
-"Please enter PIN to upgrade wallet" = "Please enter PIN to upgrade wallet";
+"Please enter PIN to upgrade wallet" = "Por favor ingrese su PIN para actualizar la billetera";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Coloca tu teléfono cerca del dispositivo NFC.";
@@ -492,10 +492,10 @@
 "Quick Receive" = "Recibir Rápidamente ";
 
 /* No comment provided by engineer. */
-"Quorums validated: %d/%d" = "Quorums validated: %1$d/%2$d";
+"Quorums validated: %d/%d" = "Quorums validados: %1$d/%2$d";
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
-"Rate: %@ = %@" = "Rate: %1$@ = %2$@";
+"Rate: %@ = %@" = "Taza: %1$@ = %2$@";
 
 /* No comment provided by engineer. */
 "Receive" = "Recibir";
@@ -606,7 +606,7 @@
 "Send" = "Envia";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Send %1$@ (%2$@) from this private key into your wallet? The Dash network will receive a fee of %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "¿Enviar %1$@ (%2$@) de esta clave privada a su cartera? La red Dash deducirá una tasa de %3$@ (%4$@).";
 
 /* Send by (scanning QR code) */
 "Send by" = "Enviado por";
@@ -723,7 +723,7 @@
 "This app is open source:" = "Esta app es de código abierto:";
 
 /* No comment provided by engineer. */
-"This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
+"This PIN will be required to unlock your app every time when you use it." = "Este PIN será requerido para desbloquear su app toda vez que la utilices.";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "Esta frase de recuperación es su acceso para los fondos en esta billetera.";
@@ -780,7 +780,7 @@
 "Unsupported URL" = "Dirección no soportada";
 
 /* ex., Updated: 27.12, 8:30 */
-"Updated: %@" = "Updated: %@";
+"Updated: %@" = "Actualizado: %@";
 
 /* No comment provided by engineer. */
 "Uphold" = "Uphold";
@@ -834,13 +834,13 @@
 "We do not store this recovery phrase." = "Nosotros no guardamos esta frase de recuperación.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete.";
+"We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Hemos detectado que Dash Wallet se bloqueó durante la migración. Volver a escanear la cadena de bloques resolverá este problema o puedes intentarlo de nuevo. La reexploración debe realizarse preferiblemente en wifi y demorará hasta media hora. Tus fondos estarán disponibles una vez que se complete el proceso de sincronización.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared.";
+"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Detectamos que la Dash Wallet dejó de funcionar la última vez que se utilizó. ¿Le gustaría ayudarnos a resolver este problema enviándonos un reporte con los datos del fallo? Su historial de transacciones y cualquier otra información privada NO SERÁ compartida.";
 
 /* No comment provided by engineer. */
-"We Upgraded" = "We Upgraded";
+"We Upgraded" = "Actualizamos";
 
 /* No comment provided by engineer. */
 "Welcome" = "Bienvenido";
@@ -858,7 +858,7 @@
 "with Dash blockchain" = "con la blockchain de Dash";
 
 /* No comment provided by engineer. */
-"You are about to sweep funds from another Dash Wallet." = "You are about to sweep funds from another Dash Wallet.";
+"You are about to sweep funds from another Dash Wallet." = "Estás a punto de barrer los fondos de otra billetera Dash.";
 
 /* No comment provided by engineer. */
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Estás a punto de limpiar esta billetera de este dispositivo. Fondos asociados a esta billetera solo podrán ser recuperados si tienes esta frase de recuperación.";
@@ -870,16 +870,16 @@
 "You can authenticate with Touch ID for payments below" = "Puedes autenticar con Touch ID para pagos abajo de";
 
 /* No comment provided by engineer. */
-"You must enter your PIN in order to enter Dash Wallet" = "You must enter your PIN in order to enter Dash Wallet";
+"You must enter your PIN in order to enter Dash Wallet" = "Debe ingresar su PIN para ingresar a la Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Recibiste Dash! Si pierdes este dispositivo, podrás perder sus fondos. Obtenga su frase de recuperación para que puedas restaurar su billetera en otro dispositivo.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "También deberás cerrar sesión en el sitio web de Uphold utilizando tu navegador";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Necesitarás esta frase de recuperación para acceder a tus fondos si este dispositivo se pierde, daña o si la billetera de Dash se desinstala accidentalmente de este dispositivo.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Tu transacción se envió y la cantidad debería aparecer en tu billetera en unos minutos.";

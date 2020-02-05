@@ -96,10 +96,10 @@
 "Backup Wallet" = "Wallet สำรอง";
 
 /* No comment provided by engineer. */
-"Bad recovery phrase" = "Bad recovery phrase";
+"Bad recovery phrase" = "วลีกู้คืนไม่ดี";
 
 /* No comment provided by engineer. */
-"Balance hidden" = "Balance hidden";
+"Balance hidden" = "ยอดคงเหลือถูกซ่อน";
 
 /* No comment provided by engineer. */
 "block #%d of %d" = "กลุ่ม # %1$d of %2$d";
@@ -525,7 +525,7 @@
 "Recovery phrase must have %d words" = "Recovery phrase must have %d words";
 
 /* No comment provided by engineer. */
-"Registered from" = "Registered from";
+"Registered from" = "ลงทะเบียนจาก";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Masternodes ที่ลงทะเบียน";
@@ -543,7 +543,7 @@
 "Reset" = "ตั้งค่า";
 
 /* No comment provided by engineer. */
-"Reset to Default" = "Reset to Default";
+"Reset to Default" = "ตั้งค่าเป็นค่าเริ่มต้น";
 
 /* No comment provided by engineer. */
 "Reset Wallet" = "ตั้งค่า wallet";
@@ -591,7 +591,7 @@
 "Secure now" = "ปลอดภัย";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "Secure Wallet Now";
+"Secure Wallet Now" = "ทำให้ Wallet ปลอดภัยตอนนี้";
 
 /* No comment provided by engineer. */
 "Security" = "ความปลอดภัย";
@@ -612,7 +612,7 @@
 "Send by" = "ส่งจาก";
 
 /* An action */
-"Send crash report" = "Send crash report";
+"Send crash report" = "รายงานข้อขัดข้อง";
 
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
@@ -642,55 +642,55 @@
 "Sent" = "ส่ง";
 
 /* No comment provided by engineer. */
-"Sent from" = "Sent from";
+"Sent from" = "ส่งจาก";
 
 /* No comment provided by engineer. */
-"Sent successfully" = "Sent successfully";
+"Sent successfully" = "ส่งสำเร็จแล้ว";
 
 /* No comment provided by engineer. */
-"Sent to" = "Sent to";
+"Sent to" = "ส่งไปยัง";
 
 /* No comment provided by engineer. */
 "Set a trusted node" = "Set a trusted node";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "ตั้งค่า PIN";
 
 /* No comment provided by engineer. */
 "Settings" = "ตั้งค่า";
 
 /* No comment provided by engineer. */
-"Setup Wallet" = "Setup Wallet";
+"Setup Wallet" = "ตั้งค่า wallet";
 
 /* No comment provided by engineer. */
 "Share" = "แบ่งปัน";
 
 /* No comment provided by engineer. */
-"Show Masternode Keys" = "Show Masternode Keys";
+"Show Masternode Keys" = "แสดง masternode keys";
 
 /* No comment provided by engineer. */
-"Show Recovery Phrase" = "Show Recovery Phrase";
+"Show Recovery Phrase" = "แสดงวลีกู้คืน";
 
 /* No comment provided by engineer. */
-"Skip" = "Skip";
+"Skip" = "ข้าม";
 
 /* No comment provided by engineer. */
-"skip" = "skip";
+"skip" = "ข้าม";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "มีบางอย่างผิดพลาด";
 
 /* No comment provided by engineer. */
-"Specify Amount" = "Specify Amount";
+"Specify Amount" = "ระบุจำนวน";
 
 /* No comment provided by engineer. */
-"Spending Confirmation" = "Spending Confirmation";
+"Spending Confirmation" = "การยืนยันการใช้จ่าย";
 
 /* No comment provided by engineer. */
 "Steps to reproduce the crash" = "ขั้นตอนในการทำให้เกิดความผิดพลาดซ้ำ";
 
 /* No comment provided by engineer. */
-"Swept!" = "Swept!";
+"Swept!" = "ลบล้าง";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Mainnet" = "Switch to Mainnet";
@@ -699,31 +699,31 @@
 "Switch to Testnet" = "Switch to Testnet";
 
 /* No comment provided by engineer. */
-"Sync Failed" = "Sync Failed";
+"Sync Failed" = "ซิงค์ล้มเหลว";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Sync Now" = "Sync Now";
+"Sync Now" = "ซิงค์ตอนนี้";
 
 /* No comment provided by engineer. */
-"Syncing" = "Syncing";
+"Syncing" = "กำลังซิงค์";
 
 /* Pay using NFC (should be as short as possible) */
-"Tap" = "Tap";
+"Tap" = "กด";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Tap to hide balance";
+"Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
 
 /* No comment provided by engineer. */
-"Tap to unhide balance" = "Tap to unhide balance";
+"Tap to unhide balance" = "กดเพื่อเลิกซ่อนยอดคงเหลือ";
 
 /* No comment provided by engineer. */
-"There are no transactions to display" = "There are no transactions to display";
+"There are no transactions to display" = "ไม่มีธุรกรรมเพื่อแสดง";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "This app is open source:";
 
 /* No comment provided by engineer. */
-"This PIN will be required to unlock your app every time when you use it." = "This PIN will be required to unlock your app every time when you use it.";
+"This PIN will be required to unlock your app every time when you use it." = "ต้องใช้ PIN นี้เพื่อปลดล็อคแอพของคุณทุกครั้งที่ใช้";
 
 /* No comment provided by engineer. */
 "This recovery phrase is your access to the funds in this wallet." = "This recovery phrase is your access to the funds in this wallet.";
