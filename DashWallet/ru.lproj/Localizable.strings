@@ -108,10 +108,10 @@
 "Block #%d of %d" = "Блок №%1$d из %2$d";
 
 /* No comment provided by engineer. */
-"Buy & Sell Dash" = "Купить и продать Dash";
+"Buy & Sell Dash" = "Купить и продать";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Buy / Sell Dash" = "Купить/Продать Dash";
+"Buy / Sell Dash" = "Купить / Продать";
 
 /* No comment provided by engineer. */
 "Buy Dash" = "Купить Dash";
@@ -219,7 +219,7 @@
 "Download peer: %@" = "Узел загрузки: %@";
 
 /* No comment provided by engineer. */
-"Email client is not configured. Please add your email account in Settings" = "E-mail клиент не настроен. Пожалуйста, добавьте ваш e-mail аккаунт в Настройках. ";
+"Email client is not configured. Please add your email account in Settings" = "E-mail клиент не настроен. Пожалуйста, добавьте Ваш e-mail аккаунт в Настройках. ";
 
 /* No comment provided by engineer. */
 "Enable Face ID" = "Включить Face ID";
@@ -276,7 +276,7 @@
 "Go to Website" = "Перейти на сайт";
 
 /* No comment provided by engineer. */
-"Have complete control and customize your wallet based on your needs" = "Полный контроль и настройки кошелька для ваших нужд";
+"Have complete control and customize your wallet based on your needs" = "Полный контроль и настройки кошелька для Ваших нужд";
 
 /* No comment provided by engineer. */
 "Help us improve your experience" = "Помогите нам стать лучше";
@@ -294,10 +294,10 @@
 "I wrote it down" = "Я записал";
 
 /* No comment provided by engineer. */
-"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Если вы потеряете это устройство, то вы потеряете доступ к вашим средствам. Сохраните вашу фразу восстановления что бы иметь возможность восстановить кошелек на другом устройстве.";
+"If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Если Вы потеряете это устройство, то Вы потеряете доступ к вашим средствам. Сохраните Вашу фразу восстановления, чтобы иметь возможность восстановить кошелек на другом устройстве.";
 
 /* No comment provided by engineer. */
-"If you still would like to wipe it please input: \"%@\"" = "Если вы всё ещё хотите выполнить удаление кошелька, пожалуйста введите: \"%@\"";
+"If you still would like to wipe it please input: \"%@\"" = "Если Вы всё ещё хотите выполнить удаление кошелька, пожалуйста, введите: \"%@\"";
 
 /* No comment provided by engineer. */
 "Ignore" = "Игнорировать";
@@ -306,7 +306,7 @@
 "Immediately" = "Немедленно";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Import Private Key" = "Импортировать приватный ключ";
+"Import Private Key" = "Импорт ключа";
 
 /* No comment provided by engineer. */
 "Import private key…" = "Импортировать приватный ключ…";
@@ -411,7 +411,7 @@
 "NFC device didn't transmit a valid Dash address" = "NFC-устройство не предоставило Dash адрес";
 
 /* No comment provided by engineer. */
-"No address copied" = "Адрес не скопирован";
+"No address copied" = "Нет адреса";
 
 /* No comment provided by engineer. */
 "Node IP" = "IP узла";
@@ -459,10 +459,10 @@
 "Please enter PIN to upgrade wallet" = "Пожалуйста, введите PIN для выполнения обновления кошелька";
 
 /* No comment provided by engineer. */
-"Please place your phone near NFC device." = "Пожалуйста, поместите ваш телефон рядом с NFC устройством.";
+"Please place your phone near NFC device." = "Пожалуйста, поместите Ваш телефон рядом с NFC устройством.";
 
 /* No comment provided by engineer. */
-"Please tap on the words from your recovery phrase in the right order" = "Пожалуйста, нажмите на слова из вашей фразы восстановления в правильном порядке";
+"Please tap on the words from your recovery phrase in the right order" = "Пожалуйста, нажмите на слова из Вашей фразы восстановления в правильном порядке";
 
 /* No comment provided by engineer. */
 "Please try again" = "Попробуйте еще раз";
@@ -573,13 +573,13 @@
 "Scan this to Pay" = "Отсканируйте для оплаты";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Scan to Pay" = "Сканировать";
+"Scan to Pay" = "Оплатить по QR-коду";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "Сканировать";
 
 /* (Send by) Scanning QR code */
-"Scanning QR code" = "Сканирование QR-кода";
+"Scanning QR code" = "QR-коду";
 
 /* No comment provided by engineer. */
 "Screenshot detected. New recovery phrase:" = "Произошел снимок экрана. НОВАЯ фраза восстановления:";
@@ -591,7 +591,7 @@
 "Secure now" = "Сохранить кошелек";
 
 /* Translate it as short as possible! (24 symbols max) */
-"Secure Wallet Now" = "Сохраните кошелек сейчас";
+"Secure Wallet Now" = "Сохраните кошелек";
 
 /* No comment provided by engineer. */
 "Security" = "Безопасность";
@@ -606,10 +606,10 @@
 "Send" = "Отправить";
 
 /* No comment provided by engineer. */
-"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) с этого приватного ключа в ваш кошелёк? Сеть Dash получит комиссию %3$@ (%4$@).";
+"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@)." = "Отправить %1$@ (%2$@) с этого приватного ключа в Ваш кошелёк? Сеть Dash получит комиссию %3$@ (%4$@).";
 
 /* Send by (scanning QR code) */
-"Send by" = "Отправить через";
+"Send by" = "Оплатить по";
 
 /* An action */
 "Send crash report" = "Отправить отчёт об ошибке";
@@ -711,10 +711,10 @@
 "Tap" = "Вкл.";
 
 /* No comment provided by engineer. */
-"Tap to hide balance" = "Нажмите чтобы скрыть баланс";
+"Tap to hide balance" = "Нажмите, чтобы скрыть баланс";
 
 /* No comment provided by engineer. */
-"Tap to unhide balance" = "Нажмите что бы показать баланс";
+"Tap to unhide balance" = "Нажмите, чтобы показать баланс";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "Нет транзакций для отображения";
@@ -726,7 +726,7 @@
 "This PIN will be required to unlock your app every time when you use it." = "Этот PIN нужно будет вводить для разблокировки приложения при каждом его использовании.";
 
 /* No comment provided by engineer. */
-"This recovery phrase is your access to the funds in this wallet." = "Эта фраза восстановления - ваш доступ к средствам на этом кошельке.";
+"This recovery phrase is your access to the funds in this wallet." = "Эта фраза восстановления - Ваш доступ к средствам на этом кошельке.";
 
 /* No comment provided by engineer. */
 "This transaction may take several minutes to settle." = "Для подтверждения этой транзакции может понадобиться несколько минут.";
@@ -735,10 +735,10 @@
 "This transaction should settle instantly at no extra fee" = "Эту транзакция будет подтверждена немедленно без дополнительной комиссии";
 
 /* No comment provided by engineer. */
-"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства, или синхронизация не была завершена. Вы не сможете удалить его без фразы для восстановления.";
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "В кошельке есть средства или синхронизация не была завершена. Вы не сможете удалить его без фразы восстановления.";
 
 /* No comment provided by engineer. */
-"This will move all coins from that wallet to your wallet on this device." = "Все средства перейдут на ваш кошелёк на этом устройстве.";
+"This will move all coins from that wallet to your wallet on this device." = "Все средства перейдут на Ваш кошелёк на этом устройстве.";
 
 /* No comment provided by engineer. */
 "Tools" = "Инструменты";
@@ -756,7 +756,7 @@
 "Transfer" = "Перевод средств";
 
 /* No comment provided by engineer. */
-"Transfer Dash from your Uphold account to this wallet" = "Перевести Dash из вашей учётной записи Uphold на этот кошелёк";
+"Transfer Dash from your Uphold account to this wallet" = "Перевести Dash из Вашей учётной записи Uphold на этот кошелёк";
 
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Перевести средства из Uphold";
@@ -828,7 +828,7 @@
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"We are about to show you the secret key to your wallet." = "Сейчас мы покажем секретный ключ к вашему кошельку.";
+"We are about to show you the secret key to your wallet." = "Сейчас мы покажем секретный ключ к Вашему кошельку.";
 
 /* No comment provided by engineer. */
 "We do not store this recovery phrase." = "Мы не храним эту фразу восстановления.";
@@ -837,7 +837,7 @@
 "We have detected that Dash Wallet crashed during migration. Rescanning the blockchain will solve this issue or you may try again. Rescanning should preferably be performed on wifi and will take up to half an hour. Your funds will be available once the sync process is complete." = "Обнаружено, что во время миграции Dash Wallet произошёл сбой. Повторное сканирование блокчейн решит эту проблему, либо попробуйте ещё раз. Повторное сканирование желательно проводить с использованием Wi-Fi и это займет до получаса. Ваши средства будут доступны после завершения процесса синхронизации.";
 
 /* No comment provided by engineer. */
-"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Мы обнаружили, что во время последней сессии кошелёк Dash Wallet завершил работу некорректно. Хотите отправить отчёт об ошибках, чтобы помочь нам решить эту проблему? Ваша история транзакций и любая другая личная информация НЕ БУДЕТ передана.  ";
+"We have detected that Dash Wallet crashed last time it was opened. Would you like to help us solve the issue by sending us the crash report data? Your transaction history and any other private information WILL NOT be shared." = "Мы обнаружили, что во время последней сессии кошелёк Dash Wallet завершил работу некорректно. Хотите отправить отчёт об ошибках, чтобы помочь нам решить эту проблему? Ваша история транзакций и любая другая личная информация НЕ БУДЕТ передана.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Мы обновились";
@@ -861,7 +861,7 @@
 "You are about to sweep funds from another Dash Wallet." = "Вы собираетесь перенести все средства из другого кошелька Dash.";
 
 /* No comment provided by engineer. */
-"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Вы собираетесь удалить кошелек с этого устройства. Средства на этом кошельке смогут быть доступны только если у вас есть фраза восстановления.";
+"You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Вы собираетесь удалить кошелек с этого устройства. Средства на этом кошельке смогут быть доступны, только если у Вас есть фраза восстановления.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Вам будут доступны платежи через Face ID меньше";
@@ -873,13 +873,13 @@
 "You must enter your PIN in order to enter Dash Wallet" = "Вы должны ввести PIN для входа в Dash Wallet";
 
 /* No comment provided by engineer. */
-"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Вы получили Dash! Если вы потеряете это устройство, то вы потеряете доступ к вашим средствам. Сохраните вашу фразу восстановления что бы иметь возможность восстановить кошелек на другом устройстве.";
+"You received Dash! If you lose this device, you will lose your funds. Get your recovery phrase so that you can restore your wallet on another device." = "Вы получили Dash! Если Вы потеряете это устройство, то Вы потеряете доступ к Вашим средствам. Сохраните Вашу фразу восстановления, чтобы иметь возможность восстановить кошелек на другом устройстве.";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Вам также необходимо будет выйти из своей учётной записи Uphold используя браузер";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Вам понадобится эта фраза восстановления для доступа к вашим средствам если это устройство будет утеряно, повреждено или приложение Dash Wallet будет случайно удалено.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Вам понадобится эта фраза восстановления для доступа к Вашим средствам, если это устройство будет утеряно, повреждено или приложение Dash Wallet будет случайно удалено.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Ваша транзакция была отправлена и её сумма отобразится в вашем кошельке через несколько минут.";
@@ -888,4 +888,4 @@
 "Your Uphold account Dash balance is" = "Баланс Dash на вашей учётной записи Uphold составляет";
 
 /* No comment provided by engineer. */
-"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Сейчас ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к вашему аккаунту на другом устройстве.";
+"Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Сейчас Ваш кошелёк защищён. Вы можете использовать фразу восстановления в любое время, чтобы получить доступ к Вашему аккаунту на другом устройстве.";

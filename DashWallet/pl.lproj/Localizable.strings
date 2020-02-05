@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access Face ID" = "%@ nie ma zezwolenia na dostępu do Face ID";
+"%@ is not allowed to access Face ID" = "%@ nie ma zezwolenia na dostęp do Face ID";
 
 /* No comment provided by engineer. */
 "%@ is not allowed to access the camera" = "%@ nie na zezwolenia na dostęp do kamery";
@@ -183,7 +183,7 @@
 "Copy Logs" = "Kopiuj Logi";
 
 /* No comment provided by engineer. */
-"Copyright © 2020 Dash Core" = "Copyright © 2020 Dash Core";
+"Copyright © 2020 Dash Core" = "Prawa autorskie © 2020 Dash Core";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Nie można dokonać płatności";
@@ -315,7 +315,7 @@
 "Insufficient funds" = "Niewystarczająca ilość funduszy";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "Przelew wewnętrzny";
 
 /* Invalid transaction */
 "Invalid" = "Niewłaściwy";
@@ -879,7 +879,7 @@
 "You will also need to log out from the Uphold website using your browser" = "Potrzebujesz także wylogować się z przeglądarki na swoim koncie Uphold ";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Fraza odzysku danych będzie potrzebna aby mieć dostęp do funduszy w wypadku utraty tego urządzenia lub jeśli Dash Wallet zostanie przypadkowo odinstalowany. ";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Twoja transakcja została wysłana a ilość powinna pojawić się na Twoim koncie w kilka minut.";

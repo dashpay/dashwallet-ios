@@ -315,7 +315,7 @@
 "Insufficient funds" = "Dana tidak mencukupi";
 
 /* Transaction within the wallet, transfer of own funds */
-"Internal Transfer" = "Internal Transfer";
+"Internal Transfer" = "Transfer Internal";
 
 /* Invalid transaction */
 "Invalid" = "Tidak valid";
@@ -879,7 +879,7 @@
 "You will also need to log out from the Uphold website using your browser" = "Anda juga harus keluar dari situs web Uphold menggunakan browser Anda";
 
 /* No comment provided by engineer. */
-"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device.";
+"You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet ever is accidentally uninstalled from this device." = "Anda akan memerlukan frasa pemulihan ini untuk mengakses dana Anda jika perangkat ini hilang, rusak, atau jika Dash Wallet secara tidak sengaja dihapus dari perangkat ini.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
