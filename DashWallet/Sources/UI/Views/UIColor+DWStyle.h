@@ -67,6 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIColor *)dw_declineButtonColor;
 
++ (UIColor *)dw_blueGradientStartColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

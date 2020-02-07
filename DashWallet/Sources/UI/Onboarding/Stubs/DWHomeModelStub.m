@@ -30,7 +30,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWHomeModelStub ()
+@interface DWHomeModelStub () <DWShortcutsModelDataSource>
 
 @property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
         _stubTxs = [DWTransactionStub stubs];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
-        _shortcutsModel = [[DWShortcutsModel alloc] init];
+        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
         _payModel = [[DWPayModelStub alloc] init];
         _balanceDisplayOptions = [[DWBalanceDisplayOptionsStub alloc] init];
 
@@ -129,6 +129,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)performOnSetupUpgrades {
+    return NO;
+}
+
+#pragma mark - DWShortcutsModelDataSource
+
+- (BOOL)shouldShowCreateUserNameButton {
     return NO;
 }
 

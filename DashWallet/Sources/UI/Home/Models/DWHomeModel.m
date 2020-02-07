@@ -56,7 +56,10 @@ static BOOL IsJailbroken(void) {
     return jailbroken;
 }
 
-@interface DWHomeModel ()
+// TODO: consider moving to the DashSync
+static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = 0.1;
+
+@interface DWHomeModel () <DWShortcutsModelDataSource>
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DSReachabilityManager *reachability;
@@ -107,7 +110,7 @@ static BOOL IsJailbroken(void) {
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];
 
-        _shortcutsModel = [[DWShortcutsModel alloc] init];
+        _shortcutsModel = [[DWShortcutsModel alloc] initWithDataSource:self];
 
         _payModel = [[DWPayModel alloc] init];
 
@@ -278,6 +281,18 @@ static BOOL IsJailbroken(void) {
     [syncModel forceStartSyncingActivity];
 }
 
+#pragma mark - #pragma mark - DWShortcutsModelDataSource
+
+- (BOOL)shouldShowCreateUserNameButton {
+    // TODO: add check if appropriate spork is on and username has been registered
+    BOOL hasUsername = NO;
+    BOOL canRegisterUsername = YES;
+    const uint64_t balanceValue = [DWEnvironment sharedInstance].currentWallet.balance;
+    BOOL isEnoughBalance = balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME;
+    BOOL isSynced = self.syncModel.state == DWSyncModelState_SyncDone;
+    return canRegisterUsername && !hasUsername && isSynced && isEnoughBalance;
+}
+
 #pragma mark - Notifications
 
 - (void)reachabilityDidChangeNotification {
@@ -425,6 +440,10 @@ static BOOL IsJailbroken(void) {
     DWGlobalOptions *options = [DWGlobalOptions sharedInstance];
     if (balanceValue > 0 && options.walletNeedsBackup && !options.balanceChangedDate) {
         options.balanceChangedDate = [NSDate date];
+    }
+
+    if (balanceValue >= MIN_BALANCE_TO_CREATE_USERNAME) {
+        [self reloadShortcuts];
     }
 }
 
