@@ -57,7 +57,7 @@ static BOOL IsJailbroken(void) {
 }
 
 // TODO: consider moving to the DashSync
-static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = 0.1;
+static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
 
 @interface DWHomeModel () <DWShortcutsModelDataSource>
 
