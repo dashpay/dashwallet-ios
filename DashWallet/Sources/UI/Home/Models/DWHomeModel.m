@@ -284,6 +284,12 @@ static uint64_t MIN_BALANCE_TO_CREATE_USERNAME = (DUFFS / 10); // 0.1 Dash
 #pragma mark - #pragma mark - DWShortcutsModelDataSource
 
 - (BOOL)shouldShowCreateUserNameButton {
+    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+    // available in Evonet so far
+    if ([chain.devnetIdentifier isEqualToString:DWDevnetEvonetIdentifier] == NO) {
+        return NO;
+    }
+
     // TODO: add check if appropriate spork is on and username has been registered
     BOOL hasUsername = NO;
     BOOL canRegisterUsername = YES;
