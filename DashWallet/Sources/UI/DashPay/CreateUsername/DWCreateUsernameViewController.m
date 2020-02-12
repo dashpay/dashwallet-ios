@@ -39,6 +39,7 @@
     [super viewDidLoad];
 
     self.hidesBottomBarWhenPushed = YES;
+    self.keyboardNotificationsEnabled = YES;
 
     // TODO: Localize
     self.title = @"Dash Username";

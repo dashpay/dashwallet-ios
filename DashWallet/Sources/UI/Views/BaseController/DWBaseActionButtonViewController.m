@@ -83,13 +83,19 @@ static CGFloat const BOTTOM_BUTTON_HEIGHT = 54.0;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    [self ka_startObservingKeyboardNotifications];
+    if (self.isKeyboardNotificationsEnabled) {
+        // pre-layout view to avoid undesired animation if the keyboard is shown while appearing
+        [self.view layoutIfNeeded];
+        [self ka_startObservingKeyboardNotifications];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 
-    [self ka_stopObservingKeyboardNotifications];
+    if (self.isKeyboardNotificationsEnabled) {
+        [self ka_stopObservingKeyboardNotifications];
+    }
 }
 
 - (void)setupContentView:(UIView *)contentView {
