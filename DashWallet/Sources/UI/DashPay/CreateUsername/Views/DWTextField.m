@@ -15,23 +15,23 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWTextField.h"
 
-NS_ASSUME_NONNULL_BEGIN
+static CGFloat const HORIZONTAL_PADDING = 30.0;
+static CGFloat const VERTICAL_PADDING = 16.0;
 
-typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
+@implementation DWTextField
 
-@interface DWUsernameHeaderView : UIView
+- (CGRect)textRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
 
-@property (readonly, nonatomic, strong) UIButton *cancelButton;
-@property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
+- (CGRect)editingRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
 
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-
-- (void)showInitialAnimation;
+- (CGRect)placeholderRectForBounds:(CGRect)bounds {
+    return CGRectInset(bounds, HORIZONTAL_PADDING, VERTICAL_PADDING);
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

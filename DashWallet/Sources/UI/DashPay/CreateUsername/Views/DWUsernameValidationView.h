@@ -17,20 +17,19 @@
 
 #import <UIKit/UIKit.h>
 
+#import "DWUsernameValidationRule.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
+@interface DWUsernameValidationView : UIView
 
-@interface DWUsernameHeaderView : UIView
-
-@property (readonly, nonatomic, strong) UIButton *cancelButton;
-@property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
+@property (nullable, nonatomic, copy) NSString *title;
 
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
-- (void)showInitialAnimation;
+- (void)setValidationResult:(DWUsernameValidationRuleResult)validationResult;
 
 @end
 

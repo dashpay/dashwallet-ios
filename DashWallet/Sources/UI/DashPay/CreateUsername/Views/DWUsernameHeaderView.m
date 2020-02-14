@@ -20,8 +20,43 @@
 #import "DWPlanetarySystemView.h"
 #import "DWUIKit.h"
 
+static CGFloat const BottomSpacing(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 4.0;
+    }
+    else {
+        return 16.0;
+    }
+}
+
+static CGFloat SmallCircleRadius(void) {
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return 39.0;
+    }
+    else {
+        return 78.0;
+    }
+}
+
+static CGFloat PlanetarySize(void) {
+    const CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    const CGFloat side = MIN(screenSize.width, screenSize.height);
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        return side / 2.0;
+    }
+    else {
+        return MIN(375.0, side);
+    }
+}
+
 static NSArray<DWPlanetObject *> *Planets(void) {
-    const CGSize size = CGSizeMake(36.0, 36.0);
+    CGSize size;
+    if (IS_IPHONE_5_OR_LESS || IS_IPHONE_6) {
+        size = CGSizeMake(20.0, 20.0);
+    }
+    else {
+        size = CGSizeMake(36.0, 36.0);
+    }
 
     NSMutableArray<DWPlanetObject *> *planets = [NSMutableArray array];
     {
@@ -92,6 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWUsernameHeaderView ()
 
 @property (strong, nonatomic) DWPlanetarySystemView *planetaryView;
+@property (nonatomic, strong) UILabel *titleLabel;
 
 @end
 
@@ -122,7 +158,7 @@ NS_ASSUME_NONNULL_END
 
         DWPlanetarySystemView *planetaryView = [[DWPlanetarySystemView alloc] initWithFrame:CGRectZero];
         planetaryView.translatesAutoresizingMaskIntoConstraints = NO;
-        planetaryView.centerOffset = 78.0;
+        planetaryView.centerOffset = SmallCircleRadius();
         planetaryView.colors = colors;
         planetaryView.lineWidth = 1.0;
         planetaryView.numberOfOrbits = colors.count;
@@ -130,9 +166,15 @@ NS_ASSUME_NONNULL_END
         [self addSubview:planetaryView];
         _planetaryView = planetaryView;
 
+        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        titleLabel.backgroundColor = [UIColor clearColor];
+        titleLabel.numberOfLines = 3;
+        [self addSubview:titleLabel];
+        _titleLabel = titleLabel;
+
         const CGFloat buttonSize = 44.0;
-        const CGSize screenSize = [UIScreen mainScreen].bounds.size;
-        const CGFloat side = MIN(screenSize.width, screenSize.height);
+        const CGFloat side = PlanetarySize();
         [NSLayoutConstraint activateConstraints:@[
             [cancelButton.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor],
             [cancelButton.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
@@ -143,13 +185,42 @@ NS_ASSUME_NONNULL_END
             [planetaryView.centerYAnchor constraintEqualToAnchor:self.topAnchor],
             [planetaryView.widthAnchor constraintEqualToConstant:side],
             [planetaryView.heightAnchor constraintEqualToConstant:side],
+
+            [titleLabel.topAnchor constraintGreaterThanOrEqualToAnchor:cancelButton.bottomAnchor],
+            [titleLabel.leadingAnchor constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
+            [self.layoutMarginsGuide.trailingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor],
+            [self.bottomAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
+                                              constant:BottomSpacing()],
         ]];
     }
     return self;
 }
 
+- (void)setTitleBuilder:(DWTitleStringBuilder)titleBuilder {
+    _titleBuilder = [titleBuilder copy];
+
+    [self updateTitle];
+}
+
 - (void)showInitialAnimation {
     [self.planetaryView showInitialAnimation];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+    [super traitCollectionDidChange:previousTraitCollection];
+
+    [self updateTitle];
+}
+
+#pragma mark - Private
+
+- (void)updateTitle {
+    if (self.titleBuilder) {
+        self.titleLabel.attributedText = self.titleBuilder();
+    }
+    else {
+        self.titleLabel.attributedText = nil;
+    }
 }
 
 @end

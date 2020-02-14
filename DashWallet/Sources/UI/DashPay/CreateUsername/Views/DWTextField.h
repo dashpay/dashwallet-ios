@@ -19,18 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
-
-@interface DWUsernameHeaderView : UIView
-
-@property (readonly, nonatomic, strong) UIButton *cancelButton;
-@property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
-
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)new NS_UNAVAILABLE;
-
-- (void)showInitialAnimation;
+@interface DWTextField : UITextField
 
 @end
 

@@ -15,22 +15,27 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NSAttributedString *_Nonnull (^DWTitleStringBuilder)(void);
+typedef NS_ENUM(NSUInteger, DWUsernameValidationRuleResult) {
+    DWUsernameValidationRuleResultEmpty,
+    DWUsernameValidationRuleResultValid,
+    DWUsernameValidationRuleResultInvalid,
+    DWUsernameValidationRuleResultHidden,
+};
 
-@interface DWUsernameHeaderView : UIView
+@interface DWUsernameValidationRule : NSObject
 
-@property (readonly, nonatomic, strong) UIButton *cancelButton;
-@property (nullable, nonatomic, copy) DWTitleStringBuilder titleBuilder;
+@property (readonly, nonatomic, copy) NSString *title;
 
-- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithTitle:(NSString *)title
+              validationBlock:(DWUsernameValidationRuleResult (^)(NSString *_Nullable))validationBlock;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 
-- (void)showInitialAnimation;
+- (DWUsernameValidationRuleResult)validateText:(NSString *_Nullable)text;
 
 @end
 

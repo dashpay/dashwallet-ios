@@ -25,7 +25,14 @@
 #import "DWUsernamePendingViewController.h"
 #import "UIViewController+DWEmbedding.h"
 
-static CGFloat const HEADER_HEIGHT = 231.0;
+static CGFloat const HeaderHeight(void) {
+    if (IS_IPHONE_6 || IS_IPHONE_5_OR_LESS) {
+        return 125.0;
+    }
+    else {
+        return 231.0;
+    }
+}
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -61,7 +68,7 @@ NS_ASSUME_NONNULL_END
         [self.headerView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
         [self.headerView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
         [self.view.trailingAnchor constraintEqualToAnchor:self.headerView.trailingAnchor],
-        [self.headerView.heightAnchor constraintEqualToConstant:HEADER_HEIGHT],
+        [self.headerView.heightAnchor constraintEqualToConstant:HeaderHeight()],
 
         [self.contentView.topAnchor constraintEqualToAnchor:self.headerView.bottomAnchor],
         [self.contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
@@ -105,6 +112,40 @@ NS_ASSUME_NONNULL_END
     if (_headerView == nil) {
         _headerView = [[DWUsernameHeaderView alloc] initWithFrame:CGRectZero];
         _headerView.translatesAutoresizingMaskIntoConstraints = NO;
+        _headerView.preservesSuperviewLayoutMargins = YES;
+        _headerView.titleBuilder = ^NSAttributedString *_Nonnull {
+            // TODO: DynamicType
+            NSDictionary *regularAttributes = @{
+                NSFontAttributeName : [UIFont dw_regularFontOfSize:22.0],
+                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+            };
+
+            NSDictionary *emphasizedAttributes = @{
+                NSFontAttributeName : [UIFont dw_mediumFontOfSize:22.0],
+                NSForegroundColorAttributeName : [UIColor dw_darkTitleColor],
+            };
+
+            NSAttributedString *chooseYourString =
+                [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Choose your", @"Choose your Dash username")
+                                                attributes:regularAttributes];
+
+            NSAttributedString *spaceString =
+                [[NSAttributedString alloc] initWithString:@"\n"
+                                                attributes:regularAttributes];
+
+            NSAttributedString *dashUsernameString =
+                [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Dash username", nil)
+                                                attributes:emphasizedAttributes];
+
+            NSMutableAttributedString *resultString = [[NSMutableAttributedString alloc] init];
+            [resultString beginEditing];
+            [resultString appendAttributedString:chooseYourString];
+            [resultString appendAttributedString:spaceString];
+            [resultString appendAttributedString:dashUsernameString];
+            [resultString endEditing];
+
+            return resultString;
+        };
         [_headerView.cancelButton addTarget:self
                                      action:@selector(cancelButtonAction)
                            forControlEvents:UIControlEventTouchUpInside];
